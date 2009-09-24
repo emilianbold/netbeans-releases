@@ -125,7 +125,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    private final ToolsCacheManager cacheManager = new ToolsCacheManager();
+    private static final ToolsCacheManager cacheManager = new ToolsCacheManager();
 
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
@@ -161,7 +161,12 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         this.model = model;
     }
 
-    private void initialize() {
+
+    private void initializeLong() {
+        csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
+    }
+
+    private void initializeUI() {
         if (instance == null) {
             instance = this;
         }
@@ -228,7 +233,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             cbFortranRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
         }
-        csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
 
         customizeDebugger = isCustomizableDebugger();
 
@@ -499,13 +503,26 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     /** Update the display */
-    public void update(boolean doInitialize, CompilerSet selectedCS) {
-
+    public void update(final boolean doInitialize, final CompilerSet selectedCS) {
         updating = true;
         if (!initialized || doInitialize) {
-            initialize();
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                     initializeLong();
+                     SwingUtilities.invokeLater(new Runnable(){
+                        public void run() {
+                            initializeUI();
+                            updateUI(doInitialize, selectedCS);
+                        }
+                     });
+                }
+            });
+        } else {
+            updateUI(doInitialize, selectedCS);
         }
+    }
 
+    private void updateUI(boolean doInitialize, CompilerSet selectedCS){
         lbDebuggerCommand.setVisible(customizeDebugger);
         tfDebuggerPath.setVisible(customizeDebugger);
         btDebuggerBrowse.setVisible(customizeDebugger);
@@ -713,7 +730,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return instance;
     }
 
-    public ToolsCacheManager getToolsCacheManager() {
+    public static ToolsCacheManager getToolsCacheManager() {
         return cacheManager;
     }
 
@@ -728,8 +745,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     public boolean dataValid() {
         if (csm.getCompilerSets().size() == 0) {
-            valid = false;
-            firePropertyChange(PROP_VALID, !valid, valid);
+            if (valid) {
+                valid = false;
+                firePropertyChange(PROP_VALID, !valid, valid);
+            }
             return false;
         }
         if (updating || changingCompilerSet) {
@@ -1027,7 +1046,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (ServerListDisplayerEx.showServerListDialog(cacheManager)) {
+        if (ServerListUIEx.showServerListDialog(cacheManager)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -1876,7 +1895,7 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             CompilerSet cs = (CompilerSet) value;
-            if (cs.isDefault()) {
+            if (cs != null && cs.isDefault()) {
                 comp.setFont(comp.getFont().deriveFont(Font.BOLD));
             }
             return comp;

@@ -21,8 +21,8 @@
     </target>
     <target name="wsimport-client-CalculatorWSService" depends="wsimport-init">
         <mkdir dir="${build.generated.dir}/jax-wsCache/CalculatorWSService"/>
-        <wsimport sourcedestdir="${build.generated.dir}/jax-wsCache/CalculatorWSService" destdir="${build.generated.dir}/jax-wsCache/CalculatorWSService" wsdl="${basedir}/${conf-dir}xml-resources/web-service-references/CalculatorWSService/wsdl/localhost_8080/SecureCalculatorApp/CalculatorWSService.wsdl" catalog="catalog.xml" package="org.me.calculator.client" xnocompile="true" xendorsed="true">
-            <depends file="${basedir}/${conf-dir}xml-resources/web-service-references/CalculatorWSService/wsdl/localhost_8080/SecureCalculatorApp/CalculatorWSService.wsdl"/>
+        <wsimport sourcedestdir="${build.generated.dir}/jax-wsCache/CalculatorWSService" destdir="${build.generated.dir}/jax-wsCache/CalculatorWSService" wsdl="${basedir}/${conf-dir}xml-resources/web-service-references/CalculatorWSService/wsdl/CalculatorWSService.wsdl" catalog="catalog.xml" package="org.me.calculator.client" xnocompile="true" xendorsed="true">
+            <depends file="${basedir}/${conf-dir}xml-resources/web-service-references/CalculatorWSService/wsdl/CalculatorWSService.wsdl"/>
             <produces dir="${build.generated.dir}/jax-wsCache/CalculatorWSService"/>
         </wsimport>
         <copy todir="${build.generated.sources.dir}/jax-ws">

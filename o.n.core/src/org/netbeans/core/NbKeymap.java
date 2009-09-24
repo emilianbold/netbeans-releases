@@ -171,6 +171,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                     keymaps.addFileChangeListener(keymapListener);
                 }
             }
+            Map<String,FileObject> id2Dir = new HashMap<String,FileObject>(); // #170677
             for (FileObject dir : dirs) {
                 if (dir != null) {
                     for (FileObject def : dir.getChildren()) {
@@ -196,7 +197,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                             binder.put(strokes[strokes.length - 1], new Binding(def));
                             if (strokes.length == 1) {
                                 String id = idForFile(def);
-                                KeyStroke former = id2Stroke.get(id);
+                                KeyStroke former = id2Dir.put(id, dir) == dir ? id2Stroke.get(id) : null;
                                 if (former == null || compare(former, strokes[0]) > 0) {
                                     id2Stroke.put(id, strokes[0]);
                                 }
@@ -226,7 +227,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
         return bindings;
     }
     
-    private static List<KeyStroke> context; // accessed reflectively from org.netbeans.editor.MultiKeymap
+    private static final List<KeyStroke> context = new ArrayList<KeyStroke>(); // accessed reflectively from org.netbeans.editor.MultiKeymap
     
     private static void resetContext() {
         context.clear();
@@ -260,7 +261,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     private static final Logger LOG = Logger.getLogger(NbKeymap.class.getName());
     
     public NbKeymap() {
-        context = new ArrayList<KeyStroke>();
+        context.clear(); // may be useful in unit testing
     }
 
     public Action getDefaultAction() {

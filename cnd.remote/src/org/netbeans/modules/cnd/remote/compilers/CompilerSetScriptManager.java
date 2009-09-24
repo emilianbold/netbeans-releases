@@ -44,6 +44,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
@@ -76,26 +77,26 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
                         new InputStreamReader(process.getInputStream()));
                 try {
                     if (0 < emulateFailure) {
-                        log.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
+                        RemoteUtil.LOGGER.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
                         setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
                         emulateFailure--;
                         return;
                     }
 
                     platform = in.readLine();
-                    log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
-                    log.fine("    platform [" + platform + "]");
+                    RemoteUtil.LOGGER.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
+                    RemoteUtil.LOGGER.fine("    platform [" + platform + "]");
 
                     String line;
                     while ((line = in.readLine()) != null) {
-                        log.fine("    line [" + line + "]");
+                        RemoteUtil.LOGGER.fine("    line [" + line + "]");
                         compilerSets.add(line);
                     }
                 } finally {
                     in.close();
                 }
             } catch (IOException ex) {
-                log.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
+                RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
                 setFailed(ex.getMessage());
 //            } finally {
 //                support.disconnect();
@@ -103,7 +104,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         }
     }
 
-    public static final String SCRIPT = ".netbeans/6.7/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+    public static final String SCRIPT = ".netbeans/6.8/cnd3/scripts/getCompilerSets.bash"; // NOI18N
 
     public String getPlatform() {
         return platform;

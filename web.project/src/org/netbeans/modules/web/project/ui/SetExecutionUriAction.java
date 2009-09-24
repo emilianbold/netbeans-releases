@@ -41,17 +41,31 @@
 
 package org.netbeans.modules.web.project.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebAppMetadataHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -59,9 +73,15 @@ import org.openide.NotifyDescriptor;
 /** 
 *
 * @author Milan Kuchtiak
+* @author ads
 */
 public final class SetExecutionUriAction extends NodeAction {
+    
+    private static final String IS_SERVLET_FILE = 
+                "org.netbeans.modules.web.IsServletFile";            // NOI18N
     public static final String ATTR_EXECUTION_URI = "execution.uri"; //NOI18N
+    // Added as  fix for IZ#171708.
+    private final MarkerClass myMarker = new MarkerClass();
     
     /**
      * Creates and starts a thread for generating documentation
@@ -103,22 +123,28 @@ public final class SetExecutionUriAction extends NodeAction {
                 DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
                 if (data != null) {
                     FileObject javaClass = data.getPrimaryFile();
+                    WebModule webModule = WebModule.getWebModule(javaClass);
+                    if ( servletFilesScanning( webModule, javaClass ) ){
+                        return false;
+                    }
                     String mimetype = javaClass.getMIMEType();
-                    final String servletFileKey = "org.netbeans.modules.web.IsServletFile"; //NOI18N
-                    Boolean servletAttr = (Boolean)javaClass.getAttribute(servletFileKey);
+                    if ( !"text/x-java".equals(mimetype) ){     // NOI18N
+                        return false;
+                    }
+                    Boolean servletAttr = (Boolean)javaClass.getAttribute(IS_SERVLET_FILE);
                     if (!Boolean.TRUE.equals(servletAttr)) {
-                        WebModule webModule = WebModule.getWebModule(javaClass);
-                        boolean isServletFile = isServletFile(webModule, javaClass);
+                        boolean isServletFile = isServletFile(webModule, 
+                                javaClass, false );
                         if (isServletFile) {
                             try {
-                                javaClass.setAttribute(servletFileKey, Boolean.TRUE); //NOI18N
+                                javaClass.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
                             } catch (java.io.IOException ex) {
                                 //we tried
                             }
                         }
                         servletAttr = Boolean.valueOf(isServletFile);
                     }
-                    return "text/x-java".equals(mimetype) && Boolean.TRUE.equals(servletAttr); //NOI18N
+                    return Boolean.TRUE.equals(servletAttr);
                 }
             }
         }
@@ -180,8 +206,63 @@ public final class SetExecutionUriAction extends NodeAction {
         }
     }
     
-    private static boolean isServletFile(WebModule webModule, FileObject javaClass) {
-        if (webModule == null || javaClass == null) {
+    /**
+     * Method check if initial servlet scanning has been started.
+     * It's done via setting special mark for project ( actually 
+     * for  ProjectWebModule ).
+     * If this mark is present initial scanning is either in progress
+     * or finished.
+     * <code>myMarker</code> is set up if scanning was started.
+     * Any other instance of MarkerClass signals that scanning 
+     * is already finished.
+     * 
+     * Fix for IZ#171708 - AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir)
+     */
+    private boolean servletFilesScanning( final WebModule webModule , 
+            final FileObject fileObject ) 
+    {
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project != null ){
+            final ProjectWebModule prjWebModule = project.getLookup().lookup( 
+                    ProjectWebModule.class);
+            if (prjWebModule != null) {
+                MarkerClass marker = prjWebModule.getLookup().lookup(
+                        MarkerClass.class );
+                if ( marker == null ){
+                    Runnable runnable = new Runnable(){
+                        public void run() {
+                            isServletFile(webModule, fileObject , true );
+                            prjWebModule.removeCookie( myMarker);
+                            prjWebModule.addCookie( new MarkerClass() );
+                        }
+                    };
+                    if ( prjWebModule.getLookup().lookup( MarkerClass.class ) == null ){
+                        /* Double check . It's not good but not fatal.
+                         * In the worst case we will start several initial scanning.
+                         */
+                        RequestProcessor.getDefault().post(runnable);
+                        prjWebModule.addCookie( myMarker );
+                     }
+                    return true;
+                }
+                else if ( marker == myMarker ){
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    /*
+     * Modified as fix for IZ#171708. 
+     */
+    private static boolean isServletFile(WebModule webModule, FileObject javaClass,
+            boolean initialScan) 
+    {
+        if (webModule == null ) {
             return false;
         }
         
@@ -195,17 +276,82 @@ public final class SetExecutionUriAction extends NodeAction {
         }
         
         try {
-            List<ServletInfo> servlets =
-                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
-            for (ServletInfo si : servlets) {
-                if (className.equals(si.getServletClass())) {
-                    return true;
+            MetadataModel<WebAppMetadata> metadataModel = webModule
+                    .getMetadataModel();
+            boolean result = false;
+            if ( initialScan || metadataModel.isReady()) {
+                List<ServletInfo> servlets = WebAppMetadataHelper
+                        .getServlets(metadataModel);
+                List<String> servletClasses = new ArrayList<String>( servlets.size() );
+                for (ServletInfo si : servlets) {
+                    if (className.equals(si.getServletClass())) {
+                        result =  true;
+                    }
+                    else {
+                        servletClasses.add( si.getServletClass() );
+                    }
                 }
+                setServletClasses( servletClasses,  javaClass , initialScan);
             }
+            return result;
         } catch (java.io.IOException ex) {
             ex.printStackTrace();
         }
         return false;
     }
     
+    /*
+     * Created as  fix for IZ#171708 - AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir)
+     */
+    private static void setServletClasses( final List<String> servletClasses, 
+            final FileObject orig, boolean initial )
+    {
+        if ( initial ){
+            JavaSource javaSource = JavaSource.forFileObject( orig );
+            if ( javaSource == null) {
+                return;
+            }
+            try {
+            javaSource.runUserActionTask( new Task<CompilationController>(){
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    for( String servletClass : servletClasses){
+                        TypeElement typeElem = controller.getElements().
+                            getTypeElement( servletClass);
+                        if ( typeElem == null ){
+                            continue;
+                        }
+                        ElementHandle<TypeElement> handle = 
+                            ElementHandle.create( typeElem );
+                        FileObject fileObject = SourceUtils.getFile( handle, 
+                                controller.getClasspathInfo());
+                        if ( fileObject != null && !Boolean.TRUE.equals(
+                                fileObject.getAttribute(IS_SERVLET_FILE)))
+                        {
+                            fileObject.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
+                        }
+                    }
+                }
+            }, true);
+            }
+            catch(IOException e ){
+                e.printStackTrace();
+            }
+        }
+        else {
+            Runnable runnable = new Runnable() {
+                
+                public void run() {
+                    setServletClasses(servletClasses, orig, true);
+                }
+            };
+            RequestProcessor.getDefault().post(runnable);
+        }
+    }
+
+    /*
+     * Created as  fix for IZ#171708 = AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir) 
+     */
+    private class MarkerClass {
+    }
 }

@@ -71,6 +71,7 @@ public final class NativeProcessInfo {
     private boolean unbuffer;
     private boolean redirectError;
     private boolean x11forwarding;
+    private boolean suspend;
     private Collection<ChangeListener> listeners = null;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
@@ -131,18 +132,40 @@ public final class NativeProcessInfo {
         return x11forwarding;
     }
 
+    public void setInitialSuspend(boolean suspend) {
+        this.suspend = suspend;
+    }
+
+    public boolean getInitialSuspend() {
+        return suspend;
+    }
+
     /**
      *
      * @param name
      * @param value
      */
-    public void addEnvironmentVariable(final String name, final String value) {
+    public void putEnvironmentVariable(final String name, final String value) {
         envVariables.put(name, value);
     }
 
-    public void addEnvironmentVariables(Map<String, String> envs) {
-        for (String key : envs.keySet()) {
-            addEnvironmentVariable(key, envs.get(key));
+    public void addPathVariable(String name, String path, boolean prepend) {
+        char delimiter = ':';
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            name = name.toUpperCase();
+            delimiter = ';';
+        }
+
+        if (prepend) {
+            envVariables.put(name, "${" + name + '}' + delimiter + path); // NOI18N
+        } else {
+            envVariables.put(name, path + delimiter +"${" + name + '}'); // NOI18N
+        }
+    }
+
+    public void putAllEnvironmentVariables(Map<String, String> envs) {
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            putEnvironmentVariable(entry.getKey(), entry.getValue());
         }
     }
 

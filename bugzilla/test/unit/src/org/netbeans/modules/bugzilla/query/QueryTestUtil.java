@@ -62,7 +62,7 @@ public class QueryTestUtil implements TestConstants, QueryConstants {
         }
     }
 
-    static BugzillaRepository getRepository() {
+    public static BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 

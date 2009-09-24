@@ -67,6 +67,7 @@ public class ComponentBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor("enabled", java.awt.Component.class, "isEnabled", "setEnabled"), //2 // NOI18N
                 new PropertyDescriptor("name", java.awt.Component.class), //3 // NOI18N
                 new PropertyDescriptor("visible", java.awt.Component.class), //4 // NOI18N
+                new PropertyDescriptor("cursor", java.awt.Component.class), // NOI18N
                 new PropertyDescriptor("font", java.awt.Component.class) // NOI18N
             };
         } catch (IntrospectionException ex) {

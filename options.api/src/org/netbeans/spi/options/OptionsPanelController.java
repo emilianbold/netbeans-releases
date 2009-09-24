@@ -41,7 +41,12 @@
 package org.netbeans.spi.options;
 
 import java.beans.PropertyChangeListener;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.OptionsPanelControllerAccessor;
 import org.netbeans.modules.options.advanced.AdvancedPanelController;
 import org.openide.util.HelpCtx;
@@ -102,7 +107,9 @@ public abstract class OptionsPanelController {
      * &lt;/folder&gt;</pre>
      * @return OptionsPanelController a controller wrapping all AdvancedOption instances found in the folder
      * @since 1.8
+     * @deprecated Use {@link ContainerRegistration} instead.
      */
+    @Deprecated
     public static final OptionsPanelController createAdvanced(String subpath) {
         return new AdvancedPanelController(subpath);
     }
@@ -210,4 +217,122 @@ public abstract class OptionsPanelController {
      * @param l a listener to be removed
      */
     public abstract void removePropertyChangeListener (PropertyChangeListener l);
+
+    /**
+     * Registers a simple panel at the top level of the Options dialog.
+     * Should be placed on a {@link OptionsPanelController} instance.
+     * @see OptionsCategory
+     * @since org.netbeans.modules.options.api/1 1.14
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TopLevelRegistration {
+        /**
+         * Optional path that can be used in {@link OptionsDisplayer#open(String)}.
+         * Typically this should be a reference to a compile-time constant to which other code can refer.
+         */
+        String id() default "";
+        /** Label shown on the button. You may use {@code #key} syntax. */
+        String categoryName();
+        /** Path to icon for the button. */
+        String iconBase();
+        /**
+         * Optional keywords (separated by commas) for use with Quick Search (must also specify {@link #keywordsCategory}).
+         * You may use {@code #key} syntax.
+         */
+        String keywords() default "";
+        /** Keyword category for use with Quick Search (must also specify {@link #keywords}). */
+        String keywordsCategory() default "";
+        /** Position relative to other top-level panels. */
+        int position() default Integer.MAX_VALUE;
+    }
+
+    /**
+     * Registers a subpanel inside a top-level container panel in the Options dialog.
+     * Should be placed on a {@link OptionsPanelController} instance.
+     * @see AdvancedOption
+     * @since org.netbeans.modules.options.api/1 1.14
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SubRegistration {
+        /**
+         * Optional path that can be used (with {@link #location}) in {@link OptionsDisplayer#open(String)}.
+         * Typically this should be a reference to a compile-time constant to which other code can refer.
+         */
+        String id() default "";
+        /**
+         * Location of this panel inside some top-level panel matching {@link ContainerRegistration#id}.
+         * If unspecified, placed in the Miscellaneous panel.
+         * Typically this should be a reference to a compile-time constant also used for the container's ID.
+         */
+        String location() default "Advanced";
+        /** Label shown on the tab. You may use {@code #key} syntax. */
+        String displayName();
+        /**
+         * Optional keywords (separated by commas) for use with Quick Search (must also specify {@link #keywordsCategory}).
+         * You may use {@code #key} syntax.
+         */
+        String keywords() default "";
+        /** Keyword category for use with Quick Search (must also specify {@link #keywords}). */
+        String keywordsCategory() default "";
+        /**
+         * Position relative to sibling subpanels.
+         * Accepted only for non-default {@link #location} (Miscellaneous panel is sorted alphabetically).
+         */
+        int position() default Integer.MAX_VALUE;
+    }
+
+    /**
+     * Registers a panel with child panels at the top level of the Options dialog.
+     * May be placed on any package (i.e. {@code package-info.java}).
+     * Register children using {@link SubRegistration}.
+     * @see OptionsCategory
+     * @since org.netbeans.modules.options.api/1 1.14
+     */
+    @Target(ElementType.PACKAGE)
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ContainerRegistration {
+        /**
+         * Path that can be used in {@link OptionsDisplayer#open(String)} and {@link SubRegistration#location}.
+         * Typically this should be a reference to a compile-time constant to which other code can refer.
+         */
+        String id();
+        /** Label shown on the button. You may use {@code #key} syntax. */
+        String categoryName();
+        /** Path to icon for the button. */
+        String iconBase();
+        /**
+         * Optional keywords (separated by commas) for use with Quick Search (must also specify {@link #keywordsCategory}).
+         * You may use {@code #key} syntax.
+         */
+        String keywords() default "";
+        /** Keyword category for use with Quick Search (must also specify {@link #keywords}). */
+        String keywordsCategory() default "";
+        /** Position relative to other top-level panels. */
+        int position() default Integer.MAX_VALUE;
+    }
+
+    /* XXX consider using annotations on:
+o.n.m.uml.propertysupport                 OptionsDialog/UMLOptionsCategory.instance
+o.n.m.websvc.axis2                        OptionsDialog/o-n-m-websvc-axis2-options-Axis2OptionsCategory.instance
+o.n.m.python.options                      OptionsDialog/o-n-m-python-options-OptionsOptionsCategory.instance
+o.n.bluej                                 OptionsDialog/Advanced/BlueJ.instance
+o.n.m.collab.ui                           OptionsDialog/Advanced/Collab.instance
+o.n.m.form                                OptionsDialog/Advanced/FormEditor.instance
+o.n.m.jconsole                            OptionsDialog/Advanced/JConsole.instance
+o.n.m.ruby.project                        OptionsDialog/Advanced/RubyOptions.instance
+o.n.m.autosave                            OptionsDialog/Advanced/o-n-m-autosave-AutoSaveAdvancedOption.instance
+o.n.m.debugger.jpda.ui                    OptionsDialog/Advanced/o-n-m-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance
+o.n.m.genericnavigator                    OptionsDialog/Advanced/o-n-m-genericnavigator-GenericNavigatorOptionsAdvancedOption.instance
+o.n.m.groovy.support                      OptionsDialog/Advanced/o-n-m-groovy-support-api-GroovySettings.instance
+o.n.m.javacard.project                    OptionsDialog/Advanced/o-n-m-javacard-options-javacardAdvancedOption.instance
+o.n.m.mobility.svgcore                    OptionsDialog/Advanced/o-n-m-mobility-svgcore-options-SvgcoreAdvancedOption.instance
+o.n.m.perspective                         OptionsDialog/Advanced/o-n-m-perspective-options-PerspectiveAdvancedOption.instance
+o.n.m.spellchecker                        OptionsDialog/Advanced/o-n-m-spellchecker-options-SpellcheckerOption.instance
+o.n.m.tasklist.usertasks                  OptionsDialog/Advanced/o-n-m-tasklist-usertasks-Options.instance
+o.n.m.visualweb.designer.jsf              OptionsDialog/Advanced/o-n-m-visualweb-designer-jsf-JsfDesignerAdvancedOptions.instance
+o.n.m.vmd.componentssupport               OptionsDialog/Advanced/o-n-m-vmd-componentssupport-options-ComponentssupportAdvancedOption.instance
+     */
+
 }

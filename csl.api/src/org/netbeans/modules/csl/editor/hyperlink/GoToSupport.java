@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -66,13 +67,11 @@ import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.core.UiUtils;
-import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.awt.HtmlBrowser;
@@ -95,22 +94,22 @@ public class GoToSupport {
     }
     
     public static String getGoToElementTooltip(final Document doc, final int offset) {
-        return perform(doc, offset, true);
+        return perform(doc, offset, true, new AtomicBoolean());
     }
 
-    public static String performGoTo(final Document doc, final int offset) {
-        return perform(doc, offset, false);
+    public static void performGoTo(final Document doc, final int offset) {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        String name = NbBundle.getMessage(GoToSupport.class, "NM_GoToDeclaration");
+
+        RunOffAWT.runOffAWT(new Runnable() {
+
+            public void run() {
+                perform(doc, offset, false, cancel);
+            }
+        }, name, cancel);
     }
     
-    private static String perform(final Document doc, final int offset, final boolean tooltip) {
-        if (IndexingManager.getDefault().isIndexing()) {
-            if (!tooltip) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                Toolkit.getDefaultToolkit().beep();
-            }
-            return null;
-        }
-        
+    private static String perform(final Document doc, final int offset, final boolean tooltip, final AtomicBoolean cancel) {
         if (tooltip && PopupUtil.isPopupShowing()) {
             return null;
         }
@@ -125,11 +124,12 @@ public class GoToSupport {
             return null;
         }
         final String[] result = new String[] { null };
+        final DeclarationLocation[] location = new DeclarationLocation[] { null };
 
         try {
             ParserManager.parse(Collections.singleton(js), new UserTask() {
                 public void run(ResultIterator controller) throws Exception {
-
+                    if(cancel.get()) return ;
                     Parser.Result embeddedResult = controller.getParserResult(offset);
                     if (!(embeddedResult instanceof ParserResult)) {
                         return;
@@ -149,12 +149,14 @@ public class GoToSupport {
                     // Isn't this a waste of time? Unused
                     getIdentifierSpan(doc, offset);
 
-                    DeclarationLocation location = finder.findDeclaration(info, offset);
+                    location[0] = finder.findDeclaration(info, offset);
 
+                    if (cancel.get()) return ;
+                    
                     if (tooltip) {
                         CodeCompletionHandler completer = language.getCompletionProvider();
-                        if (location != DeclarationLocation.NONE && completer != null) {
-                            ElementHandle element = location.getElement();
+                        if (location[0] != DeclarationLocation.NONE && completer != null) {
+                            ElementHandle element = location[0].getElement();
                             if (element != null) {
                                 String documentation = completer.document(info, element);
                                 if (documentation != null) {
@@ -163,32 +165,51 @@ public class GoToSupport {
                             }
                         }
 
-                    } else if (location != DeclarationLocation.NONE && location != null) {
-                        URL url = location.getUrl();
-                        String invalid = location.getInvalidMessage();
+                    } else if (location[0] != DeclarationLocation.NONE && location[0] != null) {
+                        final URL url = location[0].getUrl();
+                        final String invalid = location[0].getInvalidMessage();
                         if (url != null) {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                        } else if (invalid != null) {
-                            // TODO - show in the editor as an error instead?
-                            StatusDisplayer.getDefault().setStatusText(invalid);
-                            Toolkit.getDefaultToolkit().beep();
-                        } else {
-                            if (!IM_FEELING_LUCKY && location.getAlternativeLocations().size() > 0 &&
-                                    !PopupUtil.isPopupShowing()) {
-                                // Many alternatives - pop up a dialog and make the user choose
-                                if (chooseAlternatives(doc, offset, location.getAlternativeLocations())) {
-                                    return;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                                 }
+                            });
+                        } else if (invalid != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    // TODO - show in the editor as an error instead?
+                                    StatusDisplayer.getDefault().setStatusText(invalid);
+                                    Toolkit.getDefaultToolkit().beep();
+                                }
+
+                            });
+                        } else {
+                            if (!IM_FEELING_LUCKY && location[0].getAlternativeLocations().size() > 0 &&
+                                    !PopupUtil.isPopupShowing()) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        // Many alternatives - pop up a dialog and make the user choose
+                                        if (chooseAlternatives(doc, offset, location[0].getAlternativeLocations())) {
+                                            return;
+                                        }
+                                    }
+                                });
                             }
 
-                            UiUtils.open(location.getFileObject(), location.getOffset());
+                            FileObject f = location[0].getFileObject();
+                            int offset = location[0].getOffset();
 
-                            String desc = "Description not yet implemented";
-                            result[0] = "<html><body>" + desc;
+                            if (f != null && f.isValid()) {
+                                UiUtils.open(f, offset);
+                            }
                         }
 
                     } else {
-                        Toolkit.getDefaultToolkit().beep();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                Toolkit.getDefaultToolkit().beep();
+                            }
+                        });
                     }
                 }
             });
@@ -292,7 +313,9 @@ public class GoToSupport {
         assert finder != null;
 
         OffsetRange range = finder.getReferenceSpan(doc, offset);
-        if (range != OffsetRange.NONE) {
+        if (range == null) {
+            throw new NullPointerException(finder + " violates its contract; should not return null from getReferenceSpan."); //NOI18N
+        } else if (range != OffsetRange.NONE) {
             return new int[] { range.getStart(), range.getEnd() };
         }
         

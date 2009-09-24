@@ -50,19 +50,11 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
-import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author Pavel Buzek
- * @author Po-Ting Wu
- */
 public final class JsfTable extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
         "<h:form>\n <h:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
@@ -100,15 +92,6 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
         }
         stringBuffer.append(MessageFormat.format(BEGIN [formType], new Object [] {variable, "item"})); //NOI18N
         
-        FileObject targetJspFO = getFO(target);
-        JavaSource javaSource = JavaSource.create(createClasspathInfo(targetJspFO));
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(bean);
-                createTable(controller, typeElement, variable, stringBuffer, "", null, null);
-            }
-        }, true);
         stringBuffer.append(END [formType]);
         if (surroundWithFView) {
             stringBuffer.append("</f:view>\n");
@@ -119,7 +102,7 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
     /** @param commands a message that will be added to the end of each line in table,
      *  it will be formated using {0} = iterator variable
      */
-    public static void createTable(CompilationController controller, TypeElement bean, String variable, StringBuffer stringBuffer, 
+    public static void createTable(CompilationController controller, TypeElement bean, String variable, StringBuffer stringBuffer,
             String commands, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String tableVarName) {
         if (tableVarName == null) {
             tableVarName = "item"; //NOI18N
@@ -135,7 +118,7 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
                     int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
                     String name = methodName.substring(3);
                     String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
-                    if (isId(controller, method, fieldAccess)) {
+                    if (EntityClass.isId(controller, method, fieldAccess)) {
                         TypeMirror rType = method.getReturnType();
                         if (TypeKind.DECLARED == rType.getKind()) {
                             DeclaredType rTypeDeclared = (DeclaredType)rType;
@@ -159,11 +142,11 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
                         }
                     } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
                         //param 3 - temporal, param 4 - date/time format
-                        String temporal = getTemporal(controller, method, fieldAccess);
+                        String temporal = EntityClass.getTemporal(controller, method, fieldAccess);
                         if (temporal == null) {
                             stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
                         } else {
-                            stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), tableVarName}));
+                            stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, EntityClass.getDateTimeFormat(temporal), tableVarName}));
                         }
                     } else if (isRelationship == JpaControllerUtil.REL_NONE || isRelationship == JpaControllerUtil.REL_TO_ONE) {
                         stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));

@@ -53,17 +53,19 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
+import org.netbeans.modules.php.project.ui.Utils.PhpVersionComboBoxModel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
-    private static final long serialVersionUID = 5558962745375479L;
+    private static final long serialVersionUID = 5558754132375479L;
 
     private final LocalServerController localServerComponent;
 
@@ -79,6 +81,8 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     private void init() {
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
+
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel());
 
         encodingComboBox.setModel(new EncodingModel());
         encodingComboBox.setRenderer(new EncodingRenderer());
@@ -105,6 +109,9 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         localServerComboBox = new JComboBox();
         localServerButton = new JButton();
         localServerInfoLabel = new JLabel();
+        phpVersionLabel = new JLabel();
+        phpVersionComboBox = new JComboBox();
+        phpVersionInfoLabel = new JLabel();
         encodingLabel = new JLabel();
         encodingComboBox = new JComboBox();
         separator = new JSeparator();
@@ -123,9 +130,13 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
         localServerComboBox.setEditable(true);
 
-        Mnemonics.setLocalizedText(localServerButton,NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
+        Mnemonics.setLocalizedText(localServerButton, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
         Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
         localServerInfoLabel.setEnabled(false);
+
+        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text"));
+        phpVersionInfoLabel.setEnabled(false);
 
         encodingLabel.setLabelFor(encodingComboBox);
 
@@ -137,25 +148,30 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
+            .add(separator, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(projectNameLabel)
                     .add(sourcesLabel)
-                    .add(encodingLabel))
+                    .add(encodingLabel)
+                    .add(phpVersionLabel))
                 .add(24, 24, 24)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(projectNameTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(localServerComboBox, 0, 202, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(localServerButton))
-                    .add(layout.createSequentialGroup()
-                        .add(localServerInfoLabel)
+                        .add(phpVersionInfoLabel)
                         .addContainerGap())
-                    .add(encodingComboBox, 0, 297, Short.MAX_VALUE)))
-            .add(separator, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                    .add(layout.createParallelGroup(GroupLayout.LEADING)
+                        .add(phpVersionComboBox, 0, 297, Short.MAX_VALUE)
+                        .add(projectNameTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                        .add(layout.createSequentialGroup()
+                            .add(localServerComboBox, 0, 202, Short.MAX_VALUE)
+                            .addPreferredGap(LayoutStyle.RELATED)
+                            .add(localServerButton))
+                        .add(layout.createSequentialGroup()
+                            .add(localServerInfoLabel)
+                            .addContainerGap())
+                        .add(encodingComboBox, 0, 297, Short.MAX_VALUE))))
             .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -173,14 +189,19 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                 .add(localServerInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(phpVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(phpVersionLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(phpVersionInfoLabel)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(encodingComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(encodingLabel))
                 .addPreferredGap(LayoutStyle.UNRELATED)
                 .add(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-
+                .add(projectFolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         projectNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -213,6 +234,9 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     private JButton localServerButton;
     private JComboBox localServerComboBox;
     private JLabel localServerInfoLabel;
+    private JComboBox phpVersionComboBox;
+    private JLabel phpVersionInfoLabel;
+    private JLabel phpVersionLabel;
     private JPanel projectFolderPanel;
     private JLabel projectNameLabel;
     protected JTextField projectNameTextField;
@@ -248,6 +272,14 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
     public void selectSourcesLocation(LocalServer localServer) {
         localServerComponent.selectLocalServer(localServer);
+    }
+
+    public PhpVersion getPhpVersion() {
+        return (PhpVersion) phpVersionComboBox.getSelectedItem();
+    }
+
+    public void setPhpVersion(PhpVersion phpVersion) {
+        phpVersionComboBox.setSelectedItem(phpVersion);
     }
 
     public Charset getEncoding() {

@@ -22,7 +22,7 @@ import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-    private final static Object lock = new String(RemoteNativeProcess.class.getName());
+    private final static Object lock = RemoteNativeProcess.class.getName() + "Lock"; // NOI18N
     private ChannelStreams cstreams = null;
     private Integer exitValue = null;
 
@@ -50,7 +50,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info, envVars);
 
             // Always prepend /bin and /usr/bin to PATH
-            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+//            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
             if (isInterrupted()) {
                 throw new InterruptedException();
@@ -75,6 +75,11 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                     EnvWriter ew = new EnvWriter(streams.in);
                     ew.write(envVars);
 
+                    if (info.getInitialSuspend()) {
+                        streams.in.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
+                        streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
+                        streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+                    }
                     streams.in.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
                     streams.in.flush();
 

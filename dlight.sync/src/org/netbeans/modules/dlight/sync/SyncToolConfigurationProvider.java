@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.sync;
 
+import java.awt.Color;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,23 +55,22 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.DataRowToPlot;
-import org.netbeans.modules.dlight.indicators.PlotIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
-import org.netbeans.modules.dlight.indicators.graph.GraphDescriptor;
+import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
+import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
+import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -87,7 +87,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final String TOOL_NAME = loc("SyncTool.ToolName"); // NOI18N
     private static final String TOOL_DESCRIPTION = loc("SyncTool.ToolDescription");//NOI18N
     private static final Column timestampColumn =
-        new Column("timestamp", Long.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
+        new Column("timestamp", Time.class, loc("SyncTool.ColumnName.timestamp"), null); // NOI18N
     private static final Column waiterColumn =
         new Column("waiter", Integer.class, loc("SyncTool.ColumnName.waiter"), null); // NOI18N
     private static final Column mutexColumn =
@@ -97,7 +97,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
     private static final Column timeColumn =
         new Column("time", Long.class, loc("SyncTool.ColumnName.time"), null); // NOI18N
     private static final Column stackColumn =
-        new Column("stackid", Integer.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
+        new Column("stackid", Long.class, loc("SyncTool.ColumnName.stackid"), null); // NOI18N
     private static final Column locksColumn =
         new Column("locks", Float.class, loc("SyncTool.ColumnName.locks"), null); // NOI18N
     private static final Column threadsColumn =
@@ -141,7 +141,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private List<DataCollectorConfiguration> initDataCollectorConfigurations() {
         List<DataCollectorConfiguration> result = new ArrayList<DataCollectorConfiguration>();
-
+        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
+        result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
         URL scriptUrl = getClass().getResource("resources/sync.d"); // NOI18N
 
         DTDCConfiguration dataCollectorConfiguration =
@@ -151,8 +152,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         dataCollectorConfiguration.setIndicatorFiringFactor(1);
         dataCollectorConfiguration.setOutputPrefix("sync:"); // NOI18N
         result.add(dataCollectorConfiguration);
-        result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
-        result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
+
         return result;
     }
 
@@ -168,13 +168,15 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         indicatorColumns.addAll(LLDataCollectorConfiguration.SYNC_TABLE.getColumns());
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
-        PlotIndicatorConfiguration indicatorConfiguration = new PlotIndicatorConfiguration(
-                indicatorMetadata, INDICATOR_POSITION,
-                loc("indicator.title"), 2, // NOI18N
-                Arrays.asList(
-                    new GraphDescriptor(GraphConfig.COLOR_4, loc("graph.description.threads"), GraphDescriptor.Kind.ABS_SURFACE), // NOI18N
-                    new GraphDescriptor(GraphConfig.COLOR_1, loc("graph.description.locks"), GraphDescriptor.Kind.ABS_SURFACE)), // NOI18N
-                new DataRowToSyncPlot(
+        TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
+                indicatorMetadata, INDICATOR_POSITION);
+        indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
+        indicatorConfiguration.setGraphScale(2);
+        indicatorConfiguration.addTimeSeriesDescriptors(
+                new TimeSeriesDescriptor(new Color(0xB2, 0xBC, 0x00), loc("graph.description.threads"), TimeSeriesDescriptor.Kind.ABS_SURFACE), // NOI18N
+                new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), loc("graph.description.locks"), TimeSeriesDescriptor.Kind.ABS_SURFACE)); // NOI18N
+        indicatorConfiguration.setDataRowHandler(
+                new DataRowToSync(
                     Arrays.asList(threadsColumn, ProcDataProviderConfiguration.THREADS, LLDataCollectorConfiguration.threads_count),
                     Arrays.asList(locksColumn, SunStudioDCConfiguration.c_ulockSummary, LLDataCollectorConfiguration.LOCKS_COUNT)));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
@@ -284,8 +286,8 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
     private VisualizerConfiguration getDetails(DataTableMetadata rawTableMetadata) {
         DataTableMetadata viewTableMetadata = null;
-        Column syncTimeColumn = new Column("time", Long.class, "Time, ms", null);//NOI18N
-        Column syncCountColumn = new Column("count", Long.class, "Count", null);//NOI18N
+        Column syncTimeColumn = new Column("time", Long.class, loc("SyncTool.ColumnName.e_sync"), null);//NOI18N
+        Column syncCountColumn = new Column("count", Long.class, loc("SyncTool.ColumnName.syncn"), null);//NOI18N
         List<Column> viewColumns = Arrays.asList(
             new Column("id", Integer.class, "id", null),// NOI18N
             new Column("func_name", FunctionName.class, "Function", null),// NOI18N
@@ -314,14 +316,14 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         return NbBundle.getMessage(SyncToolConfigurationProvider.class, key, params);
     }
 
-    private static final class DataRowToSyncPlot implements DataRowToPlot {
+    private static final class DataRowToSync implements DataRowToTimeSeries {
 
         private final List<Column> threadColumns;
         private final List<Column> lockColumns;
         private int threads;
         private int locks;
 
-        public DataRowToSyncPlot(List<Column> threadColumns, List<Column> lockColumns) {
+        public DataRowToSync(List<Column> threadColumns, List<Column> lockColumns) {
             this.threadColumns = new ArrayList<Column>(threadColumns);
             this.lockColumns = new ArrayList<Column>(lockColumns);
         }

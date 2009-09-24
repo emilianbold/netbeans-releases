@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionCallTreeTableNode;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
@@ -51,20 +53,22 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.openide.util.Lookup;
 
+
 /**
  * @author Alexey Vladykin
  */
-final class StackDataProviderImpl implements StackDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
+final class StackDataProviderImpl implements StackDataProvider {
 
     private final List<FunctionMetric> metricsList = Arrays.<FunctionMetric>asList(
             FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoDataStorage;
+    private final Object lock = new String("StackDataProviderImpl.lock");//NOI18N
+    private final List<DataFilter> filters = new ArrayList<DataFilter>();
 
     public void attachTo(DataStorage storage) {
         this.storage = (StackDataStorage) storage;
@@ -78,16 +82,19 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
         return metricsList;
     }
 
-    public List<FunctionCallWithMetric> getCallers(FunctionCallWithMetric[] path, boolean aggregate) {
-        return storage.getCallers(path, aggregate);
+    public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
+        return storage.getCallers(path, columns, orderBy, aggregate);
     }
-
-    public List<FunctionCallWithMetric> getCallees(FunctionCallWithMetric[] path, boolean aggregate) {
-        return storage.getCallees(path, aggregate);
+    public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
+        return storage.getCallees(path, columns, orderBy, aggregate);
     }
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
-        return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
+        List<DataFilter> filtersCopy = null;
+        synchronized (lock) {
+            filtersCopy = new ArrayList<DataFilter>(filters);
+        }
+        return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, filtersCopy, limit);
     }
 
     public List<FunctionCall> getCallStack(int stackId) {
@@ -98,8 +105,10 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(null, null, limit));
     }
 
-    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path) {
-        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getCallers(FunctionCallTreeTableNode.getFunctionCalls(path).toArray(new FunctionCallWithMetric[0]), false));
+    public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path, List<Column> columns, List<Column> orderBy) {
+        List<FunctionCallWithMetric> fcPath = FunctionCallTreeTableNode.getFunctionCalls(path);
+        List<FunctionCallWithMetric> callers = getCallees(fcPath, columns, orderBy, false);
+        return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(callers);
     }
 
     public FunctionCallTreeTableNode getValueAt(int row) {
@@ -117,7 +126,7 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -125,6 +134,21 @@ final class StackDataProviderImpl implements StackDataProvider, TreeTableDataPro
         return null;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        if (isAdjusting) {
+            return;
+        }
+        synchronized (lock) {
+            filters.clear();
+            filters.addAll(newSet);
+        }
+    }
+
+    public ThreadDumpProvider getThreadDumpProvider() {
+        if (storage instanceof ThreadDumpProvider) {
+            return (ThreadDumpProvider) storage;
+        }
+
+        return null;
     }
 }

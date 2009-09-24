@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import com.sun.source.tree.ClassTree;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
@@ -49,6 +51,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -58,11 +61,13 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Generator of Session EJBs for EJB 2.1 and 3.0
@@ -83,6 +88,8 @@ public final class SessionGenerator {
     public static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
     public static final String EJB31_SINGLETON_EJBCLASS = "Templates/J2EE/EJB31/SingletonEjbClass.java"; // NOI18N
+
+    public static final String ANNOTATION_LOCAL_BEAN = "javax.ejb.LocalBean";
 
     // informations collected in wizard
     private final FileObject pkg;
@@ -204,29 +211,47 @@ public final class SessionGenerator {
             assert false;
         }
 
-        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
+        final FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null, templateParameters);
         if (hasRemote) {
             GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null, templateParameters);
         }
         if (hasLocal) {
             GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null, templateParameters);
         }
-        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
-        javaSource.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-                ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
-                ClassTree newClassTree = classTree;
-                if (hasRemote) {
-                    newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + remoteName);
-                }
-                if (hasLocal) {
-                    newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + localName);
-                }
-                workingCopy.rewrite(classTree, newClassTree);
+        final JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        Future<Void> res = javaSource.runWhenScanFinished(new Task<CompilationController>(){
+            public void run(CompilationController cc) throws Exception {
+                javaSource.runModificationTask(new Task<WorkingCopy>() {
+                    public void run(WorkingCopy workingCopy) throws IOException {
+                        workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                        GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                        ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
+                        ClassTree newClassTree = classTree;
+                        if (!hasLocal && !hasRemote){
+                            Project project = FileOwnerQuery.getOwner(ejbClassFO);
+                            J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
+                            if (projectCap != null && projectCap.isEjb31Supported()){
+                                newClassTree = generationUtils.addAnnotation(newClassTree, generationUtils.createAnnotation(ANNOTATION_LOCAL_BEAN));
+                            }
+                        }
+                        if (hasRemote) {
+                            newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + remoteName);
+                        }
+                        if (hasLocal) {
+                            newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + localName);
+                        }
+                        workingCopy.rewrite(classTree, newClassTree);
+                    }
+                }).commit();
             }
-        }).commit();
+        }, true);
+        try {
+            res.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return ejbClassFO;
     }
 

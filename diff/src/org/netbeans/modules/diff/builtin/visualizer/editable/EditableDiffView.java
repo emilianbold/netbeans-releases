@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -69,6 +70,7 @@ import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -84,6 +86,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.DiffController;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffControllerImpl;
 import org.netbeans.editor.EditorUI;
@@ -122,6 +125,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private boolean secondSourceAvailable;
     private boolean firstSourceAvailable;
+    private boolean firstSourceUnsupportedTextUI;
+    private boolean secondSourceUnsupportedTextUI;
     private final boolean binaryDiff;
     
     private JViewport jViewport2;
@@ -210,7 +215,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     jEditorPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                     
                     jEditorPane1.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f1));
+                    repairTextUI(jEditorPane1.getEditorPane());
                     jEditorPane2.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f2));
+                    repairTextUI(jEditorPane2.getEditorPane());
                     
                     try {
                         setSource1(ss1);
@@ -221,14 +228,16 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     
                     if (!secondSourceAvailable) {
                         filePanel2.remove(jEditorPane2);
-                        NoContentPanel ncp = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
+                        NoContentPanel ncp = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class,
+                                secondSourceUnsupportedTextUI ? "CTL_DiffPanel_UnsupportedTextUI" : "CTL_DiffPanel_NoContent")); // NOI18N
                         ncp.setPreferredSize(new Dimension(jEditorPane1.getPreferredSize().width, ncp.getPreferredSize().height));
                         filePanel2.add(ncp);
                         actionsEnabled = false;
                     }
                     if (!firstSourceAvailable) {
                         filePanel1.remove(jEditorPane1);
-                        NoContentPanel ncp = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoContent")); // NOI18N
+                        NoContentPanel ncp = new NoContentPanel(NbBundle.getMessage(EditableDiffView.class,
+                                firstSourceUnsupportedTextUI ? "CTL_DiffPanel_UnsupportedTextUI" : "CTL_DiffPanel_NoContent")); // NOI18N
                         ncp.setPreferredSize(new Dimension(jEditorPane2.getPreferredSize().width, ncp.getPreferredSize().height));
                         filePanel1.add(ncp);
                         actionsEnabled = false;
@@ -262,11 +271,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
         
         jSplitPane1.addAncestorListener(this);
-        
-        refreshDiffTask.run();
-        
+
         manager = new DiffViewManager(this);
         manager.init();
+        refreshDiff(0);
     }
 
     private void adjustPreferredSizes() {
@@ -645,7 +653,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void showCurrentDifference() {
-        Difference diff = diffs[getDifferenceIndex()];
+        int index = getDifferenceIndex();
+        if (index < 0 || index >= diffs.length) {
+            return;
+        }
+        Difference diff = diffs[index];
         
         int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
@@ -665,7 +677,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
             jEditorPane2.getScrollPane().getVerticalScrollBar().setValue(ddiff.getTopRight() - offset);
         } catch (IndexOutOfBoundsException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
 
         // scroll the left pane accordingly
@@ -829,25 +841,24 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         Document sdoc = getSourceDocument(ss);
         baseDocument = sdoc;
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
-        if (!(doc instanceof StyledDocument)) {
-            doc = new DefaultStyledDocument(new StyleContext());
-            kit = new StyledEditorKit();
-            jEditorPane1.getEditorPane().setEditorKit(kit);
-        }
-        if (sdoc == null) {
-            Reader r = ss.createReader();
-            if (r != null) {
-                firstSourceAvailable = true;
-                try {
-                    kit.read(r, doc, 0);
-                } catch (javax.swing.text.BadLocationException e) {
-                    throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                } finally {
-                    r.close();
+        if (jEditorPane1.getEditorPane().getUI() instanceof BaseTextUI) {
+            if (sdoc == null) {
+                Reader r = ss.createReader();
+                if (r != null) {
+                    firstSourceAvailable = true;
+                    try {
+                        kit.read(r, doc, 0);
+                    } catch (javax.swing.text.BadLocationException e) {
+                        throw new IOException("Can not locate the beginning of the document."); // NOI18N
+                    } finally {
+                        r.close();
+                    }
                 }
+            } else {
+                firstSourceAvailable = true;
             }
         } else {
-            firstSourceAvailable = true;    
+            firstSourceUnsupportedTextUI = true;
         }
         jEditorPane1.initActions();        
         jEditorPane1.getEditorPane().setDocument(doc);
@@ -911,25 +922,24 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
-        if (!(doc instanceof StyledDocument)) {
-            doc = new DefaultStyledDocument(new StyleContext());
-            kit = new StyledEditorKit();
-            jEditorPane2.getEditorPane().setEditorKit(kit);
-        }
-        if (sdoc == null) {
-            Reader r = ss.createReader();
-            if (r != null) {
-                secondSourceAvailable = true;
-                try {
-                    kit.read(r, doc, 0);
-                } catch (javax.swing.text.BadLocationException e) {
-                    throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                } finally {
-                    r.close();
+        if (jEditorPane2.getEditorPane().getUI() instanceof BaseTextUI) {
+            if (sdoc == null) {
+                Reader r = ss.createReader();
+                if (r != null) {
+                    secondSourceAvailable = true;
+                    try {
+                        kit.read(r, doc, 0);
+                    } catch (javax.swing.text.BadLocationException e) {
+                        throw new IOException("Can not locate the beginning of the document."); // NOI18N
+                    } finally {
+                        r.close();
+                    }
                 }
+            } else {
+                secondSourceAvailable = true;
             }
         } else {
-            secondSourceAvailable = true;
+            secondSourceUnsupportedTextUI = true;
         }
         jEditorPane2.initActions();
         jSplitPane1.putClientProperty(UndoRedo.class, editorUndoRedo);
@@ -995,10 +1005,14 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     public class RefreshDiffTask implements Runnable {
 
         public void run() {
-            synchronized(EditableDiffView.this) {
-                computeDiff();
+            synchronized (RefreshDiffTask.this) {
+                final Difference[] differences = computeDiff();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        diffs = differences;
+                        if (diffs != NO_DIFFERENCES) {
+                            diffChanged();
+                        }
                         if (getDifferenceIndex() >= diffs.length) updateCurrentDifference();
                         support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
@@ -1006,36 +1020,63 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         refreshDividerSize();
                         jSplitPane1.repaint();
                         diffMarkprovider.refresh();
+                        if (diffs.length > 0 && getCurrentDifference() == -1) {
+                            setCurrentDifference(0);
+                        }
                     }
                 });
             }
         }
 
-        private void computeDiff() {
+        private Difference[] computeDiff() {
             if (!secondSourceAvailable || !firstSourceAvailable) {
-                diffs = NO_DIFFERENCES;
-                return;
+                return NO_DIFFERENCES;
             }
 
-            Reader first = null;
-            Reader second = null;
-            try {
-                first = new StringReader(jEditorPane1.getEditorPane().getDocument().getText(0, jEditorPane1.getEditorPane().getDocument().getLength()));
-                second = new StringReader(jEditorPane2.getEditorPane().getDocument().getText(0, jEditorPane2.getEditorPane().getDocument().getLength()));
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+            Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
+            Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
+            if (first == null || second == null) {
+                return NO_DIFFERENCES;
             }
 
             DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
+            Difference[] diffs;
             try {
                 diffs = diff.computeDiff(first, second);
-                diffChanged();
             } catch (IOException e) {
                 diffs = NO_DIFFERENCES;
             }
+            return diffs;
         }
     }
+
+    /**
+     * Runs under a read lock
+     * @param doc
+     * @return
+     */
+    private Reader getReader (final Document doc) {
+        final Reader[] reader = new Reader[1];
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    reader[0] = new StringReader(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+                }
+            }
+        });
+        return reader[0];
+    }
     
+    private void repairTextUI (DecoratedEditorPane pane) {
+        TextUI ui = pane.getUI();
+        if (!(ui instanceof BaseTextUI)) {
+            // use plain editor
+            pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain")); //NOI18N
+        }
+    }
+
     private void refreshDividerSize() {
         Font font = jSplitPane1.getFont();
         if (font == null) return;

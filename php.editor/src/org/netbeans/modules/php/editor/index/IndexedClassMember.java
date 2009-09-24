@@ -98,4 +98,31 @@ public class IndexedClassMember<E extends IndexedElement>  implements ElementHan
     public OffsetRange getOffsetRange(ParserResult result) {
         return getMember().getOffsetRange(result);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IndexedClassMember<E> other = (IndexedClassMember<E>) obj;
+        if (this.type != other.type && (this.type == null || !this.type.equals(other.type))) {
+            return false;
+        }
+        if (this.member != other.member && (this.member == null || !this.member.equals(other.member))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 59 * hash + (this.member != null ? this.member.hashCode() : 0);
+        return hash;
+    }
+
 }

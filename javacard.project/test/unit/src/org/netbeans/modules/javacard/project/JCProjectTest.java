@@ -40,43 +40,25 @@
  */
 package org.netbeans.modules.javacard.project;
 
-import com.sun.javacard.AID;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.*;
 import org.netbeans.modules.javacard.api.ProjectKind;
-import org.netbeans.modules.javacard.Utils;
 import org.netbeans.modules.javacard.constants.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
-import org.netbeans.modules.javacard.constants.ProjectTemplateWizardKeys;
-import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.Dependency;
 import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
-import org.netbeans.modules.javacard.wizard.ProjectXmlCreator;
-import org.netbeans.modules.projecttemplates.ProjectCreator;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -87,109 +69,25 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import static org.junit.Assert.*;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Cancellable;
-import org.openide.util.test.MockLookup;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class JCProjectTest extends NbTestCase {
+public class JCProjectTest extends AbstractJCProjectTest {
     public JCProjectTest() {
-        super ("Test");
+        super ("JCProjectTest");
     }
 
-    FileObject dir;
     JCProject project;
-    FileObject projDir;
+
     @Before
     @Override
     public void setUp() throws Exception {
-        System.out.println("setUpClass");
-        System.setProperty("JCProjectTest", Boolean.TRUE.toString());
-        clearWorkDir();
-        //if we don't do this, we get an endless loop inside
-        //recognizeInstanceFiles in lookup
-        MockLookup.setLayersAndInstances(getClass().getClassLoader());
+        super.setUp();
         FileObject fo = FileUtil.getConfigFile("Templates/Project/javacard/capproject.properties");
-        assertNotNull (fo);
-        DataObject dob = DataObject.find (fo);
-        assertTrue (dob.isTemplate());
-        dir = FileUtil.toFileObject(FileUtil.normalizeFile(getWorkDir()));
-        assertTrue (dir != null);
-        ProgressHandle h = ProgressHandleFactory.createHandle("x");
-        assertNotNull (dir);
-        FileObject capDir = dir.createFolder ("CapProject");
-        ProjectKind kind = ProjectKind.CLASSIC_APPLET;
-        String webContextPath = "/foo";
-        ProjectCreator gen = new ProjectCreator(capDir);
-        Map<String, String> templateProperties = new HashMap<String, String>();
-        String pkg = "com.foo.bar.baz";
-        String name = "CapProject";
-        gen.add (new ProjectXmlCreator(name, ProjectKind.CLASSIC_APPLET));
-        String nameSpaces = "Cap Project";
-        String mainClassName = "Bob";
-        String appletAid = Utils.generateAppletAID(pkg, "Bob").toString();
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_CLASSIC_PACKAGE_AID,
-                Utils.generatePackageAid(pkg).toString());
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_APPLET_AID,
-                appletAid);
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROJECT_NAME_SPACES, nameSpaces);
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_PACKAGE, pkg);
-        String pkgSlashes = pkg.replace('.', '/'); //NOI18N
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_PACKAGE_PATH, pkgSlashes);
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_CLASSNAME, mainClassName);
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_CLASSNAME_LOWERCASE, mainClassName.toLowerCase());
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_PROJECT_NAME, name);
-        templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_CLASSPATH, ""); //NOI18N
-        templateProperties.put (ProjectWizardKeys.WIZARD_PROP_APPLET_AID, appletAid);
-        if (appletAid != null) {
-            String aidAsHex = Utils.getAIDStringForScript(appletAid);
-            templateProperties.put (ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_APPLET_AID_HEX, aidAsHex);
-        }
-        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_FILE_SEPARATOR, File.separator);
-        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_APPLET_MANIFEST_TYPE, kind.getManifestApplicationType());
-        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_KIND, kind.name());
-
-        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_ACTIVE_DEVICE, "Default Device");
-        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_ACTIVE_PLATFORM, JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME);
-
-        if (kind == ProjectKind.CLASSIC_APPLET) {
-            AID packageAid = Utils.generatePackageAid(pkg);
-            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_CLASSIC_PACKAGE_AID,
-                    packageAid.toString());
-        }
-
-        if (appletAid != null) {
-            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_APPLET_AID, appletAid);
-            AID instanceAid = AID.parse(appletAid).increment();
-            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_INSTANCE_AID, instanceAid.toString());
-        }
-        if (webContextPath != null) {
-            templateProperties.put (ProjectPropertyNames.PROJECT_PROP_WEB_CONTEXT_PATH,
-                    webContextPath);
-        }
-        String servletMapping = "/bar";
-        if (servletMapping != null) {
-            templateProperties.put(ProjectWizardKeys.WIZARD_PROP_SERVLET_MAPPING, servletMapping);
-        }
-
-        projDir = gen.createProject(h, "CapProject", fo, templateProperties).projectDir;
-        synchronized (gen) {
-            gen.wait(3000);
-        }
-        
-        project = (JCProject) ProjectManager.getDefault().findProject(projDir);
-        assertNotNull (project);
-        System.err.println("Opening project");
-        OpenProjects.getDefault().open(new Project[] { project }, false);
-    }
-
-    @After
-    @Override
-    public void tearDown() throws Exception {
+        project = createProject(fo, "CapProject", ProjectKind.CLASSIC_APPLET, "com.foo.bar.baz", "Cap Project", "Bob");
     }
 
     @Test
@@ -201,7 +99,7 @@ public class JCProjectTest extends NbTestCase {
         assertNotNull (prov);
         assertTrue (prov.createLogicalView().getHtmlDisplayName() != null);
 
-        EditableProperties props = 
+        EditableProperties props =
                 project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
         PropertyEvaluator eval = project.evaluator();
@@ -220,46 +118,28 @@ public class JCProjectTest extends NbTestCase {
     }
 
     public void testPropertyEvaluatorSanity() {
-        FileObject fo = projDir.getFileObject("nbproject/project.properties");
+        FileObject fo = project.getProjectDirectory().getFileObject("nbproject/project.properties");
         File f = FileUtil.toFile (fo);
         PropertyProvider prov = PropertyUtils.propertiesFilePropertyProvider(f);
         PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(
                 project.getAntProjectHelper().getStockPropertyPreprovider(),
-                PropertyUtils.globalPropertyProvider(), prov);        
+                PropertyUtils.globalPropertyProvider(), prov);
         String ap = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         assertEquals ("javacard_default", ap);
     }
 
-    public void testDependencies() throws SAXException, IOException, InterruptedException {
+    public void testDependencies() throws Exception {
         System.out.println("testDependencies");
+        FileObject srcDir = project.getProjectDirectory().getFileObject("src");
+        assertNotNull(srcDir);
+
         ClassPathProvider prov = project.getLookup().lookup(ClassPathProvider.class);
-        assertEquals (1, prov.findClassPath(projDir.getFileObject("src"), ClassPath.COMPILE).getRoots().length);
+        assertEquals (1, prov.findClassPath(srcDir, ClassPath.COMPILE).getRoots().length);
 
         ResolvedDependencies deps = project.syncGetResolvedDependencies();
         assertTrue (deps.all().isEmpty());
-        File tmp = new File (System.getProperty("java.io.tmpdir"));
-        final File fakeLib = new File (tmp, "fakelib.jar");
-        fakeLib.deleteOnExit();
-        if (!fakeLib.exists()) {
-            assertTrue (fakeLib.createNewFile());
-        }
-
-        BufferedOutputStream bo = new BufferedOutputStream(new FileOutputStream(fakeLib));
-        JarOutputStream jo = new JarOutputStream(bo);
-
         String act = "org/netbeans/modules/javacard/project/Nothing.class";
-        BufferedInputStream bi = new BufferedInputStream(JCProjectTest.class.getResourceAsStream("Nothing.class"));
-        JarEntry je = new JarEntry(act);
-        jo.putNextEntry(je);
-        byte[] buf = new byte[1024];
-        int anz;
-        while ((anz = bi.read(buf)) != -1) {
-          jo.write(buf, 0, anz);
-        }
-        bi.close();
-        jo.close();
-        bo.close();
-
+        final File fakeLib = createJar (act, "fakeLib.jar", "Nothing.class", null);
         Map<ArtifactKind,String> m = new HashMap <ArtifactKind, String>();
         Dependency dep = new Dependency ("dep", DependencyKind.RAW_JAR, DeploymentStrategy.ALREADY_ON_CARD);
         m.put (ArtifactKind.ORIGIN, fakeLib.getAbsolutePath());
@@ -295,7 +175,6 @@ public class JCProjectTest extends NbTestCase {
 
         assertNotNull (prov);
 
-        FileObject srcDir = projDir.getFileObject("src");
         ClassPath path = prov.findClassPath(srcDir, ClassPath.COMPILE);
 
         FileObject[] roots = path.getRoots();
@@ -303,6 +182,12 @@ public class JCProjectTest extends NbTestCase {
 
         FileObject clazz = path.findResource(act);
         assertNotNull (clazz);
+
+        String cp = project.getClasspathClosureAsString();
+        System.err.println("Classpath Closure String:" + cp);
+        assertNotNull (cp);
+        assertTrue (cp.length() > 0);
+        assertEquals (fakeLib, new File(cp));
     }
 
     public void testAntArtifactProvider() throws Exception {

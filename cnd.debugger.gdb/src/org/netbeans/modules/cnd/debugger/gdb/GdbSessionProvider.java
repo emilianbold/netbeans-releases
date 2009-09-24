@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -80,6 +81,10 @@ public class GdbSessionProvider extends SessionProvider {
     }
     
     public String getLocationName() {
+        if (projectActionEvent != null) {
+            return ServerList.get((projectActionEvent.getConfiguration()).
+                    getDevelopmentHost().getExecutionEnvironment()).getServerName();
+        }
         return CompilerSetManager.LOCALHOST;
     }
     

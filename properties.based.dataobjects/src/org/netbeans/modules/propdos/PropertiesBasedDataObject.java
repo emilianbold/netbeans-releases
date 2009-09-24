@@ -66,6 +66,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
@@ -93,6 +95,9 @@ import org.openide.util.WeakListeners;
  */
 public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
 
+    protected static final Logger LOGGER = Logger.getLogger(PropertiesBasedDataObject.class.
+            getPackage().getName());
+
     private final InstanceContent internalContent = new InstanceContent();
     /**
      * This instanceContent can be used by subclasses to add/remove objects from this
@@ -118,6 +123,12 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     }
 
     private void replaceCreatedObject() {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "replaceCreatedObject() on " + //NOI18N
+                    getPrimaryFile().getPath() + " for " + type().getName() +
+                    " discarding old InstanceContent.Converter and its" +
+                    " instance, and invoking onReplaceObject()"); //NOI18N
+        }
         lkp.replaceConverter(new C());
         propsAdapter.clear(); //XXX shouldn't be necessary
         onReplaceObject();
@@ -317,12 +328,25 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
         }
 
         public synchronized ObservableProperties asProperties() {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "Fetch " + getPrimaryFile().getPath() //NOI18N
+                        + " as observable properties"); //NOI18N
+            }
             if (!isValid()) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, getPrimaryFile().getPath() +
+                            " is invalid, returning null"); //NOI18N
+                }
                 return null;
             }
             if (props == null) {
                 props = new JCSelfSavingProperties();
                 props.addPropertyChangeListener (WeakListeners.propertyChange(l, props));
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "First load of " + //NOI18N
+                            getPrimaryFile().getPath() +
+                            " as observable properties"); //NOI18N
+                }
                 try {
                     InputStream in = getPrimaryFile().getInputStream();
                     try {
@@ -331,6 +355,10 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
                         in.close();
                     }
                 } catch (IOException ex) {
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Load of " + //NOI18N
+                                getPrimaryFile().getPath() + " failed"); //NOI18N
+                    }
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -348,6 +376,16 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
         protected void onWriteCompleted() throws IOException {
             //The file has been rewritten.  Destroy the object in our lookup
             //and let it be replaced as needed
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Write of " + getPrimaryFile().getPath() //NOI18N
+                        + " observable properties completed.  Invoking " + //NOI18N
+                        "replaceCreatedObject() for " + getClass().getName()); //NOI18N
+            } else if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINE, "Write of " + getPrimaryFile().getPath() //NOI18N
+                        + " observable properties completed.  Invoking " + //NOI18N
+                        "replaceCreatedObject() for " + getClass().getName() +
+                        " - data now" + this, new Exception()); //NOI18N
+            }
             replaceCreatedObject();
         }
     }
@@ -362,6 +400,14 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
                 return null;
             }
             ObservableProperties props = propsAdapter.asProperties();
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "Request for " +
+                        PropertiesBasedDataObject.this.type().getName() + " from " //NOI18N
+                        + getPrimaryFile().getPath() //NOI18N
+                        + " observable properties completed.  Invoking " + //NOI18N
+                        "createFrom() for " + getClass().getName() + " with " //NOI18N
+                        + props); //NOI18N
+            }
             return props == null ? null : createFrom(props);
         }
 

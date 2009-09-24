@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -78,6 +79,9 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected static void instantiateSample(String name, File destdir) throws IOException {
+        if(destdir.exists()) {
+            assertTrue("Can not remove directory " + destdir.getAbsolutePath(), removeDirectoryContent(destdir));
+        }
         FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         DataObject templateDO = DataObject.find(templateFO);
@@ -127,6 +131,8 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException {
+        // reusing directories makes debugging much more difficult, so we add host name
+        projectDirShortName += "_" + getTestHostName();
         File projectDir = new File(getWorkDir(), projectDirShortName);
         instantiateSample(sampleName, projectDir);
         FileObject projectDirFO = FileUtil.toFileObject(projectDir);
@@ -162,5 +168,24 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
+    protected void changeProjectHost(File projectDir) throws Exception {
+        File nbproject = new File(projectDir, "nbproject");
+        assertTrue("file does not exist: " + projectDir.getAbsolutePath(), nbproject.exists());
+        File confFile = new File(nbproject, "configurations.xml");
+        assertTrue(confFile.exists());
+        String text = readFile(confFile);
+        String openTag = "<developmentServer>";
+        String closeTag = "</developmentServer>";
+        int start = text.indexOf(openTag);
+        start += openTag.length();
+        assertTrue(start >= 0);
+        int end = text.indexOf(closeTag);
+        assertTrue(end >= 0);
+        StringBuilder newText = new StringBuilder();
+        newText.append(text.substring(0, start));
+        newText.append(ExecutionEnvironmentFactory.toUniqueID(getTestExecutionEnvironment()));
+        newText.append(text.substring(end));
+        writeFile(confFile, newText);
+    }
 
 }

@@ -98,6 +98,36 @@ made subject to such option by the copyright holder.
                     <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.myNamedAction'/>
                     <attr name='displayName' stringvalue='Name1'/>
                 </file>
+                <file name="testSystemPreferences.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>
+                    <attr name='PreferencesKey' stringvalue='myKey'/>
+                    <attr name='PreferencesNode' stringvalue='system:/myNode'/>
+                </file>
+                <file name="testSystemPreferences.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>
+                    <attr name='PreferencesKey' stringvalue='myKey'/>
+                    <attr name='PreferencesNode' stringvalue='system:/myNode'/>
+                </file>
+                <file name="testUserPreferences.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>
+                    <attr name='PreferencesKey' stringvalue='myKey'/>
+                    <attr name='PreferencesNode' stringvalue='user:/myNode'/>
+                </file>
+                <file name="testNbPreferences.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>
+                    <attr name='PreferencesKey' stringvalue='myKey'/>
+                    <attr name='PreferencesNode' stringvalue='nb:/myNode'/>
+                </file>
+                <file name="testCustomPreferences.instance">
+                    <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.alwaysEnabled'/>
+                    <attr name='delegate' methodvalue='org.openide.awt.AlwaysEnabledActionTest.preferencesAction'/>
+                    <attr name='PreferencesKey' stringvalue='myKey'/>
+                    <attr name='PreferencesNode' methodvalue='org.openide.awt.AlwaysEnabledActionTest.customPreferences'/>
+                </file>
                 <file name="testCallback.instance">
                     <attr name='instanceCreate' methodvalue='org.openide.awt.Actions.callback'/>
                     <attr name='delegate' methodvalue='org.openide.awt.CallbackActionTest.myListener'/>

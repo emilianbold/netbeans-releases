@@ -123,7 +123,7 @@ public class J2eePlatformUiSupport {
         String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
         for (int i = 0; i < serverInstanceIDs.length; i++) {
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
-            if (platform != null && platform.getDisplayName().equals(j2eePlatform.getDisplayName())) {
+            if (platform != null && platform.equals(j2eePlatform)) {
                 return serverInstanceIDs[i];
             }
         }

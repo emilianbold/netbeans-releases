@@ -94,6 +94,7 @@ public class STSClientPanel extends SectionInnerPanel {
         wsdlLocationTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         trustVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         trustVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        shareTokenChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         inSync = true;
         trustVersionCombo.addItem(ComboConstants.TRUST_10);
@@ -107,6 +108,7 @@ public class STSClientPanel extends SectionInnerPanel {
         addImmediateModifier(wsdlLocationTextField);
         addImmediateModifier(metadataField);
         addImmediateModifier(trustVersionCombo);
+        addImmediateModifier(shareTokenChBox);
 
         sync();
     }
@@ -149,6 +151,9 @@ public class STSClientPanel extends SectionInnerPanel {
             setWstVersion(wstVersion);
         }
         
+        boolean shareToken = ProprietarySecurityPolicyModelHelper.isPreSTSShareToken(binding);
+        setShareToken(shareToken);
+
         inSync = false;
     }
 
@@ -167,7 +172,15 @@ public class STSClientPanel extends SectionInnerPanel {
     private void setMetadata(String url) {
         this.metadataField.setText(url);
     }
-    
+
+    private boolean isShareToken() {
+        return this.shareTokenChBox.isSelected();
+    }
+
+    private void setShareToken(boolean shareToken) {
+        this.shareTokenChBox.setSelected(shareToken);
+    }
+
     private String getNamespace() {
         return this.namespaceTextField.getText();
     }
@@ -281,6 +294,10 @@ public class STSClientPanel extends SectionInnerPanel {
                 ProprietarySecurityPolicyModelHelper.setPreSTSWstVersion(binding, version);
             }
             
+            if (source.equals(shareTokenChBox)) {                
+                ProprietarySecurityPolicyModelHelper.setPreSTSShareToken(binding, isShareToken());
+            }
+
             enableDisable();
         }
     }
@@ -319,6 +336,8 @@ public class STSClientPanel extends SectionInnerPanel {
         portNameTextField.setEnabled(!amSec);
         serviceNameLabel.setEnabled(!amSec);
         serviceNameTextField.setEnabled(!amSec);
+        shareTokenChBox.setEnabled(!amSec);
+        shareTokenChBox.setEnabled(!amSec);
         wsdlLocationLabel.setEnabled(!amSec);
         wsdlLocationTextField.setEnabled(!amSec);
     }
@@ -345,6 +364,7 @@ public class STSClientPanel extends SectionInnerPanel {
         metadataField = new javax.swing.JTextField();
         trustVersionLabel = new javax.swing.JLabel();
         trustVersionCombo = new javax.swing.JComboBox();
+        shareTokenChBox = new javax.swing.JCheckBox();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -393,29 +413,34 @@ public class STSClientPanel extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(trustVersionLabel, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_PolicyVersion")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(shareTokenChBox, org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_ShareToken")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(namespaceLabel)
-                    .add(endpointLabel)
-                    .add(wsdlLocationLabel)
-                    .add(metadataLabel)
-                    .add(serviceNameLabel)
-                    .add(portNameLabel)
-                    .add(trustVersionLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(namespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(portNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(serviceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(wsdlLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(endpointTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(metadataField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(trustVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(namespaceLabel)
+                            .add(endpointLabel)
+                            .add(wsdlLocationLabel)
+                            .add(metadataLabel)
+                            .add(serviceNameLabel)
+                            .add(portNameLabel)
+                            .add(trustVersionLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(namespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .add(portNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .add(serviceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .add(wsdlLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .add(endpointTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .add(metadataField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                            .add(trustVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(shareTokenChBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -449,6 +474,8 @@ public class STSClientPanel extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(trustVersionLabel)
                     .add(trustVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(shareTokenChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -486,6 +513,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JTextField portNameTextField;
     private javax.swing.JLabel serviceNameLabel;
     private javax.swing.JTextField serviceNameTextField;
+    private javax.swing.JCheckBox shareTokenChBox;
     private javax.swing.JComboBox trustVersionCombo;
     private javax.swing.JLabel trustVersionLabel;
     private javax.swing.JLabel wsdlLocationLabel;

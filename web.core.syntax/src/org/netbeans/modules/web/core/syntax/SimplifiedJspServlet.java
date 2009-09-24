@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,17 +55,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -74,7 +74,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
@@ -90,9 +89,6 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  * @author Tomasz.Slota@Sun.COM
  */
 public class SimplifiedJspServlet extends JSPProcessor {
-
-    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends %s {\n" + //NOI18N
-            "\tprivate static final long serialVersionUID = 1L;\n"; //NOI18N
     private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(\n"
             + "\t\tHttpServletRequest request,\n"
             + "\t\tHttpServletResponse response,\n"
@@ -112,12 +108,13 @@ public class SimplifiedJspServlet extends JSPProcessor {
     private List<String> localImportsFound = new ArrayList<String>();
     private List<String> localBeansFound = new ArrayList<String>();
 
-    private Embedding header;
+    private List<Embedding> header = new LinkedList<Embedding>();
     private List<Embedding> scriptlets = new LinkedList<Embedding>();
     private List<Embedding> declarations = new LinkedList<Embedding>();
     private List<Embedding> localImports = new LinkedList<Embedding>();
     // keep bean declarations separate to avoid duplicating the declaration, see #130745
-    List<Embedding> beanDeclarations = new LinkedList<Embedding>();;
+    List<Embedding> beanDeclarations = new LinkedList<Embedding>();
+    Embedding pageExtends = null;
     
     private List<Embedding> implicitImports = new LinkedList<Embedding>();;
     private int expressionIndex = 1;
@@ -163,7 +160,14 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
         processIncludes();
 
-        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+        TokenHierarchy tokenHierarchy = null;
+
+        if (doc != null){
+            tokenHierarchy = TokenHierarchy.get(doc);
+        } else {
+            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
+        }
+
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
         if (!tokenSequence.moveNext()) {
             return; //no tokens in token sequence
@@ -195,9 +199,32 @@ public class SimplifiedJspServlet extends JSPProcessor {
             }
         } while (tokenSequence.moveNext());
 
-        processImportsAndBeanDeclarations();
+        processJavaInTagValues();
 
-        header = snapshot.create(getClassHeader(), "text/x-java");
+
+        String extendsClass = null; //NOI18N
+        PageInfo pageInfo = getPageInfo();
+
+        if (pageInfo != null) {
+            extendsClass = pageInfo.getExtends();
+        }
+
+        if (extendsClass == null ||
+                // workaround for issue #116314
+                "org.apache.jasper.runtime.HttpJspBase".equals(extendsClass)){ //NOI18N
+            extendsClass = "HttpServlet"; //NOI18N
+        }
+
+        header.add(snapshot.create("\nclass SimplifiedJSPServlet extends ", "text/x-java")); //NOI18N
+
+        if (pageExtends != null){
+            header.add(pageExtends);
+        } else {
+            header.add(snapshot.create(extendsClass, "text/x-java")); //NOI18N
+        }
+
+        header.add(snapshot.create(" {\n\tprivate static final long serialVersionUID = 1L;\n", "text/x-java")); //NOI18N
+
         implicitImports.add(snapshot.create(createImplicitImportStatements(localImportsFound), "text/x-java"));
         beanDeclarations.add(snapshot.create("\n" + createBeanVarDeclarations(localBeansFound), "text/x-java"));
     }
@@ -222,8 +249,15 @@ public class SimplifiedJspServlet extends JSPProcessor {
      *
      * additionaly it returns a list of imports found
      */
-    private void processImportsAndBeanDeclarations() {
-        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+    private void processJavaInTagValues() {
+        TokenHierarchy tokenHierarchy = null;
+
+        if (doc != null){
+            tokenHierarchy = TokenHierarchy.get(doc);
+        } else {
+            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
+        }
+        
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.moveStart();
 
@@ -289,8 +323,17 @@ public class SimplifiedJspServlet extends JSPProcessor {
                         String beanId = id.getContent();
                         localBeansFound.add(beanId);
                     }
-                }
+                } else {
+                    pieceOfCode = extractCodeFromTagAttribute(tokenSequence,
+                        Arrays.asList("page"), //NOI18N
+                        Arrays.asList("extends"));
 
+                    if (pieceOfCode != null){
+                        pageExtends = snapshot.create(pieceOfCode.startOffset,
+                                pieceOfCode.length,
+                                "text/x-java"); //NOI18N
+                    }
+                }
             }
         }
     }
@@ -320,6 +363,10 @@ public class SimplifiedJspServlet extends JSPProcessor {
                                     // attr values can be specified using double or single quotes
                                     && (val.charAt(0) == '"' || val.charAt(0) == '\'')
                                     && val.charAt(val.length() - 1) == val.charAt(0)) {
+
+                                // a hack for compatibility with
+                                // org.netbeans.modules.editor.java.Utilities.isJavaContext()
+                                tokenSequence.createEmbedding(JavaTokenId.language(), 1, 1);
 
                                 int startOffset = tokenSequence.offset() + 1;
                                 int len = val.length() - 1;
@@ -381,37 +428,15 @@ public class SimplifiedJspServlet extends JSPProcessor {
         }
     }
 
-
-    
-    
-
-    private String getClassHeader() {
-        String extendsClass = null; //NOI18N
-        PageInfo pageInfo = getPageInfo();
-
-        if (pageInfo != null) {
-            extendsClass = pageInfo.getExtends();
-        }
-
-        if (extendsClass == null ||
-                // workaround for issue #116314
-                "org.apache.jasper.runtime.HttpJspBase".equals(extendsClass)){ //NOI18N
-            extendsClass = "HttpServlet"; //NOI18N
-        }
-
-        return String.format(CLASS_HEADER, extendsClass);
+    @Override
+    protected Collection<String> processedIncludes() {
+        return Collections.emptyList();
     }
-
-    
 
     public Embedding getSimplifiedServlet() {
         assureProcessCalled();
 
         if (!processingSuccessful){
-            return null;
-        }
-
-        if (localImports.isEmpty() && declarations.isEmpty() && scriptlets.isEmpty()) {
             return null;
         }
 
@@ -426,7 +451,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
         
         content.addAll(implicitImports);
         content.addAll(localImports);
-        content.add(header);
+        content.addAll(header);
         content.addAll(declarations);
         content.addAll(beanDeclarations);
         content.add(snapshot.create(METHOD_HEADER, "text/x-java"));
@@ -443,6 +468,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
         return embedding;
     }
 
+    @Deprecated
     public static abstract class VirtualJavaClass {
 
         public final void create(Document doc, String virtualClassBody) {

@@ -54,7 +54,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.spi.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
@@ -84,27 +84,13 @@ public class BugzillaQuery extends Query {
         this(null, repository, null, false, false, true);
     }
 
-//    protected BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved) {
-//        super();
-//        this.name = name;
-//        this.repository = repository;
-//        this.urlParameters = urlParameters;
-//        this.initialUrlDef = false;
-//        this.saved = saved;
-//        // let the subclass create the controller
-//    }
-
-//    public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean urlDef, boolean saved, boolean initControler) {
-//        this(name, repository, urlParameters, saved, urlDef, initControler);
-//    }
-
     public BugzillaQuery(String name, BugzillaRepository repository, String urlParameters, boolean saved, boolean urlDef, boolean initControler) {
         this.repository = repository;
         this.saved = saved;
         this.name = name;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(name));
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
@@ -218,7 +204,7 @@ public class BugzillaQuery extends Query {
         return ret[0];
     }
 
-    protected String getStoredQueryName() {
+    public String getStoredQueryName() {
         return getDisplayName();
     }
 

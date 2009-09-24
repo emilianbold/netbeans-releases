@@ -42,7 +42,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
-import org.netbeans.module.dlight.threads.api.storage.ThreadStateMapper;
+import org.netbeans.modules.dlight.core.stack.api.support.ThreadStateMapper;
 
 public final class ThreadStateImpl implements ThreadState {
 
@@ -50,6 +50,7 @@ public final class ThreadStateImpl implements ThreadState {
     private final byte[] statePercentage;
     private final int size;
     private final long timestamp;
+    private final long samplePeriod;
     static MSAState[] collectedStates = new MSAState[]{
         null,
         null,
@@ -61,7 +62,7 @@ public final class ThreadStateImpl implements ThreadState {
         MSAState.SleepingUserDataPageFault,
         MSAState.SleepingKernelPageFault,
         MSAState.WaitingCPU,
-        MSAState.Stopped,
+        MSAState.ThreadStopped,
         MSAState.SleepingUserLock,
         MSAState.SleepingOther,
         null,
@@ -71,12 +72,22 @@ public final class ThreadStateImpl implements ThreadState {
         null
     };
 
-    public ThreadStateImpl(long timestamp, int[] stat) {
+    /**
+     *
+     * @param timestamp - start time of the sample period
+     * @param samplePeriod - length of the sample
+     * @param stat - array of states (how many nanoseconds each state was in)
+     */
+    public ThreadStateImpl(long timestamp, long samplePeriod, long[] stat) {
         int count = 0;
+        this.samplePeriod = samplePeriod;
+
         byte[] states = new byte[stat.length];
+        long statesSum = 0;
 
         for (int i = 3; i < stat.length; i++) {
             if (stat[i] > 0) {
+                statesSum += stat[i];
                 states[count++] = (byte) i;
             }
         }
@@ -84,10 +95,10 @@ public final class ThreadStateImpl implements ThreadState {
         size = count;
         stateIDs = new byte[size];
         statePercentage = new byte[size];
-        int factor = stat[0] * 10;
+
         for (int i = 0; i < size; i++) {
             stateIDs[i] = states[i];
-            statePercentage[i] = (byte) ((stat[stateIDs[i]]+factor/2) / factor);
+            statePercentage[i] = (byte) (100.0 * stat[stateIDs[i]] / statesSum);
         }
 
         this.timestamp = timestamp;
@@ -107,7 +118,6 @@ public final class ThreadStateImpl implements ThreadState {
         assert stateIdx > 2;
 
         final MSAState fullState = collectedStates[stateIdx];
-
         return (full) ? fullState : ThreadStateMapper.toSimpleState(fullState);
     }
 
@@ -129,10 +139,10 @@ public final class ThreadStateImpl implements ThreadState {
         buf.append("MSA " + timestamp); // NOI18N
         buf.append(" has " + size); // NOI18N
         buf.append(" states\n\tMSA:"); // NOI18N
-        for(int i = 0; i < this.size(); i++) {
+        for (int i = 0; i < this.size(); i++) {
             buf.append(" "); // NOI18N
             buf.append(getMSAState(i, true));
-            buf.append("="+getState(i)); // NOI18N
+            buf.append("=" + getState(i)); // NOI18N
         }
         return buf.toString();
     }
@@ -169,5 +179,9 @@ public final class ThreadStateImpl implements ThreadState {
         }
 
         return 0;
+    }
+
+    public long getMSASamplePeriod() {
+        return samplePeriod;
     }
 }

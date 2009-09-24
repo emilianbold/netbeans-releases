@@ -51,9 +51,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -66,9 +68,12 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
 
@@ -134,54 +139,71 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     public CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
-        return ToolsPanel.getToolsPanel().getToolsCacheManager().getCompilerSetManagerCopy(execEnv, true);
+        ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
+        return manager.getCompilerSetManagerCopy(execEnv, true);
     }
     
-    private void updateCompilerCollections(CompilerSet csToSelect) {
+    private void updateCompilerCollections(final CompilerSet csToSelect) {
+
         compilerCollectionComboBox.removeAllItems();
 
-        CompilerSetPresenter toSelect = null;
-        List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
-        Collection<? extends ServerRecord> servers = ServerList.getRecords();
-        if (servers.size() > 1) {
-            for (ServerRecord record : servers) {
-                for (CompilerSet cs : getCompilerSetManager(record.getExecutionEnvironment()).getCompilerSets()) {
-                    CompilerSetPresenter csp = new CompilerSetPresenter(cs, record.getDisplayName() + " : " + cs.getName()); //NOI18N
-                    if (csToSelect == cs) {
-                        toSelect = csp;
+        final AtomicReference<CompilerSetPresenter> toSelect = new AtomicReference<CompilerSetPresenter>();
+        final List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
+        final Collection<? extends ServerRecord> servers = ServerList.getRecords();
+
+        final Runnable uiUpdater = new Runnable() { //NOI18N
+            public void run() {
+                for (CompilerSetPresenter cs : allCS) {
+                    compilerCollectionComboBox.addItem(cs);
+                }
+
+                if (toSelect.get() == null) {
+                    if (compilerCollectionComboBox.getItemCount() > 0) {
+                        compilerCollectionComboBox.setSelectedIndex(0);
                     }
-                    allCS.add(csp);
                 }
-            }
-        } else {
-            assert servers.iterator().hasNext();
-            assert ! servers.iterator().next().isRemote();
-        }
-
-        if (allCS.size() == 0) {
-            // localhost only mode (either cnd.remote is not installed or no devhosts were specified
-            for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
-                CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
-                if (csToSelect == cs) {
-                    toSelect = csp;
+                else {
+                    compilerCollectionComboBox.setSelectedItem(toSelect.get());
                 }
-                allCS.add(csp);
+                updateTabs();
             }
-        }
+        };
 
-        for (CompilerSetPresenter cs : allCS) {
-            compilerCollectionComboBox.addItem(cs);
-        }
+        final Runnable worker = new NamedRunnable("ParserSettings worker") { //NOI18N
+            @Override
+            protected void runImpl() {
+                if (servers.size() > 1) {
+                    for (ServerRecord record : servers) {
+                        for (CompilerSet cs : getCompilerSetManager(record.getExecutionEnvironment()).getCompilerSets()) {
+                            CompilerSetPresenter csp = new CompilerSetPresenter(cs, record.getDisplayName() + " : " + cs.getName()); //NOI18N
+                            if (csToSelect == cs) {
+                                toSelect.set(csp);
+                            }
+                            allCS.add(csp);
+                        }
+                    }
+                } else {
+                    assert servers.iterator().hasNext();
+                    assert ! servers.iterator().next().isRemote();
+                }
 
-        if (toSelect == null) {
-            if (compilerCollectionComboBox.getItemCount() > 0) {
-                compilerCollectionComboBox.setSelectedIndex(0);
+                if (allCS.size() == 0) {
+                    // localhost only mode (either cnd.remote is not installed or no devhosts were specified
+                    for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
+                        for (Tool tool : cs.getTools()) {
+                            tool.waitReady();
+                        }
+                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
+                        if (csToSelect == cs) {
+                            toSelect.set(csp);
+                        }
+                        allCS.add(csp);
+                    }
+                }
+                SwingUtilities.invokeLater(uiUpdater);
             }
-        }
-        else {
-            compilerCollectionComboBox.setSelectedItem(toSelect);
-        }
-        updateTabs();
+        };
+        RequestProcessor.getDefault().post(worker);
     }
 
     private synchronized void updateTabs() {

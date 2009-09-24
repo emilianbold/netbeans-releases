@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -63,8 +64,10 @@ import org.openide.util.Lookup;
  */
 class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
+    private final Object lock = new String("FunctionsListDataProviderImpl.lock");//NOI18N
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
+    private final List<DataFilter> filters = new ArrayList<DataFilter>();
 
     FunctionsListDataProviderImpl() {
     }
@@ -78,9 +81,13 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     }
 
     public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        List<DataFilter> filtersCopy = null;
+        synchronized(lock) {
+            filtersCopy = new ArrayList<DataFilter>(filters);
+        }
         if (functionDescription.getOffsetColumn() == null) {
             List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
-            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, Integer.MAX_VALUE));
+            List<FunctionCallTreeTableNode> nodes = FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(storage.getHotSpotFunctions(FunctionMetric.CpuTimeExclusiveMetric, filtersCopy, Integer.MAX_VALUE));
             for (FunctionCallTreeTableNode node : nodes) {
                 FunctionCallWithMetric call = node.getDeligator();
                 result.add(call);
@@ -88,8 +95,14 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
 
             return result;
         }
-        return storage.getFunctionsList(metadata, metricsColumn, functionDescription);
+        return storage.getFunctionsList(metadata, metricsColumn, functionDescription, filtersCopy);
     }
+
+    public List<FunctionCallWithMetric> getDetailedFunctionsList(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        return  getFunctionsList(metadata, functionDescription, metricsColumn);
+    }
+
+    
 
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
@@ -97,7 +110,7 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), -1, functionCall.getOffset(), serviceInfoStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -105,6 +118,15 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         return null;
     }
 
-    public void dataFiltersChanged(List<DataFilter> newSet) {
+    public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        //we should keep them here
+        if (isAdjusting){
+            return;
+        }
+        synchronized(lock){
+            filters.clear();
+            filters.addAll(newSet);
+        }
+        //and now we should 
     }
 }

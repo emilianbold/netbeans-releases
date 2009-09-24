@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.netbeans.api.project.Project;
@@ -49,11 +48,10 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,6 +82,25 @@ public abstract class WebRestSupport extends RestSupport {
         FileObject fo = getWebXml();
         if (fo != null) {
             return DDProvider.getDefault().getDDRoot(fo);
+        }
+        return null;
+    }
+
+    protected WebApp findWebApp() throws IOException {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            FileObject ddFo = wm.getDeploymentDescriptor();
+            if (ddFo != null) {
+                return DDProvider.getDefault().getDDRoot(ddFo);
+            }
+        }
+        return null;
+    }
+
+    protected FileObject getDeploymentDescriptor() {
+        WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
+        if (wmp != null) {
+            return wmp.findWebModule(project.getProjectDirectory()).getDeploymentDescriptor();
         }
         return null;
     }
@@ -199,4 +216,29 @@ public abstract class WebRestSupport extends RestSupport {
             webApp.write(ddFO);
         }
     }
+
+    @Override
+    public String getApplicationPath() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp == null) {
+            return super.getApplicationPath();
+        } else {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm == null) {
+                // TODO needs to take applicationPath from @ApplicationPath
+                return super.getApplicationPath();
+            } else {
+                String urlPattern = sm.getUrlPattern();
+                if (urlPattern.endsWith("*")) {
+                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                }
+                if (urlPattern.endsWith("/")) {
+                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                }
+                return urlPattern;
+            }
+        }
+    }
+
+    
 }

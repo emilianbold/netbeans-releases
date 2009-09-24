@@ -81,7 +81,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.subversion.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -205,6 +205,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             renderingHints = null;
         }
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        elementAnnotationsSubstitute = "";                              //NOI18N
     }
 
     public File getFile() {
@@ -230,6 +231,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     public void setAnnotationMessage(String message) {
+        if (message == null) {
+            throw new NullPointerException("Parameter cannot be null"); //NOI18N
+        }
         elementAnnotationsSubstitute = message;
         revalidate();
     }
@@ -787,6 +791,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         } else {
             annotation = elementAnnotationsSubstitute;
+        }
+        if (annotation == null) {
+            annotation = "";                                            //NOI18N
+            Subversion.LOG.log(Level.WARNING, "Annotation line text is null: {0}:{1}, {2}", new Object[] {file, line, elementAnnotationsSubstitute}); //NOI18N
         }
 
         if (al != null && al.getRevision().equals(recentRevision)) {

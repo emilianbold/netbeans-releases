@@ -38,9 +38,13 @@
  */
 package org.netbeans.modules.dlight.api.tool;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -57,7 +61,9 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.impl.IDPProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorProvider;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Exceptions;
 
 /**
  * D-Light Tool is a set of registered collector used to collect data,
@@ -77,6 +83,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private final List<IndicatorDataProvider<?>> indicatorDataProviders;
     private final List<Indicator<?>> indicators;
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
+    private ValidationStatus dataCollectorsValidationStatus = ValidationStatus.initialStatus();
+    private ValidationStatus indicatorDataProvidersValidationStatus = ValidationStatus.initialStatus();
     private final List<ValidationListener> validationListeners = Collections.synchronizedList(new ArrayList<ValidationListener>());
     private boolean collectorsTurnedOn = true;
     private final String iconPath;
@@ -255,7 +263,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 //Add All indicators
                 List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
                 for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
-                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(toolName, indConfiguration);
+                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration);
                     if (indicator == null) {
                         log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
                                 "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N
@@ -274,7 +282,9 @@ public final class DLightTool implements Validateable<DLightTarget> {
     void registerCollector(DataCollector collector) {
         if (collector == null) {
             log.info("Cannot register collector"); //NOI18N
+            return;
         }
+
         if (!dataCollectors.contains(collector)) {
             dataCollectors.add(collector);
         }
@@ -302,33 +312,136 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return newStatus;
     }
 
+    public final ValidationStatus validateIndicatorDataProviders(final DLightTarget target) {
+        if (indicatorDataProvidersValidationStatus.isValid()) {
+            return indicatorDataProvidersValidationStatus;
+        }
+        initIndicatorDataProviders();
+        initCollectors();
+        if (EventQueue.isDispatchThread()) {
+            Future<ValidationStatus> task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                public ValidationStatus call() throws Exception {
+                    ValidationStatus result = ValidationStatus.initialStatus();
+
+                    for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+                        result = result.merge(idp.validate(target));
+                    }
+                    for (DataCollector<?> dc : dataCollectors) {
+                        if (!(dc instanceof IndicatorDataProvider)) {
+                            continue;
+                        }
+                        result = result.merge(dc.validate(target));
+                    }
+                    return result;
+                }
+            }, "Validate IndicatorDataProviders for tool " + getID());//NO18N // NOI18N
+            try {
+                indicatorDataProvidersValidationStatus = task.get();
+                return indicatorDataProvidersValidationStatus;
+            } catch (InterruptedException ex) {
+                return ValidationStatus.initialStatus();
+            } catch (ExecutionException ex) {
+                return ValidationStatus.initialStatus();
+            }
+        } else {
+            ValidationStatus result = ValidationStatus.initialStatus();
+
+            for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+                result = result.merge(idp.validate(target));
+            }
+            for (DataCollector<?> dc : dataCollectors) {
+                if (!(dc instanceof IndicatorDataProvider)) {
+                    continue;
+                }
+                result = result.merge(dc.validate(target));
+            }
+            indicatorDataProvidersValidationStatus = result;
+            return indicatorDataProvidersValidationStatus;
+        }
+
+    }
+
+    public final ValidationStatus validateDataCollectors(final DLightTarget target) {
+        if (dataCollectorsValidationStatus.isValid()) {
+            return dataCollectorsValidationStatus;
+        }
+        initCollectors();
+        initIndicatorDataProviders();
+        if (EventQueue.isDispatchThread()) {
+            Future<ValidationStatus> task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
+
+                public ValidationStatus call() throws Exception {
+                    ValidationStatus result = ValidationStatus.initialStatus();
+
+                    for (DataCollector<?> dc : dataCollectors) {
+                        result = result.merge(dc.validate(target));
+                    }
+                    return result;
+                }
+            }, "Validate DataCollectors for tool " + getID());//NO18N // NOI18N
+            try {
+                dataCollectorsValidationStatus = task.get();
+                return dataCollectorsValidationStatus;
+            } catch (InterruptedException ex) {
+                return ValidationStatus.initialStatus();
+            } catch (ExecutionException ex) {
+                return ValidationStatus.initialStatus();
+            }
+        } else {
+            ValidationStatus result = ValidationStatus.initialStatus();
+
+            for (DataCollector<?> dc : dataCollectors) {
+                result = result.merge(dc.validate(target));
+            }
+            result = dataCollectorsValidationStatus;
+            return dataCollectorsValidationStatus;
+        }
+
+    }
+
     public final void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
         notifyStatusChanged(null, validationStatus);
     }
 
-    final synchronized ValidationStatus doValidation(DLightTarget target) {
-        // VK: in the case there are collectors, consider the tool valid
-        if (dataCollectors.isEmpty()) {
-            return ValidationStatus.validStatus();
-        }
-        ValidationStatus result = ValidationStatus.initialStatus();
+    final synchronized ValidationStatus doValidation(final DLightTarget target) {
+        initCollectors();
+        initIndicatorDataProviders();
+        if (EventQueue.isDispatchThread()) {
+            Future<ValidationStatus> task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
-        for (DataCollector<?> dc : dataCollectors) {
-            result = result.merge(dc.validate(target));
-//            if (result.isInvalid()) {
-//                break;
-//            }
-        }
-        for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
-            result = result.merge(idp.validate(target));
-//            if (result.isInvalid()) {
-//                break;
-//            }
-        }
+                public ValidationStatus call() throws Exception {
+                    ValidationStatus result = ValidationStatus.initialStatus();
 
+                    for (DataCollector<?> dc : dataCollectors) {
+                        result = result.merge(dc.validate(target));
+                    }
+                    for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+                        result = result.merge(idp.validate(target));
+                    }
+                    return result;
+                }
+            }, "Validate DataCollectors and IndicatorDataProviders for tool " + getID());//NO18N // NOI18N
+            try {
+                //NO18N
+                return task.get();
+            } catch (InterruptedException ex) {
+                return ValidationStatus.initialStatus();
+            } catch (ExecutionException ex) {
+                return ValidationStatus.initialStatus();
+            }
+        } else {
+            ValidationStatus result = ValidationStatus.initialStatus();
 
-        return result;
+            for (DataCollector<?> dc : dataCollectors) {
+                result = result.merge(dc.validate(target));
+            }
+            for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+                result = result.merge(idp.validate(target));
+            }
+            return result;
+        }
     }
 
     public final void addValidationListener(ValidationListener listener) {
@@ -342,7 +455,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     }
 
     private final void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
-        if (oldStatus.equals(newStatus)) {
+        if (oldStatus != null && oldStatus.equals(newStatus)) {
             return;
         }
         for (ValidationListener validationListener : validationListeners) {

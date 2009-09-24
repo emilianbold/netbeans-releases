@@ -72,6 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/ruby/build"/>
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
+        <delete dir="${basedir}/netBeans/javafx/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>     
         <delete dir="${basedir}/netBeans/groovy/build"/>
         <delete dir="${basedir}/netBeans/php/build"/> 
@@ -108,17 +109,24 @@ Microsystems, Inc. All Rights Reserved.
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
                                          ergonomics(ergonomics),
+                                         javafx(javafx), javafx-mac(javafx),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
-        </for-each>                                                  
+            <exec executable="sh" failonerror="no">
+                <arg value="-c"/>
+                <arg value="cd ${basedir}/netBeans/${module.name}/build/netbeans ; rm -rf META-INF"/>
+            </exec>        
+        </for-each>
+
+
     </target>
     
     <target name="unzip-cluster">
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
+            <arg value="unzip -o -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
         </exec>      
     </target>
     
@@ -163,6 +171,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="build-modules">        
         <property name="modules" value="javase(${javase-title}),
+                                        javafx(${javafx-title}),
                                         javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
@@ -215,8 +224,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg">
                   
-        <property name="bundles" value="        (./build/*pkg),
+        <property name="bundles" value="     (./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/cpp.pkg ./build/ruby.pkg ./build/php.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
+                                             -javafx-full(./build/*pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
+                                             -javafx(./build/baseide.pkg ./build/javase.pkg ./build/javafx.pkg),
                                              -java(./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
@@ -441,6 +452,7 @@ Microsystems, Inc. All Rights Reserved.
             <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
+                <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
                 <!--<filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>-->
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>

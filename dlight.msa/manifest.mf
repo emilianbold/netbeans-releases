@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.dlight.msa
+OpenIDE-Module-Layer: org/netbeans/modules/dlight/msa/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/msa/resources/Bundle.properties
+

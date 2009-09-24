@@ -134,8 +134,24 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
     }
     
     private String makeUnique(String methodName){
-        // TODO: RETOUCHE
-        return methodName;
+        List <? extends Tree> members=getClassTree().getMembers();
+        String name=methodName;
+        int add=1;
+        boolean found=false;
+        do
+        {
+            found=false;
+            for(Tree membr:members) {
+                if(Tree.Kind.METHOD.equals(membr.getKind())){
+                    MethodTree mt = membr instanceof MethodTree ? (MethodTree) membr : null;
+                    if(mt!=null && name.equals(mt.getName().toString())) {
+                        found = true;
+                        name = methodName + add++;
+                    }
+                }
+            }
+        }while(found);
+        return name;
     }
     
     FieldInfo getEntityManagerFactoryFieldInfo(){
@@ -302,7 +318,7 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
         switch(init){
             
             case INJECT :
-                anns.add(getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN));
+                anns.add(getGenUtils().createAnnotation(PERSISTENCE_CONTEXT_FQN, Collections.singletonList(getGenUtils().createAnnotationArgument("unitName", getPersistenceUnitName()))));//NOI18N
                 break;
                 
             case EMF:
@@ -349,7 +365,7 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
                 result = getTreeMaker().addClassMember(result, destroyMethod);
                 
                 if(needsEmf){
-                    ExpressionTree annArgument = getGenUtils().createAnnotationArgument("name", getPersistenceUnitName());
+                    ExpressionTree annArgument = getGenUtils().createAnnotationArgument("name", getPersistenceUnitName());//NOI18N
                     AnnotationTree puAnn = getGenUtils().createAnnotation(PERSISTENCE_UNIT_FQN, Collections.<ExpressionTree>singletonList(annArgument));
                     VariableTree emf = getTreeMaker().Variable(
                             getTreeMaker().Modifiers(

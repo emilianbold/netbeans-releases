@@ -47,7 +47,7 @@ package org.netbeans.modules.gsf.testrunner.api;
  */
 public enum Status {
 
-    PASSED("00CC00"), PENDING("800080"), FAILED("FF0000"), ERROR("FF0000"), ABORTED("D69D29"); //NOI18N
+    PASSED("00CC00"), PENDING("800080"), FAILED("FF0000"), ERROR("FF0000"), ABORTED("D69D29"), SKIPPED("585858"); //NOI18N
     
     private final String displayColor;
 
@@ -66,6 +66,6 @@ public enum Status {
      * @return true if the given status represents a failure or an error.
      */
     static boolean isFailure(Status status) {
-        return FAILED.compareTo(status) <= 0;
+        return FAILED.equals(status) || ERROR.equals(status);
     }
 }

@@ -42,6 +42,8 @@
 package org.openide.filesystems;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -49,9 +51,19 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /** Interface that provides basic information about a virtual
@@ -69,6 +81,9 @@ import org.openide.util.actions.SystemAction;
 * @author Jaroslav Tulach
 */
 public abstract class FileSystem implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(FileSystem.class.getName());
+
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -8931487924240189180L;
 
@@ -136,8 +151,8 @@ public abstract class FileSystem implements Serializable {
     /** Describes capabilities of the filesystem.
     */
     @Deprecated // have to store it for compat
-    // XXX JDK #6460147: javac still reports it even though @Deprecated, and @SuppressWarnings("deprecation") does not help either
-    private FileSystemCapability capability;
+    private /* XXX JDK #6460147: javac still reports it even though @Deprecated,
+               and @SuppressWarnings("deprecation") does not help either: FileSystemCapability*/Object capability;
 
     /** property listener on FileSystemCapability. */
     private transient PropertyChangeListener capabilityListener;
@@ -409,12 +424,13 @@ public abstract class FileSystem implements Serializable {
     * @exception IOException error during read
     * @exception ClassNotFoundException when class not found
     */
+    @SuppressWarnings("deprecation")
     private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, java.lang.ClassNotFoundException {
         in.defaultReadObject();
 
         if (capability != null) {
-            capability.addPropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
         }
     }
 
@@ -442,15 +458,31 @@ public abstract class FileSystem implements Serializable {
         throw new EnvironmentNotSupportedException(this);
     }
 
-    /** Get a status object that can annotate a set of files by changing the names or icons
-    * associated with them.
-    * <P>
-    * The default implementation returns a status object making no modifications.
-    *
-    * @return the status object for this filesystem
-    */
+    /**
+     * Gets a status object that can annotate a set of files by changing the names or icons
+     * associated with them.
+     * <p>
+     * The default implementation returns a status object making no modifications,
+     * unless this {@link #isDefault()} in which case certain special attributes
+     * will be honored as of org.openide.filesystems 7.25:
+     * <dl>
+     * <dt>{@code displayName}</dt>
+     * <dd>Value of {@link Status#annotateName}. Often used with {@code bundlevalue} in an {@link XMLFileSystem}.</dd>
+     * <dt>{@code SystemFileSystem.localizingBundle}</dt>
+     * <dd>Name of a bundle (as per {@link NbBundle#getBundle(String)}) in which to look up a display name.
+     * The bundle key is the {@link FileObject#getPath}.
+     * {@code displayName} is preferred for new code.</dd>
+     * <dt>{@code iconBase}</dt>
+     * <dd>Resource path to icon for {@link Status#annotateIcon}.
+     * {@code _32} will be inserted before the file suffix for 32x32 icons.</dd>
+     * <dt>{@code SystemFileSystem.icon} and {@code SystemFileSystem.icon32}</dt>
+     * <dd>Icon specified directly as a {@link URL} (usually {@code nbresloc} protocol)
+     * or {@link Image}. {@code iconBase} is preferred for new code.</dd>
+     * </dl>
+     * @return the status object for this filesystem
+     */
     public Status getStatus() {
-        return STATUS_NONE;
+        return isDefault() ? SFS_STATUS : STATUS_NONE;
     }
 
     /** The object describing capabilities of this filesystem.
@@ -462,10 +494,10 @@ public abstract class FileSystem implements Serializable {
     public final FileSystemCapability getCapability() {
         if (capability == null) {
             capability = new FileSystemCapability.Bean();
-            capability.addPropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
         }
 
-        return capability;
+        return (FileSystemCapability) capability;
     }
 
     /** Allows subclasses to change a set of capabilities of the
@@ -476,13 +508,13 @@ public abstract class FileSystem implements Serializable {
     @Deprecated
     protected final void setCapability(FileSystemCapability capability) {
         if (this.capability != null) {
-            this.capability.removePropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) this.capability).removePropertyChangeListener(getCapabilityChangeListener());
         }
 
         this.capability = capability;
 
         if (this.capability != null) {
-            this.capability.addPropertyChangeListener(getCapabilityChangeListener());
+            ((FileSystemCapability) this.capability).addPropertyChangeListener(getCapabilityChangeListener());
         }
     }
 
@@ -877,13 +909,13 @@ public abstract class FileSystem implements Serializable {
     */
     static abstract class EventDispatcher extends Object implements Runnable {
         public final void run() {
-            dispatch(false);
+            dispatch(false, null);
         }
 
         /** @param onlyPriority if true then invokes only priority listeners
          *  else all listeners are invoked.
          */
-        protected abstract void dispatch(boolean onlyPriority);
+        protected abstract void dispatch(boolean onlyPriority, Collection<Runnable> postNotify);
 
         /** @param propID  */
         protected abstract void setAtomicActionLink(EventControl.AtomicActionLink propID);
@@ -898,7 +930,7 @@ public abstract class FileSystem implements Serializable {
             this.fStatusEvent = fStatusEvent;
         }
 
-        protected void dispatch(boolean onlyPriority) {
+        protected void dispatch(boolean onlyPriority, Collection<Runnable> postNotify) {
             if (onlyPriority) {
                 return;
             }
@@ -912,4 +944,102 @@ public abstract class FileSystem implements Serializable {
             /** empty no fireFrom in FileStatusEvent*/
         }
     }
+
+    private static final Status SFS_STATUS = new Status() {
+
+        public String annotateName(String s, Set<? extends FileObject> files) {
+            // Look for a localized file name.
+            // Note: all files in the set are checked. But please only place the attribute
+            // on the primary file, and use this primary file name as the bundle key.
+            for (FileObject fo : files) {
+                // annotate a name
+                String displayName = annotateName(fo);
+                if (displayName != null) {
+                    return displayName;
+                }
+            }
+            return s;
+        }
+
+        private final String annotateName(FileObject fo) {
+            String bundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+            if (bundleName != null) {
+                try {
+                    bundleName = Utilities.translate(bundleName);
+                    ResourceBundle b = NbBundle.getBundle(bundleName);
+                    try {
+                        return b.getString(fo.getPath());
+                    } catch (MissingResourceException ex) {
+                        // ignore--normal
+                    }
+                } catch (MissingResourceException ex) {
+                    Exceptions.attachMessage(ex, warningMessage(bundleName, fo));
+                    LOG.log(Level.WARNING, null, ex);
+                    // ignore
+                }
+            }
+            return (String) fo.getAttribute("displayName"); // NOI18N
+        }
+
+        private String warningMessage(String name, FileObject fo) {
+            Object by = fo.getAttribute("layers"); // NOI18N
+            if (by instanceof Object[]) {
+                by = Arrays.toString((Object[]) by);
+            }
+            return "Cannot load " + name + " for " + fo + " defined by " + by; // NOI18N
+        }
+
+        public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
+            for (FileObject fo : files) {
+                Image img = annotateIcon(fo, type);
+                if (img != null) {
+                    return img;
+                }
+            }
+            return im;
+        }
+
+        private Image annotateIcon(FileObject fo, int type) {
+            String attr = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                attr = "SystemFileSystem.icon"; // NOI18N
+            } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                attr = "SystemFileSystem.icon32"; // NOI18N
+            }
+            if (attr != null) {
+                Object value = fo.getAttribute(attr);
+                if (value != null) {
+                    if (value instanceof URL) {
+                        return Toolkit.getDefaultToolkit().getImage((URL) value);
+                    } else if (value instanceof Image) {
+                        // #18832
+                        return (Image) value;
+                    } else {
+                        LOG.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+                    }
+                }
+            }
+            String base = (String) fo.getAttribute("iconBase"); // NOI18N
+            if (base != null) {
+                if (type == BeanInfo.ICON_COLOR_16x16) {
+                    return ImageUtilities.loadImage(base, true);
+                } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                    return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
+                }
+            }
+            return null;
+        }
+
+        private String insertBeforeSuffix(String path, String toInsert) {
+            String withoutSuffix = path;
+            String suffix = ""; // NOI18N
+            if (path.lastIndexOf('.') >= 0) {
+                withoutSuffix = path.substring(0, path.lastIndexOf('.'));
+                suffix = path.substring(path.lastIndexOf('.'), path.length());
+            }
+            return withoutSuffix + toInsert + suffix;
+        }
+
+    };
+
 }

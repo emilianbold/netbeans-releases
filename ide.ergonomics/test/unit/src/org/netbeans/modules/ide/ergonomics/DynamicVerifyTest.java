@@ -107,7 +107,13 @@ public class DynamicVerifyTest extends NbTestCase {
         iterateRegistrations(sb, ProjectFactory.class, null, all);
 
         if (!all.isEmpty()) {
-            fail("No all IDE projects are registered for ergonomics mode:\n" + sb);
+            fail("Not all IDE projects are registered for ergonomics mode, see the list below.\n" +
+                "This may mean that you are not using @AntBasedProjectRegistration to register\n" +
+                "your projects, or that you need to hardcode the nature of your project into\n" +
+                "ide.ergonomics/*.properties using XPath. For more information see\n" +
+                "http://wiki.netbeans.org/FitnessForever" +
+                "The list of differences follows:\n" + sb
+            );
         }
     }
 
@@ -129,7 +135,12 @@ public class DynamicVerifyTest extends NbTestCase {
         iterateRegistrations(sb, rake, rake.getDeclaredMethod("getType"), all);
 
         if (!all.isEmpty()) {
-            fail("No all IDE projects are registered for ergonomics mode:\n" + sb);
+            fail("Not all IDE projects are registered for ergonomics mode, see the list below.\n" +
+                "This may mean that you are not using @AntBasedProjectRegistration to register\n" +
+                "your projects. For more information see\n" +
+                "http://wiki.netbeans.org/FitnessForever" +
+                "The list of differences follows:\n" + sb
+            );
         }
     }
 

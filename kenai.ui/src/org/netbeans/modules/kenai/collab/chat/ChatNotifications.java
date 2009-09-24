@@ -65,7 +65,7 @@ import org.openide.util.NbPreferences;
 public class ChatNotifications {
     public static final String NOTIFICATIONS_PREF = "chat.notifications."; // NOI18N
     
-    private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png"));
+    private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png")); // NOI18N
     private static ChatNotifications instance;
 
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
@@ -91,7 +91,7 @@ public class ChatNotifications {
         if (r != null) {
             r.disposeNotification();
             r.notifyMessagesRead();
-            groupMessages.remove(name);
+            //groupMessages.remove(name);
         }
     }
 
@@ -109,7 +109,11 @@ public class ChatNotifications {
 
     synchronized void addGroupMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        final String chatRoomName = StringUtils.parseName(msg.getFrom());
+        String name = StringUtils.parseName(msg.getFrom());
+        if (name.contains("@")) { // NOI18N
+            name = StringUtils.parseName(name);
+        }
+        final String chatRoomName = name;
         final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
         r.notifyMessageReceived(msg);
         String title = null;
@@ -144,7 +148,9 @@ public class ChatNotifications {
             n.clear();
             privateNotifications.remove(name);
         }
-        n = NotificationDisplayer.getDefault().notify("New Message", getIcon(), "New Message from " + name, new ActionListener() {
+        String title = NbBundle.getMessage(ChatTopComponent.class, "LBL_PrivateNotificationTitle"); // NOI18N
+        String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_PrivateNotificationDescription", new Object[] { name }); // NOI18N
+        n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 ChatTopComponent tc = ChatTopComponent.findInstance();

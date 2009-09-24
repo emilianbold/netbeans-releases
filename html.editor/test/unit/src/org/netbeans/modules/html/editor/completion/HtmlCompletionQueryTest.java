@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +49,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -60,8 +60,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.html.editor.NbReaderProvider;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -88,7 +87,6 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     public HtmlCompletionQueryTest(String name) throws IOException, BadLocationException {
         super(name);
-        NbReaderProvider.setupReaders(); //initialize DTD providers
     }
 
     @Override
@@ -154,9 +152,9 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
 
     public void testCompleteTags() throws BadLocationException, ParseException {
-        assertCompletedText("<|", "div", "<div>|");
-        assertCompletedText("<di|", "div", "<div>|");
-        assertCompletedText("<div|", "div", "<div>|");
+        assertCompletedText("<|", "div", "<div|");
+        assertCompletedText("<di|", "div", "<div|");
+        assertCompletedText("<div|", "div", "<div|");
 
         assertCompletedText("<div></|", "div", "<div></div>|");
         assertCompletedText("<div></d|", "div", "<div></div>|");
@@ -164,9 +162,9 @@ public class HtmlCompletionQueryTest extends TestBase {
     }
     
     public void testCompleteTagsBeforeText() throws BadLocationException, ParseException {
-        assertCompletedText("<| ", "div", "<div>| ");
-        assertCompletedText("<di| ", "div", "<div>| ");
-        assertCompletedText("<div| ", "div", "<div>| ");
+        assertCompletedText("<| ", "div", "<div| ");
+        assertCompletedText("<di| ", "div", "<div| ");
+        assertCompletedText("<div| ", "div", "<div| ");
 
         assertCompletedText("<div></| ", "div", "<div></div>| ");
         assertCompletedText("<div></d| ", "div", "<div></div>| ");
@@ -385,7 +383,7 @@ public class HtmlCompletionQueryTest extends TestBase {
             return ;
         }
 
-        Collection<CompletionItem> items = completionResult.getItems();
+        Collection<? extends CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
         if(expectedAnchor > 0) {
@@ -443,7 +441,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
 
         assertNotNull(result);
-        Collection<CompletionItem> items = completionResult.getItems();
+        Collection<? extends CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
         CompletionItem item = null;
@@ -465,7 +463,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     }
 
-    private void assertCompletionItemNames(String[] expected, Collection<CompletionItem> ccresult, Match type) {
+    private void assertCompletionItemNames(String[] expected, Collection<? extends CompletionItem> ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionItem ccp : ccresult) {
             //check only html items
@@ -507,7 +505,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         for (int i = 0; i < doc.getLength(); i++) {
             HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, i).query();
             if (result != null) {
-                Collection<CompletionItem> items = result.getItems();
+                Collection<? extends CompletionItem> items = result.getItems();
                 output.append(i + ":");
                 output.append('[');
                 List<CompletionItem> itemsList = new ArrayList<CompletionItem>(items);

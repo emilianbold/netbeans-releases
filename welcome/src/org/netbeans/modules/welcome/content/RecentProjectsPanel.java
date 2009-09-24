@@ -167,7 +167,7 @@ public class RecentProjectsPanel extends JPanel implements Constants {
             }
 
             if ( prj != null ) {
-                OpenProjects.getDefault().open( new Project[] { prj }, false );
+                OpenProjects.getDefault().open( new Project[] { prj }, false, true );
             } else {
                 String msg = BundleSupport.getMessage("ERR_InvalidProject", project.getDisplayName()); //NOI18N
                 NotifyDescriptor nd = new NotifyDescriptor.Message( msg );

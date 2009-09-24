@@ -112,6 +112,18 @@ public class UtilitiesTest extends NbTestCase {
                                 "java.lang.reflect.TypeVariable<java.lang.Class<? extends java.util.Map>>[]");
     }
 
+    public void testCapturedTypeExtends170574() throws Exception {
+        performCapturedTypeTest("package test; interface Foo<T> {Foo<? extends T> foo();}" +
+                "public class Test {public void t() {Foo<? extends Number> bar = null; bar.foo(|);}}",
+                                "test.Foo<? extends java.lang.Number>");
+    }
+
+    public void testCapturedTypeSuper170574() throws Exception {
+        performCapturedTypeTest("package test; interface Foo<T> {Foo<? super T> foo();}" +
+                "public class Test {public void t() {Foo<? super Number> bar = null; bar.foo(|);}}",
+                                "test.Foo<? super java.lang.Number>");
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         FileObject workFO = FileUtil.toFileObject(getWorkDir());

@@ -290,8 +290,11 @@ made subject to such option by the copyright holder.
     <mkdir dir="${netbeans.build.dir}"/>
     <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
     <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
-      <arg value="id"/>
-      <arg value="-i"/>
+      <arg value="log"/>
+      <arg value="-r"/>
+      <arg value="."/>
+      <arg value="--template"/>
+      <arg value="{node|short}\n"/>
     </hgexec>
     <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
       <equals arg1="${hg.id.exit}" arg2="0"/>
@@ -469,7 +472,7 @@ the ${netbeans.dest}/bin/ directory.
     </pathconvert>
     <pathconvert property="nb.clusters.exe.includes" pathsep=",">
         <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*,\1/**/modules/ext/lib/*/tools_exec,\1/**/modules/ext/lib/**/*.so,\1/**/modules/ext/lib/**/*.dylib"/>
     </pathconvert>
     <pathconvert property="nb.clusters.exe.excludes" pathsep=",">
         <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
@@ -1560,6 +1563,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="group-friend-packages" file="${generated.files.dir}/group-friend-packages.txt" />
       <output type="kits" file="${generated.files.dir}/kits.txt" />
       <output type="kit-dependencies" file="${generated.files.dir}/kit-deps.txt" />
+      <output type="plugins" file="${generated.files.dir}/plugins.txt"/>
     </deps>
 
     <taskdef name="test-deps" classname="org.netbeans.nbbuild.ModuleTestDependencies" classpath="nbantext.jar"/>
@@ -1623,7 +1627,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
   </target>
 
-  <target name="build-test-dist" depends="init" description="Built test distribution">
+  <target name="init-test-dist" depends="init">
       <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
@@ -1633,6 +1637,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <mapper type="identity" />
       </pathconvert>
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
+  </target>
+  <target name="build-test-dist" depends="init-test-dist" description="Build test distribution">
       <mkdir dir="build"/>
       <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
@@ -1760,8 +1766,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <property name="catalog.file" location="catalog.xml"/>
       <property name="catalog.base.url" value="http://bits.netbeans.org/"/>
       <property name="use.license.url.in.catalog" value="true"/>
+      <property name="catalog.notification.message" value=""/>
+      <property name="catalog.notification.url"     value=""/>
+
 <!--      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>-->
-      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
+      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}" notificationmessage="${catalog.notification.message}" notificationurl="${catalog.notification.url}">
           <fileset dir="${nbms.location}">
               <include name="**/*.nbm"/>
           </fileset>

@@ -197,7 +197,7 @@ final class Utils {
      * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
      */
     static CharBuffer decodeByteBuffer(final ByteBuffer in, final Charset charset) throws CharacterCodingException {
-        final CharsetDecoder decoder = ThreadLocalCoders.decoderFor(charset)
+        final CharsetDecoder decoder = ThreadLocalCoders.decoderFor(charset.name())
                                               .onMalformedInput(CodingErrorAction.REPLACE)
                                               .onUnmappableCharacter(CodingErrorAction.REPLACE);
         int remaining = in.remaining();

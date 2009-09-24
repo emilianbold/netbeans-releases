@@ -105,7 +105,7 @@ public class MonitorsUpdateService {
     private final boolean isMemoryMonitor;
     private final boolean isDataRaceMonitor;
     private final boolean isDeadlockMonitor;
-    private final Object updaterLock = new String(MonitorsUpdateService.class.getName() + " UpdaterLock"); // NOI18N
+    private final Object updaterLock = MonitorsUpdateService.class.getName() + "Lock"; // NOI18N
     private Updater updater = null;
     private BlockingQueue<Object> requestsQueue = new LinkedBlockingQueue<Object>(1);
 
@@ -181,7 +181,7 @@ public class MonitorsUpdateService {
                 throw new IllegalStateException("Updater can be started only once!"); // NOI18N
             }
 
-            erprintSession = new ErprintSession(execEnv, sproHome, experimentDir, ssdc);
+            erprintSession = ErprintSession.createNew(execEnv, sproHome, experimentDir, ssdc);
 
             final Future notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
 

@@ -6,7 +6,7 @@
             <code-name-base>org.netbeans.modules.cnd.kit</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.asm</code-name-base>
+                    <code-name-base>org.netbeans.modules.cnd.asm</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>

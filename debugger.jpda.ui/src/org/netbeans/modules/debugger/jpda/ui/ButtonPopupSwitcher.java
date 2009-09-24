@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
@@ -53,6 +54,7 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
+import org.openide.util.Utilities;
 
 /**
  * Represents Popup for "Document switching" which is shown after an user clicks
@@ -88,7 +90,7 @@ final class ButtonPopupSwitcher
     private static boolean shown;
     
     private SwitcherTable pTable;
-    
+
     private int x;
     private int y;
     
@@ -99,20 +101,47 @@ final class ButtonPopupSwitcher
      * <code>SwitcherTableItem.Activatable</code> implementation. A popup appears
      * on <code>x</code>, <code>y</code> coordinates.
      */
-    public static void selectItem(JComponent owner, SwitcherTableItem[] items,
-            int x, int y) {
-        ButtonPopupSwitcher switcher
-                = new ButtonPopupSwitcher(items, x, y);
+    public static void selectItem(JComponent owner, SwitcherTableItem[] items, int x, int y) {
+        ButtonPopupSwitcher switcher = new ButtonPopupSwitcher(owner, items, x, y);
         switcher.doSelect(owner);
     }
     
     /** Creates a new instance of TabListPanel */
-    private ButtonPopupSwitcher(SwitcherTableItem items[],
-            int x,
-            int y) {
-        this.pTable = new SwitcherTable(items, y);
-        this.x = x - (int) pTable.getPreferredSize().getWidth();
-        this.y = y + 1;
+    private ButtonPopupSwitcher(JComponent owner, SwitcherTableItem items[], int x, int y) {
+        int ownerWidth = owner.getWidth();
+        int ownerHeight = owner.getHeight();
+        int cornerX, cornerY;
+        int xOrient, yOrient;
+        Rectangle screenRect = Utilities.getUsableScreenBounds();
+
+        // get rid of the effect when popup seems to be higher that screen height
+        int gap = (y == 0 ? 10 : 5);
+        int height = 0;
+
+        int leftD = x - screenRect.x;
+        int rightD = screenRect.x + screenRect.width - x;
+        if (leftD < rightD / 2) {
+            xOrient = 1;
+            cornerX = x + 1;
+        } else {
+            xOrient = -1;
+            cornerX = x + ownerWidth;
+        }
+        int topD = y - screenRect.y;
+        int bottomD = screenRect.y + screenRect.height - y;
+        if (bottomD < topD / 4) {
+            yOrient = -1;
+            height = topD - gap;
+            cornerY = y;
+        } else {
+            yOrient = 1;
+            cornerY = y + ownerHeight;
+            height = screenRect.height - cornerY - gap;
+        }
+
+        this.pTable = new SwitcherTable(items, height);
+        this.x = cornerX - (xOrient == -1 ? (int) pTable.getPreferredSize().getWidth() : 0);
+        this.y = cornerY - (yOrient == -1 ? (int) pTable.getPreferredSize().getHeight() : 0);
     }
     
     private void doSelect(JComponent owner) {

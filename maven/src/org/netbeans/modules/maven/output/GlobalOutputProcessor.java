@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -79,7 +80,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.setOutputListener(new OutputListener() {
                 public void outputLineSelected(OutputEvent ev) {}
                 public void outputLineAction(OutputEvent ev) {
-                    OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+                    OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
                 }
                 public void outputLineCleared(OutputEvent ev) {}
             });

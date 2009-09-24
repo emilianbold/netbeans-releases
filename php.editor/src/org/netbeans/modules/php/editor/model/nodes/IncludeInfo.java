@@ -40,11 +40,11 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  * @author Radek Matous
@@ -70,13 +70,18 @@ public class IncludeInfo extends ASTNodeInfo<Include> {
     }
 
     @Override
-    public OffsetRange getRange() {
-        Include incl = getOriginalNode();
-        return new OffsetRange(incl.getStartOffset(), incl.getEndOffset());
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.create(getName()).toName();
     }
 
-    public FileObject getIncludeFile(FileObject sourceFile) {
-        Parameters.notNull("sourceFile", sourceFile);
-        return VariousUtils.resolveInclude(sourceFile, getOriginalNode());
+    @Override
+    public OffsetRange getRange() {
+        Include incl = getOriginalNode();
+        Expression expression = incl.getExpression();
+        return new OffsetRange(expression.getStartOffset(), expression.getEndOffset());
+    }
+
+    public String getFileName() {
+        return VariousUtils.resolveFileName(getOriginalNode());
     }
 }

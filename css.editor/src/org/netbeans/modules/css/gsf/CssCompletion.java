@@ -41,6 +41,8 @@ package org.netbeans.modules.css.gsf;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +65,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.PropertyModel.Element;
@@ -472,12 +475,23 @@ public class CssCompletion implements CodeCompletionHandler {
 //            System.out.println("property = " + e.property().name());
             return CssHelpResolver.instance().getPropertyHelp(e.property().name());
         }
+        // fix for #137696
+        else if ( element instanceof ElementHandle.UrlHandle){
+            try {
+                return CssHelpResolver.instance().getHelpText(new URL(element.getName()));
+            }
+            catch( MalformedURLException e ){
+                assert false;
+            }
+        }
         return null;
     }
 
     @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
-        return CssHelpResolver.getHelpZIPURL() == null ? null : new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURL() + link);
+        return CssHelpResolver.getHelpZIPURL() == null ? null : 
+            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURL() + 
+                    normalizeLink( elementHandle, link));
     }
 
     @Override
@@ -493,6 +507,39 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         });
         return retval[0];
+    }
+    
+    private String normalizeLink(ElementHandle handle , String link){
+        if ( link.startsWith("." )|| link.startsWith("/" )){ // NOI18N
+            return normalizeLink(handle, link.substring( 1 ));
+        }
+        int index = link.lastIndexOf('#');
+        if ( index !=-1 ){
+            if ( index ==0 || link.charAt(index-1) =='/'){
+                if ( handle instanceof CssPropertyElement ){
+                    String name = ((CssPropertyElement)handle).property().name();
+                    URL propertyHelpURL = CssHelpResolver.instance().
+                        getPropertyHelpURL(name);
+                    String path = propertyHelpURL.getPath();
+                    if ( path.startsWith( CssHelpResolver.getHelpZIPURL())){
+                        path = path.substring(CssHelpResolver.getHelpZIPURL().length());
+                    }
+                    return path+link.substring( index );
+                }
+                else if (handle instanceof UrlHandle){
+                    String url = handle.getName();
+                    int anchorIndex = url.lastIndexOf('#');
+                    if ( anchorIndex!= -1 ){
+                        url = url.substring( 0, anchorIndex);
+                    }
+                    if ( url.startsWith( CssHelpResolver.getHelpZIPURL())){
+                        url = url.substring(CssHelpResolver.getHelpZIPURL().length());
+                    }
+                    return url+link.substring( index );
+                }
+            }
+        }
+        return link;
     }
 
     private String getPrefix(TokenSequence<CssTokenId> ts, int caretOffset) {

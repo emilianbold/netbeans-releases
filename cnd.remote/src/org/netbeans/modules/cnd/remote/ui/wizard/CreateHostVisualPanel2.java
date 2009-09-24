@@ -36,10 +36,12 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -51,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /*package*/ final class CreateHostVisualPanel2 extends JPanel {
 
@@ -63,14 +66,18 @@ import org.openide.util.NbBundle;
         initComponents();
 
         textLoginName.setText(System.getProperty("user.name"));
-        
-        // default password to the last entered one
-        ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
-        if (lastEnv != null) {
-            char[] passwd = PasswordManager.getInstance().get(lastEnv);
-            if (passwd != null) {
-                textPassword.setText(new String(passwd));
+
+        if (Boolean.getBoolean("cnd.remote.keep.pwd")) {
+            // default password to the last entered one
+            ExecutionEnvironment lastEnv = CreateHostData.getLastExecutionEnvironment();
+            if (lastEnv != null) {
+                char[] passwd = PasswordManager.getInstance().get(lastEnv);
+                if (passwd != null) {
+                    textPassword.setText(new String(passwd));
+                }
             }
+        } else {
+            textPassword.setText("");
         }
 
         DocumentListener dl = new DocumentListener() {
@@ -198,9 +205,8 @@ import org.openide.util.NbBundle;
                 .addContainerGap(52, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
     private ProgressHandle phandle;
-    
+
     /* package-local */ ExecutionEnvironment getHost() {
         return hostFound;
     }
@@ -208,7 +214,6 @@ import org.openide.util.NbBundle;
     /* package-local */ Runnable getRunOnFinish() {
         return runOnFinish;
     }
-
     private ExecutionEnvironment hostFound = null;
     private Runnable runOnFinish = null;
 
@@ -222,38 +227,47 @@ import org.openide.util.NbBundle;
         return true;
     }
 
-    
-    public void validateHost() {
-        final char[] password = getPassword();
-        final boolean rememberPassword = cbSavePassword.isSelected();
-        final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
+    public Future<Boolean> validateHost() {
+        FutureTask<Boolean> validationTask = new FutureTask<Boolean>(new Callable<Boolean>() {
 
-        tpOutput.setText("");
+            public Boolean call() throws Exception {
+                final char[] password = getPassword();
+                final boolean rememberPassword = cbSavePassword.isSelected();
+                final ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(getLoginName(), data.getHostName(), data.getPort());
 
-        phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
-        pbarStatusPanel.removeAll();
-        pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
-        pbarStatusPanel.validate();
-        phandle.start();
+                tpOutput.setText("");
 
-        try {
-            HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
-            if (hostValidator.validate(env, password, rememberPassword, new TextComponentWriter(tpOutput))) {
-                hostFound = env;
-                runOnFinish = hostValidator.getRunOnFinish();
-                try { // let user see the log ;-)
-                    Thread.sleep(1500);
-                } catch (InterruptedException ex) {
-                    // nothing
+                phandle = ProgressHandleFactory.createHandle(""); ////NOI18N
+                pbarStatusPanel.removeAll();
+                pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
+                pbarStatusPanel.validate();
+                phandle.start();
+
+                try {
+                    HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
+                    if (hostValidator.validate(env, password, rememberPassword, new TextComponentWriter(tpOutput))) {
+                        hostFound = env;
+                        runOnFinish = hostValidator.getRunOnFinish();
+                        try { // let user see the log ;-)
+                            Thread.sleep(1500);
+                        } catch (InterruptedException ex) {
+                            // nothing
+                        }
+                    }
+                } finally {
+                    phandle.finish();
+                    wizardListener.stateChanged(null);
+                    pbarStatusPanel.setVisible(false);
                 }
-            }
-        } finally {
-            phandle.finish();
-            wizardListener.stateChanged(null);
-            pbarStatusPanel.setVisible(false);
-        }
-    }
 
+                return true;
+            }
+        });
+
+        RequestProcessor.getDefault().post(validationTask);
+
+        return validationTask;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbSavePassword;
     private javax.swing.JLabel jLabel1;

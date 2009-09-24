@@ -14,11 +14,47 @@ public class Installer {
 
         Utils.phaseOne(data, "all");
 
-        //select apache
+        // Pages
+          // Apache
         Utils.stepChooseComponet("Apache Tomcat");
+        // Welcome
+        Utils.stepWelcome();
+        // Agreement
+        Utils.stepLicense();
+        // Location
+        Utils.stepSetDir(
+            data,
+            "Install the NetBeans IDE",
+            data.GetNetBeansInstallPath( )
+          );
+        // GF
+        Utils.stepSetDir(
+            data,
+            "Install GlassFish",
+            data.GetApplicationServerInstallPath( )
+          );
+        // Apache
+        Utils.stepSetDir(
+            data,
+            "Install Apache Tomcat",
+            data.GetTomcatInstallPath( )
+          );
+        // Summary
+        Utils.stepInstall(data);
+        //Installation
+        //finish
+        Utils.stepFinish();
 
-        Utils.phaseTwo(data);
-        Utils.phaseThree(data);
-        Utils.phaseFourWOUninstall(data);
+        //Utils.phaseTwo(data);
+        //Utils.phaseThree(data);
+        Utils.phaseFour(data);
+
+        //Utils.RunCommitTests( data );
+
+        Utils.phaseFive( data );
+
+        //Utils.phaseFourWOUninstall(data);
+      //TODO Dir removed test
+      //TODO Clean up work dir
     }
 }

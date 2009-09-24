@@ -36,17 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.execution;
 
 import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 
-public class DLightTargetChangeEvent {
+public final class DLightTargetChangeEvent {
+    
     public final DLightTarget target;
     public final DLightTarget.State state;
     public final Integer status;
 
-      public DLightTargetChangeEvent(DLightTarget target, State state) {
+    public DLightTargetChangeEvent(DLightTarget target, State state) {
         this.target = target;
         this.state = state;
         this.status = null;

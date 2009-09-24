@@ -149,7 +149,7 @@ public final class VCSContext {
         }
 
         if (rootFiles.isEmpty()) {
-            LOG.warning("forNodes: context contains no root files");    //NOI18N
+            LOG.fine("forNodes: context contains no root files");    //NOI18N
         }
         List<File> unversionedFiles = new ArrayList<File>(rootFiles.size());
         Set<VersioningSystem> projectOwners = new HashSet<VersioningSystem>(2);

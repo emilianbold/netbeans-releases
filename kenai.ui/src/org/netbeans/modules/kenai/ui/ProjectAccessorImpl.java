@@ -40,7 +40,6 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,12 +53,14 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.project.DetailsAction;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -121,7 +122,8 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public Action getDetailsAction(final ProjectHandle project) {
-        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
+        return DetailsAction.forProject(project.getId());    
+//        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
     }
 
     @Override
@@ -169,6 +171,25 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             Exceptions.printStackTrace(kenaiException);
         }
         return null;
+    }
+
+    @Override
+    public Action getBookmarkAction(ProjectHandle project) {
+        return new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet. Please vote for http://kenai.com/jira/browse/KENAI-735");
+            }
+        };
+    }
+
+    @Override
+    public Action getNewKenaiProjectAction() {
+        return new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                ShareAction.actionPerformed(new Node[0]);
+            }
+        };
     }
 
     private static class RefreshAction extends AbstractAction {

@@ -59,6 +59,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -116,10 +117,40 @@ public class ELExpression {
      * if EL expression is attribute value. 
      */
     private String myAttributeValue;
+    
+    /**
+     * @author ads
+     * Lexer for facelet file doesn't inform you about attribute.
+     * So  I have added this attribute which contains token text with 
+     * context EL inside.
+     */
+    private String myXhtmlToken;
+    
+    private int contextOffset = -1;
+    private int myStartOffset = -1;
 
     public ELExpression(Document doc) {
         this.doc = doc;
         this.replace = "";
+    }
+    
+    /**
+     * Expression could contain operations, keywords, ...
+     * In this case context expression divided to several parts by such operations, ...
+     * In this case start offset is the beginning of such part EL which 
+     * includes context offset.   
+     * @return start index of context expression
+     */
+    public int getStartOffset(){
+        return myStartOffset;
+    }
+    
+    public int getContextOffset() {
+        return contextOffset;
+    }
+
+    public Document getDocument() {
+        return doc;
     }
 
     /** Parses text before offset in the document. Doesn't parse after offset.
@@ -127,7 +158,9 @@ public class ELExpression {
      *  For example ${ 2 < bean.start }. If the offset is after bean.start, then only bean.start
      *  is parsed.
      */
-    public int parse(int offset) {
+    public final int parse(int offset) {
+        setContextOffset(offset);
+
         BaseDocument document = (BaseDocument) doc;
         String value = null;
         document.readLock();
@@ -147,6 +180,15 @@ public class ELExpression {
                         if ( JspTokenId.ATTR_VALUE == last.token().id() ){
                             isAttribute = true;
                             myAttributeValue = last.token().text().toString();
+                        }
+                        /*
+                         *  This is a little hack . I don't know why NoClassDefFoundError 
+                         *  appears in runtime. Compilation works perfectly. 
+                         */
+                        else if ( last.token().id().toString().equals("HTML")
+                                && last.language().mimeType().equals("text/xhtml"))// NOI18N
+                        {
+                            myXhtmlToken = last.token().text().toString();
                         }
                     }
                     break;
@@ -180,7 +222,9 @@ public class ELExpression {
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
             // it can be start of the function or start of a simple expression.
             Token<?> token = ts.token();
-            while ((!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
+            boolean rBracket = false;
+            while (rBracket || 
+                    (!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
                     || ts.token().id() == ELTokenId.DOT || 
                         ts.token().id() == ELTokenId.LBRACKET
                         || ts.token().id() == ELTokenId.RBRACKET) &&
@@ -188,11 +232,17 @@ public class ELExpression {
                     (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
                     ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) 
             {
-
+                if ( ts.token().id() == ELTokenId.RBRACKET ){
+                    rBracket = true;
+                }
+                else if ( ts.token().id() == ELTokenId.LBRACKET ){
+                    rBracket = false;
+                }
+                
                 //repeat until not ( and ' ' and keyword or number
                 if (value == null) {
                     value = ts.token().text().toString();
-                    if (ts.token().id() == ELTokenId.DOT || 
+                    if ( ts.token().id() == ELTokenId.DOT  || 
                             ts.token().id() == ELTokenId.LBRACKET) 
                     {
                         replace = "";
@@ -212,6 +262,7 @@ public class ELExpression {
                     }
                 }
                 token = ts.token();
+                myStartOffset = ts.offset();
                 if (!ts.movePrevious()) {
                     //we are on the beginning of the EL token sequence
                     break;
@@ -258,7 +309,8 @@ public class ELExpression {
         String beanName = extractBeanName();
 
         // not found within declared beans, try implicit objects
-        ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
+        ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName,
+                this );
 
         if (implObj != null) {
             return implObj.getClazz();
@@ -267,14 +319,17 @@ public class ELExpression {
         return null;
     }
     
+    public String getBeanName(){
+        return extractBeanName();
+    }
+    
+    public FileObject getFileObject() {
+        return DataLoadersBridge.getDefault().getFileObject(doc);
+    }
+    
     protected CompletionInfo getPropertyCompletionInfo(String beanType, int anchor) {
         return new PropertyCompletionItemsTask(beanType, anchor);
     }
-
-    protected FileObject getFileObject() {
-        return DataLoadersBridge.getDefault().getFileObject(doc);
-    }
-            
 
     protected void runTask(CancellableTask<CompilationController> task) {
         
@@ -325,18 +380,28 @@ public class ELExpression {
         return isDefferedExecution;
     }
 
-    protected String getPropertyBeingTypedName() {
+    public String getPropertyBeingTypedName() {
         String elExp = getExpression();
         int dotPos = elExp.lastIndexOf('.');            // NOI18N
-        int bracketIndex = elExp.lastIndexOf('[');          // NOI18N
+        int lBracketIndex = elExp.lastIndexOf('[');          // NOI18N
+        int rBracketIndex = elExp.lastIndexOf(']');          // NOI18N
 
-        if ( bracketIndex >-1 || dotPos >-1 ){
-            return elExp.substring( Math.max( bracketIndex, dotPos) + 1);
+        /*
+         * Fix for IZ#172413 - Unexpected error in EL with dot inside array notation
+         */
+        if ( rBracketIndex <lBracketIndex   ){
+            return elExp.substring( lBracketIndex+ 1);
+        }
+        else if ( lBracketIndex > -1 && dotPos < rBracketIndex ){ 
+            return elExp.substring(lBracketIndex + 1);
+        }
+        else if (dotPos >-1 ){
+            return elExp.substring( dotPos + 1);
         }
         return null;
     }
     
-    protected String removeQuotes( String propertyName ) {
+    public String removeQuotes( String propertyName ) {
         if ( propertyName.length() >0 ){
             char first = propertyName.charAt(0);
             if ( (first == '"' || first == '\'' )&& propertyName.length() >1 
@@ -362,6 +427,63 @@ public class ELExpression {
         }
         return propertyName;
     }
+    
+    public String getInsert( String propertyName , char startChar ) {
+        int lBracketIndex = getExpression().lastIndexOf('[');
+        int rBracketIndex = getExpression().lastIndexOf(']');
+        
+        if ( rBracketIndex < lBracketIndex  ){
+            String quote = null;
+            if ( startChar == '"' || startChar =='\''){
+                quote = ""+startChar;
+            }
+            else if ( isAttribute && myAttributeValue!= null && 
+                    myAttributeValue.length() > 0 )
+            {
+                quote = getQuote(  myAttributeValue.charAt( 0 ) ,
+                        myAttributeValue );
+            }
+            else if ( myXhtmlToken != null ){
+                int dQuoteIndex = myXhtmlToken.lastIndexOf('"');
+                int sQuoteIndex = myXhtmlToken.lastIndexOf('\'');
+                if ( sQuoteIndex> dQuoteIndex ){
+                    quote = getQuote( '\'', myXhtmlToken);
+                }
+                else if ( dQuoteIndex>=0 ){
+                    quote = getQuote( '"', myXhtmlToken);
+                }
+            }
+            if ( quote == null ){
+                quote = "\"";                   // NOI18N
+            }
+            StringBuilder builder = new StringBuilder( quote);
+            builder.append( propertyName );
+            builder.append( quote );
+            builder.append("]");                    // NOI18N
+            return builder.toString();
+        }
+        return propertyName;
+    }
+
+    private String getQuote( char ch, String text ) {
+        if ( ch == '"'){
+            if ( text.indexOf("'")!=-1){
+                return "\\\"";                         // NOI18N
+            }
+            else {
+                return "'";                             // NOI18N
+            }
+        }
+        else if( ch == '\''){
+            if ( text.indexOf('"')!=-1){
+                return "\\'";                         // NOI18N
+            }
+            else {
+                return "\"";                           // NOI18N
+            }
+        }
+        return null;
+    }
 
     static String getPropertyName(String methodName, int prefixLength) {
         String propertyName = methodName.substring(prefixLength);
@@ -378,59 +500,174 @@ public class ELExpression {
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
     
-    private String[] getParts() {
-        if ( getExpression().indexOf('[') == -1 ){
-            return getExpression().split("\\.");            // NOI18N
+    private void setContextOffset(int offset) {
+        this.contextOffset = offset;
+    }
+    
+    protected Part[] getParts(){
+        return getParts(getExpression());
+    }
+    
+    protected Part[] getParts( final String expr ) {
+        List<Part> result = new LinkedList<Part>();
+        String expression = expr;
+        if  ( expr.indexOf('[') == -1 ){
+            String[] parts = expression.split( "\\." );     // NOI18N
+            int offset = 0;
+            for (int i=0; i<parts.length; i++ ) {
+                result.add( new Part( offset, parts[i] ));
+                offset = offset + parts[i].length() +1;
+            }
+            return result.toArray(new Part[result.size()] );
         }
-        List<String> result = new LinkedList<String>();
         boolean previousDot = false;
         boolean previousLeftBracket = false;
-        String expression = getExpression();
         int i=0;
-        while( expression.length() > 0 ){
+        int offset = 0;
+        while( expression.length() > 0 && i < expression.length()){
             char ch = expression.charAt( i );
             if ( ch == '.'){
                 if ( previousLeftBracket ){
-                    addPart(result, expression.substring(i+1));
+                    addPart(result, expression.substring(i+1), i+offset +1);
                     break;
                 }
                 previousDot = true;
-                addPart(result,  expression.substring( 0 , i ));
+                String part = expression.substring( 0 , i );
+                addPart(result, part  , offset);
+                offset = offset+part.length()+1;
                 expression = expression.substring( i+1);
                 i=0;
                 continue;
             }
             if ( ch == '['){
                 if ( previousLeftBracket ){
-                    addPart(result,  expression.substring(i+1) );
+                    addPart(result,  expression.substring(i+1) , i+offset+1);
                     break;
                 }
                 if ( previousDot ){
                     previousDot = false;
                 }
                 previousLeftBracket = true;
-                addPart(result,  expression.substring( 0 , i ));
+                String part =  expression.substring( 0 , i );
+                addPart(result,  part , offset );
+                offset = offset + part.length()+1;
                 int index = expression.indexOf(']');
                 if ( index == -1 ){
-                    addPart(result,  expression.substring(i+1) );
+                    addPart(result,  expression.substring(i+1) , offset );
                     break;
                 }
                 else {
-                    addPart(result, removeQuotes( expression.substring(i+1, index )));
+                    part = expression.substring(i+1, index );
+                    String unquoted = removeQuotes( part );
+                    int prefixLength = part.indexOf( unquoted );
+                    addPart(result, unquoted , offset + prefixLength );
                     expression = expression.substring( index +1);
+                    offset = offset + part.length() + 1;
+                    previousLeftBracket = false;
                     i=0;
                     continue;
                 }
             }
             i++;
         }
-        return result.toArray(new String[result.size()] );
+        /*
+         *  In the end there can be case when dot was 
+         *  last character ( from "." , "[", "]" list ).
+         *  So we need to add current ( modified ) expression as part 
+         */
+        if ( previousDot ){
+            addPart(result, expression, getExpression().length() - expression.length());
+        }
+        return result.toArray(new Part[result.size()] );
     }
     
-    private void addPart(List<String> parts, String part ){
+    private void addPart(List<Part> parts, String part , int offset){
         if ( part != null && part.length() != 0 ){
-            parts.add(part);
+            parts.add(new Part( offset, part));
         }
+    }
+    
+    public static class Part {
+
+        Part( int index , String part ){
+            myIndex = index;
+            myPart = part;
+        }
+        
+        public String getPart(){
+            return myPart;
+        }
+        
+        public int getIndex(){
+            return myIndex;
+        }
+        private int myIndex;
+        private String myPart;
+    }
+    
+    public abstract class InspectPropertiesTask extends BaseELTaskClass implements
+            CancellableTask<CompilationController>
+    {
+
+        public InspectPropertiesTask() {
+            super(getObjectClass());
+        }
+        
+        public InspectPropertiesTask( String beanName ) {
+            super( beanName);
+        }
+
+        public void execute() {
+            runTask(this);
+        }
+
+        public TypeElement getTypePreceedingCaret( CompilationController controller ) throws Exception {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            return getTypePreceedingCaret(controller, getExpression(), new FailHandler() {
+
+                public void typeNotFound( int index, String propertyName ) {
+                    myOffset = index;
+                    myProperty = propertyName;
+                }
+            });
+        }
+        
+        public TypeMirror getTypePreceedingCaret( CompilationController controller ,
+                String expression ) throws Exception 
+        {
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            return getTypeMirrorPreceedingCaret(controller, expression , null , true );
+        }
+
+        public String getProperty() {
+            return myProperty;
+        }
+
+        public int getOffset() {
+            return myOffset;
+        }
+        
+        public boolean lastProperty(){
+            return isLast;
+        }
+        
+        protected void setOffset(int offset){
+            myOffset = offset;
+        }
+        
+        protected void setProperty( String property){
+            myProperty = property;
+        }
+        
+        protected void setLast(){
+            isLast = true;
+        }
+
+        private int myOffset = -1;
+
+        private String myProperty;
+        
+        private boolean isLast;
     }
     
     protected abstract class BaseELTaskClass {
@@ -440,41 +677,92 @@ public class ELExpression {
         public BaseELTaskClass(String beanType) {
             this.beanType = beanType;
         }
-
+        
+        public void cancel() {
+        }
+        
+        protected String removeQuotes(String propertyName){
+            return ELExpression.this.removeQuotes(propertyName);
+            
+        }
+        
         /**
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
         protected TypeElement getTypePreceedingCaret(CompilationInfo controller) {
-            if (beanType == null) {
+            return getTypePreceedingCaret(controller, getExpression(), null );
+        }
+        
+        /**
+         * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
+         */
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
+                String expression) 
+        {
+            return getTypePreceedingCaret(controller, expression , null );
+        }
+        
+        /**
+         * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
+         */
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
+                String expression , FailHandler handler )
+        {
+            return getTypePreceedingCaret( controller , expression , handler , false);
+        }
+        
+        protected TypeElement getTypePreceedingCaret(CompilationInfo controller,
+                String expression , FailHandler handler , boolean fullexpression)
+        {
+            TypeMirror mirror = getTypeMirrorPreceedingCaret(controller, expression, handler, 
+                    fullexpression);
+            if ( mirror == null ){
                 return null;
             }
+            return (TypeElement) controller.getTypes().asElement( mirror);
+        }
 
-            TypeElement lastKnownType = controller.getElements().
-                getTypeElement(beanType);
+        protected TypeMirror getTypeMirrorPreceedingCaret(CompilationInfo controller,
+                String expression , FailHandler handler , boolean fullexpression)
+        {
+            if (beanType == null) {
+                if ( handler != null ){
+                    handler.typeNotFound(0, extractBeanName());
+                }
+                return null;
+            }
+            TypeMirror lastKnownType = controller.getElements().getTypeElement(
+                    beanType).asType();
             TypeMirror lastReturnType = null;
 
-            String parts[] = getParts();
+            Part parts[] = getParts( expression );
             // part[0] - the bean
             // part[parts.length - 1] - the property being typed (if not empty)
 
             int limit = parts.length - 1;
 
-            if (getPropertyBeingTypedName().length() == 0) {
+            if (fullexpression || getPropertyBeingTypedName().length() == 0) {
                 limit += 1;
             }
 
+            int i=1;
             parts:
-            for (int i = 1; i < limit; i++) {
+            for ( ; i < limit; i++) {
                 if (lastKnownType == null && lastReturnType == null) {
                     logger.fine("EL CC: Could not resolve type for property " //NOI18N
-                            + parts[i] + " in " + getExpression()); //NOI18N
+                            + parts[i] + " in " + expression); //NOI18N
+                    if ( handler != null ){
+                        handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
+                    }
 
                     return null;
                 }
                 if (lastKnownType != null) {
-                    String accessorName = getAccessorName(parts[i]);
+                    String accessorName = getAccessorName(parts[i].getPart());
                     List<ExecutableElement> allMethods = ElementFilter
-                            .methodsIn(lastKnownType.getEnclosedElements());
+                            .methodsIn(controller.getElements().getAllMembers(
+                                    (TypeElement)controller.getTypes().asElement(
+                                            lastKnownType)));
                     
                     lastKnownType = null;
 
@@ -486,8 +774,7 @@ public class ELExpression {
                             lastReturnType = returnType;
 
                             if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
-                                lastKnownType = (TypeElement) controller
-                                        .getTypes().asElement(returnType);
+                                lastKnownType = returnType;
                                 break;
                             }
                             else if (returnType.getKind() == TypeKind.ARRAY) {
@@ -509,8 +796,7 @@ public class ELExpression {
                         TypeMirror typeMirror = ((ArrayType)lastReturnType).
                             getComponentType();
                         if ( typeMirror.getKind() == TypeKind.DECLARED){
-                            lastKnownType = (TypeElement) controller.getTypes().
-                                asElement(typeMirror);
+                            lastKnownType = typeMirror;
                         }
                         else if ( typeMirror.getKind() == TypeKind.ARRAY){
                             lastReturnType = typeMirror;
@@ -528,14 +814,14 @@ public class ELExpression {
                             if ( typeArguments.size() != 0 ){
                                 TypeMirror typeMirror = typeArguments.get(0);
                                 if ( typeMirror.getKind() == TypeKind.DECLARED){
-                                    lastKnownType = (TypeElement) controller.getTypes().
-                                        asElement( typeMirror );
+                                    lastKnownType = typeMirror ;
                                 }
                             }
                         }
                         if ( lastKnownType == null ){
                             lastKnownType = controller.getElements().
-                                getTypeElement(Object.class.getCanonicalName());
+                                getTypeElement(Object.class.getCanonicalName()).
+                                asType();
                         }
                     }
                     else if (controller.getTypes().isAssignable(
@@ -550,21 +836,24 @@ public class ELExpression {
                             if (typeArguments.size() == 2) {
                                 TypeMirror typeMirror = typeArguments.get(1);
                                 if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                    lastKnownType = (TypeElement) controller
-                                            .getTypes().asElement(typeMirror);
+                                    lastKnownType = typeMirror;
                                 }
                             }
                         }
                         if (lastKnownType == null) {
                             lastKnownType = controller.getElements()
                                     .getTypeElement(
-                                            Object.class.getCanonicalName());
+                                            Object.class.getCanonicalName()).
+                                            asType();
                         }
                     }
                     lastReturnType = null;
                 }
             }
 
+            if ( lastKnownType == null && handler!= null){
+                handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
+            }
             return lastKnownType;
         }
 
@@ -576,14 +865,16 @@ public class ELExpression {
         /**
          * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
          */
-        protected String getExpressionSuffix(ExecutableElement method) {
+        protected String getExpressionSuffix(ExecutableElement method,
+                CompilationController controller) 
+        {
 
             if (method.getModifiers().contains(Modifier.PUBLIC) 
-                    && checkMethodParameters(method)) 
+                    && checkMethodParameters(method, controller )) 
             {
                 String methodName = method.getSimpleName().toString();
 
-                if (methodName.startsWith("get")) { //NOI18N
+                if (methodName.startsWith("get") && methodName.length() >3 ) { //NOI18N
                     return getPropertyName(methodName, 3);
                 }
 
@@ -594,7 +885,7 @@ public class ELExpression {
                 if (isDefferedExecution()) {
                     //  also return values for method expressions
 
-                    if (checkMethodReturnType(method)) { 
+                    if (checkMethod(method, controller )) { 
                         return methodName;
                     }
                 }
@@ -603,17 +894,22 @@ public class ELExpression {
             return null; // not a property accessor
         }
         
-        protected boolean checkMethodParameters( ExecutableElement method ){
+        protected boolean checkMethodParameters( ExecutableElement method , 
+                CompilationController controller )
+        {
             return method.getParameters().size() == 0;
         }
         
-        protected boolean checkMethodReturnType( ExecutableElement method ){
+        protected boolean checkMethod( ExecutableElement method , 
+                CompilationController controller)
+        {
             return String.class.getCanonicalName().equals( 
                     method.getReturnType().toString());
         }
-
-        public void cancel() {
-        }
+    }
+    
+    public interface FailHandler {
+        void typeNotFound( int expressionIndex , String propertyName );
     }
 
     /**
@@ -638,9 +934,9 @@ public class ELExpression {
                 String suffix = removeQuotes(getPropertyBeingTypedName());
 
                 for (ExecutableElement method : ElementFilter.methodsIn(
-                        bean.getEnclosedElements())) 
+                        controller.getElements().getAllMembers(bean))) 
                 {
-                    String propertyName = getExpressionSuffix(method);
+                    String propertyName = getExpressionSuffix(method, controller );
 
                     if (propertyName != null && propertyName.equals(suffix)) {
                         success = UiUtils.open(controller.getClasspathInfo(), method);
@@ -693,7 +989,7 @@ public class ELExpression {
                 for (ExecutableElement method : ElementFilter.methodsIn(
                         controller.getElements().getAllMembers(bean))) 
                 {
-                    String propertyName = getExpressionSuffix(method);
+                    String propertyName = getExpressionSuffix(method, controller );
 
                     if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
@@ -706,48 +1002,6 @@ public class ELExpression {
                     }
                 }
             }
-        }
-
-        private String getInsert( String propertyName , char startChar ) {
-            int bracketIndex = getExpression().lastIndexOf("[");    // NOI18N
-            int dotIndex = getExpression().lastIndexOf(".");        // NOI18N
-            
-            if ( dotIndex < bracketIndex ){
-                String quote = null;
-                if ( startChar == '"' || startChar =='\''){
-                    quote = ""+startChar;
-                }
-                else if ( isAttribute && myAttributeValue!= null && 
-                        myAttributeValue.length() > 0 )
-                {
-                    char firstChar = myAttributeValue.charAt( 0 );
-                    if ( firstChar == '"'){
-                        if ( myAttributeValue.indexOf("'")!=-1){
-                            quote = "\\\"";                         // NOI18N
-                        }
-                        else {
-                            quote ="'";                             // NOI18N
-                        }
-                    }
-                    else if( firstChar == '\''){
-                        if ( myAttributeValue.indexOf('"')!=-1){
-                            quote = "\\'";                         // NOI18N
-                        }
-                        else {
-                            quote ="\"";                           // NOI18N
-                        }
-                    }
-                }
-                if ( quote == null ){
-                    quote = "\"";                   // NOI18N
-                }
-                StringBuilder builder = new StringBuilder( quote);
-                builder.append( propertyName );
-                builder.append( quote );
-                builder.append("]");                    // NOI18N
-                return builder.toString();
-            }
-            return propertyName;
         }
 
         public List<CompletionItem> getCompletionItems() {
@@ -763,6 +1017,8 @@ public class ELExpression {
 
     /** Return context, whether the expression is about a bean, implicit object or
      *  function.
+     *
+     *  Implementation may use getContextOffset() method if context sensitive
      */
     protected int findContext(String expr) {
         int dotIndex = expr.indexOf('.');
@@ -771,7 +1027,8 @@ public class ELExpression {
 
         if (bracketIndex == -1 && dotIndex > -1) {
             String first = expr.substring(0, dotIndex);
-            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size() > 0) {
+            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first
+                    ,this ).size() > 0) {
                 value = EL_IMPLICIT;
             }
 

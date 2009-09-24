@@ -39,29 +39,58 @@
 
 package org.netbeans.modules.bugtracking.bridge.kenai;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.PasswordAuthentication;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.kenai.api.KenaiNotification;
+import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
-public class VCSKenaiSupportImpl extends VCSKenaiSupport {
+public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChangeListener {
+
     private Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.kenai.VCSKenaiSupport");  // NOI18N
+
+    private static final String KENAI_WEB_SOURCES_REVISION_PATH = "{0}/sources/{1}/revision/{2}"; //NOI18N
+    private static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation"; // NOI18N
+
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    private final Set<KenaiProjectListener> registeredKenaiListenres = new HashSet<KenaiProjectListener>();
+
     @Override
     public boolean isKenai(String url) {
         return KenaiUtil.isKenai(url);
     }
-    
+
     @Override
     public PasswordAuthentication getPasswordAuthentication() {
         return getPasswordAuthentication(true);
@@ -95,24 +124,92 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
     @Override
     public KenaiUser forName(String user) {
-        org.netbeans.modules.kenai.ui.spi.KenaiUser kenaiUser =
-                org.netbeans.modules.kenai.ui.spi.KenaiUser.forName(user);
-        if(kenaiUser == null) {
-            return null;
-        } else {
-            return new KenaiUserImpl(kenaiUser);
-}
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
+    }
+
+    public void addVCSNoficationListener(PropertyChangeListener l) {
+        PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
+        if(ls == null || ls.length == 0) {
+            Dashboard.getDefault().addPropertyChangeListener(this);
+            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        }
+        support.addPropertyChangeListener(PROP_KENAI_VCS_NOTIFICATION, l);
+    }
+
+    public void removeVCSNoficationListener(PropertyChangeListener l) {
+        support.removePropertyChangeListener(PROP_KENAI_VCS_NOTIFICATION, l);
+        PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
+        if(ls == null || ls.length == 0) {
+            Dashboard.getDefault().removePropertyChangeListener(this);
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Dashboard.PROP_OPENED_PROJECTS)) {
+            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        } 
+    }
+
+    private void registerVCSNotificationListener(ProjectHandle[] phs) {
+        synchronized(registeredKenaiListenres) {
+            // unregister registered
+            for (KenaiProjectListener l : registeredKenaiListenres) {
+                l.kp.removePropertyChangeListener(l);
+            }
+            // register on all handlers
+            for (ProjectHandle projectHandle : phs) {
+                KenaiProject kp = KenaiUtil.getKenaiProject(projectHandle);
+                kp.addPropertyChangeListener(new KenaiProjectListener(kp));
+            }
+        }
     }
 
     @Override
     public boolean isUserOnline(String user) {
-        return org.netbeans.modules.kenai.ui.spi.KenaiUser.isOnline(user);
+        return org.netbeans.modules.kenai.api.KenaiUser.isOnline(user);
+    }
+
+    @Override
+    public String getRevisionUrl(String sourcesUrl, String revision) {
+        if (revision == null || sourcesUrl == null) {
+            throw new NullPointerException("Null parameter");           // NOI18N
+        }
+        String revisionUrl = null;
+        String projectUrl = KenaiUtil.getProjectUrl(sourcesUrl);
+        String repositoryName = getRepositoryName(sourcesUrl);
+        if (projectUrl != null && repositoryName != null) {
+            // XXX unofficial API
+            revisionUrl = KENAI_WEB_SOURCES_REVISION_PATH;               
+            revisionUrl = java.text.MessageFormat.format(revisionUrl, projectUrl, repositoryName, revision);
+        }
+        return revisionUrl;
+    }
+
+    private String getRepositoryName (String sourcesUrl) {
+        String repositoryName = null;
+        // XXX unofficial API
+        // repository url looks like https://..../mercurial|svn/PROJECT_NAME~REPOSITORY_NAME
+        int pos = sourcesUrl.lastIndexOf('~') + 1;                              // NOI18N
+        if (pos > 0 && sourcesUrl.length() > pos) {
+            String repositoryNameCandidate = sourcesUrl.substring(pos);
+            if (repositoryNameCandidate.indexOf('/') == -1) {                   // NOI18N
+                repositoryName = repositoryNameCandidate;
+            }
+        }
+        return repositoryName;
+    }
+
+    @Override
+    public void logVcsUsage(String vcs, String repositoryUrl) {
+        if (repositoryUrl != null && isKenai(repositoryUrl)) {
+            UIUtils.logKenaiUsage("SCM", vcs); // NOI18N
+        }
     }
 
     private class KenaiUserImpl extends KenaiUser {
-        org.netbeans.modules.kenai.ui.spi.KenaiUser delegate;
+        org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate;
 
-        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUser delegate) {
+        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate) {
             this.delegate = delegate;
         }
 
@@ -123,17 +220,17 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            delegate.removePropertyChangeListener(listener);
+            delegate.getKenaiUser().removePropertyChangeListener(listener);
         }
 
         @Override
         public boolean isOnline() {
-            return delegate.isOnline();
+            return delegate.getKenaiUser().isOnline();
         }
 
         @Override
         public String getUser() {
-            return delegate.getUser();
+            return delegate.getUserName();
         }
 
         @Override
@@ -148,8 +245,125 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport {
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            delegate.addPropertyChangeListener(listener);
+            delegate.getKenaiUser().addPropertyChangeListener(listener);
         }
 
     }
+
+    private class VCSKenaiNotificationImpl extends VCSKenaiNotification {
+        private final KenaiNotification kn;
+        private final File projectDir;
+
+        public VCSKenaiNotificationImpl(KenaiNotification kn, File projectDir) {
+            assert kn.getType() == KenaiService.Type.SOURCE;
+            this.kn = kn;
+            this.projectDir = projectDir;
+        }
+
+        public URI getUri() {
+            return kn.getUri();
+        }
+
+        public Date getStamp() {
+            return kn.getStamp();
+        }
+
+        public Service getService() {
+            if(kn.getServiceName().equals(KenaiService.Names.SUBVERSION)) {
+                return Service.VCS_SVN;
+            } else if (kn.getServiceName().equals(KenaiService.Names.MERCURIAL)) {
+                return Service.VCS_HG;
+            }
+            return Service.UNKNOWN;
+        }
+
+        public List<VCSKenaiModification> getModifications() {
+            List<VCSKenaiModification> ret = new ArrayList<VCSKenaiModification>(kn.getModifications().size());
+            for(Modification m : kn.getModifications()) {
+                ret.add(new VCSKenaiModificationImpl(m));
+            }
+            return Collections.unmodifiableList(ret);
+        }
+
+        public String getAuthor() {
+            return kn.getAuthor();
+        }
+
+        @Override
+        public File getProjectDirectory() {
+            return projectDir;
+        }
+    }
+
+    private class VCSKenaiModificationImpl extends VCSKenaiModification{
+        private final Modification m;
+
+        public VCSKenaiModificationImpl(Modification m) {
+            this.m = m;
+        }
+
+        public Type getType() {
+            switch(m.getType()) {
+                case NEW:
+                    return Type.NEW;
+                case CHANGE:
+                    return Type.CHANGE;
+                case DELETE:
+                    return Type.DELETE;
+                default:
+                    throw new IllegalStateException("unknown modification type" + m.getType());   // NOI18N
+            }
+        }
+
+        public String getResource() {
+            return m.getResource();
+        }
+
+        public String getId() {
+            return m.getId();
+        }
+    }
+
+    private class KenaiProjectListener implements PropertyChangeListener {
+        private final KenaiProject kp;
+
+        public KenaiProjectListener(KenaiProject kp) {
+            this.kp = kp;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            handleKenaiProjectEvent(evt, kp.getName());
+        }
+
+    }
+
+    private void handleKenaiProjectEvent(PropertyChangeEvent evt, String projectName) {
+        if (!evt.getPropertyName().equals(KenaiProject.PROP_PROJECT_NOTIFICATION)) {
+            return ;
+        }
+        Object newValue = evt.getNewValue();
+        if (newValue instanceof KenaiNotification) {
+            KenaiNotification kn = (KenaiNotification) newValue;
+            if (kn.getType() != KenaiService.Type.SOURCE) {
+                return;
+            }
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            for (Project project : projects) {
+                FileObject projectDir = project.getProjectDirectory();
+                String url = (String) projectDir.getAttribute(PROVIDED_EXTENSIONS_REMOTE_LOCATION);
+                if (url == null) {
+                    continue;
+                }
+                if (!url.equals(kn.getUri().toString())) {
+                    continue;
+                }
+                String name = KenaiProject.getNameForRepository(url);
+                if (name.equals(projectName)) {
+                    support.firePropertyChange(PROP_KENAI_VCS_NOTIFICATION, null, new VCSKenaiNotificationImpl(kn, FileUtil.toFile(projectDir)));
+                }
+            }
+        }
+        return;
+    }
+    
 }

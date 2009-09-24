@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.core;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -177,7 +178,7 @@ public final class UiUtils {
 
         final DeclarationLocation[] result = new DeclarationLocation[] { null };
         try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
+            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(source), new UserTask() {
                 public void run(ResultIterator resultIterator) throws ParseException {
                     if (resultIterator.getSnapshot().getMimeType().equals(handle.getMimeType())) {
                         Parser.Result r = resultIterator.getParserResult();
@@ -199,6 +200,11 @@ public final class UiUtils {
                     }
                 }
             });
+            //#169806: Do not block when parsing is in progress
+            if (!f.isDone()) {
+                f.cancel(true);
+                return new DeclarationLocation(source.getFileObject(), -1);
+            }
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
         }

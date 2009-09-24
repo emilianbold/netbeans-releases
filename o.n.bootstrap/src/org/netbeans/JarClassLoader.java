@@ -52,6 +52,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.security.CodeSource;
@@ -418,8 +420,13 @@ public class JarClassLoader extends ProxyClassLoader {
                 requests++;
                 used++;
                 if (jar == null) {
+                    long now = System.currentTimeMillis();
                     jar = new JarFile(file, false);
+                    long took = System.currentTimeMillis() - now;
                     opened(this, forWhat);
+                    if (took > 500) {
+                        LOGGER.log(Level.WARNING, "Opening " + file + " took " + took + " ms"); // NOI18N
+                    }
                 }
                 return jar;
             }
@@ -437,7 +444,11 @@ public class JarClassLoader extends ProxyClassLoader {
             byte[] buf = archive.getData(this, name);
             if (buf == null) return null;
             LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, file.getPath()});
-            return new URL(resPrefix + name);
+            try {
+                return new URL(resPrefix + new URI(null, name, null).getRawPath());
+            } catch (URISyntaxException x) {
+                throw (IOException) new IOException(name + " in " + resPrefix + ": " + x.toString()).initCause(x);
+            }
         }
         
         protected byte[] readClass(String path) throws IOException {
@@ -754,7 +765,6 @@ public class JarClassLoader extends ProxyClassLoader {
                 from = 0;
             }
             String jar = url.substring(from, bang).replace('/', File.separatorChar);
-            String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
             if (_src == null) {
                 try {
@@ -764,6 +774,12 @@ public class JarClassLoader extends ProxyClassLoader {
                 } catch (Exception e) {
                     throw (IOException) new IOException(e.toString()).initCause(e);
                 }
+            }
+            String _name = url.substring(bang + 2);
+            try {
+                _name = new URI(_name).getPath();
+            } catch (URISyntaxException x) {
+                throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
             return new ResURLConnection (u, _src, _name);
         }

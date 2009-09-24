@@ -45,7 +45,7 @@ import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -102,7 +102,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         //enable EL support it this xhtml file
         //TODO possibly add if(jsf_used()) { //enable el }
         Document doc = result.getSnapshot().getSource().getDocument(true);
-        if (doc.getProperty(InputAttributes.class) == null) {
+        if (doc != null && doc.getProperty(InputAttributes.class) == null) {
             InputAttributes inputAttributes = new InputAttributes();
             inputAttributes.setValue(HTMLTokenId.language(), "enable el", new Object(), false); //NOI18N
             doc.putProperty(InputAttributes.class, inputAttributes);

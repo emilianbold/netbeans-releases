@@ -262,12 +262,15 @@ public class getTopmostTest extends NbTestCase {
     private Map<File, File> getFoldersToRoots() throws SecurityException, IllegalArgumentException, Exception, IllegalAccessException {
         Field f = null;
         try {
-            f = Mercurial.class.getDeclaredField("foldersToRoot");
+            f = Mercurial.class.getDeclaredField("rootsToFile");
         } catch (Exception ex) {
             throw ex;
         }
         f.setAccessible(true);
-        Map<File, File> m = (Map<File, File>) f.get(Mercurial.getInstance());
+        Object rootsToFile = f.get(Mercurial.getInstance());
+        f = rootsToFile.getClass().getDeclaredField("files");
+        f.setAccessible(true);
+        Map<File, File> m = (Map<File, File>) f.get(rootsToFile);
         return m;
     }
 

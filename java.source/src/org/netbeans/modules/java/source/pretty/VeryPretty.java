@@ -47,11 +47,13 @@ import com.sun.source.util.TreePath;
 import static com.sun.source.tree.Tree.*;
 import com.sun.source.tree.VariableTree;
 
+import java.util.Map.Entry;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 
@@ -849,14 +851,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	for (List < JCCatch > l = tree.catchers; l.nonEmpty(); l = l.tail)
 	    printStat(l.head);
 	if (tree.finalizer != null) {
-            if (cs.placeFinallyOnNewLine()) {
-                newline();
-                toLeftMargin();
-            } else if (cs.spaceBeforeFinally()) {
-                needSpace();
-            }
-	    print("finally");
-	    printBlock(tree.finalizer, cs.getOtherBracePlacement(), cs.spaceBeforeFinallyLeftBrace());
+	    printFinallyBlock(tree.finalizer);
 	}
     }
 
@@ -1293,18 +1288,6 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitLiteral(JCLiteral tree) {
-        if (   origUnit != null
-            && cInfo != null
-            && cInfo.getTrees().getSourcePositions().getStartPosition(origUnit, tree) >= 0 //#137564
-            && cInfo.getTrees().getSourcePositions().getEndPosition(origUnit, tree) >= 0) {
-            TokenSequence<JavaTokenId> ts = cInfo.getTreeUtilities().tokensFor(tree);
-            boolean printed = false;
-            while (ts.moveNext()) {
-                print(ts.token().text().toString());
-                printed = true;
-            }
-            if (printed) return;
-        }
 	switch (tree.typetag) {
 	  case INT:
 	    print(tree.value.toString());
@@ -1530,6 +1513,17 @@ public final class VeryPretty extends JCTree.Visitor {
         printFlags(flags, true);
     }
 
+    public void printFinallyBlock(JCBlock finalizer) {
+        if (cs.placeFinallyOnNewLine()) {
+            newline();
+            toLeftMargin();
+        } else if (cs.spaceBeforeFinally()) {
+            needSpace();
+        }
+        print("finally");
+        printBlock(finalizer, cs.getOtherBracePlacement(), cs.spaceBeforeFinallyLeftBrace());
+    }
+
     public void printFlags(long flags, boolean addSpace) {
 	print(TreeInfo.flagNames(flags));
         if ((flags & StandardFlags) != 0) {
@@ -1727,6 +1721,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean members) {
+        printPrecedingComments(tree, true);
 	int old = indent();
 	int bcol = old;
         switch(bracePlacement) {
@@ -1767,6 +1762,7 @@ public final class VeryPretty extends JCTree.Visitor {
         toColExactly(bcol);
 	undent(old);
 	print('}');
+        printTrailingComments(tree, true);
     }
 
     private void printTypeParameters(List < JCTypeParameter > trees) {
@@ -1798,7 +1794,7 @@ public final class VeryPretty extends JCTree.Visitor {
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> cl = commentSet.getComments(CommentSet.RelativePosition.INLINE);
         for (Comment comment : cl) {
-            printComment(comment, false, printWhitespace);
+            printComment(comment, true, printWhitespace);
         }
         java.util.List<Comment> tc = commentSet.getComments(CommentSet.RelativePosition.TRAILING);
         if (!tc.isEmpty()) {
@@ -1848,7 +1844,7 @@ public final class VeryPretty extends JCTree.Visitor {
 //                }
 //            }
 //        }
-        java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INLINE);
+        java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
         for (Comment c : comments)
             printComment(c, false, printWhitespace);
     }
@@ -1894,6 +1890,10 @@ public final class VeryPretty extends JCTree.Visitor {
             out.toLineStart();
         } else if (comment.indent() > 0 && !preceding) {
             if (out.lastBlankLines == 0 && comment.style() != Style.LINE)
+                newline();
+            toLeftMargin();
+        } else if (comment.indent() < 0 && !preceding) {
+            if (out.lastBlankLines == 0)
                 newline();
             toLeftMargin();
         } else {

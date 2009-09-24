@@ -48,6 +48,8 @@ public final class RubyPreferences {
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     private static final String FETCH_ALL_VERSIONS = "gem-manager-fetch-all-versions"; // NOI18N
     private static final String FETCH_GEM_DESCRIPTIONS = "gem-manager-fetch-descriptions"; // NOI18N
+    private static final String GEM_VERBOSE_OUTPUT = "gem-manager-verbose-output"; // NOI18N
+    private static final String INDEX_VENDOR_GEMS_ONLY = "rails-index-vendor-gems-only"; // NOI18N
 
     private RubyPreferences() {
     }
@@ -104,4 +106,32 @@ public final class RubyPreferences {
         RubyPreferences.getPreferences().putBoolean(FETCH_GEM_DESCRIPTIONS, fetchDescriptions);
     }
 
+    /**
+     *@return true if the gem manager should use the verbose switch when updating/installing gems.
+     */
+    public static boolean isGemVerboseOutput() {
+        return RubyPreferences.getPreferences().getBoolean(GEM_VERBOSE_OUTPUT, true);
+    }
+
+    /**
+     * Sets whether the geme manager should use use the verbose switch when updating/installing gems.
+     * @param verbose
+     */
+    public static void setGemVerboseOutput(boolean verbose) {
+        RubyPreferences.getPreferences().putBoolean(GEM_VERBOSE_OUTPUT, verbose);
+    }
+
+    /**
+     * @return whether only gems in vendor/gems should be indexed (for rails apps).
+     */
+    public static boolean isIndexVendorGemsOnly() {
+        return RubyPreferences.getPreferences().getBoolean(INDEX_VENDOR_GEMS_ONLY, false);
+    }
+
+    /**
+     * Sets whether only gems in vendor/gems should be indexed (for rails apps).
+     */
+    public static void setIndexVendorGemsOnly(boolean vendorGemsOnly) {
+        RubyPreferences.getPreferences().putBoolean(INDEX_VENDOR_GEMS_ONLY, vendorGemsOnly);
+    }
 }

@@ -49,14 +49,13 @@ import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
-import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
  * Utility class for the {@link NativeProcess external native process} creation.
  * <p>
- * Depending on {@link ExecutionEnvironment} it creates whether local process or
- * remote one. This class was designed to be used with {@link ExecutionService}
+ * Depending on {@link ExecutionEnvironment} it creates either local process or
+ * remote one. This class was designed to be usable with {@link ExecutionService}
  * provided by the
  * <a href="http://bits.netbeans.org/dev/javadoc/org-netbeans-modules-extexecution/index.html?overview-summary.html" target="_blank">External Execution Support</a>
  * NetBeans module.
@@ -64,9 +63,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
  * Builder handles command, working directory, environment, task's listeners and
  * execution in an external terminal.
  * <p>
- * Note that <tt>NativeProcessBuilder</tt> is immutable. This means that it
- * cannot be changed and every it's method returns a new instance of the native
- * process builder with additionally configured properties.
  */
 public final class NativeProcessBuilder implements Callable<Process> {
 
@@ -181,6 +177,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
     }
 
     /**
+     * DEPRECATED
+     * <b>USE putEnvironmentVariable instead!</b>
+     *
      * Configures additional environment variable for the command.
      * 
      * Process subsequently created by the call() method on this builder
@@ -194,8 +193,69 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @param value value of the variable
      * @return this
      */
+    @Deprecated
     public NativeProcessBuilder addEnvironmentVariable(String name, String value) {
-        info.addEnvironmentVariable(name, value);
+        info.putEnvironmentVariable(name, value);
+        return this;
+    }
+
+    /**
+     *
+     * Configures additional environment variable for the command.
+     *
+     * Process subsequently created by the call() method on this builder
+     * will be executed with configured environment variables.
+     *
+     * <p>
+     * By default no additional environment variables are configured.
+     * <p>
+     *
+     * @param name name of the variable
+     * @param value value of the variable
+     * @return this
+     */
+    public NativeProcessBuilder putEnvironmentVariable(String name, String value) {
+        return addEnvironmentVariable(name, value);
+    }
+
+    /**
+     * DEPRECATED
+     * <b>USE putAllEnvironmentVariables instead!</b>
+     * Configures additional environment variable for the command.
+     *
+     * Process subsequently created by the call() method on this builder
+     * will be executed with configured environment variables.
+     *
+     * <p>
+     * By default no additional environment variables are configured.
+     * <p>
+     *
+     * @param envs map of value, name of additional env variables
+     * @return this
+     */
+    @Deprecated
+    public NativeProcessBuilder addEnvironmentVariables(Map<String, String> envs) {
+        if (envs == null || envs.isEmpty()) {
+            return this;
+        }
+
+        info.putAllEnvironmentVariables(envs);
+        return this;
+    }
+
+    public NativeProcessBuilder putPathVariable(String name, String path) {
+        info.putEnvironmentVariable(name, "");
+        info.addPathVariable(name, path, false);
+        return this;
+    }
+
+    public NativeProcessBuilder appendPathVariable(String name, String path) {
+        info.addPathVariable(name, path, false);
+        return this;
+    }
+
+    public NativeProcessBuilder prependPathVariable(String name, String path) {
+        info.addPathVariable(name, path, true);
         return this;
     }
 
@@ -212,13 +272,8 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @param envs map of value, name of additional env variables
      * @return this
      */
-    public NativeProcessBuilder addEnvironmentVariables(Map<String, String> envs) {
-        if (envs == null || envs.isEmpty()) {
-            return this;
-        }
-
-        info.addEnvironmentVariables(envs);
-        return this;
+    public NativeProcessBuilder putAllEnvironmentVariables(Map<String, String> envs) {
+        return addEnvironmentVariables(envs);
     }
 
     /**
@@ -277,6 +332,20 @@ public final class NativeProcessBuilder implements Callable<Process> {
             return this; //
         }
         info.setX11Forwarding(x11forwarding);
+        return this;
+    }
+
+    /**
+     * Configure whether process starts normally or suspended.
+     * Suspended process can be resumed by sending it SIGCONT signal.
+     * Note that suspended process is also in RUNNING state.
+     *
+     * @param suspend  pass <code>true</code> to start process suspended,
+     *      or <code>false</code> to start process normally
+     * @return this
+     */
+    public NativeProcessBuilder setInitialSuspend(boolean suspend) {
+        info.setInitialSuspend(suspend);
         return this;
     }
 }

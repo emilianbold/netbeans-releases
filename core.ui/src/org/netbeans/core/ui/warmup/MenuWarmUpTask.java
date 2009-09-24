@@ -168,7 +168,6 @@ public final class MenuWarmUpTask implements Runnable {
             r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
             r.setLoggerName(LOG.getName());
             LOG.log(r);
-
         }        
     }
     

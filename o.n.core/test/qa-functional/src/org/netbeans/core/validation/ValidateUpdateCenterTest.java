@@ -108,7 +108,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
             auVisibilityProblems.append("\n" + cnb);
         }
         if (auVisibilityProblems.length() > 0) {
-            fail("Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client nor AutoUpdate-Essential-Module" + auVisibilityProblems);
+            fail("Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client=true nor AutoUpdate-Essential-Module=true (thus unreachable through Plugin Manager)" + auVisibilityProblems);
         }
     }
 
@@ -128,6 +128,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.jemmy");
         permittedDisabledAutoloads.add("org.netbeans.modules.nbjunit");
         permittedDisabledAutoloads.add("org.netbeans.insane");
+        permittedDisabledAutoloads.add("org.netbeans.modules.swing.validation");
         permittedDisabledAutoloads.add("org.netbeans.modules.visualweb.gravy");
         // just has to be present, not enabled
         permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.harness");

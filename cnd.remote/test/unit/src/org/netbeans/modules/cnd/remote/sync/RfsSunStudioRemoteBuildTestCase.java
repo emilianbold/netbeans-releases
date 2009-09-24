@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -52,6 +53,9 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
 
+    static {
+        System.setProperty("cnd.rfs.ss.hack", "true");
+    }
     public RfsSunStudioRemoteBuildTestCase(String testName) {
         super(testName);
     }
@@ -65,7 +69,7 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         setDefaultCompilerSet("SunStudio");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject);
+        buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
 
     public static Test suite() {

@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.dlight.perfan.tha.api;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -47,8 +49,10 @@ import java.util.concurrent.FutureTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.NbBundle;
 
@@ -57,7 +61,7 @@ public final class THAInstrumentationSupport {
     private final static CollectVersion minSupportedVersion = CollectVersion.getCollectVersion("6.7"); // NOI18N
     private final static ConcurrentHashMap<SSLocation, THAInstrumentationSupport> hash = new ConcurrentHashMap<SSLocation, THAInstrumentationSupport>();
     private final ExecutionEnvironment execEnv;
-    private final Future<CollectVersion> version;
+    private Future<CollectVersion> version;
     private final String collectCMD;
     private final String binDir;
 
@@ -83,12 +87,15 @@ public final class THAInstrumentationSupport {
         this.binDir = sunstudioBinDir;
         this.execEnv = execEnv;
         collectCMD = sunstudioBinDir + "collect"; // NOI18N
-        version = getVersion();
+        //version = getVersion();
     }
 
     public boolean isSupported() {
         boolean result = false;
         try {
+            if (version == null) {
+                version = getVersion();
+            }
             CollectVersion vers = version.get();
             return vers.compareTo(minSupportedVersion) > 0;
         } catch (InterruptedException ex) {
@@ -96,6 +103,18 @@ public final class THAInstrumentationSupport {
         }
 
         return result;
+    }
+
+    public boolean isInstrumentationNeeded(ExecutionEnvironment env, THAConfiguration configuration) {
+        try {
+            if (!configuration.collectDataRaces() && configuration.collectDeadlocks() && HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
+                return false;
+            }
+            return true;
+        } catch (IOException ex) {
+        } catch (CancellationException ex) {
+        }
+        return true;
     }
 
     public Future<Boolean> isInstrumented(final String executable) {
@@ -169,11 +188,18 @@ public final class THAInstrumentationSupport {
                 return new CollectVersion(Integer.parseInt(m.group(1)),
                         Integer.parseInt(m.group(2)));
             } else {
-                versionPattern = Pattern.compile("([1-9]+)\\.([1-9]+).*"); // NOI18N
+                versionPattern = Pattern.compile("version [^:]+: Sun .*Analyzer ([1-9]+)\\.([1-9]+).*"); // NOI18N
                 m = versionPattern.matcher(versionString);
                 if (m.matches()) {
                     return new CollectVersion(Integer.parseInt(m.group(1)),
                             Integer.parseInt(m.group(2)));
+                } else {
+                    versionPattern = Pattern.compile("([1-9]+)\\.([1-9]+).*"); // NOI18N
+                    m = versionPattern.matcher(versionString);
+                    if (m.matches()) {
+                        return new CollectVersion(Integer.parseInt(m.group(1)),
+                                Integer.parseInt(m.group(2)));
+                    }
                 }
             }
 
@@ -186,11 +212,34 @@ public final class THAInstrumentationSupport {
         }
 
         public int compareTo(CollectVersion other) {
+            if (this.equals(other)) {
+                return 0;
+            }
+
             if (major == other.major) {
                 return Integer.valueOf(minor).compareTo(other.minor);
             } else {
                 return Integer.valueOf(major).compareTo(other.major);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof CollectVersion)) {
+                return false;
+            }
+
+            CollectVersion that = (CollectVersion) obj;
+
+            return (this.major == that.major && this.minor == that.minor);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + this.major;
+            hash = 17 * hash + this.minor;
+            return hash;
         }
     }
 

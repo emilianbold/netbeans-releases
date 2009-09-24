@@ -43,12 +43,14 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.Writer;
 import java.util.List;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.InputOutput;
 
 /**
  * Implements Make action
@@ -89,8 +91,9 @@ public class MakeAction extends MakeBaseAction {
      *
      *  @param node A single MakefileDataNode(should have a {@link MakeExecSupport}
      */
-    public static void execute(Node node, String target, ExecutionListener listener, Writer outputListener, Project project, List<String> additionalEnvironment) {
-        (SystemAction.get(MakeAction.class)).performAction(node, target, listener, outputListener, project, additionalEnvironment);
+    public static Future<Integer> execute(Node node, String target, ExecutionListener listener, Writer outputListener,
+                               Project project, List<String> additionalEnvironment, InputOutput inputOutput) {
+        return (SystemAction.get(MakeAction.class)).performAction(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
     }
 
     @Override

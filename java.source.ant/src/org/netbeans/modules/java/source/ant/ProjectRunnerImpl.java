@@ -214,33 +214,40 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         }
         {
             FileObject source = toRun;
-            if (source == null) {
-                String binaryResource = className.replace('.', '/') + ".class";
-                for (FileObject root : exec.getRoots()) {
-                    if (root.getFileObject(binaryResource) != null) {
-                        try {
-                            String sourceResource = className.replace('.', '/') + ".java";
-                            for (FileObject srcRoot : SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots()) {
-                                FileObject srcFile = srcRoot.getFileObject(sourceResource);
-                                if (srcFile != null) {
-                                    source = srcFile;
-                                    break;
+            final Charset charset = getValue(properties, "runtime.encoding", Charset.class);   //NOI18N
+            String encoding = charset != null && Charset.isSupported(charset.name()) ? charset.name() : null;
+            if (encoding == null) {
+                if (source == null) {
+                    String binaryResource = className.replace('.', '/') + ".class";
+out:                for (FileObject root : exec.getRoots()) {
+                        if (root.getFileObject(binaryResource) != null) {
+                            try {
+                                String sourceResource = className.replace('.', '/') + ".java";
+                                for (FileObject srcRoot : SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots()) {
+                                    FileObject srcFile = srcRoot.getFileObject(sourceResource);
+                                    if (srcFile != null) {
+                                        source = srcFile;
+                                        break out;
+                                    }
                                 }
+                            } catch (FileStateInvalidException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                        } catch (FileStateInvalidException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
                     }
-                    break;
+                }
+                if (source != null) {
+                    Charset sourceEncoding = FileEncodingQuery.getEncoding(source);
+                    if (Charset.isSupported(sourceEncoding.name())) {
+                        encoding = sourceEncoding.name();
+                    }
                 }
             }
-            String encoding = "UTF-8";
-            if (source != null) {
-                Charset sourceEncoding = FileEncodingQuery.getEncoding(source);
-                if (Charset.isSupported(sourceEncoding.name())) {
-                    encoding = sourceEncoding.name();
-                }
+            if (encoding == null) {
+                //Encoding still null => fallback to UTF-8
+                encoding = "UTF-8"; //NOI18N
             }
+            
             setProperty(antProps, "encoding", encoding);
         }
 

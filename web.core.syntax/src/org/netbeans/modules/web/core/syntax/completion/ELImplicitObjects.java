@@ -46,8 +46,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 //import org.netbeans.jmi.javamodel.Method;
 
+import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -74,6 +76,15 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
             setType(OBJECT_TYPE);
             setClazz("javax.servlet.jsp.PageContext"); //NOI18N
         }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.core.syntax.spi.ELImplicitObject#isApplicable(org.netbeans.modules.web.core.syntax.completion.api.ELExpression)
+         */
+        @Override
+        public boolean isApplicable( ELExpression expression ) {
+            FileObject fileObject = expression.getFileObject();
+            return !fileObject.getMIMEType().equals("text/xhtml");      // NOI18N
+        }
     }
     
     private Collection<ELImplicitObject> getELImplicitObjects() {
@@ -81,11 +92,11 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
         implicitELObjects = new ArrayList<ELImplicitObject>(11);
         implicitELObjects.add(new PageContextObject("pageContext")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("pageScope")); // NOI18N
-        implicitELObjects.add(new ELImplicitObject("requestScope")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("sessionScope")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("applicationScope")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("param")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("paramValues")); // NOI18N
+        implicitELObjects.add(new ELImplicitObject("requestScope"));
         implicitELObjects.add(new ELImplicitObject("header")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("headerValues")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("initParam")); // NOI18N
@@ -95,20 +106,24 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
     
     /** Returns implicit objects that starts with the prefix.
      */
-    public static Collection <ELImplicitObject> getELImplicitObjects(String prefix){
+    public static Collection <ELImplicitObject> getELImplicitObjects(
+            String prefix, ELExpression expression )
+    {
         initImplicitObjects();
-        Collection <ELImplicitObject> filtered = IMPLICIT_OBJECTS;
-        if (prefix != null && !prefix.equals("")){
-            filtered = new ArrayList<ELImplicitObject>();
-            for (ELImplicitObject elem : IMPLICIT_OBJECTS) {
-                if (elem.getName().startsWith(prefix))
-                    filtered.add(elem);
+        Collection<ELImplicitObject> filtered = new ArrayList<ELImplicitObject>();
+        for (ELImplicitObject elem : IMPLICIT_OBJECTS) {
+            if (elem.isApplicable(expression)){
+                if (prefix == null || elem.getName().startsWith(prefix)){
+                    filtered.add(elem);    
+                }
             }
         }
         return filtered;
     }
     
-    public static ELImplicitObject getELImplicitObject (String expr){
+    public static ELImplicitObject getELImplicitObject (String expr, 
+            ELExpression expression )
+    {
         initImplicitObjects();
         ELImplicitObject obj = null;
         if (expr != null && !expr.equals("")){
@@ -125,7 +140,7 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
             }
             name = name.trim();
             for (ELImplicitObject elem : IMPLICIT_OBJECTS) {
-                if (elem.getName().equals(name)){
+                if (elem.isApplicable(expression) && elem.getName().equals(name)){
                     obj = elem;
                     break;
                 }

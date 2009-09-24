@@ -122,7 +122,7 @@ public class IntroduceHint extends AbstractRule {
             Exceptions.printStackTrace(ex);
         }
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
-            Model model = ModelFactory.getModel(context.parserResult);
+            final Model model = phpParseResult.getModel();
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model,lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();

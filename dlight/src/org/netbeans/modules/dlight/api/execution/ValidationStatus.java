@@ -186,8 +186,7 @@ public final class ValidationStatus {
         }
 
         ValidationStatus result = new ValidationStatus(false, false,
-                mergedReason.toString(),
-                mergedActions);
+                mergedReason, mergedActions);
 
         return result;
     }

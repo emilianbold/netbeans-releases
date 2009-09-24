@@ -120,7 +120,13 @@ public final class Ear {
      */
     public String getJ2eePlatformVersion () {
         if (impl2 != null) {
-            return impl2.getJ2eeProfile().toPropertiesString();
+            // TODO null happens when EAR is deleted and getApplication is called
+            // invent better fix #168399
+            Profile profile = impl2.getJ2eeProfile();
+            if (profile != null) {
+                return profile.toPropertiesString();
+            }
+            return null;
         }
         return impl.getJ2eePlatformVersion();
     }

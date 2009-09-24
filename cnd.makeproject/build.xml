@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
         <exclude name="**/CVS"/>
     </patternset>
     <target name="jar-prep" depends="projectized-common.jar-prep">
+        <mkdir dir="${sample-dist}"/>
         <zip zipfile="${sample-dist}/args.zip" >
             <fileset dir="${sample-src}/args">
                 <patternset refid="sample-src-pattern-set"/>
@@ -118,6 +119,11 @@ made subject to such option by the copyright holder.
         </zip>
         <zip zipfile="${sample-dist}/profiling.zip" >
             <fileset dir="${sample-src}/profiling">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/fft.zip" >
+            <fileset dir="${sample-src}/fft">
                 <patternset refid="sample-src-pattern-set"/>
             </fileset>
         </zip>

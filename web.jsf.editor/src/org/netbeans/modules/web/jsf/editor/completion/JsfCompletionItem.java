@@ -39,23 +39,10 @@
 package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.awt.Color;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.gsf.api.HtmlParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.util.NbBundle;
@@ -90,7 +77,7 @@ public class JsfCompletionItem {
 
         private static String generateItemText(FaceletsLibrary.NamedComponent component, String declaredPrefix) {
             String libraryPrefix = component.getLibrary().getDefaultPrefix();
-            return (declaredPrefix != null ? declaredPrefix : libraryPrefix ) + ":" + component.getName(); //NOI18N
+            return (declaredPrefix != null ? declaredPrefix : libraryPrefix) + ":" + component.getName(); //NOI18N
         }
 
         @Override
@@ -106,64 +93,10 @@ public class JsfCompletionItem {
             }
         }
 
-        //XXX document vs parser infr. locking - how to modify document from a usertask???????????
-        //now I just feel lucky and do not lock the document. 
         private void autoimportLibrary(JTextComponent component) {
-            try {
-                final BaseDocument doc = (BaseDocument) component.getDocument();
-                Source source = Source.create(doc);
-                final AstNode[] htmlRootNode = new AstNode[1];
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        //suppose we are always top level
-                        Result result = resultIterator.getParserResult(substitutionOffset);
-                        if (result.getSnapshot().getMimeType().equals("text/html")) { //NOI18N
-                            htmlRootNode[0] = AstNodeUtils.query(((HtmlParserResult)result).root(), "html"); //NOI18N
-                        }
-                    }
-                });
-                //TODO reformat
-                //TODO decide whether to add a new line before or not based on other attrs - could be handled by the formatter!?!?!
-                if (htmlRootNode[0] != null) {
-
-                    final Indent indent = Indent.get(doc);
-                    indent.lock();
-                    try {
-                        doc.runAtomic(new Runnable() {
-                            public void run() {
-                                try {
-                                    boolean noAttributes = htmlRootNode[0].getAttributeKeys().isEmpty();
-                                    //if there are no attributes, just add the new one at the end of the tag,
-                                    //if there are some, add the new one on a new line and reformat the tag
-
-                                    FaceletsLibrary lib = JsfTag.this.component.getLibrary();
-                                    int insertPosition = htmlRootNode[0].endOffset() - 1; //just before the closing symbol
-                                    String text = (!noAttributes ? "\n" : "") + " xmlns:" + lib.getDefaultPrefix() + //NOI18N
-                                            "=\"" + lib.getNamespace() + "\""; //NOI18N
-
-                                    doc.insertString(insertPosition, text, null);
-
-                                    if(!noAttributes) {
-                                        //reformat the tag so the new attribute gets aligned with the previous one/s
-                                        int newRootNodeEndOffset = htmlRootNode[0].endOffset() + text.length();
-                                        indent.reindent(insertPosition, newRootNodeEndOffset);
-                                    }
-                                } catch (BadLocationException ex) {
-                                    Logger.global.log(Level.INFO, null, ex);
-                                }
-                            }
-                        });
-                    } finally {
-                        indent.unlock();
-                    }
-                } else {
-                    //TODO create the root node???
-                }
-            } catch (ParseException ex) {
-                Logger.global.log(Level.INFO, null, ex);
-            }
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            FaceletsLibrary lib = JsfTag.this.component.getLibrary();
+            JsfUtils.importLibrary(doc, lib, null);
         }
 
         //use bold font
@@ -190,11 +123,11 @@ public class JsfCompletionItem {
             sb.append("</h1>"); //NOI18N
 
             TldLibrary.Tag tag = component.getTag();
-            if(tag != null) {
+            if (tag != null) {
                 //there is TLD available
                 String descr = tag.getDescription();
-                if(descr == null) {
-                    NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR"); //NOI18N
+                if (descr == null) {
+                    sb.append(NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD_ITEM_DESCR")); //NOI18N
                 } else {
                     sb.append(descr);
                 }
@@ -202,7 +135,7 @@ public class JsfCompletionItem {
                 String msg = NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD"); //NOI18N
                 //extract some simple info from the component
                 sb.append("<table border=\"1\">"); //NOI18N
-                for(String[] descr : component.getDescription()) {
+                for (String[] descr : component.getDescription()) {
                     sb.append("<tr>"); //NOI18N
                     sb.append("<td>"); //NOI18N
                     sb.append("<div style=\"font-weight: bold\">"); //NOI18N
@@ -213,7 +146,7 @@ public class JsfCompletionItem {
                     sb.append(descr[1]);
                     sb.append("</td>"); //NOI18N
                     sb.append("</tr>"); //NOI18N
-                }                
+                }
                 sb.append("</table>"); //NOI18N
                 sb.append("<p style=\"color: red\">" + msg + "</p>"); //NOI18N
             }

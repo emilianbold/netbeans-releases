@@ -127,6 +127,7 @@
                       <Component id="suspendCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="283" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="remoteCheckbox" alignment="0" pref="444" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -226,7 +227,9 @@
                   </Group>
                   <Component id="jSeparator1" alignment="0" min="-2" pref="125" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="19" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="remoteCheckbox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -488,6 +491,14 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Contactless Port:"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="remoteCheckbox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Card Manager is on a remote computer"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="onRemoteCheckboxChanged"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

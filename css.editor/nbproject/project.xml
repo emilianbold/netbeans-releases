@@ -200,16 +200,12 @@
                         <test/>
                     </test-dependency>
                 </test-type>
-                <test-type>
-                    <name>qa-functional</name>
-                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.devtools</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.editor.kit</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
-                <!--<friend>org.netbeans.modules.visualweb.html</friend>-->
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.css.editor.model</package>
                 <package>org.netbeans.modules.css.gsf.api</package>

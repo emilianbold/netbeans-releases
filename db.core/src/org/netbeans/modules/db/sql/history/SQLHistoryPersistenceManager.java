@@ -473,21 +473,18 @@ public class SQLHistoryPersistenceManager {
             if (ELEMENT_SQL.equals(qName)) {
                 isSql = true;
                 url = attrs.getValue(ATTR_URL_PROPERTY_VALUE);
-                // #152486 SQL History:  if running NB in multiple locales the history file cannot be parsed
-                if (attrs.getValue(ATTR_DATE_PROPERTY_VALUE).indexOf("/") != -1) { // NOI18N
-                    try {
-                        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-                        date = df.parse(attrs.getValue(ATTR_DATE_PROPERTY_VALUE));
-                    } catch (ParseException ex) {
-                         // # 152486; Date stored is not parsable, so reset the date to the current timestamp
-                         Calendar calendar = Calendar.getInstance();
-                         date = calendar.getTime();
-                         LOGGER.log(Level.INFO, ex.getLocalizedMessage(), ex); 
-                    }
-                } else {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(new Long(attrs.getValue(ATTR_DATE_PROPERTY_VALUE)).longValue());
+                Calendar calendar = Calendar.getInstance();
+                try {
+                    calendar.setTimeInMillis(Long.parseLong(attrs.getValue(ATTR_DATE_PROPERTY_VALUE)));
                     date = calendar.getTime();
+                } catch (NumberFormatException nfe) {
+                    // #152486 - previously date stored in text format
+                    try {
+                        date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).parse(attrs.getValue(ATTR_DATE_PROPERTY_VALUE));
+                    } catch (ParseException pe) {
+                        // # 152486; Date stored is not parsable, so reset the date to the current timestamp
+                        date = calendar.getTime();
+                    }
                 }
             } else {
                 isSql = false;

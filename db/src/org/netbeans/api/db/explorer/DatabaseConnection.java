@@ -113,7 +113,7 @@ public final class DatabaseConnection {
      * @param user the username.
      * @param schema the schema to use, or null for the default schema
      * @param password the password.
-     * @param rememberPassword whether to remeber the password for the current session.
+     * @param rememberPassword whether to remember the password for the current session.
      *
      * @return the new instance.
      *
@@ -149,7 +149,7 @@ public final class DatabaseConnection {
      * Returns the JDBC driver instance that this connection uses.
      *
      * @since 1.32
-     * @return the JDBC driver or null if no driver registred
+     * @return the JDBC driver or null if no driver registered
      */
     public JDBCDriver getJDBCDriver() {
         return delegate.findJDBCDriver ();
@@ -206,7 +206,7 @@ public final class DatabaseConnection {
      * @return the display name
      */
     public String getDisplayName() {
-        return delegate.getName();
+        return delegate.getDisplayName();
     }
     
     /**

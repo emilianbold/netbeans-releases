@@ -25,6 +25,24 @@ pack_all_components()
 {
     DIST_DIR=${1}
     NAME=${2}
+
+    mkdir $DIST_DIR/zip/moduleclusters
+
+    if [ $RUNJAVAFX == 1 ]; then
+	cd $NB_ALL/nbbuild
+
+        #Pack all the NetBeans with javafx
+	ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME-javafx-full.zip || exit 1
+
+        cd $NB_ALL/nbbuild/netbeans
+	cp $NB_ALL/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
+	cp $NB_ALL/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip
+	cp $NB_ALL/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip
+	cp $NB_ALL/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip
+	cp $NB_ALL/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip
+	rm -rf javafx*
+    fi
+
     cd $NB_ALL/nbbuild
 
     #Pack the distributions
@@ -36,8 +54,6 @@ pack_all_components()
     ant zip-cluster-config -Dcluster.config=ruby -Dzip.name=$DIST_DIR/zip/$NAME-ruby.zip || exit 1
     ant zip-cluster-config -Dcluster.config=php -Dzip.name=$DIST_DIR/zip/$NAME-php.zip || exit 1
     ant zip-cluster-config -Dcluster.config=cnd -Dzip.name=$DIST_DIR/zip/$NAME-cpp.zip || exit 1
-
-    mkdir $DIST_DIR/zip/moduleclusters
 
     cd $NB_ALL/nbbuild/netbeans
 
@@ -69,17 +85,6 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME javacard "javacard*"
     rm -rf javacard*
-
-    if [ $RUNJAVAFX == 1 ]; then
-	cd $NB_ALL/nbbuild
-
-        #Pack all the NetBeans with javafx
-	pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one-w-javafx netbeans
-
-        cd $NB_ALL/nbbuild/netbeans
-	pack_component $DIST_DIR/zip/moduleclusters $NAME javafx "javafx*"
-	rm -rf javafx*
-    fi
 
     cd $NB_ALL/nbbuild
 

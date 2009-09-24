@@ -77,11 +77,6 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("iz143977_0.cc", 28, 42, "iz143977_0.cc", 6, 9);
     }
     
-    public void testIZ143977_Parm_in_Loki_1() throws Exception {
-        performTest("iz143977_1.cc", 45, 33, "iz143977_1.cc", 11, 9);
-        performTest("iz143977_1.cc", 46, 33, "iz143977_1.cc", 12, 9);
-    }
-    
     public void testIZ143977_Parm_in_Loki_2() throws Exception {
         performTest("iz143977_2.cc", 9, 36, "iz143977_2.cc", 5, 9);
     }
@@ -89,8 +84,6 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
     public void testIZ143977_Parm_in_Loki_3() throws Exception {
         performTest("iz143977_3.cc", 20, 36, "iz143977_3.cc", 8, 9);
         performTest("iz143977_3.cc", 21, 36, "iz143977_3.cc", 12, 9);
-        performTest("iz143977_3.cc", 22, 36, "iz143977_3.cc", 8, 9);
-        performTest("iz143977_3.cc", 23, 36, "iz143977_3.cc", 12, 9);
     }
     
     public void testIZ103462_1() throws Exception {
@@ -102,6 +95,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         // IZ#160659 : Unresolved ids in case of specialization of templated class forward declaration
         performTest("iz160659.cc", 11, 45, "iz160659.cc", 7, 12);
         performTest("iz160659.cc", 25, 51, "iz160659.cc", 21, 16);
+    }
+
+    public void testIZ172227() throws Exception {
+        // IZ#172227 : Unable to resolve identifier path although code compiles allright
+        performTest("iz172227.cc", 14, 9, "iz172227.cc", 2, 5);
+        performTest("iz172227.cc", 16, 10, "iz172227.cc", 5, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {
@@ -124,6 +123,16 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
             performTest("template_fun_spec.cc", 55, 26, "template_fun_spec.cc", 21, 1); // and back
         }
         
+        public void testIZ143977_Parm_in_Loki_1() throws Exception {
+            performTest("iz143977_1.cc", 45, 33, "iz143977_1.cc", 11, 9);
+            performTest("iz143977_1.cc", 46, 33, "iz143977_1.cc", 12, 9);
+        }
+
+        public void testIZ143977_Parm_in_Loki_4() throws Exception {
+            performTest("iz143977_3.cc", 22, 36, "iz143977_3.cc", 8, 9);
+            performTest("iz143977_3.cc", 23, 36, "iz143977_3.cc", 12, 9);
+        }
+
         public Failed(String testName) {
             super(testName, true);
         }

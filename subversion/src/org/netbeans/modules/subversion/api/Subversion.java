@@ -55,7 +55,7 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -509,13 +509,7 @@ public class Subversion {
                             retval = true;
                         }
                     } catch (SVNClientException ex) {
-                        String msg = ex.getMessage().toLowerCase();
-                        if(SvnClientExceptionHandler.isAuthentication(msg)
-                                || SvnClientExceptionHandler.isNoCertificate(msg)) {
-                            retval = true;
-                        } else {
-                            org.netbeans.modules.subversion.Subversion.LOG.log(Level.FINE, "Invalid url: " + url, ex);
-                        }
+                        org.netbeans.modules.subversion.Subversion.LOG.log(Level.FINE, "Invalid url: " + url, ex);
                     }
                 }
             }

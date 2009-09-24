@@ -45,14 +45,18 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -75,19 +79,18 @@ import org.openide.util.NbBundle;
 public final class ConnectionManager {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
-
+    private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib");
+    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 0); // NOI18N
+    private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 0); // NOI18N
     // Instance of the ConnectionManager
-    private final static ConnectionManager instance;
+    private final static ConnectionManager instance = new ConnectionManager();
     // Map that contains all connected sessions;
     private final HashMap<ExecutionEnvironment, Session> sessions;
-
     // Actual sessions pool
     private final JSch jsch;
     private volatile boolean connecting;
 
-
     static {
-        instance = new ConnectionManager();
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
     }
 
@@ -127,6 +130,7 @@ public final class ConnectionManager {
     public static ConnectionManager getInstance() {
         return instance;
     }
+
     /**
      * Returns the ssh session for requested <tt>ExecutionEnvironment</tt>
      * or <tt>null</tt> if no active session exists.
@@ -137,8 +141,6 @@ public final class ConnectionManager {
      *         Already existent <tt>Session</tt> for specified
      *         <tt>execEnv</tt> on success.
      */
-    AtomicInteger idx = new AtomicInteger();
-
     private Session getSession(final ExecutionEnvironment env, boolean restoreLostConnection) {
         int attemptsLeft = 2;
         Session session = null;
@@ -197,6 +199,10 @@ public final class ConnectionManager {
             char[] password,
             boolean storePassword) throws IOException, CancellationException {
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            // otherwise UI can hang forever
+            throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+        }
         if (env.isLocal()) {
             return true;
         }
@@ -224,6 +230,10 @@ public final class ConnectionManager {
     public boolean connectTo(
             final ExecutionEnvironment env) throws IOException, CancellationException {
 
+        if (SwingUtilities.isEventDispatchThread()) {
+            // otherwise UI can hang forever
+            throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+        }
         synchronized (this) {
             if (connecting) {
                 return false;
@@ -279,46 +289,22 @@ public final class ConnectionManager {
             final UserInfo userInfo) throws IOException, CancellationException {
 
         try {
-            Callable<Session> connectRunnable = new Callable<Session>() {
-
-                public Session call() throws Exception {
-                    final String user = env.getUser();
-                    final String host = env.getHostAddress();
-                    final int sshPort = env.getSSHPort();
-
-                    try {
-                        synchronized (jsch) {
-                            Session session = jsch.getSession(user, host, sshPort);
-                            session.setUserInfo(userInfo);
-                            session.connect();
-                            return session;
-                        }
-                    } catch (JSchException e) {
-                        if (e.getMessage().equals("Auth fail")) { // NOI18N
-                            throw new ConnectException(e.getMessage());
-                        } else if (e.getMessage().equals("Auth cancel")) { // NOI18N
-                            throw new CancellationException(e.getMessage());
-                        }
-
-                        Throwable cause = e.getCause();
-
-                        if (cause != null && cause instanceof IOException) {
-                            throw (IOException) cause;
-                        }
-
-                        // Should not happen
-                        throw new IOException(e.getMessage());
-                    }
-                }
-            };
-
+            final ConnectTask task = new ConnectTask(env, userInfo);
             final Future<Session> connectResult = NativeTaskExecutorService.submit(
-                    connectRunnable, "Connect to " + env.toString()); // NOI18N
+                    task, "Connect to " + env.toString()); // NOI18N
 
             final Cancellable cancelConnection = new Cancellable() {
 
                 public boolean cancel() {
-                    return connectResult.cancel(true);
+                    if (task != null) {
+                        task.cancel();
+                    }
+
+                    if (connectResult != null) {
+                        connectResult.cancel(true);
+                    }
+
+                    return true;
                 }
             };
 
@@ -333,7 +319,8 @@ public final class ConnectionManager {
             try {
                 session = connectResult.get();
             } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
+                cancelConnection.cancel();
+                throw new CancellationException(ex.getMessage());
             } catch (ExecutionException ex) {
                 Throwable cause = ex.getCause();
                 if (cause != null) {
@@ -459,6 +446,165 @@ public final class ConnectionManager {
             if (newConnectionEstablished) {
                 onConnect.run();
             }
+        }
+    }
+
+    private final class ConnectTask implements Callable<Session>, Cancellable {
+
+        private final ExecutionEnvironment env;
+        private final UserInfo userInfo;
+        private Session session;
+        private volatile boolean cancelled = false;
+
+        public ConnectTask(final ExecutionEnvironment env, final UserInfo userInfo) {
+            this.env = env;
+            this.userInfo = userInfo;
+            this.session = null;
+        }
+
+        public Session call() throws Exception {
+            Session result = null;
+
+            try {
+                result = doConnect();
+            } catch (ExecutionException ex) {
+                if (ex.getCause() != null && ex instanceof Exception) {
+                    throw (Exception) ex.getCause();
+                }
+            }
+
+            if (cancelled) {
+                throw new CancellationException("ConnectTask cancelled"); // NOI18N
+            } else {
+                synchronized (this) {
+                    session = result;
+                }
+            }
+
+            return session;
+        }
+
+        public Session doConnect() throws Exception {
+            Session newSession = null;
+
+            // IZ#165591 - Trying to connect to wrong host breaks remote host setup (for other hosts)
+            // To prevent this first try to just open a socket and
+            // go to the jsch code in case of success only.
+
+            // The important thing here is that we still need to be interruptable
+            // In case of wrong IP address (unreachable) the SocketImpl's connect()
+            // method may hang in system call for a long period of time, being
+            // insensitive to interrupts.
+            // So do this in a separate thread...
+
+            final Socket socket = new Socket();
+
+            Future<Boolean> socketValidationResult = NativeTaskExecutorService.submit(
+                    new SocketValidationTask(socket, new InetSocketAddress(env.getHostAddress(), env.getSSHPort()), SOCKET_CREATION_TIMEOUT),
+                    "Connection to " + env.getDisplayName() + " verification"); // NOI18N
+
+            long currentTime = System.currentTimeMillis();
+
+            try {
+                while (!cancelled && !socket.isConnected()) {
+                    if (SOCKET_CREATION_TIMEOUT != 0 &&
+                            (System.currentTimeMillis() - currentTime) > SOCKET_CREATION_TIMEOUT) {
+                        break;
+                    }
+
+                    // This assures that we will receive an interruption signal
+                    Thread.sleep(1000);
+                }
+            } catch (InterruptedException e) {
+                cancelled = true;
+            } finally {
+                socket.close();
+            }
+
+            if (cancelled) {
+                throw new CancellationException("Connection cancelled"); // NOI18N
+            }
+
+            // This may throw an exception. This is good.
+            boolean socketIsOK = socketValidationResult.get();
+
+            if (!socketIsOK) {
+                return null;
+            }
+
+            try {
+                newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
+                newSession.setUserInfo(userInfo);
+
+                if (USE_JZLIB) {
+                    newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
+                    newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
+                    newSession.setConfig("compression_level", "9"); // NOI18N
+                }
+
+                // Unfortunately, there are races in jsch connect() code...
+                // To avoid unexpected results we need this (big ;( )
+                // synchronization
+                // Because of THIS lock we need all that dances with a
+                // socket-in-a-separate-thread-connection...
+
+                // We are here ONLY after we are sure that socet can be created
+                // and connected. So the risk of hanging on the lock is small
+
+                synchronized (jsch) {
+                    newSession.connect(JSCH_CONNECTION_TIMEOUT);
+                }
+
+                return newSession;
+            } catch (JSchException e) {
+                if (e.getMessage().equals("Auth fail")) { // NOI18N
+                    throw new ConnectException(e.getMessage());
+                } else if (e.getMessage().equals("Auth cancel")) { // NOI18N
+                    throw new CancellationException(e.getMessage());
+                }
+
+                Throwable cause = e.getCause();
+
+                if (cause != null && cause instanceof IOException) {
+                    throw (IOException) cause;
+                }
+
+                // Should not happen
+                throw new IOException(e.getMessage());
+            }
+        }
+
+        public boolean cancel() {
+            final Session activeSession;
+            cancelled = true;
+
+            synchronized (this) {
+                activeSession = session;
+            }
+
+            if (activeSession != null) {
+                activeSession.disconnect();
+            }
+
+            return true;
+        }
+    }
+
+    private static class SocketValidationTask implements Callable<Boolean> {
+
+        private final Socket socket;
+        private final SocketAddress addressToConnect;
+        private final int timeout;
+
+        public SocketValidationTask(Socket socket, SocketAddress addressToConnect, int timeout) {
+            this.socket = socket;
+            this.timeout = timeout;
+            this.addressToConnect = addressToConnect;
+        }
+
+        public Boolean call() throws Exception {
+            socket.connect(addressToConnect, timeout);
+            return Boolean.TRUE;
         }
     }
 

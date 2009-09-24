@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -88,6 +89,13 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 String name = allAttributes.nextElement();
                 Object attr = fo.getAttribute(name);
                 if (attr == null) {
+                    if ("instantiatingIterator".equals(name)) {
+                        final Object tvi = fo.getAttribute("templateWizardIterator");
+                        if (tvi == null) {
+                            fail("There shall be templateWizardIterator: " + tvi + " for " + fo + " when " + name + " is null");
+                        }
+                        continue;
+                    }
                     fail("fo: " + fo + " has null " + name + " attribute");
                 }
                 System.setProperty(dynAttr + fo.getPath() + "@" + name, attr.toString());
@@ -269,6 +277,7 @@ public class FilesAndAttributesCheck extends NbTestCase {
 
         Enumeration<? extends FileObject> allTemplates = orig.getChildren(true);
         StringBuilder errors = new StringBuilder();
+        int checked = 0;
 
         while (allTemplates.hasMoreElements()) {
             FileObject fo = allTemplates.nextElement();
@@ -278,8 +287,16 @@ public class FilesAndAttributesCheck extends NbTestCase {
 
             Object attr = fo.getAttribute("instantiatingWizardURL");
             if (attr == null) {
+                attr = fo.getAttribute("templateWizardURL");
+            }
+            if (attr == null) {
                 continue;
             }
+            String whoDefines = Arrays.toString((Object[])fo.getAttribute("layers"));
+            if (!whoDefines.contains("org-netbeans-modules-ide-ergonomics.jar")) {
+                continue;
+            }
+            checked++;
 
             URL u = (URL) attr;
             byte[] arr = new byte[1024 * 8];
@@ -300,6 +317,10 @@ public class FilesAndAttributesCheck extends NbTestCase {
 
         if (errors.length() > 0) {
             fail(errors.toString());
+        }
+
+        if (checked == 0) {
+            fail("There shall be at least one file defined by ergonomics JAR, shall it not?");
         }
     }
 

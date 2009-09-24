@@ -98,7 +98,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     static final class Interractive implements UserInfo, UIKeyboardInteractive {
 
-        private final static Object lock = new String(RemoteUserInfo.Interractive.class.getName());
+        private final static Object lock = RemoteUserInfo.Interractive.class.getName() + "Lock"; // NOI18N
         private final static PasswordManager pm = PasswordManager.getInstance();
         private final Component parent;
         private final ExecutionEnvironment env;

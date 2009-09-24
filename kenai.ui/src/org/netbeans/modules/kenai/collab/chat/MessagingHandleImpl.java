@@ -75,7 +75,7 @@ public class MessagingHandleImpl extends MessagingHandle {
         Kenai k = Kenai.getDefault();
         try {
             final KenaiProject prj = k.getProject(id);
-            if (k.getMyProjects().contains(prj)) {
+            if (prj.isMyProject() && k.getStatus()==Kenai.Status.ONLINE) {
                 onlineCount = -2;
             } else {
                 onlineCount = -1;

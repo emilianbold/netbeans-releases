@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.core.stack.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -50,6 +51,8 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.ui.Renderer;
 
 /**
@@ -58,6 +61,7 @@ import org.netbeans.modules.dlight.util.ui.Renderer;
  */
 public final class StackRenderer implements Renderer<DataRow> {
 
+    private final Object lock = new String("StackRenderer.lock");//NOI18N
     private final List<Column> stackColumns;
 
     public StackRenderer(List<Column> stackColumns) {
@@ -65,26 +69,44 @@ public final class StackRenderer implements Renderer<DataRow> {
                 new ArrayList<Column>(stackColumns)); // yes, it's paranoia :)
     }
 
-    public JComponent render(DataRow data) {
-        MultipleCallStackPanel resultPanel = null;
-        StackDataProvider stackProvider = findStackDataProvider();
-        if (stackProvider != null) {
-            for (Column column : stackColumns) {
-                int stackId = DataUtil.toInt(data.getData(column.getColumnName()));
-                if (0 < stackId) {
-                    List<FunctionCall> stack = stackProvider.getCallStack(stackId);
-                    if (stack != null) {
-                        if (resultPanel == null) {
-                            resultPanel = MultipleCallStackPanel.createInstance();
-                        }
-                        resultPanel.add(column.getColumnUName(), true, stack);
-                    }
-                }
-            }
-        }
-        return resultPanel;
-    }
+    public JComponent render(final DataRow data) {
+        synchronized (lock) {
+            final StackDataProvider stackProvider = findStackDataProvider();
+            final MultipleCallStackPanel resultPanel = MultipleCallStackPanel.createInstance(stackProvider);
+            if (stackProvider != null) {
+                DLightExecutorService.submit(new Runnable() {
 
+                    public void run() {
+                        final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>();
+                        stacks.setSize(stackColumns.size());
+                        final Column[] columns_array = stackColumns.toArray(new Column[0]);
+                        for (int i = 0, size = columns_array.length; i < size; i++) {
+                            Column column = columns_array[i];
+                            int stackId = DataUtil.toInt(data.getData(column.getColumnName()));
+                            if (0 < stackId) {
+                                stacks.set(i, stackProvider.getCallStack(stackId));
+                            }
+                        }
+                        UIThread.invoke(new Runnable() {
+
+                            public void run() {
+                                for (int i = 0, size = columns_array.length; i < size; i++) {
+                                    Column column = columns_array[i];
+                                    List<FunctionCall> stack = stacks.get(i);
+                                    if (stack != null) {
+                                        resultPanel.add(column.getColumnUName(), true, stack);
+                                    }
+                                }
+
+                            }
+                        });
+                    }
+                }, "Fill-in panel for a stack in StackRenderer");//NOI18N
+            }
+            return resultPanel;
+        }
+     
+    }
     private boolean stackDataProviderSearched;
     private StackDataProvider stackDataProvider;
 

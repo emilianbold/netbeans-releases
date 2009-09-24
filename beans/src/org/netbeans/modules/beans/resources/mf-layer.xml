@@ -141,7 +141,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-beans-beaninfo-GenerateBeanInfoAction.instance"/>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-java">
@@ -151,8 +156,8 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Actions">
-                    <file name="beans-GenerateBeanInfoAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction"/>
+                    <file name="org-netbeans-modules-beans-beaninfo-GenerateBeanInfoAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-beans-beaninfo-GenerateBeanInfoAction.instance"/>
                         <attr name="position" intvalue="2120"/>
                     </file>
                     <file name="beans-separator1.instance">

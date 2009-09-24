@@ -155,7 +155,7 @@ public class TestBase extends NbTestCase  {
         port = System.getProperty("mysql.port", "3306");
         user = System.getProperty("mysql.user", "root");
         password = System.getProperty("mysql.password", null);
-        dbname = System.getProperty("mysql.dbname", null);
+        dbname = System.getProperty("mysql.dbname", "mysql");
 
         String message = "\nPlease set the following in nbproject/private/private.properties:\n" +
                 "test-unit-sys-prop.mysql.host=<mysql-hostname> [optional, default=localhost]\n" +
