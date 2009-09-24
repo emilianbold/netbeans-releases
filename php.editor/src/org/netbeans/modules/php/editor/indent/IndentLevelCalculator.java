@@ -279,18 +279,23 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         }
 
         // BEGIN AN UGLY HACK
-        // AST info does not allow to distinguish
-        // between "if" and "elseif"
         if (node instanceof IfStatement) {
-            String ELSE_IF = "elseif"; //NOI18N
-            try {
-                if (doc.getLength() > node.getStartOffset() + ELSE_IF.length()
-                        && ELSE_IF.equals(doc.getText(node.getStartOffset(),
-                        ELSE_IF.length()))) {
-                    return;
+            TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
+            ts.move(node.getStartOffset());
+            ts.moveNext();
+
+            if (ts.token().id() == PHPTokenId.PHP_ELSEIF){
+                return;
+            } else if (ts.token().id() == PHPTokenId.PHP_IF) {
+                if (ts.movePrevious()){
+                    if (ts.token().id() == PHPTokenId.WHITESPACE){
+                        if (ts.movePrevious()){
+                            if (ts.token().id() == PHPTokenId.PHP_ELSE){
+                                return;
+                            }
+                        }
+                    }
                 }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         // END AN UGLY HACK
