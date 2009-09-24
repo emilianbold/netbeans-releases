@@ -94,8 +94,9 @@ public class CloneAction extends ContextAction {
     }
     
     public void performAction(ActionEvent ev){
-        final File root = HgUtils.getRootFile(context);
-        if (root == null) return;
+        final File roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         
         // Get unused Clone Folder name
         File tmp = root.getParentFile();
@@ -338,7 +339,7 @@ public class CloneAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     }
    
     private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N

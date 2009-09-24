@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPInfo.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFInfo.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJsfIterator"/>
             </file>
             <file name="JsfFromDB" url="templates/dummy.template">
@@ -180,7 +180,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPInfo.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFInfo.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJsfIterator"/>
             </file>
             <!-- Facelet -->
@@ -203,6 +203,17 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
+
+            <file name="Template.xhtml" url="templates/dummy.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/Template.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.TemplateIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="820"/>
+            </file>
             <!-- JSF Managed Bean --> 
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
@@ -216,7 +227,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="faces-config.xml" url="templates/dummy.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFCatalog.png"/>
                 <attr name="position" intvalue="70"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
@@ -226,13 +237,22 @@ made subject to such option by the copyright holder.
             </file>
             <file name="out.xhtml" url="templates/compositeComponent.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/tag.png"/>
                 <attr name="position" intvalue="75"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/compositeComponent.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.CompositeComponentWizardIterator"/>
+            </file>
+            <file name="JsfFromDB" url="templates/dummy.template">
+                <attr name="position" intvalue="250"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.wizards.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types-server"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JsfFromDB.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
         </folder>
         <folder name="Persistence">
