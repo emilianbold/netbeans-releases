@@ -642,10 +642,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void setCurrentThread (JPDAThread thread) {
         Object oldT;
         PropertyChangeEvent event;
+        CallStackFrame topFrame = getTopFrame(thread);
         synchronized (currentThreadAndFrameLock) {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
-            event = updateCurrentCallStackFrameNoFire(thread);
+            event = updateCurrentCallStackFrameNoFire(topFrame);
         }
         if (thread != oldT) {
             firePropertyChange (PROP_CURRENT_THREAD, oldT, thread);
@@ -665,10 +666,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Object oldT;
         PropertyChangeEvent evt = null;
         PropertyChangeEvent evt2;
+        CallStackFrame topFrame = getTopFrame(thread);
         synchronized (currentThreadAndFrameLock) {
             oldT = currentThread;
             currentThread = (JPDAThreadImpl) thread;
-            evt2 = updateCurrentCallStackFrameNoFire(thread);
+            evt2 = updateCurrentCallStackFrameNoFire(topFrame);
         }
         if (thread != oldT) {
             evt = new PropertyChangeEvent(this, PROP_CURRENT_THREAD, oldT, thread);
@@ -1864,22 +1866,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    private CallStackFrame getTopFrame(JPDAThread thread) {
+        CallStackFrame callStackFrame;
+        if ((thread == null) || (thread.getStackDepth () < 1)) {
+            callStackFrame = null;
+        } else {
+            try {
+                callStackFrame = thread.getCallStack(0, 1) [0];
+            } catch (AbsentInformationException e) {
+                callStackFrame = null;
+            }
+        }
+        return callStackFrame;
+    }
+
     /**
      * @param thread The thread to take the top frame from
      * @return A PropertyChangeEvent or <code>null</code>.
      */
-    private PropertyChangeEvent updateCurrentCallStackFrameNoFire(JPDAThread thread) {
+    private PropertyChangeEvent updateCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
         CallStackFrame old;
-        CallStackFrame callStackFrame;
-        if ( (thread == null) ||
-             (thread.getStackDepth () < 1))
-            old = setCurrentCallStackFrameNoFire(callStackFrame = null);
-        else
-        try {
-            old = setCurrentCallStackFrameNoFire(callStackFrame = thread.getCallStack (0, 1) [0]);
-        } catch (AbsentInformationException e) {
-            old = setCurrentCallStackFrameNoFire(callStackFrame = null);
-        }
+        old = setCurrentCallStackFrameNoFire(callStackFrame);
         if (old == callStackFrame) return null;
         else return new PropertyChangeEvent(this, PROP_CURRENT_CALL_STACK_FRAME,
                                             old, callStackFrame);
