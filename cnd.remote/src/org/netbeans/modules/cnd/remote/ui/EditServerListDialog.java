@@ -355,7 +355,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason = new javax.swing.JTextField();
         pbarStatusPanel = new javax.swing.JPanel();
 
-        setMinimumSize(new java.awt.Dimension(258, 315));
+        setMinimumSize(new java.awt.Dimension(419, 255));
         setLayout(new java.awt.GridBagLayout());
 
         lbDevHosts.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_ServerList").charAt(0));
