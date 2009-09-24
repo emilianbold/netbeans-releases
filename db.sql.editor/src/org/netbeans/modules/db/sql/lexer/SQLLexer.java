@@ -83,7 +83,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             state = State.ISA_SLASH;
                             break;
                         case '#':
-                            state = State.ISI_LINE_COMMENT;
+                            state = State.ISA_HASH;
                             break;
                         case '=':
                         case '>':
@@ -217,6 +217,17 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             state = State.INIT;
                             input.backup(1);
                             return factory.createToken(SQLTokenId.OPERATOR);
+                    }
+                    break;
+
+                // If we are after a hash (#).
+                case ISA_HASH:
+                    if (Character.isWhitespace(actChar)) {
+                        // only in MySQL # starts line comment
+                        state = State.ISI_LINE_COMMENT;
+                    } else {
+                        // otherwise in can be identifier (issue 172904)
+                        state = State.ISI_IDENTIFIER;
                     }
                     break;
 
@@ -391,6 +402,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         ISI_STRING, // inside string constant
         ISI_IDENTIFIER, // inside identifier
         ISA_SLASH, // slash char
+        ISA_HASH, // hash char '#'
         ISA_MINUS,
         ISA_STAR_IN_BLOCK_COMMENT, // after '*' in a block comment
         // XXX is ISA_ZERO really needed?

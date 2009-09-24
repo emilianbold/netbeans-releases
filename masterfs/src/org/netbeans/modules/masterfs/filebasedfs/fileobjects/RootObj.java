@@ -189,7 +189,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
     
 
-    public final Enumeration getAttributes() {
+    public final Enumeration<String> getAttributes() {
         return getRealRoot().getAttributes();
     }
 
@@ -217,6 +217,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
         return getRealRoot().lock();
     }
 
+    @Deprecated
     public final void setImportant(final boolean b) {
         getRealRoot().setImportant(b); 
     }
@@ -229,6 +230,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
         return getRealRoot().getFileObject(name, ext);
     }
 
+    @Override
     public final FileObject getFileObject(String relativePath) {
         return getRealRoot().getFileObject(relativePath);
     }
@@ -241,6 +243,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
         return getRealRoot().createData(name, ext);
     }
 
+    @Deprecated
     public final boolean isReadOnly() {
         return getRealRoot().isReadOnly();
     }
@@ -255,6 +258,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
 
     
+    @Override
     public String toString() {
         return getRealRoot().toString();
     }

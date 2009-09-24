@@ -113,15 +113,24 @@ final class MetaInfServicesLookup extends AbstractLookup {
     protected final void beforeLookup(Lookup.Template t) {
         Class c = t.getType();
 
+        Collection<AbstractLookup.Pair<?>> toAdd = null;
+        synchronized (this) {
+            if (classes.get(c) == null) { // NOI18N
+                toAdd = new ArrayList<Pair<?>>();
+            } else {
+                // ok, nothing needs to be done
+                return;
+            }
+        }
+        if (toAdd != null) {
+            search(c, toAdd);
+        }
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
-                search(c, arr);
+                arr.addAll(toAdd);
                 setPairs(arr, RP);
-            } else {
-                // ok, nothing needs to be done
-                return;
             }
         }
     }
