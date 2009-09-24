@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.log;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.dlight.core.ui.components;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Rectangle;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 
 /**
- * Log action for mercurial:
- * hg log - show revision history of entire repository or files
  *
- * @author John Rice
+ * @author ak119685
  */
-public class OutAction extends SearchHistoryAction {
+class DLightTargetSelectionDialogLayout implements LayoutManager {
 
-    public OutAction(String name, VCSContext context) {
-        super(context);
-        putValue(Action.NAME, name);
+  static int COMBO_IDX = 0;
+  static int BTN_IDX = 1;
+  Dimension origin = new Dimension(400, 56);
+
+  public void addLayoutComponent(String name, Component comp) {
+  }
+
+  public void removeLayoutComponent(Component comp) {
+  }
+
+  public Dimension preferredLayoutSize(Container parent) {
+    return origin;
+  }
+
+  public Dimension minimumLayoutSize(Container parent) {
+    return origin;
+  }
+
+  public void layoutContainer(Container parent) {
+    Rectangle b = parent.getBounds();
+    int inset = 8;
+    int vOffset = 20;
+    int hOffset = 0;
+    int btnWSize = 80;
+
+    if (parent.getComponentCount() > 1) {
+      JButton btn = (JButton) parent.getComponent(BTN_IDX);
+      int btnHSize = (int) btn.getPreferredSize().getHeight();
+      btn.setBounds(b.width - inset - btnWSize, vOffset, btnWSize, btnHSize);
+      hOffset = inset + btnWSize;
     }
 
-    public void performAction(ActionEvent e) {
-        openOut();
-    }
+    JComboBox combo = (JComboBox) parent.getComponent(COMBO_IDX);
+    int comboHSize = (int) combo.getPreferredSize().getHeight() + 1;
+    combo.setBounds(inset, vOffset, b.width - 2 * inset - hOffset, comboHSize);
 
-    /**
-     * Opens the Seach History panel to view Mercurial Out Changesets that will be sent on next Push to remote repo
-     * using: hg out - to get the data
-     */
-    private void openOut () {
-        File repositoryRoot = getRepositoryRoot();
-        if (repositoryRoot == null) {
-            return;
-        }
-        outputSearchContextTab(repositoryRoot, "MSG_LogOut_Title");
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot});
-        tc.setDisplayName(NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", repositoryRoot.getName()));
-        tc.open();
-        tc.requestActive();
-        tc.searchOut();
-    }
+  }
 }

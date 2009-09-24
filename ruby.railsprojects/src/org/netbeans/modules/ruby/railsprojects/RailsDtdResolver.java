@@ -36,77 +36,55 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.Vector;
-import javax.swing.Action;
-import javax.swing.Icon;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
+package org.netbeans.modules.ruby.railsprojects;
+
+import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rhtml.spi.DtdResolver;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
- * @author mt154047
+ * @author Erno Mononen
  */
-final class MultipleCallStackRootNode extends AbstractNode {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rhtml.spi.DtdResolver.class)
+public final class RailsDtdResolver implements DtdResolver {
 
-    private final Vector<StackRootNode> children = new Vector<StackRootNode>();
-    private final Image icon = ImageUtilities.icon2Image(new MyIcon());
-    private final Action prefferedAction;
+    // default to xhtml 1.0
+    private static final String DEFAULT_FALLBACK_DTD = "-//W3C//DTD XHTML 1.0 Strict//EN"; //NOI18N
+    private static final String RHTML_DTD_PROPERTY = "rhtml.doctype"; //NOI18N
 
-    MultipleCallStackRootNode(Action action) {
-        super(Children.LEAF);
-        setDisplayName("Root");//NOI18N
-        this.prefferedAction = action;
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{prefferedAction};
-    }
-
-    synchronized void add(final StackRootNode node) {
-        children.add(node);
-        setChildren(Children.LEAF);
-        setChildren(new MultipleCallStackRootChildren(children));
-
-    }
-
-    void removeAll() {
-
-        children.clear();
-        setChildren(Children.LEAF);
-    }
-
-//    @Override
-//    public Image getIcon(int type) {
-//        return icon;
-//    }
-//
-//    @Override
-//    public Image getOpenedIcon(int type) {
-//        return getIcon(type);
-//    }
-//    @Override
-//    public String getHtmlDisplayName() {
-//        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
-//    }
-    class MyIcon implements Icon {
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
+    // todo: this could try resolving the doctype from the layout templates in view/layouts
+    public String getIdentifier(Document doc) {
+        FileObject fo = getFileObject(doc);
+        if (fo == null) {
+            return null;
         }
-
-        public int getIconWidth() {
-            return 10;
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return null;
         }
-
-        public int getIconHeight() {
-            return 10;
+        RubyBaseProject project = owner.getLookup().lookup(RubyBaseProject.class);
+        if (project == null) {
+            return null;
         }
+        String result = project.evaluator().getProperty(RHTML_DTD_PROPERTY);
+        return result != null ? result : DEFAULT_FALLBACK_DTD;
     }
+
+    private static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject) sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject) sdp).getPrimaryFile();
+        }
+        return null;
+    }
+
 }

@@ -41,13 +41,14 @@ package org.netbeans.modules.maven.j2ee.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
-import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -56,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -208,21 +210,40 @@ public class WebModuleProviderImpl extends J2eeModuleProvider implements WebModu
     
     @Override
     public FileObject[] getSourceRoots() {
-        ArrayList<FileObject> toRet = new ArrayList<FileObject>();
-        Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] webs = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
-        if (webs != null) {
-            for (int i = 0; i < webs.length; i++) {
-                toRet.add(webs[i].getRootFolder());
+        ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE);
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        List<URL> resUris = new ArrayList<URL>();
+        URI webapp = prj.getWebAppDirectory();
+        if (webapp != null) {
+            try {
+                resUris.add(webapp.toURL());
+            } catch (MalformedURLException ex) {
+//                Exceptions.printStackTrace(ex);
             }
         }
-        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (grps != null) {
-            for (int i = 0; i < grps.length; i++) {
-                toRet.add(grps[i].getRootFolder());
+        for (URI uri : prj.getResources(false)) {
+            try {
+                resUris.add(uri.toURL());
+            } catch (MalformedURLException ex) {
+//                Exceptions.printStackTrace(ex);
             }
         }
-        return toRet.toArray(new org.openide.filesystems.FileObject[toRet.size()]);
+        Iterator<ClassPath.Entry> en = cp.entries().listIterator();
+        List<FileObject> toRet = new ArrayList<FileObject>();
+        int index = 0;
+        while (en.hasNext()) {
+            ClassPath.Entry ent = en.next();
+            if (ent.getRoot() == null) continue;
+            if (resUris.contains(ent.getURL())) {
+                //put resources up front..
+                toRet.add(index, ent.getRoot());
+                index = index + 1;
+            } else {
+                toRet.add(ent.getRoot());
+            }
+        }
+        return toRet.toArray(new FileObject[0]);
     }
 
 

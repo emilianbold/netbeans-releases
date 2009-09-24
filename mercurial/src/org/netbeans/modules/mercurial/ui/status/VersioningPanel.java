@@ -228,7 +228,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
-                    File root = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
+//                    File root = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
                     /* #126311: Optimize UI for Large repos
                      if (root != null) {
                         String[] info = getRepositoryBranchInfo(root);

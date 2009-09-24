@@ -365,13 +365,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
             
-            //            if (EjbJar.VERSION_3_0.equals(dd.getVersion().toString())) {
-            //                JavaPersistenceGenerator jpg = new JavaPersistenceGenerator();
-            //                jpg.generateBeans(
-            //            } else {
-            //                CmpGenerator gen = new CmpGenerator();
-            //                gen.generateBeans(progressPanel,helper, pkg, dbschemaFile, genHelper, handle, module.getDeploymentDescriptor(), pwm, dd, false);
-            //            }
         } finally {
             handle.finish();
             SwingUtilities.invokeLater(new Runnable() {

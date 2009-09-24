@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.log;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.ruby.rhtml.spi;
+
+import javax.swing.text.Document;
 
 /**
- * Log action for mercurial:
- * hg log - show revision history of entire repository or files
+ * Resolves the (fallback) doctype for documents. Meant to be
+ * used for resolving doctypes for docs that don't explicitly declare it,
+ * e.g. except for layout files rhtml files don't contain a doctype declaration.
  *
- * @author John Rice
+ * @author Erno Mononen
  */
-public class OutAction extends SearchHistoryAction {
-
-    public OutAction(String name, VCSContext context) {
-        super(context);
-        putValue(Action.NAME, name);
-    }
-
-    public void performAction(ActionEvent e) {
-        openOut();
-    }
+public interface DtdResolver {
 
     /**
-     * Opens the Seach History panel to view Mercurial Out Changesets that will be sent on next Push to remote repo
-     * using: hg out - to get the data
+     * Gets the identifier of the doctype that should 
+     * be used for the given <code>doc</doc>, e.g. 
+     * <code>"-//W3C//DTD XHTML 1.0 Strict//EN"</code>.
+     * 
+     * @param doc
+     * @return the id or <code>null</code>.
      */
-    private void openOut () {
-        File repositoryRoot = getRepositoryRoot();
-        if (repositoryRoot == null) {
-            return;
-        }
-        outputSearchContextTab(repositoryRoot, "MSG_LogOut_Title");
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot});
-        tc.setDisplayName(NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", repositoryRoot.getName()));
-        tc.open();
-        tc.requestActive();
-        tc.searchOut();
-    }
+    String getIdentifier(Document doc);
+
 }

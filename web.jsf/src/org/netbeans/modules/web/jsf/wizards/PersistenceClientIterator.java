@@ -89,6 +89,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -204,6 +205,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             } else {
                                 generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
                             }
+                            PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Integer[]{entities.size()});
                             progressContributor.progress(progressStepCount);
                         }
                     });
