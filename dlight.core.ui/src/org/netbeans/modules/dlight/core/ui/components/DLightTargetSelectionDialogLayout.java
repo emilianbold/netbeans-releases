@@ -36,77 +36,58 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.ui;
+
+package org.netbeans.modules.dlight.core.ui.components;
 
 import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.Vector;
-import javax.swing.Action;
-import javax.swing.Icon;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Rectangle;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 
 /**
  *
- * @author mt154047
+ * @author ak119685
  */
-final class MultipleCallStackRootNode extends AbstractNode {
+class DLightTargetSelectionDialogLayout implements LayoutManager {
 
-    private final Vector<StackRootNode> children = new Vector<StackRootNode>();
-    private final Image icon = ImageUtilities.icon2Image(new MyIcon());
-    private final Action prefferedAction;
+  static int COMBO_IDX = 0;
+  static int BTN_IDX = 1;
+  Dimension origin = new Dimension(400, 56);
 
-    MultipleCallStackRootNode(Action action) {
-        super(Children.LEAF);
-        setDisplayName("Root");//NOI18N
-        this.prefferedAction = action;
+  public void addLayoutComponent(String name, Component comp) {
+  }
+
+  public void removeLayoutComponent(Component comp) {
+  }
+
+  public Dimension preferredLayoutSize(Container parent) {
+    return origin;
+  }
+
+  public Dimension minimumLayoutSize(Container parent) {
+    return origin;
+  }
+
+  public void layoutContainer(Container parent) {
+    Rectangle b = parent.getBounds();
+    int inset = 8;
+    int vOffset = 20;
+    int hOffset = 0;
+    int btnWSize = 80;
+
+    if (parent.getComponentCount() > 1) {
+      JButton btn = (JButton) parent.getComponent(BTN_IDX);
+      int btnHSize = (int) btn.getPreferredSize().getHeight();
+      btn.setBounds(b.width - inset - btnWSize, vOffset, btnWSize, btnHSize);
+      hOffset = inset + btnWSize;
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{prefferedAction};
-    }
+    JComboBox combo = (JComboBox) parent.getComponent(COMBO_IDX);
+    int comboHSize = (int) combo.getPreferredSize().getHeight() + 1;
+    combo.setBounds(inset, vOffset, b.width - 2 * inset - hOffset, comboHSize);
 
-    synchronized void add(final StackRootNode node) {
-        children.add(node);
-        setChildren(Children.LEAF);
-        setChildren(new MultipleCallStackRootChildren(children));
-
-    }
-
-    void removeAll() {
-
-        children.clear();
-        setChildren(Children.LEAF);
-    }
-
-//    @Override
-//    public Image getIcon(int type) {
-//        return icon;
-//    }
-//
-//    @Override
-//    public Image getOpenedIcon(int type) {
-//        return getIcon(type);
-//    }
-//    @Override
-//    public String getHtmlDisplayName() {
-//        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
-//    }
-    class MyIcon implements Icon {
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-        }
-
-        public int getIconWidth() {
-            return 10;
-        }
-
-        public int getIconHeight() {
-            return 10;
-        }
-    }
+  }
 }

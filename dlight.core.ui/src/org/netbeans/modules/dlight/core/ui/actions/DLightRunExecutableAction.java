@@ -36,77 +36,61 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.core.stack.ui;
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.util.ArrayList;
-import java.util.Vector;
-import javax.swing.Action;
-import javax.swing.Icon;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+package org.netbeans.modules.dlight.core.ui.actions;
+
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.dlight.core.ui.components.SelectExecutableTargetDialog;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author mt154047
  */
-final class MultipleCallStackRootNode extends AbstractNode {
+public class DLightRunExecutableAction extends AbstractAction {
+  //DLightAction {
 
-    private final Vector<StackRootNode> children = new Vector<StackRootNode>();
-    private final Image icon = ImageUtilities.icon2Image(new MyIcon());
-    private final Action prefferedAction;
+  protected SelectExecutableTargetDialog dialog = null;
 
-    MultipleCallStackRootNode(Action action) {
-        super(Children.LEAF);
-        setDisplayName("Root");//NOI18N
-        this.prefferedAction = action;
+  public DLightRunExecutableAction() {
+    super(NbBundle.getMessage(DLightRunExecutableAction.class, "DLightRunExecutableAction.Name"), // NOI18N
+            ImageUtilities.loadImageIcon("org/netbeaans/modules/dlight/core/ui/resources/indicators_small.png", false)); // NOI18N
+  }
+
+  public void actionPerformed(ActionEvent e) {
+    if (dialog == null) {
+      dialog = new SelectExecutableTargetDialog();
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{prefferedAction};
+    //Frame frame = dtraceSession.getUIHandler().getFrame();
+    Frame frame = WindowManager.getDefault().getMainWindow();
+    dialog.show(frame);
+    int res = dialog.getResult();
+
+    if (res == SelectExecutableTargetDialog.RESULT_OK) {
+      String pname = dialog.getProgramName();
+      String pargs = dialog.getProgramArguments();
+      String pdir = dialog.getWorkingDirectory();
+
+      if (pname != null) {
+
+//        if (startActionFactory != null) {
+//          ExecutableTarget target = new SimpleExecutableTarget(pname, pargs);
+//          target.setWorkingDirectory(pdir);
+//          StartDLightAbstractAction startAction = startActionFactory.createAction(target);
+//          startAction.actionPerformed(null);
+//        }
+      }
+
     }
+  }
 
-    synchronized void add(final StackRootNode node) {
-        children.add(node);
-        setChildren(Children.LEAF);
-        setChildren(new MultipleCallStackRootChildren(children));
-
-    }
-
-    void removeAll() {
-
-        children.clear();
-        setChildren(Children.LEAF);
-    }
-
-//    @Override
-//    public Image getIcon(int type) {
-//        return icon;
-//    }
-//
-//    @Override
-//    public Image getOpenedIcon(int type) {
-//        return getIcon(type);
-//    }
-//    @Override
-//    public String getHtmlDisplayName() {
-//        return "<h2>" + getDisplayName() + "</h2>"; // NOI18N
-//    }
-    class MyIcon implements Icon {
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-        }
-
-        public int getIconWidth() {
-            return 10;
-        }
-
-        public int getIconHeight() {
-            return 10;
-        }
-    }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }
