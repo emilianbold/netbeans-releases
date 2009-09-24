@@ -44,6 +44,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
 import java.io.File;
@@ -54,6 +55,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -62,6 +65,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;                                                                                                                                                                                         
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Index;
 import org.openide.filesystems.FileObject;
@@ -218,6 +222,11 @@ public final class TreePathHandle {
             throw (RuntimeException) new RuntimeException().initCause(e);
         }
         int position = ((JCTree) treePath.getLeaf()).pos;
+        if (position == (-1)) {
+            int index = listChildren(treePath.getParentPath().getLeaf()).indexOf(treePath.getLeaf());
+            assert index != (-1);
+            return new TreePathHandle(new CountingDelegate(TreePathHandle.create(treePath.getParentPath(), info), index, treePath.getLeaf().getKind()));
+        }
         PositionRef pos = createPositionRef(file, position, Bias.Forward);
         TreePath current = treePath;
         Element element;
@@ -701,4 +710,67 @@ public final class TreePathHandle {
         }
         
     }
-}                                                                                                                                                                                                                              
+
+    private static final class CountingDelegate implements Delegate {
+
+        private final TreePathHandle parent;
+        private final int index;
+        private final Tree.Kind kind;
+
+        public CountingDelegate(TreePathHandle parent, int index, Kind kind) {
+            this.parent = parent;
+            this.index = index;
+            this.kind = kind;
+        }
+
+        public FileObject getFileObject() {
+            return parent.getFileObject();
+        }
+
+        public TreePath resolve(CompilationInfo compilationInfo) throws IllegalArgumentException {
+            TreePath p = parent.resolve(compilationInfo);
+
+            if (p == null) return null;
+
+            List<Tree> children = listChildren(p.getLeaf());
+
+            if (index < children.size()) {
+                Tree t = children.get(index);
+
+                if (t.getKind() == kind) {
+                    return new TreePath(p, t);
+                }
+            }
+
+            return null;
+        }
+
+        public boolean equalsHandle(Delegate obj) {
+            return this == obj;//XXX
+        }
+
+        public Element resolveElement(CompilationInfo info) {
+            return parent.resolveElement(info);
+        }
+
+        public Kind getKind() {
+            return kind;
+        }
+
+    }
+
+    private static List<Tree> listChildren(@NonNull Tree t) {
+        final List<Tree> result = new LinkedList<Tree>();
+
+        t.accept(new TreeScanner<Void, Void>() {
+            @Override
+            public Void scan(Tree node, Void p) {
+                result.add(node);
+                return null;
+            }
+        }, null);
+
+        return result;
+    }
+    
+}
