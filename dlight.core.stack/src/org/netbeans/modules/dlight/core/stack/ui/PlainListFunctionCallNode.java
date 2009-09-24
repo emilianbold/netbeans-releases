@@ -36,45 +36,68 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.api.tool.impl;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.spi.indicator.Indicator;
+package org.netbeans.modules.dlight.core.stack.ui;
+
+import java.awt.Image;
+import javax.swing.Action;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author mt154047
  */
-public abstract class DLightConfigurationAccessor {
+ class PlainListFunctionCallNode extends  AbstractNode implements GoToSourceAction.GoToSourceActionReadnessListener {
 
-    private static volatile DLightConfigurationAccessor DEFAULT;
+    private final FunctionCall functionCall;
+    private GoToSourceAction action;
 
-    public static DLightConfigurationAccessor getDefault() {
-        DLightConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
-        try {
-            Class.forName(DLightConfiguration.class.getName(), true,
-                    DLightConfiguration.class.getClassLoader());//
-        } catch (Exception e) {
-        }
-        return DEFAULT;
+    PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider,  FunctionCall functionCall) {
+        super(Children.LEAF);
+        this.functionCall = functionCall;
+        action = new GoToSourceAction(sourceFileInfoDataProvider, functionCall, this);
     }
 
-    public static void setDefault(DLightConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
+    @Override
+    public String getDisplayName() {
+        return functionCall.getDisplayedName();
     }
 
-    public DLightConfigurationAccessor() {
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.mergeImages(CallStackUISupport.functionIcon, CallStackUISupport.upBadge, 0, 0);
     }
 
-    public abstract List<Indicator<?>> getEnabledIndicators(DLightConfiguration configuration) ;
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
 
-    public abstract boolean isHidden(DLightConfiguration configuration);
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{action};
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return action;
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        if (!action.isEnabled()) {
+            String baseName = super.getHtmlDisplayName();
+            baseName = baseName != null ? baseName : getDisplayName();
+            return "<font color='!controlShadow'>" + baseName; // NOI18N
+            }
+        return super.getHtmlDisplayName();
+    }
+
+    public void ready() {
+        fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+    }
 }

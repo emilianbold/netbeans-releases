@@ -95,6 +95,8 @@ public final class OptionsDisplayer {
      * To open a subpanel, pass its {@link SubRegistration#location} followed by {@code /}
      * followed by its {@link SubRegistration#id}.
      * To open a container panel without specifying a particular subpanel, pass its {@link ContainerRegistration#id}.
+     * To avoid typos and keep track of dependencies it is recommended to define compile-time
+     * constants for all these IDs, to be used both by the annotations and by calls to this method.
      * @param path slash-separated path of category and perhaps subcategories to be selected
      * @return true if optins dialog was sucesfully opened with required category.
      * If this method is called when options dialog is already opened then this method

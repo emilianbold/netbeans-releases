@@ -545,22 +545,22 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                             if (isPrimaryColumn && nvalue.intValue() == 0) {
                                 skipFunction = true;
                             }
-                            metricValue = new Integer(nvalue.intValue());
+                            metricValue = Integer.valueOf(nvalue.intValue());
                         } else if (Double.class == colClass) {
                             if (isPrimaryColumn && nvalue.doubleValue() == 0) {
                                 skipFunction = true;
                             }
-                            metricValue = new Double(nvalue.doubleValue());
+                            metricValue = Double.valueOf(nvalue.doubleValue());
                         } else if (Float.class == colClass) {
                             if (isPrimaryColumn && nvalue.floatValue() == 0) {
                                 skipFunction = true;
                             }
-                            metricValue = new Float(nvalue.floatValue());
+                            metricValue = Float.valueOf(nvalue.floatValue());
                         } else if (Long.class == colClass) {
                             if (isPrimaryColumn && nvalue.longValue() == 0) {
                                 skipFunction = true;
                             }
-                            metricValue = new Long(nvalue.longValue());
+                            metricValue = Long.valueOf(nvalue.longValue());
                         }
 
                     } catch (ParseException ex) {

@@ -109,7 +109,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 
     NewKenaiProjectWizardIterator(Node [] activatedNodes) {
-        this.activeNodes = activatedNodes;
+        this.activeNodes = activatedNodes != null ? activatedNodes : new Node[]{};
     }
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
