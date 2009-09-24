@@ -29,7 +29,7 @@ ant -Dtest.fail.on.error=false build-test-dist
 
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
 ant -v -f $mydir/build-update-descriptor.xml || exit
-ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuild/build/jnlp/ \
+ant -Djnlp.codebase=${BUILD_URL}artifact/nbbuild/build/jnlp/ \
     -Djnlp.signjar.keystore=$keystore \
     -Djnlp.signjar.alias=nb_ide \
     -Djnlp.signjar.password=$storepass \
@@ -54,11 +54,13 @@ done
 ant generate-golden-files generate-files-layout index-layer-paths || exit
 generated=nbbuild/build/generated
 cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
-prev_generated=../lastSuccessful/archive/$generated
-if [ -d $prev_generated ]; then
+if wget -O nbbuild/build/old-generated.zip "${JOB_URL}lastSuccessfulBuild/artifact/nbbuild/build/generated/*zip*/generated.zip"; then
+    mkdir nbbuild/build/old-generated
+    (cd nbbuild/build/old-generated; unzip ../old-generated.zip)
+    prev_generated=nbbuild/build/old-generated/generated
     # kits.txt is too verbose and changes too frequently to include in diff
     diff -r -u --show-function-line='^[A-Z][A-Z]' -x kits.txt $prev_generated $generated > $generated.diff
     if [ -s $generated.diff ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
+        (echo "${BUILD_URL}changes"; echo "${BUILD_URL}artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
     fi
 fi
