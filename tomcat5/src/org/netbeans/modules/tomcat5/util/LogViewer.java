@@ -77,6 +77,9 @@ import org.openide.windows.OutputWriter;
  * @author  Stepan Herold
  */
 public class LogViewer extends Thread {
+
+    private static final Logger LOGGER = Logger.getLogger(LogViewer.class.getName());
+
     private volatile boolean stop = false;
     private final TomcatManager tomcatManager;
     private InputOutput inOut;
@@ -207,7 +210,13 @@ public class LogViewer extends Thread {
     
     private File getLogFile(String timestamp) throws IOException {
         File f = new File(directory, prefix + timestamp + suffix);
-        FileUtil.createData(f);
+        try {
+            FileUtil.createData(f);
+        } catch (IOException ex) {
+            // this can happen when directory is RO for netbeans
+            LOGGER.log(Level.INFO, null, ex);
+            return null;
+        }
         return f;
     }
     
@@ -269,31 +278,40 @@ public class LogViewer extends Thread {
         String oldTimestamp = timestamp;
         try {
             File logFile = getLogFile(timestamp);
-            BufferedReader reader = new BufferedReader(new FileReader(logFile));
+            BufferedReader reader = null;
+            if (logFile != null) {
+                reader = new BufferedReader(new FileReader(logFile));
+            }
             try {
                 while (!stop && !inOut.isClosed()) {
                     // check whether a log file has rotated
                     timestamp = getTimestamp();
                     if (!timestamp.equals(oldTimestamp)) {
                         oldTimestamp = timestamp;
-                        reader.close();
+                        if (reader != null) {
+                            reader.close();
+                        }
                         logFile = getLogFile(timestamp);
-                        reader = new BufferedReader(new FileReader(logFile));
+                        if (logFile != null) {
+                            reader = new BufferedReader(new FileReader(logFile));
+                        }
                     }
-                    int count = 0;
-                    // take a nap after 1024 read cycles, this should ensure responsiveness
-                    // even if log file is growing fast
-                    boolean updated = false;
-                    while (reader.ready() && count++ < 1024) {
-                        processLine(reader.readLine());
-                        updated = true;
-                    }
-                    if (updated) {
-                        writer.flush();
-                        errorWriter.flush();
-                        if (takeFocus) {
-                            inOut.select();
-                        }                    
+                    if (reader != null) {
+                        int count = 0;
+                        // take a nap after 1024 read cycles, this should ensure responsiveness
+                        // even if log file is growing fast
+                        boolean updated = false;
+                        while (reader.ready() && count++ < 1024) {
+                            processLine(reader.readLine());
+                            updated = true;
+                        }
+                        if (updated) {
+                            writer.flush();
+                            errorWriter.flush();
+                            if (takeFocus) {
+                                inOut.select();
+                            }
+                        }
                     }
                     // wait for the next attempt
                     try {
