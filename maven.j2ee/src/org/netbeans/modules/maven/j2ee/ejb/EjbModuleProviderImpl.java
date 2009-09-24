@@ -38,13 +38,16 @@
  */
 package org.netbeans.modules.maven.j2ee.ejb;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -53,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.openide.filesystems.FileObject;
@@ -163,21 +167,32 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     
     @Override
     public FileObject[] getSourceRoots() {
-//        System.out.println("EjbMP: getsourceroots");
-
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        //#116215,121147 just workaround the AIOOBE
-        EjbJar[] jars = EjbJar.getEjbJars(project);
-        int offset = (jars == null || jars.length == 0) ? 0 : 1;
-        FileObject[] roots = new FileObject[groups.length + offset];
-        if (jars != null && jars.length > 0) {
-            roots[0] = jars[0].getMetaInf();
+        ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE);
+        NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        List<URL> resUris = new ArrayList<URL>();
+        for (URI uri : prj.getResources(false)) {
+            try {
+                resUris.add(uri.toURL());
+            } catch (MalformedURLException ex) {
+//                Exceptions.printStackTrace(ex);
+            }
         }
-        for (int i=0; i < groups.length; i++) {
-            roots[i + offset] = groups[i].getRootFolder();
+        Iterator<ClassPath.Entry> en = cp.entries().listIterator();
+        List<FileObject> toRet = new ArrayList<FileObject>();
+        int index = 0;
+        while (en.hasNext()) {
+            ClassPath.Entry ent = en.next();
+            if (ent.getRoot() == null) continue;
+            if (resUris.contains(ent.getURL())) {
+                //put resources up front..
+                toRet.add(index, ent.getRoot());
+                index = index + 1;
+            } else {
+                toRet.add(ent.getRoot());
+            }
         }
-        return roots;
+        return toRet.toArray(new FileObject[0]);
     }
 
     public EjbJar[] getEjbJars() {
