@@ -228,7 +228,11 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             if (rendata != null && value != null) {
                 String displayName = rendata.getDisplayName(value);
                 if (displayName != null) {
-                    setText (displayName);
+                    if (rendata.isHtmlDisplayName(value)) {
+                        setText("<html>" + displayName + "</html>"); // NOI18N
+                    } else {
+                        setText (displayName);
+                    }
                 }
                 lastRendererRef = new WeakReference<RenderDataProvider>(rendata);
                 lastRenderedValueRef = new WeakReference<Object>(value);
