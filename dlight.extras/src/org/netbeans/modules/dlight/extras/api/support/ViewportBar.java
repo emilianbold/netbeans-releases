@@ -43,7 +43,6 @@ import org.netbeans.modules.dlight.extras.api.support.dragging.AbstractDraggable
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -61,7 +60,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
-import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.extras.api.support.dragging.DraggingSupport;
 import org.netbeans.modules.dlight.util.Range;
@@ -71,6 +69,7 @@ import org.netbeans.modules.dlight.extras.api.support.dragging.Draggable;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -97,13 +96,17 @@ import org.openide.util.ImageUtilities;
     private final Draggable selectionStartMark;
     private final Draggable selectionEndMark;
     private final AxisMarksProvider timeMarksProvider;
-    private final int margin;
+    private final int leftMargin;
+    private final int rightMargin;
 
-    public ViewportBar(final ViewportModel viewportModel, final DataFilterManager filterManager, final int margin) {
-        setMinimumSize(new Dimension(200, 30));
-        setPreferredSize(new Dimension(200, 30));
+    public ViewportBar(final ViewportModel viewportModel, final DataFilterManager filterManager, final int leftMargin, final int rightMargin) {
+        Dimension size = new Dimension(200, 30);
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        setMinimumSize(size);
+        setPreferredSize(size);
         setOpaque(true);
-        this.margin = margin;
+        this.leftMargin = leftMargin;
+        this.rightMargin = rightMargin;
 
         this.viewportModel = viewportModel;
 
@@ -112,14 +115,14 @@ import org.openide.util.ImageUtilities;
             @Override
             public int getPosition() {
                 ViewportModelState vms = getViewportModelState();
-                return (int) DLightMath.map(vms.getViewport().getStart(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin);
+                return (int) DLightMath.map(vms.getViewport().getStart(), vms.getLimits().getStart(), vms.getLimits().getEnd(), leftMargin, getWidth() - rightMargin);
             }
 
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
-                Long startTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 if (viewport != null && startTime >= viewport.getEnd()){
                     return;
                 }
@@ -150,14 +153,14 @@ import org.openide.util.ImageUtilities;
             @Override
             public int getPosition() {
                 ViewportModelState vms = getViewportModelState();
-                return (int) DLightMath.map(vms.getViewport().getEnd(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin);
+                return (int) DLightMath.map(vms.getViewport().getEnd(), vms.getLimits().getStart(), vms.getLimits().getEnd(), leftMargin, getWidth() - rightMargin);
             }
 
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
-                Long endTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 if (viewport != null && viewport.getStart() >= endTime){
                     return;
                 }
@@ -199,14 +202,14 @@ import org.openide.util.ImageUtilities;
                 if (selection == null) {
                     selection = vms.getLimits();
                 }
-                return (int) DLightMath.map(selection.getStart(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin);
+                return (int) DLightMath.map(selection.getStart(), vms.getLimits().getStart(), vms.getLimits().getEnd(), leftMargin, getWidth() - rightMargin);
             }
 
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
-                Long startTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 if (selection != null && selection.getEnd() <= startTime){
                     //return
                     return;
@@ -243,13 +246,13 @@ import org.openide.util.ImageUtilities;
                 if (selection == null) {
                     selection = vms.getLimits();
                 }
-                return (int) DLightMath.map(selection.getEnd(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin);
+                return (int) DLightMath.map(selection.getEnd(), vms.getLimits().getStart(), vms.getLimits().getEnd(), leftMargin, getWidth() - rightMargin);
             }
 
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
-                Long endTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
                 if (selection  != null && selection.getStart() >= endTime){
                     return;
@@ -341,17 +344,22 @@ import org.openide.util.ImageUtilities;
         GradientPaint gradient = new GradientPaint(0, 0, GRADIENT_DARK_COLOR, 0, h, getBackground());
         Paint oldPaint = g2.getPaint();
         g2.setPaint(gradient);
-        g2.fillRect(margin, 0, w - 2 * margin, h);
+        g2.fillRect(leftMargin, 0, w - leftMargin - rightMargin, h);
         g2.setPaint(oldPaint);
 
         g2.setColor(VIEWPORT_HANDLE_COLOR);
-        g2.drawLine(margin, 0, margin, h);
-        g2.drawLine(w - margin, 0, w - margin, h);
+        g2.drawLine(leftMargin, 0, leftMargin, h);
+        g2.drawLine(w - rightMargin, 0, w - rightMargin, h);
 
         int v1 = viewportStartMark.getPosition();
         int v2 = viewportEndMark.getPosition();
+
         g.setColor(getBackground());
         g.fillRect(v1, 0, v2 - v1, h);
+
+        g.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR));
+        g.fillRect(0, 0, v1, 2);
+        g.fillRect(v2, 0, w - v2, 2);
 
 //        FontMetrics fm = g.getFontMetrics();
 //        Range<Long> limits = getViewportModelState().getLimits();

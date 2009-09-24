@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -61,7 +60,7 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 public class GraphPanel<G extends JComponent, L extends JComponent> extends JLayeredPane {
 
     private static final Color BORDER_COLOR = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR);
-    private static final int PADDING = 12;
+    private static final int PADDING = DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_PADDING);
 
     private final G graph;
     private final L legend;

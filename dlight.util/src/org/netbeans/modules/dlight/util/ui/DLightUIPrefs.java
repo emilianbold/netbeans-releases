@@ -53,6 +53,7 @@ import javax.swing.UIManager;
 public final class DLightUIPrefs {
 
     public static final String INDICATOR_BORDER_COLOR = "indicator.border.color"; // NOI18N
+    public static final String INDICATOR_PADDING = "indicator.padding"; // NOI18N
     public static final String INDICATOR_TITLE_FONT = "indicator.title.font"; // NOI18N
     public static final String INDICATOR_TITLE_FONT_COLOR = "indicator.title.font.color"; // NOI18N
 
@@ -122,6 +123,7 @@ public final class DLightUIPrefs {
         Color fontColor = new Color(0x31, 0x4E, 0x72);
 
         prefs.put(INDICATOR_BORDER_COLOR, new Color(0x72, 0x8A, 0x84));
+        prefs.put(INDICATOR_PADDING, 12);
         prefs.put(INDICATOR_TITLE_FONT, UIManager.getFont("Label.font").deriveFont(Font.BOLD)); // NOI18N
         prefs.put(INDICATOR_TITLE_FONT_COLOR, fontColor);
 
