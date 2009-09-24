@@ -60,8 +60,9 @@ import org.openide.util.RequestProcessor.Task;
  * @author Alexey Vladykin
  */
 public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerConfiguration> {
+
     public final static Image deadlockImage = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
-    public final static Icon deadlockIcon  = ImageUtilities.image2Icon(deadlockImage);
+    public final static Icon deadlockIcon = ImageUtilities.image2Icon(deadlockImage);
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
     private MasterSlaveView<Deadlock, DeadlockTHANodeFactory> msview;
@@ -128,12 +129,17 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
 
         public Component getComponent() {
-            MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
+            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
             for (DeadlockThreadSnapshot dts : snapshots) {
-                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockIcon , dts.getHeldLockCallStack());//NOI18N
+                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockIcon, dts.getHeldLockCallStack());//NOI18N
                 stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), deadlockIcon, dts.getRequestedLockCallStack());//NOI18N
             }
-            stackPanel.expandAll();
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    stackPanel.expandAll();
+                }
+            }, 500);
             return stackPanel;
 //            return StackPanelFactory.newStackPanel(stack);
         }
