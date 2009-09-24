@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -56,6 +57,7 @@ import org.openide.util.NbBundle;
     private CreateHostVisualPanel2 component;
     private ExecutionEnvironment lastValidatedHost;
     private final CreateHostData data;
+    private Future<Boolean> validationTask;
 
     public CreateHostWizardPanel2(CreateHostData data) {
         this.data = data;
@@ -78,16 +80,29 @@ import org.openide.util.NbBundle;
 
     public void validate() throws WizardValidationException {
         ExecutionEnvironment host = component.getHost();
+
         if (host == null || !host.equals(lastValidatedHost)) {
-            component.validateHost();
+            validationTask = component.validateHost();
+
+            try {
+                validationTask.get();
+            } catch (Exception ex) {
+                // just skip it 
+                // component.getHost() == null will indicate that validation
+                // failed
+            } finally {
+                validationTask = null;
+            }
         }
+
         component.enableControls(true);
+
         if (component.getHost() == null) {
             String errMsg = NbBundle.getMessage(getClass(), "MSG_Failure");
             throw new WizardValidationException(component, errMsg, errMsg);
-        } else {
-            lastValidatedHost = host;
         }
+
+        lastValidatedHost = host;
     }
 
     public HelpCtx getHelp() {
@@ -97,7 +112,6 @@ import org.openide.util.NbBundle;
     public boolean isValid() {
         return component.canValidateHost();
     }
-
     ////////////////////////////////////////////////////////////////////////////
     // change support
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -106,8 +120,27 @@ import org.openide.util.NbBundle;
         changeSupport.addChangeListener(l);
     }
 
+    // 
+    // This method (removeChangeListener) is called when we go away from
+    // the panel.
+    // If it happens when we are in the host validation phase and to step back,
+    // then both buttons (prev, next) will be disabled (validationRuns == true)
+    // See WizardDescriptor:893
+    //         boolean valid = p.isValid () && !validationRuns;
+    //         nextButton.setEnabled (next && valid);
+    //
+    // So here we should interrupt the validation process.
+    //
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
+
+        if (validationTask != null && !validationTask.isDone()) {
+            try {
+                validationTask.cancel(true);
+            } finally {
+                validationTask = null;
+            }
+        }
     }
 
     public void stateChanged(ChangeEvent e) {

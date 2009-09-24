@@ -57,7 +57,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * JButton with a small arrow that displays popup menu when clicked.
@@ -93,6 +92,7 @@ class DropDownButton extends JButton {
         putClientProperty( DropDownButtonFactory.PROP_DROP_DOWN_MENU, popup );
         
         setIcon( icon );
+        setDisabledIcon(ImageUtilities.createDisabledIcon(icon));
         
         resetIcons();
         
@@ -103,6 +103,7 @@ class DropDownButton extends JButton {
         });
         
         addMouseMotionListener( new MouseMotionAdapter() {
+            @Override
             public void mouseMoved( MouseEvent e ) {
                 if( null != getPopupMenu() ) {
                     mouseInArrowArea = isInArrowArea( e.getPoint() );
@@ -114,6 +115,7 @@ class DropDownButton extends JButton {
         addMouseListener( new MouseAdapter() {
             private boolean popupMenuOperation = false;
             
+            @Override
             public void mousePressed( MouseEvent e ) {
                 popupMenuOperation = false;
                 JPopupMenu menu = getPopupMenu();
@@ -144,6 +146,7 @@ class DropDownButton extends JButton {
                 }
             }
 
+            @Override
             public void mouseEntered( MouseEvent e ) {
                 mouseInButton = true;
                 if( hasPopupMenu() ) {
@@ -152,6 +155,7 @@ class DropDownButton extends JButton {
                 }
             }
 
+            @Override
             public void mouseExited( MouseEvent e ) {
                 mouseInButton = false;
                 mouseInArrowArea = false;
@@ -338,6 +342,7 @@ class DropDownButton extends JButton {
     private class Model extends DefaultButtonModel {
         private boolean _pressed = false;
         
+        @Override
         public void setPressed(boolean b) {
             if( mouseInArrowArea || _pressed )
                 return;

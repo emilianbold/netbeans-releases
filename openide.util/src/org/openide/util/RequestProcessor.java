@@ -126,10 +126,10 @@ public final class RequestProcessor implements Executor{
     // 50: a conservative value, just for case of misuse
 
     /** the static instance for users that do not want to have own processor */
-    private static RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
+    private static final RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
     /** A shared timer used to pass timeouted tasks to pending queue */
-    private static final Timer starterThread = new Timer(true);
+    private static Timer starterThread = new Timer(true);
 
     /** logger */
     private static Logger logger;
@@ -455,7 +455,7 @@ public final class RequestProcessor implements Executor{
     /** Logger for the error manager.
      */
     static Logger logger() {
-        synchronized (starterThread) {
+        synchronized (UNLIMITED) {
             if (logger == null) {
                 logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
             }
@@ -661,7 +661,21 @@ public final class RequestProcessor implements Executor{
             if (delay == 0) { // Place it to pending queue immediatelly
                 enqueue(localItem);
             } else { // Post the starter
-                starterThread.schedule(new EnqueueTask(localItem), delay);
+                while (true) {
+                    Timer timer = starterThread;
+                    try {
+                        timer.schedule(new EnqueueTask(localItem), delay);
+                        break;
+                    } catch (IllegalStateException e) {
+                        logger().info(e.toString());
+                        // starterThread cancelled, create new one and try to schedule again
+                        synchronized (UNLIMITED) {
+                            if (timer == starterThread) {
+                                starterThread = new Timer(true);
+                            }
+                        }
+                    }
+                }
             }
         }
 

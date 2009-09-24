@@ -144,7 +144,6 @@ public class RemoteProcReader extends ProcReaderImpl {
 
     private static class MultyFilesStream extends FilterInputStream {
 
-        boolean eof = false;
         private final int chunkSize;
 
         private MultyFilesStream(InputStream stream, int chunkSize) {
