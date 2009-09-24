@@ -81,8 +81,9 @@ public class VerifyAction extends ContextAction {
     }
     
     public static void verify(final VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
+        final File roots[] = HgUtils.getActionRoots(ctx);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
@@ -119,6 +120,6 @@ public class VerifyAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     }
 }
