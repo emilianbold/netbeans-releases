@@ -87,7 +87,7 @@ public class ExportDiffAction extends ContextAction {
     public boolean isEnabled() {
         Set<File> roots = context.getFiles();
         if(roots == null) return false;
-        if(HgUtils.getRootFile(context) == null) return false;
+        if(!HgUtils.isFromHgRepository(context)) return false;
         for (File root : roots) {
             FileInformation info = Mercurial.getInstance().getFileStatusCache().getCachedStatus(root);
             if(info != null &&
@@ -100,20 +100,22 @@ public class ExportDiffAction extends ContextAction {
     }
 
     private static void exportDiff(VCSContext ctx) {
-        final File root = HgUtils.getRootFile(ctx);
-        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
-        ExportDiffSupport exportDiffSupport = new ExportDiff(root, files) {
+        final File files[] = HgUtils.getActionRoots(ctx);
+        if (files == null || files.length == 0) return;
+        final File repository = Mercurial.getInstance().getRepositoryRoot(files[0]);
+
+        ExportDiffSupport exportDiffSupport = new ExportDiff(repository, files) {
             public void writeDiffFile (final File toFile) {
                 final String revStr = getSelectionRevision();
                 saveFolderToPrefs(toFile);
-                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         OutputLogger logger = getLogger();
-                        performExport(root, revStr, toFile.getAbsolutePath(), logger);
+                        performExport(repository, revStr, toFile.getAbsolutePath(), logger);
                     }
                 };
-                support.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
+                support.start(rp, repository, org.openide.util.NbBundle.getMessage(ExportDiffAction.class, "LBL_ExportDiff_Progress")).waitFinished(); // NOI18N
             }
         };
         exportDiffSupport.export();
