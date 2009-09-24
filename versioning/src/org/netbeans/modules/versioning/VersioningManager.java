@@ -304,7 +304,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         for (File f : localHistoryFiles.keySet()) {
             if(f.isFile()) files++;
         }
-        System.out.println(" === cached LH files " + files);
         if (localHistory == null) return null;
 
         synchronized(localHistoryFiles) {
