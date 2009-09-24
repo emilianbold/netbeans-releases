@@ -60,6 +60,7 @@ import org.netbeans.modules.dlight.extras.api.support.TimeMarksProvider;
 import org.netbeans.modules.dlight.extras.api.support.ValueMarksProvider;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
  * Displays a graph
@@ -135,12 +136,13 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
 
     @Override
     protected void paintComponent(Graphics g) {
-        FontMetrics fm = g.getFontMetrics(g.getFont().deriveFont(GraphConfig.FONT_SIZE));
+        FontMetrics xfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_X_AXIS_FONT));
+        FontMetrics yfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_Y_AXIS_FONT));
         Range<Long> viewport = viewportModel.getViewport();
         int viewportStart = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart());
         int viewportEnd = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd());
-        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
-        List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);
+        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), xfm);
+        List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - yfm.getAscent() / 2, yfm);
         int filterStart, filterEnd;
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
         if (tmpTimeFilter != null) {
@@ -227,17 +229,18 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (isEnabled()) {
-                FontMetrics fm = g.getFontMetrics(g.getFont().deriveFont(GraphConfig.FONT_SIZE));
                 switch (orientation) {
                     case VERTICAL:
-                        List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - fm.getAscent() / 2, fm);
+                        FontMetrics yfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_Y_AXIS_FONT));
+                        List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - yfm.getAscent() / 2, yfm);
                         graph.paintVerticalAxis(g, 0, 0, getWidth(), getHeight(), valueMarks, getBackground());
                         break;
                     case HORIZONTAL:
                         Range<Long> viewport = viewportModel.getViewport();
                         int viewportStart = (int)(viewport.getStart() / 1000);
                         int viewportEnd = (int)(viewport.getEnd() / 1000);
-                        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), fm);
+                        FontMetrics xfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_X_AXIS_FONT));
+                        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), xfm);
                         graph.paintHorizontalAxis(g, 0, 0, getWidth(), getHeight(), timeMarks, getBackground());
                         break;
                 }
