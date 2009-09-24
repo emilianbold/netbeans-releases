@@ -41,12 +41,15 @@ static void new_connection_start_function(void* data) {
     while (1) {
         trace("Waiting for a data to arrive...\n");
         memset(request, 0, sizeof (request));
+        errno = 0;
         size = recv(conn_data->sd, request, sizeof (request), 0);
-        if (size == -1) {
-            break;
-        }
-        if (size == 0) {
-            break; // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
+        if (size == -1 || size == 0) { // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
+            if (errno == ECONNRESET) {
+                trace("Connection reset by peer => normal termination\n");
+            } else if (errno != 0) {
+                perror("error getting message");
+            }
+            break; 
         }
 
         file_data *fd = find_file_data(request, true);
@@ -79,18 +82,13 @@ static void new_connection_start_function(void* data) {
             response[1] = 0;
             trace("Already known; filled reply: %s\n", response);
         }
-        
+
         if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
             perror("send");
         } else {
             trace("%d bytes sent\n", size);
         }
         
-    }
-    if (errno == ECONNRESET) {
-        trace("Connection reset by peer => normal termination\n");
-    } else if (errno != 0) {
-        perror("error getting message");
     }
     close(conn_data->sd);
     trace("Connection to %s:%d closed\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port));
