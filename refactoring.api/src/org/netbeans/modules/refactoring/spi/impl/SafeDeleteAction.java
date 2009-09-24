@@ -160,7 +160,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                 }
                 return true;
             } else {
-                return true;
+                return false;
             }
         }
     }
