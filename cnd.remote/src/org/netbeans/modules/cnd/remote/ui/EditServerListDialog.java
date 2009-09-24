@@ -146,12 +146,36 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
-    private boolean isEmptyToolchains(ExecutionEnvironment env) {
-        if (env.isLocal()) {
-            return false;
+    private void checkDefaultButton(RemoteServerRecord record) {
+        final ExecutionEnvironment env = record.getExecutionEnvironment();
+        // make fast checks just in the UI thread, in which we are called
+        if (record.equals(defaultRecord)) {
+            btSetAsDefault.setEnabled(false);
+        } else if (!buttonsEnabled) {
+            btSetAsDefault.setEnabled(false);
+        } else if (env.isLocal()) {
+            btSetAsDefault.setEnabled(true);
         } else {
-            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
-            return compilerSetManagerCopy.isEmpty();
+            // need to check remote tool chains in a separate thread
+            btSetAsDefault.setEnabled(false);
+            final Runnable enabler = new Runnable() {
+                public void run() {
+                    // check if it has already changed
+                    ServerRecord curr = (ServerRecord) lstDevHosts.getSelectedValue();
+                    if (curr != null && curr.getExecutionEnvironment().equals(env)) {
+                        btSetAsDefault.setEnabled(true);
+                    }
+                }
+            };
+            Runnable checker = new Runnable() {
+                public void run() {
+                    CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
+                    if (!compilerSetManagerCopy.isEmpty()) {
+                        SwingUtilities.invokeLater(enabler);
+                    }
+                }
+            };
+            RequestProcessor.getDefault().post(checker);
         }
     }
 
@@ -254,8 +278,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
         if (record != null) {
             tfStatus.setText(record.getStateAsText());
-            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);
-            btSetAsDefault.setEnabled( ! record.equals(defaultRecord) && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
+            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);            
+            checkDefaultButton(record);
             btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote());
             if (!record.isOnline()) {
