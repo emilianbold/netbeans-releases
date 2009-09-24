@@ -409,7 +409,7 @@ public class ThreadsDataManager {
     private boolean isValidDump(ThreadSnapshot dump, int lookAt){
         if (dump.getStack().size() > lookAt){
             String s = dump.getStack().get(0).getFunction().getQuilifiedName();
-            if ("_start".equals(s)||"_lwp_start".equals(s)) {
+            if ("_start".equals(s)||"_lwp_start".equals(s)) { //NOI18N
                 return true;
             }
         }
@@ -419,7 +419,7 @@ public class ThreadsDataManager {
     private void updateName(String newName, int id) {
         for (ThreadStateColumnImpl col : threadData){
             if (col.getThreadID() == id) {
-                col.updateName(newName+ " ("+id+")");
+                col.updateName(newName+ " ("+id+")"); //NOI18N
                 break;
             }
         }
