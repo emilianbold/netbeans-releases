@@ -174,6 +174,15 @@ public class ThreadsDataManager {
         return threadData.get(index).getName();
     }
 
+    public synchronized String findThreadName(int threadID) {
+        for (int i = 0; i < threadData.size(); i++) {
+            if (threadData.get(i).getThreadID() == threadID){
+                return threadData.get(i).getName();
+            }
+        }
+        return ""+threadID; //NOI18N
+    }
+
     /**
      * Returns the number of currently monitored threads
      */
