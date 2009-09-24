@@ -2751,12 +2751,12 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addTypes(Env env, EnumSet<ElementKind> kinds, DeclaredType baseType, Set<? extends Element> toExclude) throws IOException {
             if (queryType == COMPLETION_ALL_QUERY_TYPE) {
                 if (baseType == null) {
-                    addAllTypes(env, kinds);
+                    addAllTypes(env, kinds, toExclude);
                 } else {
                     Elements elements = env.getController().getElements();
                     for(DeclaredType subtype : getSubtypesOf(env, baseType)) {
                         TypeElement elem = (TypeElement)subtype.asElement();
-                        if ((Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && (!env.isAfterExtends() || !elem.getModifiers().contains(Modifier.FINAL)))
+                        if ((toExclude == null || !toExclude.contains(elem)) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)) && (!env.isAfterExtends() || !elem.getModifiers().contains(Modifier.FINAL)))
                             results.add(JavaCompletionItem.createTypeItem(elem, subtype, anchorOffset, true, elements.isDeprecated(elem), env.isInsideNew(), true));
                     }
                 }
@@ -2816,17 +2816,23 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addAllTypes(Env env, EnumSet<ElementKind> kinds) {
+        private void addAllTypes(Env env, EnumSet<ElementKind> kinds, Set<? extends Element> toExclude) {
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
+            Set<ElementHandle<Element>> excludeHandles = null;
+            if (toExclude != null) {
+                excludeHandles = new HashSet<ElementHandle<Element>>(toExclude.size());
+                for (Element el : toExclude) {
+                    excludeHandles.add(ElementHandle.create(el));
+                }
+            }
             ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                 Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
                 Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
             for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
-                LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, anchorOffset, controller.getSnapshot().getSource(), env.isInsideNew(), env.afterExtends);
-                if (item.isAnnonInner())
+                if (excludeHandles != null && excludeHandles.contains(name) || isAnnonInner(name))
                     continue;
-                results.add(item);
+                results.add(LazyTypeCompletionItem.create(name, kinds, anchorOffset, controller.getSnapshot().getSource(), env.isInsideNew(), env.afterExtends));
             }
         }
         
@@ -3514,6 +3520,14 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             return false;
         }
+
+        private static boolean isAnnonInner(ElementHandle<TypeElement> elem) {
+            String name = elem.getQualifiedName();
+            int idx = name.lastIndexOf('.'); //NOI18N
+            String simpleName = idx > -1 ? name.substring(idx + 1) : name;
+            return simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0));
+        }
+
         private static boolean isJavaIdentifierPart(String text) {
             for (int i = 0; i < text.length(); i++) {
                 if (!(Character.isJavaIdentifierPart(text.charAt(i))))

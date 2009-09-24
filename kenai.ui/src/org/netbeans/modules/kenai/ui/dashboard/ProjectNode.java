@@ -77,7 +77,8 @@ public class ProjectNode extends TreeListNode {
 
     private JPanel component = null;
     private JLabel lbl = null;
-    private LinkButton btnBookmark = null;
+//    private LinkButton btnBookmark = null;
+    private JLabel myPrjLabel;
     private LinkButton btnClose = null;
 
     private boolean isMemberProject = false;
@@ -144,11 +145,13 @@ public class ProjectNode extends TreeListNode {
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true),
-                        accessor.getBookmarkAction(project)); //NOI18N
-                btnBookmark.setRolloverEnabled(true);
-                component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+//                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
+//                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true),
+//                        accessor.getBookmarkAction(project)); //NOI18N
+//                btnBookmark.setRolloverEnabled(true);
+//                component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                myPrjLabel = new JLabel();
+                component.add( myPrjLabel, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
                 btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
                 btnClose.setRolloverEnabled(true);
@@ -157,12 +160,16 @@ public class ProjectNode extends TreeListNode {
             }
             lbl.setForeground(foreground);
             lbl.setFont( isMemberProject ? boldFont : regFont );
-            btnBookmark.setForeground(foreground, isSelected);
-            btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true));
-            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true));
-            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+//            btnBookmark.setForeground(foreground, isSelected);
+//            btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+//                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true));
+//            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+//                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true));
+//            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            myPrjLabel.setIcon(isMemberProject
+                    ? ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true) // NOI18N
+                    : null);
+            myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
             btnClose.setForeground(foreground, isSelected);
             return component;
         }

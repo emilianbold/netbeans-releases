@@ -44,14 +44,15 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
+import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
@@ -70,15 +71,31 @@ import org.netbeans.modules.dlight.extras.api.support.dragging.Draggable;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.openide.util.ImageUtilities;
 
 /**
  * @author Alexey Vladykin
  */
 /*package*/ class ViewportBar extends JComponent implements ChangeListener, DataFilterListener {
 
+    private static final Image VIEWPORT_HANDLE = ImageUtilities.loadImage("org/netbeans/modules/dlight/extras/resources/viewport_handle.png"); // NOI18N
+    private static final Color VIEWPORT_HANDLE_COLOR = new Color(0x72, 0x8A, 0x84);
+    private static final int VIEWPORT_HANDLE_WIDTH = VIEWPORT_HANDLE.getWidth(null);
+    private static final int VIEWPORT_HANDLE_HEIGHT = VIEWPORT_HANDLE.getHeight(null);
+
+    private static final Image FILTER_HANDLE = ImageUtilities.loadImage("org/netbeans/modules/dlight/extras/resources/filter_handle.png"); // NOI18N
+    private static final Color FILTER_HANDLE_COLOR = new Color(0xE7, 0x6F, 0x00);
+    private static final int FILTER_HANDLE_WIDTH = FILTER_HANDLE.getWidth(null);
+    private static final int FILTER_HANDLE_HEIGHT = FILTER_HANDLE.getHeight(null);
+
+    private static final Color GRADIENT_DARK_COLOR = new Color(0xB4, 0xB4, 0xB4);
+
     private final ViewportModel viewportModel;
     private final DataFilterManager filterManager;
-    private final List<Draggable> marks;
+    private final Draggable viewportStartMark;
+    private final Draggable viewportEndMark;
+    private final Draggable selectionStartMark;
+    private final Draggable selectionEndMark;
     private final AxisMarksProvider timeMarksProvider;
     private final int margin;
 
@@ -88,23 +105,21 @@ import org.netbeans.modules.dlight.util.DLightMath;
         setOpaque(true);
         this.margin = margin;
 
-        List<Draggable> tmpMarks = new ArrayList<Draggable>();
-
         this.viewportModel = viewportModel;
 
-        Draggable viewportStartMark = new AbstractDraggable(this) {
+        this.viewportStartMark = new AbstractDraggable(this) {
 
             @Override
             public int getPosition() {
                 ViewportModelState vms = getViewportModelState();
-                return (int) DLightMath.map(vms.getViewport().getStart(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin - 2);
+                return (int) DLightMath.map(vms.getViewport().getStart(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin);
             }
 
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
-                Long startTime = DLightMath.map(pos, margin, getWidth() - margin - 2, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long startTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 if (viewport != null && startTime >= viewport.getEnd()){
                     return;
                 }
@@ -117,27 +132,32 @@ import org.netbeans.modules.dlight.util.DLightMath;
             }
 
             @Override
-            protected Color getColor() {
-                return Color.BLACK;
+            public void paint(Graphics g) {
+                int pos = getPosition();
+                g.setColor(VIEWPORT_HANDLE_COLOR);
+                g.drawLine(pos, 0, pos, ViewportBar.this.getHeight());
+                g.drawImage(VIEWPORT_HANDLE, pos - VIEWPORT_HANDLE_WIDTH / 2, 0, null);
             }
 
             @Override
             protected Shape getShape() {
-                return new Rectangle(getPosition(), 0, 2, getHeight());
+                return new Rectangle(
+                        getPosition() - VIEWPORT_HANDLE_WIDTH / 2, 0,
+                        VIEWPORT_HANDLE_WIDTH, VIEWPORT_HANDLE_HEIGHT);
             }
         };
-        Draggable viewportEndMark = new AbstractDraggable(this) {
+        this.viewportEndMark = new AbstractDraggable(this) {
             @Override
             public int getPosition() {
                 ViewportModelState vms = getViewportModelState();
-                return (int) DLightMath.map(vms.getViewport().getEnd(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin - 2);
+                return (int) DLightMath.map(vms.getViewport().getEnd(), vms.getLimits().getStart(), vms.getLimits().getEnd(), margin, getWidth() - margin);
             }
 
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
-                Long endTime = DLightMath.map(pos, margin, getWidth() - margin - 2, vms.getLimits().getStart(), vms.getLimits().getEnd());
+                Long endTime = DLightMath.map(pos, margin, getWidth() - margin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 if (viewport != null && viewport.getStart() >= endTime){
                     return;
                 }
@@ -150,24 +170,27 @@ import org.netbeans.modules.dlight.util.DLightMath;
             }
 
             @Override
-            protected Color getColor() {
-                return Color.BLACK;
+            public void paint(Graphics g) {
+                int pos = getPosition();
+                g.setColor(VIEWPORT_HANDLE_COLOR);
+                g.drawLine(pos, 0, pos, ViewportBar.this.getHeight());
+                g.drawImage(VIEWPORT_HANDLE, pos - VIEWPORT_HANDLE_WIDTH / 2, 0, null);
             }
 
             @Override
             protected Shape getShape() {
-                return new Rectangle(getPosition(), 0, 2, getHeight());
+                return new Rectangle(
+                        getPosition() - VIEWPORT_HANDLE_WIDTH / 2, 0,
+                        VIEWPORT_HANDLE_WIDTH, VIEWPORT_HANDLE_HEIGHT);
             }
         };
         viewportStartMark.setRightBound(viewportEndMark);
         viewportEndMark.setLeftBound(viewportStartMark);
-        tmpMarks.add(viewportStartMark);
-        tmpMarks.add(viewportEndMark);
         viewportModel.addChangeListener(this);
 
         this.filterManager = filterManager;
 
-        Draggable selectionStartMark = new AbstractDraggable(this) {
+        this.selectionStartMark = new AbstractDraggable(this) {
 
             @Override
             public int getPosition() {
@@ -197,18 +220,21 @@ import org.netbeans.modules.dlight.util.DLightMath;
             }
 
             @Override
-            protected Color getColor() {
-                return Color.RED;
+            public void paint(Graphics g) {
+                int pos = getPosition();
+                g.drawImage(FILTER_HANDLE, pos - FILTER_HANDLE_WIDTH / 2,
+                        ViewportBar.this.getHeight() - FILTER_HANDLE_HEIGHT, null);
             }
 
             @Override
             protected Shape getShape() {
                 int pos = getPosition();
-                int h = getHeight();
-                return new Polygon(new int[] {pos - 10, pos, pos}, new int[] {h, h - 10, h}, 3);
+                return new Rectangle(
+                        pos - FILTER_HANDLE_WIDTH / 2, ViewportBar.this.getHeight() - FILTER_HANDLE_HEIGHT,
+                        FILTER_HANDLE_WIDTH, FILTER_HANDLE_HEIGHT);
             }
         };
-        Draggable selectionEndMark = new AbstractDraggable(this) {
+        this.selectionEndMark = new AbstractDraggable(this) {
 
             @Override
             public int getPosition() {
@@ -237,29 +263,30 @@ import org.netbeans.modules.dlight.util.DLightMath;
             }
 
             @Override
-            protected Color getColor() {
-                return Color.RED;
+            public void paint(Graphics g) {
+                int pos = getPosition();
+                g.drawImage(FILTER_HANDLE, pos - FILTER_HANDLE_WIDTH / 2,
+                        ViewportBar.this.getHeight() - FILTER_HANDLE_HEIGHT, null);
             }
 
             @Override
             protected Shape getShape() {
                 int pos = getPosition();
-                int h = getHeight();
-                return new Polygon(new int[] {pos, pos, pos + 10}, new int[] {h, h - 10, h}, 3);
+                return new Rectangle(
+                        pos - FILTER_HANDLE_WIDTH / 2, ViewportBar.this.getHeight() - FILTER_HANDLE_HEIGHT,
+                        FILTER_HANDLE_WIDTH, FILTER_HANDLE_HEIGHT);
             }
         };
         selectionStartMark.setRightBound(selectionEndMark);
         selectionEndMark.setLeftBound(selectionStartMark);
-        tmpMarks.add(selectionStartMark);
-        tmpMarks.add(selectionEndMark);
         if (this.filterManager != null) {
             this.filterManager.addDataFilterListener(this);
         }
 
-        this.marks = Collections.unmodifiableList(tmpMarks);
         this.timeMarksProvider = TimeMarksProvider.newInstance();
 
-        DraggingSupport dragAdapter = new DraggingSupport(this, marks);
+        DraggingSupport dragAdapter = new DraggingSupport(this,
+                Arrays.asList(viewportStartMark, viewportEndMark, selectionStartMark, selectionEndMark));
     }
 
     // Use this method instead of querying viewportModel directly!
@@ -302,30 +329,55 @@ import org.netbeans.modules.dlight.util.DLightMath;
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int w = getWidth();
+        int h = getHeight();
 
         g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.fillRect(0, 0, w, h);
 
-        FontMetrics fm = g.getFontMetrics();
-        Range<Long> limits = getViewportModelState().getLimits();
-        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
-                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
-                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
-                getWidth() - 2 * margin, fm);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        for (AxisMark mark : timeMarks) {
-            g.setColor(Color.BLACK);
-            g.drawLine(margin + mark.getPosition(), 0, margin + mark.getPosition(), 5);
-            if (mark.getText() != null) {
-                int length = fm.stringWidth(mark.getText());
-                g.drawString(mark.getText(), margin + mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
-            }
-        }
+        GradientPaint gradient = new GradientPaint(0, 0, GRADIENT_DARK_COLOR, 0, h, getBackground());
+        Paint oldPaint = g2.getPaint();
+        g2.setPaint(gradient);
+        g2.fillRect(margin, 0, w - 2 * margin, h);
+        g2.setPaint(oldPaint);
 
-        for (Draggable mark : marks) {
-            mark.paint(g);
-        }
+        g2.setColor(VIEWPORT_HANDLE_COLOR);
+        g2.drawLine(margin, 0, margin, h);
+        g2.drawLine(w - margin, 0, w - margin, h);
+
+        int v1 = viewportStartMark.getPosition();
+        int v2 = viewportEndMark.getPosition();
+        g.setColor(getBackground());
+        g.fillRect(v1, 0, v2 - v1, h);
+
+//        FontMetrics fm = g.getFontMetrics();
+//        Range<Long> limits = getViewportModelState().getLimits();
+//        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
+//                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
+//                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
+//                getWidth() - 2 * margin, fm);
+//
+//        for (AxisMark mark : timeMarks) {
+//            g.setColor(Color.BLACK);
+//            g.drawLine(margin + mark.getPosition(), 0, margin + mark.getPosition(), 5);
+//            if (mark.getText() != null) {
+//                int length = fm.stringWidth(mark.getText());
+//                g.drawString(mark.getText(), margin + mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
+//            }
+//        }
+
+        viewportStartMark.paint(g);
+        viewportEndMark.paint(g);
+
+        int s1 = selectionStartMark.getPosition();
+        int s2 = selectionEndMark.getPosition();
+        g.setColor(FILTER_HANDLE_COLOR);
+        g.fillRect(s1, getHeight() - 5, s2 - s1, 5);
+        selectionStartMark.paint(g);
+        selectionEndMark.paint(g);
     }
 
     public void stateChanged(ChangeEvent e) {

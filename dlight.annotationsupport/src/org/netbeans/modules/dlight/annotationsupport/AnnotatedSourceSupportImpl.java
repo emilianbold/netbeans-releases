@@ -266,7 +266,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             log.finest("  getDisplayedName " + functionCall.getDisplayedName());
             log.finest("  getFunction " + functionCall.getFunction());
             log.finest("  getFunction().getName() " + functionCall.getFunction().getName());
-            log.finest("  getFunction().getQuilifiedName() " + functionCall.getFunction().getQuilifiedName());
+            log.finest("  getFunction().getQuilifiedName() " + functionCall.getFunction().getSignature());
 
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {

@@ -38,10 +38,7 @@
  */
 package org.netbeans.modules.dlight.extras.api.support.dragging;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 
@@ -70,8 +67,6 @@ public abstract class AbstractDraggable implements Draggable {
     protected abstract void setPosition(int pos, boolean isAdjusting);
 
     protected abstract Shape getShape();
-
-    protected abstract Color getColor();
 
     public final boolean containsPoint(Point p) {
         return getShape().contains(p);
@@ -102,10 +97,5 @@ public abstract class AbstractDraggable implements Draggable {
         if (dragging) {
             dragging = false;
         }
-    }
-
-    public final void paint(Graphics g) {
-        g.setColor(getColor());
-        ((Graphics2D) g).fill(getShape());
     }
 }

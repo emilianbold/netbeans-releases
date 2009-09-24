@@ -75,4 +75,6 @@ public abstract class DLightConfigurationAccessor {
     }
 
     public abstract List<Indicator<?>> getEnabledIndicators(DLightConfiguration configuration) ;
+
+    public abstract boolean isHidden(DLightConfiguration configuration);
 }

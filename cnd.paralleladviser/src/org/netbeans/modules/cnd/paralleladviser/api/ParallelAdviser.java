@@ -49,13 +49,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.paralleladviser.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
+import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.ParallelAdviserTopComponent;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
 import org.openide.util.Lookup;
 
 /**
@@ -79,7 +81,7 @@ public class ParallelAdviser {
     }
 
     /**
-     * Collects tips from providers
+     * Collects tips from providers.
      *
      * @return - tips
      */
@@ -89,5 +91,37 @@ public class ParallelAdviser {
             tips.addAll(provider.getTips());
         }
         return tips;
+    }
+
+    /**
+     * Add listener to all tips providers.
+     *
+     * @param listener - new listener
+     */
+    public static void addListener(ParallelAdviserTipsProviderListener listener) {
+        for (ParallelAdviserTipsProvider provider : getParallelAdviserTipsProviders()) {
+            provider.addListener(listener);
+        }
+    }
+
+    /**
+     * Opens Parallel Adviser top component.
+     */
+    public static void showParallelAdviserView() {
+        Runnable updateView = new Runnable() {
+
+            public void run() {
+                ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
+                if (!view.isOpened()) {
+                    view.open();
+                }
+                view.requestActive();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateView.run();
+        } else {
+            SwingUtilities.invokeLater(updateView);
+        }
     }
 }

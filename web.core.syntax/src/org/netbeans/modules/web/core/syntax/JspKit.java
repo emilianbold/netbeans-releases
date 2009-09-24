@@ -132,11 +132,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     /** Creates a new instance of the syntax coloring parser */
     @Override
     public Syntax createSyntax(Document doc) {
-        //TODO - place the coloring listener initialization to
-        //more appropriate place. The createSyntax method is likely
-        //going to be removed.
-        initLexerColoringListener(doc);
-
         Syntax contentSyntax   = getSyntaxForLanguage(doc, JspUtils.getContentLanguage());
         Syntax scriptingSyntax = getSyntaxForLanguage(doc, JspUtils.getScriptingLanguage());
         final Jsp11Syntax newSyntax = new Jsp11Syntax(contentSyntax, scriptingSyntax);
@@ -148,7 +143,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         JspColoringData data = JspUtils.getJSPColoringData(fobj);
         // construct the listener
         PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
-        // attach the listener
+        // attach the listener 
         // PENDING - listen on the language
         //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
         if (data != null) {
@@ -156,6 +151,13 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         }
 
         return newSyntax;
+    }
+
+    @Override
+    public Document createDefaultDocument() {
+        Document doc = super.createDefaultDocument();
+        initLexerColoringListener(doc);
+        return doc;
     }
 
     @Override

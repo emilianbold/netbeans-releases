@@ -44,10 +44,10 @@ import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -66,8 +66,6 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -138,15 +136,16 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
                 public void run() {
 
-                    //synchronized (lock) {
-                    final List<List<FunctionCall>> stacks = new ArrayList<List<FunctionCall>>();
+                    //synchronized (lock) {                    
                     final ThreadSnapshot[] snapshots = descriptor.getThreadStates().toArray(new ThreadSnapshot[0]);
+                    final Vector<List<FunctionCall>> stacks = new Vector<List<FunctionCall>>();
+                    stacks.setSize(snapshots.length);
                     for (int i = 0, size = snapshots.length; i < size; i++) {
                         ThreadSnapshot snapshot = snapshots[i];
                         final MSAState msa = snapshot.getState();
                         final ThreadStateResources res = ThreadStateResources.forState(msa);
                         if (res != null) {
-                            stacks.add(snapshot.getStack());
+                            stacks.set(i, snapshot.getStack());
 
                         }
                     }
@@ -159,9 +158,9 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                                 final ThreadStateResources res = ThreadStateResources.forState(msa);
                                 if (res != null) {
                                     final List<FunctionCall> functionCalls = stacks.get(i);
-                                    stackPanel.add(res.name + " " + snapshot.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
-
-
+                                    if (functionCalls != null){
+                                        stackPanel.add(res.name + " " + snapshot.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                    }
                                 }
                             }
                             cardLayout.show(ThreadStackVisualizer.this, "stack");//NOI18N

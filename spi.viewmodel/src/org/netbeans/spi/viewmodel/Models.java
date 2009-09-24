@@ -86,8 +86,8 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     /** Cached default implementations of expansion models. */
-    private static final WeakHashMap<ModelLists, DefaultTreeExpansionModel> defaultExpansionModels = new WeakHashMap<ModelLists, DefaultTreeExpansionModel>();
-    private static final WeakHashMap<List, ModelLists> modelLists = new WeakHashMap<List, ModelLists>();
+    private static final WeakHashMap<Object, DefaultTreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, DefaultTreeExpansionModel>();
+
     /**
      * Empty model - returns default root node with no children.
      */
@@ -222,14 +222,7 @@ public final class Models {
             return new CompoundModel(mainModel, subModels.toArray(new CompoundModel[]{}), treeFilter, propertiesHelpID);
         }
 
-        ModelLists ml;
-        synchronized (modelLists) {
-            ml = modelLists.get(models);
-            if (ml == null) {
-                ml = new ModelLists();
-                modelLists.put(models, ml);
-            }
-        }
+        ModelLists ml = new ModelLists();
         List<? extends Model>           otherModels;
         RequestProcessor                rp = null;
         
@@ -301,6 +294,20 @@ public final class Models {
         }
 
         ml.addOtherModels(otherModels);
+
+        if (ml.treeExpansionModels.isEmpty()) {
+            DefaultTreeExpansionModel defaultExpansionModel = null;
+            synchronized (defaultExpansionModels) {
+                defaultExpansionModel = defaultExpansionModels.get(models);
+                if (defaultExpansionModel != null) {
+                    defaultExpansionModel = defaultExpansionModel.cloneForNewModel();
+                } else {
+                    defaultExpansionModel = new DefaultTreeExpansionModel();
+                }
+                defaultExpansionModels.put(models, defaultExpansionModel);
+            }
+            ml.treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
+        }
         /*
         System.out.println("Tree Models = "+treeModels);
         System.out.println("Tree Model Filters = "+treeModelFilters);
@@ -333,6 +340,10 @@ public final class Models {
                 defaultExpansionModels.put(ml, defaultExpansionModel);
             }
             ml.treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
+        } else if (ml.treeExpansionModels.size() == 1) {
+            if (ml.treeExpansionModels.get(0) instanceof DefaultTreeExpansionModel) {
+                defaultExpansionModel = (DefaultTreeExpansionModel) ml.treeExpansionModels.get(0);
+            }
         }
         
         CompoundModel cm = new CompoundModel (

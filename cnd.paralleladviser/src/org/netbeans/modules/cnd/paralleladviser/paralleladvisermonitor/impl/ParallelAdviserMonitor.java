@@ -64,16 +64,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
-import javax.swing.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
+import org.netbeans.modules.cnd.paralleladviser.api.ParallelAdviser;
 import org.netbeans.modules.cnd.paralleladviser.codemodel.CodeModelUtils;
 import org.netbeans.modules.cnd.paralleladviser.hints.ParallelAdviserFileTaskFactory;
-import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.ParallelAdviserTopComponent;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -150,35 +149,36 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         InputOutput io = session.getInputOutput();
-        if (!notificationTips.isEmpty() && newState == SessionState.ANALYZE && io != null) {
-            try {
-                io.getErr().println("Parallel Adviser: ", // NOI18N
-                        new OutputListener() {
+        if (newState == SessionState.ANALYZE) {
 
-                    public void outputLineSelected(OutputEvent ev) {
-                    }
+            analyzeDataCollectors();
 
-                    public void outputLineAction(OutputEvent ev) {
-                        ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                        if (!view.isOpened()) {
-                            view.open();
+            if (!notificationTips.isEmpty() && io != null) {
+                try {
+                    io.getErr().println("Parallel Adviser: ", // NOI18N
+                            new OutputListener() {
+
+                        public void outputLineSelected(OutputEvent ev) {
                         }
-                        view.requestActive();
-                    }
 
-                    public void outputLineCleared(OutputEvent ev) {
-                    }
-                });
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            for (Advice advice : notificationTips) {
-                advice.addNotification(io.getErr());
-            }
+                        public void outputLineAction(OutputEvent ev) {
+                            ParallelAdviser.showParallelAdviserView();
+                        }
 
-            ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
-            if (hints != null) {
-                hints.propertyChange(null);
+                        public void outputLineCleared(OutputEvent ev) {
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                for (Advice advice : notificationTips) {
+                    advice.addNotification(io.getErr());
+                }
+
+                ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
+                if (hints != null) {
+                    hints.propertyChange(null);
+                }
             }
         }
     }
@@ -193,112 +193,124 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         for (DataRow dataRow : data) {
-
             highLoadFinder.update(dataRow);
-
-            if (highLoadFinder.isHighLoadInterval()) {
-                SunStudioDataCollector collector = new SunStudioDataCollector();
-
-                for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
-                    if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
-                        break;
-                    }
-                    if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_eUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
-                        continue;
-                    }
-                    String functionName = functionCall.getFunction().getQuilifiedName();
-                    functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
-                    functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
-                    CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
-                    for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
-                        if (CodeModelUtils.canParallelize(loop)) {
-                            LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
-                            LoopParallelizationTipsProvider.addTip(tip);
-                            addNotificationTip(tip);
-                            Runnable updateView = new Runnable() {
-
-                                public void run() {
-                                    ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                                    view.updateTips();
-                                }
-                            };
-                            if (SwingUtilities.isEventDispatchThread()) {
-                                updateView.run();
-                            } else {
-                                SwingUtilities.invokeLater(updateView);
-                            }
-                        }
-                    }
-                }
-
-                DTraceDataCollector collector2 = new DTraceDataCollector();
-
-                for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
-                    final Column c_iUser = new Column(
-                            FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
-                            FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
-                            FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
-                    final Column c_eUser = new Column(
-                            FunctionMetric.CpuTimeExclusiveMetric.getMetricID(),
-                            FunctionMetric.CpuTimeExclusiveMetric.getMetricValueClass(),
-                            FunctionMetric.CpuTimeExclusiveMetric.getMetricDisplayedName(), null);
-                    if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
-                        break;
-                    }
-                    if (((Time) functionCall.getMetricValue(c_eUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
-                        continue;
-                    }
-                    String functionName = functionCall.getFunction().getQuilifiedName();
-                    functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
-                    functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
-                    functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
-                    CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
-                    for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
-                        if (CodeModelUtils.canParallelize(loop)) {
-                            LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
-                            LoopParallelizationTipsProvider.addTip(tip);
-                            addNotificationTip(tip);
-                            Runnable updateView = new Runnable() {
-
-                                public void run() {
-                                    ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                                    view.updateTips();
-                                }
-                            };
-                            if (SwingUtilities.isEventDispatchThread()) {
-                                updateView.run();
-                            } else {
-                                SwingUtilities.invokeLater(updateView);
-                            }
-                        }
-                    }
-                }
-            }
-
             unnecessaryThreadsFinder.update(dataRow);
-            if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
-                UnnecessaryThreadsTipsProvider.clearTips();
-                UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice();
-                UnnecessaryThreadsTipsProvider.addTip(tip);
-                addNotificationTip(tip);
-                Runnable updateView = new Runnable() {
+        }
+    }
 
-                    public void run() {
-                        ParallelAdviserTopComponent view = ParallelAdviserTopComponent.findInstance();
-                        view.updateTips();
+    private void analyzeDataCollectors() {
+        if (highLoadFinder.isHighLoadInterval()) {
+            SunStudioDataCollector collector = new SunStudioDataCollector();
+
+            for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
+                if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
+                    break;
+                }
+                if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_eUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
+                    continue;
+                }
+                String functionName = functionCall.getFunction().getQuilifiedName();
+                functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
+                functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
+                CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
+                for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
+                    if (CodeModelUtils.canParallelize(loop)) {
+                        LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
+                        LoopParallelizationTipsProvider.addTip(tip);
+                        addNotificationTip(tip);
                     }
-                };
-                if (SwingUtilities.isEventDispatchThread()) {
-                    updateView.run();
-                } else {
-                    SwingUtilities.invokeLater(updateView);
                 }
             }
+
+            DTraceDataCollector collector2 = new DTraceDataCollector();
+
+            for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
+                final Column c_iUser = new Column(
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricID(),
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricValueClass(),
+                        FunctionMetric.CpuTimeInclusiveMetric.getMetricDisplayedName(), null);
+                final Column c_eUser = new Column(
+                        FunctionMetric.CpuTimeExclusiveMetric.getMetricID(),
+                        FunctionMetric.CpuTimeExclusiveMetric.getMetricValueClass(),
+                        FunctionMetric.CpuTimeExclusiveMetric.getMetricDisplayedName(), null);
+                if (((Time) functionCall.getMetricValue(c_iUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
+                    break;
+                }
+                if (((Time) functionCall.getMetricValue(c_eUser.getColumnName())).getNanos() / 1000000000 < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
+                    continue;
+                }
+                String functionName = functionCall.getFunction().getQuilifiedName();
+                functionName = functionName.replaceAll(".*\\`", ""); // NOI18N
+                functionName = functionName.replaceAll("_\\$.*\\.(.*)", "$1"); // NOI18N
+                functionName = functionName.replaceAll("([~\\.])*\\..*", "$1"); // NOI18N
+                CsmFunction function = CodeModelUtils.getFunction(getProject(), functionName);
+                for (CsmLoopStatement loop : CodeModelUtils.getForStatements(function)) {
+                    if (CodeModelUtils.canParallelize(loop)) {
+                        LoopParallelizationAdvice tip = new LoopParallelizationAdvice(function, loop, highLoadFinder.getProcessorUtilization());
+                        LoopParallelizationTipsProvider.addTip(tip);
+                        addNotificationTip(tip);
+                    }
+                }
+            }
+        }
+
+        if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
+            UnnecessaryThreadsTipsProvider.clearTips();
+            UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice();
+            UnnecessaryThreadsTipsProvider.addTip(tip);
+            addNotificationTip(tip);
         }
     }
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(ParallelAdviserMonitor.class, name);
+    }
+
+    private void addNotificationTip(Advice tip) {
+        if (tip instanceof LoopParallelizationAdvice) {
+            for (Advice advice : notificationTips) {
+                if (advice instanceof LoopParallelizationAdvice) {
+                    if (((LoopParallelizationAdvice) advice).getLoop().equals(((LoopParallelizationAdvice) tip).getLoop())) {
+                        notificationTips.remove(advice);
+                        break;
+                    }
+                }
+            }
+        }
+        if (tip instanceof UnnecessaryThreadsAdvice) {
+            for (Advice advice : notificationTips) {
+                if (advice instanceof UnnecessaryThreadsAdvice) {
+                    notificationTips.remove(advice);
+                    break;
+                }
+            }
+        }
+        notificationTips.add(tip);
+    }
+    private int processorsNumber = 0;
+
+    private int getProcessorsNumber() {
+        if (processorsNumber == 0) {
+            processorsNumber = 1;
+            DLightSession session = DLightManager.getDefault().getActiveSession();
+            if (session != null) {
+                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(session.getServiceInfoDataStorage().getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
+                if (env != null) {
+                    HostInfo hostInfo = null;
+                    try {
+                        hostInfo = HostInfoUtils.getHostInfo(env);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (CancellationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (hostInfo != null) {
+                        processorsNumber = hostInfo.getCpuNum();
+                    }
+                }
+            }
+        }
+        return processorsNumber;
     }
     public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
 
@@ -367,53 +379,6 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
         }
     }
-    private int processorsNumber = 0;
-
-    private int getProcessorsNumber() {
-        if (processorsNumber == 0) {
-            processorsNumber = 1;
-            DLightSession session = DLightManager.getDefault().getActiveSession();
-            if (session != null) {
-                ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(session.getServiceInfoDataStorage().getValue(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
-                if (env != null) {
-                    HostInfo hostInfo = null;
-                    try {
-                        hostInfo = HostInfoUtils.getHostInfo(env);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (hostInfo != null) {
-                        processorsNumber = hostInfo.getCpuNum();
-                    }
-                }
-            }
-        }
-        return processorsNumber;
-    }
-
-    private void addNotificationTip(Advice tip) {
-        if (tip instanceof LoopParallelizationAdvice) {
-            for (Advice advice : notificationTips) {
-                if (advice instanceof LoopParallelizationAdvice) {
-                    if (((LoopParallelizationAdvice) advice).getLoop().equals(((LoopParallelizationAdvice) tip).getLoop())) {
-                        notificationTips.remove(advice);
-                        break;
-                    }
-                }
-            }
-        }
-        if (tip instanceof UnnecessaryThreadsAdvice) {
-            for (Advice advice : notificationTips) {
-                if (advice instanceof UnnecessaryThreadsAdvice) {
-                    notificationTips.remove(advice);
-                    break;
-                }
-            }
-        }
-        notificationTips.add(tip);
-    }
 
     private static class DTraceDataCollector {
 
@@ -468,15 +433,16 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
 
         private static final int INTERVAL_BOUND = 10;
         private int interval;
+        private boolean found;
 
         public UnnecessaryThreadsIntervalFinder() {
             interval = 0;
             processorsNumber = 0;
+            found = false;
         }
 
         public boolean isUnnecessaryThreadsInterval() {
-            boolean result = (interval > 0) && (interval % INTERVAL_BOUND == 0);
-            return result;
+            return found;
         }
 
         public void update(DataRow dataRow) {
@@ -485,6 +451,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             if (threadsObj != null) {
                 if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj))) {
                     interval++;
+                    if (interval > INTERVAL_BOUND) {
+                        found = true;
+                    }
                 } else {
                     interval = 0;
                 }
@@ -505,6 +474,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         private int interval;
         private int ticks;
         private double processorUtilizationSum;
+        private boolean found;
 
         public CpuHighLoadIntervalFinder() {
             interval = 0;
@@ -514,8 +484,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         public boolean isHighLoadInterval() {
-            boolean result = (interval > 0) && (interval % INTERVAL_BOUND == 0);
-            return result;
+            return found;
         }
 
         public double getProcessorUtilization() {
@@ -527,9 +496,11 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             if (usrTime != null) {
                 ticks++;
                 processorUtilizationSum += (Float) usrTime;
-
                 if (isSingleThreadOnOneProcessorHighLoaded(dataRow)) {
                     interval++;
+                    if (interval > INTERVAL_BOUND) {
+                        found = true;
+                    }
                 } else {
                     interval = 0;
                 }

@@ -249,7 +249,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                 //undeclared prefix, check if a taglib contains it as
                 //default prefix. If so, offer it in the cc w/ tag autoimport function
                 for (FaceletsLibrary lib : libs.values()) {
-                    if (lib.getDefaultPrefix().equals(tagNamePrefix)) {
+                    if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().equals(tagNamePrefix)) {
                         //match
                         items.addAll(queryLibrary(context, lib, tagNamePrefix, true));
                     }

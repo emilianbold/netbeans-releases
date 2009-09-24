@@ -143,7 +143,6 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     public void performOperation(POMModel model) {
                         model.getProject().setName(newName);
-                        model.endTransaction();
                     }
                 };
                 Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));

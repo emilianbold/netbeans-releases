@@ -337,9 +337,8 @@ install_new_updater() {
     base="$1"
     newUpdaterDir="${base}/update/new_updater"
     mkdir -p "${base}/modules/ext/"
-    rm -f "${base}/modules/ext/updater.jar"
-    cp "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
-    rm -Rf "${newUpdaterDir}"
+    mv -f "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
+    rmdir "${newUpdaterDir}"
 }
 
 # detect system http proxy setting

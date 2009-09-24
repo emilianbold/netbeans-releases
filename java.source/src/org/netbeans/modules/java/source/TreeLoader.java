@@ -302,7 +302,10 @@ public class TreeLoader extends LazyTreeLoader {
                     writer.println(String.format("class file %s", cfURI)); //NOI18N
                     writer.println(String.format("source file %s", sfURI)); //NOI18N
                     writer.println("----- Source file content: ----------------------------------------"); // NOI18N
-                    writer.println(sourceFile.getCharContent(true));
+                    if (sourceFile != null)
+                        writer.println(sourceFile.getCharContent(true));
+                    else
+                        writer.println("<unknown>");
                     writer.print("----- Trees: -------------------------------------------------------"); // NOI18N
                     writer.println(treeInfo);
                     writer.println("----- Stack trace: ---------------------------------------------"); // NOI18N

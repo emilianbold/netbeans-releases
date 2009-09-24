@@ -44,10 +44,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
@@ -78,7 +78,6 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
@@ -90,6 +89,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -128,6 +128,12 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
             ic.add(info);
         }
         final Artifact fArt = artifact;
+
+        TopComponent existing = findExistingTc(artifact);
+        if (existing != null) {
+            return existing;
+        }
+
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
@@ -219,6 +225,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         TopComponent tc = MultiViewFactory.createMultiView(panels, panels[0]);
         tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
         tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
+        tc.putClientProperty(MAVEN_TC_PROPERTY, getTcId(artifact));
         return tc;
     }
 
@@ -226,6 +233,22 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
         return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
     }
+    
+    private static final String MAVEN_TC_PROPERTY = "mvn_tc_id";
 
+    private static TopComponent findExistingTc(Artifact artifact) {
+        String id = getTcId(artifact);
+        Set<TopComponent> tcs = WindowManager.getDefault().getRegistry().getOpened();
+        for (TopComponent tc : tcs) {
+            if (id.equals(tc.getClientProperty(MAVEN_TC_PROPERTY))) {
+                return tc;
+            }
+        }
+        return null;
+    }
+
+    private static String getTcId(Artifact artifact) {
+        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+    }
 
 }

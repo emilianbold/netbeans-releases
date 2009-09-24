@@ -64,4 +64,7 @@ public interface ParallelAdviserTipsProvider {
 
     public Collection<Advice> getTips();
 
+    public void addListener(ParallelAdviserTipsProviderListener listener);
+
+    public void removeListener(ParallelAdviserTipsProviderListener listener);
 }
