@@ -113,6 +113,9 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         }
         initialized = true;
         Profile j2eeProfile = Profile.fromPropertiesString(uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
+        if (j2eeProfile == null) {
+            j2eeProfile = Profile.JAVA_EE_6_WEB;
+        }
         String serverInstanceID = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         Properties properties = controller.getProperties();
 
