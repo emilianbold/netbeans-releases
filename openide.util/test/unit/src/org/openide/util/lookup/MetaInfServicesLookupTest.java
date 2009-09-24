@@ -72,6 +72,7 @@ import java.util.regex.Pattern;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -438,5 +439,57 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         ) {
             fail("Collections are different:\nFirst: " + col1 + "\nLast:  " + col3);
         }
+    }
+
+    public void testContentionWhenLoadingMetainfServices() throws Exception {
+        class My extends ClassLoader implements Runnable {
+            Lookup query;
+            Integer value;
+
+            public void run() {
+                value = query.lookup(Integer.class);
+            }
+
+
+            @Override
+            protected URL findResource(String name) {
+                waitForTask(name);
+                return super.findResource(name);
+            }
+
+            @Override
+            protected Enumeration<URL> findResources(String name) throws IOException {
+                waitForTask(name);
+                return super.findResources(name);
+            }
+
+            private synchronized void waitForTask(String name) {
+                if (name.startsWith(prefix()) && Thread.currentThread().getName().contains("block")) {
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
+        My loader = new My();
+        loader.query = createLookup(loader);
+        Thread t = new Thread(loader, "block when querying");
+        t.start();
+        t.join(1000);
+
+        // this blocks waiting for the waitForTask to finish
+        // right now
+        Float f = loader.query.lookup(Float.class);
+        assertNull("Nothing found", f);
+
+        synchronized (loader) {
+            loader.notifyAll();
+        }
+        t.join();
+
+        assertNull("Nothing found", loader.value);
     }
 }
