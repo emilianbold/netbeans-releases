@@ -40,36 +40,43 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import org.openide.util.NbBundle;
 
 /**
- * Log action for mercurial: 
+ * Log action for mercurial:
  * hg log - show revision history of entire repository or files
- * 
+ *
  * @author John Rice
  */
-public class IncomingAction extends ContextAction {
-    
-    private final VCSContext context;
-    
+public class IncomingAction extends SearchHistoryAction {
+
     public IncomingAction(String name, VCSContext context) {
-        this.context = context;
+        super(context);
         putValue(Action.NAME, name);
     }
-    
+
     public void performAction(ActionEvent e) {
-        SearchHistoryAction.openIncoming(context,
-                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", 
-                HgUtils.getRootFile(context).getName()));    
+        openIncoming();
     }
-        
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
-}    
+
+    /**
+     * Opens the Seach History panel to view Mercurial Incoming Changesets that will be sent on next Pull from remote repo
+     * using: hg incoming - to get the data
+     */
+    private void openIncoming() {
+        File repositoryRoot = getRepositoryRoot();
+        if (repositoryRoot == null) {
+            return;
+        }
+        outputSearchContextTab(repositoryRoot, "MSG_LogIncoming_Title");
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot});
+        tc.setDisplayName(NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", repositoryRoot.getName()));
+        tc.open();
+        tc.requestActive();
+        tc.searchIncoming();
+    }
+}

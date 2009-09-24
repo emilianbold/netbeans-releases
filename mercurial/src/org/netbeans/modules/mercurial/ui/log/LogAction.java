@@ -40,35 +40,62 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.List;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 
 /**
- * Log action for mercurial: 
+ * Log action for mercurial:
  * hg log - show revision history of entire repository or files
- * 
+ *
  * @author John Rice
  */
-public class LogAction extends ContextAction {
-    
-    private final VCSContext context;
-    
+public class LogAction extends SearchHistoryAction {
+
     public LogAction(String name, VCSContext context) {
-        this.context = context;
+        super(context);
         putValue(Action.NAME, name);
     }
-    
+
     public void performAction(ActionEvent e) {
-        SearchHistoryAction.openHistory(context,
-                NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+        openHistory(NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(getContext())));
     }
-        
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
-}    
+
+    private void openHistory(final String title) {
+        File repositoryRoot = getRepositoryRoot();
+        File[] files = getFiles();
+        if (files == null) {
+            return;
+        }
+        outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title");
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(files);
+        tc.setDisplayName(title);
+        tc.open();
+        tc.requestActive();
+        if (files != null && (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files))) {
+            tc.search();
+        }
+    }
+
+    /**
+     * Opens search panel with a diff view fixed on a line
+     * @param file file to search history for
+     * @param lineNumber number of a line to fix on
+     */
+    public static void openSearch(final File file, final int lineNumber) {
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(file, new SearchHistoryTopComponent.DiffResultsViewFactory() {
+            @Override
+            DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
+                return new DiffResultsViewForLine(panel, results, lineNumber);
+            }
+        });
+        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", file.getName()); // NOI18N
+        tc.setDisplayName(tcTitle);
+        tc.open();
+        tc.requestActive();
+    }
+}

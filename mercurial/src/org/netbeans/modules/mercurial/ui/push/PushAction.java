@@ -67,18 +67,13 @@ import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.DialogDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
-import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
  * Push action for mercurial:
@@ -153,9 +148,9 @@ public class PushAction extends ContextAction {
 
     static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
         // If the repository has no default push path then inform user
-        String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(ctx);
+        String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(root);
         if (isNullOrEmpty(tmpPushPath)) {
-            tmpPushPath = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
+            tmpPushPath = HgRepositoryContextCache.getInstance().getPullDefault(root);
         }
         if (isNullOrEmpty(tmpPushPath)) {
             notifyDefaultPushUrlNotSpecified(logger);
