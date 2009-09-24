@@ -57,7 +57,6 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
@@ -70,6 +69,7 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
  * Indicator capable of drawing one or more time series.
@@ -103,14 +103,20 @@ public final class TimeSeriesIndicator
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration) {
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         TimeSeriesPlot graph = new TimeSeriesPlot(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration));
-        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
-        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
+        Dimension graphSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_HEIGHT));
         graph.setMinimumSize(graphSize);
         graph.setPreferredSize(graphSize);
-        Dimension valueAxisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        Dimension valueAxisSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_HEIGHT));
         graph.getVerticalAxis().setMinimumSize(valueAxisSize);
         graph.getVerticalAxis().setPreferredSize(valueAxisSize);
-        Dimension timeAxisSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.HORIZONTAL_AXIS_HEIGHT);
+        Dimension timeAxisSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_X_AXIS_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_X_AXIS_HEIGHT));
         graph.getHorizontalAxis().setMinimumSize(timeAxisSize);
         graph.getHorizontalAxis().setPreferredSize(timeAxisSize);
         return graph;
@@ -160,9 +166,9 @@ public final class TimeSeriesIndicator
                 }
             });
         } else {
-            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
+            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()),
+                    false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             UIThread.invoke(new Runnable() {
-
                 public void run() {
                     panel.setOverlay(label);
                 }

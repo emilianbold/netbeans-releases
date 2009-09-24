@@ -47,6 +47,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.util.UIUtilities;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +66,7 @@ public class RepairPanel extends JPanel {
         String text = status.isKnown()? status.getReason() : getMessage("RepairPanel.Label.Text"); // NOI18N
         String buttonText = getMessage("RepairPanel.Repair.Text"); // NOI18N
 
-        label = UIUtilities.createJEditorPane(text, false, GraphConfig.TEXT_COLOR);
+        label = UIUtilities.createJEditorPane(text, false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
         if (!status.isKnown()) {
             label.setToolTipText(getMessage("RepairPanel.Label.Tooltip", buttonText));//NOI18N
         } else {

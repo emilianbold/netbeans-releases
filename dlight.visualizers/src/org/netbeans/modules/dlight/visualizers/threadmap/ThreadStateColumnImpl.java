@@ -301,6 +301,10 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         info.setThreadName(newName);
     }
 
+    void resetName() {
+        info.resetName();
+    }
+
     void add(ThreadState state) {
         list.add(state);
     }

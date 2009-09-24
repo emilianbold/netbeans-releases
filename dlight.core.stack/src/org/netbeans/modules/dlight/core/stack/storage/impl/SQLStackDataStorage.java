@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -112,7 +113,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         executor = new ExecutorThread();
         executor.setPriority(Thread.MIN_PRIORITY);
         executor.start();
-        this.stmtCache = new HashMap<String, PreparedStatement>();
+        this.stmtCache = new ConcurrentHashMap<String, PreparedStatement>();
     }
 
     public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
@@ -598,14 +599,18 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             List<ThreadSnapshot> snapshots = new ArrayList<ThreadSnapshot>();
             ResultSet rs = sqlStorage.select(null, null, select.toString());
             try {
-                while (rs.next()) {
-                    ThreadSnapshot snapshot = fetchSnapshot(rs.getInt(1), rs.getLong(2), query.isFullMSA());
-                    if (snapshot != null) {
-                        snapshots.add(snapshot);
+                if (rs != null) {
+                    while (rs.next()) {
+                        ThreadSnapshot snapshot = fetchSnapshot(rs.getInt(1), rs.getLong(2), query.isFullMSA());
+                        if (snapshot != null) {
+                            snapshots.add(snapshot);
+                        }
                     }
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
             return snapshots;
         } catch (SQLException ex) {
@@ -768,6 +773,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                         FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, funcName);
                         result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
+                    } else {
+                        break;
                     }
                 } finally {
                     rs.close();

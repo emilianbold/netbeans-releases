@@ -190,6 +190,7 @@ public class ThreadMapVisualizer extends JPanel implements
 
     public void init() {
         timerSupport = new TimerBasedVisualizerSupport(this, new TimeDuration(TimeUnit.SECONDS, 1));
+        dataManager.reset();
         startup();
     }
 
@@ -198,16 +199,20 @@ public class ThreadMapVisualizer extends JPanel implements
             switch (session.getState()) {
                 case RUNNING:
                 case STARTING:
+                    dataManager.reset();
+                    dataManager.startup();
                     timerSupport.start();
                     break;
                 default:
                     timerSupport.stop();
+                    dataManager.shutdown();
             }
         }
     }
 
     public void shutdown() {
         timerSupport.stop();
+        dataManager.shutdown();
         dataManager.reset();
         startTimeStamp = 0;
     }
@@ -333,6 +338,7 @@ public class ThreadMapVisualizer extends JPanel implements
             case ANALYZE:
                 startTimeStamp = 0;
                 timerSupport.stop();
+                dataManager.shutdown();
                 syncFillModel();
                 break;
             case RUNNING:

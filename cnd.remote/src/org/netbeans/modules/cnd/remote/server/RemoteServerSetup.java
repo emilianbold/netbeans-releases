@@ -251,6 +251,15 @@ public class RemoteServerSetup {
     
     private List<String> getBinaryUpdates(List<String> list) {
 
+        if (Boolean.getBoolean("cnd.remote.force.setup")) {
+            RemoteUtil.LOGGER.info("Forcing remote host setup for " + executionEnvironment);
+            list.add(REMOTE_LIB_DIR);
+            for (String path : binarySetupMap.keySet()) {
+                list.add(path);
+            }
+            return list;
+        }
+
         // Parsing ls output doesn't work, since it differs in diferent OSes
         // (not to mention localization):
         // For example, Ubuntu says:
