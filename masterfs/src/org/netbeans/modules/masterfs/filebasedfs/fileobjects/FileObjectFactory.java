@@ -74,9 +74,9 @@ import org.openide.util.Utilities;
  * @author Radek Matous
  */
 public final class FileObjectFactory {
-    public static Map AllFactories = new HashMap();
+    public static final Map<File, FileObjectFactory> AllFactories = new HashMap<File, FileObjectFactory>();
     public static boolean WARNINGS = true;
-    final Map allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap());
+    final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
     private BaseFileObj root;
     public static enum Caller {
         ToFileObject, GetFileObject, GetChildern, GetParent, Others
@@ -87,10 +87,6 @@ public final class FileObjectFactory {
     }
 
     private FileObjectFactory(final FileInfo fInfo) {
-        final File rootFile = fInfo.getFile();
-        // can be not null for UNC 
-        // assert rootFile.getParentFile() == null;
-
         final BaseFileObj realRoot = create(fInfo);
         root = realRoot;
     }
@@ -105,12 +101,12 @@ public final class FileObjectFactory {
         final File rootFile = rootInfo.getFile();
 
         synchronized (FileObjectFactory.AllFactories) {
-            retVal = (FileObjectFactory) FileObjectFactory.AllFactories.get(rootFile);
+            retVal = FileObjectFactory.AllFactories.get(rootFile);
         }
         if (retVal == null && addMising) {
             if (rootInfo.isConvertibleToFileObject()) {
                 synchronized (FileObjectFactory.AllFactories) {
-                    retVal = (FileObjectFactory) FileObjectFactory.AllFactories.get(rootFile);
+                    retVal = FileObjectFactory.AllFactories.get(rootFile);
                     if (retVal == null) {
                         retVal = new FileObjectFactory(rootFile);
                         FileObjectFactory.AllFactories.put(rootFile, retVal);
@@ -121,9 +117,9 @@ public final class FileObjectFactory {
         return retVal;
     }
 
-    public static Collection getInstances() {
+    public static Collection<FileObjectFactory> getInstances() {
         synchronized (FileObjectFactory.AllFactories) {
-            return new ArrayList(AllFactories.values());
+            return new ArrayList<FileObjectFactory>(AllFactories.values());
         }
     }
     
@@ -141,25 +137,25 @@ public final class FileObjectFactory {
     public int getSize() {
         int retval = 0;
 
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         synchronized (allIBaseFileObjects) {
             list.addAll(allIBaseFileObjects.values());
         }
-        List list2 = new ArrayList();
+        List<Object> list2 = new ArrayList<Object>();
 
 
-        for (Iterator it = list.iterator(); it.hasNext();) {
-            Object obj = it.next();
-            if (obj instanceof Reference) {
+        for (Object obj : list) {
+            if (obj instanceof Reference<?>) {
                 list2.add(obj);
             } else {
-                list2.addAll((List) obj);
+                list2.addAll((List<?>) obj);
             }
         }
 
-        for (Iterator it = list2.iterator(); it.hasNext();) {
-            Reference ref = (Reference) it.next();
-            FileObject fo = (ref != null) ? (FileObject) ref.get() : null;
+        for (Iterator<Object> it = list2.iterator(); it.hasNext();) {
+            @SuppressWarnings("unchecked")
+            Reference<FileObject> ref = (Reference<FileObject>) it.next();
+            FileObject fo = (ref != null) ? ref.get() : null;
             if (fo != null) {
                 retval++;
             }
@@ -344,7 +340,7 @@ public final class FileObjectFactory {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             //parent is exception must be issued even if not valid
-                            ((BaseFileObj) retval).setValid(false);
+                            retval.setValid(false);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -426,27 +422,29 @@ public final class FileObjectFactory {
     }
 
     public final void refreshAll(final boolean expected) {
-        Set all2Refresh = collectForRefresh();
+        Set<BaseFileObj> all2Refresh = collectForRefresh();
         refresh(all2Refresh, expected);
     }
 
-    private Set collectForRefresh() {
-        final Set all2Refresh = new HashSet();
+    private Set<BaseFileObj> collectForRefresh() {
+        final Set<BaseFileObj> all2Refresh = new HashSet<BaseFileObj>();
         synchronized (allIBaseFileObjects) {
-            final Iterator it = allIBaseFileObjects.values().iterator();
+            final Iterator<Object> it = allIBaseFileObjects.values().iterator();
             while (it.hasNext()) {
                 final Object obj = it.next();
-                if (obj instanceof List) {
-                    for (Iterator iterator = ((List) obj).iterator(); iterator.hasNext();) {
-                        WeakReference ref = (WeakReference) iterator.next();
-                        final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                if (obj instanceof List<?>) {
+                    for (Iterator<?> iterator = ((List<?>) obj).iterator(); iterator.hasNext();) {
+                        @SuppressWarnings("unchecked")
+                        WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) iterator.next();
+                        final BaseFileObj fo = (ref != null) ? ref.get() : null;
                         if (fo != null) {
                             all2Refresh.add(fo);
                         }
                     }
                 } else {
-                    final WeakReference ref = (WeakReference) obj;
-                    final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                    @SuppressWarnings("unchecked")
+                    final WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) obj;
+                    final BaseFileObj fo = (ref != null) ? ref.get() : null;
                     if (fo != null) {
                         all2Refresh.add(fo);
                     }
@@ -456,9 +454,8 @@ public final class FileObjectFactory {
         return all2Refresh;
     }
 
-    private void refresh(final Set all2Refresh, File... files) {
-        for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
-            final BaseFileObj fo = (BaseFileObj) iterator.next();
+    private void refresh(final Set<BaseFileObj> all2Refresh, File... files) {
+        for (final BaseFileObj fo : all2Refresh) {
             for (File file : files) {
                 if (isParentOf(file, fo.getFileName().getFile())) {
                     fo.refresh(true);
@@ -468,9 +465,8 @@ public final class FileObjectFactory {
         }
     }    
     
-    private void refresh(final Set all2Refresh, final boolean expected) {
-        for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
-            final BaseFileObj fo = (BaseFileObj) iterator.next();
+    private void refresh(final Set<BaseFileObj> all2Refresh, final boolean expected) {
+        for (final BaseFileObj fo : all2Refresh) {
             fo.refresh(expected);
         }
     }
@@ -484,17 +480,18 @@ public final class FileObjectFactory {
     }
 
     public final void rename() {
-        final Map toRename = new HashMap();
+        final Map<Integer, Object> toRename = new HashMap<Integer, Object>();
         synchronized (allIBaseFileObjects) {
-            final Iterator it = allIBaseFileObjects.entrySet().iterator();
+            final Iterator<Map.Entry<Integer, Object>> it = allIBaseFileObjects.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
+                Map.Entry<Integer, Object> entry = it.next();
                 final Object obj = entry.getValue();
-                final Integer key = (Integer) entry.getKey();
-                if (!(obj instanceof List)) {
-                    final WeakReference ref = (WeakReference) obj;
+                final Integer key = entry.getKey();
+                if (!(obj instanceof List<?>)) {
+                    @SuppressWarnings("unchecked")
+                    final WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) obj;
 
-                    final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                    final BaseFileObj fo = (ref != null) ? ref.get() : null;
 
                     if (fo != null) {
                         Integer computedId = fo.getFileName().getId();
@@ -503,9 +500,10 @@ public final class FileObjectFactory {
                         }
                     }
                 } else {
-                    for (Iterator iterator = ((List) obj).iterator(); iterator.hasNext();) {
-                        WeakReference ref = (WeakReference) iterator.next();
-                        final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                    for (Iterator<?> iterator = ((List<?>) obj).iterator(); iterator.hasNext();) {
+                        @SuppressWarnings("unchecked")
+                        WeakReference<BaseFileObj> ref = (WeakReference<BaseFileObj>) iterator.next();
+                        final BaseFileObj fo = (ref != null) ? ref.get() : null;
                         if (fo != null) {
                             Integer computedId = fo.getFileName().getId();
                             if (!key.equals(computedId)) {
@@ -517,12 +515,11 @@ public final class FileObjectFactory {
                 }
             }
 
-            for (Iterator iterator = toRename.entrySet().iterator(); iterator.hasNext();) {
-                final Map.Entry entry = (Map.Entry) iterator.next();
-                Object key = entry.getKey();
+            for (Map.Entry<Integer, Object> entry : toRename.entrySet()) {
+                Integer key = entry.getKey();
                 Object previous = allIBaseFileObjects.remove(key);
-                if (previous instanceof List) {
-                    List list = (List) previous;
+                if (previous instanceof List<?>) {
+                    List<?> list = (List<?>) previous;
                     list.remove(entry.getValue());
                     allIBaseFileObjects.put(key, previous);
                 } else {
@@ -537,9 +534,9 @@ public final class FileObjectFactory {
         final Object o;
         synchronized (allIBaseFileObjects) {
             final Object value = allIBaseFileObjects.get(NamingFactory.createID(file));
-            Reference ref = null;
-            ref = (Reference) (value instanceof Reference ? value : null);
-            ref = (ref == null && value instanceof List ? FileObjectFactory.getReference((List) value, file) : ref);
+            @SuppressWarnings("unchecked")
+            Reference<BaseFileObj> ref = (Reference<BaseFileObj>) (value instanceof Reference<?> ? value : null);
+            ref = (ref == null && value instanceof List<?> ? FileObjectFactory.getReference((List<?>) value, file) : ref);
 
             o = (ref != null) ? ref.get() : null;
             assert (o == null || o instanceof BaseFileObj);
@@ -555,11 +552,12 @@ public final class FileObjectFactory {
         return retval;
     }
 
-    private static Reference getReference(final List list, final File file) {
-        Reference retVal = null;
+    private static Reference<BaseFileObj> getReference(final List<?> list, final File file) {
+        Reference<BaseFileObj> retVal = null;
         for (int i = 0; retVal == null && i < list.size(); i++) {
-            final Reference ref = (Reference) list.get(i);
-            final BaseFileObj cachedElement = (ref != null) ? (BaseFileObj) ref.get() : null;
+            @SuppressWarnings("unchecked")
+            final Reference<BaseFileObj> ref = (Reference<BaseFileObj>) list.get(i);
+            final BaseFileObj cachedElement = (ref != null) ? ref.get() : null;
             if (cachedElement != null && cachedElement.getFileName().getFile().compareTo(file) == 0) {
                 retVal = ref;
             }
@@ -569,20 +567,23 @@ public final class FileObjectFactory {
 
     private BaseFileObj putInCache(final BaseFileObj newValue, final Integer id) {
         synchronized (allIBaseFileObjects) {
-            final WeakReference newRef = new WeakReference(newValue);
+            final WeakReference<BaseFileObj> newRef = new WeakReference<BaseFileObj>(newValue);
             final Object listOrReference = allIBaseFileObjects.put(id, newRef);
 
             if (listOrReference != null) {
-                if (listOrReference instanceof List) {
-                    ((List) listOrReference).add(newRef);
+                if (listOrReference instanceof List<?>) {
+                    @SuppressWarnings("unchecked")
+                    List<Reference<BaseFileObj>> list = (List<Reference<BaseFileObj>>) listOrReference;
+                    list.add(newRef);
                     allIBaseFileObjects.put(id, listOrReference);
                 } else {
-                    assert (listOrReference instanceof WeakReference);
-                    final Reference oldRef = (Reference) listOrReference;
-                    BaseFileObj oldValue = (oldRef != null) ? (BaseFileObj) oldRef.get() : null;
+                    assert (listOrReference instanceof WeakReference<?>);
+                    @SuppressWarnings("unchecked")
+                    final Reference<BaseFileObj> oldRef = (Reference<BaseFileObj>) listOrReference;
+                    BaseFileObj oldValue = (oldRef != null) ? oldRef.get() : null;
 
                     if (oldValue != null && !newValue.getFileName().equals(oldValue.getFileName())) {
-                        final List l = new ArrayList();
+                        final List<Reference<BaseFileObj>> l = new ArrayList<Reference<BaseFileObj>>();
                         l.add(oldRef);
                         l.add(newRef);
                         allIBaseFileObjects.put(id, l);
@@ -596,20 +597,19 @@ public final class FileObjectFactory {
 
     @Override
     public String toString() {
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         synchronized (allIBaseFileObjects) {
             list.addAll(allIBaseFileObjects.values());
         }
-        List l2 = new ArrayList();
-        for (Iterator it = list.iterator(); it.hasNext();) {
-            Reference ref = (Reference) it.next();
-            FileObject fo = (ref != null) ? (FileObject) ref.get() : null;
+        List<String> l2 = new ArrayList<String>();
+        for (Iterator<Object> it = list.iterator(); it.hasNext();) {
+            @SuppressWarnings("unchecked")
+            Reference<FileObject> ref = (Reference<FileObject>) it.next();
+            FileObject fo = (ref != null) ? ref.get() : null;
             if (fo != null) {
                 l2.add(fo.getPath());
             }
         }
-
-
         return l2.toString();
     }
 
@@ -623,7 +623,7 @@ public final class FileObjectFactory {
 
     //only for tests purposes
     public static void reinitForTests() {
-        FileObjectFactory.AllFactories = new HashMap();
+        FileObjectFactory.AllFactories.clear();
     }
 
 
@@ -671,7 +671,7 @@ public final class FileObjectFactory {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             public void run() {
-                Set all2Refresh = collectForRefresh();
+                Set<BaseFileObj> all2Refresh = collectForRefresh();
                 refresh(all2Refresh, files);
             }            
         };        
