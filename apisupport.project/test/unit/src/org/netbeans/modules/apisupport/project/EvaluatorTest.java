@@ -42,10 +42,24 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectManagerTest;
+import org.netbeans.junit.Log;
+import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImplTest;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -64,18 +78,20 @@ public class EvaluatorTest extends TestBase {
     private File userPropertiesFile;
     
     protected void setUp() throws Exception {
+        clearWorkDir();
         super.setUp();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         FileObject dir = nbRoot().getFileObject("java.project");
-        assertNotNull("have java/project checked out", dir);
+        assertNotNull("have java.project checked out", dir);
+        ProjectManagerTest.resetProjectManager(ProjectManager.getDefault());
         Project p = ProjectManager.getDefault().findProject(dir);
         javaProjectProject = (NbModuleProject)p;
         dir = nbRoot().getFileObject("openide.loaders");
-        assertNotNull("have openide/loaders checked out", dir);
+        assertNotNull("have openide.loaders checked out", dir);
         p = ProjectManager.getDefault().findProject(dir);
         loadersProject = (NbModuleProject)p;
     }
-    
+
     public void testEvaluator() throws Exception {
         PropertyEvaluator eval = javaProjectProject.evaluator();
         assertEquals("right basedir", file("java.project"),
@@ -90,6 +106,20 @@ public class EvaluatorTest extends TestBase {
         eval = loadersProject.evaluator();
         assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
+    }
+
+    // specifically tests ${cluster} prop. for standalone & suite comp. modules, for NB.org already tested in testEvaluator()
+    public void testClusterProperty() throws Exception {
+        NbModuleProject p1 = generateStandaloneModule("module1");
+        PropertyEvaluator eval = p1.evaluator();
+        String cluster = eval.getProperty("cluster");
+        assertEquals("Correct absolute path to module's cluster", file(getWorkDir(), "module1/build/cluster"), new File(cluster));
+        SuiteProject s1 = generateSuite("suite1");
+        NbModuleProject p2 = generateSuiteComponent(s1, "module2");
+        eval = p2.evaluator();
+        // todo
+        cluster = eval.getProperty("cluster");
+        assertEquals("Correct absolute path to suite's cluster", file(getWorkDir(), "suite1/build/cluster"), new File(cluster));
     }
 
     /** @see "#63541" */
@@ -120,5 +150,184 @@ public class EvaluatorTest extends TestBase {
         bootcp = eval.getProperty("nbjdk.bootclasspath");
         assertEquals(origbootcp, bootcp);
     }
-    
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINER;
+    }
+
+    private class ModuleListLogHandler extends Handler {
+        private boolean cacheUsed = true;
+        private Set<String> scannedDirs = Collections.synchronizedSet(new HashSet<String>(1000));
+        String error;
+
+        @Override
+        public synchronized void publish(LogRecord record) {
+            String msg = record.getMessage();
+            if (msg.startsWith("Due to previous call of refresh(), not using nbbuild cache in"))
+                cacheUsed = false;
+            assertFalse("Duplicate scan of project tree detected: " + msg,
+                    msg.startsWith("Warning: two modules found with the same code name base"));
+            if (msg.startsWith("scanPossibleProject: ") && msg.endsWith("scanned successfully")
+                    && ! scannedDirs.add(msg)) {
+                error = "scanPossibleProject already run: " + msg;
+            }
+            if (msg.startsWith("scanCluster: ") && msg.endsWith(" succeeded.")
+                    && ! scannedDirs.add(msg)) {
+                error = "scanCluster already run: " + msg;
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            assertFalse("Using nbbuild cache, which should be disabled", cacheUsed);
+        }
+
+    }
+
+    public void testPropertiesThatTriggerModuleListScan169040() throws Exception {
+        ModuleList.refresh();   // disable cache
+        Logger logger = Logger.getLogger(ModuleList.class.getName());
+        Level origLevel = logger.getLevel();
+        final ModuleListLogHandler handler = new ModuleListLogHandler();
+        try {
+            logger.setLevel(Level.ALL);
+            logger.addHandler(handler);
+
+            long start = System.currentTimeMillis();
+            PropertyEvaluator eval = javaProjectProject.evaluator();
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            String js = eval.getProperty("javac.source");      // does not scan ML
+            assertTrue("Valid javac.source value", js != null && ! js.equals("") && ! js.equals("javac.source"));
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
+            assertTrue("Correct core.startup.dir value", Pattern.matches(".*platform[\\d]*$", coreStartupDir));
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            String cluster = eval.getProperty("cluster");   // still should not scan ML after fix of #169040
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            assertTrue("java.project in java cluster", cluster.endsWith(TestBase.CLUSTER_JAVA));
+            assertTrue("Absolute cluster dir", (new File(cluster)).isAbsolute());
+            assertTrue("Existing cluster dir", (new File(cluster)).isDirectory());
+            assertNotNull("Normalized cluster dir path", FileUtil.toFileObject(new File(cluster)));
+            String testDir = eval.getProperty("test.unit.src.dir");
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            assertTrue("Existing test src dir", PropertyUtils.resolveFile(javaProjectProject.getProjectDirectoryFile(), testDir).isDirectory());
+            String mf = eval.getProperty("manifest.mf");
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            
+            String runCP = eval.getProperty("module.classpath");    // scans ML (or at least transitive deps)
+            assertTrue("Some modules scanned", handler.scannedDirs.size() > 0);
+            System.out.println("Synchronous scan, " + handler.scannedDirs.size() + " modules scanned.");
+
+            System.out.println("Scan took " + (System.currentTimeMillis() - start) + " msec.");
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(origLevel);
+        }
+    }
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+
+    public void testModuleScanNotBlockingEvaluator169040() throws Exception {
+        ModuleList.refresh();   // disable cache
+        final Logger mlLogger = Logger.getLogger(ModuleList.class.getName());
+        Level origLevel = mlLogger.getLevel();
+        final ModuleListLogHandler handler = new ModuleListLogHandler();
+        try {
+            mlLogger.setLevel(Level.ALL);
+            mlLogger.addHandler(handler);
+            final PropertyEvaluator eval = javaProjectProject.evaluator();
+
+            Logger observer = Logger.getLogger("observer");
+            Log.enable("org.netbeans.modules.apisupport.project.universe.ModuleList", Level.ALL);
+
+            String mt = "THREAD: Test Watch Dog: testModuleScanNotBlockingEvaluator169040 MSG:";
+            String wt = "THREAD: worker MSG:";
+            String order =  // #169040: will pass only if evaluation of "fast" props is not blocked by ML scan
+                wt + "before module.classpath property eval" +
+                wt + "scanning NetBeans.org stable sources started" +
+                mt + "before synch properties eval" +
+                mt + "after synch properties eval" +
+                wt + "scanning NetBeans.org stable sources finished";
+
+            Log.controlFlow(mlLogger, observer, order, 0);
+            Thread t = new Thread("worker") {
+
+                @Override
+                public void run() {
+                    mlLogger.log(Level.FINE, "before module.classpath property eval");
+                    String runCP = eval.getProperty("module.classpath");    // scans ML (or at least transitive deps)
+                    System.out.println("Asynchronous scan, " + handler.scannedDirs.size() + " modules scanned.");
+                }
+            };
+            long start = System.currentTimeMillis();
+            t.start();
+            mlLogger.log(Level.FINE, "before synch properties eval");
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            String js = eval.getProperty("javac.source");      // does not scan ML
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
+            assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            mlLogger.log(Level.FINE, "after synch properties eval");
+            t.join();
+            System.out.println("Scan took " + (System.currentTimeMillis() - start) + " msec.");
+        } finally {
+            mlLogger.removeHandler(handler);
+            mlLogger.setLevel(origLevel);
+        }
+    }
+
+    public void testConcurrentPropertyEvaluation() throws Exception {
+        ModuleList.refresh();   // disable cache
+        final Logger mlLogger = Logger.getLogger(ModuleList.class.getName());
+        Level origLevel = mlLogger.getLevel();
+        final ModuleListLogHandler handler = new ModuleListLogHandler();
+        try {
+            mlLogger.setLevel(Level.ALL);
+            mlLogger.addHandler(handler);
+            final PropertyEvaluator eval = javaProjectProject.evaluator();
+
+            Logger observer = Logger.getLogger("observer");
+            Log.enable("org.netbeans.modules.apisupport.project.universe.ModuleList", Level.ALL);
+
+            String w1 = "THREAD: worker1 MSG:";
+            String w2 = "THREAD: worker2 MSG:";
+            String order = 
+                w2 + "before module.classpath property eval" +
+                w1 + "before module.classpath property eval" +
+                w1 + "scanning NetBeans.org stable sources started" +
+                w1 + "scanning NetBeans.org stable sources finished" +
+                w1 + "after module.classpath property eval" +   // must be here so that w1 jumps out of all locks before waking up w2
+                w2 + "after module.classpath property eval";
+
+            Log.controlFlow(mlLogger, observer, order, 0);
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    mlLogger.log(Level.FINE, "before module.classpath property eval");
+                    String runCP = eval.getProperty("module.classpath");    // scans ML (or at least transitive deps)
+                    mlLogger.log(Level.FINE, "after module.classpath property eval");
+                    System.out.println("Concurrent scan, " + handler.scannedDirs.size() + " modules scanned.");
+                }
+            };
+            Thread t1 = new Thread(r, "worker1");
+            Thread t2 = new Thread(r, "worker2");
+            long start = System.currentTimeMillis();
+            t1.start();
+            t2.start();
+            t1.join();
+            t2.join();
+            System.out.println("Scan took " + (System.currentTimeMillis() - start) + " msec.");
+        } finally {
+            mlLogger.removeHandler(handler);
+            mlLogger.setLevel(origLevel);
+        }
+    }
 }
