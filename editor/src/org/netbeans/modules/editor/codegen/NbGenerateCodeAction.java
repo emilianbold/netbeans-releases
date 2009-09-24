@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.editor.codegen;
 
+import java.awt.Frame;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -97,7 +98,7 @@ public class NbGenerateCodeAction extends BaseAction {
             }
             if (where == null)
                 where = new Point(-1, -1);
-            PopupUtil.showPopup(new GenerateCodePanel(target, task.codeGenerators), null, where.x, where.y, true, altHeight);
+            PopupUtil.showPopup(new GenerateCodePanel(target, task.codeGenerators), (Frame)SwingUtilities.getAncestorOfClass(Frame.class, target), where.x, where.y, true, altHeight);
         } else {
             target.getToolkit().beep();
         }
