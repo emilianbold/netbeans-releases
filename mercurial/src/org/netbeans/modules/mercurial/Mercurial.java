@@ -383,15 +383,6 @@ public class Mercurial {
         }
     }
 
-    public HgFileNode [] getNodes(VCSContext context, int includeStatus) {
-        File [] files = fileStatusCache.listFiles(context, includeStatus);
-        HgFileNode [] nodes = new HgFileNode[files.length];
-        for (int i = 0; i < files.length; i++) {
-            nodes[i] = new HgFileNode(files[i]);
-        }
-        return nodes;
-    }
-
    /**
      * Uses content analysis to return the mime type for files.
      *

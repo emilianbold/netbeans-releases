@@ -953,9 +953,9 @@ itor tabs #66700).
      * @param VCSContext
      * @return repository roots
      */
-    public static File[] getRepositoryRoots(VCSContext context) {
+    public static Set<File> getRepositoryRoots(VCSContext context) {
         Set<File> rootsSet = context.getRootFiles();
-        List<File> ret = new LinkedList<File>();
+        Set<File> ret = new HashSet<File>();
 
         // filter managed roots
         for (File file : rootsSet) {
@@ -966,7 +966,7 @@ itor tabs #66700).
                 }
             }
         }
-        return ret.toArray(new File[ret.size()]);
+        return ret;
     }
 
     /**

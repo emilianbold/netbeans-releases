@@ -68,13 +68,13 @@ import org.openide.util.Utilities;
 public class MergeAction extends ContextAction {
 
     private final VCSContext context;
-    private final static int MULTIPLE_AUTOMERGE_HEAD_LIMIT = 2;
     
     public MergeAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
     }
 
+    @Override
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
@@ -83,7 +83,9 @@ public class MergeAction extends ContextAction {
     }
 
     public void performAction(ActionEvent ev) {
-        final File root = HgUtils.getRootFile(context);
+        File roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         if (root == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
@@ -99,7 +101,7 @@ public class MergeAction extends ContextAction {
             return;
         }
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        final File[] roots = context != null? context.getFiles().toArray(new File[0]): null;
+        final File[] files = HgUtils.filterForRepository(context, root, false);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 OutputLogger logger = getLogger();
@@ -118,7 +120,7 @@ public class MergeAction extends ContextAction {
                             JOptionPane.INFORMATION_MESSAGE);
                          return;
                     } else {
-                        final MergeRevisions mergeDlg = new MergeRevisions(root, roots);
+                        final MergeRevisions mergeDlg = new MergeRevisions(root, files);
                         if (!mergeDlg.showDialog()) {
                             return;
                         }
