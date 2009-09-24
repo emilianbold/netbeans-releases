@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,50 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.impl;
+package org.netbeans.modules.dlight.core.stack.ui;
 
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-
+import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author mt154047
  */
-public class DefaultTreeTableNode implements TreeTableNode{
+public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
+    private final List<FunctionCall> functionCalls;
+    private final SourceFileInfoDataProvider sourceInfoProvider;
 
-  private final String value;
-  private final Column[] tableColumns;
-  private final String[] tableValues;
-
-
-  public DefaultTreeTableNode(String treeValue, Column[] tableColumns, String[] tableValues) {
-    this.value = treeValue;
-    this.tableColumns = tableColumns;
-    this.tableValues = tableValues;
-    
-  }
-
-
-
-  public String getValue(String columnName) {
-    int index = -1;
-    for (int i = 0; i < tableColumns.length; i ++){
-      if (tableColumns[i].getColumnName().equals(columnName)){
-        index = i;
-        break;
-      }
+    PlainListFunctionCallChildren(SourceFileInfoDataProvider sourceInfoProvider, List<FunctionCall> functionCalls) {
+        this.functionCalls = functionCalls;
+        this.sourceInfoProvider = sourceInfoProvider;
     }
-    if (index < 0){
-      return null;
+
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        setKeys(functionCalls);
     }
-    return tableValues[index];
-  }
 
-  public String getValue() {
-    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
-  }
 
+
+    @Override
+    protected Node[] createNodes(FunctionCall key) {
+        return new PlainListFunctionCallNode[]{new PlainListFunctionCallNode(sourceInfoProvider, key)};
+    }
 }

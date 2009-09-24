@@ -38,11 +38,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.wag.manager.actions;
 
-package org.netbeans.modules.cnd.makeproject.api.configurations;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.modules.wag.manager.model.WagService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+/**
+ *
+ * @author peterliu
+ */
+public class ViewTutorialAction extends NodeAction {
 
-public interface AllOptionsProvider extends Cloneable {
-    public String getAllOptions(BasicCompiler compiler);
+    private static final String TUTORIAL_URL = "http://www.netbeans.org/kb/docs/websvc/zembly-wag.html";    //NOI18N
+
+    /** Creates a new instance of ViewWSDLAction */
+    public ViewTutorialAction() {
+        super();
+    }
+
+    protected boolean enable(Node[] nodes) {
+        return true;
+    }
+
+    private String getApiDocUrl(Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            WagService service = nodes[0].getLookup().lookup(WagService.class);
+
+            if (service != null) {
+                return service.getUrl();
+            }
+        }
+        return null;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(ViewTutorialAction.class, "ViewTutorialAction");
+    }
+
+    protected void performAction(Node[] activatedNodes) {
+        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
+        if (displayer == null) {
+            String msg = NbBundle.getMessage(ViewTutorialAction.class, "MSG_NoDefaultBrowser");
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+
+        try {
+            URL href = new URL(TUTORIAL_URL);
+            displayer.showURL(href);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public boolean asynchronous() {
+        return true;
+    }
 }

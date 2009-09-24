@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -86,6 +87,34 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
+        String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+        File f = new File(path, "modules"); // NOI18N
+        FileUtil.toFileObject(FileUtil.normalizeFile(f)).addFileChangeListener(new FileChangeListener() {
+
+            public void fileFolderCreated(FileEvent fe) {
+                notifyLibrariesChanged();
+            }
+
+            public void fileDataCreated(FileEvent fe) {
+                notifyLibrariesChanged();
+            }
+
+            public void fileChanged(FileEvent fe) {
+                notifyLibrariesChanged();
+            }
+
+            public void fileDeleted(FileEvent fe) {
+                notifyLibrariesChanged();
+            }
+
+            public void fileRenamed(FileRenameEvent fe) {
+                notifyLibrariesChanged();
+            }
+
+            public void fileAttributeChanged(FileAttributeEvent fe) {
+                // we can ignore this type of change
+            }
+        });
         initLibraries();
     }
 
