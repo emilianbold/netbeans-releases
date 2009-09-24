@@ -701,6 +701,7 @@ public class ProviderUtil {
                         "org-netbeans-modules-j2ee-persistence/persistence-"+version+".xml"), persistenceLocation, "persistence"); //NOI18N
             }
         });
+        PersistenceUtils.logUsage(ProviderUtil.class, "USG_PERSISTENCE_XML_CREATED", new String[]{version});
         return dd[0];
     }
     
