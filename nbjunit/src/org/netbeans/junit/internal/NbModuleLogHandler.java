@@ -149,6 +149,25 @@ public final class NbModuleLogHandler extends Handler {
     public void close() throws SecurityException {
     }
 
+    public static void checkFailures(TestCase test, TestResult res) {
+        StringBuffer t = text;
+        if (t == null) {
+            return;
+        }
+        synchronized (t) {
+            if (t.length() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("NbModuleSuite has been started with failOnMessage(");
+                sb.append(msg);
+                sb.append(") and failOnException(").append(exc);
+                sb.append("). The following failures have been captured:\n");
+                sb.append(text);
+                res.addFailure(test, new AssertionFailedError(sb.toString()));
+                t.setLength(0);
+            }
+        }
+    }
+
     private static final class FailOnException extends TestCase {
         private final Level msg;
         private final Level exc;
@@ -165,15 +184,7 @@ public final class NbModuleLogHandler extends Handler {
 
         @Override
         public void run(TestResult res) {
-            if (text.length() > 0) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("NbModuleSuite has been started with failOnMessage(");
-                sb.append(msg);
-                sb.append(") and failOnException(").append(exc);
-                sb.append("). The following failures have been captured:\n");
-                sb.append(text);
-                res.addFailure(this, new AssertionFailedError(sb.toString()));
-            }
+            checkFailures(this, res);
         }
 
     }

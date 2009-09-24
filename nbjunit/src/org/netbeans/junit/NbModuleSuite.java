@@ -777,9 +777,9 @@ public class NbModuleSuite {
                         Class<? extends TestCase> sndClazz =
                             testLoader.loadClass(item.clazz.getName()).asSubclass(TestCase.class);
                         if (item.fileNames == null) {
-                            toRun.addTest(new NbTestSuite(sndClazz));
+                            toRun.addTest(new NbTestSuiteLogCheck(sndClazz));
                         } else {
-                            NbTestSuite t = new NbTestSuite();
+                            NbTestSuite t = new NbTestSuiteLogCheck();
                             t.addTests(sndClazz, item.fileNames);
                             toRun.addTest(t);
                         }
@@ -1196,5 +1196,24 @@ public class NbModuleSuite {
                 default: return s.substring(len - 2);
             }
         }
+
     } // end of S
+
+    private static class NbTestSuiteLogCheck extends NbTestSuite {
+        public NbTestSuiteLogCheck() {
+        }
+        public NbTestSuiteLogCheck(Class<? extends TestCase> clazz) {
+            super(clazz);
+        }
+
+        @Override
+        public void runTest(Test test, TestResult result) {
+            int e = result.errorCount();
+            int f = result.failureCount();
+            super.runTest(test, result);
+            if (e == result.errorCount() && f == result.failureCount()) {
+                NbModuleLogHandler.checkFailures((TestCase) test, result);
+            }
+        }
+    }
 }
