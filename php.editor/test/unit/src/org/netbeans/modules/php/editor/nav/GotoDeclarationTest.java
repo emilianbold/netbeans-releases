@@ -552,6 +552,15 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "print Ca^t::kindInfo();", "class ^Cat extends Mammal {");
     }
 
+    public void testVardoc166660() throws Exception {
+        //testfiles/gotodeclaration/testVardoc166660/testVardoc166660.php
+        checkDeclaration(getTestPath(), "@var $testClass Test^Class", "class ^TestClass {}");
+    }
+    public void testVardoc166660_1() throws Exception {
+        //testfiles/gotodeclaration/testVardoc166660/testVardoc166660.php
+        checkDeclaration(getTestPath(), "@var $test^Class TestClass", "$^testClass = new TestClass();");
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

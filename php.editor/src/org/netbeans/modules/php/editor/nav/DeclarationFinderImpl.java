@@ -134,6 +134,31 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         }
                     }
                 }
+            } else if (id.equals(PHPTokenId.PHP_COMMENT) && token.text() != null) {
+                String text = token.text().toString();
+                final String dollaredVar = "@var";
+                if (text.contains(dollaredVar)) {
+                    String[] segments = text.split("\\s");
+                    for (int i = 0; i < segments.length; i++) {
+                        String seg = segments[i];
+                        if (seg.equals(dollaredVar) && segments.length > i+2) {
+                            for (int j = 1; j <= 2 ; j++) {
+                                seg = segments[i + j];
+                                if (seg != null && seg.trim().length() > 0) {
+                                    int indexOf = text.indexOf(seg);
+                                    assert indexOf != -1;
+                                    indexOf += ts.offset();
+                                    OffsetRange range = new OffsetRange(indexOf, indexOf + seg.length());
+                                    if (range.containsInclusive(caretOffset)) {
+                                        return range;
+                                    }
+                                }
+                            }
+                            return OffsetRange.NONE;
+                        }
+                    }
+                }
+
             }
         }
         return OffsetRange.NONE;
