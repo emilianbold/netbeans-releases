@@ -277,7 +277,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         for (File child : children) {
             feedFilesImpl(writer, child, null, filter);
         }
-        writer.printf("\n");
+        writer.printf("\n"); // NOI18N
         writer.flush();
     }
 
@@ -285,7 +285,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         // it is assumed that the file itself was already filtered
         String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
         if (file.isDirectory()) {
-            String text = String.format("D %s", fileName);
+            String text = String.format("D %s", fileName); // NOI18N
             writer.println(text); // adds LF
             writer.flush(); //TODO: remove?
             File[] children = file.listFiles(filter);
@@ -294,7 +294,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 feedFilesImpl(writer, child, newBase, filter);
             }
         } else {
-            String text = String.format("%d %s", file.length(), fileName);
+            String text = String.format("%d %s", file.length(), fileName); // NOI18N
             writer.println(text); // adds LF
             writer.flush(); //TODO: remove?
         }
