@@ -97,6 +97,7 @@ public final class StackRenderer implements Renderer<DataRow> {
                                         resultPanel.add(column.getColumnUName(), true, stack);
                                     }
                                 }
+                                resultPanel.expandAll();
 
                             }
                         });

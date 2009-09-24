@@ -53,9 +53,11 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Syntax;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
+import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.core.DeleteToNextCamelCasePosition;
@@ -68,9 +70,12 @@ import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.netbeans.modules.ruby.rhtml.spi.DtdResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Editor kit implementation for RHTML content type
@@ -104,7 +109,32 @@ public class RhtmlKit extends HtmlKit {
     public String getContentType() {
         return RhtmlTokenId.MIME_TYPE;
     }
-    
+
+    @Override
+    public Document createDefaultDocument() {
+        return super.createDefaultDocument();
+    }
+
+    @Override
+    public Syntax createSyntax(Document doc) {
+        Syntax result = super.createSyntax(doc);
+        DtdResolver resolver = Lookup.getDefault().lookup(DtdResolver.class);
+        // need to this here instead of createDefaultDocument since the StreamDescriptionProperty
+        // property gets set after createDefaultDocument and the DtdResolver impls typically
+        // need to be able to get the fo for the document. Another way would be to provide
+        // custom DataEditorSupport in RhtmlDataLoader and override createStyledDocument - the
+        // drawback of that is that it requires copy-pasting code from SimpleES
+        if (resolver != null) {
+            String fallbackDtd = resolver.getIdentifier(doc);
+            if (fallbackDtd != null) {
+                doc.putProperty(HtmlParserResult.FALLBACK_DTD_PROPERTY_NAME, Registry.getDTD(fallbackDtd, null));
+            }
+        }
+        return result;
+    }
+
+
+
     @Override
     protected DeleteCharAction createDeletePrevAction() {
         return new RhtmlDeleteCharAction(deletePrevCharAction, false, super.createDeletePrevAction());

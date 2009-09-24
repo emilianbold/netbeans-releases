@@ -156,7 +156,7 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../platform10/modules/org-openide-loaders.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform10/modules/org-openide-nodes.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform10/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../enterprise5/modules/org-netbeans-modules-derby.jar"/>                    
+                    <pathelement location="${{netbeans.home}}/../enterprise6/modules/org-netbeans-modules-derby.jar"/>                    
                     <pathelement location="${{netbeans.home}}/../ide11/modules/org-netbeans-modules-db.jar"/>
                     <pathelement location="${{module.install.dir}}/org-netbeans-modules-sql-project.jar"/>
                     <pathelement location="${{module.install.dir}}/../ant/nblib/org-netbeans-modules-sql-project.jar"/>

@@ -74,6 +74,8 @@ import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
@@ -1185,5 +1187,29 @@ public final class Utils {
             }
         }
         return false;
+    }
+
+/**
+     * Returns hash value for the given byte array and algoritmus in a hex string form.
+     * @param alg Algoritmus to compute the hash value (see also Appendix A in the
+     * Java Cryptography Architecture API Specification &amp; Reference </a>
+     * for information about standard algorithm names.)
+     * @param bytes byte array
+     * @return hash value as a string
+     * @throws java.security.NoSuchAlgorithmException
+     */
+    public static String getHash(String alg, byte[] bytes) throws NoSuchAlgorithmException {
+        MessageDigest md5 = MessageDigest.getInstance(alg);
+        md5.update(bytes);
+        byte[] md5digest = md5.digest();
+        String ret = ""; // NOI18N
+        for (int i = 0; i < md5digest.length; i++) {
+            String hex = Integer.toHexString(md5digest[i] & 0x000000FF);
+            if (hex.length() == 1) {
+                hex = "0" + hex; // NOI18N
+            }
+            ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
+        }
+        return ret;
     }
 }

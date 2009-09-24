@@ -122,6 +122,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.html.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -356,6 +365,7 @@
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.modules.ruby.rhtml.lexer.api</package>
                 <package>org.netbeans.modules.ruby.rhtml.editor.completion</package>
+                <package>org.netbeans.modules.ruby.rhtml.spi</package>
             </friend-packages>
         </data>
     </configuration>

@@ -90,7 +90,7 @@ Current java platform setup is:
 
     <target name="-copy-cobertura-datafile" depends="cobertura-init">
         <!-- rename using code-name-base so the files will be unique in the suite -->
-        <copy file="${cobertura.datafile}" tofile="${suite.merge.dir}/${code.name.base.dashes}.ser" failonerror="false" />
+        <copy file="${cobertura.unit.datafile}" tofile="${suite.merge.dir}/${code.name.base.dashes}.ser" failonerror="false" />
     </target>
 
 

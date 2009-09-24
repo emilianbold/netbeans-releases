@@ -75,7 +75,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
-import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
  * Pull action for mercurial:
@@ -186,8 +185,9 @@ public class PullAction extends ContextAction {
     }
 
     public static void pull(final VCSContext ctx) {
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
+        final File roots[] = HgUtils.getActionRoots(ctx);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
@@ -197,11 +197,11 @@ public class PullAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
-        final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
+        final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(root);
         // If the repository has no default pull path then inform user
         if (isNullOrEmpty(pullSourceString)) {
             notifyDefaultPullUrlNotSpecified(logger);

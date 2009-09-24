@@ -43,41 +43,50 @@
  * Created on Dec 1, 2008, 2:41:58 PM
  */
 
-package org.netbeans.modules.subversion.util;
+package org.netbeans.modules.versioning.util;
 
 import java.awt.Dialog;
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stuka
  */
 public class FileSelector extends javax.swing.JPanel implements ListSelectionListener {
-    private File[] files;
     private DialogDescriptor dialogDescriptor;
     private JButton okButton;
     private JButton cancelButton;
+    private final String text;
+    private final String title;
+    private final HelpCtx helpCtx;
+    private final Preferences pref;
+    private static final String FILE_SELECTOR_PREFIX = "fileSelector";                               // NOI18N
+    private static final Logger LOG = Logger.getLogger(FileSelector.class.getName());
 
     /** Creates new form RootSelectorPanel */
-    public FileSelector() {
+    public FileSelector(String text, String title, HelpCtx helpCtx, Preferences pref) {
+        this.text = text;
+        this.title = title;
+        this.helpCtx = helpCtx;
+        this.pref = pref;
+
         initComponents();
+
         filesList.addListSelectionListener(this);
 
-        dialogDescriptor = new DialogDescriptor(this, org.openide.util.NbBundle.getMessage(FileSelector.class, "LBL_FileSelector_Title"));
+        dialogDescriptor = new DialogDescriptor(this, title);
 
         okButton = new JButton(org.openide.util.NbBundle.getMessage(FileSelector.class, "CTL_FileSelector_Select"));
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileSelector.class, "CTL_FileSelector_Select"));
@@ -103,7 +112,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(FileSelector.class, "FileSelector.jLabel1.text")); // NOI18N
+        jLabel1.setText(text);
 
         filesList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -144,7 +153,6 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
 
     public boolean show(File[] files) {
         Arrays.sort(files);
-        this.files = files;
         DefaultListModel m = new DefaultListModel();
         for (File file : files) {
             m.addElement(file);
@@ -153,10 +161,10 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         preselectFile(files);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSelector.class, "LBL_FileSelector_Title"));                     // NOI18N
+        dialog.getAccessibleContext().setAccessibleDescription(title);                     // NOI18N
 
         dialog.setVisible(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.subversion.FileSelector"));
+        dialogDescriptor.setHelpCtx(helpCtx);
         boolean ret = dialogDescriptor.getValue() == okButton;
         if(ret) {
             saveSelectedFile(files);
@@ -179,7 +187,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         if(hash == null || hash.trim().equals("")) {
             return;
         }
-        String path = SvnModuleConfig.getDefault().getFileSelectorPreset(hash);
+        String path = getFileSelectorPreset(hash);
         if(path != null && !path.trim().equals("")) {
             File f = new File(path);
             filesList.setSelectedValue(f, true);
@@ -193,7 +201,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         }
         File file = getSelectedFile();
         if(file != null) {
-            SvnModuleConfig.getDefault().setFileSelectorPreset(hash, file.getAbsolutePath());
+            setFileSelectorPreset(hash, file.getAbsolutePath());
         }
     }
 
@@ -205,11 +213,20 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         }
         String hash = null;
         try {
-            hash = SvnUtils.getHash("MD5", sb.toString().getBytes());
+            hash = Utils.getHash("MD5", sb.toString().getBytes());
         } catch (NoSuchAlgorithmException ex) {
-            Subversion.LOG.log(Level.SEVERE, null, ex); // should not happen
+            LOG.log(Level.SEVERE, null, ex); // should not happen
         }
         return hash;
     }
+
+    public String getFileSelectorPreset(String hash) {
+        return pref.get(FILE_SELECTOR_PREFIX + "-" + hash, "");
+    }
+
+    public void setFileSelectorPreset(String hash, String path) {
+        pref.put(FILE_SELECTOR_PREFIX + "-" + hash, path);
+    }
+
 
 }
