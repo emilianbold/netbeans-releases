@@ -149,7 +149,10 @@ public class PageIterator implements TemplateWizard.Iterator {
                         folderPanel
                     };
         } else if (fileType.equals(FileType.TAG)) {
-            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
+            if (sourceGroups == null || sourceGroups.length == 0) {
+                sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+            }
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             }
@@ -162,9 +165,18 @@ public class PageIterator implements TemplateWizard.Iterator {
                     };
         } else if (fileType.equals(FileType.TAGLIBRARY)) {
             sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-            if (sourceGroups == null || sourceGroups.length == 0) {
-                sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            SourceGroup[] docRoot = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+            SourceGroup[] webInfGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
+            if (docRoot == null || docRoot.length == 0) {
+                docRoot = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             }
+
+            if (docRoot != null && webInfGroups != null) {
+                sourceGroups = new SourceGroup[docRoot.length + webInfGroups.length];
+                System.arraycopy(webInfGroups, 0, sourceGroups, 0, webInfGroups.length);
+                System.arraycopy(docRoot, 0, sourceGroups, webInfGroups.length, docRoot.length);
+            }
+
             if (sourceGroups == null || sourceGroups.length == 0) {
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             }
