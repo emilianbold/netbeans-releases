@@ -5,6 +5,7 @@
     <folder name="ToolConfigurationProviders">
       <file name="DLightTHAToolConfigurationProvider.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.dlight.tha.DLightTHAToolConfigurationProvider"/>
+        <attr name="hidden" boolvalue="true"/>
       </file>
     </folder>
   </folder>

@@ -229,6 +229,7 @@ public abstract class OptionsPanelController {
     public @interface TopLevelRegistration {
         /**
          * Optional path that can be used in {@link OptionsDisplayer#open(String)}.
+         * Typically this should be a reference to a compile-time constant to which other code can refer.
          */
         String id() default "";
         /** Label shown on the button. You may use {@code #key} syntax. */
@@ -257,11 +258,13 @@ public abstract class OptionsPanelController {
     public @interface SubRegistration {
         /**
          * Optional path that can be used (with {@link #location}) in {@link OptionsDisplayer#open(String)}.
+         * Typically this should be a reference to a compile-time constant to which other code can refer.
          */
         String id() default "";
         /**
          * Location of this panel inside some top-level panel matching {@link ContainerRegistration#id}.
          * If unspecified, placed in the Miscellaneous panel.
+         * Typically this should be a reference to a compile-time constant also used for the container's ID.
          */
         String location() default "Advanced";
         /** Label shown on the tab. You may use {@code #key} syntax. */
@@ -292,6 +295,7 @@ public abstract class OptionsPanelController {
     public @interface ContainerRegistration {
         /**
          * Path that can be used in {@link OptionsDisplayer#open(String)} and {@link SubRegistration#location}.
+         * Typically this should be a reference to a compile-time constant to which other code can refer.
          */
         String id();
         /** Label shown on the button. You may use {@code #key} syntax. */
