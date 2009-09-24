@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -98,7 +99,7 @@ public class CssHintsProvider implements HintsProvider {
                     e.getDescription(),
                     e.getFile(),
                     new OffsetRange(e.getStartPosition(), e.getEndPosition()),
-                    Collections.EMPTY_LIST,
+                    Collections.<HintFix>emptyList(),
                     10);
             
             hints.add(h);
