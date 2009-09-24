@@ -47,7 +47,11 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.modules.glassfish.common.ui.AdminObjectCustomizer;
 import org.netbeans.modules.glassfish.common.ui.ConnectionPoolCustomizer;
+import org.netbeans.modules.glassfish.common.ui.ConnectorConnectionPoolCustomizer;
+import org.netbeans.modules.glassfish.common.ui.ConnectorCustomizer;
+import org.netbeans.modules.glassfish.common.ui.JavaMailCustomizer;
 import org.netbeans.modules.glassfish.common.ui.JdbcResourceCustomizer;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -81,8 +85,9 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
         if((childTypes != null) && (childTypes.length > 1)) {
             for(int i = 0; i < childTypes.length; i++) {
                 String childtype = childTypes[i];
+                Class customizer = getCustomizer(childtype);
                 keys.add(new Hk2ItemNode(lookup,
-                    new Hk2Resources(lookup, childtype),
+                    new Hk2Resources(lookup, childtype, customizer),
                     NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+childtype), //TODO
                     Hk2ItemNode.REFRESHABLE_FOLDER));
             }
@@ -96,7 +101,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                     Decorator decorator = DecoratorManager.findDecorator(childtype, null);
                     List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
                     for (ResourceDesc resource : reslourcesList) {
-                        keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, null));
+                        keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
                     }
                 } catch (Exception ex) {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
@@ -133,12 +138,13 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
 
         private Lookup lookup;
         private String type;
-
+        private Class customizer;
         private final Node WAIT_NODE = Hk2ItemNode.createWaitNode();
 
-        Hk2Resources(Lookup lookup, String type) {
+        Hk2Resources(Lookup lookup, String type, Class customizer) {
             this.lookup = lookup;
             this.type = type;
+            this.customizer = customizer;
         }
 
         public void updateKeys() {
@@ -163,7 +169,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                             if (decorator != null) {
                                 List<ResourceDesc> reslourcesList = mgr.getResources(type);
                                 for (ResourceDesc resource : reslourcesList) {
-                                    keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(type)));
+                                    keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, customizer));
                                 }
                             }
                         } catch (Exception ex) {
@@ -197,15 +203,23 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
 
             return null;
         }
+    }
 
-        private Class getCustomizer(String type){
-            Class customizer = null;
-            if(type.equals(GlassfishModule.JDBC_CONNECTION_POOL)){
-                customizer = ConnectionPoolCustomizer.class;
-            }else if(type.equals(GlassfishModule.JDBC_RESOURCE)){
-                customizer = JdbcResourceCustomizer.class;
-            }
-            return customizer;
+    private Class getCustomizer(String type) {
+        Class customizer = null;
+        if (type.equals(GlassfishModule.JDBC_CONNECTION_POOL)) {
+            customizer = ConnectionPoolCustomizer.class;
+        } else if (type.equals(GlassfishModule.JDBC_RESOURCE)) {
+            customizer = JdbcResourceCustomizer.class;
+        } else if (type.equals(GlassfishModule.CONN_RESOURCE)) {
+            customizer = ConnectorCustomizer.class;
+        } else if (type.equals(GlassfishModule.CONN_CONNECTION_POOL)) {
+            customizer = ConnectorConnectionPoolCustomizer.class;
+        } else if (type.equals(GlassfishModule.ADMINOBJECT_RESOURCE)) {
+            customizer = AdminObjectCustomizer.class;
+        } else if (type.equals(GlassfishModule.JAVAMAIL_RESOURCE)) {
+            customizer = JavaMailCustomizer.class;
         }
+        return customizer;
     }
 }
