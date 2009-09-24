@@ -92,10 +92,11 @@ public class PushAction extends ContextAction {
 
     public void performAction(ActionEvent e) {
         final File roots[] = HgUtils.getActionRoots(context);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-
-        if (root == null) {
+        final File repository =
+                roots != null && roots.length > 0 ?
+                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
+                    null;
+        if (repository == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
@@ -109,8 +110,7 @@ public class PushAction extends ContextAction {
             logger.closeLog();
             return;
         }
-
-        push(context);
+        push(context, repository);
     }
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
@@ -119,16 +119,14 @@ public class PushAction extends ContextAction {
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 
-    public static void push(final VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
-
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+    private static void push(final VCSContext ctx, final File repository){
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { getDefaultAndPerformPush(ctx, root, this.getLogger()); } };
-        support.start(rp, root,
-                org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
-
+            public void perform() { 
+                getDefaultAndPerformPush(ctx, repository, this.getLogger());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
     }
 
     public static void notifyUpdatedFiles(File repo, List<String> list){
