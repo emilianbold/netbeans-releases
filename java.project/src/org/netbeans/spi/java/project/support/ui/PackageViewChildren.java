@@ -126,7 +126,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     static final String SUBTYPE = "x-java-org-netbeans-modules-java-project-packagenodednd";    //NOI18N
     static final String MASK = "mask";  //NOI18N
 
-    private java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode*/> names2nodes;
+    private final java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode*/> names2nodes;
     private final FileObject root;
     private final SourceGroup group;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
@@ -139,7 +139,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     public PackageViewChildren(SourceGroup group) {
         
         // Sem mas dat cache a bude to uplne nejrychlejsi na svete
-        
+        names2nodes = Collections.synchronizedMap(new TreeMap<String,Object>());
         this.root = group.getRootFolder();
         this.group = group;
     }
@@ -264,7 +264,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         // XXX this is not going to perform too well for a huge source root...
         // However we have to go through the whole hierarchy in order to find
         // all packages (Hrebejk)
-        names2nodes = Collections.synchronizedMap(new TreeMap<String,Object>());
+        names2nodes.clear();
         findNonExcludedPackages( root );
     }
     

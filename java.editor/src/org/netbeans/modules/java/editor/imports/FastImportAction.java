@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -59,10 +60,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.filesystems.FileObject;
@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
  */
 public class FastImportAction extends BaseAction {
     
-    public static final String NAME = "fast-import";
+    public static final String NAME = "fast-import"; // NOI18N
     
     /** Creates a new instance of FastImportAction */
     public FastImportAction() {
@@ -99,17 +99,21 @@ public class FastImportAction extends BaseAction {
                 return ;
             }
             
-            JavaSource js = JavaSource.forFileObject(file);
+            final JavaSource js = JavaSource.forFileObject(file);
             
             if (js == null) {
                 Toolkit.getDefaultToolkit().beep();
                 return ;
             }
 
-            Task<CompilationController> task = new Task<CompilationController>() {
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final Task<CompilationController> task = new Task<CompilationController>() {
 
                 public void run(final CompilationController parameter) throws IOException {
                     parameter.toPhase(Phase.RESOLVED);
+                    if (cancel.get()) {
+                        return;
+                    }
                     final JavaSource javaSource = parameter.getJavaSource();
                     Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> result = new ComputeImports().computeCandidates(parameter, Collections.singleton(ident));
 
@@ -134,38 +138,23 @@ public class FastImportAction extends BaseAction {
                     });
                 }
             };
+
+            RunOffAWT.runOffAWT(new Runnable() {
+
+                public void run() {
+                    try {
+                        js.runUserActionTask(task, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }, NbBundle.getMessage(FastImportAction.class, "LBL_Fast_Import"), cancel); // NOI18N
             
-            //Run FastImport as soon as scan finishes. Make it cancellable
-            CancellableTask taskWhenScanFinished = new CancellableTask(new UserRunnable(js, task));
-            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(FastImportAction.class, "FastImportProgressbarMessage"), taskWhenScanFinished); // NOI18N
-            taskWhenScanFinished.setHandle(handle);
-            handle.start();
-            js.runWhenScanFinished(taskWhenScanFinished, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
     
-    private class UserRunnable implements Runnable {
-        private JavaSource javaSource;
-        private Task<CompilationController> task;
-
-        public UserRunnable(JavaSource javaSource, Task<CompilationController> task) {
-            this.javaSource = javaSource;
-            this.task = task;
-        }
-
-        public void run() {
-            try {
-                javaSource.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
     private FileObject getFile(Document doc) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         

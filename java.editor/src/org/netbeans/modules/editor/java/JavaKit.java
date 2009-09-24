@@ -459,8 +459,7 @@ public class JavaKit extends NbEditorKit {
 
     @EditorActionRegistration(
             name = abbrevDebugLineAction,
-            mimeType = JAVA_MIME_TYPE,
-            shortDescription = ""
+            mimeType = JAVA_MIME_TYPE
     )
     public static class AbbrevDebugLineAction extends BaseAction {
 
