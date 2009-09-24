@@ -68,6 +68,7 @@ public final class HintsController {
      * @param errors to use
      */
     public static void setErrors(final Document doc, final String layer, Collection<? extends ErrorDescription> errors) {
+        assert doc != null;
         final Collection<? extends ErrorDescription> errorsCopy = new ArrayList<ErrorDescription>(errors);
 
         WORKER.post(new Runnable() {
