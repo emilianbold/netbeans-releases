@@ -565,7 +565,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "protected f^", false);
     }
     public void testInsideClassAdv_3() throws Exception {
-        checkCompletion("testfiles/completion/lib/insideClass2.php", "$bVa^", false);
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "/**/$bVa^", false);
     }
     public void testInsideClassAdv_4() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "$aVar->^", false);

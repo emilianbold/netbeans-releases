@@ -102,7 +102,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
                 return typeUnion.first();
             } else if (typeUnion.hasSecond() && typeUnion.second() != null) {
                 TypeScope type = ModelUtils.getFirst(typeUnion.second());
-                return type.getName();
+                return type != null ? type.getName() : null;
             }
         }
         return null;
@@ -116,6 +116,10 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         return sb.toString();
     }
 
+    public Collection<? extends String> getTypeNames() {
+        return Collections.singleton(typeNameFromUnion());
+    }
+    
     public Collection<? extends TypeScope> getTypes() {
         List<? extends TypeScope> empty = Collections.emptyList();
         FileScope topScope = ModelUtils.getFileScope(this);

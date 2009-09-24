@@ -229,6 +229,16 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }
 
+    public Collection<? extends String> getTypeNames(int offset) {
+        List<? extends TypeScope> empty = Collections.emptyList();
+        if (representsThis()) {
+            ClassScope classScope = (ClassScope) getInScope();
+            return Collections.singletonList(classScope.getName());
+        }
+        AssignmentImpl assignment = findVarAssignment(offset);
+        return (assignment != null) ? assignment.getTypeNames() : empty;
+    }
+
     public Collection<? extends TypeScope> getTypes(int offset) {
         List<? extends TypeScope> empty = Collections.emptyList();
         if (representsThis()) {
