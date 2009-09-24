@@ -62,6 +62,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -248,7 +249,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
 
             JpaControllerGenerator.generateJpaController(project, entityClass, controller, exceptionPackage, jpaControllerPackageFileObject, controllerFileObjects[i], embeddedPkSupport, managed);
         }
-
+        PersistenceUtils.logUsage(JpaControllerIterator.class, "USG_PERSISTENCE_CONTROLLER_CREATED", new Integer[]{controllerFileObjects.length});
         return controllerFileObjects;
     }
 

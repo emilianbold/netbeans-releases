@@ -133,19 +133,23 @@ final class LocalOperationFactory extends FileOperationFactory {
     @Override
     protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        return createCopyFolderRecursivelyHandler(source);
+    }
+
+    private Callable<Boolean> createCopyFolderRecursivelyHandler(final FileObject source) {
+        LOGGER.log(Level.FINE, "Creating RECUSRIVE FOLDER COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                LOGGER.log(Level.FINE, "Running INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+                LOGGER.log(Level.FINE, "Running RECUSRIVE FOLDER COPY handler for {0} (project {1})", new Object[]{getPath(source), project.getName()});
                 File target = getTarget(source);
                 if (target == null) {
                     LOGGER.log(Level.FINE, "Ignored for {0} (no target)", getPath(source));
                     return null;
                 }
-
                 if (!target.exists()) {
                     FileUtil.createFolder(target);
                     if (!target.isDirectory()) {
-                        LOGGER.log(Level.FINE, "Failed for {0}, cannot create directory {1}", new Object[] {getPath(source), target});
+                        LOGGER.log(Level.FINE, "Failed for {0}, cannot create directory {1}", new Object[]{getPath(source), target});
                         return false;
                     }
                     LOGGER.log(Level.FINE, "Directory {0} created", target);
@@ -169,11 +173,13 @@ final class LocalOperationFactory extends FileOperationFactory {
             }
         };
     }
-
+    
     @Override
     protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
-        return new Callable<Boolean>() {
+        //createCopyFolderRecursivelyHandler used because of external changes
+        //fire just one FS event for top most folder. See #172139
+        return source.isFolder() ? createCopyFolderRecursivelyHandler(source) : new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 File target = getTarget(source);

@@ -44,9 +44,11 @@ package org.netbeans.modules.j2ee.persistence.dd;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -61,9 +63,10 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -71,6 +74,7 @@ import org.openide.filesystems.FileObject;
  */
 public class PersistenceUtils {
 
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.persistence"); // NOI18N
     
     // TODO multiple mapping files
     
@@ -200,20 +204,24 @@ public class PersistenceUtils {
         }
         return version;
     }
-    
-    /**
-     * Compares entity classes lexicographically by fully qualified names.
+
+        /**
+     * Logs feature usage.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
      */
-    private static final class EntityComparator implements Comparator<Entity> {
-        
-        public int compare(Entity o1, Entity o2) {
-            String name1 = o1.getClass2();
-            String name2 = o2.getClass2();
-            if (name1 == null) {
-                return name2 == null ? 0 : -1;
-            } else {
-                return name2 == null ? 1 : name1.compareTo(name2);
-            }
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
         }
+        USG_LOGGER.log(logRecord);
     }
 }
