@@ -1053,25 +1053,30 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
-    private static void findDependencies(
+    private static boolean findDependencies(
             final URL rootURL,
             final DependenciesContext ctx,
             Set<String> libraryIds,
-            Set<String> binaryLibraryIds)
+            Set<String> binaryLibraryIds,
+            CancelRequest cancelRequest)
     {
+        if (cancelRequest.isRaised()) {
+            return false;
+        }
+
         if (ctx.useInitialState) {
             final List<URL> deps = ctx.initialRoots2Deps.get(rootURL);
             if (deps != null && deps != EMPTY_DEPS) {
                 ctx.oldRoots.remove(rootURL);
-                return;
+                return true;
             }
         }
         if (ctx.newRoots2Deps.containsKey(rootURL)) {
-            return;
+            return true;
         }
         final FileObject rootFo = URLMapper.findFileObject(rootURL);
         if (rootFo == null) {
-            return;
+            return true;
         }
 
         final List<URL> deps = new LinkedList<URL>();
@@ -1108,22 +1113,36 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
+            if (cancelRequest.isRaised()) {
+                return false;
+            }
+
             LOGGER.log(Level.FINER, "LibraryIds for {0}: {1}", new Object [] { rootURL, libraryIds }); //NOI18N
             LOGGER.log(Level.FINER, "BinaryLibraryIds for {0}: {1}", new Object [] { rootURL, binaryLibraryIds }); //NOI18N
 
             { // libraries
                 final Set<String> ids = libraryIds == null ? PathRecognizerRegistry.getDefault().getLibraryIds() : libraryIds;
                 for (String id : ids) {
+                    if (cancelRequest.isRaised()) {
+                        return false;
+                    }
+
                     ClassPath cp = ClassPath.getClassPath(rootFo, id);
                     if (cp != null) {
                         for (ClassPath.Entry entry : cp.entries()) {
+                            if (cancelRequest.isRaised()) {
+                                return false;
+                            }
+
                             final URL sourceRoot = entry.getURL();
                             if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
                                 deps.add(sourceRoot);
 //                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
 //                                        rootURL, sourceRoot, cp, id
 //                                    });
-                                findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds);
+                                if (!findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds, cancelRequest)) {
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -1133,13 +1152,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             { // binary libraries
                 final Set<String> ids = binaryLibraryIds == null ? PathRecognizerRegistry.getDefault().getBinaryLibraryIds() : binaryLibraryIds;
                 for (String id : ids) {
+                    if (cancelRequest.isRaised()) {
+                        return false;
+                    }
+
                     ClassPath cp = ClassPath.getClassPath(rootFo, id);
                     if (cp != null) {
                         for (ClassPath.Entry entry : cp.entries()) {
+                            if (cancelRequest.isRaised()) {
+                                return false;
+                            }
+
                             final URL binaryRoot = entry.getURL();
                             final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(binaryRoot, cp, false);
                             if (sourceRoots != null) {
                                 for (URL sourceRoot : sourceRoots) {
+                                    if (cancelRequest.isRaised()) {
+                                        return false;
+                                    }
+
                                     if (sourceRoot.equals(rootURL)) {
                                         ctx.sourcesForBinaryRoots.add(rootURL);
                                     } else if (!ctx.cycleDetector.contains(sourceRoot)) {
@@ -1147,7 +1178,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 //                                            LOGGER.log(Level.FINEST, "#2- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
 //                                                rootURL, sourceRoot, cp, id
 //                                            });
-                                        findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds);
+                                        if (!findDependencies(sourceRoot, ctx, libraryIds, binaryLibraryIds, cancelRequest)) {
+                                            return false;
+                                        }
                                     }
                                 }
                             }
@@ -1190,6 +1223,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         ctx.newRoots2Deps.put(rootURL, deps);
+        return true;
     }
 
     private static final Map<List<StackTraceElement>, Long> lastRecordedStackTraces = new HashMap<List<StackTraceElement>, Long>();
@@ -2400,7 +2434,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 // by following the dependencies (#166715)
 
                 for (URL url : newRoots) {
-                    findDependencies(url, depCtx, null, null);
+                    if (!findDependencies(url, depCtx, null, null, getShuttdownRequest())) {
+                        // task cancelled due to IDE shutting down, we should not be called again
+                        // throw away depCtx that has not yet been fully initialized
+                        depCtx = null;
+                        return false;
+                    }
                 }
 
                 Controller controller = (Controller)IndexingController.getDefault();
