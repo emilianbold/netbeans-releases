@@ -90,8 +90,8 @@ public final class WorkspaceParserTest extends NbTestCase {
         List<String> libContent = wk.getUserLibraries().get("my-jsf");
         assertNotNull(libContent);
         assertEquals(6, libContent.size());
-        assertEquals("/home/david/netbeans-6.1/enterprise5/modules/ext/jsf-1_2/commons-beanutils.jar", libContent.get(0));
-        assertEquals("/home/david/netbeans-6.1/enterprise5/modules/ext/jsf-1_2/commons-collections.jar", libContent.get(1));
+        assertEquals("/home/david/netbeans-6.1/enterprise6/modules/ext/jsf-1_2/commons-beanutils.jar", libContent.get(0));
+        assertEquals("/home/david/netbeans-6.1/enterprise6/modules/ext/jsf-1_2/commons-collections.jar", libContent.get(1));
         libContent = wk.getUserLibraries().get("last-one");
         assertNotNull(libContent);
         assertEquals(1, libContent.size());
