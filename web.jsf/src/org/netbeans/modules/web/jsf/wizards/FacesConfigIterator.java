@@ -173,7 +173,11 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
 
         Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
 
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
+
+        if (sourceGroups == null || sourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        }
 
         WizardDescriptor.Panel folderPanel;
         if (sourceGroups == null || sourceGroups.length == 0) {
