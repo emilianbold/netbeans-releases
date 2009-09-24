@@ -62,6 +62,8 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
 
+    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+
     public static class Factory extends TaskFactory {
 
         @Override
@@ -70,7 +72,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
             String sourceMimeType = snapshot.getSource().getMimeType();
 
             //allow to run only on .css files
-            if(sourceMimeType.equals(Css.CSS_MIME_TYPE) && mimeType.equals(Css.CSS_MIME_TYPE)) { //NOI18N
+            if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
                 return Collections.singletonList(new CssCaretAwareSourceTask());
             } else {
                 return Collections.EMPTY_LIST;
