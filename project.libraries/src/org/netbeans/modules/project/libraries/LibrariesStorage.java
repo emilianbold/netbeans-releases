@@ -144,10 +144,10 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     // scans over storage and fetchs it ((fileset persistence files) into memory
     // ... note that providers can read their data during getVolume call
-    private void loadFromStorage() {
-        // configure parser       
-        libraries = new HashMap<String,LibraryImplementation>();
-        librariesByFileNames = new HashMap<String,LibraryImplementation>();
+    private void loadFromStorage(
+            final Map<? super String, ? super LibraryImplementation> libraries,
+            final Map<? super String, ? super LibraryImplementation> librariesByFileNames) {
+        // configure parser
         //We are in unit test with no storage
         if (storage == null) {
             return;
@@ -200,20 +200,30 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }       
     }
     
-    private synchronized void initStorage () {
-        if (!initialized) {
-            if (this.storage == null) {
-                this.storage = createStorage();                
-            }                                    
-            if (storage != null) {
-                this.storage.addFileChangeListener (this);
+    private void initStorage () {
+        boolean reload;
+        synchronized (this) {
+            if (!initialized) {
+                if (this.storage == null) {
+                    this.storage = createStorage();
+                }
+                if (storage != null) {
+                    this.storage.addFileChangeListener (this);
+                }
+                LibraryTypeRegistry.getDefault().addChangeListener(this);
+                initialized = true;
             }
-            LibraryTypeRegistry.getDefault().addChangeListener(this);
-            initialized = true;
+            //For the first time or a new LibraryTypeProvider has been enabled
+            reload = libraries == null || LibraryTypeRegistry.getDefault().hasChanged();
         }
-        //For the first time or a new LibraryTypeProvider has been enabled
-        if (libraries == null || LibraryTypeRegistry.getDefault().hasChanged()) {
-            this.loadFromStorage();
+        if (reload) {
+            final Map<String,LibraryImplementation> libraries = new HashMap<String, LibraryImplementation>();
+            final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<String, LibraryImplementation>();
+            this.loadFromStorage(libraries, librariesByFileNames);
+            synchronized (this) {
+                this.libraries = libraries;
+                this.librariesByFileNames = librariesByFileNames;
+            }
         }
     }
 
@@ -312,10 +322,14 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     /**
      * Return all libraries in memory.
      */
-    public final synchronized LibraryImplementation[] getLibraries() {
+    public final LibraryImplementation[] getLibraries() {
         this.initStorage();
-        assert this.storage != null : "Storage is not initialized";        
-        return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
+        synchronized (this) {
+            assert this.storage != null : "Storage is not initialized";
+            assert this.libraries != null;
+            //return a snapshot of libraries, maybe even newer
+            return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
+        }
     } // end getLibraries
 
 
@@ -510,7 +524,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
     }        
     
-    private Properties getTimeStamps () {
+    private synchronized Properties getTimeStamps () {
         if (this.timeStamps == null) {
             this.timeStamps = new Properties();
             if (this.storage != null) {
