@@ -87,10 +87,12 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -870,8 +872,9 @@ public final class SingleModuleProperties extends ModuleProperties {
 
             for (Item item : cpExtList) {
                 String binPath = item.getFilePath();
-                if (binPath != null && binPath.startsWith(Util.CPEXT_BINARY_PATH)) {
-                    String runtimePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + binPath.substring(Util.CPEXT_BINARY_PATH.length());
+                if (binPath != null) {
+                    FileObject fo = FileUtil.toFileObject(PropertyUtils.resolveFile(getProjectDirectoryFile(), binPath));
+                    String runtimePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + fo.getNameExt();
                     newCpExt.put(runtimePath, binPath);
                 }
             }
@@ -882,15 +885,12 @@ public final class SingleModuleProperties extends ModuleProperties {
             while (it.hasNext()) {
                 Item item = it.next();
                 if (!jarsSet.contains(item.getFilePath())) {
-                    File f = new File(getProjectDirectoryFile(), item.getFilePath());
-                    FileObject toDel = FileUtil.toFileObject(f);
-                    if (toDel != null) {
-                        Set<String> pp = new HashSet<String>();
-                        Util.scanJarForPackageNames(pp, f);
-                        // TODO delete packages
-//                        getPublicPackagesModel().reloadData(null)
-                        // XXX doesn't work yet: toDel.delete();
-                    }
+                    // XXX deleting here doesn't work on Windows: 
+//                    File f = PropertyUtils.resolveFile(getProjectDirectoryFile(), item.getFilePath());
+//                    FileObject toDel = FileUtil.toFileObject(f);
+//                    if (toDel != null) {
+//                        toDel.delete();
+//                    }
                     assert item.getReference() != null : "getCPExtIterator() initializes references to wrapped JARs";
                     item.removeSourceAndJavadoc(getUpdateHelper());
                     getRefHelper().destroyReference(item.getReference());

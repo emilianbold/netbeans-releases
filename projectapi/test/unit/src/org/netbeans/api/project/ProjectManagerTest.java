@@ -445,4 +445,11 @@ public class ProjectManagerTest extends NbTestCase {
         assertFalse("No write access", ProjectManager.mutex().isWriteAccess());
     }
     
+    /**
+     * Helper method allowing to reset PM from other module's tests.
+     * @param pm PM to reset
+     */
+    public static void resetProjectManager(ProjectManager pm) {
+        pm.reset();
+    }
 }

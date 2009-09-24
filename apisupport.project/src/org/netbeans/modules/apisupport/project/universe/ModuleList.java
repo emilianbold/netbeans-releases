@@ -71,6 +71,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -131,6 +132,8 @@ public final class ModuleList {
      * Map from netbeans.org source roots, to cluster definitions,
      * where a cluster definition is from netbeans.org relative source path
      * to physical cluster directory.
+     * Source path is relative to netbeans.org root, cluster dir is relative to
+     * <tt>nbbuild/netbeans</tt>, i.e. it only contains cluster name.
      */
     private static final Map<File,Map<String,String>> clusterLocations = new HashMap<File,Map<String,String>>();
     
@@ -204,7 +207,7 @@ public final class ModuleList {
         boolean standalone = Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null; // NOI18N
         assert !(suiteComponent && standalone) : basedir;
         if (suiteComponent) {
-            PropertyEvaluator eval = parseProperties(basedir, null, true, false, "irrelevant"); // NOI18N
+            PropertyEvaluator eval = parseProperties(basedir, null, NbModuleType.SUITE_COMPONENT, "irrelevant"); // NOI18N
             String suiteS = eval.getProperty("suite.dir");
             if (suiteS == null) {
                 throw new IOException("No suite.dir defined from " + basedir); // NOI18N
@@ -453,6 +456,7 @@ public final class ModuleList {
      * @see "#62221"
      */
     private static void scanNetBeansOrgStableSources(Map<String,ModuleEntry> entries, File root, File nbdestdir) throws IOException {
+        LOG.log(Level.FINER, "scanning NetBeans.org stable sources started");
         Map<String,String> clusterProps = getClusterProperties(root);
         // Use ${clusters.list}, *not* ${nb.clusters.list}: we do want to include testtools,
         // since those modules contribute sources for JARs which are used in unit test classpaths for stable modules.
@@ -477,9 +481,10 @@ public final class ModuleList {
             StringTokenizer tok2 = new StringTokenizer(moduleList, ", "); // NOI18N
             while (tok2.hasMoreTokens()) {
                 String module = tok2.nextToken();
-                scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, false, false, root, nbdestdir, module);
+                scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, NbModuleType.NETBEANS_ORG, root, nbdestdir, module);
             }
         }
+        LOG.log(Level.FINER, "scanning NetBeans.org stable sources finished");
     }
     
     /** Only useful for pre-Hg layout. */
@@ -510,7 +515,7 @@ public final class ModuleList {
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name; // NOI18N
             try {
-                scanPossibleProject(kid, entries, false, false, root, nbdestdir, newPathPrefix);
+                scanPossibleProject(kid, entries, NbModuleType.NETBEANS_ORG, root, nbdestdir, newPathPrefix);
             } catch (IOException e) {
                 // #60295: make it nonfatal.
                 Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kid + ", skipping...", null, null, null); // NOI18N
@@ -528,6 +533,7 @@ public final class ModuleList {
      * Does nothing if project files are not found.
      * @param basedir Project folder
      * @param entries CNB =&gt; ModuleEntry mapping is stored here if project found.
+     * @param type Type of module (suite component, standalone or NB.org)
      * @param suiteComponent True if project is a suite component (asserts if both suiteComponent and standalone is true)
      * @param standalone True if project is a standalone module
      * @param root Root of NB.org sources, may be null. For NB.org modules only.
@@ -537,17 +543,17 @@ public final class ModuleList {
      * @throws java.io.IOException
      */
     static void scanPossibleProject(File basedir, Map<String,ModuleEntry> entries,
-            boolean suiteComponent, boolean standalone, File root, File nbdestdir, String path) throws IOException {
+            NbModuleType type, File root, File nbdestdir, String path) throws IOException {
         // TODO C.P many args can be extracted from metadata, just like cnb, separate methods for suite comp., standalone and NB.org
         directoriesChecked++;
         Element data = parseData(basedir);
         if (data == null) {
             return;
         }
-        assert root != null ^ (standalone || suiteComponent);
-        assert path != null ^ (standalone || suiteComponent);
+        assert root != null ^ type != NbModuleType.NETBEANS_ORG;
+        assert path != null ^ type != NbModuleType.NETBEANS_ORG;
         String cnb = Util.findText(Util.findElement(data, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED)); // NOI18N
-        PropertyEvaluator eval = parseProperties(basedir, root, suiteComponent, standalone, cnb);
+        PropertyEvaluator eval = parseProperties(basedir, root, type, cnb);
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
         StringBuffer cpextra = new StringBuffer();
@@ -585,7 +591,7 @@ public final class ModuleList {
         if (src == null) {
             src = "src"; // NOI18N
         }
-        if (!suiteComponent && !standalone) {
+        if (type == NbModuleType.NETBEANS_ORG) {
             entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(),
                     mm.getReleaseVersion(), mm.getProvidedTokens(),
                     publicPackages, friends, mm.isDeprecated(), src);
@@ -744,7 +750,7 @@ public final class ModuleList {
                 Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
                 for (File module : findModulesInSuite(root, eval)) {
                     try {
-                        scanPossibleProject(module, entries, true, false, null, nbdestdir, null);
+                        scanPossibleProject(module, entries, NbModuleType.SUITE_COMPONENT, null, nbdestdir, null);
                     } catch (IOException e) {
                         Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + module + ", skipping...", null, null, null); // NOI18N
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
@@ -837,14 +843,14 @@ public final class ModuleList {
     
     private static ModuleList findOrCreateModuleListFromStandaloneModule(
             File basedir, File customNbDestDir) throws IOException {
-        PropertyEvaluator eval = parseProperties(basedir, null, false, true, "irrelevant"); // NOI18N
+        PropertyEvaluator eval = parseProperties(basedir, null, NbModuleType.STANDALONE, "irrelevant"); // NOI18N
         File nbdestdir = resolveNbDestDir(basedir, customNbDestDir, eval);
         synchronized (sourceLists) {
             ModuleList binaries = findOrCreateModuleListFromBinaries(nbdestdir);
             ModuleList sources = sourceLists.get(basedir);
             if (sources == null) {
                 Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
-                scanPossibleProject(basedir, entries, false, true, null, nbdestdir, null);
+                scanPossibleProject(basedir, entries, NbModuleType.STANDALONE, null, nbdestdir, null);
                 if (entries.isEmpty()) {
                     throw new IOException("No module in " + basedir); // NOI18N
                 }
@@ -1067,8 +1073,7 @@ public final class ModuleList {
      * @param standalone whether this is an external standalone module
      * @param cnb code name base of this project
      */
-    static PropertyEvaluator parseProperties(File basedir, File root, boolean suiteComponent, boolean standalone, String cnb) throws IOException {
-        assert !(suiteComponent && standalone) : basedir;
+    static PropertyEvaluator parseProperties(File basedir, File root, NbModuleType type, String cnb) throws IOException {
         Properties p = System.getProperties();
         Map<String,String> predefs;
         synchronized (p) {
@@ -1077,7 +1082,7 @@ public final class ModuleList {
         predefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
         List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
-        if (suiteComponent) {
+        if (type == NbModuleType.SUITE_COMPONENT) {
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "suite-private.properties"))); // NOI18N
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "suite.properties"))); // NOI18N
             PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
@@ -1087,11 +1092,11 @@ public final class ModuleList {
                 providers.add(loadPropertiesFile(new File(suite, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
                 providers.add(loadPropertiesFile(new File(suite, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
             }
-        } else if (standalone) {
+        } else if (type == NbModuleType.STANDALONE) {
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
         }
-        if (suiteComponent || standalone) {
+        if (type != NbModuleType.NETBEANS_ORG) {
             PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
             String buildS = eval.getProperty("user.properties.file"); // NOI18N
             if (buildS != null) {
@@ -1110,8 +1115,7 @@ public final class ModuleList {
         providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "project.properties"))); // NOI18N
         // Implicit stuff.
         Map<String,String> defaults = new HashMap<String,String>();
-        boolean isNetBeansOrg = !suiteComponent && !standalone;
-        if (isNetBeansOrg) {
+        if (type == NbModuleType.NETBEANS_ORG) {
             defaults.put("nb_all", root.getAbsolutePath()); // NOI18N
             defaults.put("netbeans.dest.dir", findNetBeansOrgDestDir(root).getAbsolutePath()); // NOI18N
         }
@@ -1120,18 +1124,7 @@ public final class ModuleList {
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
-        if (suiteComponent) {
-            defaults.put("cluster", "${suite.dir}/" + SuiteProperties.CLUSTER_DIR); // NOI18N
-        } else if (standalone) {
-            defaults.put("cluster", SuiteProperties.CLUSTER_DIR); // NOI18N
-        } else {
-            // netbeans.org
-            String cluster = findClusterLocation(basedir, root);
-            if (cluster == null) {
-                cluster = "extra"; // NOI18N
-            }
-            defaults.put("cluster", "${netbeans.dest.dir}/" + cluster); // NOI18N
-        }
+        defaults.put("cluster", findClusterLocation(basedir, root, type));
         return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
@@ -1248,35 +1241,51 @@ public final class ModuleList {
     }
     
     /**
-     * Find cluster location of a netbeans.org module.
+     * Find cluster location of a netbeans module (standalone, suite components and NB.org).
      * @param basedir project basedir
-     * @param nbroot location of netbeans.org source root
+     * @param nbroot location of netbeans.org source root; not used for standalone modules and suite components
      */
-    private static String findClusterLocation(File basedir, File nbroot) throws IOException {
-        String path = PropertyUtils.relativizeFile(nbroot, basedir);
-// #163744: can happen with symlinks       assert path.indexOf("..") == -1 : path;
-        Map<String,String> clusterLocationsHere = clusterLocations.get(nbroot);
-        if (clusterLocationsHere == null) {
-            clusterLocationsHere = new HashMap<String,String>();
-            Map<String,String> clusterDefs = getClusterProperties(nbroot);
-            for (Map.Entry<String,String> entry : clusterDefs.entrySet()) {
-                String key = entry.getKey();
-                String clusterDir = clusterDefs.get(key + ".dir"); // NOI18N
-                if (clusterDir == null) {
-                    // Not a list of modules.
-                    // XXX could also just read clusters.list
-                    continue;
+    public static String findClusterLocation(File basedir, File nbroot, NbModuleType type) throws IOException {
+        String cluster;
+        switch (type) {
+            case SUITE_COMPONENT:
+                cluster = "${suite.dir}/" + SuiteProperties.CLUSTER_DIR; // NOI18N
+                break;
+            case STANDALONE:
+                cluster = PropertyUtils.resolveFile(basedir, SuiteProperties.CLUSTER_DIR).getAbsolutePath();
+                break;
+            case NETBEANS_ORG:
+            default:
+                String path = PropertyUtils.relativizeFile(nbroot, basedir);
+        // #163744: can happen with symlinks       assert path.indexOf("..") == -1 : path;
+                Map<String,String> clusterLocationsHere = clusterLocations.get(nbroot);
+                if (clusterLocationsHere == null) {
+                    clusterLocationsHere = new HashMap<String,String>();
+                    Map<String,String> clusterDefs = getClusterProperties(nbroot);
+                    for (Map.Entry<String,String> entry : clusterDefs.entrySet()) {
+                        String key = entry.getKey();
+                        String clusterDir = clusterDefs.get(key + ".dir"); // NOI18N
+                        if (clusterDir == null) {
+                            // Not a list of modules.
+                            // XXX could also just read clusters.list
+                            continue;
+                        }
+                        String val = entry.getValue();
+                        StringTokenizer tok = new StringTokenizer(val, ", "); // NOI18N
+                        while (tok.hasMoreTokens()) {
+                            String p = tok.nextToken();
+                            clusterLocationsHere.put(p, clusterDir);
+                        }
+                    }
+                    clusterLocations.put(nbroot, clusterLocationsHere);
                 }
-                String val = entry.getValue();
-                StringTokenizer tok = new StringTokenizer(val, ", "); // NOI18N
-                while (tok.hasMoreTokens()) {
-                    String p = tok.nextToken();
-                    clusterLocationsHere.put(p, clusterDir);
+                cluster = clusterLocationsHere.get(path);
+                if (cluster == null) {
+                    cluster = "extra"; // NOI18N
                 }
-            }
-            clusterLocations.put(nbroot, clusterLocationsHere);
+                cluster = "${netbeans.dest.dir}/" + cluster;
         }
-        return clusterLocationsHere.get(path);
+        return cluster;
     }
     
     // NONSTATIC PART
@@ -1355,7 +1364,7 @@ public final class ModuleList {
                 File basedir = new File(tree == null ? home : new File(home, tree), name);
                 Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>();
                 try {
-                    scanPossibleProject(basedir, _entries, false, false, home, nbdestdir, tree == null ? name : tree + "/" + name);
+                    scanPossibleProject(basedir, _entries, NbModuleType.NETBEANS_ORG, home, nbdestdir, tree == null ? name : tree + "/" + name);
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
                     continue;
