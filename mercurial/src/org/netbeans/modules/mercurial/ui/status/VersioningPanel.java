@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
@@ -73,6 +73,7 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.LinkedList;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
@@ -333,16 +334,25 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     private SyncFileNode [] getNodes(VCSContext context, int includeStatus) {
-        HgFileNode [] fnodes = mercurial.getNodes(context, includeStatus);
-        SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
-        for (int i = 0; i < fnodes.length; i++) {
-            if (Thread.interrupted()) return null;
-            HgFileNode fnode = fnodes[i];
+        File [] files = Mercurial.getInstance().getFileStatusCache().listFiles(context, includeStatus);
+        Set<File> repositories = HgUtils.getRepositoryRoots(context);
+
+        java.util.List<HgFileNode> fnodes = new LinkedList<HgFileNode>();
+        for (File file : files) {
+            if(repositories.contains(mercurial.getRepositoryRoot(file))) {
+                fnodes.add(new HgFileNode(file));
+            }
+        }
+        SyncFileNode [] nodes = new SyncFileNode[fnodes.size()];
+        int i = 0;
+        for (HgFileNode fnode : fnodes) {
+            if (Thread.interrupted()) return null;            
             nodes[i] = new SyncFileNode(fnode, this);
+            i++;
         }
         return nodes;
     }
-    
+
     public int getDisplayStatuses() {
         return displayStatuses;
     }

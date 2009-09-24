@@ -223,12 +223,7 @@ public class CommitAction extends ContextAction {
                         roots = split[c];
                         boolean recursive = c == 1;
                         if (recursive) {
-                            File[] repoArray = HgUtils.getRepositoryRoots(ctx);
-                            Set<File> repositories =new HashSet<File>(repoArray.length);
-                            for (File file : repoArray) {
-                                repositories.add(file);
-                            }
-
+                            Set<File> repositories = HgUtils.getRepositoryRoots(ctx);
                             File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
                             for (int i = 0; i < files.length; i++) {
                                 for(int r = 0; r < roots.length; r++) {
