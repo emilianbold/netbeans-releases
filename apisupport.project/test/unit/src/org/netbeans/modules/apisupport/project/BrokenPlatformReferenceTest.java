@@ -96,7 +96,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     public void testEverythingNormal() throws Exception {
         // Try making a standalone module w/ default platform, confirm loaded OK.
         File d = new File(getWorkDir(), "standalone");
-        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT);
+        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT, false);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         NbPlatform pl = p.getPlatform(false);
         assertNotNull(pl);
@@ -104,7 +104,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertEquals(pl, p.getPlatform(true));
         // Same but w/ a non-default platform.
         d = new File(getWorkDir(), "standalone2");
-        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, "install2");
+        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, "install2", false);
         p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         pl = p.getPlatform(false);
         assertNotNull(pl);
@@ -113,7 +113,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         File sd = new File(getWorkDir(), "suite");
         SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT, false);
         d = new File(getWorkDir(), "suitecomp");
-        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
+        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd, false);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
         pl = s.getPlatform(false);
         assertNotNull(pl);
@@ -125,7 +125,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         sd = new File(getWorkDir(), "suite2");
         SuiteProjectGenerator.createSuiteProject(sd, "install2", false);
         d = new File(getWorkDir(), "suitecomp2");
-        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
+        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd, false);
         s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
         pl = s.getPlatform(false);
         assertNotNull(pl);
@@ -138,7 +138,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     public void testMissingPlatformPrivatePropertiesDefaultPlatform() throws Exception {
         // Try making a standalone module w/ default platform.
         File d = new File(getWorkDir(), "standalone");
-        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT);
+        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT, false);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         p.open();
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
@@ -156,7 +156,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     public void testIncorrectPlatformPrivatePropertiesDefaultPlatform() throws Exception {
         // Try making a standalone module w/ default platform.
         File d = new File(getWorkDir(), "standalone");
-        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT);
+        NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT, false);
         FileObject props = FileUtil.createData(FileUtil.toFileObject(d), "nbproject/private/platform-private.properties");
         Util.storeProperties(props, new EditableProperties(Collections.singletonMap("user.properties.file", "bogus")));
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
@@ -174,7 +174,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         props = FileUtil.createData(FileUtil.toFileObject(sd), "nbproject/private/platform-private.properties");
         Util.storeProperties(props, new EditableProperties(Collections.singletonMap("user.properties.file", "bogus")));
         d = new File(getWorkDir(), "suitecomp");
-        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
+        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd, false);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
         p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         pl = s.getPlatform(true);
@@ -195,7 +195,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         File sd = new File(getWorkDir(), "suite");
         SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT, false);
         File d = new File(getWorkDir(), "suitecomp");
-        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
+        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd, false);
         TestBase.delete(sd);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         ModuleEntry e = p.getModuleList().getEntry("core");
