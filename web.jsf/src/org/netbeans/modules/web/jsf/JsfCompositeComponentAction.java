@@ -138,7 +138,7 @@ public final class JsfCompositeComponentAction extends CookieAction {
                         public void run() {
                             try {
                                 doc.remove(startOffset, endOffset - startOffset);
-                                String text = "<ez:"+compName+">\n     </ez:"+compName+">"; //NOI18N
+                                String text = "<ez:"+compName+"/>"; //NOI18N
                                 doc.insertString(startOffset, text, null);
                                 indent.reindent(startOffset, startOffset+text.length());
                             } catch (BadLocationException ex) {
