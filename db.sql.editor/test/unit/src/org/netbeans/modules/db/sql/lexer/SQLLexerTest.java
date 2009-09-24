@@ -78,9 +78,9 @@ public class SQLLexerTest extends NbTestCase {
     }
 
     public void testComments() throws Exception {
-        TokenSequence<SQLTokenId> seq = getTokenSequence("-- line comment\n# mysql comment\n/* block \ncomment*/");
+        TokenSequence<SQLTokenId> seq = getTokenSequence("-- line comment\n# mysql comment\n/* block \ncomment*/\n#notComment");
         assertTokens(seq, SQLTokenId.LINE_COMMENT, SQLTokenId.LINE_COMMENT,
-                SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE);
+                SQLTokenId.BLOCK_COMMENT, SQLTokenId.WHITESPACE, SQLTokenId.IDENTIFIER, SQLTokenId.WHITESPACE);
     }
 
     public void testNewLineInString() throws Exception {
