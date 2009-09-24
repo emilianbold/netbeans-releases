@@ -45,6 +45,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.Work;
 import org.openide.filesystems.FileEvent;
@@ -123,14 +124,15 @@ class FileEventLog implements Runnable {
             }
         }
         final RepositoryUpdater ru = RepositoryUpdater.getDefault();
-        for (Work wrk : first) {
-            LOG.finer("SCHEDULING: " + wrk);    //NOI18N
-            ru.scheduleWork(wrk, false);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("SCHEDULING: " + first); //NOI18N
         }
-        for (Work wrk : rest) {
-            LOG.finer("SCHEDULING: " + wrk);    //NOI18N
-            ru.scheduleWork(wrk, false);
+        ru.scheduleWork(first);
+        
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("SCHEDULING: " + rest); //NOI18N
         }
+        ru.scheduleWork(rest);
     }
 
     private void cleanUp() {
