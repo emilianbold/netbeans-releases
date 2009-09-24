@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,76 +38,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.wag.manager.actions;
 
-package org.netbeans.core.ui.options.general;
-
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.modules.wag.manager.model.WagService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Implementation of one panel in Options Dialog.
  *
- * @author Jan Jancura
+ * @author peterliu
  */
-@OptionsPanelController.TopLevelRegistration(
-    categoryName="#CTL_General_Options",
-    iconBase="org/netbeans/modules/options/resources/generalOptions.png",
-    keywords="#KW_General",
-    keywordsCategory="General",
-    id="General", // #172844; XXX effectively an undocumented API
-//    title="#CTL_General_Options_Title",
-//    description="#CTL_General_Options_Description",
-    position=100
-)
-public final class GeneralOptionsPanelController extends OptionsPanelController {
+public class ViewTutorialAction extends NodeAction {
 
+    private static final String TUTORIAL_URL = "http://www.netbeans.org/kb/docs/websvc/zembly-wag.html";    //NOI18N
 
-    public void update () {
-        getGeneralOptionsPanel ().update ();
+    /** Creates a new instance of ViewWSDLAction */
+    public ViewTutorialAction() {
+        super();
     }
 
-    public void applyChanges () {
-        getGeneralOptionsPanel ().applyChanges ();
-    }
-    
-    public void cancel () {
-        getGeneralOptionsPanel ().cancel ();
-    }
-    
-    public boolean isValid () {
-        return getGeneralOptionsPanel ().dataValid ();
-    }
-    
-    public boolean isChanged () {
-        return getGeneralOptionsPanel ().isChanged ();
-    }
-    
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.general");
-    }
-    
-    public JComponent getComponent (Lookup masterLookup) {
-        return getGeneralOptionsPanel ();
+    protected boolean enable(Node[] nodes) {
+        return true;
     }
 
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        getGeneralOptionsPanel ().addPropertyChangeListener (l);
+    private String getApiDocUrl(Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            WagService service = nodes[0].getLookup().lookup(WagService.class);
+
+            if (service != null) {
+                return service.getUrl();
+            }
+        }
+        return null;
     }
 
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        getGeneralOptionsPanel ().removePropertyChangeListener (l);
+    public HelpCtx getHelpCtx() {
+        return null;
     }
 
-    
-    private GeneralOptionsPanel generalOptionsPanel;
-    
-    private GeneralOptionsPanel getGeneralOptionsPanel () {
-        if (generalOptionsPanel == null)
-            generalOptionsPanel = new GeneralOptionsPanel ();
-        return generalOptionsPanel;
+    public String getName() {
+        return NbBundle.getMessage(ViewTutorialAction.class, "ViewTutorialAction");
+    }
+
+    protected void performAction(Node[] activatedNodes) {
+        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
+        if (displayer == null) {
+            String msg = NbBundle.getMessage(ViewTutorialAction.class, "MSG_NoDefaultBrowser");
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+
+        try {
+            URL href = new URL(TUTORIAL_URL);
+            displayer.showURL(href);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public boolean asynchronous() {
+        return true;
     }
 }
