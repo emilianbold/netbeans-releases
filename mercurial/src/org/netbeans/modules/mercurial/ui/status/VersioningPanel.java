@@ -94,14 +94,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private String                      branchInfo;
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
-    private Thread                      refreshViewThread;
     
     private HgProgressSupport           hgProgressSupport;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialView", 1, true);  // NOI18N
     
     private final NoContentPanel noContentComponent = new NoContentPanel();
-    
-    private static final int HG_UPDATE_TARGET_LIMIT = 100;
     
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -241,7 +238,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         // XXX attach Cancelable hook
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
         try {
-            refreshViewThread = Thread.currentThread();
             Thread.interrupted();  // clear interupted status
             ph.start();
             final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
@@ -303,34 +299,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                 }
             });
         }
-    }
-
-    
-
-    private void setRepositoryBranchInfo(String rev, String changeset){
-        String branchInfo = null;
-        if (rev != null && !rev.equals("-1")) {
-            branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                    "CTL_VersioningView_BranchInfo", // NOI18N
-                    rev, changeset);
-        } else {
-            branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                    "CTL_VersioningView_BranchInfoNotCommitted"); // NOI18N
-        }
-        String repositoryStatus = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_StatusTitle", branchInfo); // NOI18N
-        if( !repositoryStatus.equals(statusLabel.getText())){
-            statusLabel.setText(repositoryStatus);
-        }
-    }
-
-    private String[] getRepositoryBranchInfo(File root){
-        String infoStr = null;
-        try {
-            infoStr = HgCommand.getBranchInfo(root);
-        } catch (HgException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return infoStr == null ? null: infoStr.split(":");
     }
     
     private SyncFileNode [] getNodes(VCSContext context, int includeStatus) {
