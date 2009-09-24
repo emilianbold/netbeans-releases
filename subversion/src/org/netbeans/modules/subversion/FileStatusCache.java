@@ -651,6 +651,9 @@ public class FileStatusCache {
         if ( r1 != r2 ) {
             return false;
         }
+        if (e1.isCopied() != e2.isCopied()) {
+            return false;
+        }
         return e1.getUrl() == e2.getUrl() || 
                 e1.getUrl() != null && e1.getUrl().equals(e2.getUrl());
     }
