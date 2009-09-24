@@ -63,7 +63,7 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
-    @ForAllEnvironments
+    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         RemoteUtil.LOGGER.setLevel(Level.ALL);
         setDefaultCompilerSet("SunStudio");
