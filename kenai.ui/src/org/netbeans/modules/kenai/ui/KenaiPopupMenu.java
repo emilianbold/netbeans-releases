@@ -47,7 +47,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -189,7 +188,7 @@ public class KenaiPopupMenu extends CookieAction {
                             kenaiPopup.add(item);
                         }
                     }
-                    kenaiPopup.add(new JSeparator());
+                    kenaiPopup.addSeparator();
                     /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
                     String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
                     String kpName = KenaiProject.getNameForRepository(projRepo);
@@ -199,7 +198,7 @@ public class KenaiPopupMenu extends CookieAction {
                             if (issueTrackers != null && issueTrackers.length > 0) {
                                 kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
                                 kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
-                                kenaiPopup.add(new JSeparator());
+                                kenaiPopup.addSeparator();
                             }
                         }
                         kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
