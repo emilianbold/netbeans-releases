@@ -41,61 +41,64 @@
 
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
-import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
-import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -110,6 +113,7 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  * @author Po-Ting Wu
+ * @author ads
  */
 public class JsfElExpression extends ELExpression {
     
@@ -266,15 +270,23 @@ public class JsfElExpression extends ELExpression {
     public String getObjectClass(){
         String beanName = extractBeanName();
         if (bundleName !=null && bundleName.startsWith("#{")) {//NOI18N
-            int pos = bundleName.indexOf(".");
-            setExpression(getExpression().replaceAll(beanName, bundleName.substring(2,bundleName.length()-1)));
-            if (pos != -1) {
+            /**
+             * @author ads
+             *  The code below is hacky and incorrect.
+             *  I have changed this code to another due issue 
+             *  IZ#172824 - JSF code completion problems
+             */
+            //int pos = bundleName.indexOf(".");
+            //This is very bad idea !! setExpression(getExpression().replaceAll(beanName, bundleName.substring(2,bundleName.length()-1)));
+            /*if (pos != -1) {
                 beanName = bundleName.substring(2,pos);
             } else {
                 beanName = bundleName.substring(2,bundleName.length()-1);
-            }
+            }*/
+            
+            return getIterableTypeName( bundleName.substring(2,bundleName.length()-1) );
         }
-  
+        
         List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
         
         for (FacesManagedBean bean : beans){
@@ -297,6 +309,70 @@ public class JsfElExpression extends ELExpression {
 
     public String getBundleName() {
         return bundleName;
+    }
+    
+    /*
+     * Appears as fix for IZ#172824 - JSF code completion problems
+     */
+    private String getIterableTypeName( final String varType ) {
+        Part[] parts = getParts( varType );
+        String name = null;
+        if ( parts!= null && parts .length >0 ){
+            name = parts[0].getPart();
+        }
+        else {
+            return null;
+        }
+        
+        if ( name == null ){
+            return null;
+        }
+        
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
+        
+        for (FacesManagedBean bean : beans){
+            if (name.equals(bean.getManagedBeanName())){
+                name = bean.getManagedBeanClass();
+                break;
+            }
+        }
+        final String[] result= new String[1];
+        InspectPropertiesTask inspectPropertiesTask = new InspectPropertiesTask(name){
+
+            public void run( CompilationController controller ) throws Exception {
+                TypeMirror type = getTypePreceedingCaret(controller, varType);
+                TypeMirror erasedType = controller.getTypes().erasure(type);
+                TypeMirror iterable = controller.getTypes().erasure( controller.getElements().
+                        getTypeElement(Iterable.class.getCanonicalName()).asType());
+                if ( type.getKind() == TypeKind.ARRAY){
+                    TypeMirror typeMirror = ((ArrayType)type).
+                        getComponentType();
+                    if ( typeMirror.getKind() == TypeKind.DECLARED){
+                        result[0] = ((TypeElement)controller.getTypes().asElement(
+                                typeMirror)).getQualifiedName().toString();
+                    }
+                }
+                else if ( controller.getTypes().isAssignable( erasedType, iterable)){
+                    List<? extends TypeMirror> typeArguments = 
+                        ((DeclaredType)type).getTypeArguments();
+                    if ( typeArguments.size() != 0 ){
+                        TypeMirror typeMirror = typeArguments.get(0);
+                        if ( typeMirror.getKind() == TypeKind.DECLARED){
+                            Element element = controller.getTypes().asElement(
+                                    typeMirror);
+                            if ( element instanceof TypeElement){
+                                result[0] = ((TypeElement)element).getQualifiedName().toString();
+                            }
+                        }
+                    }
+                    if ( result[0] == null ){
+                        result[0] = Object.class.getCanonicalName();
+                    }
+                }
+            }
+        };
+        inspectPropertiesTask.execute();
+        return result[0];
     }
 
     private static final String ATTRS_ATTR_NAME = "attrs"; //NOI18N

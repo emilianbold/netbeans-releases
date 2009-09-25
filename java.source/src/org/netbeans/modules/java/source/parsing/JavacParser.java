@@ -856,7 +856,8 @@ public class JavacParser extends Parser {
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
-                    block = task.reparseMethodBody(cu, orig, newBody, firstInner);                
+                    Map<JCTree,String> docComments = new HashMap<JCTree, String>();
+                    block = task.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
                     }
@@ -870,6 +871,8 @@ public class JavacParser extends Parser {
                         }
                         return false;
                     }
+                    ((JCTree.JCCompilationUnit)cu).docComments.keySet().removeAll(fav.docOwners);
+                    ((JCTree.JCCompilationUnit)cu).docComments.putAll(docComments);                    
                     long end = System.currentTimeMillis();                
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));

@@ -1008,11 +1008,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
-            LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false);
-            // XXX item.isAnnonInner() is package private :-(
-//            if (item.isAnnonInner())
-//                continue;
-            items.add(item);
+            if (!isAnnonInner(name)) {
+                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false));
+            }
         }
     }
         
@@ -1070,6 +1068,13 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         return false;
     }
     
+    private static boolean isAnnonInner(ElementHandle<TypeElement> elem) {
+        String name = elem.getQualifiedName();
+        int idx = name.lastIndexOf('.'); //NOI18N
+        String simpleName = idx > -1 ? name.substring(idx + 1) : name;
+        return simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0));
+    }
+
     /* copied from JavaCompletionProvider */
     private List<DeclaredType> getSubtypesOf(DeclaredType baseType, String prefix, JavadocContext jdctx) {
         if (((TypeElement)baseType.asElement()).getQualifiedName().contentEquals("java.lang.Object"))

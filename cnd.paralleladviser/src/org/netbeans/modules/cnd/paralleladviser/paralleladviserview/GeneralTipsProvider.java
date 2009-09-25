@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
 
 /**
  * Service that provides tips for Parallel Adviser.
@@ -85,4 +86,9 @@ public class GeneralTipsProvider implements ParallelAdviserTipsProvider {
         return tips;
     }
 
+    public void addListener(ParallelAdviserTipsProviderListener listener) {
+    }
+
+    public void removeListener(ParallelAdviserTipsProviderListener listener) {
+    }
 }

@@ -138,7 +138,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
-        final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY));
+
+        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+        String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
+
+        final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY)) && "Facelets".equals(preferredLanguage);   //NOI18N
         final String bundleName = (String)wizard.getProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME);
         
         PersistenceUnit persistenceUnit = 
@@ -448,7 +452,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
         }
-
+        //Create template.xhtml if it is not created yet, because it is used by other generated templates
+        if (webRoot.getFileObject(JSFClientGenerator.TEMPLATE_JSF_FL_PAGE) == null) {
+            FileObject target = TemplateIterator.createTemplate(project, webRoot, false);
+            progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", target.getNameExt()); //NOI18N
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
+        }
+        
         List<TemplateData> bundleData = new ArrayList<TemplateData>();
 
         for (int i = 0; i < controllerFileObjects.length; i++) {
@@ -674,9 +685,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-        String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
-        if (preferredLanguage.equals("Facelets") && (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL))) {    //NOI18N
+        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
         }
 

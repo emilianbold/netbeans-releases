@@ -80,6 +80,7 @@ import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
+import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -801,6 +802,20 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         return timestamp / 1000;  // bucket is 1 second
     }
 
+    /**
+     * Maximal string length that underlying database can store.
+     * Must match the numbers in schema.sql.
+     */
+    private static final int MAX_STRING_LENGTH = 16384;
+
+    private static String truncateString(String str) {
+        if (str.length() <= MAX_STRING_LENGTH) {
+            return str;
+        } else {
+            return str.substring(0, MAX_STRING_LENGTH - 3) + "..."; // NOI18N
+        }
+    }
+
 ////////////////////////////////////////////////////////////////////////////////
     private static class NodeCacheKey {
 
@@ -853,13 +868,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             this.name = name;
         }
 
-        public String getQuilifiedName() {
+        public String getSignature() {
             return quilifiedName;
         }
 
         @Override
         public String toString() {
             return name;
+        }
+
+        public String getQuilifiedName() {
+            return FunctionNameUtils.getFunctionQName(name);
         }
     }
 
@@ -1023,8 +1042,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                     //demagle here
                                     PreparedStatement stmt = getPreparedStatement("INSERT INTO Func (func_id, func_full_name, func_name) VALUES (?, ?, ?)"); //NOI18N
                                     stmt.setLong(1, addFunctionCmd.id);
-                                    stmt.setString(2, addFunctionCmd.name.toString());
-                                    stmt.setString(3, addFunctionCmd.name.toString());
+                                    stmt.setString(2, truncateString(addFunctionCmd.name.toString()));
+                                    stmt.setString(3, truncateString(addFunctionCmd.name.toString()));
                                     stmt.executeUpdate();
                                 } else if (cmd instanceof AddNode) {
                                     AddNode addNodeCmd = (AddNode) cmd;

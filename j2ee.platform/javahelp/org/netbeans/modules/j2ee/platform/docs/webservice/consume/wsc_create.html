@@ -3,8 +3,8 @@
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Generating a JAX-WS Web Service Client</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head> 
@@ -12,86 +12,86 @@ Use is subject to license terms.  *-->
         <h2>Generating a JAX-WS  Web Service Client</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
         <p>A web service can be consumed in a web application, a Java application, or
-        a MIDP client (MIDlet). For information on consuming web services 
-        in a MIDlet, see the Java ME Mobility documentation.</p>
+            a MIDP client (MIDlet). For information on consuming web services
+            in a MIDlet, see the Java ME Mobility documentation.</p>
 
         <p>For JAX-WS clients, all imported WSDL files and schemas are
-        resolved automatically by the IDE. For JAX-RPC clients,
-        before you begin, note that if the WSDL file that you want to use imports schemas, other WSDL files, or both, from the local file system, the web service client will only work
-        if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
-        folder. If you do not do this,
-        the <tt>wscompile</tt> tool
-        will not be able to locate these imported files at the end of the procedure below.
+            resolved automatically by the IDE. For JAX-RPC clients,
+            before you begin, note that if the WSDL file that you want to use imports schemas, other WSDL files, or both, from the local file system, the web service client will only work
+            if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
+            folder. If you do not do this,
+            the <tt>wscompile</tt> tool
+            will not be able to locate these imported files at the end of the procedure below.
 
         <p><b>To create a web service client:</b>
-	
+
         <ol>
             <li>Create the project to contain the web service client. Depending on how you want to
-            consume the web service, create a web application project or a Java application project.
+                consume the web service, create a web application project or a Java application project.
             <li>From the Projects window or Files window, right-click a node
-            in the project and choose New &gt; Other.
-            The New File wizard appears. Under Categories, select Web Services. Under File Types, select Web Service Client.
-            Click Next.</li>
+                in the project and choose New &gt; Other.
+                The New File wizard appears. Under Categories, select Web Services. Under File Types, select Web Service Client.
+                Click Next.</li>
             <li>Access the WSDL file of the web service that the web service client is to consume.
-            Depending on what the provider has distributed, do the following:<ul>
-                <li>To generate a client from a project
-                on your local filesystem, click Project and browse to a project's
-                web service port icon.</li>            
-                <li>To generate a client from a WSDL file
-                on your local filesystem, click Local File and browse to the WSDL file on
-                your local filesystem.</li>
-                <li>To generate a client from a running web service, click WSDL URL,
-                    then type or paste the web service's URL.
-                    If you are behind a corporate firewall, click Proxy Settings and
-                    set your proxy host and port number.
-                    <ul class="note">
-                        <li>The WSDL file is downloaded when you finish the wizard.</li>
-                    </ul>
-                </li>
-            </ul>
-            <li>Specify a package where the client files are to be generated. When you complete
-            the wizard, you can find the generated client files in the Files window, within the
-            <tt>build</tt> folder. See <a href="wsc_expose.html">Exposing the Web Service Client in the Projects Window</a>.
-            <li>For JAX-RPC (J2EE 1.4) clients, for which support
-             is available via the "JAX-RPC Web Services" plugin
-              in the Plugins manager, select the web service client type from the Client Type drop-down:
-                <ul><li><b>J2EE Container-generated static stub.</b> 
-                    This type is based on JSR-109, which enhances JSR-101 by defining the packaging
-                    of web services into standard J2EE modules, including a new deployment descriptor,
-                    and defining web services that are implemented as session beans or servlets.
-                    This is the recommended and portable (via J2EE 1.4 specification) type.
-                    When you choose this type, the IDE adds deployment information in the 
-                    deployment descriptors and the container generates the stub and other artifacts.</li>
-                    <li><b>IDE-generated static stub.</b> 
-                    Only available for JAX-WS (J2EE 1.4) web services.
-                    This type is based on JAX-RPC, which defines the mapping of WSDL to Java and vice versa.
-                    It also defines a client API to invoke a remote web service and a runtime environment 
-                    on the server to host a web service. This type is not portable.
-                    When you choose this type, the IDE generates 
-                    the stub and other 
-                    artifacts, packages them in the archive, and deploys them.</li>
-                    <ul class="note">
-                        <li>If a web service is consumed in a Java application, no J2EE application server
-                        is used. The application runs as a stand-alone JVM process and its
-                        JVM parameters are set per project. Therefore, the J2EE Container-generated
-                        static stub does not apply to Java applications and is not made available in the Client Type
-                        drop-down.</li>
-                    </ul>
+                Depending on what the provider has distributed, do the following:<ul>
+                    <li>To generate a client from a project
+                        on your local filesystem, click Project and browse to a project's
+                        web service port icon.</li>
+                    <li>To generate a client from a WSDL file
+                        on your local filesystem, click Local File and browse to the WSDL file on
+                        your local filesystem.</li>
+                    <li>To generate a client from a running web service, click WSDL URL,
+                        then type or paste the web service's URL.
+                        If you are behind a corporate firewall, click Proxy Settings and
+                        set your proxy host and port number.
+                        <ul class="note">
+                            <li>The WSDL file is downloaded when you finish the wizard.</li>
+                        </ul>
+                    </li>
                 </ul>
-                <p>For Java SE clients, use the JAX Version drop-down to
-                specify whether you want to create a JAX-WS client
-            or a JAX-RPC client.</p>
-            </li>
-            <li>If you want to use raw XML messages when invoking the web service, select Generate Dispatch Code. The client code is generated using the <tt>java.xml.ws.Dispatch</tt> interface instead of the usual service endpoint interface. This is an advanced feaure and is unselected by default.</li>            <li>Click Finish.</li>
+            <li>Optionally, specify the package where the client files will be generated. When you complete
+                the wizard, you can find the generated client files in the Projects window, in the <tt>Generated
+                    Sources</tt> node of the client project, or in the Files window, within the
+                <tt>build</tt> folder.
+                <p>If you do not specify a package name, the IDE generates the client
+                    files in the default package, which is based on the namespace in the WSDL. You can change this package name later in the
+                    WSDL Customization editor.</p></li>
+            <li>Specify whether to use JAX-WS or the older JAX-RPC client style. JAX-WS is selected
+                by default. However, older services may require JAX-RPC clients. Install the JAX-RPC Web Services plugin to create JAX-RPC clients.
+                <p class="notes">If you are creating a client in a J2EE 1.4 web application, the RPC style is automatically selected,
+                    and additional options for Client Type appear. See <a href="#j2ee14client">JAX-RPC Clients in J2EE 1.4 Web Applications</a>.</p></li>
 
- 
-           
+
+
+            <li>If you want to use raw XML messages when invoking the web service, select Generate Dispatch Code. The client code is generated using the <tt>java.xml.ws.Dispatch</tt> interface instead of the usual service endpoint interface. This is an advanced feaure and is unselected by default.</li>
+            <li>Click Finish.</li>
         </ol>
+        <h3><a name="j2ee14client"/>JAX-RPC Clients in J2EE 1.4 Web Applications</h3>
+        <p>If you are creating a web service client in a J2EE 1.4 web application, a Client Type drop-down list appears with the following
+            options:</p>
+
+        <ul><li><b>J2EE Container-generated static stub.</b>
+                This type is based on JSR-109, which enhances JSR-101 by defining the packaging
+                of web services into standard J2EE modules, including a new deployment descriptor,
+                and defining web services that are implemented as session beans or servlets.
+                This is the recommended and portable (via J2EE 1.4 specification) type.
+                When you choose this type, the IDE adds deployment information in the
+                deployment descriptors and the container generates the stub and other artifacts.</li>
+            <li><b>IDE-generated static stub.</b>
+                This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
+                It also defines a client API to invoke a remote web service and a runtime environment
+                on the server to host a web service. This type is not portable.
+                When you choose this type, the IDE generates
+                the stub and other
+                artifacts, packages them in the archive, and deploys them.</li></ul>
+
+
+
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="about_wsc.html">About Web Service Clients</a></dd>
             <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-            
+
         </dl>
 
 

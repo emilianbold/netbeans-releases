@@ -97,7 +97,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         List<WizardDescriptor.Panel<WizardDescriptor>> pList = new ArrayList<Panel<WizardDescriptor>>();
         HostSetupWorker worker;
         if (providers.size() > 1) {
-            pList.add(panel0);            
+            pList.add(panel0);
         }
         // even in the case we don't show panel0
         worker = panel0.getSelectedWorker();
@@ -105,7 +105,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         pList.addAll(worker.getWizardPanels(new HostValidatorImpl(cacheManager)));
 
         WizardDescriptor.Panel<WizardDescriptor>[] result =
-                (WizardDescriptor.Panel<WizardDescriptor>[])(new WizardDescriptor.Panel[pList.size()]);
+                (WizardDescriptor.Panel<WizardDescriptor>[]) (new WizardDescriptor.Panel[pList.size()]);
         pList.toArray(result);
         return result;
     }
@@ -204,29 +204,46 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); //NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(CreateHostWizardIterator.class, "CreateNewHostWizardTitle"));
-        
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
+
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            HostSetupWorker worker = iterator.getSelectedWorker();
-            HostSetupWorker.Result result = worker.getResult();
-            Runnable r = result.getRunOnFinish();
-            CndUtils.assertFalse(r == null);
-            if (r != null) {
-                r.run();
-            }
-            ExecutionEnvironment execEnv = result.getExecutionEnvironment();
-            String displayName = result.getDisplayName();
-            if (displayName == null) {
-                displayName = execEnv.getDisplayName();
-            }
-            final RemoteSyncFactory syncFactory = result.getSyncFactory();
-            final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
-            return record;
-        } else {
+
+        if (cancelled) {
             return null;
         }
+
+        HostSetupWorker worker = iterator.getSelectedWorker();
+
+        if (worker == null) {
+            return null;
+        }
+
+        HostSetupWorker.Result result = worker.getResult();
+
+        if (result == null) {
+            return null;
+        }
+
+        Runnable r = result.getRunOnFinish();
+        CndUtils.assertFalse(r == null);
+
+        if (r != null) {
+            r.run();
+        }
+
+        ExecutionEnvironment execEnv = result.getExecutionEnvironment();
+        String displayName = result.getDisplayName();
+
+        if (displayName == null) {
+            displayName = execEnv.getDisplayName();
+        }
+
+        final RemoteSyncFactory syncFactory = result.getSyncFactory();
+        final ServerRecord record = ServerList.addServer(execEnv, displayName, syncFactory, false, false);
+
+        return record;
     }
 }

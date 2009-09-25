@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
@@ -100,12 +101,15 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private LinkedList evaluationQueue = new LinkedList();
 
+    private EvaluatorListener evalListener;
     private VariablesPreferenceChangeListener prefListener;
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
+        evalListener = new EvaluatorListener();
+        CodeEvaluator.addResultListener(evalListener);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(prefListener);
         Properties properties = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
@@ -650,6 +654,21 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
 
         private void refresh() {
+            try {
+                fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
+        }
+
+    }
+
+    private class EvaluatorListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
             try {
                 fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
             } catch (ThreadDeath td) {

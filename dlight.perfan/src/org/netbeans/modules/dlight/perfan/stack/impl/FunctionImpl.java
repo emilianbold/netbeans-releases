@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.perfan.stack.impl;
 
 import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 
 public class FunctionImpl implements Function {
 
@@ -54,7 +55,7 @@ public class FunctionImpl implements Function {
     return longName;
   }
 
-  public String getQuilifiedName() {
+  public String getSignature() {
     return longName;
   }
 
@@ -67,5 +68,7 @@ public class FunctionImpl implements Function {
     return "Function: " + longName + " [" + objRef + "]"; // NOI18N
   }
 
-  
+    public String getQuilifiedName() {
+        return FunctionNameUtils.getFunctionQName(longName);
+    }
 }

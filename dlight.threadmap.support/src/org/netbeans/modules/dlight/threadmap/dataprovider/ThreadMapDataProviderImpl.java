@@ -46,15 +46,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
-import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.threadmap.api.ThreadData;
@@ -225,6 +225,10 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
 
     public synchronized ThreadDump getThreadDump(final ThreadDumpQuery query) {
         return threadDumpProvider == null ? null : threadDumpProvider.getThreadDump(query);
+    }
+
+    public Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query) {
+        return threadDumpProvider == null ? null : threadDumpProvider.getThreadSnapshots(query);
     }
 
     public synchronized void attachTo(final DataStorage storage) {

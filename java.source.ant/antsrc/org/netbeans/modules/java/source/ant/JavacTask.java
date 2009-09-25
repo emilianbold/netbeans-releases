@@ -76,7 +76,7 @@ public class JavacTask extends Javac {
                 File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
                 
                 try {
-                    Boolean built = BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false);
+                    Boolean built = BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false, true);
 
                     if (built == null) {
                         noBin = true;

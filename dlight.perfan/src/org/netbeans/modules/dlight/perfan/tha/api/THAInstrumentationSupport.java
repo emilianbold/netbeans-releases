@@ -105,7 +105,7 @@ public final class THAInstrumentationSupport {
         return result;
     }
 
-    public boolean isInstrumentationNeeded(ExecutionEnvironment env, THAConfiguration configuration){
+    public boolean isInstrumentationNeeded(ExecutionEnvironment env, THAConfiguration configuration) {
         try {
             if (!configuration.collectDataRaces() && configuration.collectDeadlocks() && HostInfoUtils.getHostInfo(env).getCpuFamily().equals(CpuFamily.SPARC)) {
                 return false;
@@ -212,11 +212,34 @@ public final class THAInstrumentationSupport {
         }
 
         public int compareTo(CollectVersion other) {
+            if (this.equals(other)) {
+                return 0;
+            }
+
             if (major == other.major) {
                 return Integer.valueOf(minor).compareTo(other.minor);
             } else {
                 return Integer.valueOf(major).compareTo(other.major);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof CollectVersion)) {
+                return false;
+            }
+
+            CollectVersion that = (CollectVersion) obj;
+
+            return (this.major == that.major && this.minor == that.minor);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + this.major;
+            hash = 17 * hash + this.minor;
+            return hash;
         }
     }
 

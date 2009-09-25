@@ -43,6 +43,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 
 /**
@@ -71,7 +72,9 @@ public final class DLightConfigurationUIWrapperProvider {
                 DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
                 List<DLightTool> allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
                 for (DLightConfiguration dLightConfiguration : accessor.getDLightConfigurations(manager)) {
-                    dLightConfigurations.add(new DLightConfigurationUIWrapper(dLightConfiguration, allDLightTools));
+                    if (!DLightConfigurationAccessor.getDefault().isHidden(dLightConfiguration)){
+                        dLightConfigurations.add(new DLightConfigurationUIWrapper(dLightConfiguration, allDLightTools));
+                    }
                 }
             }
         }

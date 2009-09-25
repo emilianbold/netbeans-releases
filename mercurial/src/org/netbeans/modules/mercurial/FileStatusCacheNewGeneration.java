@@ -82,9 +82,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     private final Map<File, FileInformation> cachedFiles;
     private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
     private final RequestProcessor rp = new RequestProcessor("Mercurial.cacheNG", 1, true);
-    /**
-     * Copy of cachedFiles. Available for time-consuming read operations, so these operations don't block a fast synchronized access to cachedFiles
-     */
+    private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
 
     FileStatusCacheNewGeneration() {
         this.hg = Mercurial.getInstance();
@@ -377,15 +375,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
                     File file = entry.getKey();
                     FileInformation fi = entry.getValue();
                     boolean exists = file.exists();
+                    File filesOwner = null;
+                    boolean correctRepository = true;
                     if (!interestingFiles.containsKey(file) // file no longer has an interesting status
                             && ((fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0 && !exists || // file was ignored and is now deleted
-                            (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile()))) { // file is now up-to-date or also ignored by .hgignore
+                            (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0 && (!exists || file.isFile())) // file is now up-to-date or also ignored by .hgignore
+                            && (correctRepository = repository.equals(filesOwner = hg.getRepositoryRoot(file)))) { // do not remove info for nested repositories
                         LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                         // TODO better way to detect conflicts
                         if (HgCommand.existsConflictFile(file.getAbsolutePath())) {
                             refreshFileStatus(file, FILE_INFORMATION_CONFLICT, interestingFiles); // set the files status to 'IN CONFLICT'
                         } else {
                             refreshFileStatus(file, FILE_INFORMATION_UNKNOWN, interestingFiles); // remove the file from cache
+                        }
+                    }
+                    if (!correctRepository) {
+                        if (nestedRepositories.add(filesOwner)) {
+                            LOG.log(Level.INFO, "refreshAllRoots: nested repository found: {0} contains {1}", new File[] {repository, filesOwner}); //NOI18N
                         }
                     }
                 }

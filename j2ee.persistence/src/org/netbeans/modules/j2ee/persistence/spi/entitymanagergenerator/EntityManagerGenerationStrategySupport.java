@@ -134,8 +134,24 @@ public abstract class EntityManagerGenerationStrategySupport implements EntityMa
     }
     
     private String makeUnique(String methodName){
-        // TODO: RETOUCHE
-        return methodName;
+        List <? extends Tree> members=getClassTree().getMembers();
+        String name=methodName;
+        int add=1;
+        boolean found=false;
+        do
+        {
+            found=false;
+            for(Tree membr:members) {
+                if(Tree.Kind.METHOD.equals(membr.getKind())){
+                    MethodTree mt = membr instanceof MethodTree ? (MethodTree) membr : null;
+                    if(mt!=null && name.equals(mt.getName().toString())) {
+                        found = true;
+                        name = methodName + add++;
+                    }
+                }
+            }
+        }while(found);
+        return name;
     }
     
     FieldInfo getEntityManagerFactoryFieldInfo(){

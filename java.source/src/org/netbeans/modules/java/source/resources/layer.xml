@@ -251,6 +251,9 @@ made subject to such option by the copyright holder.
         <file name="JavaBinaryIndexer.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaBinaryIndexer$Factory"/>
         </file>
+        <file name="COSSynchronizingIndexer.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer$Factory"/>
+        </file>
         <folder name="text">
             <folder name="x-java">
                 <file name="Reformatter.instance">

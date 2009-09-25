@@ -106,6 +106,23 @@ public class SQLSyntaxTest extends NbTestCase {
         });
     }
 
+    public void testComments() {
+        assertTokens("select /* block comment */ * from #notLineComment -- line comment", new TokenID[] {
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.BLOCK_COMMENT,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.IDENTIFIER,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.LINE_COMMENT
+        });
+        assertTokens("# MySQL Line Comment", SQLTokenContext.LINE_COMMENT);
+    }
+
     private void assertTokens(String m, TokenID... tokens) {
         Syntax s = new SQLSyntax();
         s.load(null, m.toCharArray(), 0, m.length(), true, m.length());

@@ -41,7 +41,10 @@
 
 package org.netbeans.spi.palette;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.SplitConstraint;
@@ -107,7 +110,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         TopComponent tc = createTopComponentWithPalette( null );
         PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
         
-        PaletteController foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false );
+        PaletteController foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false, tc.isOpened() );
         
         assertNull( foundPalette );
     }
@@ -126,7 +129,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         TopComponent tc = createTopComponentWithPalette( pc );
         PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
         
-        PaletteController foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false );
+        PaletteController foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false, tc.isOpened() );
         
         assertNotNull( foundPalette );
         assertEquals( pc.getModel().getName(), foundPalette.getModel().getName() );
@@ -143,7 +146,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         assertNotNull( foundPalette );
         assertEquals( mimePaletteRootName, foundPalette.getModel().getName() );
         
-        foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false );
+        foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false, tc.isOpened() );
         assertNotNull( foundPalette );
         assertEquals( mimePaletteRootName, foundPalette.getModel().getName() );
     }
@@ -161,85 +164,9 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         assertNotNull( foundPalette );
         assertEquals( mimePaletteRootName, foundPalette.getModel().getName() );
         
-        foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false );
+        foundPalette = paletteSwitch.getPaletteFromTopComponent( tc, false, tc.isOpened() );
         assertNotNull( foundPalette );
         assertEquals( pc.getModel().getName(), foundPalette.getModel().getName() );
-    }
-    
-    public void testVisibilityPerDocumentType() throws Exception {
-        final TopComponent palette = PaletteTopComponent.getDefault();
-        assertNotNull( palette );
-        
-        final PaletteController pc = PaletteFactory.createPalette( lookupPaletteRootName, new DummyActions() );
-        final MyTopComponent paletteTc1 = createTopComponentWithPalette( pc );
-        paletteTc1.open();
-
-        final MyTopComponent paletteTc2 = createTopComponentWithPalette( null );
-        paletteTc2.setActivatedNodes( new Node[] { DataObject.find( dummyDocumentFile ).getNodeDelegate() } );
-        paletteTc2.open();
-        
-        final MyTopComponent noPaletteTc = createTopComponentWithPalette( null );
-        noPaletteTc.open();
-
-        noPaletteTc.requestActive();
-        final PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
-        paletteSwitch.startListening();
-        
-        assertNull( "No PaletteController for TC which doesn't provide one", 
-                paletteSwitch.getCurrentPalette() );
-        assertFalse( "Palette window cannot be opened when a document without PaletteController is active", 
-                palette.isOpened() );
-        
-        paletteTc1.requestActive();
-        SwingUtilities.invokeLater( new Runnable() {
-            public void run() {
-                assertEquals( TopComponent.getRegistry().getActivated(), paletteTc1 );
-                assertNotNull( "TC with PaletteController is active", 
-                        paletteSwitch.getCurrentPalette() );
-                assertTrue( "Palette window opens by default when a document with PaletteController is active", 
-                        palette.isOpened() );
-                
-                noPaletteTc.requestActive();
-
-                SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                        assertFalse( "Palette window closes when document without PaletteController is active", 
-                                palette.isOpened() );
-                        
-                        paletteTc1.requestActive();
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                assertTrue( "Palette window opens by default when a document with PaletteController is active", 
-                                        palette.isOpened() );
-                                
-                                //simulate closing palette window by user
-                                palette.close();
-                                
-                                noPaletteTc.requestActive();
-                                paletteTc1.requestActive();
-
-                                SwingUtilities.invokeLater( new Runnable() {
-                                    public void run() {
-                                        assertFalse( "Palette window doesn't show up even when document with PaletteController is active because the palette window was closed by the user before.", 
-                                                palette.isOpened() );
-                                        
-                                        paletteTc2.requestActive();
-                                
-                                        SwingUtilities.invokeLater( new Runnable() {
-                                            public void run() {
-                                                assertTrue( "Palette window opens by default when a different document with PaletteController is active", 
-                                                        palette.isOpened() );
-                                                paletteSwitch.stopListening();
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        });
     }
     
     public void testPaletteInNonActivatedEditor() throws IOException {

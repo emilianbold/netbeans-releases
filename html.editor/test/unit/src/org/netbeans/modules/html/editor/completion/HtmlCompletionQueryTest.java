@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -384,7 +383,7 @@ public class HtmlCompletionQueryTest extends TestBase {
             return ;
         }
 
-        Collection<CompletionItem> items = completionResult.getItems();
+        Collection<? extends CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
         if(expectedAnchor > 0) {
@@ -442,7 +441,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
 
         assertNotNull(result);
-        Collection<CompletionItem> items = completionResult.getItems();
+        Collection<? extends CompletionItem> items = completionResult.getItems();
         assertNotNull(items);
 
         CompletionItem item = null;
@@ -464,7 +463,7 @@ public class HtmlCompletionQueryTest extends TestBase {
 
     }
 
-    private void assertCompletionItemNames(String[] expected, Collection<CompletionItem> ccresult, Match type) {
+    private void assertCompletionItemNames(String[] expected, Collection<? extends CompletionItem> ccresult, Match type) {
         Collection<String> real = new ArrayList<String>();
         for (CompletionItem ccp : ccresult) {
             //check only html items
@@ -506,7 +505,7 @@ public class HtmlCompletionQueryTest extends TestBase {
         for (int i = 0; i < doc.getLength(); i++) {
             HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, i).query();
             if (result != null) {
-                Collection<CompletionItem> items = result.getItems();
+                Collection<? extends CompletionItem> items = result.getItems();
                 output.append(i + ":");
                 output.append('[');
                 List<CompletionItem> itemsList = new ArrayList<CompletionItem>(items);

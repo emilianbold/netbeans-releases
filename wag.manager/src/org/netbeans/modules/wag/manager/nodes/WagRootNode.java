@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.wag.manager.actions.LoginAction;
+import org.netbeans.modules.wag.manager.actions.ViewTutorialAction;
 import org.netbeans.modules.wag.manager.actions.ViewZemblyApiBrowserAction;
 import org.netbeans.modules.wag.manager.util.WagPreferences;
 import org.netbeans.modules.wag.manager.zembly.ZemblySession;
@@ -95,6 +96,7 @@ public class WagRootNode extends AbstractNode implements PropertyChangeListener 
     public Action[] getActions(boolean context) {
         return new Action[]{
                     SystemAction.get(LoginAction.class),
+                    SystemAction.get(ViewTutorialAction.class),
                     SystemAction.get(ViewZemblyApiBrowserAction.class)
                 };
     }

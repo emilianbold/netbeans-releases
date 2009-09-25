@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.event.ActionEvent;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.management.api.DLightSession;
@@ -73,7 +72,6 @@ import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDa
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -316,7 +314,7 @@ public class ThreadMapVisualizer extends JPanel implements
         synchronized (uiLock) {
             if (mapData != null) {
                 threadsPanel.threadsMonitoringEnabled();
-                dataManager.processData(MonitoredData.getMonitoredData(mapData), session);
+                dataManager.processData(MonitoredData.getMonitoredData(mapData), session, provider);
                 startTimeStamp = dataManager.getEndTimeStump();
             }
             dataManager.processData(summaryData);

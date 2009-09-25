@@ -449,9 +449,12 @@ public class BracketCompleterTest extends GroovyTestBase {
     }
 
     public void testBackspace9() throws Exception {
-        deleteChar("x=/^/", "x=^");
+        deleteChar("x=/^/", "x=^/");
     }
 
+    public void testBackspace10() throws Exception {
+        deleteChar("String s = \"/^/html/body\";", "String s = \"^/html/body\";");
+    }
 
     public void testContComment() throws Exception {
         if (BracketCompleter.CONTINUE_COMMENTS) {
@@ -546,13 +549,13 @@ public class BracketCompleterTest extends GroovyTestBase {
     }
 
     public void testDeleteContComment() throws Exception {
-        deleteChar("// ^", "^");
-        deleteChar("\n// ^", "\n^");
+        deleteChar("// ^", "//^");
+        deleteChar("\n// ^", "\n//^");
     }
 
     public void testDeleteContComment2() throws Exception {
-        deleteChar("// ^  ", "^  ");
-        deleteChar("\n// ^  ", "\n^  ");
+        deleteChar("// ^  ", "//^  ");
+        deleteChar("\n// ^  ", "\n//^  ");
     }
 
     // TODO fix and uncomment

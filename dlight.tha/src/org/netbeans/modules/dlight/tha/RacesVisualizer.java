@@ -137,7 +137,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
                     stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.image2Icon(CallStackUISupport.downBadge), snap.getStack());//NOI18N
                 }
             }
-            stackPanel.expandAll();
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    stackPanel.expandAll();
+                }
+            }, 500);
             return stackPanel;
         }
     }

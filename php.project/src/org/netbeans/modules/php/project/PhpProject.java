@@ -388,8 +388,16 @@ public class PhpProject implements Project {
         return VisibilityQuery.getDefault().isVisible(file);
     }
 
-    boolean isVisible(FileObject file) {
-        return isVisible(FileUtil.toFile(file));
+    boolean isVisible(FileObject fileObject) {
+        final File file = FileUtil.toFile(fileObject);
+        if (file != null) {
+            //added because #172139 caused NPE in GlobalVisibilityQueryImpl
+            if (getIgnoredFileObjects().contains(fileObject)) {
+                return false;
+            }
+            return VisibilityQuery.getDefault().isVisible(fileObject);
+        }
+        return isVisible(file);
     }
 
     public Set<File> getIgnoredFiles() {
@@ -397,6 +405,18 @@ public class PhpProject implements Project {
         putIgnoredProjectFiles(ignored);
         putIgnoredFrameworkFiles(ignored);
         return ignored;
+    }
+
+    public Set<FileObject> getIgnoredFileObjects() {
+        //added because #172139 caused NPE in GlobalVisibilityQueryImpl
+        Set<FileObject> ignoredFileObjects = new HashSet<FileObject>();
+        for (File file : getIgnoredFiles()) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                ignoredFileObjects.add(fo);
+            }
+        }
+        return ignoredFileObjects;
     }
 
     private void putIgnoredProjectFiles(Set<File> ignored) {

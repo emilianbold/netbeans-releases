@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,50 +34,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.api.impl;
+package org.netbeans.modules.dlight.core.ui.components;
 
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Rectangle;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 
 /**
  *
- * @author mt154047
+ * @author ak119685
  */
-public class DefaultTreeTableNode implements TreeTableNode{
+class DLightTargetSelectionDialogLayout implements LayoutManager {
 
-  private final String value;
-  private final Column[] tableColumns;
-  private final String[] tableValues;
+  static int COMBO_IDX = 0;
+  static int BTN_IDX = 1;
+  Dimension origin = new Dimension(400, 56);
 
-
-  public DefaultTreeTableNode(String treeValue, Column[] tableColumns, String[] tableValues) {
-    this.value = treeValue;
-    this.tableColumns = tableColumns;
-    this.tableValues = tableValues;
-    
+  public void addLayoutComponent(String name, Component comp) {
   }
 
+  public void removeLayoutComponent(Component comp) {
+  }
 
+  public Dimension preferredLayoutSize(Container parent) {
+    return origin;
+  }
 
-  public String getValue(String columnName) {
-    int index = -1;
-    for (int i = 0; i < tableColumns.length; i ++){
-      if (tableColumns[i].getColumnName().equals(columnName)){
-        index = i;
-        break;
-      }
+  public Dimension minimumLayoutSize(Container parent) {
+    return origin;
+  }
+
+  public void layoutContainer(Container parent) {
+    Rectangle b = parent.getBounds();
+    int inset = 8;
+    int vOffset = 20;
+    int hOffset = 0;
+    int btnWSize = 80;
+
+    if (parent.getComponentCount() > 1) {
+      JButton btn = (JButton) parent.getComponent(BTN_IDX);
+      int btnHSize = (int) btn.getPreferredSize().getHeight();
+      btn.setBounds(b.width - inset - btnWSize, vOffset, btnWSize, btnHSize);
+      hOffset = inset + btnWSize;
     }
-    if (index < 0){
-      return null;
-    }
-    return tableValues[index];
-  }
 
-  public String getValue() {
-    throw new UnsupportedOperationException("Not supported yet."); //NOI18N
-  }
+    JComboBox combo = (JComboBox) parent.getComponent(COMBO_IDX);
+    int comboHSize = (int) combo.getPreferredSize().getHeight() + 1;
+    combo.setBounds(inset, vOffset, b.width - 2 * inset - hOffset, comboHSize);
 
+  }
 }

@@ -70,7 +70,7 @@ public class DLightConfigurationUIWrapper {
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         this.dlightConfiguration = accessor.getDefaultConfiguration(manager);
         this.name = name;
-        this.displayedName = displayedName;
+        this.displayedName =name;
         this.custom = true;
         initWrapper(allDLightTools);
     }
@@ -81,7 +81,10 @@ public class DLightConfigurationUIWrapper {
         int i = 0;
         for (DLightTool dlightTool : allDLightTools) {
             DLightTool toolToAdd = findTool(confDlightTools, dlightTool.getID());
-            tools.add(new DLightToolUIWrapper(toolToAdd == null ? dlightTool : toolToAdd,  inList(dlightTool, confDlightTools)));
+            toolToAdd = toolToAdd == null ? dlightTool : toolToAdd;
+            if (toolToAdd != null && toolToAdd.isVisible()){
+                tools.add(new DLightToolUIWrapper(toolToAdd,  inList(dlightTool, confDlightTools)));
+            }
         }
     }
 

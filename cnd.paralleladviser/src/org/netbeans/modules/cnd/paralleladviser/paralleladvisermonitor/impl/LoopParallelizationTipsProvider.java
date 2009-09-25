@@ -51,11 +51,14 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
 
 /**
  * Service that provides tips for Parallel Adviser.
@@ -72,6 +75,8 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
 
     private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
 
+    private final static List<WeakReference<ParallelAdviserTipsProviderListener>> listeners = new ArrayList<WeakReference<ParallelAdviserTipsProviderListener>>();
+
     public static void addTip(LoopParallelizationAdvice tip) {
         for (LoopParallelizationAdvice advice : tips) {
             if(advice.getLoop().equals(tip.getLoop())) {
@@ -80,6 +85,7 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
             }
         }
         tips.add(tip);
+        notifyListeners();
     }
 
     public static void clearTips() {
@@ -105,4 +111,22 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
         }
     }
 
+    public void addListener(ParallelAdviserTipsProviderListener listener) {
+        listeners.add(new WeakReference<ParallelAdviserTipsProviderListener>(listener));
+    }
+
+    public void removeListener(ParallelAdviserTipsProviderListener listener) {
+        for (Iterator<WeakReference<ParallelAdviserTipsProviderListener>> it = listeners.iterator(); it.hasNext();) {
+            WeakReference<ParallelAdviserTipsProviderListener> ref = it.next();
+            if (ref.get() == listener) {
+                it.remove();
+            }
+        }
+    }
+
+    private static void notifyListeners() {
+        for (WeakReference<ParallelAdviserTipsProviderListener> ref : listeners) {
+            ref.get().tipsChanged();
+        }
+    }
 }

@@ -237,7 +237,7 @@ public class ProcFSDataCollector
             if (log.isLoggable(Level.FINE)) {
                 log.fine(String.format("Got UNEXPECTED targetStarted() notification. " + // NOI18N
                         "Validation was performed against %s, but notified about %s", // NOI18N
-                        getName(), this.target.toString(), target.toString()));
+                        this.target.toString(), target.toString()));
             }
             return;
         }

@@ -63,7 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
     private static final boolean TRACE = false;
 
-    public SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
             String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
@@ -79,11 +79,10 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
                 return null;
             }
             if (TRACE) {
-                System.err.println("Model search for: "+functionName); // NOI18N
+                System.err.println("Model search for: "+functionQName); // NOI18N
             }
 
-            String name = getFunctionSignature(functionName);
-            SourceFileInfo res = findFunction(csmProject, name, lineNumber);
+            SourceFileInfo res = findFunction(csmProject, functionQName, lineNumber);
             if (TRACE) {
                 if (res != null) {
                     System.err.println("\tFound: "+res); // NOI18N
@@ -129,39 +128,4 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         return declaration;
     }
     
-    public static String getFunctionSignature(String functionName){
-        int start = 0;
-        int templateLevel = 0;
-        boolean isOperator = false;
-        for(int i = 0; i < functionName.length(); i++) {
-            char c = functionName.charAt(i);
-            switch (c) {
-                case '<':
-                    templateLevel++;
-                    break;
-                case '>':
-                    templateLevel++;
-                    break;
-                case 'o':
-                    if (functionName.substring(i).startsWith("operator") && // NOI18N
-                        functionName.length() > i + 8 &&
-                        !Character.isLetter(functionName.charAt(i+8))) {
-                        isOperator = true;
-                    }
-                    break;
-                case ' ':
-                case '*':
-                case '&':
-                    if (templateLevel == 0) {
-                        if (!isOperator) {
-                            start = i + 1;
-                        }
-                    }
-                    break;
-                case '(':
-                    return functionName.substring(start, i);
-            }
-        }
-        return functionName.substring(start);
-    }
 }

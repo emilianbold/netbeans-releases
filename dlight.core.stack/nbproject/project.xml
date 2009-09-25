@@ -94,6 +94,7 @@
                 <package>org.netbeans.modules.dlight.core.stack.spi</package>
                 <package>org.netbeans.modules.dlight.core.stack.storage</package>
                 <package>org.netbeans.modules.dlight.core.stack.ui</package>
+                <package>org.netbeans.modules.dlight.core.stack.utils</package>
             </friend-packages>
         </data>
     </configuration>

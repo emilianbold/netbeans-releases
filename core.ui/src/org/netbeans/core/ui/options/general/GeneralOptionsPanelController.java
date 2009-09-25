@@ -58,6 +58,7 @@ import org.openide.util.Lookup;
     iconBase="org/netbeans/modules/options/resources/generalOptions.png",
     keywords="#KW_General",
     keywordsCategory="General",
+    id="General", // #172844; XXX effectively an undocumented API
 //    title="#CTL_General_Options_Title",
 //    description="#CTL_General_Options_Description",
     position=100
