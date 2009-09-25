@@ -95,7 +95,7 @@ public class AddUseImportRule extends AbstractRule {
         return NbBundle.getMessage(AddUseImportRule.class, "AddUseImportRuleDispName");
     }
 
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -104,12 +104,8 @@ public class AddUseImportRule extends AbstractRule {
         final int caretOffset = context.caretOffset;
         int lineBegin = -1;
         int lineEnd = -1;
-        try {
-            lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             CheckVisitor checkVisitor = new CheckVisitor(context, doc, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(checkVisitor);

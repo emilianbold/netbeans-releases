@@ -575,7 +575,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
                 try {
                     if (J2eeModule.Type.WAR.equals(jmp.getJ2eeModule().getType())) {
                         contextRoot = jmp.getConfigSupport().getWebContextRoot();
-                        if(contextRoot != null && contextRoot.length() > 0) {
+                        if(contextRoot == null || contextRoot.trim().length() == 0) {
                             contextRoot = "/" ; //NOI18N
                         }
                     }
