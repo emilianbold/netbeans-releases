@@ -508,8 +508,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 refresh(doc, comp.getCaretPosition());
                 Annotations annotations = ((BaseDocument) doc).getAnnotations();
                 AnnotationDesc desc = annotations.getAnnotation(line, type);
-                annotations.frontAnnotation(desc);
-                ParseErrorAnnotation annotation = findAnnotation(doc, desc, line);
+                ParseErrorAnnotation annotation = null;
+                if (desc != null) {
+                    annotations.frontAnnotation(desc);
+                    annotation = findAnnotation(doc, desc, line);
+                }
 
                 if (annotation == null) {
                     if (onlyActive) {

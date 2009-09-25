@@ -873,7 +873,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
-    /* test */ void scheduleWork(final Work work, boolean wait) {
+    /* test */ void scheduleWork(Iterable<? extends Work> multipleWork) {
+        recordCaller();
+
+        boolean canScheduleMultiple = true;
+        synchronized (this) {
+            canScheduleMultiple = state == State.INITIAL_SCAN_RUNNING || state == State.ACTIVE;
+        }
+
+        if (canScheduleMultiple) {
+            getWorker().schedule(multipleWork);
+        } else {
+            for(Work w : multipleWork) {
+                scheduleWork(w, false);
+            }
+        }
+    }
+
+    /* test */ void scheduleWork(Work work, boolean wait) {
         recordCaller();
 
         boolean scheduleExtraWork = false;
@@ -2832,6 +2849,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         // -------------------------------------------------------------------
         // Public implementation
         // -------------------------------------------------------------------
+
+        public void schedule (Iterable<? extends Work> multipleWork) {
+            synchronized (todo) {
+                for(Work w : multipleWork) {
+                    schedule(w, false);
+                }
+            }
+        }
 
         public void schedule (Work work, boolean wait) {
             boolean enforceWork = false;
