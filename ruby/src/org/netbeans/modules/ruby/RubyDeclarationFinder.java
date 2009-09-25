@@ -484,12 +484,12 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                 // search for AR associations
                 if (location == DeclarationLocation.NONE) {
-                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                    location = new ActiveRecordAssociationFinder(index, (SymbolNode) closest, root, path).findAssociationLocation();
                 }
 
                 // search for helpers
                 if (location == DeclarationLocation.NONE) {
-                    location = new HelpersFinder(parserResult, (SymbolNode) closest, root, path).findHelperLocation();
+                    location = new HelpersFinder(index, (SymbolNode) closest, root, path).findHelperLocation();
                 }
 
                 if (location == DeclarationLocation.NONE) {
