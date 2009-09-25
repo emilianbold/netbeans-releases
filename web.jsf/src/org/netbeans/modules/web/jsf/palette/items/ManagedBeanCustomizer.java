@@ -111,6 +111,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         this.project = project;
         this.collection = collection;
         readOnlyCheckBox.setVisible(enableReadOnly);
+        hint.setVisible(false);
         Component comp = this.managedBeanCombo.getEditor().getEditorComponent();
         if (comp instanceof JTextField) {
             final JTextField field = (JTextField)comp;
@@ -162,6 +163,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         managedBeanCombo = new javax.swing.JComboBox();
         readOnlyCheckBox = new javax.swing.JCheckBox();
         customizeTemplatesLabel = new javax.swing.JLabel();
+        hint = new javax.swing.JLabel();
 
         entityBeanLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.entityBeanLabel.text")); // NOI18N
 
@@ -189,6 +191,8 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
             }
         });
 
+        hint.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.hint.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -202,9 +206,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                             .add(managedBeanLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(readOnlyCheckBox)
                             .add(entityBeanCombo, 0, 324, Short.MAX_VALUE)
-                            .add(managedBeanCombo, 0, 324, Short.MAX_VALUE)))
+                            .add(managedBeanCombo, 0, 324, Short.MAX_VALUE)
+                            .add(readOnlyCheckBox)
+                            .add(hint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)))
                     .add(customizeTemplatesLabel))
                 .addContainerGap())
         );
@@ -220,8 +225,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                     .add(managedBeanLabel)
                     .add(managedBeanCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(hint)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(readOnlyCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 100, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 77, Short.MAX_VALUE)
                 .add(customizeTemplatesLabel)
                 .addContainerGap())
         );
@@ -229,7 +236,14 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
 
     private void entityBeanComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_entityBeanComboItemStateChanged
         final String entityClass = (String)entityBeanCombo.getModel().getSelectedItem();
+
         if (entityClass != null && entityClass.length() > 0) {
+            if (collection) {
+                hint.setText(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.listHint", entityClass));
+            } else {
+                hint.setText(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.instanceHint", entityClass));
+            }
+            hint.setVisible(true);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     final List<String> props = getPropertyNames(project, entityClass, collection);
@@ -248,6 +262,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
             } );
         } else {
             managedBeanCombo.setModel(new DefaultComboBoxModel());
+            hint.setVisible(false);
         }
     }//GEN-LAST:event_entityBeanComboItemStateChanged
 
@@ -322,6 +337,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     private javax.swing.JLabel customizeTemplatesLabel;
     private javax.swing.JComboBox entityBeanCombo;
     private javax.swing.JLabel entityBeanLabel;
+    private javax.swing.JLabel hint;
     private javax.swing.JComboBox managedBeanCombo;
     private javax.swing.JLabel managedBeanLabel;
     private javax.swing.JCheckBox readOnlyCheckBox;
