@@ -1052,7 +1052,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         boolean globalContext;
     }
 
-    private LocalVariables getLocalVariables(PHPParseResult context, String namePrefix, int position, String localFileURL) {
+    private LocalVariables getLocalVariables(final PHPParseResult context, final String namePrefix, final int position, final String localFileURL) {
         Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
         LocalVariables result = new LocalVariables();
         result.vars = localVars.values();
@@ -1060,16 +1060,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         VariableScope variableScope = model.getVariableScope(position);
         if (variableScope != null) {
             result.globalContext = variableScope instanceof NamespaceScope;
-            Collection<? extends VariableName> declaredVariables = ModelUtils.filter(variableScope.getDeclaredVariables(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX,namePrefix);
+            Collection<? extends VariableName> declaredVariables = ModelUtils.filter(variableScope.getDeclaredVariables(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, namePrefix);
             final int caretOffset = position + namePrefix.length();
             for (VariableName varName : declaredVariables) {
-                if (varName.getNameRange().containsInclusive(caretOffset)) continue;
-                final String name = varName.getName();
-                String notDollaredName = name.startsWith("$") ? name.substring(1) : name;
-                if (PredefinedSymbols.SUPERGLOBALS.contains(notDollaredName)) continue;
-                final String typeName = ModelUtils.getFirst(varName.getTypeNames(position));
-                IndexedConstant ic = new IndexedConstant(name, null, null, localFileURL, -1, 0,typeName);
-                localVars.put(name, ic);                
+                if (varName.getNameRange().getEnd() < caretOffset) {
+                    final String name = varName.getName();
+                    String notDollaredName = name.startsWith("$") ? name.substring(1) : name;
+                    if (PredefinedSymbols.SUPERGLOBALS.contains(notDollaredName)) {
+                        continue;
+                    }
+                    String typeName = ModelUtils.getFirst(varName.getTypeNames(position));
+                    if (typeName != null && typeName.contains("@")) {//NOI18N
+                        typeName = null;
+                    }
+                    IndexedConstant ic = new IndexedConstant(name, null, null, localFileURL, -1, 0, typeName);
+                    localVars.put(name, ic);
+                }
             }
         }
         return result;

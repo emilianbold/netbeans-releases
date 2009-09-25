@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule.AstRule;
@@ -54,12 +55,12 @@ import org.netbeans.modules.csl.api.RuleContext;
  * @author Radek Matous
  */
 public abstract class AbstractRule implements AstRule {
-    final void computeHints(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+    final void computeHints(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         if (isKindSupported(kind)) {
             computeHintsImpl(context, hints, kind);
         }
     }
-    abstract void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind);
+    abstract void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException;
 
     boolean isKindSupported(PHPHintsProvider.Kind kind) {
         return kind.equals(PHPHintsProvider.Kind.SUGGESTION);
