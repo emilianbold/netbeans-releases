@@ -253,13 +253,7 @@ class LazyFindIssuesAction extends JMenuItem {
                             final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                DashboardImpl.getInstance().addProject(pHandle, false);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DashboardImpl.getInstance().selectAndExpand(kp);
-                                    }
-                                });
+                                DashboardImpl.getInstance().addProject(pHandle, false, true);
                                 QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
                                 return;
                             }
@@ -291,13 +285,7 @@ class LazyNewIssuesAction extends JMenuItem {
                             final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                DashboardImpl.getInstance().addProject(pHandle, false);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DashboardImpl.getInstance().selectAndExpand(kp);
-                                    }
-                                });
+                                DashboardImpl.getInstance().addProject(pHandle, false, true);
                                 QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
                             }
                         } catch (KenaiException e) {
@@ -336,13 +324,7 @@ class LazyOpenKenaiProjectAction extends JMenuItem {
                             final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                DashboardImpl.getInstance().addProject(pHandle, false);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DashboardImpl.getInstance().selectAndExpand(kp);
-                                    }
-                                });
+                                DashboardImpl.getInstance().addProject(pHandle, false, true);
                             }
                         } catch (KenaiException ex) {
                             Exceptions.printStackTrace(ex);
