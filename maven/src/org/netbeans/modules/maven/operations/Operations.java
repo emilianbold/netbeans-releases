@@ -43,6 +43,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,7 +55,7 @@ public class Operations {
     public static void renameProject(NbMavenProjectImpl project) {
         assert SwingUtilities.isEventDispatchThread();
         RenameProjectPanel panel = new RenameProjectPanel(project);
-        DialogDescriptor dd = new DialogDescriptor(panel, "Rename project");
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(Operations.class, "RenameProjectPanel.lblRename.text=Rename Project"));
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             panel.renameProject();
         }
