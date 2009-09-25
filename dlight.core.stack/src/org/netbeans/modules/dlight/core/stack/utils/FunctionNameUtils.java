@@ -79,6 +79,16 @@ public final class FunctionNameUtils {
                    }
                    break;
                 case ' ':
+                    if (functionSignature.length() > i+1 &&
+                        functionSignature.charAt(i + 1) == '#') {
+                        return functionSignature.substring(start, i);
+                    }
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
+                    break;
                 case '*':
                 case '&':
                     if (templateLevel == 0) {
