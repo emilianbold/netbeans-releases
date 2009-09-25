@@ -173,7 +173,7 @@ public class BindingPanel extends SectionInnerPanel {
         WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);
         inSync = true;
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-            if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion))) {
+            if ((wsStackVersion != null) && (cfgVersion.isSupported(wsStackVersion) && (cfgVersion.isVisible()))) {
                 supportedConfigVersions.add(cfgVersion);
                 cfgVersionCombo.addItem(cfgVersion);
             }
