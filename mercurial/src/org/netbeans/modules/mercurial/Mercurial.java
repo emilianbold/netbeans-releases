@@ -62,6 +62,7 @@ import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.util.Lookup;
@@ -147,7 +148,7 @@ public class Mercurial {
         fileStatusCache.addPropertyChangeListener(mvcs);
         mercurialAnnotator.addPropertyChangeListener(mvcs);
         addPropertyChangeListener(mvcs);
-        checkVersion(); // Does the Hg check but postpones querying user until menu is activated
+        asyncInit(); // Does the Hg check but postpones querying user until menu is activated
     }
 
     private void setDefaultPath() {
@@ -175,18 +176,19 @@ public class Mercurial {
         }
     }
 
-    public void checkVersion() {
+    public void asyncInit() {
         gotVersion = false;
         RequestProcessor rp = getRequestProcessor();
-        Runnable doCheck = new Runnable() {
+        Runnable init = new Runnable() {
             public void run() {
+                HgKenaiSupport.getInstance().registerVCSNoficationListener();
                 synchronized(this) {
                     checkVersionIntern();
                 }
             }
 
         };
-        rp.post(doCheck);
+        rp.post(init);
     }
 
     private void checkVersionIntern() {
