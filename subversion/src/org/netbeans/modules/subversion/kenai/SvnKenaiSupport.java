@@ -104,19 +104,22 @@ public class SvnKenaiSupport {
         return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
     }
 
-    public void removeVCSNoficationListener(PropertyChangeListener l) {
+    private void removeVCSNoficationListener(PropertyChangeListener l) {
         if(kenaiSupport != null) {
             kenaiSupport.removeVCSNoficationListener(l);
         }
     }
 
-    public void addVCSNoficationListener(PropertyChangeListener l) {
+    private void addVCSNoficationListener(PropertyChangeListener l) {
         if(kenaiSupport != null) {
             kenaiSupport.addVCSNoficationListener(l);
         }
     }
 
-    public void register() {
+    public void registerVCSNoficationListener() {
+        if("true".equals(System.getProperty("kenai.vcs.notifications.ignore"))) {
+            return;
+        }
         addVCSNoficationListener(new KenaiNotificationListener());
     }
 
