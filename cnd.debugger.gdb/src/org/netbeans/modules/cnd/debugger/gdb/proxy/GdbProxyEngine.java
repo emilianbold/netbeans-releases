@@ -145,6 +145,8 @@ public class GdbProxyEngine {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable(debuggerCommand.get(0)).setArguments(args);
 
+        npb.setWorkingDirectory(workingDirectory);
+
         if (debuggerEnvironment != null) {
             for (String str : debuggerEnvironment) {
                 npb.putEnvironmentVariable(EnvUtils.getKey(str), EnvUtils.getValue(str));
@@ -154,7 +156,6 @@ public class GdbProxyEngine {
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();
             npb.appendPathVariable(pathname, cspath);
-            npb.setWorkingDirectory(workingDirectory);
         }
 
         final NativeProcess proc = npb.call();
