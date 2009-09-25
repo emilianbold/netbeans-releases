@@ -48,13 +48,17 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -125,7 +129,24 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         DataObject dTemplate = DataObject.find( template );                
         ClientCreator creator = CreatorProvider.getClientCreator(project, wiz);
         if (creator!=null) creator.createClient();
-                
+
+        // logging usage of Client wizard
+        Object[] params = new Object[6];
+        boolean isJaxWs = ClientWizardProperties.JAX_WS.equals(wiz.getProperty(ClientWizardProperties.JAX_VERSION));
+        params[0] = isJaxWs ? LogUtils.WS_STACK_JAXWS : LogUtils.WS_STACK_JAXRPC ;
+        params[1] = project.getClass().getName();
+        J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
+        params[2] = j2eeModule == null ? "" : j2eeModule.getModuleVersion(); //NOI18N
+        params[3] = "WS CLIENT"; //NOI18N
+        params[4] = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH) ? "DISPATCH": "STANDARD"; //NOI18N
+        int wsdlSource = (Integer)wiz.getProperty(ClientWizardProperties.WSDL_SOURCE);
+        switch (wsdlSource) {
+            case 0: params[5] = "FROM PROJECT";break; //NOI18N
+            case 1: params[5] = "FROM FILE";break; //NOI18N
+            default: params[5] = "FROM URL"; //NOI18N
+        }
+        LogUtils.logWsWizard(params);
+
         return Collections.singleton(dTemplate);
     }
 
