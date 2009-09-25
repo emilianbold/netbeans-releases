@@ -164,7 +164,7 @@ public class RemoteServerSetup {
                     needChmod = true;
                     for (String remoteFileName : binarySetupMap.keySet()) {
                         String localFileName = binarySetupMap.get(remoteFileName);
-                        RemoteUtil.LOGGER.fine("RSS.setup: Copying" + localFileName + " to " + executionEnvironment); //NO18N
+                        RemoteUtil.LOGGER.fine("RSS.setup: Copying " + localFileName + " to " + executionEnvironment); //NO18N
                         File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
                         if (file == null
                                 || !file.exists()
