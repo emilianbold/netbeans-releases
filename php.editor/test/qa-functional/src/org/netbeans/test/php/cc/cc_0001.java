@@ -40,7 +40,6 @@
  */
 package org.netbeans.test.php.cc;
 
-
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
@@ -69,25 +68,26 @@ public class cc_0001 extends cc {
                 NbModuleSuite.createConfiguration(cc_0001.class).addTest(
                 "CreateApplication",
                 "Create_a_PHP_source_file",
-                //          "Verify_automatic_code_completion_invocation",
-                //          "Verify_local_variable_code_completion",
-                //          "Verify_global_variable_code_completion",
-                //          "Verify_variable_from_included_file_code_completion",
-                //          "Verify_variable_from_required_file_code_completion",
-                //          "Verify_code_completion_inside_the_identifier",
-                //          "Verify_documentation_hints_for_built_in_identifiers",
-                //          "Verify_documentation_hints_for_keywords",
+                "Verify_automatic_code_completion_invocation",
+                "Verify_local_variable_code_completion",
+                "Verify_global_variable_code_completion",
+                "Verify_variable_from_included_file_code_completion",
+                "Verify_variable_from_required_file_code_completion",
+                "Verify_code_completion_inside_the_identifier",
+                "Verify_documentation_hints_for_built_in_identifiers",
+                "Verify_documentation_hints_for_keywords",
                 "Verify_keywords_code_completion",
                 "Verify_code_completion_after_extends_keyword",
                 "Verify_code_completion_with_a_single_option",
                 "Verify_JavaDoc_window",
                 "Verify_code_completion_after_EXTENDS",
-                //          //"Verify_that_require_directive_is_automatically_added",
+                "Verify_that_require_directive_is_automatically_added",
                 "Verify_code_completion_in_slash_slash_comments",
                 "Verify_code_completion_in_slash_star_comments",
-                "Verify_code_completion_in_slash_star_star_comments"
-                ).enableModules(".*").clusters(".*") //.gui( true )
+                "Verify_code_completion_in_slash_star_star_comments").enableModules(".*").clusters(".*") //.gui( true )
                 );
+
+
     }
 
     public void CreateApplication() {
@@ -380,7 +380,7 @@ public class cc_0001 extends cc {
         Sleep(1000);
         TypeCode(eoPHP, "\n");
         CheckResult(eoPHP, "class a extends", -1);
-        
+
         // Clean up
         eoPHP.deleteLine(eoPHP.getLineNumber() - 1);
 
@@ -585,8 +585,8 @@ public class cc_0001 extends cc {
          */
 
         // Cleanup
-        //jList.hideAll( );
 
+        
         endTest();
     }
 
@@ -594,9 +594,10 @@ public class cc_0001 extends cc {
         startTest();
 
         EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
-        eoPHP_2.setCaretPosition("/* comment    */", false);
-        TypeCode(eoPHP_2, "\n/** comment    */");
-        eoPHP_2.setCaretPosition("/** comment  ", false);
+        eoPHP_2.setCaretPosition(8);
+        eoPHP_2.deleteLine(eoPHP_2.getLineNumber());
+        TypeCode(eoPHP_2, "\n/** \n");
+        TypeCode(eoPHP_2, "@");
         eoPHP_2.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
 
