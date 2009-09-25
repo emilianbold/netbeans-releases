@@ -701,7 +701,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testVarTypeCommentVariable02() throws Exception {
-        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hell^", false);
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/*second comment*//* @var $hello^", false);
     }
 
     public void testVarTypeCommentType02() throws Exception {
