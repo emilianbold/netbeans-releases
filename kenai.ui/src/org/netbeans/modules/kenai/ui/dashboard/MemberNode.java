@@ -61,6 +61,7 @@ import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Node for a single project's source repository.
@@ -85,7 +86,16 @@ public class MemberNode extends LeafNode {
         if( null == panel ) {
             panel = new JPanel( new BorderLayout() );
             panel.setOpaque(false);
-            lbl = new TreeLabel( user.getDisplayName() );
+            String role = user.getRole();
+            String displayName = role != null
+                    ? NbBundle.getMessage(MemberNode.class, "LBL_MEMBER_FORMAT", user.getDisplayName(), role) // NOI18N
+                    : user.getDisplayName();
+            lbl = new TreeLabel(displayName) {
+                @Override
+                public String getToolTipText() {
+                    return user.isOnline() ? NbBundle.getMessage(MemberNode.class, "LBL_ONLINE_MEMBER_TOOLTIP") : null; // NOI18N
+                }
+            };
             lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
             panel.add( lbl, BorderLayout.CENTER);
             if (user.hasMessages()) {

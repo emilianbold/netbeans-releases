@@ -54,6 +54,8 @@ import org.xmlpull.v1.XmlPullParser;
 
 public class NotificationExtensionProvider implements PacketExtensionProvider {
 
+    final static String NAMESPACE = "http://kenai.com/schema/XMPPNotification";
+    
     public NotificationExtensionProvider() {
     }
 
@@ -78,7 +80,7 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
             }
             tag = parser.next();
         }
-        return new NotificationExtension("notification", "jabber:client",
+        return new NotificationExtension("notification", NAMESPACE,
                 new KenaiNotification(stamp,type,uri,author,serviceName,modifications));
     }
 }

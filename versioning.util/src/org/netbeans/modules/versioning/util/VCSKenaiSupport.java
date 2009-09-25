@@ -39,14 +39,23 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.awt.Color;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,6 +67,8 @@ public abstract class VCSKenaiSupport {
      * Some kenai vcs repository was changed
      */
     public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
+
+    protected static Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport");
 
     /**
      * A Kenai service
@@ -276,6 +287,95 @@ public abstract class VCSKenaiSupport {
          * @return
          */
         public abstract String getId();
+    }
+
+    /**
+     * Hadles VCS notifications from kenai
+     */
+    public abstract static class KenaiNotificationListener implements PropertyChangeListener {
+
+        protected static Logger LOG = VCSKenaiSupport.LOG;
+
+        private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/versioning/util/resources/info.png"; //NOI18N
+        private RequestProcessor rp = new RequestProcessor("Kenai VCS notifications");                                  //NOI18N
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(VCSKenaiSupport.PROP_KENAI_VCS_NOTIFICATION)) {
+                final VCSKenaiNotification notification = (VCSKenaiNotification) evt.getNewValue();
+                rp.post(new Runnable() {
+                    public void run() {
+                        handleVCSNotification(notification);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Do whatever you have to do with a nofitication
+         *
+         * @param notification
+         */
+        protected abstract void handleVCSNotification(final VCSKenaiNotification notification);
+
+        /**
+         * Called to setup the textpane used for the notification buble
+         *
+         * @param file
+         * @param url
+         * @param revision
+         * @return
+         */
+        protected abstract void setupPane(JTextPane pane, final File file, final String url, final String revision);
+
+        /**
+         * Removes a leading and trailing slash from the given string
+         * @param str
+         * @return
+         */
+        protected String trim(String str) {
+            if(str.startsWith("/")) {
+                str = str.substring(1, str.length());
+            }
+            if(str.endsWith("/")) {
+                str = str.substring(0, str.length() - 1);
+            }
+            return str;
+        }
+
+        /**
+         *
+         * Opens a notification buble in the IDEs status bar containing the text returned in
+         * {@link #getPaneText(java.io.File, java.lang.String, java.lang.String)}
+         *
+         * @param file
+         * @param url
+         * @param revision
+         */
+        protected void notifyFileChange(File file, String url, String revision) {
+            JTextPane ballonDetails = getPane(file, url, revision); // using the same pane causes the balloon popup
+            JTextPane popupDetails = getPane(file, url, revision);  // to trim the text to the first line
+            NotificationDisplayer.getDefault().notify(
+                    NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
+                    ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
+                    ballonDetails, popupDetails, NotificationDisplayer.Priority.NORMAL);
+        }
+
+        private JTextPane getPane (final File file, final String url, final String revision) {
+            JTextPane bubble = new JTextPane();
+            bubble.setOpaque(false);
+            bubble.setEditable(false);
+
+            if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {                   //NOI18N
+                //#134837
+                //http://forums.java.net/jive/thread.jspa?messageID=283882
+                bubble.setBackground(new Color(0, 0, 0, 0));
+            }
+
+            bubble.setContentType("text/html");                                          //NOI18N
+            setupPane(bubble, file, url, revision);
+            return bubble;
+        }
+
     }
     
 }
