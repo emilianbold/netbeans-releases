@@ -796,7 +796,12 @@ public final class Utils {
             }
             
             int permissions = 0;
-            for (int i = 0; i < 9; i++) {
+
+            if(output.length() < 9) { 
+                return 777;
+            }
+
+            for (int i = 0; i < 9; i++) {                
                 char character = output.charAt(i + 1);
                 
                 if (i % 3 == 0) {
@@ -812,7 +817,7 @@ public final class Utils {
                 } else if ((i % 3 == 2) && (character == 'x')) {
                     permissions += 1;
                 } else {
-                    return -1;
+                    return 777;
                 }
             }
             
