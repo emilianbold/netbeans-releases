@@ -386,9 +386,11 @@ int open(const char *path, int flags, ...) {
     real_open(open, path, flags)
 }
 
+#if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
     real_open(open64, path, flags)
 }
+#endif
 
 int _open(const char *path, int flags, ...) {
     real_open(_open, path, flags)
