@@ -428,7 +428,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                     StringBuilder sb = new StringBuilder();
                     sb.append("-Djava.endorsed.dirs=");
                      sb.append(quotedString(new File(root,"lib/endorsed").getAbsolutePath()));
-                    sb.append(":");
+                    sb.append(File.pathSeparator);
                      sb.append(quotedString(new File(root,"modules/endorsed").getAbsolutePath()));
                      sb.append(" -javaagent:");
                      sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
