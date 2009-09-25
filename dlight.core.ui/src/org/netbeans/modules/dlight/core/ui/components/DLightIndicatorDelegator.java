@@ -16,8 +16,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mt154047
  */
-@ServiceProvider(service = IndicatorComponentDelegator.class, position=10000)
-public final class DLightIndicatorDelegator implements IndicatorComponentDelegator{
+@ServiceProvider(service = IndicatorComponentDelegator.class, position = 10000)
+public final class DLightIndicatorDelegator implements IndicatorComponentDelegator {
 
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
         if (oldSession == newSession) {
@@ -26,11 +26,15 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
         if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
         }
+         if (newSession == null || !needToHandle(newSession)) {
+             return;
+         }
         if (newSession != null) {
             newSession.addSessionStateListener(this);
         }
-//        if (newSession.getState() != SessionState.CONFIGURATION)
+
         UIThread.invoke(new Runnable() {
+
             public void run() {
                 DLightIndicatorsTopComponent.findInstance().setSession(newSession);
             }
@@ -39,7 +43,7 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
 
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
         if (newState == SessionState.STARTING) {
-            if (!needToHandle(session)){
+            if (!needToHandle(session)) {
                 session.removeSessionStateListener(this);
                 return;
             }
@@ -61,8 +65,12 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
 
     public void sessionRemoved(DLightSession removedSession) {
     }
-    private boolean needToHandle(DLightSession session){
+
+    private boolean needToHandle(DLightSession session) {
+        if (session == null){
+            return false;
+        }
         ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
-        return serviceInfoStorage.getValue(DLightServiceInfo.DLIGHT_RUN) != null;
+        return serviceInfoStorage != null && serviceInfoStorage.getValue(DLightServiceInfo.DLIGHT_RUN) != null;
     }
 }

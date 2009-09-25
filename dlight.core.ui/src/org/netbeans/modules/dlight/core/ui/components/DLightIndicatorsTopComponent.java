@@ -54,26 +54,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
-import org.netbeans.modules.dlight.extras.api.ViewportAware;
-import org.netbeans.modules.dlight.extras.api.support.ViewportManager;
+import org.netbeans.modules.dlight.extras.api.support.IndicatorsContainer;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -85,11 +78,11 @@ import org.openide.windows.WindowManager;
  */
 final class DLightIndicatorsTopComponent extends TopComponent implements ExplorerManager.Provider {
 
-    private static DLightIndicatorsTopComponent instance;
+      private static DLightIndicatorsTopComponent instance;
     private DLightSession session;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
-    private static final String PREFERRED_ID = "DLightIndicatorsTopComponen"; // NOI18N
+    private static final String PREFERRED_ID = "DLightIndicatorsTopComponent"; // NOI18N
     private static final AtomicInteger index = new AtomicInteger();
     private final CardLayout cardLayout = new CardLayout();
     private JPanel cardsLayoutPanel;
@@ -101,7 +94,8 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
     private final ExplorerManager manager = new ExplorerManager();
     private JComponent lastFocusedComponent = null;
     private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl();
-    //private final PopupAction popupAction = new PopupAction("popupDLightIndicatorTopComponentAction");//NOI18N
+//    private GizmoIndicatorsTopComponentActionsProvider actionsProvider = null;
+    //private final PopupAction popupAction = new PopupAction("popupGizmoIndicatorTopComponentAction");//NOI18N
 
 
     static {
@@ -127,14 +121,17 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
 //        ActionMap map = new ActionMap();
 //        map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
 //        this.associateLookup(ExplorerUtils.createLookup(manager, map));
-        installActions();
+//        installActions();
     }
 
     public ExplorerManager getExplorerManager() {
         return manager;
     }
 
- 
+//    void setActionsProvider(GizmoIndicatorsTopComponentActionsProvider actionsProvoder) {
+//        this.actionsProvider = actionsProvoder;
+//
+//    }
 
     private Action getPopupAction() {
         return null;
@@ -194,87 +191,30 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
             }
 
         }
-        if (indicators != null){
-            Collections.sort(indicators, new Comparator<Indicator<?>>() {
+        Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
-                public int compare(Indicator<?> o1, Indicator<?> o2) {
-                    if (o1.getPosition() < o2.getPosition()) {
-                        return -1;
-                    } else if (o2.getPosition() < o1.getPosition()) {
-                        return 1;
-                    } else {
-                        return 0;
-                    }
+            public int compare(Indicator<?> o1, Indicator<?> o2) {
+                if (o1.getPosition() < o2.getPosition()) {
+                    return -1;
+                } else if (o2.getPosition() < o1.getPosition()) {
+                    return 1;
+                } else {
+                    return 0;
                 }
-            });
-        }
+            }
+        });
         setContent(session, indicators);
     }
 
     private void setContent(DLightSession session, List<Indicator<?>> indicators) {
-        ViewportManager viewportManager = null;
-        JComponent componentToAdd = null;
-        if (indicators != null) {
-            JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setBorder(BorderFactory.createEmptyBorder());
-            JSplitPane prevSplit = null;
-            indicatorPanels = new Vector<JComponent>(indicators.size());
-            indicatorPanels.setSize(indicators.size());
-            // We will resize only components without MaximumSize.
-            // Implemented for Parallel Adviser indicator.
-            int freeSizeComponentsNumber = 0;
-            for (int i = 0; i < indicators.size(); ++i) {
-                JComponent component = indicators.get(i).getComponent();
-                if(!component.isMaximumSizeSet()) {
-                    freeSizeComponentsNumber++;
-                }
-            }
-            for (int i = 0; i < indicators.size(); ++i) {
-                Indicator<?> indicator = indicators.get(i);
-                JComponent component = indicators.get(i).getComponent();
-                if (indicator instanceof ViewportAware) {
-                    if (viewportManager == null) {
-                        viewportManager = new ViewportManager((DataFilterManager) session);
-                    }
-                    viewportManager.addManagedComponent((ViewportAware)indicator);
-                }
-
-                indicatorPanels.set(i, component);
-                if (i + 1 < indicators.size()) {
-                    JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-                    splitPane.setBorder(BorderFactory.createEmptyBorder());
-                    splitPane.setContinuousLayout(true);
-                    splitPane.setDividerSize(5);
-                    if(!component.isMaximumSizeSet()) {
-                        splitPane.setResizeWeight(1.0 / (freeSizeComponentsNumber - i));
-                    }
-                    splitPane.setTopComponent(component);
-                    component = splitPane;
-                }
-                if (prevSplit == null) {
-                    scrollPane.setViewportView(component);
-                } else {
-                    prevSplit.setBottomComponent(component);
-                }
-                if (component instanceof JSplitPane) {
-                    prevSplit = (JSplitPane) component;
-                }
-            }
-//            add(scrollPane);
-            componentToAdd = scrollPane;
-        } else {
-            indicatorPanels = null;
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
-            emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-            componentToAdd = emptyLabel;
-//            add(emptyLabel);
-        }
         JPanel panel = getNextPanel();
         panel.removeAll();
         panel.setLayout(new BorderLayout());
-        panel.add(componentToAdd, BorderLayout.CENTER);
-        if (viewportManager != null) {
-            panel.add(viewportManager, BorderLayout.SOUTH);
+        panel.add(new IndicatorsContainer((DataFilterManager) session, indicators), BorderLayout.CENTER);
+        indicatorPanels = new Vector<JComponent>(indicators.size());
+        indicatorPanels.setSize(indicators.size());
+        for (int i = 0; i < indicators.size(); ++i) {
+            indicatorPanels.set(i, indicators.get(i).getComponent());
         }
         setActive();
         repaint();
