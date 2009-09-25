@@ -144,7 +144,7 @@ public class CheckHelpSetsBin extends Task {
             File parent = moduleJar.getParentFile();
             java.util.jar.Attributes attrs = manifest.getMainAttributes();
 
-            String value = attrs.getValue("OpenIDE-Module");
+            String value = JarWithModuleAttributes.extractCodeName(attrs);
             if (value == null) {
                 log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
                 continue;
