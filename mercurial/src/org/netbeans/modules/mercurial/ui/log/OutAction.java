@@ -40,36 +40,43 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import org.openide.util.NbBundle;
 
 /**
- * Log action for mercurial: 
+ * Log action for mercurial:
  * hg log - show revision history of entire repository or files
- * 
+ *
  * @author John Rice
  */
-public class OutAction extends ContextAction {
-    
-    private final VCSContext context;
-    
+public class OutAction extends SearchHistoryAction {
+
     public OutAction(String name, VCSContext context) {
-        this.context = context;
+        super(context);
         putValue(Action.NAME, name);
     }
-    
+
     public void performAction(ActionEvent e) {
-        SearchHistoryAction.openOut(context,
-                NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", 
-                HgUtils.getRootFile(context).getName()));
+        openOut();
     }
-        
-    public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
-    } 
-}    
+
+    /**
+     * Opens the Seach History panel to view Mercurial Out Changesets that will be sent on next Push to remote repo
+     * using: hg out - to get the data
+     */
+    private void openOut () {
+        File repositoryRoot = getRepositoryRoot();
+        if (repositoryRoot == null) {
+            return;
+        }
+        outputSearchContextTab(repositoryRoot, "MSG_LogOut_Title");
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot});
+        tc.setDisplayName(NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", repositoryRoot.getName()));
+        tc.open();
+        tc.requestActive();
+        tc.searchOut();
+    }
+}
