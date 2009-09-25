@@ -45,6 +45,7 @@ import java.util.List;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
@@ -60,14 +61,19 @@ import org.openide.util.NbBundle;
 public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
 
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
+        if(notification.getService() != VCSKenaiSupport.Service.VCS_HG) {
+            Mercurial.LOG.fine("rejecting VCS notification " + notification + " because not from hg"); // NOI18N
+            return;
+        }
         File projectDir = notification.getProjectDirectory();
         if(!Mercurial.getInstance().isManaged(projectDir)) {
+            assert false : " project " + projectDir + " not managed";
             Mercurial.LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by hg"); // NOI18N
             return;
         }
         Mercurial.LOG.fine("accepting VCS notification " + notification + " for " + projectDir); // NOI18N
 
-        File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(projectDir);
+        File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(new File[] { projectDir }, FileInformation.STATUS_LOCAL_CHANGE);
         List<VCSKenaiModification> modifications = notification.getModifications();
 
         for (File file : files) {
@@ -76,8 +82,10 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
                 assert false : file.getAbsolutePath() + " - no relative path"; // NOI18N
                 continue;
             }
+            path = trim(path);
             for (VCSKenaiModification modification : modifications) {
                 String resource = modification.getResource();
+                resource = trim(resource);
                 LOG.finer(" changed file " + path + ", " + resource); // NOI18N
                 if(path.equals(resource)) {
                     LOG.fine("  notifying " + file + ", " + notification); // NOI18N

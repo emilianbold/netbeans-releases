@@ -302,9 +302,6 @@ public abstract class VCSKenaiSupport {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(VCSKenaiSupport.PROP_KENAI_VCS_NOTIFICATION)) {
                 final VCSKenaiNotification notification = (VCSKenaiNotification) evt.getNewValue();
-                if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
-                    return;
-                }
                 rp.post(new Runnable() {
                     public void run() {
                         handleVCSNotification(notification);

@@ -65,8 +65,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
 
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
+        if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
+            LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
+            return;
+        }
         File projectDir = notification.getProjectDirectory();
         if(!SvnUtils.isManaged(projectDir)) {
+            assert false : " project " + projectDir + " not managed";
             LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by svn"); // NOI18N
             return;
         }
