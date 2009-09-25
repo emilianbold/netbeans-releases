@@ -44,7 +44,6 @@ import java.awt.Insets;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -119,8 +118,6 @@ public final class IndicatorsContainer extends JPanel
             JScrollPane scrollPane = new JScrollPane();
             scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
             JSplitPane prevSplit = null;
-            Vector<JComponent> indicatorPanels = new Vector<JComponent>(indicators.size());
-            indicatorPanels.setSize(indicators.size());
             // We will resize only components without MaximumSize.
             // Implemented for Parallel Adviser indicator.
             int freeSizeComponentsNumber = 0;
@@ -136,7 +133,6 @@ public final class IndicatorsContainer extends JPanel
                 if (indicator instanceof ViewportAware) {
                     ((ViewportAware) indicator).setViewportModel(viewportModel);
                 }
-                indicatorPanels.set(i, component);
                 if (i + 1 < indicators.size()) {
                     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
                     splitPane.setBorder(BorderFactory.createEmptyBorder());
