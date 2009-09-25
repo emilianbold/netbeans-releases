@@ -57,17 +57,17 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroE
 public class RfsSetupProvider implements SetupProvider {
 
     private Map<String, String> binarySetupMap;
-    private static final String CONTROLLER = "rfs_controller";
-    private static final String PRELOAD = "rfs_preload.so";
+    private static final String CONTROLLER = "rfs_controller"; // NOI18N
+    private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 
     public RfsSetupProvider() {
         String[] dirs = new String[] {
-             "SunOS-x86"
-            ,"SunOS-x86_64"
-            ,"Linux-x86"
-            ,"Linux-x86_64"
-            ,"SunOS-sparc"
-            ,"SunOS-sparc_64"
+             "SunOS-x86" // NOI18N
+            ,"SunOS-x86_64" // NOI18N
+            ,"Linux-x86" // NOI18N
+            ,"Linux-x86_64" // NOI18N
+            ,"SunOS-sparc" // NOI18N
+            ,"SunOS-sparc_64" // NOI18N
         };
         binarySetupMap = new HashMap<String, String>();
         for (String dir : dirs) {
@@ -95,7 +95,7 @@ public class RfsSetupProvider implements SetupProvider {
 
     public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {
         String libDir = getLibDir(execEnv);
-        return libDir + ':' + libDir + "_64";
+        return libDir + ':' + libDir + "_64"; // NOI18N
     }
 
     private static String getLibDir(ExecutionEnvironment execEnv) throws ParseException {

@@ -221,11 +221,11 @@ public class RemoteServerSetup {
             String remoteDir = remoteFilePath.substring(0, slashPos);
             if (!checkedDirs.contains(remoteDir)) {
                 checkedDirs.add(remoteDir);
-                RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, "pwd");
+                RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, "pwd"); // NOI18N
                 int rc0 = rcs.run();
                 String xxx = rcs.getOutput();
 
-                String cmd = String.format("sh -c \"if [ ! -d %s ]; then mkdir -p %s; fi\"", remoteDir, remoteDir);
+                String cmd = String.format("sh -c \"if [ ! -d %s ]; then mkdir -p %s; fi\"", remoteDir, remoteDir); // NOI18N
                 int rc = RemoteCommandSupport.run(executionEnvironment, cmd);
 //                if (rc != 0) {
 //                    return false;

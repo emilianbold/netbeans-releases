@@ -90,7 +90,7 @@ public class DLightRunExecutableAction extends AbstractAction {
       String pname = dialog.getProgramName();
       String pargs = dialog.getProgramArguments();
       String pdir = dialog.getWorkingDirectory();
-      String[] args = pargs.split(" ");
+      String[] args = pargs.split(" "); // NOI18N
 
       if (pname != null) {
 
