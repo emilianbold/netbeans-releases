@@ -6,7 +6,6 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.visualizers.*;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -29,15 +28,14 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-class TableSorter extends AbstractTableModel implements TableModelListener {
+final class TableSorter extends AbstractTableModel implements TableModelListener {
 
-    int indexes[];
-    List<Integer> sortingColumns = new Vector<Integer>();
-    List<Boolean> sortingColumnsOrder = new Vector<Boolean>();
-//    boolean ascending = true;
-    int compares;
-    protected TableModel model;
     private static final boolean TRACE = Boolean.getBoolean("table.sorter.trace");//NOI18N
+    private int indexes[];
+    private List<Integer> sortingColumns = new Vector<Integer>();
+    private int compares;
+    private TableModel model;
+    List<Boolean> sortingColumnsOrder = new Vector<Boolean>();
 
     public TableSorter() {
         indexes = new int[0]; // For consistency.
@@ -51,11 +49,7 @@ class TableSorter extends AbstractTableModel implements TableModelListener {
         setModel(model);
     }
 
-    public TableModel getModel() {
-        return model;
-    }
-
-    public synchronized void setModel(TableModel tablemodel) {
+    private void setModel(TableModel tablemodel) {
         if (model != null) {
             model.removeTableModelListener(this);
         }
@@ -346,7 +340,7 @@ class TableSorter extends AbstractTableModel implements TableModelListener {
         sortingColumnsOrder.clear();
         sortingColumnsOrder.add(Boolean.valueOf(ascending));
         sortingColumns.clear();
-        sortingColumns.add(new Integer(column));
+        sortingColumns.add(Integer.valueOf(column));
         sort(this);
         fireTableChanged(new TableModelEvent(this));
     }
@@ -463,38 +457,41 @@ class MultiSortTableCellHeaderRenderer extends DefaultTableCellRenderer {
 
         return sortIcon;
     }
-}
 
-class SortIcon implements Icon, SwingConstants {
+    final static class SortIcon implements Icon, SwingConstants {
 
-    private int baseSize;
-    private int size;
-    private int direction;
-    private BasicArrowButton iconRenderer;
-    private double[] sizePercentages = {1.0, .85, .70, .55, .40, .25, .10};
+        private static int NONE = 0;
+        private int baseSize;
+        private int size;
+        private int direction = NONE;
+        private BasicArrowButton iconRenderer;
+        private double[] sizePercentages = {1.0, .85, .70, .55, .40, .25, .10};
 
-    public SortIcon(int size) {
-        this.baseSize = this.size = size;
-        iconRenderer = new BasicArrowButton(direction);
-    }
+        public SortIcon(int size) {
+            this.baseSize = this.size = size;
+            iconRenderer = new BasicArrowButton(direction);
+        }
 
-    public void setPriority(int priority) {
-        size = (int) (baseSize * sizePercentages[priority]);
-    }
+        public void setPriority(int priority) {
+            size = (int) (baseSize * sizePercentages[priority]);
+        }
 
-    public void setSortOrder(boolean ascending) {
-        direction = ascending ? SOUTH : NORTH;
-    }
+        public void setSortOrder(boolean ascending) {
+            direction = ascending ? SOUTH : NORTH;
+        }
 
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        iconRenderer.paintTriangle(g, x, y, size, direction, true);
-    }
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            if (direction != NONE) {
+                iconRenderer.paintTriangle(g, x, y, size, direction, true);
+            }
+        }
 
-    public int getIconWidth() {
-        return size;
-    }
+        public int getIconWidth() {
+            return size;
+        }
 
-    public int getIconHeight() {
-        return size / 2;
+        public int getIconHeight() {
+            return size / 2;
+        }
     }
 }
