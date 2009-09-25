@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.api.support;
+package org.netbeans.modules.websvc.api.jaxws.project;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -52,21 +52,16 @@ import org.openide.util.Parameters;
 public class LogUtils {
 
     private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger("org.netbeans.ui.metrics.websvc"); // NOI18N
-    //private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger("org.netbens.modules.websvc");
+    //private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger("org.netbeans.modules.websvc");
 
-    public static final String USG_WEBSVC_WIZARD = "USG_WEBSVC_WIZARD"; //NOI18N
-    public static final String USG_WEBSVC_ACTION = "USG_WEBSVC_ACTION"; //NOI18N
+    public static final String USG_WEBSVC_DETECTED = "USG_WEBSVC_DETECTED"; //NOI18N
 
     public static final String WS_STACK_JAXWS = "JAX-WS"; //NOI18N
     public static final String WS_STACK_JAXRS = "JAX-RS"; //NOI18N
     public static final String WS_STACK_JAXRPC = "JAX-RPC"; //NOI18N
 
-    public static void logWsWizard(Object[] params) {
-        log(USG_WEBSVC_WIZARD, params);
-    }
-
-    public static void logWsAction(Object[] params) {
-        log(USG_WEBSVC_ACTION, params);
+    public static void logWsDetect(Object[] params) {
+        log(USG_WEBSVC_DETECTED, params);
     }
 
     private static void log(String message, Object[] params) {
