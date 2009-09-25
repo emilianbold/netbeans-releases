@@ -56,6 +56,13 @@ public final class FunctionNameUtils {
         int start = 0;
         int templateLevel = 0;
         boolean isOperator = false;
+        int ssOpenmp = functionSignature.indexOf("_$"); // NOI18N
+        if (ssOpenmp >=0 ) {
+            int j = functionSignature.indexOf('.');
+            if (j > ssOpenmp) {
+                functionSignature = functionSignature.substring(0, ssOpenmp)+functionSignature.substring(j+1);
+            }
+        }
         for (int i = 0; i < functionSignature.length(); i++) {
             char c = functionSignature.charAt(i);
             switch (c) {
@@ -78,6 +85,8 @@ public final class FunctionNameUtils {
                         return functionSignature.substring(start, i);
                    }
                    break;
+                case '.':
+                    return functionSignature.substring(start, i);
                 case ' ':
                     if (functionSignature.length() > i+1 &&
                         functionSignature.charAt(i + 1) == '#') {
