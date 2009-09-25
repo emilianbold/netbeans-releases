@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 
 /**
  * @author Radek Matous
@@ -427,7 +428,7 @@ public final class FileObjectFactory {
     }
 
     private Set<BaseFileObj> collectForRefresh() {
-        final Set<BaseFileObj> all2Refresh = new HashSet<BaseFileObj>();
+        final Set<BaseFileObj> all2Refresh = new WeakSet<BaseFileObj>();
         synchronized (allIBaseFileObjects) {
             final Iterator<Object> it = allIBaseFileObjects.values().iterator();
             while (it.hasNext()) {
