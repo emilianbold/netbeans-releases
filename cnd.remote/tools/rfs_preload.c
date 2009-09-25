@@ -141,7 +141,7 @@ static int get_socket_descriptor(int create) {
     // 0 means unitialized
     // -1 means that we failed to open a socket
     static __thread int sd = 0; // socket descriptor
-    if (!create) {
+    if (!create || sd > 0) {
         return sd;
     }
     if (sd == -1) {
@@ -289,11 +289,19 @@ on_startup(void) {
     } else {
         my_dir_len++;
         void *p = malloc(my_dir_len + 1);
-        strcat(p, my_dir);
+        strcpy(p, my_dir);
         strcat(p, "/");
         my_dir = p;
     }
     trace("RFS startup; my dir: %s\n", my_dir);
+}
+
+static void release_socket() {
+    int sd = get_socket_descriptor(0);
+    if (sd != -1) {
+        trace("Closing socket %d\n", sd);
+        close(sd);
+    }
 }
 
 void
@@ -301,10 +309,7 @@ __attribute__((destructor))
 on_shutdown(void) {
     trace("RFS shutdown\n");
     trace_shutdown();
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        close(sd);
-    }
+    release_socket();
 }
 
 typedef struct pthread_routine_data {
@@ -318,11 +323,7 @@ static void* pthread_routine_wrapper(void* data) {
     prd->user_start_routine(prd->arg);
     trace("User thread routine finished. Performing cleanup\n");
     free(data);
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        trace("Closing socked %d\n", sd);
-        close(sd);
-    }
+    release_socket();
     return 0;
 }
 
