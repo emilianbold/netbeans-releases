@@ -58,7 +58,7 @@ final class StackRootNode extends AbstractNode{
     private final Image icon;
 
     StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
-//        super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
+     //   super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
         super(stack == null || stack.size() == 0 ? Children.LEAF : new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack));
         this.stackName = stackName;
         this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;

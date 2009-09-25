@@ -75,9 +75,8 @@ public class DiffAction extends ContextAction {
     public void performAction(ActionEvent e) {
         String contextName = Utils.getContextDisplayName(context);
                 
-        File root = HgUtils.getRootFile(context);
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        boolean bNotManaged = (root == null) || ( files == null || files.length == 0);
+        boolean bNotManaged = !HgUtils.isFromHgRepository(context) || ( files == null || files.length == 0);
 
         if (bNotManaged) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
@@ -99,7 +98,7 @@ public class DiffAction extends ContextAction {
     
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true;
     } 

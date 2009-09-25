@@ -87,7 +87,7 @@ public class StatusAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     } 
 
     /**

@@ -108,6 +108,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
     private boolean createWelcome = true;
     
@@ -253,6 +254,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         } else {
             panel = new JSFConfigurationPanel(this, controller, !defaultValue);
         }
+        panel.setCreateExamples(createWelcome);
         if (!defaultValue){
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
@@ -530,7 +532,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
 
             }
-            final String baseFolder = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
             if (panel.isEnableFacelets() && panel.isCreateExamples()) {
                 InputStream is;
@@ -541,10 +542,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){
                     if (isJSF20) {
                         is= JSFFrameworkProvider.class.getClassLoader()
-                            .getResourceAsStream(baseFolder + TEMPLATE_XHTML2);
+                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML2);
                     } else {
                         is= JSFFrameworkProvider.class.getClassLoader()
-                            .getResourceAsStream(baseFolder + TEMPLATE_XHTML);
+                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML);
                     }
                     content = readResource(is, encoding.name());
                     target = FileUtil.createData(webModule.getDocumentBase(), TEMPLATE_XHTML);
@@ -552,7 +553,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
                 if (webModule.getDocumentBase().getFileObject(WELCOME_XHTML) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + WELCOME_XHTML);
+                    .getResourceAsStream(FL_RESOURCE_FOLDER + WELCOME_XHTML);
                     content = readResource(is, encoding.name());
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     createFile(target, content, encoding.name());
@@ -562,7 +563,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     defaultCSSFolder = CSS_FOLDER2;
                 }
                 if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+"/"+DEFAULT_CSS) == null){   //NOI18N
-                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + DEFAULT_CSS);  
+                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + DEFAULT_CSS);
                     content = readResource(is, encoding.name());
                     //File.separator replaced by "/" because it is used in createData method
                     target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + "/"+ DEFAULT_CSS);  //NOI18N
