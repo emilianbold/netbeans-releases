@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
