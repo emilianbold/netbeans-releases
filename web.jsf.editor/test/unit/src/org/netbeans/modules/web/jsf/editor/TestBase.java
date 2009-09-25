@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -63,10 +61,29 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Marek Fukala
@@ -101,9 +118,9 @@ public class TestBase extends CslTestBase {
                 //we may also create folders
                 StringTokenizer items = new StringTokenizer(fName, "/");
                 FileObject fo = memFS.getRoot();
-                while(items.hasMoreTokens()) {
+                while (items.hasMoreTokens()) {
                     String item = items.nextToken();
-                    if(items.hasMoreTokens()) {
+                    if (items.hasMoreTokens()) {
                         //folder
                         fo = fo.createFolder(item);
                     } else {
@@ -151,9 +168,10 @@ public class TestBase extends CslTestBase {
 
         final HtmlParserResult[] _result = new HtmlParserResult[1];
         ParserManager.parse(Collections.singleton(source), new UserTask() {
+
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = (HtmlParserResult)Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                _result[0] = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
             }
         });
 
@@ -163,4 +181,99 @@ public class TestBase extends CslTestBase {
         return result;
     }
 
+    protected class TestClassPathProvider implements ClassPathProvider {
+
+        private Map<String, ClassPath> map;
+
+        public TestClassPathProvider(Map<String, ClassPath> map) {
+            this.map = map;
+        }
+
+        public ClassPath findClassPath(FileObject file, String type) {
+            if (map != null) {
+                return map.get(type);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    protected Map<String, ClassPath> createClassPaths() throws Exception {
+        Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
+        ClassPath cp = createServletAPIClassPath();
+        cps.put(ClassPath.COMPILE, cp);
+        return cps;
+    }
+
+    public final ClassPath createServletAPIClassPath() throws MalformedURLException, IOException {
+        String path = System.getProperty("web.project.jars");
+        String[] st = PropertyUtils.tokenizePath(path);
+        List<FileObject> fos = new ArrayList<FileObject>();
+        for (int i = 0; i < st.length; i++) {
+            String token = st[i];
+            File f = new File(token);
+            if (!f.exists()) {
+                fail("cannot find file " + token);
+            }
+            FileObject fo = FileUtil.toFileObject(f);
+            fos.add(FileUtil.getArchiveRoot(fo));
+        }
+        return ClassPathSupport.createClassPath(fos.toArray(new FileObject[fos.size()]));
+    }
+
+    protected static class FakeWebModuleProvider implements WebModuleProvider {
+
+        private FileObject webRoot;
+
+        public FakeWebModuleProvider(FileObject webRoot) {
+            this.webRoot = webRoot;
+        }
+
+        public WebModule findWebModule(FileObject file) {
+            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot));
+        }
+    }
+
+    private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
+
+        private FileObject webRoot;
+
+        public FakeWebModuleImplementation2(FileObject webRoot) {
+            this.webRoot = webRoot;
+        }
+
+        public FileObject getDocumentBase() {
+            return webRoot;
+        }
+
+        public String getContextPath() {
+            return "/";
+        }
+
+        public Profile getJ2eeProfile() {
+            return Profile.JAVA_EE_6_FULL;
+        }
+
+        public FileObject getWebInf() {
+            return null;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return null;
+        }
+
+        public FileObject[] getJavaSources() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+    }
 }
