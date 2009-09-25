@@ -50,7 +50,7 @@ public final class ContextKnowledge {
     private Map<String, RubyType> typesForSymbols;
     private Map<Node, RubyType> typesForNodes;
     
-    private final RubyIndex index;
+    private RubyIndex index;
     private final Node root;
     private final Node target;
     private final int astOffset;
@@ -129,6 +129,9 @@ public final class ContextKnowledge {
     }
 
     RubyIndex getIndex() {
+        if (index == null) {
+            index = RubyIndex.get(parserResult);
+        }
         return index;
     }
 
