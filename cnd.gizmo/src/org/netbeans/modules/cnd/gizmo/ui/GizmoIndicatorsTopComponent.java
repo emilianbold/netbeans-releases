@@ -215,6 +215,11 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
         panel.removeAll();
         panel.setLayout(new BorderLayout());
         panel.add(new IndicatorsContainer((DataFilterManager) session, indicators), BorderLayout.CENTER);
+        indicatorPanels = new Vector<JComponent>(indicators.size());
+        indicatorPanels.setSize(indicators.size());
+        for (int i = 0; i < indicators.size(); ++i) {
+            indicatorPanels.set(i, indicators.get(i).getComponent());
+        }
         setActive();
         repaint();
     }
