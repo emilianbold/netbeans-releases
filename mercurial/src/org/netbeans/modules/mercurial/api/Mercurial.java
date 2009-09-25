@@ -51,7 +51,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
-import org.netbeans.modules.mercurial.ui.log.SearchHistoryAction;
+import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
@@ -293,7 +293,7 @@ public class Mercurial {
          */
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                SearchHistoryAction.openSearch(file, lineNumber);
+                LogAction.openSearch(file, lineNumber);
             }
         });
         return true;
