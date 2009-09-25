@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.openide.util.Utilities;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
@@ -257,29 +256,23 @@ public final class CommonTasksSupport {
      *         means failure.
      */
     public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final String signal, final Writer error) {
-        final boolean isWindows = execEnv.isLocal() && Utilities.isWindows();
         final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
 
-        if (isWindows) {
-            return NativeTaskExecutorService.submit(new Callable<Integer>() {
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
 
-                public Integer call() throws Exception {
-                    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                    String winShell = hostInfo.getShell();
-                    if (winShell != null) {
-                        CommandRunner runner = new CommandRunner(execEnv, error, winShell, "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
-                        return runner.call();
-                    } else {
-                        // Will not kill in case no cygwin ??
-                        return -1;
-                    }
+            public Integer call() throws Exception {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                String shell = hostInfo.getShell();
+                if (shell != null) {
+                    String cmd = String.format("kill -%d %d", Signal.toID(signal), pid); // NOI18N
+                    CommandRunner runner = new CommandRunner(execEnv, error, shell, "-c", cmd); // NOI18N
+                    return runner.call();
+                } else {
+                    // Will not kill in case when no cygwin on Windows installed??
+                    return -1;
                 }
-            }, descr);
-        } else {
-            return NativeTaskExecutorService.submit(
-                new CommandRunner(execEnv, error, "kill", "-s", signal, String.valueOf(pid)), // NOI18N
-                descr);
-        }
+            }
+        }, descr);
     }
 
     private static int transferFileContent(File srcFile, OutputStream outStream) {
@@ -342,5 +335,80 @@ public final class CommonTasksSupport {
         }
 
         return result;
+    }
+
+    // TODO: linux???
+    private static enum Signal {
+
+        SIGHUP(1),
+        SIGINT(2),
+        SIGQUIT(3),
+        SIGILL(4),
+        SIGTRAP(5),
+        SIGABRT(6),
+        SIGEMT(7),
+        SIGFPE(8),
+        SIGKILL(9),
+        SIGBUS(10),
+        SIGSEGV(11),
+        SIGSYS(12),
+        SIGPIPE(13),
+        SIGALRM(14),
+        SIGTERM(15),
+        SIGUSR1(16),
+        SIGUSR2(17),
+        SIGCHLD(18),
+        SIGPWR(19),
+        SIGWINCH(20),
+        SIGURG(21),
+        SIGPOLL(22),
+        SIGSTOP(23),
+        SIGTSTP(24),
+        SIGCONT(25),
+        SIGTTIN(26),
+        SIGTTOU(27),
+        SIGVTALRM(28),
+        SIGPROF(29),
+        SIGXCPU(30),
+        SIGWAITING(32),
+        SIGLWP(33),
+        SIGFREEZE(34),
+        SIGTHAW(35),
+        SIGCANCEL(36),
+        SIGLOST(37),
+        SIGXRES(38),
+        SIGJVM1(39);
+        private final int id;
+
+        private Signal(int id) {
+            this.id = id;
+        }
+
+        public static int toID(String str) {
+            if (str == null) {
+                throw new IllegalArgumentException("null signal specification"); // NOI18N
+            }
+
+            str = str.trim().toUpperCase();
+
+            if (str.startsWith("SIG")) { // NOI18N
+                Signal s = Signal.valueOf(str);
+                return s.id;
+            }
+
+            if (str.startsWith("-")) { // NOI18N
+                str = str.substring(1);
+            }
+
+            int sid;
+
+            try {
+                sid = Integer.parseInt(str);
+            } catch (Exception ex) {
+                throw new IllegalArgumentException("wrong signal specification: " + str); // NOI18N
+            }
+
+            return sid;
+        }
     }
 }
