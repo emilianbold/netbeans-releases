@@ -205,7 +205,7 @@ made subject to such option by the copyright holder.
             </file>
 
             <file name="Template.xhtml" url="templates/dummy.template">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
@@ -237,7 +237,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="out.xhtml" url="templates/compositeComponent.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
                 <attr name="position" intvalue="75"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>

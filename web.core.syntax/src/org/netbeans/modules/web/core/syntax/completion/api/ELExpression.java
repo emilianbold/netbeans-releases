@@ -859,7 +859,16 @@ public class ELExpression {
 
         protected String getAccessorName(String propertyName) {
             // we do not have to handle "is" type accessors here
-            return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+            // Fix for IZ#172658 - StringIndexOutOfBoundsException: String index out of range: 0
+            StringBuilder suffix = new StringBuilder();
+            if ( propertyName.length() == 1 ){
+                suffix.append(Character.toUpperCase(propertyName.charAt(0)));   
+            }
+            else if ( propertyName.length() >1 ) {
+                suffix.append(Character.toUpperCase(propertyName.charAt(0)));
+                suffix.append( propertyName.substring(1) );
+            }
+            return suffix.insert( 0 , "get" ).toString();          //NOI18N
         }
 
         /**

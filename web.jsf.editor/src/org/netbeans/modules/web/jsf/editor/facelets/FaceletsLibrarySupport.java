@@ -141,7 +141,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     //TODO cache the context-param entry value and check if has changed,
     //now we invalidate libs on each change
-    private void ddChanged() {
+    private synchronized void ddChanged() {
         faceletsLibraries = null; //invalidate libraries, force refresh
     }
 
@@ -149,7 +149,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         return jsfSupport;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
         faceletsLibraries = null;
     }
 
