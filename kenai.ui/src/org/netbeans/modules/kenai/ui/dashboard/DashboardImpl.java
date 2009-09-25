@@ -313,8 +313,12 @@ public final class DashboardImpl extends Dashboard {
     @Override
     public void addProject( final ProjectHandle project, boolean isMemberProject, boolean select ) {
         synchronized( LOCK ) {
-            if( openProjects.contains(project) )
+            if( openProjects.contains(project) ) {
+                if (select) {
+                    selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
+                }
                 return;
+            }
 
             if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
                 memberProjects.add(project);
