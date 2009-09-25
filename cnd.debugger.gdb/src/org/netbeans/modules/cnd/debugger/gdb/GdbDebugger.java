@@ -294,7 +294,9 @@ public class GdbDebugger implements PropertyChangeListener {
             String[] debuggerEnv = new String[0];
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                 String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
-                debuggerEnv = new String[]{path}; //NOI18N
+                if (path != null) {
+                    debuggerEnv = new String[]{path}; //NOI18N
+                }
             }
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
