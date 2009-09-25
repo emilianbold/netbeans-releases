@@ -627,7 +627,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return DeclarationLocation.NONE;
@@ -1313,7 +1313,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
             return candidate;
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return null;
