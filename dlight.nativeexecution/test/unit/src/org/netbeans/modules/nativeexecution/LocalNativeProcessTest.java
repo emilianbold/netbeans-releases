@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -55,8 +56,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -202,12 +205,11 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
                             if (!isWindows) {
                                 try {
-                                    NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("/bin/kill").setArguments("-0", "" + pid); // NOI18N
-                                    int result = pb.call().waitFor();
+                                    int result = CommonTasksSupport.sendSignal(execEnv, pid, Signal.NULL, null).get();
                                     assertTrue(result == 0);
                                 } catch (InterruptedException ex) {
                                     System.out.println("kill interrupted..."); // NOI18N
-                                } catch (IOException ex) {
+                                } catch (ExecutionException ex) {
                                     Exceptions.printStackTrace(ex);
                                     fail();
                                 }
@@ -258,6 +260,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
     }
 
     private class ShortTask implements Runnable {
+
         private final String expectedOutput = "test passed"; // NOI18N
         private final Counters counters;
         private final BlockingQueue<NativeProcess> pqueue;

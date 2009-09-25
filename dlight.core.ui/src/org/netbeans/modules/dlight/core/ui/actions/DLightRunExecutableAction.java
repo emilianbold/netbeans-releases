@@ -41,8 +41,21 @@ package org.netbeans.modules.dlight.core.ui.actions;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
+import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
+import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
+import org.netbeans.modules.dlight.api.support.NativeExecutableTargetConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.netbeans.modules.dlight.core.ui.components.SelectExecutableTargetDialog;
+import org.netbeans.modules.dlight.spi.impl.DLightServiceInfo;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -55,10 +68,12 @@ public class DLightRunExecutableAction extends AbstractAction {
   //DLightAction {
 
   protected SelectExecutableTargetDialog dialog = null;
+  private DLightSessionHandler session;
 
   public DLightRunExecutableAction() {
     super(NbBundle.getMessage(DLightRunExecutableAction.class, "DLightRunExecutableAction.Name"), // NOI18N
-            ImageUtilities.loadImageIcon("org/netbeaans/modules/dlight/core/ui/resources/indicators_small.png", false)); // NOI18N
+            ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/core/ui/resources/runProject24.png", false)); // NOI18N
+    //putValue(Action.SMALL_ICON, "org/netbeans/modules/dlight/core/ui/resources/runProject.png");
   }
 
   public void actionPerformed(ActionEvent e) {
@@ -75,8 +90,44 @@ public class DLightRunExecutableAction extends AbstractAction {
       String pname = dialog.getProgramName();
       String pargs = dialog.getProgramArguments();
       String pdir = dialog.getWorkingDirectory();
+      String[] args = pargs.split(" ");
 
       if (pname != null) {
+
+
+        NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
+                pname,
+                args,
+                null);
+
+
+        targetConf.setWorkingDirectory(pdir);
+        targetConf.putInfo(DLightServiceInfo.DLIGHT_RUN, "true");//NOI18N
+        // Setup simple output convertor factory...
+        //targetConf.setOutConvertorFactory(new SimpleOutputConvertorFactory());
+
+        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("DLight");//NOI18N
+//        DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
+        NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
+
+
+        //WE are here only when Profile On RUn
+        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
+                target, configuration, pname);
+
+        DLightExecutorService.submit(new Runnable() {
+
+            public void run() {
+                try {
+                    session = handle.get();
+                    DLightToolkitManagement.getInstance().startSession(session);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }, "DLight Session for " + target.toString()); // NOI18N
 
 //        if (startActionFactory != null) {
 //          ExecutableTarget target = new SimpleExecutableTarget(pname, pargs);

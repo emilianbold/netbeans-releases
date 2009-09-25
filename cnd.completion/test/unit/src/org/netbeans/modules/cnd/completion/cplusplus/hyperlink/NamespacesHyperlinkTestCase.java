@@ -291,6 +291,12 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz159243.cc", 25, 7, "iz159243.cc", 17, 13);
     }
 
+    public void testIZ172596() throws Exception {
+        // IZ#172596 : variable highlighted as unused and also undefined
+        performTest("iz172596.cc", 17, 35, "iz172596.cc", 6, 21);
+        performTest("iz172596.cc", 37, 27, "iz172596.cc", 26, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
