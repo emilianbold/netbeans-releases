@@ -230,23 +230,44 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     public Collection<? extends String> getTypeNames(int offset) {
-        List<? extends TypeScope> empty = Collections.emptyList();
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope.getName());
         }
         AssignmentImpl assignment = findVarAssignment(offset);
-        return (assignment != null) ? assignment.getTypeNames() : empty;
+        while(assignment != null) {
+            Collection<String> typeNames = assignment.getTypeNames();
+            if (typeNames.isEmpty()) {
+                AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
+                if (nextAssignment != null && !nextAssignment.equals(assignment)) {
+                    assignment = nextAssignment;
+                    continue;
+                }
+            }
+            return typeNames;
+        }
+
+        return Collections.emptyList();
     }
 
     public Collection<? extends TypeScope> getTypes(int offset) {
-        List<? extends TypeScope> empty = Collections.emptyList();
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope);
         }
         AssignmentImpl assignment = findVarAssignment(offset);
-        return (assignment != null) ? assignment.getTypes() : empty;
+        while(assignment != null) {
+            Collection<TypeScope> types = assignment.getTypes();
+            if (types.isEmpty()) {
+                AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
+                if (nextAssignment != null && !nextAssignment.equals(assignment)) {
+                    assignment = nextAssignment;
+                    continue;
+                } 
+            }
+            return types;
+        }
+        return Collections.emptyList();
     }
 
     public boolean isGloballyVisible() {
