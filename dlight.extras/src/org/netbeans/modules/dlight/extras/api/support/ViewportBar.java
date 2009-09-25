@@ -43,6 +43,7 @@ import org.netbeans.modules.dlight.extras.api.support.dragging.AbstractDraggable
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -68,6 +69,7 @@ import org.netbeans.modules.dlight.extras.api.ViewportModelState;
 import org.netbeans.modules.dlight.extras.api.support.dragging.Draggable;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
+import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.util.DLightMath;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.ImageUtilities;
@@ -361,21 +363,22 @@ import org.openide.util.ImageUtilities;
         g.fillRect(0, 0, v1, 2);
         g.fillRect(v2, 0, w - v2, 2);
 
-//        FontMetrics fm = g.getFontMetrics();
-//        Range<Long> limits = getViewportModelState().getLimits();
-//        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
-//                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
-//                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
-//                getWidth() - 2 * margin, fm);
-//
-//        for (AxisMark mark : timeMarks) {
-//            g.setColor(Color.BLACK);
-//            g.drawLine(margin + mark.getPosition(), 0, margin + mark.getPosition(), 5);
-//            if (mark.getText() != null) {
-//                int length = fm.stringWidth(mark.getText());
-//                g.drawString(mark.getText(), margin + mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
-//            }
-//        }
+        g.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_X_AXIS_FONT));
+        g.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_X_AXIS_FONT_COLOR));
+        FontMetrics fm = g.getFontMetrics();
+        Range<Long> limits = getViewportModelState().getLimits();
+        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
+                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
+                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
+                getWidth() - leftMargin - rightMargin, fm);
+
+        for (AxisMark mark : timeMarks) {
+            g.drawLine(leftMargin + mark.getPosition(), 0, leftMargin + mark.getPosition(), 5);
+            if (mark.getText() != null) {
+                int length = fm.stringWidth(mark.getText());
+                g.drawString(mark.getText(), leftMargin + mark.getPosition() - length / 2, 3 * fm.getAscent() / 2);
+            }
+        }
 
         viewportStartMark.paint(g);
         viewportEndMark.paint(g);

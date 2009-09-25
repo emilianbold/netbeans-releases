@@ -46,8 +46,6 @@ import java.awt.event.AdjustmentListener;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,11 +56,13 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.netbeans.modules.dlight.util.TimeFormatter;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.NbBundle;
@@ -74,10 +74,12 @@ public final class IndicatorsContainer extends JPanel
         implements AdjustmentListener, ChangeListener {
 
     private static final long EXTENT = 20000L; // 20 seconds
+    private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
     private final ViewportBar viewportBar;
     private final JScrollBar scrollBar;
     private final ViewportModel viewportModel;
+    private final JLabel timeLabel;
     private boolean isAdjusting;
 
     public IndicatorsContainer(DataFilterManager filterManager, List<Indicator<?>> indicators) {
@@ -88,28 +90,42 @@ public final class IndicatorsContainer extends JPanel
 
         JComponent indicatorsComponent = createIndicatorsComponent(indicators, viewportModel);
 
-        int knobSize = UIManager.getInt("ScrollBar.width"); // NOI18N
+        timeLabel = new JLabel(TIME_FORMATTER.format(0), JLabel.CENTER);
+        timeLabel.setOpaque(false);
+        timeLabel.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_TITLE_FONT));
+        timeLabel.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_TITLE_FONT_COLOR));
+
+        int scrollBarButtonSize = UIManager.getInt("ScrollBar.width"); // NOI18N
         int padding = DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_PADDING);
-        int leftMargin = padding + DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_WIDTH);
-        int rightMargin = padding + DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH);
-        viewportBar = new ViewportBar(viewportModel, filterManager, leftMargin, rightMargin);
+        int leftMargin = padding + DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_WIDTH) - scrollBarButtonSize;
+        int rightMargin = padding + DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH) - scrollBarButtonSize;
+        viewportBar = new ViewportBar(viewportModel, filterManager, scrollBarButtonSize, scrollBarButtonSize);
 
         scrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         adjust();
         scrollBar.addAdjustmentListener(this);
 
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
 
-        add(indicatorsComponent);
-        add(viewportBar);
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.LEADING, true)
+                .add(indicatorsComponent, 200, 200, Short.MAX_VALUE)
+                .add(layout.createSequentialGroup()
+                        .addContainerGap(leftMargin, leftMargin)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING, true)
+                                .add(GroupLayout.LEADING, scrollBar, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(GroupLayout.LEADING, viewportBar, 200 - leftMargin - rightMargin, 200 - leftMargin - rightMargin, Short.MAX_VALUE))
+                        .add(timeLabel, GroupLayout.PREFERRED_SIZE, rightMargin, GroupLayout.PREFERRED_SIZE)));
 
-        Box scrollBox = Box.createHorizontalBox();
-        scrollBox.setMaximumSize(scrollBar.getMaximumSize());
-        scrollBox.setPreferredSize(scrollBar.getPreferredSize());
-        scrollBox.add(Box.createHorizontalStrut(leftMargin - knobSize));
-        scrollBox.add(scrollBar);
-        scrollBox.add(Box.createHorizontalStrut(rightMargin - knobSize));
-        add(scrollBox);
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .add(indicatorsComponent, 100, 100, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(GroupLayout.CENTER, false)
+                    .add(layout.createSequentialGroup()
+                        .add(viewportBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .add(scrollBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .add(timeLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
     }
 
     private static JComponent createIndicatorsComponent(List<Indicator<?>> indicators, ViewportModel viewportModel) {
@@ -163,8 +179,17 @@ public final class IndicatorsContainer extends JPanel
         return indicatorsComponent;
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR));
+        g.fillRect(0, viewportBar.getY(), getWidth(), 2);
+    }
+
     private void adjust() {
         Range<Long> limits = viewportModel.getLimits();
+        timeLabel.setText(TIME_FORMATTER.format(Math.max(0, (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()) - 1)));
+
         Range<Long> viewport = viewportModel.getViewport();
         limits = limits.extend(viewport);
         isAdjusting = true;
