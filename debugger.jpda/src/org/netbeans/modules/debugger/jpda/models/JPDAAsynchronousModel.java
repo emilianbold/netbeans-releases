@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.debugger.jpda.models;
 
-import java.io.IOException;
-import org.netbeans.modules.websvc.api.support.LogUtils;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import java.util.concurrent.Executor;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 
 /**
  *
- * @author rico
+ * @author Martin Entlicher
  */
-public class JaxWsGenWSDLAction extends CookieAction{
+//@DebuggerServiceRegistration(path="netbeans-JPDASession", types=AsynchronousModelFilter.class)
+public class JPDAAsynchronousModel implements AsynchronousModelFilter {
+    
+    private Executor rp;
 
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
+    public JPDAAsynchronousModel(ContextProvider lookupProvider) {
+        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
+            lookupFirst (null, JPDADebugger.class);
+        rp = debugger.getRequestProcessor();
     }
 
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return new Class[]{JaxWsGenWSDLCookie.class};
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        JaxWsGenWSDLCookie cookie = activatedNodes[0].getCookie(JaxWsGenWSDLCookie.class);
-        if(cookie != null){
-            try {
-                cookie.generateWSDL();
-                
-                // logging usage of action
-                Object[] params = new Object[2];
-                params[0] = LogUtils.WS_STACK_JAXWS;
-                params[1] = "GENERATE WSDL"; // NOI18N
-                LogUtils.logWsAction(params);
-
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+    public Executor asynchronous(Executor exec, CALL asynchCall, Object object) {
+        switch (asynchCall) {
+            case VALUE:
+            case CHILDREN:
+                return rp;
+            case SHORT_DESCRIPTION:
+            case DISPLAY_NAME:
+                return CURRENT_THREAD;
         }
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(JaxWsGenWSDLAction.class, "LBL_Generate_WSDL");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return null; // ??
     }
 
 }

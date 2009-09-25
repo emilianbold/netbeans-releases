@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.viewmodel;
 
-import java.io.IOException;
-import org.netbeans.modules.websvc.api.support.LogUtils;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import java.util.concurrent.Executor;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
+ * Not in public API, AsynchronousModelFilter is sufficient, since we have a default.
  *
- * @author rico
+ * @author Martin Entlicher
  */
-public class JaxWsGenWSDLAction extends CookieAction{
+public interface AsynchronousModel {
 
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return new Class[]{JaxWsGenWSDLCookie.class};
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        JaxWsGenWSDLCookie cookie = activatedNodes[0].getCookie(JaxWsGenWSDLCookie.class);
-        if(cookie != null){
-            try {
-                cookie.generateWSDL();
-                
-                // logging usage of action
-                Object[] params = new Object[2];
-                params[0] = LogUtils.WS_STACK_JAXWS;
-                params[1] = "GENERATE WSDL"; // NOI18N
-                LogUtils.logWsAction(params);
-
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(JaxWsGenWSDLAction.class, "LBL_Generate_WSDL");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
+    /**
+     * Provide the threading information for view models method calls.
+     * The returned Executor is used to call methods identified by
+     * {@link CALL} enum.
+     *
+     * @param asynchCall Identification of the method call
+     * @param node Object node
+     * @return an instance of Executor
+     */
+    Executor asynchronous(CALL asynchCall, Object node) throws UnknownTypeException;
+    
 }

@@ -130,20 +130,19 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         ClientCreator creator = CreatorProvider.getClientCreator(project, wiz);
         if (creator!=null) creator.createClient();
 
-        // logging usage of Client wizard
-        Object[] params = new Object[6];
+        // logging usage of wizard
+        Object[] params = new Object[5];
         boolean isJaxWs = ClientWizardProperties.JAX_WS.equals(wiz.getProperty(ClientWizardProperties.JAX_VERSION));
         params[0] = isJaxWs ? LogUtils.WS_STACK_JAXWS : LogUtils.WS_STACK_JAXRPC ;
         params[1] = project.getClass().getName();
         J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
-        params[2] = j2eeModule == null ? "" : j2eeModule.getModuleVersion(); //NOI18N
-        params[3] = "WS CLIENT"; //NOI18N
-        params[4] = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH) ? "DISPATCH": "STANDARD"; //NOI18N
+        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+        params[3] = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH) ? "DISPATCH": "WS CLIENTL"; //NOI18N
         int wsdlSource = (Integer)wiz.getProperty(ClientWizardProperties.WSDL_SOURCE);
         switch (wsdlSource) {
-            case 0: params[5] = "FROM PROJECT";break; //NOI18N
-            case 1: params[5] = "FROM FILE";break; //NOI18N
-            default: params[5] = "FROM URL"; //NOI18N
+            case 0: params[4] = "FROM PROJECT";break; //NOI18N
+            case 1: params[4] = "FROM FILE";break; //NOI18N
+            default: params[4] = "FROM URL"; //NOI18N
         }
         LogUtils.logWsWizard(params);
 
