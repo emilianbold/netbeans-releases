@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -172,7 +173,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             return;
         }
 
-        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, "SIGKILL", null); // NOI18N
+        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null); // NOI18N
     }
 
     private ChannelStreams execCommand(

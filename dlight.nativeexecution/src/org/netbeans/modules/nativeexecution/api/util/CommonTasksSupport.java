@@ -248,14 +248,14 @@ public final class CommonTasksSupport {
      *
      * @param execEnv  execution environment of the process
      * @param pid  pid of the process
-     * @param signal  signal name, e.g. "KILL", "USR1"
+     * @param signal  signal name, e.g. "SIGKILL", "SIGUSR1"
      * @param error  if not <tt>null</tt> and some error occurs,
      *        an error message will be written to this <tt>Writer</tt>
      * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
      *         of the signal task. <tt>0</tt> means success, any other value
      *         means failure.
      */
-    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final String signal, final Writer error) {
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
         final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
 
         return NativeTaskExecutorService.submit(new Callable<Integer>() {
@@ -264,7 +264,7 @@ public final class CommonTasksSupport {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
                 String shell = hostInfo.getShell();
                 if (shell != null) {
-                    String cmd = String.format("kill -%d %d", Signal.toID(signal), pid); // NOI18N
+                    String cmd = String.format("kill -%d %d", signal.getID(), pid); // NOI18N
                     CommandRunner runner = new CommandRunner(execEnv, error, shell, "-c", cmd); // NOI18N
                     return runner.call();
                 } else {
@@ -335,80 +335,5 @@ public final class CommonTasksSupport {
         }
 
         return result;
-    }
-
-    // TODO: linux???
-    private static enum Signal {
-
-        SIGHUP(1),
-        SIGINT(2),
-        SIGQUIT(3),
-        SIGILL(4),
-        SIGTRAP(5),
-        SIGABRT(6),
-        SIGEMT(7),
-        SIGFPE(8),
-        SIGKILL(9),
-        SIGBUS(10),
-        SIGSEGV(11),
-        SIGSYS(12),
-        SIGPIPE(13),
-        SIGALRM(14),
-        SIGTERM(15),
-        SIGUSR1(16),
-        SIGUSR2(17),
-        SIGCHLD(18),
-        SIGPWR(19),
-        SIGWINCH(20),
-        SIGURG(21),
-        SIGPOLL(22),
-        SIGSTOP(23),
-        SIGTSTP(24),
-        SIGCONT(25),
-        SIGTTIN(26),
-        SIGTTOU(27),
-        SIGVTALRM(28),
-        SIGPROF(29),
-        SIGXCPU(30),
-        SIGWAITING(32),
-        SIGLWP(33),
-        SIGFREEZE(34),
-        SIGTHAW(35),
-        SIGCANCEL(36),
-        SIGLOST(37),
-        SIGXRES(38),
-        SIGJVM1(39);
-        private final int id;
-
-        private Signal(int id) {
-            this.id = id;
-        }
-
-        public static int toID(String str) {
-            if (str == null) {
-                throw new IllegalArgumentException("null signal specification"); // NOI18N
-            }
-
-            str = str.trim().toUpperCase();
-
-            if (str.startsWith("SIG")) { // NOI18N
-                Signal s = Signal.valueOf(str);
-                return s.id;
-            }
-
-            if (str.startsWith("-")) { // NOI18N
-                str = str.substring(1);
-            }
-
-            int sid;
-
-            try {
-                sid = Integer.parseInt(str);
-            } catch (Exception ex) {
-                throw new IllegalArgumentException("wrong signal specification: " + str); // NOI18N
-            }
-
-            return sid;
-        }
     }
 }
