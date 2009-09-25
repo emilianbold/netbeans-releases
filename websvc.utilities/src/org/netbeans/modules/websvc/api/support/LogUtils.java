@@ -51,8 +51,9 @@ import org.openide.util.Parameters;
  */
 public class LogUtils {
 
-    //private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger("org.netbeans.ui.metrics.websvc"); // NOI18N
-    private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger("org.netbeans.modules.websvc.api.support.LogUtils"); // NOI18N
+    private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger("org.netbeans.ui.metrics.websvc"); // NOI18N
+    //private static final Logger USG_LOGGER_WEBSVC = Logger.getLogger(LogUtils.class.getName());
+
     public static final String USG_WEBSVC_WIZARD = "USG_WEBSVC_WIZARD"; //NOI18N
     public static final String USG_WEBSVC_OPEN = "USG_WEBSVC_OPEN"; //NOI18N
     public static final String USG_WEBSVC_ACTION = "USG_WEBSVC_ACTION"; //NOI18N
@@ -74,7 +75,7 @@ public class LogUtils {
     }
 
     private static void log(String message, Object[] params) {
-        Parameters.notNull("message", message); // NOI18N
+        Parameters.notNull("params", params); // NOI18N
         LogRecord logRecord = new LogRecord(Level.INFO, message);
         logRecord.setLoggerName(USG_LOGGER_WEBSVC.getName());
         logRecord.setResourceBundle(NbBundle.getBundle(LogUtils.class));
