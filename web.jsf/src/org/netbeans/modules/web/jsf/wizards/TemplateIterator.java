@@ -130,14 +130,14 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                             is = templatePanel.getLayoutCSS();
                             JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
                         }
-                        String layoutPath = getRelativePath(target, cssFile);
+                        String layoutPath = JSFUtils.getRelativePath(target, cssFile);
                         cssFile = cssFolder.getFileObject("default", CSS_EXT);  //NOI18N
                         if (cssFile == null){
                             cssFile = cssFolder.createData("default", CSS_EXT); //NOI18N
                             is = templatePanel.getDefaultCSS();
                             JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
                         }
-                        String defaultPath = getRelativePath(target, cssFile);
+                        String defaultPath = JSFUtils.getRelativePath(target, cssFile);
 
                         is = templatePanel.getTemplate();
                         String content = JSFFrameworkProvider.readResource(is, ENCODING);
@@ -267,18 +267,5 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
-    }
-    /** Returns relative path from one file to another file
-     */
-    private static String getRelativePath (FileObject fromFO, FileObject toFO){
-        String path = "./";
-        FileObject parent = fromFO.getParent();
-        String tmpPath = null;
-        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null){
-            parent = parent.getParent();
-            path = path + "../";
-        }
-
-        return (tmpPath != null ? path + tmpPath : null);
     }
 }
