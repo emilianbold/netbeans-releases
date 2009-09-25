@@ -43,12 +43,17 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+import java.util.concurrent.Executor;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -112,7 +117,31 @@ public class TreeModelHyperNode extends TreeModelNode {
             super(null, model.getColumns(), treeModelRoot, object);
             this.model = model;
         }
-        
+
+        // TODO: Run children of individual models according to individual asynchronous specifications
+        @Override
+        protected Executor getModelAsynchronous() {
+            Executor exec = null;
+            for (Models.CompoundModel m : model.getModels()) {
+                try {
+                    Executor e = m.asynchronous(CALL.CHILDREN, object);
+                    if (exec == null) {
+                        exec = e;
+                    } else {
+                        if (e != AsynchronousModelFilter.CURRENT_THREAD) {
+                            exec = e;
+                        }
+                    }
+                } catch (UnknownTypeException ex) {
+                    Exceptions.printStackTrace(Exceptions.attachMessage(ex, "model = "+model+", object = "+object));
+                }
+            }
+            if (exec == null) {
+                exec = AsynchronousModelFilter.CURRENT_THREAD;
+            }
+            return exec;
+        }
+
         @Override
         protected Object[] getModelChildren(RefreshingInfo refreshInfo) throws UnknownTypeException {
             if (refreshInfo instanceof HyperRefreshingInfo) {
