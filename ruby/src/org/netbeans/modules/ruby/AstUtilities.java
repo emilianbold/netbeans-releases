@@ -253,7 +253,7 @@ public class AstUtilities {
                 offset--;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return comments;
