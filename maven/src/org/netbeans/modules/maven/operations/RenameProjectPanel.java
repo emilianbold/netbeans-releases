@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.maven.operations;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.apache.maven.project.MavenProject;
@@ -54,11 +56,21 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
+import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.validation.api.Problems;
+import org.netbeans.validation.api.Severity;
+import org.netbeans.validation.api.Validator;
+import org.netbeans.validation.api.ui.ValidationListener;
+import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.openide.DialogDescriptor;
 import org.openide.LifecycleManager;
+import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -75,30 +87,56 @@ import org.openide.util.RequestProcessor;
  */
 public class RenameProjectPanel extends javax.swing.JPanel {
     private final NbMavenProjectImpl project;
-
+    private ValidationGroup vg;
+    private NotificationLineSupport nls;
 
     RenameProjectPanel(NbMavenProjectImpl prj) {
         initComponents();
-        checkEnablement();
+        txtFolder.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Folder Name");
+        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "ArtifactId");
         this.project = prj;
+        final String folder = project.getProjectDirectory().getNameExt();
+        txtFolder.setText(folder);
         //load values..
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 MavenProject prj = project.getOriginalMavenProject();
                 final String dn = prj.getName();
                 final String artId = prj.getArtifactId();
-                final String folder = project.getProjectDirectory().getNameExt();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         txtArtifactId.setText(artId);
                         txtDisplayName.setText(dn);
-                        txtFolder.setText(folder);
                         lblRename.setText(NbBundle.getMessage(RenameProjectPanel.class, "RenameProjectPanel.lblRename.text2", dn));
                     }
                 });
             }
         });
     }
+
+    void createValidations(DialogDescriptor dd) {
+        nls = dd.createNotificationLineSupport();
+        vg = ValidationGroup.create(new NotificationLineSupportAdapter(nls), new DialogDescriptorAdapter(dd));
+        vg.add(txtFolder,
+                new OptionalValidator(cbFolder,
+                    Validators.merge(true,
+                        Validators.REQUIRE_NON_EMPTY_STRING,
+                        Validators.REQUIRE_VALID_FILENAME,
+                        new FileNameExists(FileUtil.toFile(project.getProjectDirectory().getParent()))
+                    )
+                ));
+        vg.add(txtArtifactId,
+                new OptionalValidator(cbArtifactId,
+                    Validators.merge(true,
+                        Validators.REQUIRE_NON_EMPTY_STRING,
+//                        Validators.MAY_NOT_START_WITH_DIGIT,
+                        Validators.NO_WHITESPACE,
+                        Validators.regexp("[a-zA-Z0-9_\\-.]+", "ArtifactId contains invalid characters.", false)
+                    )
+                ));
+        checkEnablement();
+    }
+
 
     private void checkEnablement() {
         txtArtifactId.setEnabled(cbArtifactId.isSelected());
@@ -208,14 +246,17 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbDisplayNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbDisplayNameActionPerformed
+        vg.validateAll();
         checkEnablement();
     }//GEN-LAST:event_cbDisplayNameActionPerformed
 
     private void cbArtifactIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbArtifactIdActionPerformed
+        vg.validateAll();
         checkEnablement();
     }//GEN-LAST:event_cbArtifactIdActionPerformed
 
     private void cbFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFolderActionPerformed
+        vg.validateAll();
         checkEnablement();
     }//GEN-LAST:event_cbFolderActionPerformed
 
@@ -269,6 +310,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             }
         });
     }
+
 
     private class ArtIdOperation implements ModelOperation<POMModel> {
         private final String artifactId;
@@ -498,6 +540,38 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         });
     }
 
+    private class OptionalValidator implements Validator<String> {
+        private final JCheckBox checkbox;
+        private final Validator<String> delegate;
 
+        public OptionalValidator(JCheckBox cb, Validator<String> validator) {
+            checkbox = cb;
+            delegate = validator;
+        }
+        
+        public boolean validate(Problems problems, String compName, String model) {
+            if (checkbox.isSelected()) {
+                return delegate.validate(problems, compName, model);
+            }
+            return true;
+        }
+    }
 
+    private class FileNameExists implements Validator<String> {
+        private final File parent;
+
+        public FileNameExists(File parent) {
+            assert parent.isDirectory() && parent.exists();
+            this.parent = parent;
+        }
+
+        public boolean validate(Problems problems, String compName, String model) {
+            File newDir = new File(parent, model);
+            if (newDir.exists()) {
+                problems.add("Folder with name '" + model + "' already exists.", Severity.FATAL);
+                return false;
+            }
+            return true;
+        }
+    }
 }

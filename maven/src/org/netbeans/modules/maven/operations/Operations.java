@@ -55,7 +55,8 @@ public class Operations {
     public static void renameProject(NbMavenProjectImpl project) {
         assert SwingUtilities.isEventDispatchThread();
         RenameProjectPanel panel = new RenameProjectPanel(project);
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(Operations.class, "RenameProjectPanel.lblRename.text=Rename Project"));
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(Operations.class, "RenameProjectPanel.lblRename.text"));
+        panel.createValidations(dd);
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             panel.renameProject();
         }
