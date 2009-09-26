@@ -82,6 +82,10 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         };
 
     static {
+        System.setProperty("cnd.remote.force.setup", "true");
+    }
+
+    static {
         //log.setLevel(Level.ALL);
         log.addHandler(new Handler() {
             @Override

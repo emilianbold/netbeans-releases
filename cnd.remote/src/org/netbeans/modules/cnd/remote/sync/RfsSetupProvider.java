@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
-import org.openide.util.Exceptions;
+
 
 /**
  * An implementation of SetupProvider that nandles RFS related binaries
@@ -56,25 +56,24 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
 
-    private static final String PRELOAD_PATTERN = "%s/rfs_preload-%s.so"; // NOI18N
-    private static final String CONTROLLER_PATTERN = "%s/rfs_controller-%s"; // NOI18N
-
     private Map<String, String> binarySetupMap;
+    private static final String CONTROLLER = "rfs_controller"; // NOI18N
+    private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 
     public RfsSetupProvider() {
+        String[] dirs = new String[] {
+             "SunOS-x86" // NOI18N
+            ,"SunOS-x86_64" // NOI18N
+            ,"Linux-x86" // NOI18N
+            ,"Linux-x86_64" // NOI18N
+            ,"SunOS-sparc" // NOI18N
+            ,"SunOS-sparc_64" // NOI18N
+        };
         binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put("rfs_preload-Linux-x86.so", "bin/Linux-x86/rfs_preload.so"); // NOI18N
-        binarySetupMap.put("rfs_preload-Linux-x86_64.so", "bin/Linux-x86_64/rfs_preload.so"); // NOI18N
-        binarySetupMap.put("rfs_controller-Linux-x86", "bin/Linux-x86/rfs_controller"); // NOI18N
-        binarySetupMap.put("rfs_controller-Linux-x86_64", "bin/Linux-x86_64/rfs_controller"); // NOI18N
-        binarySetupMap.put("rfs_preload-SunOS-x86.so", "bin/SunOS-x86/rfs_preload.so"); // NOI18N
-        binarySetupMap.put("rfs_preload-SunOS-x86_64.so", "bin/SunOS-x86_64/rfs_preload.so"); // NOI18N
-        binarySetupMap.put("rfs_controller-SunOS-x86", "bin/SunOS-x86/rfs_controller"); // NOI18N
-        binarySetupMap.put("rfs_controller-SunOS-x86_64", "bin/SunOS-x86_64/rfs_controller"); // NOI18N
-        //binarySetupMap.put("rfs_preload-SunOS-sparc.so", "bin/SunOS-sparc/rfs_preload.so"); // NOI18N
-        binarySetupMap.put("rfs_preload-SunOS-sparc_64.so", "bin/SunOS-sparc_64/rfs_preload.so"); // NOI18N
-        //binarySetupMap.put("rfs_controller-SunOS-sparc", "bin/SunOS-sparc/rfs_controller"); // NOI18N
-        binarySetupMap.put("rfs_controller-SunOS-sparc_64", "bin/SunOS-sparc_64/rfs_controller"); // NOI18N
+        for (String dir : dirs) {
+            binarySetupMap.put(dir + "/" + PRELOAD, "bin/" +  dir + "/" + PRELOAD); // NOI18N
+            binarySetupMap.put(dir + "/" + CONTROLLER, "bin/" +  dir + "/" + CONTROLLER); // NOI18N
+        }
     }
 
     public Map<String, String> getBinaryFiles() {
@@ -85,25 +84,24 @@ public class RfsSetupProvider implements SetupProvider {
         return null;
     }
 
-    public static String getPreload(ExecutionEnvironment execEnv) {
-        return getBinary(execEnv, PRELOAD_PATTERN);
+    public static String getPreloadName(ExecutionEnvironment execEnv) {
+        return PRELOAD;
     }
 
-    public static String getController(ExecutionEnvironment execEnv) {
-        return getBinary(execEnv, CONTROLLER_PATTERN);
+    /** Never returns null, throws instead */
+    public static String getControllerPath(ExecutionEnvironment execEnv) throws ParseException {
+        return getLibDir(execEnv) + '/' + CONTROLLER; // NOI18N
     }
 
-    private static String getBinary(ExecutionEnvironment execEnv, String pattern) {
+    public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {
+        String libDir = getLibDir(execEnv);
+        return libDir + ':' + libDir + "_64"; // NOI18N
+    }
+
+    private static String getLibDir(ExecutionEnvironment execEnv) throws ParseException {
         String libDir = HostInfoProvider.getLibDir(execEnv); //NB: should contain trailing '/'
-        String osname = null;
-        try {
-            MacroExpander mef = MacroExpanderFactory.getExpander(execEnv);
-            osname = mef.expandPredefinedMacros("${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-        String result = String.format(pattern, libDir, osname);
-        return result;
+        MacroExpander mef = MacroExpanderFactory.getExpander(execEnv);
+        String osname = mef.expandPredefinedMacros("${osname}-${platform}"); // NOI18N
+        return libDir + '/' + osname;
     }
 }

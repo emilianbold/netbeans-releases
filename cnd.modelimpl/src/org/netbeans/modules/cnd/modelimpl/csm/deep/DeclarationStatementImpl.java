@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
-    private List<CsmDeclaration> declarators;
+    private volatile List<CsmDeclaration> declarators;
 
     public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
@@ -70,7 +70,6 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
     public List<CsmDeclaration> getDeclarators() {
         if (declarators == null) {
-            declarators = new ArrayList<CsmDeclaration>();
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
         }
@@ -90,12 +89,16 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }
 
-    private void render() {
-        AstRenderer renderer = new DSRenderer();
-        renderer.render(getAst(), null, null);
+    private synchronized void render() {
+        if (this.declarators == null) {
+            DSRenderer renderer = new DSRenderer();
+            renderer.render(getAst(), null, null);
+            this.declarators = renderer.declarators;
+        }
     }
 
     private class DSRenderer extends AstRenderer {
+        private List<CsmDeclaration> declarators = new ArrayList<CsmDeclaration>();
 
         public DSRenderer() {
             super((FileImpl) getContainingFile());

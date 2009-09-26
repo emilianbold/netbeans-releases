@@ -53,6 +53,7 @@ import org.openide.windows.TopComponent;
  */
 final class DLightIndicatorTopComponentRegsitry implements PropertyChangeListener {
 
+
     static String PROP_DLIGHT_TC_ACTIVATED = "dlightIndTcActivated"; //NOI18N
     static String PROP_DLIGHT_TC_OPENED = "dlightIndTcOpened";//NOI18N
     static String PROP_DLIGHT_TC_CLOSED = "dlightIndTcClosed";//NOI18N
@@ -61,6 +62,7 @@ final class DLightIndicatorTopComponentRegsitry implements PropertyChangeListene
     //private List<PropertyChangeListener> propertyChangeListeners = new ArrayList<PropertyChangeListener>();
     private PropertyChangeSupport pcs;
     private Reference<DLightIndicatorsTopComponent> active = new WeakReference<DLightIndicatorsTopComponent>(null);
+    private Reference<TopComponent> lastNonIndicatorActive = new WeakReference<TopComponent>(null);
     private final Set<DLightIndicatorsTopComponent> opened;
 
     private DLightIndicatorTopComponentRegsitry() {
@@ -113,6 +115,9 @@ final class DLightIndicatorTopComponentRegsitry implements PropertyChangeListene
                 setActive((DLightIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
             }
+            if (tc != null && !(tc instanceof DLightIndicatorsTopComponent)){
+                setActiveNonIndicators(tc);
+            }
         } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             if (evt.getNewValue() instanceof DLightIndicatorsTopComponent) {
                 DLightIndicatorsTopComponent tc = (DLightIndicatorsTopComponent) evt.getNewValue();
@@ -122,6 +127,8 @@ final class DLightIndicatorTopComponentRegsitry implements PropertyChangeListene
                 }
                 //check if closed component was active
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_CLOSED, evt.getOldValue(), evt.getNewValue()));
+            }else {
+                setActiveNonIndicators(null);
             }
         } else if (TopComponent.Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) evt.getNewValue();
@@ -131,14 +138,27 @@ final class DLightIndicatorTopComponentRegsitry implements PropertyChangeListene
                 setActive((DLightIndicatorsTopComponent) tc);
                 firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_ACTIVATED, evt.getOldValue(), evt.getNewValue()));
             //firePropertyChangeEvent(new PropertyChangeEvent(evt.getSource(), PROP_DLIGHT_TC_OPENED, evt.getOldValue(), evt.getNewValue()));
+            }else{
+                setActiveNonIndicators(tc);
             }
         } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
         }
     //throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    private synchronized  void setActiveNonIndicators(TopComponent tc){
+            lastNonIndicatorActive = new WeakReference<TopComponent>(tc);
+    }
+
+    TopComponent getActivatedNonIndicators(){
+        return lastNonIndicatorActive.get();
+    }
+
     private synchronized void setActive(DLightIndicatorsTopComponent tc) {
         active = new WeakReference<DLightIndicatorsTopComponent>(tc);
+        if (tc != null && !opened.contains(tc)){
+            opened.add(tc);
+        }
 //    Node[] _nodes = (tc == null ? new Node[0] : tc.getActivatedNodes());
 //    if (_nodes != null){
 //      nodes = _nodes;
