@@ -24,6 +24,18 @@
                     </xsl:element>
                 </xsl:element>
             </xsl:if>
+            <xsl:if test="//*/folder[@name='org-netbeans-api-project-libraries']/folder[@name='Libraries']/*">
+                <xsl:element name="folder">
+                    <xsl:attribute name="name">org-netbeans-api-project-libraries</xsl:attribute>
+                    <xsl:element name="folder">
+                        <xsl:attribute name="name">Libraries</xsl:attribute>
+                        <xsl:apply-templates
+                            select="//*/folder[@name='org-netbeans-api-project-libraries']/folder[@name='Libraries']/*"
+                            mode="project-wizard"
+                        />
+                    </xsl:element>
+                </xsl:element>
+            </xsl:if>
             <xsl:if test="//*/folder[@name='Ergonomics']/*">
                 <xsl:element name="folder">
                     <xsl:attribute name="name">Ergonomics</xsl:attribute>
