@@ -341,6 +341,10 @@ public class JsfElExpression extends ELExpression {
 
             public void run( CompilationController controller ) throws Exception {
                 TypeMirror type = getTypePreceedingCaret(controller, varType);
+                if(type == null) {
+                    //unresolvable type
+                    return ;
+                }
                 TypeMirror erasedType = controller.getTypes().erasure(type);
                 TypeMirror iterable = controller.getTypes().erasure( controller.getElements().
                         getTypeElement(Iterable.class.getCanonicalName()).asType());
