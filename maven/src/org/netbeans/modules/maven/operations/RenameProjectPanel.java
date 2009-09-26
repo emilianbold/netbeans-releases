@@ -127,12 +127,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                 ));
         vg.add(txtArtifactId,
                 new OptionalValidator(cbArtifactId,
-                    Validators.merge(true,
-                        Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                        Validators.NO_WHITESPACE,
-                        Validators.regexp("[a-zA-Z0-9_\\-.]+", "ArtifactId contains invalid characters.", false)
-                    )
+                        MavenValidators.createArtifactIdValidators()
                 ));
         checkEnablement();
     }
