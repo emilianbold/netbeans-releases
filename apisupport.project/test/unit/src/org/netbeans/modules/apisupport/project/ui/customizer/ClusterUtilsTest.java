@@ -125,14 +125,14 @@ public class ClusterUtilsTest extends TestBase {
 
         File scDir = new File(suiteDir, "module1");
         NbModuleProjectGenerator.createSuiteComponentModule(
-                scDir, "test.module1", "Module 1", "test/module1/Bundle.properties", null, suiteDir);
+                scDir, "test.module1", "Module 1", "test/module1/Bundle.properties", null, suiteDir, false);
         NbModuleProject prj2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(scDir));
         prj2.open(); // necessary for project files to be created
         assertEquals(new File(suiteDir, "build/cluster"), ClusterUtils.getClusterDirectory(prj2).getAbsoluteFile());
 
         File standaloneDir = new File(getWorkDir(), "module2");
         NbModuleProjectGenerator.createStandAloneModule(
-                standaloneDir, "test.module2", "Module 2", "test/module2/Bundle.properties", null, NbPlatform.PLATFORM_ID_DEFAULT);
+                standaloneDir, "test.module2", "Module 2", "test/module2/Bundle.properties", null, NbPlatform.PLATFORM_ID_DEFAULT, false);
         NbModuleProject prj3 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(standaloneDir));
         prj3.open(); // necessary for project files to be created
         assertEquals(new File(standaloneDir, "build/cluster"), ClusterUtils.getClusterDirectory(prj3).getAbsoluteFile());
