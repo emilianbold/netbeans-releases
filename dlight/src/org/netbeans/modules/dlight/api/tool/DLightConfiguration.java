@@ -269,7 +269,7 @@ public final class DLightConfiguration {
 
     private class DefaultConfigurationOption implements DLightConfigurationOptions {
 
-        private boolean turnState = false;
+        private boolean turnState = true;
 
         public void turnCollectorsState(boolean turnState) {
             this.turnState = turnState;
@@ -294,7 +294,7 @@ public final class DLightConfiguration {
         }
 
         public boolean validateToolsRequiredUserInteraction() {
-            return false;
+            return true;
         }
 
         public boolean profileOnRun() {
@@ -302,7 +302,13 @@ public final class DLightConfiguration {
         }
 
         public Collection<String> getActiveToolNames() {
-            return null;
+            Collection<String> toolIDs = new ArrayList<String>();
+            for(DLightTool tool : getToolsSet()){
+                if (tool.isEnabled()){
+                    toolIDs.add(tool.getID());
+                }
+            }
+            return toolIDs;
         }
 
         public void addListener(DLightConfigurationOptionsListener listener) {

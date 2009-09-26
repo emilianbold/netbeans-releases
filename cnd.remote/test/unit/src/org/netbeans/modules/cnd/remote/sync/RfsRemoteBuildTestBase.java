@@ -50,7 +50,6 @@ public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
 
     static {
         System.setProperty("cnd.remote.fs", "true");
-        System.setProperty("cnd.remote.force.setup", "true");
     }
 
     public RfsRemoteBuildTestBase(String testName) {

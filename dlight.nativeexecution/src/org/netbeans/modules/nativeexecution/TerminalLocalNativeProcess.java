@@ -51,19 +51,20 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -222,67 +223,48 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         }
     }
 
-    @Override
-    public void cancel() {
-        sendSignal(15);
-    }
-
-    private synchronized int sendSignal(int signal) {
-        int result = 1;
+    private int getPIDNoException() {
         int pid = -1;
 
         try {
             pid = getPID();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
         }
+
+        return pid;
+    }
+
+    @Override
+    public void cancel() {
+        int pid = getPIDNoException();
 
         if (pid < 0) {
-            return -1;
+            // Process even was not started ...
+            return;
         }
 
-        try {
-            ProcessBuilder pb;
-            List<String> command = new ArrayList<String>();
-
-            if (isWindows) {
-                command.add(hostInfo.getShell());
-                command.add("-c"); // NOI18N
-                command.add("kill -" + signal + " " + getPID()); // NOI18N
-            } else {
-                command.add("/bin/kill"); // NOI18N
-                command.add("-" + signal); // NOI18N
-                command.add("" + getPID()); // NOI18N
-            }
-
-            pb = new ProcessBuilder(command);
-            Process killProcess = pb.start();
-            result = killProcess.waitFor();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (InterruptedIOException ex) {
-            Thread.currentThread().interrupt();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return result;
+        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGTERM, null);
     }
 
     @Override
     public int waitResult() throws InterruptedException {
-        int pid = -1;
-
-        try {
-            pid = getPID();
-        } catch (IOException ex) {
-        }
+        int pid = getPIDNoException();
 
         if (pid < 0) {
+            // Process was not even started
             return -1;
         }
 
         if (isWindows || isMacOS) {
-            while (sendSignal(0) == 0) {
+            int rc = 0;
+            while (rc == 0) {
+                try {
+                    rc = CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.NULL, null).get();
+                } catch (ExecutionException ex) {
+                    log.log(Level.FINEST, "", ex); // NOI18N
+                    rc = -1;
+                }
+                
                 Thread.sleep(300);
             }
         } else {
