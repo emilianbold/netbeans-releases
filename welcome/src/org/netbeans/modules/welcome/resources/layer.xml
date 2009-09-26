@@ -73,11 +73,6 @@ made subject to such option by the copyright holder.
     <folder name="WelcomePage">
         <folder name="GettingStartedLinks">
 
-            <file name="tour_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="100"/>
-            </file>
-
             <file name="whatsnew_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="200"/>
