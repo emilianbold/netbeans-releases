@@ -522,28 +522,6 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
     }
     
-    /** 
-     * Returns URI of GF (manager application).
-     * 
-     * @return URI without home and base specification
-     */
-    public String getPlainUri() {
-        InstanceProperties ip = getInstanceProperties();
-        return constructServerUri(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                ip.getProperty(GlassfishModule.HTTPPORT_ATTR), "/__asadmin/");
-    }
-    
-    /** 
-     * Returns URI of hk2.
-     * 
-     * @return URI without home and base specification
-     */
-    public String getServerUri() {
-        InstanceProperties ip = getInstanceProperties();
-        return constructServerUri(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                ip.getProperty(GlassfishModule.ADMINPORT_ATTR), null);
-    }
-
     private final String constructServerUri(String host, String port, String path) {
         StringBuilder builder = new StringBuilder(128);
         builder.append("http://"); // NOI18N
@@ -597,54 +575,4 @@ public class Hk2DeploymentManager implements DeploymentManager {
         }
         return provider;
     }
-//    class UpdateContextRoot implements ProgressListener {
-//        private MonitorProgressObject returnProgress;
-//        private Hk2TargetModuleID moduleId;
-//
-//        UpdateContextRoot(MonitorProgressObject returnProgress,Hk2TargetModuleID moduleId) {
-//            this.returnProgress = returnProgress;
-//            this.moduleId = moduleId;
-//        }
-//
-//            public void handleProgressEvent(ProgressEvent event) {
-//                if (event.getDeploymentStatus().isCompleted()) {
-//                    returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
-//                    // let's update the context-root
-//                    //
-//                    RequestProcessor.getDefault().post(new Runnable() {
-//                        public void run() {
-//                            GetPropertyCommand gpc = new GetPropertyCommand("*." + moduleId.getModuleID() + ".context-root");
-//                            Future<OperationState> result = getCommonServerSupport().execute(gpc);
-//                            try {
-//                                //result.get()
-//                                if (result.get(60, TimeUnit.SECONDS) == OperationState.COMPLETED) {
-//                                    long end = System.nanoTime();
-//                                    //String installRoot = getGlassfishRoot();
-//                                    //String targetInstallRoot = gpc.propertyValue();
-//                                    Map<String, String> retVal = gpc.getData();
-//                                    if (retVal.size() == 1) {
-//                                        returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
-//                                        moduleId.setPath(retVal.entrySet().iterator().next().getValue());
-//                                    }
-//                                }
-//                            } catch (InterruptedException ex) {
-//                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
-//                                Exceptions.printStackTrace(ex);
-//                            } catch (ExecutionException ex) {
-//                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
-//                                Exceptions.printStackTrace(ex);
-//                            } catch (TimeoutException ex) {
-//                                returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid");
-//                                Exceptions.printStackTrace(ex);
-//                            }
-//                        }
-//                    });
-//                } else if (event.getDeploymentStatus().isFailed()) {
-//                    returnProgress.operationStateChanged(OperationState.FAILED, "failed to update the moduleid");
-//                } else {
-//                    returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
-//                }
-//            }
-//
-//    }
 }
