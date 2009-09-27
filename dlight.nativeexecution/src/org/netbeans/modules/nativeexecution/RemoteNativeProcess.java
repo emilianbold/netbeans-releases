@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MacroMap;
@@ -153,11 +155,25 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
-//          NativeTaskSupport.kill(execEnv, 9, getPID());
             }
-
         }
 
+        // Sometimes jsch fails to kill the remote process ...
+        // try to do force kill
+
+        int pid = -1;
+
+        try {
+            pid = getPID();
+        } catch (IOException ex) {
+        }
+
+        if (pid == -1) {
+            // This means that we are cancelling process that was not started
+            return;
+        }
+
+        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null); // NOI18N
     }
 
     private ChannelStreams execCommand(

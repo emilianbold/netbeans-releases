@@ -47,16 +47,18 @@ enum {
 };
 
 #if TRACE
+
 #if RFS_PRELOAD
-static const char* prefix = "#RFS_PRLD: ";
+static const char* prefix = "#RFS_PRLD[%d]: ";
 #elif RFS_CONTROLLER
-static const char* prefix = "#RFS_CNTL: ";
+static const char* prefix = "#RFS_CNTL[%d]: ";
 #else
 #error either RFS_PRELOAD or RFS_CONTROLLER should be defined and nonzero
 #endif
 
 FILE *trace_file;
-#define trace(args...) { fprintf(trace_file, prefix); fprintf(trace_file, ## args); fflush(trace_file); }
+static pid_t pid = 0;
+#define trace(args...) { fprintf(trace_file, prefix, pid); fprintf(trace_file, ## args); fflush(trace_file); }
 void trace_startup(const char* env_var) {
     char *file_name = getenv(env_var);
     if (file_name) {        
@@ -74,8 +76,8 @@ void trace_startup(const char* env_var) {
     }
     char dir[PATH_MAX];
     getcwd(dir, sizeof dir);
-    pid_t pid = getpid();
-    trace("%d started in %s\n", pid, dir);
+    pid = getpid();
+    trace("started in %s\n", dir);
 }
 void trace_shutdown() {
     if (trace_file && trace_file != stderr) {
