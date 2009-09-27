@@ -162,7 +162,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         }
         if ("enabled".equals(evt.getPropertyName())) {
             setEnabled(isEnabled());
-            System.out.println("Source=" + evt.getSource()); // NOI18N
+//             System.out.println("Source=" + evt.getSource()); // NOI18N
         }
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;
