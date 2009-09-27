@@ -42,6 +42,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -66,6 +67,12 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Property;
@@ -73,7 +80,9 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Scans for known modules.
@@ -554,47 +563,45 @@ final class ModuleListParser {
                 }
                 for (int k = 0; k < jars.length; k++) {
                     File m = jars[k];
-                    if (!m.getName().endsWith(".jar")) {
+                    scanOneBinary(m, cluster, entries);
+                }
+            }
+
+            final File configDir = new File(new File(cluster, "config"), "Modules");
+            File[] configs = configDir.listFiles();
+            XPathExpression expr = null;
+            DocumentBuilder b = null;
+            if (configs != null) {
+                for (File xml : configs) {
+                    // TODO, read location, scan
+                    final String fileName = xml.getName();
+                    if (!fileName.endsWith(".xml")) {
                         continue;
                     }
-                    JarFile jf = new JarFile(m);
+                    final String cnb = fileName.substring(0, fileName.length() - 4).replace('-', '.');
+                    if (entries.containsKey(cnb)) {
+                        continue;
+                    }
                     try {
-                        Attributes attr = jf.getManifest().getMainAttributes();
-                        String codename = attr.getValue("OpenIDE-Module");
-                        if (codename == null) {
-                            continue;
+                        if (expr == null) {
+                            expr = XPathFactory.newInstance().newXPath().compile("/module/param[@name='jar']");
+                            b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                            b.setEntityResolver(new EntityResolver() {
+                                public InputSource resolveEntity(String publicId, String systemId)
+                                throws SAXException, IOException {
+                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                }
+                            });
                         }
-                        String codenamebase;
-                        int slash = codename.lastIndexOf('/');
-                        if (slash == -1) {
-                            codenamebase = codename;
-                        } else {
-                            codenamebase = codename.substring(0, slash);
+                        Document doc = b.parse(xml);
+                        String res = expr.evaluate(doc);
+                        File jar = new File(cluster, res.replace('/', File.separatorChar));
+                        if (!jar.isFile()) {
+                            throw new BuildException("Cannot find module " + jar + " from " + xml);
                         }
-                        
-                        String cp = attr.getValue("Class-Path");
-                        File[] exts;
-                        if (cp == null) {
-                            exts = new File[0];
-                        } else {
-                            String[] pieces = cp.split(" +");
-                            exts = new File[pieces.length];
-                            for (int l = 0; l < pieces.length; l++) {
-                                exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
-                            }
-                        }
-                        String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
-                        
-                        
-                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, cluster.getName(),
-                                parseRuntimeDependencies(moduleDependencies), Collections.<String,String[]>emptyMap());
-                        if (entries.containsKey(codenamebase)) {
-                            throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
-                        } else {
-                            entries.put(codenamebase, entry);
-                        }
-                    } finally {
-                        jf.close();
+                        scanOneBinary(jar, cluster, entries);
+                    } catch (Exception ex) {
+                        throw new BuildException(ex);
                     }
                 }
             }
@@ -821,6 +828,48 @@ final class ModuleListParser {
         }
         return cnds.toArray(new String[cnds.size()]);
     }
+
+    static boolean scanOneBinary(File m, File cluster, Map<String, Entry> entries) throws IOException {
+        if (!m.getName().endsWith(".jar")) {
+            return true;
+        }
+        JarFile jf = new JarFile(m);
+        File dir = m.getParentFile();
+        try {
+            Attributes attr = jf.getManifest().getMainAttributes();
+            String codename = JarWithModuleAttributes.extractCodeName(attr);
+            if (codename == null) {
+                return true;
+            }
+            String codenamebase;
+            int slash = codename.lastIndexOf('/');
+            if (slash == -1) {
+                codenamebase = codename;
+            } else {
+                codenamebase = codename.substring(0, slash);
+            }
+            String cp = attr.getValue("Class-Path");
+            File[] exts;
+            if (cp == null) {
+                exts = new File[0];
+            } else {
+                String[] pieces = cp.split(" +");
+                exts = new File[pieces.length];
+                for (int l = 0; l < pieces.length; l++) {
+                    exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                }
+            }
+            String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
+            Entry entry = new Entry(codenamebase, m, exts, dir, null, null, cluster.getName(), parseRuntimeDependencies(moduleDependencies), Collections.<String, String[]>emptyMap());
+            Entry prev = entries.put(codenamebase, entry);
+            if (prev != null && !prev.equals(entry)) {
+                throw new IOException("Duplicated module " + codenamebase + ": found in " + prev + " and " + entry);
+            }
+        } finally {
+            jf.close();
+        }
+        return false;
+    }
     
     /**
      * One entry in the file.
@@ -920,7 +969,62 @@ final class ModuleListParser {
         public @Override String toString() {
             return (sourceLocation != null ? sourceLocation : jar).getAbsolutePath();
         }
-        
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Entry other = (Entry) obj;
+            if ((this.cnb == null) ? (other.cnb != null) : !this.cnb.equals(other.cnb)) {
+                return false;
+            }
+            if (this.jar != other.jar && (this.jar == null || !this.jar.equals(other.jar))) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.classPathExtensions, other.classPathExtensions)) {
+                return false;
+            }
+            if (this.sourceLocation != other.sourceLocation && (this.sourceLocation == null || !this.sourceLocation.equals(other.sourceLocation))) {
+                return false;
+            }
+            if ((this.netbeansOrgPath == null) ? (other.netbeansOrgPath != null) : !this.netbeansOrgPath.equals(other.netbeansOrgPath)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.buildPrerequisites, other.buildPrerequisites)) {
+                return false;
+            }
+            if ((this.clusterName == null) ? (other.clusterName != null) : !this.clusterName.equals(other.clusterName)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.runtimeDependencies, other.runtimeDependencies)) {
+                return false;
+            }
+            if (this.testDependencies != other.testDependencies && (this.testDependencies == null || !this.testDependencies.equals(other.testDependencies))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 83 * hash + (this.cnb != null ? this.cnb.hashCode() : 0);
+            hash = 83 * hash + (this.jar != null ? this.jar.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.classPathExtensions);
+            hash = 83 * hash + (this.sourceLocation != null ? this.sourceLocation.hashCode() : 0);
+            hash = 83 * hash + (this.netbeansOrgPath != null ? this.netbeansOrgPath.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.buildPrerequisites);
+            hash = 83 * hash + (this.clusterName != null ? this.clusterName.hashCode() : 0);
+            hash = 83 * hash + Arrays.deepHashCode(this.runtimeDependencies);
+            hash = 83 * hash + (this.testDependencies != null ? this.testDependencies.hashCode() : 0);
+            return hash;
+        }
+
+
     }
 
 }
