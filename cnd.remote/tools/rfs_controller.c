@@ -31,7 +31,7 @@ typedef struct connection_data {
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void new_connection_start_function(void* data) {
+static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
     const int bufsize = 512;
@@ -230,7 +230,8 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
         pthread_t thread;
-        pthread_create(&thread, NULL, (void *(*) (void *)) new_connection_start_function, conn_data);
+        pthread_create(&thread, NULL /*&attr*/, (void *(*) (void *)) serve_connection, conn_data);
+        pthread_detach(thread);
     }
 
     close(sd);
