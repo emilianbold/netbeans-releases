@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,62 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.semantic.options;
+package org.netbeans.modules.cnd.utils.ui;
 
+/**
+ * Utility class with some UI constants
+ * @author Vladimir Voskresensky
+ */
+public final class CndUIConstants {
 
-
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
-@OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_HIGHLIGHTING_ID,
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_SemanticHighlightingTab", // NOI18N
-    position=500
-)
-public final class SemanticHighlightingOptionsPanelController extends OptionsPanelController {
-
-    private SemanticHighlightingOptionsPanel panel = new SemanticHighlightingOptionsPanel();
-
-    public void update() {
-        panel.update();
-}
-
-    public void applyChanges() {
-        panel.applyChanges();
-    }
-    
-    public void cancel() {
-        panel.cancel();
-    }
-    
-    public boolean isValid() {
-        return true; //panel.dataValid();
-    }
-    
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-    
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
+    private CndUIConstants() {
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
-    }
+    // CND options IDs
+    public static final String TOOLS_OPTIONS_CND_CATEGORY_ID="CPlusPlus"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_HIGHLIGHTING_ID="HighlightingTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_TOOLS_ID="ToolsTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_OTHER_ID="OtherOptionsTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID="CodeAssistanceTab"; // NOI18N
+    public static final String TOOLS_OPTIONS_CND_PROJECTS_ID="ProjectsTab"; // NOI18N
 
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
-    }
+    private static final String DELIM = "/"; // NOI18N
+
+    // CND options paths. Can be used with OptionsDisplayer.getDefault().open(path)
+    public static final String TOOLS_OPTIONS_CND_HIGHLIGHTING_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_HIGHLIGHTING_ID;
+    public static final String TOOLS_OPTIONS_CND_TOOLS_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_TOOLS_ID;
+    public static final String TOOLS_OPTIONS_CND_OTHER_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_OTHER_ID;
+    public static final String TOOLS_OPTIONS_CND_CODE_ASSISTANCE_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_CODE_ASSISTANCE_ID;
+    public static final String TOOLS_OPTIONS_CND_PROJECTS_PATH = TOOLS_OPTIONS_CND_CATEGORY_ID + DELIM + TOOLS_OPTIONS_CND_PROJECTS_ID;
+
 }
