@@ -40,11 +40,9 @@ package org.netbeans.modules.dlight.memory;
 
 import java.awt.Color;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorConfiguration;
@@ -68,6 +66,7 @@ import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
+import org.netbeans.modules.dlight.util.BytesFormatter;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionName;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -86,15 +85,6 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static final Column totalColumn;
     private static final DataTableMetadata rawTableMetadata;
     private static final String MAX_HEAP_DETAIL_ID = "max-heap"; // NOI18N
-    private static final int BINARY_ORDER = 1024;
-    private static final int DECIMAL_ORDER = 1000;
-    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
-
-    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
-    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
-    static {
-        FRAC_FORMAT.setMaximumFractionDigits(1);
-    }
 //    /** this is for the case of using DTrace for indicator only  */
 
 
@@ -197,21 +187,18 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
         indicatorColumns.addAll(Arrays.asList(totalColumn));
         indicatorMetadata = new IndicatorMetadata(indicatorColumns);
 
+        ValueFormatter formatter = new BytesFormatter();
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
         indicatorConfiguration.setTitle(loc("indicator.title")); // NOI18N
-        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.setGraphScale(1024);
         indicatorConfiguration.addTimeSeriesDescriptors(
                 new TimeSeriesDescriptor(new Color(0x53, 0x82, 0xA1), loc("graph.description"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
-        indicatorConfiguration.setDataRowHandler(new DataRowToMemory(indicatorColumns));
+        indicatorConfiguration.setDataRowHandler(new DataRowToMemory(indicatorColumns, formatter));
         indicatorConfiguration.addDetailDescriptors(
-                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0))); // NOI18N
+                new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatter.format(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
-        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
-            public String format(long value) {
-                return formatValue(value);
-            }
-        });
+        indicatorConfiguration.setLabelFormatter(formatter);
 
         DataTableMetadata detailedViewTableMetadata =
                 SunStudioDCConfiguration.getMemTableMetadata(
@@ -281,12 +268,14 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
     private static final class DataRowToMemory implements DataRowToTimeSeries {
 
         private final List<Column> columns;
+        private final ValueFormatter formatter;
         private int mem;
         private long memTimestamp;
         private int max;
 
-        public DataRowToMemory(List<Column> columns) {
+        public DataRowToMemory(List<Column> columns, ValueFormatter formatter) {
             this.columns = new ArrayList<Column>(columns);
+            this.formatter = formatter;
         }
 
         public void addDataRow(DataRow row) {
@@ -311,22 +300,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         public void tick(float[] data, Map<String, String> details) {
             data[0] = mem;
-            details.put(MAX_HEAP_DETAIL_ID, formatValue(max));
+            details.put(MAX_HEAP_DETAIL_ID, formatter.format(max));
         }
-    }
-
-    private static String formatValue(long value) {
-        double dbl = value;
-        int i = 0;
-        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
-            dbl /= BINARY_ORDER;
-            ++i;
-        }
-        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
-            dbl /= BINARY_ORDER;
-            ++i;
-        }
-        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
-        return nf.format(dbl) + SUFFIXES[i];
     }
 }
