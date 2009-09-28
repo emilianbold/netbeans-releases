@@ -69,10 +69,8 @@
                 <file name="DLightToolsTopComponent.wstcref" url="DLightToolsTopComponentWstcref.xml">
                     <attr name="position" intvalue="3100"/>
                 </file>
-            </folder>
-            <folder name="explorer">
                 <file name="DLightIndicatorsTopComponent.wstcref" url="DLightIndicatorsTopComponentWstcref.xml">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="3200"/>
                 </file>
             </folder>
             <folder name="rightSlidingSide">
