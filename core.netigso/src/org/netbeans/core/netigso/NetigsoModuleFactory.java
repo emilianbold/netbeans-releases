@@ -58,18 +58,20 @@ import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import org.apache.felix.framework.Felix;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
 
 /**
  *
@@ -79,12 +81,12 @@ import org.osgi.framework.Constants;
 public class NetigsoModuleFactory extends ModuleFactory
 implements Stamps.Updater {
     private static NetigsoActivator activator;
-    private static Felix felix;
+    private static Framework framework;
     private static Set<String> registered;
 
     static void clear() {
         activator = null;
-        felix = null;
+        framework = null;
         readBundles();
     }
 
@@ -146,7 +148,7 @@ implements Stamps.Updater {
         }
     }
 
-    synchronized static Felix getContainer() throws BundleException {
+    synchronized static Framework getContainer() throws BundleException {
         if (activator == null) {
             Map<String,Object> configMap = new HashMap<String,Object>();
             // Configure the Felix instance to be embedded.
@@ -173,11 +175,12 @@ implements Stamps.Updater {
             List<BundleActivator> activators = new ArrayList<BundleActivator>();
             activators.add(activator);
             configMap.put("felix.systembundle.activators", activators);
-            felix = new Felix(configMap);
-            felix.init();
+            FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
+            framework = frameworkFactory.newFramework(configMap);
+            framework.init();
             NetigsoActivator.LOG.finer("Felix initialized"); // NOI18N
         }
-        return felix;
+        return framework;
     }
 
     static void startContainer() throws BundleException {
