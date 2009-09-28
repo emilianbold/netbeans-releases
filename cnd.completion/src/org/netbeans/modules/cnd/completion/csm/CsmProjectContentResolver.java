@@ -427,16 +427,14 @@ public final class CsmProjectContentResolver {
                 if (CsmKindUtilities.isFile(elem.getScope())) {
                     CsmFile currentFile = (CsmFile) elem.getScope();
                     fillFileLocalVariables(strPrefix, match, currentFile, needFileLocalOrDeclFromUnnamedNS, false, out);
-                    if (!needFileLocalOrDeclFromUnnamedNS) {
-                        List<CsmVariable> cached = null;
-                        if (fileReferncesContext != null && !fileReferncesContext.isCleaned() && match) {
-                            cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
-                        }
-                        if (cached != null) {
-                            out.addAll(cached);
-                        } else {
-                            fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
-                        }
+                    List<CsmVariable> cached = null;
+                    if (fileReferncesContext != null && !fileReferncesContext.isCleaned() && match) {
+                        cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
+                    }
+                    if (cached != null) {
+                        out.addAll(cached);
+                    } else {
+                        fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
                     }
                     for (Iterator it2 = context.iterator(); it2.hasNext();) {
                         CsmContext.CsmContextEntry elem2 = (CsmContext.CsmContextEntry) it2.next();
