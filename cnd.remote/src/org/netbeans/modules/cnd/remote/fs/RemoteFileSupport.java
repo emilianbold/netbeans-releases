@@ -194,11 +194,17 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         final InputStream is = process.getInputStream();
         final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
         String fileName;
-        RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath());
+        RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
         while ((fileName = rdr.readLine()) != null) {
             boolean directory = fileName.endsWith("/"); // NOI18N
             File file = new File(dir, fileName);
-            boolean result = directory ? file.mkdirs() : file.createNewFile();
+            try {
+                boolean result = directory ? file.mkdirs() : file.createNewFile();
+            } catch (IOException ex) {
+                RemoteUtil.LOGGER.warning("Error creating " + (directory ? "directory" : "file") +
+                        ' ' + file.getAbsolutePath() + ": " + ex.getMessage());
+                throw ex;
+            }
             // TODO: error processing
             RemoteUtil.LOGGER.finest("\tcreating " + fileName);
             file.createNewFile(); // TODO: error processing
@@ -295,7 +301,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     private static class PendingFilesQueue {
 
         private final BlockingQueue<PendingFile> queue = new LinkedBlockingQueue<PendingFile>();
-        private final Set<String> remoteAbsPaths = new TreeSet();
+        private final Set<String> remoteAbsPaths = new TreeSet<String>();
 
         public synchronized void add(File localFile, String remotePath) {
             if (remoteAbsPaths.add(remotePath)) {
