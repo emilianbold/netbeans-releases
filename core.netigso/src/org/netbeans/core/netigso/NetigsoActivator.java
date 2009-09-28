@@ -41,6 +41,7 @@ package org.netbeans.core.netigso;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
@@ -48,18 +49,11 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.felix.moduleloader.IContent;
-import org.apache.felix.moduleloader.IContentLoader;
-import org.apache.felix.moduleloader.IModule;
-import org.apache.felix.moduleloader.ISearchPolicy;
-import org.apache.felix.moduleloader.IURLPolicy;
-import org.apache.felix.moduleloader.ResourceNotFoundException;
+import org.apache.felix.framework.ModuleImpl;
+import org.apache.felix.framework.ModuleImpl.ModuleClassLoader;
 import org.netbeans.Module;
-import org.netbeans.ProxyClassLoader;
 import org.netbeans.core.startup.MainLookup;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.InstanceContent;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -131,23 +125,26 @@ InstanceContent.Convertor<ServiceReference, Object> {
      */
     private void join(Bundle bundle, ModuleInfo mi) {
         try {
-            Method m = findMethod(bundle, "getInfo");
-            Object info = m.invoke(bundle);
-            Method m2 = findMethod(info, "getCurrentModule");
-            IModule imodule = (IModule)m2.invoke(info);
-            Method m3 = findMethod(imodule, "setContentLoader", IContentLoader.class);
-            m3.invoke(imodule, new ModuleContentLoader(mi));
+            Field modules = findField(bundle, "m_modules");
+            Object[] arr = (Object[])modules.get(bundle);
+            Field loader = null;
+            for (int i = 0; i < arr.length; i++) {
+                ModuleImpl impl = (ModuleImpl)arr[i];
+                if (loader == null) {
+                    loader = findField(impl, "m_classLoader");
+                }
+                loader.set(impl, new DelegateLoader(impl, mi));
+            }
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
     }
-
-    private static Method findMethod(Object obj, String name, Class... args) throws Exception {
+    private static Field findField(Object obj, String name) throws Exception {
         Exception first = null;
         Class<?> c = obj.getClass();
         while (c != null) {
             try {
-                Method m = c.getDeclaredMethod(name, args);
+                Field m = c.getDeclaredField(name);
                 m.setAccessible(true);
                 return m;
             } catch (Exception e) {
@@ -192,107 +189,36 @@ InstanceContent.Convertor<ServiceReference, Object> {
         return (String) obj.getProperty(Constants.SERVICE_DESCRIPTION);
     }
 
-    private static final class ModuleContentLoader implements IContentLoader,
-    ISearchPolicy {
+    private static final class DelegateLoader extends ModuleClassLoader {
         private final ModuleInfo mi;
-
-        public ModuleContentLoader(ModuleInfo mi) {
+        public DelegateLoader(ModuleImpl impl, ModuleInfo mi) {
+            impl.super(null);
             this.mi = mi;
         }
 
-        public void close() {
+        @Override
+        public Class<?> loadClass(String string) throws ClassNotFoundException {
+            return getDelegate().loadClass(string);
         }
 
-        public IContent getContent() {
-            return null;
+        @Override
+        public Enumeration<URL> getResources(String string) throws IOException {
+            return getDelegate().getResources(string);
         }
 
-        ISearchPolicy sp;
-        public void setSearchPolicy(ISearchPolicy arg0) {
-            sp = arg0;
+        @Override
+        public InputStream getResourceAsStream(String string) {
+            return getDelegate().getResourceAsStream(string);
         }
 
-        public ISearchPolicy getSearchPolicy() {
-            return sp == null ? this : sp;
+        @Override
+        public URL getResource(String string) {
+            return getDelegate().getResource(string);
         }
 
-        IURLPolicy up;
-        public void setURLPolicy(IURLPolicy arg0) {
-            up = arg0;
+        private ClassLoader getDelegate() {
+            return mi.getClassLoader();
         }
 
-        public IURLPolicy getURLPolicy() {
-            return up;
-        }
-
-        Object sc;
-        public void setSecurityContext(Object arg0) {
-            sc = arg0;
-        }
-
-        public Object getSecurityContext() {
-            return sc;
-        }
-
-        public Class getClass(String name) {
-            try {
-                return mi.getClassLoader().loadClass(name);
-            } catch (ClassNotFoundException ex) {
-                return null;
-            }
-        }
-
-        public URL getResource(String name) {
-            if (mi.getClassLoader() instanceof ProxyClassLoader) {
-                return ((ProxyClassLoader)mi.getClassLoader()).findResource(name);
-            }
-            return mi.getClassLoader().getResource(name);
-        }
-
-        public Enumeration getResources(String name) {
-            try {
-                if (mi.getClassLoader() instanceof ProxyClassLoader) {
-                    return ((ProxyClassLoader) mi.getClassLoader()).findResources(name);
-                }
-                return mi.getClassLoader().getResources(name);
-            } catch (IOException iOException) {
-                Exceptions.printStackTrace(iOException);
-                return Enumerations.empty();
-            }
-        }
-
-        public URL getResourceFromContent(String arg0) {
-            return null;
-        }
-
-        public boolean hasInputStream(int arg0, String arg1) throws IOException {
-            return getResource(arg1) != null;
-        }
-
-        public InputStream getInputStream(int arg0, String name) throws IOException {
-            return getResource(name).openStream();
-        }
-
-        public Object[] definePackage(String arg0) {
-            return null;
-        }
-
-        public Class findClass(String name) throws ClassNotFoundException {
-            return getClass(name);
-        }
-
-        public URL findResource(String name) throws ResourceNotFoundException {
-            return findResource(name);
-        }
-
-        public Enumeration findResources(String name) throws ResourceNotFoundException {
-            return getResources(name);
-        }
-
-        public String findLibrary(String arg0) {
-            return null;
-        }
-
-    } // end of ModuleContentLoader
-
+    } // end of DelegateLoader
 }
