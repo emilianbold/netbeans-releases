@@ -745,7 +745,7 @@ public class IndentSupport {
             switch(token.getTokenID()) {
                 case LPAREN:
                     if (parDepth == 0) { // could be a 'for ('
-                        TokenItem tp = findImportantToken(token, null, false);
+                        TokenItem tp = findImportantToken(token, null, true);
                         if (tp != null && tp.getTokenID() == CppTokenId.FOR) {
                             return true;
                         }
