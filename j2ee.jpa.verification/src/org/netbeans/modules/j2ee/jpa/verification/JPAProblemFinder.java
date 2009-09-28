@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileAttributeEvent;
@@ -103,6 +104,8 @@ public abstract class JPAProblemFinder {
     public JPAProblemFinder(FileObject file){
         assert file != null;
         this.file = file;
+        //if classes use something japa related this event is logged, should be once per class  open, may need verification
+        PersistenceUtils.logUsage(JPAProblemFinder.class, "USG_PERSISTENCE_DETECTED", null);//NOI18N
     }
     
     public void run(final CompilationInfo info) throws Exception{
