@@ -217,7 +217,17 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/Template.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.TemplateIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="position" intvalue="820"/>
+                <attr name="position" intvalue="821"/>
+            </file>
+            <file name="TemplateClient.xhtml" url="../facelets/resources/templates/htmlTemplateClient.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/TemplateClient.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.TemplateClientIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="831"/>
             </file>
             <!-- JSF Managed Bean --> 
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">

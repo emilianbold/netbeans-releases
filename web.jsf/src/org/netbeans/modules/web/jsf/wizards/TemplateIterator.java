@@ -110,6 +110,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             WebModule wm = WebModule.getWebModule(df.getPrimaryFile());
             if (wm != null) {
                 final FileObject docBase = wm.getDocumentBase();
+                if (!JSFConfigUtilities.hasJsfFramework(docBase)) {
+                    JSFConfigUtilities.extendJsfFramework(dir, false);
+                }
                 final boolean isJSF20 = isJSF20(wm);
 
                 df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
@@ -167,10 +170,10 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         //this.wiz = wiz;
         index = 0;
         Project project = Templates.getProject( wiz );
-        panels = createPanels(project);
+        panels = createPanels(project, wiz);
         
         // Creating steps.
-        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
@@ -188,9 +191,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
@@ -232,7 +235,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
     public void removeChangeListener(ChangeListener l) {
     }
     
-    protected WizardDescriptor.Panel[] createPanels(Project project) {
+    protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wiz) {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         SourceGroup[] sourceGroups1 = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         SourceGroup[] sourceGroups;
@@ -241,7 +244,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         else
             sourceGroups = sourceGroups1;
         
-        templatePanel=new TemplatePanel();
+        templatePanel=new TemplatePanel(wiz);
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project,sourceGroups,templatePanel);
         JComponent c = (JComponent)firstPanel.getComponent();
