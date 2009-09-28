@@ -205,6 +205,12 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
+    protected void removeRemoteHome() {
+        String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
+        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
+        assertEquals("Failed to run " + cmd, 0, rc);
+    }
+
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
