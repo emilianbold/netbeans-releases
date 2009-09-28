@@ -59,12 +59,15 @@ import org.netbeans.modules.nativeexecution.test.Conditional;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Vladimir Kvashin
  */
 public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBase {
+
+    public static final String SECTION = "remote.rfs.build.parameterized";
 
     public RfsGnuParameterizedRemoteBuildTestCase(String testName) {
         super(testName);
@@ -74,12 +77,12 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBa
         super(testName, execEnv);
     }
 
-    private void doTest(String projectKey, String sync, Level loggersLevel) throws Exception {
+    private void doTest(String projectKey, String sync, String buildCommand, Level loggersLevel) throws Exception {
         setupHost(sync);
         setLoggersLevel(loggersLevel);
         setDefaultCompilerSet("GNU");
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-        String projectPath = rcFile.get("remote.rfs.build.parameterized", projectKey);
+        String projectPath = rcFile.get( SECTION, projectKey);
         assertNotNull(projectPath);
         File projectDirFile = new File(projectPath);
         assertTrue(projectDirFile.exists());
@@ -88,23 +91,26 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBa
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         long time = System.currentTimeMillis();
-        buildProject(makeProject, 60*6, TimeUnit.SECONDS);
+        buildProject(makeProject, buildCommand, 60*6, TimeUnit.SECONDS);
         time = System.currentTimeMillis() - time;
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
     }
 
-    @Conditional(section="remote.rfs.build.parameterized", key="measure.build")
-    @ForAllEnvironments(section="remote.rfs.build.parameterized")
+    @Conditional(section=SECTION, key = "measure.build")
+    @ForAllEnvironments(section = SECTION)
     public void testBuildRfsParameterized() throws Exception {
-        doTest("project", ZipSyncFactory.ID, Level.ALL);
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String sync = rcFile.get(SECTION,"sync", ZipSyncFactory.ID);
+        String buildCommand = rcFile.get(SECTION, "build-command", ActionProvider.COMMAND_BUILD);
+        doTest("project", sync, buildCommand, Level.ALL);
     }
 
-    @Conditional(section="remote.rfs.build.parameterized", key="measure.plain.copy")
-    @ForAllEnvironments(section="remote.rfs.build.parameterized")
+    @Conditional(section=SECTION, key = "measure.plain.copy")
+    @ForAllEnvironments(section = SECTION)
     public void testPlainCopy() throws Exception {
         setLoggersLevel(Level.OFF);
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-        String timestampsPath = rcFile.get("remote.rfs.build.parameterized", "timestamps");
+        String timestampsPath = rcFile.get(SECTION,"timestamps");
         assertNotNull(timestampsPath);
         File timestampsFile = new File(timestampsPath);
         assertTrue(timestampsFile.exists());
