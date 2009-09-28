@@ -2343,10 +2343,10 @@ org.netbeans.modules.cnd.api.model.CsmProgressListener
 org.netbeans.modules.cnd.api.model.CsmProject
 org.netbeans.modules.cnd.api.model.CsmValidable
 org.netbeans.modules.cnd.apt.debug.APTTraceFlags
-org.netbeans.modules.cnd.apt.debug.DebugUtils
 org.netbeans.modules.cnd.classview.actions.SelectInClassesAction
 org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction
 org.netbeans.modules.cnd.classview.resources.I18n
+org.netbeans.modules.cnd.debug.DebugUtils
 org.netbeans.modules.cnd.debugger.gdb.EditorContext
 org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge
 org.netbeans.modules.cnd.debugger.gdb.EditorContextImpl
