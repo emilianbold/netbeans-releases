@@ -92,8 +92,8 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     private synchronized void render() {
         if (this.declarators == null) {
             DSRenderer renderer = new DSRenderer();
-            renderer.render(getAst(), null, null);
             this.declarators = renderer.declarators;
+            renderer.render(getAst(), null, null);
         }
     }
 
