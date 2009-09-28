@@ -47,12 +47,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -699,6 +701,8 @@ public class JsfElExpression extends ELExpression {
             
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
+                // Fix for IZ#173117 - multiplied EL completion items
+                Set<String> addedItems = new HashSet<String>(); 
                 
                 for (ExecutableElement method : ElementFilter.methodsIn(
                         controller.getElements().getAllMembers(bean)))
@@ -712,6 +716,11 @@ public class JsfElExpression extends ELExpression {
                     {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
+                                // Fix for IZ#173117 - multiplied EL completion items
+                                if ( addedItems.contains( methodName)){
+                                    continue;
+                                }
+                                addedItems.add(methodName);
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
                                     methodName, anchor, method.getReturnType().toString());
 
@@ -753,6 +762,10 @@ public class JsfElExpression extends ELExpression {
         protected boolean checkMethod( ExecutableElement method , 
                 CompilationController compilationController)
         {
+            // Fix for IZ#173117 -  multiplied EL completion items
+            if ( super.checkMethod(method, compilationController)){
+                return false;
+            }
             return JsfElExpression.this.checkMethod(method, compilationController);
         }
     }

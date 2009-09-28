@@ -898,7 +898,7 @@ public class ELExpression {
                     return getPropertyName(methodName, 3);
                 }
 
-                if (methodName.startsWith("is")) { //NOI18N
+                if (methodName.startsWith("is") && methodName.length() >2) { //NOI18N
                     return getPropertyName(methodName, 2);
                 }
 
