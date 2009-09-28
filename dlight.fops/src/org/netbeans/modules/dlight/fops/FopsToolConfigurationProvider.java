@@ -158,7 +158,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
                 new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
         indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
-            public String format(int value) {
+            public String format(long value) {
                 return formatValue(value);
             }
         });

@@ -208,7 +208,7 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
                 new DetailDescriptor(MAX_HEAP_DETAIL_ID, loc("MemoryTool.Legend.Max"), formatValue(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
         indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
-            public String format(int value) {
+            public String format(long value) {
                 return formatValue(value);
             }
         });

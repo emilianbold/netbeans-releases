@@ -58,43 +58,43 @@ public final class TimeMarksProvider implements AxisMarksProvider {
 
     private TimeMarksProvider() {
     }
-    private static final int[] INTERVALS = {1, 5, 10, 30, 60, 300, 600};
+    private static final int[] INTERVALS = {100, 500, 1000, 5000, 10000, 30000, 60000, 300000, 600000};
     private static final String LABEL_TEXT = "99:99"; // NOI18N
     private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
-    public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+    public List<AxisMark> getAxisMarks(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
         if (viewportStart == viewportEnd || axisSize < 10) {
             return Collections.emptyList();
         }
-        int tickInterval = getTickInterval(viewportEnd - viewportStart, axisSize);
-        int labelInterval = getLabelInterval(viewportEnd - viewportStart, axisSize, axisFontMetrics);
+        long tickInterval = getTickInterval(viewportEnd - viewportStart, axisSize);
+        long labelInterval = getLabelInterval(viewportEnd - viewportStart, axisSize, axisFontMetrics);
         List<AxisMark> marks = new ArrayList<AxisMark>();
-        for (int value = viewportStart; value < viewportEnd; ++value) {
+        for (long value = viewportStart; value <= viewportEnd; ++value) {
             if (value % tickInterval == 0) {
                 String text = null;
                 if (value % labelInterval == 0) {
                     text = TIME_FORMATTER.format(value);
                 }
-                marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
+                marks.add(new AxisMark((int) DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
             }
         }
         return marks;
     }
 
-    private int getTickInterval(int viewportSize, int axisSize) {
-        int pixelsPerSecond = axisSize / viewportSize;
+    private long getTickInterval(long viewportSize, int axisSize) {
+        float pixelsPerMilli = (float) axisSize / viewportSize;
         for (int i = 0; i < INTERVALS.length; ++i) {
-            if (10 <= INTERVALS[i] * pixelsPerSecond) {
+            if (10 <= INTERVALS[i] * pixelsPerMilli) {
                 return INTERVALS[i];
             }
         }
         return INTERVALS[INTERVALS.length - 1];
     }
 
-    private int getLabelInterval(int viewportSize, int axisSize, FontMetrics axisFontMetrics) {
-        int pixelsPerSecond = axisSize / viewportSize;
+    private long getLabelInterval(long viewportSize, int axisSize, FontMetrics axisFontMetrics) {
+        float pixelsPerMilli = (float) axisSize / viewportSize;
         for (int i = 0; i < INTERVALS.length; ++i) {
-            if (4 * axisFontMetrics.stringWidth(LABEL_TEXT) / 3 <= INTERVALS[i] * pixelsPerSecond) {
+            if (4 * axisFontMetrics.stringWidth(LABEL_TEXT) / 3 <= INTERVALS[i] * pixelsPerMilli) {
                 return INTERVALS[i];
             }
         }
