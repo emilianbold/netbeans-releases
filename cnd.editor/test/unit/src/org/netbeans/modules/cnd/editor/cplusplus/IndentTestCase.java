@@ -1002,4 +1002,21 @@ public class IndentTestCase extends EditorBase {
             "    cout << _bbt_it->phi.getDihedral() << endl;\n"+
             "}\n");
     }
+
+    public void testIZ168369() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                  "namespace A\n" +
+                  "{\n" +
+                  "/*|"
+                );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                  "namespace A\n" +
+                  "{\n" +
+                  "/*\n" +
+                  " * |"
+                );
+
+    }
 }
