@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.dlight.extras.api.support;
 
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
+import java.awt.FontMetrics;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
@@ -52,18 +50,13 @@ import static org.junit.Assert.*;
  */
 public class TimeMarksProviderTest {
 
-    private final BufferedImage img;
-    private final Graphics2D g;
-
     public TimeMarksProviderTest() {
-        this.img = new BufferedImage(100, 100, BufferedImage.TYPE_4BYTE_ABGR);
-        this.g = img.createGraphics();
     }
 
     @Test
     public void testViewport1s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 1000, 100, g.getFontMetrics(new Font("Times", Font.PLAIN, 10)));
+        List<AxisMark> marks = tmp.getAxisMarks(0, 1000, 100, new FakeFontMetrics());
         assertEquals(11, marks.size());
         for (int i = 0; i < 11; ++i) {
             assertEquals(10 * i, marks.get(i).getPosition());
@@ -88,7 +81,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport10s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 10000, 100, g.getFontMetrics(new Font("Times", Font.PLAIN, 10)));
+        List<AxisMark> marks = tmp.getAxisMarks(0, 10000, 100, new FakeFontMetrics());
         assertEquals(11, marks.size());
         for (int i = 0; i < 11; ++i) {
             assertEquals(10 * i, marks.get(i).getPosition());
@@ -113,7 +106,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport100s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 100000, 100, g.getFontMetrics(new Font("Times", Font.PLAIN, 10)));
+        List<AxisMark> marks = tmp.getAxisMarks(0, 100000, 100, new FakeFontMetrics());
         assertEquals(11, marks.size());
         for (int i = 0; i < 11; ++i) {
             assertEquals(10 * i, marks.get(i).getPosition());
@@ -137,7 +130,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport500s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 500000, 100, g.getFontMetrics(new Font("Times", Font.PLAIN, 10)));
+        List<AxisMark> marks = tmp.getAxisMarks(0, 500000, 100, new FakeFontMetrics());
         assertEquals(9, marks.size());
         for (int i = 0; i < 9; ++i) {
             assertEquals(12 * i, marks.get(i).getPosition());
@@ -159,7 +152,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport1000s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 1000000, 100, g.getFontMetrics(new Font("Times", Font.PLAIN, 10)));
+        List<AxisMark> marks = tmp.getAxisMarks(0, 1000000, 100, new FakeFontMetrics());
         assertEquals(4, marks.size());
         for (int i = 0; i < 4; ++i) {
             assertEquals(30 * i, marks.get(i).getPosition());
@@ -171,6 +164,16 @@ public class TimeMarksProviderTest {
         assertEquals("10:00", marks.get(2).getText());
         assertEquals(255, marks.get(2).getTextOpacity());
         assertNull(marks.get(3).getText());
+    }
+
+    private static class FakeFontMetrics extends FontMetrics {
+        public FakeFontMetrics() {
+            super(null);
+        }
+        @Override
+        public int stringWidth(String str) {
+            return 6 * str.length();
+        }
     }
 }
 
