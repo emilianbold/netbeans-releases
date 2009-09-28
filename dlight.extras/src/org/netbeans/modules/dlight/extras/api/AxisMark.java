@@ -90,6 +90,6 @@ public final class AxisMark {
 
     @Override
     public String toString() {
-        return "pos=" + pos + ", text=" + text;
+        return "pos=" + pos + ", text=" + text; // NOI18N
     }
 }
