@@ -40,59 +40,34 @@ package org.netbeans.modules.dlight.extras.api.support;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
-import org.netbeans.modules.dlight.util.DLightMath;
-import org.netbeans.modules.dlight.util.ValueFormatter;
+import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 
 /**
  * @author Alexey Vladykin
  */
-public final class ValueMarksProvider extends AbstractCachingAxisMarksProvider {
+public abstract class AbstractCachingAxisMarksProvider implements AxisMarksProvider {
 
-    public static ValueMarksProvider newInstance() {
-        return new ValueMarksProvider(null);
-    }
+    private long prevViewportStart;
+    private long prevViewportEnd;
+    private int prevAxisSize;
+    private Font prevAxisFont;
+    private List<AxisMark> prevMarks;
 
-    public static ValueMarksProvider newInstance(ValueFormatter formatter) {
-        return new ValueMarksProvider(formatter);
-    }
-
-    private final ValueFormatter formatter;
-
-    private ValueMarksProvider(ValueFormatter formatter) {
-        this.formatter = formatter;
-    }
-
-    @Override
-    protected List<AxisMark> getAxisMarksImpl(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
-        List<AxisMark> marks = new ArrayList<AxisMark>();
-        createMarks(viewportStart, viewportEnd, 0, axisSize, axisFontMetrics, marks);
-        marks.add(new AxisMark(axisSize, formatValue(viewportEnd)));
-        return marks;
-    }
-
-    private void createMarks(long minVal, long maxVal, int minPos, int maxPos, FontMetrics axisFontMetrics, List<AxisMark> marks) {
-        if (maxPos - minPos <= axisFontMetrics.getAscent()) {
-            return;
-        }
-        int midPos = (minPos + maxPos) / 2;
-        long midVal = (minVal + maxVal) / 2;
-        if (axisFontMetrics.getAscent() <= midPos - minPos) {
-            createMarks(minVal, midVal, minPos, midPos, axisFontMetrics, marks);
-        }
-        marks.add(new AxisMark(midPos, maxVal - minVal < 2 ? null : formatValue(midVal), DLightMath.map(maxPos - minPos, 3 * axisFontMetrics.getAscent() / 2, 2 * axisFontMetrics.getAscent(), 0, 255), DLightMath.map(maxPos - minPos, 2 * axisFontMetrics.getAscent(), 3 * axisFontMetrics.getAscent(), 0, 255)));
-        if (axisFontMetrics.getAscent() <= maxPos - midPos) {
-            createMarks(midVal, maxVal, midPos, maxPos, axisFontMetrics, marks);
-        }
-    }
-
-    private String formatValue(long value) {
-        if (formatter == null) {
-            return String.valueOf(value);
+    public final List<AxisMark> getAxisMarks(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+        Font axisFont = axisFontMetrics.getFont();
+        if (viewportStart == prevViewportStart && viewportEnd == prevViewportEnd && axisSize == prevAxisSize && axisFont.equals(prevAxisFont)) {
+            return prevMarks;
         } else {
-            return formatter.format(value);
+            prevViewportStart = viewportStart;
+            prevViewportEnd = viewportEnd;
+            prevAxisSize = axisSize;
+            prevAxisFont = axisFont;
+            prevMarks = getAxisMarksImpl(viewportStart, viewportEnd, axisSize, axisFontMetrics);
+            return prevMarks;
         }
     }
+
+    protected abstract List<AxisMark> getAxisMarksImpl(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics);
 }

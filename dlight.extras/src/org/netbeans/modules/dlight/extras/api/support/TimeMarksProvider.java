@@ -43,14 +43,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
-import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.util.DLightMath;
 import org.netbeans.modules.dlight.util.TimeFormatter;
 
 /**
  * @author Alexey Vladykin
  */
-public final class TimeMarksProvider implements AxisMarksProvider {
+public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
 
     public static TimeMarksProvider newInstance() {
         return new TimeMarksProvider();
@@ -62,7 +61,8 @@ public final class TimeMarksProvider implements AxisMarksProvider {
     private static final String LABEL_TEXT = "99:99"; // NOI18N
     private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
-    public List<AxisMark> getAxisMarks(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+    @Override
+    protected List<AxisMark> getAxisMarksImpl(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
         if (viewportStart == viewportEnd || axisSize < 10) {
             return Collections.emptyList();
         }
