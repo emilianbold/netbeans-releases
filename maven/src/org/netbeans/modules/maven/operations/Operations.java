@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.api.validation.adapters;
 
-import org.netbeans.validation.api.Problem;
-import org.netbeans.validation.api.ui.ValidationUI;
+package org.netbeans.modules.maven.operations;
+
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tim Boudreau
+ * @author mkleint
  */
-public final class DialogDescriptorAdapter implements ValidationUI {
-    private DialogDescriptor d;
+public class Operations {
 
-    public DialogDescriptorAdapter (DialogDescriptor d) {
-        this.d = d;
-    }
 
-    public void clearProblem() {
-        d.setValid(true);
-    }
-
-    public void setProblem(Problem problem) {
-        d.setValid (!problem.isFatal());
+    public static void renameProject(NbMavenProjectImpl project) {
+        assert SwingUtilities.isEventDispatchThread();
+        RenameProjectPanel panel = new RenameProjectPanel(project);
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(Operations.class, "RenameProjectPanel.lblRename.text"));
+        panel.createValidations(dd);
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            panel.renameProject();
+        }
     }
 
 }
