@@ -42,6 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
@@ -50,9 +53,12 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /*
  * Used to unbuffer application's output in case OutputWindow is used.
@@ -65,12 +71,39 @@ public class UnbufferSupport {
             new HashMap<ExecutionEnvironment, String>();
 
     public static void initUnbuffer(final NativeProcessInfo info, final MacroMap env) throws IOException {
-        // Setup LD_PRELOAD to load unbuffer library...
-        if (!info.isUnbuffer()) {
-            return;
+        initUnbuffer(info.getExecutionEnvironment(), info.macroExpander, env);
+    }
+
+    public static void initUnbuffer(final ExecutionEnvironment execEnv, final Map<String, String> env) throws IOException {
+        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
+
+        MacroMap envVariables = null;
+
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            envVariables = new CaseInsensitiveMacroMap(macroExpander);
+        } else {
+            envVariables = new MacroMap(macroExpander);
         }
 
-        final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
+        for (Entry<String, String> entry : env.entrySet()) {
+            envVariables.put(entry.getKey(), entry.getValue());
+        }
+
+        initUnbuffer(execEnv, macroExpander, envVariables);
+
+        env.clear();
+
+        Iterator<String> it = envVariables.keySet().iterator();
+
+        while (it.hasNext()) {
+            String key = it.next();
+            env.put(key, envVariables.get(key));
+        }
+    }
+
+    private static void initUnbuffer(final ExecutionEnvironment execEnv, final MacroExpander macroExpander, final MacroMap env) throws IOException {
+        // Setup LD_PRELOAD to load unbuffer library...
+
         final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
 
         boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
@@ -80,9 +113,9 @@ public class UnbufferSupport {
         String unbufferLib = null; // NOI18N
 
         try {
-            unbufferPath = info.macroExpander.expandPredefinedMacros(
+            unbufferPath = macroExpander.expandPredefinedMacros(
                     "bin/nativeexecution/$osname-$platform"); // NOI18N
-            unbufferLib = info.macroExpander.expandPredefinedMacros(
+            unbufferLib = macroExpander.expandPredefinedMacros(
                     "unbuffer.$soext"); // NOI18N
         } catch (ParseException ex) {
         }
