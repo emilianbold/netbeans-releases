@@ -85,6 +85,10 @@ public class UnitDetails extends DetailsPanel {
     }
 
     public void setUnit(final Unit u, Action action) {
+        if (unitDetailsTask != null && !unitDetailsTask.isFinished()) {
+            unitDetailsTask.cancel();
+        }
+
         if (u == null) {
             getDetails().setText("<i>" + getBundle("UnitDetails_Category_NoDescription") + "</i>"); // NOI18N
             setTitle(null);
@@ -98,22 +102,20 @@ public class UnitDetails extends DetailsPanel {
             setActionListener(action);
             setUnitText(u, getUnitText(u, false));
 
-            if (unitDetailsTask != null && !unitDetailsTask.isFinished()) {
-                unitDetailsTask.cancel();
+            if (u instanceof Unit.Update) {
+                unitDetailsTask = UNIT_DETAILS_PROCESSOR.post(new Runnable() {
+
+                    public void run() {
+                        final StringBuilder text = getUnitText(u, true);
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                setUnitText(u, text);
+                            }
+                        });
+                    }
+                });
             }
-
-            unitDetailsTask = UNIT_DETAILS_PROCESSOR.post(new Runnable() {
-
-                public void run() {
-                    final StringBuilder text = getUnitText(u, true);
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            setUnitText(u, text);
-                        }
-                    });
-                }
-            });
         }
     }
 
