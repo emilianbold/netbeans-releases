@@ -315,17 +315,17 @@ public abstract class VCSKenaiSupport {
          *
          * @param notification
          */
-        protected abstract void handleVCSNotification(final VCSKenaiNotification notification);
+        protected abstract void handleVCSNotification(VCSKenaiNotification notification);
 
         /**
          * Called to setup the textpane used for the notification buble
          *
-         * @param file
+         * @param files
          * @param url
          * @param revision
          * @return
          */
-        protected abstract void setupPane(JTextPane pane, final File file, final String url, final String revision);
+        protected abstract void setupPane(JTextPane pane, File[] file, File projectDir, String url, String revision);
 
         /**
          * Removes a leading and trailing slash from the given string
@@ -343,24 +343,45 @@ public abstract class VCSKenaiSupport {
         }
 
         /**
+         * 
+         * @param files
+         * @return
+         */
+        protected String getFileNames(final File[] files) {
+            StringBuffer filesSb = new StringBuffer();
+            for (int i = 0; i < files.length; i++) {
+                if (i == 4) {
+                    filesSb.append("...");                                      // NOI18N
+                    break;
+                }
+                File file = files[i];
+                filesSb.append("&nbsp;&nbsp;&nbsp;&nbsp;");                     // NOI18N
+                filesSb.append(file.getName());
+                filesSb.append("<br>");                                         // NOI18N
+            }
+            filesSb.append("<br>");                                             // NOI18N
+            return filesSb.toString();
+        }
+
+        /**
          *
          * Opens a notification buble in the IDEs status bar containing the text returned in
          * {@link #getPaneText(java.io.File, java.lang.String, java.lang.String)}
          *
-         * @param file
+         * @param files
          * @param url
          * @param revision
          */
-        protected void notifyFileChange(File file, String url, String revision) {
-            JTextPane ballonDetails = getPane(file, url, revision); // using the same pane causes the balloon popup
-            JTextPane popupDetails = getPane(file, url, revision);  // to trim the text to the first line
+        protected void notifyFileChange(File[] files, File projectDir, String url, String revision) {
+            JTextPane ballonDetails = getPane(files, projectDir, url, revision); // using the same pane causes the balloon popup
+            JTextPane popupDetails = getPane(files, projectDir, url, revision);  // to trim the text to the first line
             NotificationDisplayer.getDefault().notify(
                     NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
                     ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
                     ballonDetails, popupDetails, NotificationDisplayer.Priority.NORMAL);
         }
 
-        private JTextPane getPane (final File file, final String url, final String revision) {
+        private JTextPane getPane (final File[] files, final File projectDir, final String url, final String revision) {
             JTextPane bubble = new JTextPane();
             bubble.setOpaque(false);
             bubble.setEditable(false);
@@ -372,7 +393,7 @@ public abstract class VCSKenaiSupport {
             }
 
             bubble.setContentType("text/html");                                          //NOI18N
-            setupPane(bubble, file, url, revision);
+            setupPane(bubble, files, projectDir, url, revision);
             return bubble;
         }
 

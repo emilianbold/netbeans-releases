@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.kenai;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
@@ -81,6 +82,8 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
         File[] files = cache.listFiles(new File[] {projectDir}, FileInformation.STATUS_LOCAL_CHANGE);
         List<VCSKenaiModification> modifications = notification.getModifications();
 
+        List<File> notifyFiles = new LinkedList<File>();
+        String revision = null;
         for (File file : files) {
             String path;
             try {
@@ -96,20 +99,27 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
 
                 resource = trim(resource);
                 if(path.equals(resource)) {
-                    LOG.fine("  notifying " + file + ", " + notification); // NOI18N
-                    notifyFileChange(file, notification.getUri().toString(), modification.getId());
+                    LOG.fine("  will notify " + file + ", " + notification); // NOI18N
+                    notifyFiles.add(file);
+                    if(revision == null) {
+                        revision = modification.getId();
+                    }
+                    break;
                 }
             }
+        }
+        if(notifyFiles.size() > 0) {
+            notifyFileChange(notifyFiles.toArray(new File[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
         }
     }
 
     @Override
-    protected void setupPane(JTextPane pane, final File file, final String url, final String revision) {
+    protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {        
         String msg =
             NbBundle.getMessage(
                 KenaiNotificationListener.class,
                 "MSG_NotificationBubble_Description",                           // NOI18N
-                file.getName(),
+                getFileNames(files),
                 url
             );
         pane.setText(msg);
@@ -118,7 +128,7 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                     try {
-                        SearchHistoryAction.openSearch(new SVNUrl(url), file, Long.parseLong(revision));
+                        SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
                     } catch (MalformedURLException ex) {
                         LOG.log(Level.WARNING, null, ex);
                     }
