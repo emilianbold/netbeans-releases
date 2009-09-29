@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.ui.copy;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -53,6 +54,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -191,39 +193,49 @@ public class SwitchToAction extends ContextAction {
         return ret;
     }        
 
-    static void performSwitch(RepositoryFile toRepositoryFile, File root, SvnProgressSupport support) {
-        File[][] split = Utils.splitFlatOthers(new File[] {root} );
-        boolean recursive;
-        // there can be only 1 root file
-        if(split[0].length > 0) {
-            recursive = false;
-        } else {
-            recursive = true;
-        }                
-
+    static void performSwitch(final RepositoryFile toRepositoryFile, final File root, final SvnProgressSupport support) {
         try {
-            SvnClient client;
-            try {
-                client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
-                return;
-            }            
-            // ... and switch
-            client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
-            // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
-            List<File> switchedFiles = SvnUtils.listRecursively(root);
-            File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
-            Subversion.getInstance().getRefreshHandler().refreshImediately(fileArray);                        
-            // the cache fires status change events to trigger the annotation refresh
-            // unfortunatelly - we have to call the refresh explicitly for each file also 
-            // from this place as the branch label was changed evern if the files status didn't
-            Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
-            Subversion.getInstance().refreshAnnotations(fileArray);
-            // refresh the inline diff
-            Subversion.getInstance().versionedFilesChanged();
-        } catch (SVNClientException ex) {
-            support.annotate(ex);
+            IndexingBridge.getInstance().runWithoutIndexing(new Callable<Void>() {
+                public Void call() {
+                    File[][] split = Utils.splitFlatOthers(new File[] {root} );
+                    boolean recursive;
+                    // there can be only 1 root file
+                    if(split[0].length > 0) {
+                        recursive = false;
+                    } else {
+                        recursive = true;
+                    }
+
+                    try {
+                        SvnClient client;
+                        try {
+                            client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+                        } catch (SVNClientException ex) {
+                            SvnClientExceptionHandler.notifyException(ex, true, true);
+                            return null;
+                        }
+                        // ... and switch
+                        client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
+                        // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
+                        List<File> switchedFiles = SvnUtils.listRecursively(root);
+                        File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
+                        Subversion.getInstance().getRefreshHandler().refreshImediately(false, fileArray);
+                        // the cache fires status change events to trigger the annotation refresh
+                        // unfortunatelly - we have to call the refresh explicitly for each file also
+                        // from this place as the branch label was changed evern if the files status didn't
+                        Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
+                        Subversion.getInstance().refreshAnnotations(fileArray);
+                        // refresh the inline diff
+                        Subversion.getInstance().versionedFilesChanged();
+                    } catch (SVNClientException ex) {
+                        support.annotate(ex);
+                    }
+
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -46,11 +46,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -69,7 +72,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     
-    private static Object semaphor = new Object();        
+    private static final Object semaphor = new Object();
 
     private final ISVNClientAdapter adapter;
     private final SvnClientDescriptor desc;
@@ -116,18 +119,33 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {                               
+    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+        // XXX: list here all operations that can potentially modify files on the disk
+        final boolean fsReadOnlyAction = 
+                !method.getName().equals("update") && //NOI18N
+                !method.getName().equals("revert") && //NOI18N
+                !method.getName().equals("merge"); //NOI18N
+        
+        try {
+            Logger.getLogger(SvnClientInvocationHandler.class.getName()).fine("~~~ SVN: invoking '" + method.getName() + "'");
+            //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
 
-        try {      
-            Object ret = null;        
-            if(parallelizable(method, args)) {
-                ret = invokeMethod(method, args);    
-            } else {
-                synchronized (semaphor) {
-                    ret = invokeMethod(method, args);    
+            Callable<Object> c = new Callable<Object>() {
+                public Object call() throws Exception {
+                    if(parallelizable(method, args)) {
+                        return invokeMethod(method, args);
+                    } else {
+                        synchronized (semaphor) {
+                            return invokeMethod(method, args);
+                        }
+                    }
                 }
-            }            
-            return ret;
+            };
+            if (fsReadOnlyAction) {
+                return c.call();
+            } else {
+                return IndexingBridge.getInstance().runWithoutIndexing(c);
+            }
         } catch (Exception e) {
             try {
                 if(handleException((SvnClient) proxy, e) ) {
@@ -183,7 +201,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } finally {
             // whatever command was invoked, whatever the result is - 
             // call refresh for all files notified by the client adapter
-            Subversion.getInstance().getRefreshHandler().refresh();
+            Subversion.getInstance().getRefreshHandler().refresh(fsReadOnlyAction);
         }
     }
 

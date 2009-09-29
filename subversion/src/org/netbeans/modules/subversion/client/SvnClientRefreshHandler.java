@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -90,31 +91,31 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
      * Refresh the nb filesystem and the cache for all given files
      * @param files files to be refreshed
      */
-    public void refreshImediately(File... files) {
+    public void refreshImediately(boolean simpleRefresh, File... files) {
         for (int i = 0; i < files.length; i++) {
             files[i] = FileUtil.normalizeFile(files[i]); // I saw "./"
         }
-        refresh(files);
+        refresh(simpleRefresh, files);
     }
 
     /**
      * Refreshes all yet notified files
      * @see {@link #onNotify(java.io.File, org.tigris.subversion.svnclientadapter.SVNNodeKind)}
      */
-    public void refresh() {
+    public void refresh(boolean simpleRefresh) {
         File[] fileArray;
         synchronized(filesToRefresh) {
             fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
             filesToRefresh.clear();
         }
-        refresh(fileArray);
+        refresh(simpleRefresh, fileArray);
     }
 
     /**
      * Refresh the nb filesystem and the cache for all given files
      * @param files files to be refreshed
      */
-    private void refresh(File... files) {
+    private void refresh(boolean simpleRefresh, File... files) {
         if(Subversion.LOG.isLoggable(Level.FINE)) {
             for (File file : files) {
                 Subversion.LOG.fine("refreshing: [" + file + "]"); // NOI18N
@@ -122,7 +123,11 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
         }
         // refresh the filesystems first as the following cache refesh might fire events
         // which are intercepted by the nb filesystem - it has to be aware about possible changes made
-        refreshFS(files);
+        if (simpleRefresh) {
+            refreshFS(files);
+        } else {
+            IndexingBridge.getInstance().refreshFiles(files);
+        }
         // async cache refesh - notifications from the svnclientadapter may be caused
         // by a synchronously handled FS event. If we want to (have to) prevent
         // reentrant calls on the FS api

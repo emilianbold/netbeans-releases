@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.parsing.api.indexing;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -232,8 +235,40 @@ public final class IndexingManager {
      *
      * @since 1.23
      */
-    public void refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders) {
-        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, folders);
+    public void refreshAllIndices(boolean fullRescan, boolean wait, FileObject... fileObjects) {
+        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) fileObjects);
+    }
+
+    /**
+     *
+     * @param fullRescan
+     * @param wait
+     * @param files
+     *
+     * @since 1.24
+     */
+    public void refreshAllIndices(boolean fullRescan, boolean wait, File... files) {
+        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) files);
+    }
+
+    /**
+     * Runs the <code>operation</code> in protected mode. All events that would normally
+     * trigger rescanning are rememberd and processed after the operation finishes.
+     *
+     * @param operation The operation to run without rescanning while the operation
+     *   is running.
+     * @return Whatever value the <code>operation</code> returns.
+     * 
+     * @throws Exception Any exception thrown from the operation is rethrown.
+     * @since 1.24
+     */
+    public <T> T runProtected(Callable<T> operation) throws Exception {
+        IndexingController.getDefault().enterProtectedMode();
+        try {
+            return operation.call();
+        } finally {
+            IndexingController.getDefault().exitProtectedMode(null);
+        }
     }
 
     // -----------------------------------------------------------------------

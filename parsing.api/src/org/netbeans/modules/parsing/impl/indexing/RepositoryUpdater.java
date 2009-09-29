@@ -312,7 +312,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     }
 
-    public void refreshAll(boolean fullRescan, boolean wait, boolean logStatistics, FileObject... folders) {
+    public void refreshAll(boolean fullRescan, boolean wait, boolean logStatistics, Object... filesOrFileObjects) {
         FSRefreshInterceptor fsRefreshInterceptor = null;
         for(IndexingActivityInterceptor iai : indexingActivityInterceptors.allInstances()) {
             if (iai instanceof FSRefreshInterceptor) {
@@ -322,7 +322,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         scheduleWork(
-            new RefreshWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, fullRescan, logStatistics, Arrays.asList(folders), fsRefreshInterceptor),
+            new RefreshWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, fullRescan, logStatistics, Arrays.asList(filesOrFileObjects), fsRefreshInterceptor),
             wait);
     }
 
@@ -2262,8 +2262,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Set<URL> scannedBinaries;
         private final Set<URL> sourcesForBinaryRoots;
-        private final boolean fullRescan;
-        private final List<FileObject> suspectFolders;
+        private boolean fullRescan;
+        private final Set<Object> suspectFilesOdFileObjects;
         private final FSRefreshInterceptor interceptor;
 
         private DependenciesContext depCtx;
@@ -2274,7 +2274,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Set<URL> sourcesForBinaryRoots,
                 boolean fullRescan,
                 boolean logStatistics,
-                List<FileObject> suspectFolders,
+                Collection<Object> suspectFilesOdFileObjects,
                 FSRefreshInterceptor interceptor)
         {
             super(false, false, true, fullRescan, logStatistics);
@@ -2282,14 +2282,14 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             Parameters.notNull("scannedRoots2Depencencies", scannedRoots2Depencencies); //NOI18N
             Parameters.notNull("scannedBinaries", scannedBinaries); //NOI18N
             Parameters.notNull("sourcesForBinaryRoots", sourcesForBinaryRoots); //NOI18N
-            Parameters.notNull("suspectFolders", suspectFolders); //NOI18N
+            Parameters.notNull("suspectFilesOdFileObjects", suspectFilesOdFileObjects); //NOI18N
             Parameters.notNull("interceptor", interceptor); //NOI18N
 
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.fullRescan = fullRescan;
-            this.suspectFolders = suspectFolders;
+            this.suspectFilesOdFileObjects = new HashSet<Object>(suspectFilesOdFileObjects);
             this.interceptor = interceptor;
         }
 
@@ -2306,44 +2306,115 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
                 Collections.reverse(depCtx.newRootsToScan);
 
-                if (suspectFolders != null && suspectFolders.size() > 0) {
-                    // filter binary roots
-                    for(Iterator<URL> it = depCtx.newBinariesToScan.iterator(); it.hasNext(); ) {
-                        URL root = it.next();
-                        boolean suspect = false;
-                        File rootFile = FileUtil.archiveOrDirForURL(root);
-                        if (rootFile != null) {
-                            FileObject rootFo = FileUtil.toFileObject(rootFile);
+                if (suspectFilesOdFileObjects != null && suspectFilesOdFileObjects.size() > 0) {
+                    Set<FileObject> suspects = new HashSet<FileObject>();
+                    for(Object fileOrFileObject : suspectFilesOdFileObjects) {
+                        if (fileOrFileObject instanceof File) {
+                            FileObject f = FileUtil.toFileObject((File) fileOrFileObject);
+                            if (f != null) {
+                                suspects.add(f);
+                            }
+                        } else if (fileOrFileObject instanceof FileObject) {
+                            suspects.add((FileObject) fileOrFileObject);
+                        } else {
+                            LOGGER.fine("Not File or FileObject, ignoring: " + fileOrFileObject); //NOI18N
+                        }
+                    }
+                    Set<FileObject> processedSuspects = new HashSet<FileObject>();
+                    
+                    { // <editor-fold defaultstate="collapsed" desc="filter binary roots">
+                        Set<Pair<URL, FileObject>> binariesNotToScan = new HashSet<Pair<URL, FileObject>>();
+                        for(URL root : depCtx.newBinariesToScan) {
+                            Pair<URL, FileObject> pair = null;
+                            boolean suspect = false;
+                            File rootFile = FileUtil.archiveOrDirForURL(root);
+                            if (rootFile != null) {
+                                FileObject rootFo = FileUtil.toFileObject(rootFile);
+                                if (rootFo != null) {
+                                    pair = Pair.of(root, rootFo);
+                                    for(FileObject f : suspects) {
+                                        if (f.isData()) {
+                                            continue;
+                                        }
+                                        if (FileUtil.isParentOf(f, rootFo)) {
+                                            processedSuspects.add(f);
+                                            suspect = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (!suspect) {
+                                binariesNotToScan.add(pair == null ? Pair.of(root, (FileObject)null) : pair);
+                            }
+                        }
+
+                        for(Iterator<Pair<URL, FileObject>> it = binariesNotToScan.iterator() ; it.hasNext(); ) {
+                            Pair<URL, FileObject> pair = it.next();
+                            FileObject rootFo = pair.second;
                             if (rootFo != null) {
-                                for(FileObject folder : suspectFolders) {
-                                    if (FileUtil.isParentOf(folder, rootFo)) {
-                                        suspect = true;
+                                for(FileObject f : suspects) {
+                                    if (processedSuspects.contains(f)) {
+                                        continue;
+                                    }
+                                    if (FileUtil.isParentOf(rootFo, f)) {
+                                        it.remove();
                                         break;
                                     }
                                 }
                             }
                         }
-                        if (!suspect) {
-                            it.remove();
+
+                        for(Pair<URL, FileObject> pair : binariesNotToScan) {
+                            depCtx.newBinariesToScan.remove(pair.first);
                         }
+                    // </editor-fold>
                     }
 
-                    // filter source roots
-                    for(Iterator<URL> it = depCtx.newRootsToScan.iterator(); it.hasNext(); ) {
-                        URL root = it.next();
-                        boolean suspect = false;
-                        FileObject rootFo = URLCache.getInstance().findFileObject(root);
-                        if (rootFo != null) {
-                            for(FileObject folder : suspectFolders) {
-                                if (FileUtil.isParentOf(folder, rootFo)) {
-                                    suspect = true;
-                                    break;
+                    { // <editor-fold defaultstate="collapsed" desc="filter source roots">
+                        Set<Pair<URL, FileObject>> sourcesNotToScan = new HashSet<Pair<URL, FileObject>>();
+                        for(URL root : depCtx.newRootsToScan) {
+                            Pair<URL, FileObject> pair = null;
+                            boolean suspect = false;
+                            FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                            if (rootFo != null) {
+                                pair = Pair.of(root, rootFo);
+                                for(FileObject f : suspects) {
+                                    if (f.isData()) {
+                                        continue;
+                                    }
+                                    if (FileUtil.isParentOf(f, rootFo)) {
+                                        processedSuspects.add(f);
+                                        suspect = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!suspect) {
+                                sourcesNotToScan.add(pair == null ? Pair.of(root, (FileObject)null) : pair);
+                            }
+                        }
+
+                        for(Iterator<Pair<URL, FileObject>> it = sourcesNotToScan.iterator() ; it.hasNext(); ) {
+                            Pair<URL, FileObject> pair = it.next();
+                            FileObject rootFo = pair.second;
+                            if (rootFo != null) {
+                                for(FileObject f : suspects) {
+                                    if (processedSuspects.contains(f)) {
+                                        continue;
+                                    }
+                                    if (FileUtil.isParentOf(rootFo, f)) {
+                                        it.remove();
+                                        break;
+                                    }
                                 }
                             }
                         }
-                        if (!suspect) {
-                            it.remove();
-                        }
+
+                        for(Pair<URL, FileObject> pair : sourcesNotToScan) {
+                            depCtx.newRootsToScan.remove(pair.first);
+                        } 
+                    // </editor-fold>
                     }
                 }
                 
@@ -2395,6 +2466,25 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
+        public @Override boolean absorb(Work newWork) {
+            if (newWork instanceof RefreshWork) {
+                if (((RefreshWork) newWork).fullRescan) {
+                    fullRescan = true;
+                }
+                suspectFilesOdFileObjects.addAll(((RefreshWork) newWork).suspectFilesOdFileObjects);
+                return true;
+            } else if (newWork instanceof FileListWork) {
+                if (fullRescan) {
+                    // complicated, should check that newWork.root is reachable from suspectFilesOdFileObjects,
+                    // but don't want to convert java.io.File to FileObjects at this moment as it could
+                    // fire events from filesystems
+                } else if (!((FileListWork) newWork).forceRefresh) {
+                    suspectFilesOdFileObjects.add(URLCache.getInstance().findFileObject(((FileListWork) newWork).root));
+                    return true;
+                }
+            }
+            return false;
+        }
     } // End of RefreshWork class
 
     private static class RootsWork extends AbstractRootsWork {
