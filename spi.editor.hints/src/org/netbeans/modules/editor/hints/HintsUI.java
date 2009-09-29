@@ -126,6 +126,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_err_fixable"); // NOI18N
         fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_hint_fixable"); // NOI18N
         fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_verifier_fixable"); // NOI18N
+        fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_warn_fixable"); // NOI18N
     }
 
     public static synchronized HintsUI getDefault() {
