@@ -38,6 +38,8 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <limits.h>
 
 enum {
     true = 1,
@@ -45,7 +47,16 @@ enum {
 };
 
 #if TRACE
+#if RFS_PRELOAD
+static const char* prefix = "#RFS_PRLD: ";
+#elif RFS_CONTROLLER
+static const char* prefix = "#RFS_CNTL: ";
+#else
+#error either RFS_PRELOAD or RFS_CONTROLLER should be defined and nonzero
+#endif
+
 FILE *trace_file;
+#define trace(args...) { fprintf(trace_file, prefix); fprintf(trace_file, ## args); fflush(trace_file); }
 void trace_startup(const char* env_var) {
     char *file_name = getenv(env_var);
     if (file_name) {        
@@ -61,13 +72,16 @@ void trace_startup(const char* env_var) {
     } else {
         trace_file = stderr;
     }
+    char dir[PATH_MAX];
+    getcwd(dir, sizeof dir);
+    pid_t pid = getpid();
+    trace("%d started in %s\n", pid, dir);
 }
 void trace_shutdown() {
     if (trace_file && trace_file != stderr) {
         fclose(trace_file);
     }
 }
-#define trace(args...) { fprintf(trace_file, "!RFS> "); fprintf(trace_file, ## args); fflush(trace_file); }
 #else
 #define trace_startup(...)
 #define trace(...) 

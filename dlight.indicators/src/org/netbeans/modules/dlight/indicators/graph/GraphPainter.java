@@ -42,6 +42,7 @@ package org.netbeans.modules.dlight.indicators.graph;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
  * A delegate that is responsible for painting,
@@ -68,7 +70,9 @@ import org.netbeans.modules.dlight.util.DLightMath;
 //package-local
 class GraphPainter {
     private static final Stroke BALL_STROKE = new BasicStroke(1.0f);
-    private static final Stroke LINE_STROKE = new BasicStroke(GraphConfig.LINE_WIDTH);
+    private static final Stroke LINE_STROKE = new BasicStroke(DLightUIPrefs.getFloat(DLightUIPrefs.INDICATOR_LINE_THICKNESS));
+    private static final Color H_AXIS_FONT_COLOR = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_X_AXIS_FONT_COLOR);
+    private static final Color V_AXIS_FONT_COLOR = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_Y_AXIS_FONT_COLOR);
 
     private final List<TimeSeriesDescriptor> descriptors;
     private final int seriesCount;
@@ -163,7 +167,7 @@ class GraphPainter {
     public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
-            if (GraphConfig.GRID_SIZE < w && GraphConfig.GRID_SIZE < h) {
+            if (0 < w && 0 < h) {
                 paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
                 paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
                 dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
@@ -177,7 +181,9 @@ class GraphPainter {
     private static void paintGradient(Graphics g, int x, int y, int w, int h) {
         Graphics2D g2 = (Graphics2D)g;
         Paint oldPaint = g2.getPaint();
-        GradientPaint gradient = new GradientPaint(0, 0, GraphConfig.GRADIENT_TOP_COLOR, 0, h, GraphConfig.GRADIENT_BOTTOM_COLOR);
+        Color topColor = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_GRAPH_BGCOLOR_TOP);
+        Color bottomColor = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_GRAPH_BGCOLOR_BOTTOM);
+        GradientPaint gradient = new GradientPaint(0, 0, topColor, 0, h, bottomColor);
         g2.setPaint(gradient);
         g2.fillRect(x, y, w, h);
         g2.setPaint(oldPaint);
@@ -188,24 +194,26 @@ class GraphPainter {
      */
     private static void paintGrid(Graphics g, int x, int y, int w, int h, List<AxisMark> xMarks, List<AxisMark> yMarks, boolean ticks) {
         // vertical lines
+        Color gridColor = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_GRID_COLOR);
+        Color borderColor = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR);
         for (AxisMark xMark : xMarks) {
-            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, xMark.getMarkOpacity()));
+            g.setColor(adjustAlpha(gridColor, xMark.getMarkOpacity()));
             g.drawLine(x + xMark.getPosition(), y, x + xMark.getPosition(), y + h - 1);
         }
         if (ticks) {
             for (AxisMark xMark : xMarks) {
-                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, xMark.getMarkOpacity()));
+                g.setColor(adjustAlpha(borderColor, xMark.getMarkOpacity()));
                 g.drawLine(x + xMark.getPosition(), y + h - 5, x + xMark.getPosition(), y + h - 1);
             }
         }
         // horizontal lines
         for (AxisMark yMark : yMarks) {
-            g.setColor(adjustAlpha(GraphConfig.GRID_COLOR, yMark.getMarkOpacity()));
+            g.setColor(adjustAlpha(gridColor, yMark.getMarkOpacity()));
             g.drawLine(x, y + h - 1 - yMark.getPosition(), x + w - 1, y + h - 1 - yMark.getPosition());
         }
         if (ticks) {
             for (AxisMark yMark : yMarks) {
-                g.setColor(adjustAlpha(GraphConfig.BORDER_COLOR, yMark.getMarkOpacity()));
+                g.setColor(adjustAlpha(borderColor, yMark.getMarkOpacity()));
                 g.drawLine(x, y + h - 1 - yMark.getPosition(), x + 5, y + h - 1 - yMark.getPosition());
             }
         }
@@ -225,7 +233,9 @@ class GraphPainter {
         if (0 < sampleCount) {
             int[] xx = new int[sampleCount + 2];
             int[] yy = new int[sampleCount + 2];
-            int effectiveHeight = (int)(h - 2 - GraphConfig.FONT_SIZE / 2);
+            Font yAxisFont = DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_Y_AXIS_FONT);
+            int effectiveHeight = h - 2 - yAxisFont.getSize() / 2;
+            int ballSize = DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_BALL_SIZE);
             for (int ser = 0; ser < seriesCount; ++ser) {
                 int lastx = 0;
                 int lasty = 0;
@@ -256,9 +266,9 @@ class GraphPainter {
                         g2.drawPolyline(xx, yy, sampleCount);
                         g2.setStroke(BALL_STROKE);
                         g2.setColor(Color.WHITE);
-                        g2.fillOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE - 1, GraphConfig.BALL_SIZE - 1);
+                        g2.fillOval(lastx - ballSize / 2, lasty - ballSize / 2, ballSize - 1, ballSize - 1);
                         g2.setColor(descriptors.get(ser).getColor());
-                        g2.drawOval(lastx - GraphConfig.BALL_SIZE / 2, lasty - GraphConfig.BALL_SIZE / 2, GraphConfig.BALL_SIZE - 1, GraphConfig.BALL_SIZE - 1);
+                        g2.drawOval(lastx - ballSize / 2, lasty - ballSize / 2, ballSize - 1, ballSize - 1);
                         break;
                     case ABS_SURFACE:
                     case REL_SURFACE:
@@ -277,7 +287,7 @@ class GraphPainter {
 
     private void dimInactiveRegions(Graphics g, int viewportStart, int viewportEnd, int filterStart, int filterEnd, int x, int y, int w, int h) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setColor(GraphConfig.DIM_COLOR);
+        g2.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_GRAPH_FILTER_COLOR));
         if (viewportStart <= filterStart ) {
             int xx = DLightMath.map(filterStart, viewportStart, viewportEnd, 0, w);
             g2.fillRect(x, y, xx, h);
@@ -296,13 +306,13 @@ class GraphPainter {
         g2.fillRect(x, y, w, h);
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setFont(g2.getFont().deriveFont(GraphConfig.FONT_SIZE));
+        g2.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_X_AXIS_FONT));
 
         FontMetrics fm = g2.getFontMetrics();
         for (AxisMark mark : marks) {
             if (mark.getText() != null) {
                 int length = fm.stringWidth(mark.getText());
-                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getTextOpacity()));
+                g.setColor(adjustAlpha(H_AXIS_FONT_COLOR, mark.getTextOpacity()));
                 g.drawString(mark.getText(), x + mark.getPosition() - length / 2, y + fm.getAscent());
             }
         }
@@ -324,13 +334,13 @@ class GraphPainter {
         g2.fillRect(x, y, w, h);
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setFont(g2.getFont().deriveFont(GraphConfig.FONT_SIZE));
+        g2.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_Y_AXIS_FONT));
 
         FontMetrics fm = g2.getFontMetrics();
         for (AxisMark mark : marks) {
             if (mark.getText() != null) {
                 int length = fm.stringWidth(mark.getText());
-                g.setColor(adjustAlpha(GraphConfig.TEXT_COLOR, mark.getTextOpacity()));
+                g.setColor(adjustAlpha(V_AXIS_FONT_COLOR, mark.getTextOpacity()));
                 g.drawString(mark.getText(), x + w - length - fm.getAscent() / 2, y + h - 1 - mark.getPosition() + fm.getAscent() / 2);
             }
         }

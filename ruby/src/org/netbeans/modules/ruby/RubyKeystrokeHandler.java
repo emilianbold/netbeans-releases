@@ -1783,7 +1783,6 @@ public class RubyKeystrokeHandler implements KeystrokeHandler {
                 ranges.add(new OffsetRange(begin, end));
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
             return ranges;
         }
 

@@ -47,7 +47,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -189,7 +188,7 @@ public class KenaiPopupMenu extends CookieAction {
                             kenaiPopup.add(item);
                         }
                     }
-                    kenaiPopup.add(new JSeparator());
+                    kenaiPopup.addSeparator();
                     /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
                     String projRepo = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
                     String kpName = KenaiProject.getNameForRepository(projRepo);
@@ -199,7 +198,7 @@ public class KenaiPopupMenu extends CookieAction {
                             if (issueTrackers != null && issueTrackers.length > 0) {
                                 kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
                                 kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
-                                kenaiPopup.add(new JSeparator());
+                                kenaiPopup.addSeparator();
                             }
                         }
                         kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
@@ -253,13 +252,7 @@ class LazyFindIssuesAction extends JMenuItem {
                             final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                DashboardImpl.getInstance().addProject(pHandle, false);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DashboardImpl.getInstance().selectAndExpand(kp);
-                                    }
-                                });
+                                DashboardImpl.getInstance().addProject(pHandle, false, true);
                                 QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
                                 return;
                             }
@@ -291,13 +284,7 @@ class LazyNewIssuesAction extends JMenuItem {
                             final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                DashboardImpl.getInstance().addProject(pHandle, false);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DashboardImpl.getInstance().selectAndExpand(kp);
-                                    }
-                                });
+                                DashboardImpl.getInstance().addProject(pHandle, false, true);
                                 QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
                             }
                         } catch (KenaiException e) {
@@ -336,13 +323,7 @@ class LazyOpenKenaiProjectAction extends JMenuItem {
                             final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
                             if (kp != null) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                DashboardImpl.getInstance().addProject(pHandle, false);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        DashboardImpl.getInstance().selectAndExpand(kp);
-                                    }
-                                });
+                                DashboardImpl.getInstance().addProject(pHandle, false, true);
                             }
                         } catch (KenaiException ex) {
                             Exceptions.printStackTrace(ex);

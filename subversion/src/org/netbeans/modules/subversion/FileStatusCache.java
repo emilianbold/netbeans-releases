@@ -651,6 +651,9 @@ public class FileStatusCache {
         if ( r1 != r2 ) {
             return false;
         }
+        if (e1.isCopied() != e2.isCopied()) {
+            return false;
+        }
         return e1.getUrl() == e2.getUrl() || 
                 e1.getUrl() != null && e1.getUrl().equals(e2.getUrl());
     }
@@ -912,7 +915,7 @@ public class FileStatusCache {
             return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.REPLACED.equals(kind)) {                      
             // this status or better to use this simplyfication?
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE | remoteStatus, status);
         } else if (SVNStatusKind.CONFLICTED.equals(kind)) {            

@@ -409,12 +409,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         }
 
         DiffController view = setups[currentModelIndex].getView();
-        int currentDifferenceIndex = view != null ? view.getDifferenceIndex() : -1;
         if (view != null) {
-            int visibleDiffernce = view.getDifferenceIndex();
-            if (visibleDiffernce < view.getDifferenceCount() - 1) {
-                currentDifferenceIndex = Math.max(currentDifferenceIndex, visibleDiffernce);
-            }
+            int currentDifferenceIndex = view.getDifferenceIndex();
             if (++currentDifferenceIndex >= view.getDifferenceCount()) { // also passes for view.getDifferenceCount() == 0
                 if (++currentIndex >= setups.length) {
                     currentIndex--;
