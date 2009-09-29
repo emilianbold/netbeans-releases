@@ -46,11 +46,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -92,7 +93,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         final MacroMap env = info.getEnvVariables();
 
-        UnbufferSupport.initUnbuffer(info, env);
+        UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
 
         // Always prepend /bin and /usr/bin to PATH
 //        env.put("PATH", "/bin:/usr/bin:${PATH}"); // NOI18N
@@ -174,7 +175,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             env.put("PATH", path); // NOI18N
         }
 
-        UnbufferSupport.initUnbuffer(info, env);
+        UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
 
         pb.command(info.getCommand());
 
@@ -186,9 +187,12 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         String val = null;
 
         if (!env.isEmpty()) {
-            for (String var : env.keySet()) {
-                String envVarName = envVars.containsKey(var.toUpperCase()) ? envVars.get(var.toUpperCase()) : var;
-                val = env.get(var);
+            for (Entry<String, String> entry : env.entrySet()) {
+                String upperCaseKey = entry.getKey().toUpperCase();
+
+                String envVarName = envVars.containsKey(upperCaseKey) ? envVars.get(upperCaseKey) : entry.getKey();
+                val = entry.getValue();
+                
                 if (val != null) {
                     pb.environment().put(envVarName, val);
                     if (LOG.isLoggable(Level.FINEST)) {

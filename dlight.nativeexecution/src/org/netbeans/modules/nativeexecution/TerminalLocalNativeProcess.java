@@ -51,6 +51,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -61,7 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
@@ -208,8 +209,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 fos.close();
 
                 if (LOG.isLoggable(Level.FINEST)) {
-                    for (String var : env.keySet()) {
-                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{var, env.get(var)});
+                    for (Entry<String, String> entry : env.entrySet()) {
+                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{entry.getKey(), entry.getValue()}); // NOI18N
                     }
                 }
             }

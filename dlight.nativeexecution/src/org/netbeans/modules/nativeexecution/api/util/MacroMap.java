@@ -36,14 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.util;
 
+import org.netbeans.modules.nativeexecution.support.*;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.openide.util.Utilities;
 
 /**
  * This map is a wrapper of Map&lt;String, String&gt; that expangs
@@ -60,9 +65,22 @@ public class MacroMap {
         this.map = new TreeMap<String, String>();
     }
 
+    public final static MacroMap forExecEnv(ExecutionEnvironment execEnv) {
+        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
+        final MacroMap result;
+
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            result = new CaseInsensitiveMacroMap(macroExpander);
+        } else {
+            result = new MacroMap(macroExpander);
+        }
+
+        return result;
+    }
+
     public final void putAll(MacroMap envVariables) {
-        for (String key : envVariables.map.keySet()) {
-            put(key, envVariables.get(key));
+        for (Entry<String, String> entry : envVariables.map.entrySet()) {
+            put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -89,19 +107,7 @@ public class MacroMap {
     }
 
     public String get(String key) {
-        String result = map.get(key);
-//        Map<String, String> butOneElementMap = new HashMap<String, String>();
-//        butOneElementMap.putAll(map);
-//        butOneElementMap.remove(key);
-//
-//        if (result != null) {
-//            try {
-//                result = macroExpander.expandMacros(result, butOneElementMap);
-//            } catch (ParseException ex) {
-//            }
-//        }
-
-        return result;
+        return map.get(key);
     }
 
     @Override
@@ -124,7 +130,7 @@ public class MacroMap {
         return map.isEmpty();
     }
 
-    public final Iterable<String> keySet() {
-        return map.keySet();
+    public final Set<Entry<String, String>> entrySet() {
+        return map.entrySet();
     }
 }

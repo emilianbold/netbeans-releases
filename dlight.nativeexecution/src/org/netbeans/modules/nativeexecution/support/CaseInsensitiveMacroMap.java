@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 
 /**
