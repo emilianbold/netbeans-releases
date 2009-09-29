@@ -124,12 +124,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         // nobody calls this concurrently => no synchronization
         if (remoteControllerProcess != null) {
             remoteControllerProcess.destroy();
-            // until #170502 is fixed
-            try {
-                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID()); // NOI18N
-            } catch (IOException e) {
-                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
-            }
             remoteControllerProcess = null;
         }
     }

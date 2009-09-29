@@ -49,16 +49,21 @@ enum {
 #if TRACE
 
 #if RFS_PRELOAD
-static const char* prefix = "#RFS_PRLD[%d]: ";
+static const char* prefix = "%u #RFS_PRLD[%d]: ";
 #elif RFS_CONTROLLER
-static const char* prefix = "#RFS_CNTL[%d]: ";
+static const char* prefix = "%u #RFS_CNTL[%d]: ";
 #else
 #error either RFS_PRELOAD or RFS_CONTROLLER should be defined and nonzero
 #endif
 
+static unsigned long get_timestamp() {
+    struct timespec tp;
+    clock_gettime(CLOCK_REALTIME, &tp);
+    return tp.tv_sec*1000000000+tp.tv_nsec;
+}
+
 FILE *trace_file;
-static pid_t pid = 0;
-#define trace(args...) { fprintf(trace_file, prefix, pid); fprintf(trace_file, ## args); fflush(trace_file); }
+#define trace(args...) { fprintf(trace_file, prefix, get_timestamp(), getpid()); fprintf(trace_file, ## args); fflush(trace_file); }
 void trace_startup(const char* env_var) {
     char *file_name = getenv(env_var);
     if (file_name) {        
@@ -76,7 +81,6 @@ void trace_startup(const char* env_var) {
     }
     char dir[PATH_MAX];
     getcwd(dir, sizeof dir);
-    pid = getpid();
     trace("started in %s\n", dir);
 }
 void trace_shutdown() {
