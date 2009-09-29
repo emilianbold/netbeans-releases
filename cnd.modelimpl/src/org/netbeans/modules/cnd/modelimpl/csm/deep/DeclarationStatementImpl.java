@@ -70,7 +70,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     }
 
     public List<CsmDeclaration> getDeclarators() {
-        if (declarators == null) {
+        if (declarators == null || this.declarators == EMPTY) {
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
         }
@@ -92,10 +92,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
     private synchronized void render() {
         if (this.declarators == null) {
+            // assign constant to prevent infinite recusion by calling this method in the same thread
             this.declarators = EMPTY;
             DSRenderer renderer = new DSRenderer();
-            this.declarators = renderer.declarators;
             renderer.render(getAst(), null, null);
+            // assign should be the latest operation
+            // prevent publishing list before it is completely constructed
+            this.declarators = renderer.declarators;
         }
     }
 
