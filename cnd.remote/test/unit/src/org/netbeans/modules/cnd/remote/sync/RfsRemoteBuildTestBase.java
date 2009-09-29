@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import org.netbeans.modules.cnd.remote.project.*;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
  *
@@ -50,7 +49,6 @@ public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
 
     static {
         System.setProperty("cnd.remote.fs", "true");
-        System.setProperty("cnd.remote.force.setup", "true");
     }
 
     public RfsRemoteBuildTestBase(String testName) {
@@ -59,14 +57,5 @@ public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
 
     public RfsRemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
     }
 }

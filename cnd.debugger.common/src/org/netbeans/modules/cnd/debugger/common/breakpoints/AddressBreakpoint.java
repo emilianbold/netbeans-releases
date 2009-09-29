@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,7 +43,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
 public class AddressBreakpoint extends CndBreakpoint implements Comparable {
     public static final String          PROP_ADDRESS_VALUE = "address"; // NOI18N

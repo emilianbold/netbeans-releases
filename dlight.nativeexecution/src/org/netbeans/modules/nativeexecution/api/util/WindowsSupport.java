@@ -320,6 +320,7 @@ public final class WindowsSupport {
                 result = (result + path).replaceAll("/", "\\\\"); // NOI18N
                 break;
             default:
+                result = path;
         }
 
         return result;
