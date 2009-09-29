@@ -39,7 +39,9 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -147,5 +149,127 @@ public class JsfVariablesModel {
         return match;
     }
 
+    /** returns a list of context ancestors. The context's parent is first element in the array,
+     * the root is the last one.
+     */
+    List<JsfVariableContext> getAncestors(JsfVariableContext context) {
+        SortedSet<JsfVariableContext> head = getContexts().headSet(context);
 
+        JsfVariableContext[] head_array = head.toArray(new JsfVariableContext[]{});
+        //scan backward for all elements which contains the given context
+        //they will be the ancestors in the direct order
+        ArrayList<JsfVariableContext> ancestors = new ArrayList<JsfVariableContext>();
+        for(int i = head_array.length - 1; i >= 0; i--) {
+            JsfVariableContext c = head_array[i];
+            if(c.getTo() > context.getTo()) {
+                ancestors.add(c);
+            }
+        }
+
+        return ancestors;
+    }
+
+    //XXX we'll likely need to change the algorith not to iterate
+    //the ancestors, but all preceeeding elements since the variable
+    //declarations seems to overlap the node contexts at least in some cases.
+    String resolveVariable(JsfVariableContext context) {
+        //value = prop.name
+        //var = x
+
+        // x => (prop.name)
+
+        Expression expr = Expression.parse(context.getVariableValue());
+        String resolved = expr.getPostfix();
+        
+        List<JsfVariableContext> ancestors = getAncestors(context);
+        List<JsfVariableContext> matching = new ArrayList<JsfVariableContext>();
+        //gather matching contexts (those which baseObject fits to ancestor's variable name)
+        for(JsfVariableContext c : ancestors) {
+            if(c.getVariableName().equals(expr.getBase())) {
+                //value = ProductMB.all
+                //var = prop
+                expr = Expression.parse(c.getVariableValue());
+                matching.add(c);
+            }
+        }
+
+        //now resolve the variable using path of the matching contexts
+        for(Iterator<JsfVariableContext> itr = matching.iterator() ; itr.hasNext(); ) {
+            JsfVariableContext c  = itr.next();
+            expr = Expression.parse(c.getVariableValue());
+            if(itr.hasNext()) {
+                resolved = expr.getPostfix() + "." + resolved;
+            } else {
+                //last one
+                resolved = expr.getCleanExpression() + "." + resolved;
+            }
+        }
+
+        return resolved;
+    }
+
+    public String resolveExpression(String expression, int offset) {
+        Expression parsedExpression = Expression.parse(expression);
+        JsfVariableContext leaf = getContext(offset);
+        List<JsfVariableContext> ancestors = getAncestors(leaf);
+        List<JsfVariableContext> ancestorWithLeaf = new ArrayList<JsfVariableContext>(ancestors);
+        ancestorWithLeaf.add(0, leaf);
+
+        JsfVariableContext match = null;
+        //find a context which defines the given variableName
+        for(JsfVariableContext c : ancestorWithLeaf) {
+            if(c.getVariableName().equals(parsedExpression.getBase())) {
+                match = c;
+                break;
+            }
+        }
+
+        if(match == null) {
+            return null; //no context matches
+        }
+
+        return resolveVariable(match) + (parsedExpression.getPostfix() != null ? "." + parsedExpression.getPostfix() : "");
+
+    }
+
+    private static class Expression {
+        
+        private String base, postfix, expression;
+
+        /** expression can contain the EL delimiters */
+        public static Expression parse(String expression) {
+            return new Expression(expression);
+        }
+
+        private Expression(String expression) {
+            //first strip the EL delimiters
+            //strip #{ or ${ && }
+            if((expression.charAt(0) == '#' || expression.charAt(0) == '$') && expression.charAt(1) == '{') {
+                expression = expression.substring(2);
+            }
+            if(expression.charAt(expression.length() - 1) == '}') {
+                expression = expression.substring(0, expression.length() - 1);
+            }
+
+            this.expression = expression;
+            
+            int dotIndex = expression.indexOf('.');
+            base = dotIndex == -1 ? expression : expression.substring(0, dotIndex); //prop
+            postfix = dotIndex == -1 ? null : expression.substring(dotIndex + 1); // exclude the dot itself
+        }
+
+        /** returns the given expression w/o EL delimiters */
+        public String getCleanExpression() {
+            return expression;
+        }
+
+        public String getBase() {
+            return base;
+        }
+
+        public String getPostfix() {
+            return postfix;
+        }
+        
+    }
 }

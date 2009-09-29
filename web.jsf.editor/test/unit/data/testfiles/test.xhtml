@@ -13,7 +13,7 @@
                 <mylibrary:newjsf who="#{prop.name}"/>
             </h:column>
             <h:column>
-                <h:form value="#{ProductMB.name}" var="inner">
+                <h:form value="#{prop.name}"      var="inner">
                     <h:commandLink action="#{ProductMB.delete}" value="Delete">
                         <f:param name="id" value="#{prop.id}"/>
                     </h:commandLink>
