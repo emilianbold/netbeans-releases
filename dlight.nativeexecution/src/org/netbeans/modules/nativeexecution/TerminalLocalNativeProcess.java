@@ -193,7 +193,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 if (isWindows) {
                     String path = env.get("PATH"); // NOI18N
-                    env.put("PATH", WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
+                    String newPath = WindowsSupport.getInstance().convertToAllShellPaths(path);
+                    newPath = "/bin:/usr/bin:" + newPath; // NOI18N
+                    env.put("PATH", newPath); // NOI18N
                 }
 
                 // Always prepend /bin and /usr/bin to PATH
