@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
@@ -63,6 +62,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * @author Jiri Skrivanek
@@ -727,7 +727,7 @@ public class FileUtilTest extends NbTestCase {
         assertTrue(fileF.createNewFile());
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
-        Thread.sleep(1000); // make sure timestamp changes
+        TestFileUtils.touch(fileF, null);
         new FileOutputStream(fileF).close();
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 1, fcl.check(EventType.CHANGED));
