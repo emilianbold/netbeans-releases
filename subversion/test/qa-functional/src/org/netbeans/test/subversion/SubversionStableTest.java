@@ -52,16 +52,12 @@ import org.netbeans.test.subversion.main.branches.RevertUiTest;
 import org.netbeans.test.subversion.main.branches.SwitchUiTest;
 import org.netbeans.test.subversion.main.checkout.CheckoutContentTest;
 import org.netbeans.test.subversion.main.commit.CommitDataTest;
-import org.netbeans.test.subversion.main.commit.CommitUiTest;
 import org.netbeans.test.subversion.main.commit.IgnoreTest;
 import org.netbeans.test.subversion.main.delete.DeleteTest;
 import org.netbeans.test.subversion.main.delete.RefactoringTest;
 import org.netbeans.test.subversion.main.properties.SvnPropertiesTest;
 import org.netbeans.test.subversion.main.relocate.RelocateTest;
-import org.netbeans.test.subversion.testsuites.RelocateTestSuite;
-import org.netbeans.test.subversion.testsuites.checkoutTestSuite;
-import org.netbeans.test.subversion.testsuites.commitTestSuite;
-import org.netbeans.test.subversion.testsuites.diffTestSuite;
+
 import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
@@ -108,7 +104,7 @@ public class SubversionStableTest extends JellyTestCase {
             
                     
         } else {
-            return null;
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
         }
     }
 
