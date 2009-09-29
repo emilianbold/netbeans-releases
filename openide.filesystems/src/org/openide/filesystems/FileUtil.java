@@ -190,6 +190,7 @@ public final class FileUtil extends Object {
             }
             taskToWaitFor = refreshTask;
             refreshTask.schedule(0);
+            LOG.fine("refreshAll - scheduled");  //NOI18N
         }
         taskToWaitFor.waitFinished();
     }
