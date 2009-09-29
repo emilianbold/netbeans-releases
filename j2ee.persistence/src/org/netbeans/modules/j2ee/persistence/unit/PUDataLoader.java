@@ -59,7 +59,7 @@ public class PUDataLoader extends UniFileLoader {
     public PUDataLoader() {
         super(PUDataObject.class.getName());
         //PUDataLoader is created once for a project when persistence.xml is detected, log uusage
-        PersistenceUtils.logUsage(PUDataLoader.class, "USG_PERSISTENCE_DETECTED", null);//NOI18N
+        PersistenceUtils.logUsage(PUDataLoader.class, "USG_PERSISTENCE_DETECTED", new String[]{"XML"});//NOI18N
     }
     
     protected void initialize() {
