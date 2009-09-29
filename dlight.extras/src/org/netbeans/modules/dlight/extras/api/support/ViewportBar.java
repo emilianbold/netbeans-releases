@@ -368,8 +368,7 @@ import org.openide.util.ImageUtilities;
         FontMetrics fm = g.getFontMetrics();
         Range<Long> limits = getViewportModelState().getLimits();
         List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(
-                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getStart()),
-                (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()),
+                limits.getStart(), limits.getEnd(),
                 getWidth() - leftMargin - rightMargin, fm);
 
         for (AxisMark mark : timeMarks) {

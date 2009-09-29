@@ -42,13 +42,14 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    id="Projects",  // NOI18N
-    location="CPlusPlus", // NOI18N
+    id=CndUIConstants.TOOLS_OPTIONS_CND_PROJECTS_ID,
+    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
     displayName="#TAB_ProjectsTab", // NOI18N
     position=200
 )

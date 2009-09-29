@@ -46,6 +46,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -181,22 +182,20 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator<?>> indicators = null;
+        List<Indicator<?>> indicators = new ArrayList<Indicator<?>>();
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
-            indicators = session.getIndicators();
+            indicators.addAll(session.getIndicators());
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
             if (emptyContent != null) {
-                indicators = emptyContent.getEmptyContent();
+                indicators.addAll(emptyContent.getEmptyContent());
             }
-
         }
         Collections.sort(indicators, new Comparator<Indicator<?>>() {
-
             public int compare(Indicator<?> o1, Indicator<?> o2) {
                 if (o1.getPosition() < o2.getPosition()) {
                     return -1;

@@ -62,6 +62,13 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         super(testName, execEnv);
     }
 
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
+        removeRemoteHome();
+    }
+
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         log.setLevel(Level.ALL); // TODO: comment out

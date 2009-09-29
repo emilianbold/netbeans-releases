@@ -99,7 +99,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private final List<IndicatorNotificationsListener> indicatorNotificationListeners = Collections.synchronizedList(new ArrayList<IndicatorNotificationsListener>());
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
-    private List<DataCollector> collectors = null;
+    private List<DataCollector<?>> collectors = null;
     private Map<String, Map<String, Visualizer>> visualizers = null;//toolID, visualizer
     private SessionState state;
     private final int sessionID;
@@ -459,7 +459,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         DataCollector notAttachableDataCollector = null;
 
         if (collectors == null) {
-            collectors = new ArrayList<DataCollector>();
+            collectors = new ArrayList<DataCollector<?>>();
         }
 
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
@@ -554,7 +554,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         serviceInfoDataStorage.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
 
         if (collectors != null && collectors.size() > 0) {
-            for (DataCollector toolCollector : collectors) {
+            for (DataCollector<?> toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
                 Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 

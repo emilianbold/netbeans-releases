@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,9 +44,9 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
-public class AddressBreakpointImpl extends BreakpointImpl {
+public class AddressBreakpointImpl extends BreakpointImpl<AddressBreakpoint> {
     
     public AddressBreakpointImpl(AddressBreakpoint breakpoint, GdbDebugger debugger) {
         super(breakpoint, debugger);
@@ -55,6 +55,6 @@ public class AddressBreakpointImpl extends BreakpointImpl {
 
     @Override
     protected String getBreakpointCommand() {
-        return "*" + ((AddressBreakpoint)getBreakpoint()).getAddress(); // NOI18N
+        return "*" + getBreakpoint().getAddress(); // NOI18N
     }
 }

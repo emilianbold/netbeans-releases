@@ -153,6 +153,27 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             throw new InterruptedException();
         }
 
+        // In case we want to run application that was compiled with cygwin
+        // and require cygwin1.dll to run - we need the path to the dll in the
+        // PATH variable..
+
+        if (hostInfo.getShell() != null) {
+            String pathKey = envVars.get("PATH"); // NOI18N
+            if (pathKey == null) {
+                pathKey = "PATH"; // NOI18N
+            }
+            String path = env.get(pathKey); // NOI18N
+            String shellPath = new File(hostInfo.getShell()).getParent();
+
+            if (path != null) {
+                path = shellPath + ";" + path; // NOI18N
+            } else {
+                path = shellPath;
+            }
+
+            env.put("PATH", path); // NOI18N
+        }
+
         UnbufferSupport.initUnbuffer(info, env);
 
         pb.command(info.getCommand());
