@@ -176,7 +176,7 @@ public class ThreadMapVisualizer extends JPanel implements
         threadsTimelinePanelContainer.setLayout(new BorderLayout());
         threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
         threadsTimelinePanelContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        threadsPanel.addThreadsMonitoringActionListener(this);
+        //threadsPanel.addThreadsMonitoringActionListener(this);
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);

@@ -41,7 +41,7 @@ final class TableSorter extends AbstractTableModel implements TableModelListener
         indexes = new int[0]; // For consistency.
     }
 
-    List getSortingColumns() {
+    List<Integer> getSortingColumns() {
         return sortingColumns;
     }
 
@@ -96,7 +96,7 @@ final class TableSorter extends AbstractTableModel implements TableModelListener
     }
 
     @Override
-    public Class getColumnClass(int i) {
+    public Class<?> getColumnClass(int i) {
         return model.getColumnClass(i);
     }
 
@@ -106,7 +106,7 @@ final class TableSorter extends AbstractTableModel implements TableModelListener
     }
 
     public int compareRowsByColumn(int row1, int row2, int column) {
-        Class type = model.getColumnClass(column);
+        Class<?> type = model.getColumnClass(column);
         TableModel data = model;
 
         // Check for nulls
@@ -432,7 +432,7 @@ class MultiSortTableCellHeaderRenderer extends DefaultTableCellRenderer {
         }
         TableSorter tableSorter = (TableSorter) table.getModel();
         //   List sortKeys = table.getRowSorter().getSortKeys();
-        List columns = tableSorter.getSortingColumns();
+        List<Integer> columns = tableSorter.getSortingColumns();
         if (columns == null || columns.size() == 0) {
             return null;
         }
