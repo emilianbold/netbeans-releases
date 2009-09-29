@@ -54,7 +54,7 @@ public class MavenValidators {
                     Validators.REQUIRE_NON_EMPTY_STRING,
 //                        Validators.MAY_NOT_START_WITH_DIGIT,
                     Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_ArtifactId_Invalid"), false)
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
                );
     }
 
@@ -63,7 +63,7 @@ public class MavenValidators {
                     Validators.REQUIRE_NON_EMPTY_STRING,
 //                        Validators.MAY_NOT_START_WITH_DIGIT,
                     Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_GroupId_Invalid"), false)
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
                );
     }
 
@@ -72,7 +72,7 @@ public class MavenValidators {
                     Validators.REQUIRE_NON_EMPTY_STRING,
 //                        Validators.MAY_NOT_START_WITH_DIGIT,
                     Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Version_Invalid"),  false)
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
                );
     }
 

@@ -117,6 +117,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     private BasicWizardPanel panel;
 
     private String lastProjectName = ""; //NOI18N
+    private final ValidationGroup vg;
 
     private boolean changedPackage = false;
     
@@ -128,6 +129,10 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
         projectLocationTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_projectLocationTextField"));
         projectNameTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_projectNameTextField"));
+        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_ArtifactId"));
+        txtVersion.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_Version"));
+        txtGroupId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_GroupId"));
+        txtPackage.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_Package"));
 
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -151,7 +156,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
 
         txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
-        ValidationGroup vg = panel.getValidationGroup();
+        vg = ValidationGroup.create();
         vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
         vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
         vg.add(txtVersion, MavenValidators.createVersionValidators());
@@ -551,6 +556,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (panel.getArchetypes() != null) {
             d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));
         }
+        panel.getValidationGroup().removeValidationGroup(vg);
     }
     
     void read(WizardDescriptor settings) {
@@ -587,6 +593,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 }
             });
         }
+        panel.getValidationGroup().addValidationGroup(vg, true);
     }
 
     private void prepareAdditionalProperties(Archetype arch) {
@@ -828,7 +835,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             SwingUtilities.invokeLater(this);
         } else {
             // phase two, inside EQ thread
-            panel.getValidationGroup().validateAll();
+            vg.validateAll();
         }
     }
 

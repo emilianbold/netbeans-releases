@@ -82,7 +82,7 @@ public class EAWizardIterator implements WizardDescriptor.ProgressInstantiatingI
     private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
             new BasicWizardPanel(vg, false),
-            new EAWizardPanel()
+            new EAWizardPanel(vg)
         };
     }
     
