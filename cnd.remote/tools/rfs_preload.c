@@ -240,7 +240,7 @@ static int on_open(const char *path, int flags) {
     } else {
         //struct rfs_request;
         int path_len = strlen(path);
-        trace("Sending %s (%d bytes)\n", path, path_len);
+        trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
         if (send(sd, path, path_len, 0) == -1) {
             perror("send");
         } else {
@@ -251,13 +251,13 @@ static int on_open(const char *path, int flags) {
                 perror("receive");
                 // TODO: correct error processing
             } else {
-                trace("Got %s for %s, %d\n", response_buf, path, flags);
+                trace("Got %s for %s, flags=%d, sd=%d\n", response_buf, path, flags, sd);
                 if (response_buf[0] == response_ok) {
                     result = true;
                 } else if (response_buf[0] == response_failure) {
                     result = false;
                 } else {
-                    trace("Protocol error\n");
+                    trace("Protocol error, sd=%d\n", sd);
                     result = false;
                 }
             }
@@ -299,7 +299,7 @@ on_startup(void) {
 static void release_socket() {
     int sd = get_socket_descriptor(0);
     if (sd != -1) {
-        trace("Closing socket %d\n", sd);
+        trace("agent closes socket sd=%d\n", sd);
         close(sd);
     }
 }

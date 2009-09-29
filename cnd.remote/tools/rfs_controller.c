@@ -39,13 +39,13 @@ static void serve_connection(void* data) {
     char response[bufsize];
     int size;
     while (1) {
-        trace("Waiting for a data to arrive...\n");
+        trace("Waiting for a data to arrive, sd=%d...\n", conn_data->sd);
         memset(request, 0, sizeof (request));
         errno = 0;
         size = recv(conn_data->sd, request, sizeof (request), 0);
         if (size == -1 || size == 0) { // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
             if (errno == ECONNRESET) {
-                trace("Connection reset by peer => normal termination\n");
+                trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
             } else if (errno != 0) {
                 perror("error getting message");
             }
@@ -54,7 +54,7 @@ static void serve_connection(void* data) {
 
         file_data *fd = find_file_data(request, true);
         
-        trace("Request: %s (size=%d)\n", request, size);
+        trace("Request=%s size=%d sd=%d\n", request, size, conn_data->sd);
         if (fd != NULL && fd->state == file_state_pending) {
 
             /* TODO: this is a very primitive sync!  */
@@ -72,7 +72,7 @@ static void serve_connection(void* data) {
             gets(response);
             fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
             pthread_mutex_unlock(&mutex);
-            trace("Got reply: %s set %X->state to %d\n", response, fd, fd->state);
+            trace("Got reply=%s from sd=%d set %X->state to %d\n", response, conn_data->sd, fd, fd->state);
         } else {
             if (fd != NULL && fd->state == file_state_ok) {
                 response[0] = response_ok;
@@ -86,12 +86,12 @@ static void serve_connection(void* data) {
         if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
             perror("send");
         } else {
-            trace("%d bytes sent\n", size);
+            trace("%d bytes sent sd=%d\n", size, conn_data->sd);
         }
         
     }
     close(conn_data->sd);
-    trace("Connection to %s:%d closed\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port));
+    trace("Connection to %s:%d closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
 }
 
 static void create_dir(const char* path) {
