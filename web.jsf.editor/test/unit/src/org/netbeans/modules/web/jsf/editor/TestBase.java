@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import javax.swing.text.Document;
@@ -215,8 +216,34 @@ public class TestBase extends CslTestBase {
         ClassPath cp = createServletAPIClassPath();
         cps.put(ClassPath.COMPILE, cp);
         cps.put(ClassPath.SOURCE, cp);
-        cps.put(ClassPath.BOOT, cp);
+        cps.put(ClassPath.BOOT, createBootClassPath());
         return cps;
+    }
+
+     /**
+     * Creates boot {@link ClassPath} for platform the test is running on,
+     * it uses the sun.boot.class.path property to find out the boot path roots.
+     * @return ClassPath
+     * @throws java.io.IOException when boot path property contains non valid path
+     */
+    public static ClassPath createBootClassPath () throws IOException {
+        String bootPath = System.getProperty ("sun.boot.class.path");
+        String[] paths = bootPath.split(File.pathSeparator);
+        List<URL>roots = new ArrayList<URL> (paths.length);
+        for (String path : paths) {
+            File f = new File (path);
+            if (!f.exists()) {
+                continue;
+            }
+            URL url = f.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+            roots.add (url);
+//            System.out.println(url);
+        }
+//        System.out.println("-----------");
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
 
     public final ClassPath createServletAPIClassPath() throws MalformedURLException, IOException {
