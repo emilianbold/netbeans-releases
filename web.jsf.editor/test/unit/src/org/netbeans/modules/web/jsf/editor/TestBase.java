@@ -84,6 +84,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * @author Marek Fukala
@@ -148,6 +149,17 @@ public class TestBase extends CslTestBase {
         }
     }
 
+    public Document getDefaultDocument(FileObject fo) throws DataObjectNotFoundException, IOException {
+        DataObject dobj = DataObject.find(fo);
+        assertNotNull(dobj);
+
+        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+        assertNotNull(cookie);
+
+        Document document = (Document) cookie.openDocument();
+        return document;
+    }
+
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new HtmlLanguage();
@@ -202,6 +214,8 @@ public class TestBase extends CslTestBase {
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
         ClassPath cp = createServletAPIClassPath();
         cps.put(ClassPath.COMPILE, cp);
+        cps.put(ClassPath.SOURCE, cp);
+        cps.put(ClassPath.BOOT, cp);
         return cps;
     }
 

@@ -40,7 +40,11 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -48,13 +52,28 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache.JsfBeansProvider;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
+import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
+import org.netbeans.modules.web.jsf.editor.JsfHtmlExtension;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.TestBase;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
@@ -63,12 +82,12 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -88,10 +107,17 @@ public class JsfElExpressionTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        FileObject srcFo = getTestFile("testWebProject/src");
+
         this.classpathProvider = new TestClassPathProvider(createClassPaths());
-        this.sources = new TestSources(getTestFile("testWebProject/src"), getTestFile("testWebProject/web"));
+        this.sources = new TestSources(srcFo, getTestFile("testWebProject/web"));
+
+        TestJsfBeansProvider jsfbprovider = new TestJsfBeansProvider(
+                Collections.singletonList(new FacesManagedBeanImpl("testbean", "java.lang.String")));
 
         MockLookup.setInstances(
+                new TestUserCatalog(),
+                jsfbprovider,
                 new RepositoryImpl(),
                 new TestProjectFactory(),
                 new SimpleFileOwnerQueryImplementation(),
@@ -99,21 +125,66 @@ public class JsfElExpressionTest extends TestBase {
                 new TestLanguageProvider(),
                 new FakeWebModuleProvider(getTestFile("testWebProject")));
 
+//        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
     }
 
-    public void testParseExpression() throws BadLocationException, IOException {
+    public void testFakeJsfBeansCache() {
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(null);
+        assertNotNull(beans);
+        assertEquals(1, beans.size());
+        FacesManagedBean bean = beans.get(0);
+        assertNotNull(bean);
+        assertEquals("testbean", bean.getManagedBeanName());
+        assertEquals("java.lang.String", bean.getManagedBeanClass());
+    }
+
+    public void testParseExpression() throws BadLocationException, IOException, ParseException {
         FileObject file = getTestFile("testWebProject/web/index.xhtml");
         assertNotNull(file);
-        Document doc = getDocument(file);
+        Document doc = getDefaultDocument(file);
 
         WebModule wm = WebModule.getWebModule(file);
         assertNotNull(wm);
 
-        Project p = FileOwnerQuery.getOwner(file);
-        assertNotNull(p);
+        JsfElExpression expr = new JsfElExpression(wm, doc);
 
-//        MetadataModel<JsfModel> model = JsfModelFactory.getModel(wm);
-//        assertNotNull(model);
+        //initialize the html extension
+        JsfSupport.findFor(file);
+        Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
+        assertNotNull(extensions);
+        assertEquals(1, extensions.size());
+        final HtmlExtension hext = extensions.iterator().next();
+
+        //init the EL embedding
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singletonList(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                HtmlParserResult result = (HtmlParserResult)Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                ((JsfHtmlExtension)hext).checkELEnabled(result);
+                //block until the recolor AWT task finishes
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        //no-op
+                    }
+                });
+            }
+        });
+
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "#{testbean.}", null);
+        //                   012345678901
+
+        int offset = 11;
+        int code = expr.parse(offset);
+
+        System.out.println("code=" + code);
+        System.out.println("clazz=" + expr.getObjectClass());
+        List<CompletionItem> items = expr.getMethodCompletionItems(expr.getObjectClass(), offset);
+        for(CompletionItem item : items) {
+            System.out.println(item);
+        }
+
 
 
     }
@@ -247,5 +318,67 @@ public class JsfElExpressionTest extends TestBase {
 //            }
         }
     }
-    
+
+    public class TestJsfBeansProvider implements JsfBeansProvider {
+
+        private List<? extends FacesManagedBean> beans;
+
+        public TestJsfBeansProvider(List<? extends FacesManagedBean> beans) {
+            this.beans = beans;
+        }
+
+        public List<FacesManagedBean> getBeans(WebModule webModule) {
+            return (List<FacesManagedBean>) beans;
+        }
+
+    }
+
+
+    public static class FacesManagedBeanImpl implements FacesManagedBean {
+
+        private String name, clazz;
+
+        public FacesManagedBeanImpl(String name, String clazz) {
+            this.name = name;
+            this.clazz = clazz;
+        }
+
+        public Boolean getEager() {
+            return true; //???
+        }
+
+        public String getManagedBeanName() {
+            return name;
+        }
+
+        public String getManagedBeanClass() {
+            return clazz;
+        }
+
+        public Scope getManagedBeanScope() {
+            return Scope.REQUEST;
+        }
+
+        public String getManagedBeanScopeString() {
+            return getManagedBeanScope().toString(); //???
+        }
+
+        public List<ManagedProperty> getManagedProperties() {
+            return Collections.emptyList();
+        }
+
+    }
+
+    public static class TestUserCatalog extends UserCatalog {
+
+        @Override
+        public EntityResolver getEntityResolver() {
+            return new EntityResolver() {
+                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                    return null;
+                }
+            };
+        }
+
+    }
 }
