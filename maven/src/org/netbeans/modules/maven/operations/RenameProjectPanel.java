@@ -58,6 +58,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
 import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
+import org.netbeans.modules.maven.MavenValidators;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -65,8 +66,8 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Severity;
 import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.ui.ValidationListener;
 import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.DialogDescriptor;
 import org.openide.LifecycleManager;
@@ -558,7 +559,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         public FileNameExists(File parent) {
             assert parent.isDirectory() && parent.exists();
             this.parent = parent;
-        }
+}
 
         public boolean validate(Problems problems, String compName, String model) {
             File newDir = new File(parent, model);

@@ -39,29 +39,41 @@
 
 package org.netbeans.modules.maven;
 
+import org.netbeans.validation.api.Validator;
+import org.netbeans.validation.api.builtin.Validators;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author mkleint
  */
 public class MavenValidators {
 
-    public static createArtifactIdValidators() {
+    public static Validator<String> createArtifactIdValidators() {
         return Validators.merge(true,
                     Validators.REQUIRE_NON_EMPTY_STRING,
 //                        Validators.MAY_NOT_START_WITH_DIGIT,
                     Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", "ArtifactId contains invalid characters.", false)
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_ArtifactId_Invalid"), false)
                );
     }
 
-    public static createGroupIdValidators() {
+    public static Validator<String> createGroupIdValidators() {
         return Validators.merge(true,
                     Validators.REQUIRE_NON_EMPTY_STRING,
 //                        Validators.MAY_NOT_START_WITH_DIGIT,
                     Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", "GroupId contains invalid characters.", false)
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_GroupId_Invalid"), false)
                );
     }
 
+    public static Validator<String> createVersionValidators() {
+        return Validators.merge(true,
+                    Validators.REQUIRE_NON_EMPTY_STRING,
+//                        Validators.MAY_NOT_START_WITH_DIGIT,
+                    Validators.NO_WHITESPACE,
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Version_Invalid"),  false)
+               );
+    }
 
 }
