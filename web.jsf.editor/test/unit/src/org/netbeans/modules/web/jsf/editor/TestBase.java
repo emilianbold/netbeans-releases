@@ -308,7 +308,7 @@ public class TestBase extends CslTestBase {
         }
 
         public MetadataModel<WebAppMetadata> getMetadataModel() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return null;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
