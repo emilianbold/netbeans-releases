@@ -104,8 +104,6 @@ public abstract class JPAProblemFinder {
     public JPAProblemFinder(FileObject file){
         assert file != null;
         this.file = file;
-        //if classes use something japa related this event is logged, should be once per class  open, may need verification
-        PersistenceUtils.logUsage(JPAProblemFinder.class, "USG_PERSISTENCE_DETECTED", null);//NOI18N
     }
     
     public void run(final CompilationInfo info) throws Exception{
