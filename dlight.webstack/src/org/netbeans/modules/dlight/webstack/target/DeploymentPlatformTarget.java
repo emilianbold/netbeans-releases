@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.webstack.target;
 
@@ -44,6 +44,7 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget.State;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.windows.InputOutput;
 
 /**
  * Runs script in background which will look for apache installation and
@@ -90,15 +91,15 @@ public final class DeploymentPlatformTarget extends DLightTarget {
     }
 
     private static final class DeploymentPlatformTargetExecutionService implements
-        DLightTargetExecutionService<DeploymentPlatformTarget> {
+            DLightTargetExecutionService<DeploymentPlatformTarget> {
 
-            public void start(DeploymentPlatformTarget target, DLightTarget.ExecutionEnvVariablesProvider t) {
+        public InputOutput start(DeploymentPlatformTarget target, DLightTarget.ExecutionEnvVariablesProvider t) {
             target.start();
+            return null;
         }
 
         public void terminate(DeploymentPlatformTarget target) {
             target.terminate();
         }
     }
-
 }
