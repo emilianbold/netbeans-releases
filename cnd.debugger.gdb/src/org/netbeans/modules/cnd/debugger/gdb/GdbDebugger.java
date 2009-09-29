@@ -1771,6 +1771,11 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.stack_list_frames();
                 setStopped();
                 return;
+            } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) {
+                // see IZ 172855 (On windows we need to skip SIGTRAP)
+                gdb.stack_list_frames();
+                setStopped();
+                return;
             }
         }
         skipSignal = false;
