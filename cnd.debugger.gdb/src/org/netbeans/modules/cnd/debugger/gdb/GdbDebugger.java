@@ -283,6 +283,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }, 30000);
             }
             String gdbCommand = profile.getGdbPath(pae.getConfiguration(), false);
+            if (gdbCommand == null) {
+                throw new GdbErrorException("Gdb command is empty, exiting"); //NOI18N;
+            }
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
