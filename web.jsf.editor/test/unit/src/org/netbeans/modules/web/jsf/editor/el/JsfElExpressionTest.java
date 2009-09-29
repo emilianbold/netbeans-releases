@@ -39,16 +39,28 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -63,8 +75,10 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache.JsfBeansProvider;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
@@ -73,8 +87,11 @@ import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.editor.JsfHtmlExtension;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.TestBase;
+import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
+import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
@@ -107,37 +124,64 @@ public class JsfElExpressionTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        //disable info exceptions from j2eeserver
+        Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
+
         FileObject srcFo = getTestFile("testWebProject/src");
 
-        this.classpathProvider = new TestClassPathProvider(createClassPaths());
+        //create classpath
+        Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
+        cps.put(ClassPath.COMPILE, createServletAPIClassPath());
+        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo}));
+        cps.put(ClassPath.BOOT, createBootClassPath());
+        this.classpathProvider = new TestClassPathProvider(cps);
+
         this.sources = new TestSources(srcFo, getTestFile("testWebProject/web"));
 
-        TestJsfBeansProvider jsfbprovider = new TestJsfBeansProvider(
-                Collections.singletonList(new FacesManagedBeanImpl("testbean", "java.lang.String")));
+        //simulate some jsf beans
+        TestJsfBeansProvider testJsfBeansProviderInstance = new TestJsfBeansProvider(
+                Arrays.asList(
+                    new FacesManagedBeanImpl("testbean", "beans.MBean"),
+                    new FacesManagedBeanImpl("Product", "beans.Product"),
+                    new FacesManagedBeanImpl("Company", "beans.Company")
+                ));
 
         MockLookup.setInstances(
+                new OpenProject(),
                 new TestUserCatalog(),
-                jsfbprovider,
-                new RepositoryImpl(),
+                testJsfBeansProviderInstance,
                 new TestProjectFactory(),
                 new SimpleFileOwnerQueryImplementation(),
                 classpathProvider,
                 new TestLanguageProvider(),
                 new FakeWebModuleProvider(getTestFile("testWebProject")));
 
-//        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
+        IndexingManager.getDefault().refreshIndexAndWait(srcFo.getURL(), null);
     }
 
     public void testFakeJsfBeansCache() {
         List<FacesManagedBean> beans = JSFBeanCache.getBeans(null);
         assertNotNull(beans);
-        assertEquals(1, beans.size());
+        assertEquals(3, beans.size());
         FacesManagedBean bean = beans.get(0);
         assertNotNull(bean);
         assertEquals("testbean", bean.getManagedBeanName());
-        assertEquals("java.lang.String", bean.getManagedBeanClass());
+        assertEquals("beans.MBean", bean.getManagedBeanClass());
     }
 
+    //TODO: uncomment this once you are able to get the ManagedBeans directly
+    //via the infrastructure
+//    public void testJsfBeansCacheAccess() {
+//        FileObject file = getTestFile("testWebProject/web/index.xhtml");
+//        WebModule wm = WebModule.getWebModule(file);
+//        List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
+//        assertNotNull(beans);
+//        assertEquals(1, beans.size());
+//        FacesManagedBean bean = beans.get(0);
+//        assertNotNull(bean);
+//        assertEquals("mbean", bean.getManagedBeanName());
+//        assertEquals("java.lang.String", bean.getManagedBeanClass());
+//    }
     public void testParseExpression() throws BadLocationException, IOException, ParseException {
         FileObject file = getTestFile("testWebProject/web/index.xhtml");
         assertNotNull(file);
@@ -158,12 +202,14 @@ public class JsfElExpressionTest extends TestBase {
         //init the EL embedding
         Source source = Source.create(file);
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                HtmlParserResult result = (HtmlParserResult)Utils.getResultIterator(resultIterator, "text/html").getParserResult();
-                ((JsfHtmlExtension)hext).checkELEnabled(result);
+                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                ((JsfHtmlExtension) hext).checkELEnabled(result);
                 //block until the recolor AWT task finishes
                 SwingUtilities.invokeAndWait(new Runnable() {
+
                     public void run() {
                         //no-op
                     }
@@ -171,21 +217,23 @@ public class JsfElExpressionTest extends TestBase {
             }
         });
 
+        String code = "#{Company.primaryProduct.}";
+
         doc.remove(0, doc.getLength());
-        doc.insertString(0, "#{testbean.}", null);
-        //                   012345678901
+        doc.insertString(0, code, null);
 
-        int offset = 11;
-        int code = expr.parse(offset);
+        int offset = code.lastIndexOf('.') + 1;
+        int parseCode = expr.parse(offset);
 
-        System.out.println("code=" + code);
+        System.out.println("code=" + parseCode);
         System.out.println("clazz=" + expr.getObjectClass());
-        List<CompletionItem> items = expr.getMethodCompletionItems(expr.getObjectClass(), offset);
-        for(CompletionItem item : items) {
-            System.out.println(item);
+        List<CompletionItem> items = expr.getPropertyCompletionItems(expr.getObjectClass(), offset);
+        for (CompletionItem item : items) {
+            if (item instanceof ElCompletionItem.ELBean) {
+                ElCompletionItem.ELBean jsfitem = (ElCompletionItem.ELBean) item;
+                System.out.println(jsfitem.getItemText());
+            }
         }
-
-
 
     }
 
@@ -296,27 +344,6 @@ public class JsfElExpressionTest extends TestBase {
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
-        
-    }
-
-    public static class RepositoryImpl extends Repository {
-
-        public RepositoryImpl() {
-            super(createDefFs());
-        }
-
-        private static FileSystem createDefFs() {
-//            try {
-                FileSystem writeFs = FileUtil.createMemoryFileSystem();
-//                FileSystem glassfish = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/glassfish/javaee/layer.xml"));
-//                FileSystem glassfish2 = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml"));
-                return new MultiFileSystem(new FileSystem[]{writeFs/*, glassfish, glassfish2*/});
-//            } catch (SAXException ex) {
-//                Exceptions.printStackTrace(ex);
-//                return null;
-
-//            }
-        }
     }
 
     public class TestJsfBeansProvider implements JsfBeansProvider {
@@ -330,9 +357,7 @@ public class JsfElExpressionTest extends TestBase {
         public List<FacesManagedBean> getBeans(WebModule webModule) {
             return (List<FacesManagedBean>) beans;
         }
-
     }
-
 
     public static class FacesManagedBeanImpl implements FacesManagedBean {
 
@@ -366,7 +391,6 @@ public class JsfElExpressionTest extends TestBase {
         public List<ManagedProperty> getManagedProperties() {
             return Collections.emptyList();
         }
-
     }
 
     public static class TestUserCatalog extends UserCatalog {
@@ -374,11 +398,73 @@ public class JsfElExpressionTest extends TestBase {
         @Override
         public EntityResolver getEntityResolver() {
             return new EntityResolver() {
+
                 public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     return null;
                 }
             };
         }
+    }
 
+    public static class OpenProject implements OpenProjectsTrampoline {
+
+        public 
+        @Override
+        Project[] getOpenProjectsAPI() {
+            return new Project[0];
+        }
+
+        public 
+        @Override
+        void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
+        }
+
+        public 
+        @Override
+        void closeAPI(Project[] projects) {
+        }
+
+        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+        }
+
+        public Future<Project[]> openProjectsAPI() {
+            return new Future<Project[]>() {
+
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    return true;
+                }
+
+                public boolean isCancelled() {
+                    return false;
+                }
+
+                public boolean isDone() {
+                    return true;
+                }
+
+                public Project[] get() throws InterruptedException, ExecutionException {
+                    return new Project[0];
+                }
+
+                public Project[] get(long timeout, TimeUnit unit)
+                        throws InterruptedException, ExecutionException, TimeoutException {
+                    return new Project[0];
+                }
+            };
+        }
+
+        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+        }
+
+        public 
+        @Override
+        Project getMainProject() {
+            return null;
+        }
+
+        public 
+        @Override
+        void setMainProject(Project project) {
+        }
     }
 }
