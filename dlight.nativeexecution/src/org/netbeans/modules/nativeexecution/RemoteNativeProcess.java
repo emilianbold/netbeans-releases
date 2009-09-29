@@ -18,8 +18,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
@@ -49,7 +49,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             final MacroMap envVars = info.getEnvVariables();
 
             // Setup LD_PRELOAD to load unbuffer library...
-            UnbufferSupport.initUnbuffer(info, envVars);
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
 
             // Always prepend /bin and /usr/bin to PATH
 //            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
