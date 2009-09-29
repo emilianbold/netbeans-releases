@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -122,12 +124,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         // nobody calls this concurrently => no synchronization
         if (remoteControllerProcess != null) {
             remoteControllerProcess.destroy();
-            // until #170502 is fixed
-            try {
-                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID()); // NOI18N
-            } catch (IOException e) {
-                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
-            }
             remoteControllerProcess = null;
         }
     }
@@ -136,9 +132,15 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         final Env env = pae.getProfile().getEnvironment();
 
-        String remoteControllerPath = RfsSetupProvider.getController(execEnv);
-        if (remoteControllerPath == null) {
-            return;
+        String remoteControllerPath;
+        String ldLibraryPath;
+        try {
+            remoteControllerPath = RfsSetupProvider.getControllerPath(execEnv);
+            CndUtils.assertTrue(remoteControllerPath != null);
+            ldLibraryPath = RfsSetupProvider.getLdLibraryPath(execEnv);
+            CndUtils.assertTrue(ldLibraryPath != null);
+        } catch (ParseException ex) {
+            throw new ExecutionException(ex);
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -176,12 +178,13 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         RemoteUtil.LOGGER.fine("Remote Controller listens port " + port); // NOI18N
         RequestProcessor.getDefault().post(localController);
 
-        String preload = RfsSetupProvider.getPreload(execEnv);
-        assert preload != null;
+        String preload = RfsSetupProvider.getPreloadName(execEnv);
+        CndUtils.assertTrue(preload != null);
         // to be able to trace what we're doing, first put it all to a map
         Map<String, String> env2add = new HashMap<String, String>();
 
         env2add.put("LD_PRELOAD", preload); // NOI18N
+        env2add.put("LD_LIBRARY_PATH", ldLibraryPath); // NOI18N
         env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
         env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
         
