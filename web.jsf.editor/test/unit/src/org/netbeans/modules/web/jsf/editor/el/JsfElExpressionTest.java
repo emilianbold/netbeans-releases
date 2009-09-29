@@ -60,6 +60,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -120,6 +122,12 @@ public class JsfElExpressionTest extends TestBase {
         super(testName);
     }
 
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JsfElExpressionTest("testResolveVariables"));
+        return suite;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -132,6 +140,7 @@ public class JsfElExpressionTest extends TestBase {
         //create classpath
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
         cps.put(ClassPath.COMPILE, createServletAPIClassPath());
+        cps.put(ClassPath.EXECUTE, createServletAPIClassPath());
         cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo}));
         cps.put(ClassPath.BOOT, createBootClassPath());
         this.classpathProvider = new TestClassPathProvider(cps);
@@ -182,7 +191,82 @@ public class JsfElExpressionTest extends TestBase {
 //        assertEquals("mbean", bean.getManagedBeanName());
 //        assertEquals("java.lang.String", bean.getManagedBeanClass());
 //    }
+
+    
     public void testParseExpression() throws BadLocationException, IOException, ParseException {
+        FileObject file = getTestFile("testWebProject/web/template.xhtml");
+        assertNotNull(file);
+        Document doc = getDefaultDocument(file);
+
+        WebModule wm = WebModule.getWebModule(file);
+        assertNotNull(wm);
+
+        JsfElExpression expr = new JsfElExpression(wm, doc);
+
+        //initialize the html extension
+        JsfSupport.findFor(file);
+        Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
+        assertNotNull(extensions);
+        assertEquals(1, extensions.size());
+        final HtmlExtension hext = extensions.iterator().next();
+
+        final JsfVariablesModel[] _jsfVarModel = new JsfVariablesModel[1];
+        //init the EL embedding
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+
+                //get declared variabled model
+                _jsfVarModel[0] = JsfVariablesModel.getModel(result);
+
+                //enable EL
+                ((JsfHtmlExtension) hext).checkELEnabled(result);
+                //block until the recolor AWT task finishes
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        //no-op
+                    }
+                });
+            }
+        });
+        JsfVariablesModel jsfVarModel = _jsfVarModel[0];
+
+        assertNotNull(jsfVarModel);
+
+        jsfVarModel.getContext(0);
+
+        String code = "#{Company.products.}";
+
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, code, null);
+
+        int offset = code.lastIndexOf('.') + 1;
+        int parseCode = expr.parse(offset);
+
+        System.out.println("parsed text=" + code);
+        System.out.println("parser code=" + parseCode);
+        System.out.println("clazz=" + expr.getObjectClass());
+        System.out.println("bundle name=" + expr.bundleName);
+        System.out.println("bean name=" + expr.getBeanName());
+        System.out.println("resolved expression=" + expr.getExpression());
+        System.out.println("resolved expression code=" + expr.findContext(expr.getExpression()));
+
+        System.out.println("-----------------");
+        List<CompletionItem> items = expr.getPropertyCompletionItems(expr.getObjectClass(), offset);
+        for (CompletionItem item : items) {
+            if (item instanceof ElCompletionItem.ELBean) {
+                ElCompletionItem.ELBean jsfitem = (ElCompletionItem.ELBean) item;
+                System.out.println(jsfitem.getItemText());
+            }
+        }
+
+    }
+
+     public void testResolveVariables() throws BadLocationException, IOException, ParseException {
         FileObject file = getTestFile("testWebProject/web/index.xhtml");
         assertNotNull(file);
         Document doc = getDefaultDocument(file);
@@ -199,6 +283,7 @@ public class JsfElExpressionTest extends TestBase {
         assertEquals(1, extensions.size());
         final HtmlExtension hext = extensions.iterator().next();
 
+        final JsfVariablesModel[] _jsfVarModel = new JsfVariablesModel[1];
         //init the EL embedding
         Source source = Source.create(file);
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
@@ -206,6 +291,11 @@ public class JsfElExpressionTest extends TestBase {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+
+                //get declared variabled model
+                _jsfVarModel[0] = JsfVariablesModel.getModel(result);
+
+                //enable EL
                 ((JsfHtmlExtension) hext).checkELEnabled(result);
                 //block until the recolor AWT task finishes
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -216,24 +306,15 @@ public class JsfElExpressionTest extends TestBase {
                 });
             }
         });
+        JsfVariablesModel model = _jsfVarModel[0];
+        int offset = doc.getText(0, doc.getLength()).indexOf('|'); //find pipe position in the document
 
-        String code = "#{Company.primaryProduct.}";
+        assertTrue(offset >= 0);
 
-        doc.remove(0, doc.getLength());
-        doc.insertString(0, code, null);
+        System.out.println(model.resolveExpression("x", offset));
+        System.out.println(model.resolveExpression("y", offset));
 
-        int offset = code.lastIndexOf('.') + 1;
-        int parseCode = expr.parse(offset);
-
-        System.out.println("code=" + parseCode);
-        System.out.println("clazz=" + expr.getObjectClass());
-        List<CompletionItem> items = expr.getPropertyCompletionItems(expr.getObjectClass(), offset);
-        for (CompletionItem item : items) {
-            if (item instanceof ElCompletionItem.ELBean) {
-                ElCompletionItem.ELBean jsfitem = (ElCompletionItem.ELBean) item;
-                System.out.println(jsfitem.getItemText());
-            }
-        }
+        
 
     }
 
