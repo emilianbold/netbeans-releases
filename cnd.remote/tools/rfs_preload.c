@@ -53,6 +53,8 @@
 #include <netdb.h>
 #include <fcntl.h>
 
+#define RFS_PRELOAD 1 // rfs_utils.h needs this
+
 #include "rfs_controller.h"
 #include "rfs_util.h"
 

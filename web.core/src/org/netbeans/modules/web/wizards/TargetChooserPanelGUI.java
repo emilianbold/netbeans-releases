@@ -70,9 +70,11 @@ import org.netbeans.modules.web.core.Util;
  */
 public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener  {
     private static final Logger LOG = Logger.getLogger(TargetChooserPanelGUI.class.getName());
-    private static final String TAG_FILE_FOLDER="WEB-INF/tags"; //NOI18N
+//    private static final String TAG_FILE_FOLDER="WEB-INF/tags"; //NOI18N
+    private static final String TAG_FILE_FOLDER="tags"; //NOI18N
     private static final String TAG_FILE_IN_JAVALIB_FOLDER="META-INF/tags"; //NOI18N
-    private static final String TLD_FOLDER="WEB-INF/tlds"; //NOI18N
+//    private static final String TLD_FOLDER="WEB-INF/tlds"; //NOI18N
+    private static final String TLD_FOLDER="tlds"; //NOI18N
     private static final String TLD_IN_JAVALIB_FOLDER="META-INF"; //NOI18N
     private static final String NEW_FILE_PREFIX =
         NbBundle.getMessage( TargetChooserPanelGUI.class, "LBL_TargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
@@ -502,8 +504,20 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             segmentBox.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_DESC_TagFile_segment"));
             descriptionArea.setText(NbBundle.getMessage(TargetChooserPanelGUI.class,"DESC_TagFile"));
+            //listener to update fileTextField
+            locationCB.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    changedUpdate(null);
+                }
+            });
         } else if (fileType.equals(FileType.TAGLIBRARY)) {
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_TldName"));
+            //listener to update fileTextField
+            locationCB.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    changedUpdate(null);
+                }
+            });
         } else if (fileType.equals(FileType.HTML)) {
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_HtmlName"));
             //listener to update fileTextField
@@ -919,8 +933,16 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
                     String pack = getPackageNameInMetaInf();
                     uriTextField.setText((pack.length()>0?pack+".":"")+documentNameTextField.getText());
                 }
-                else uriTextField.setText((norm.length()==0?"":"/"+getNormalizedFolder())+ //NOI18N
-                                          "/"+documentNameTextField.getText().trim()); //NOI18N
+                else {
+                    String selectedFolder = ((LocationItem)locationCB.getSelectedItem()).getFileObject().getName();
+                    if ("WEB-INF".equals(selectedFolder)) {
+                        uriTextField.setText("/"+selectedFolder+(norm.length()==0?"":"/"+getNormalizedFolder())+ //NOI18N
+                                              "/"+documentNameTextField.getText().trim()); //NOI18N
+                    } else {
+                        uriTextField.setText((norm.length()==0?"":"/"+getNormalizedFolder())+ //NOI18N
+                                              "/"+documentNameTextField.getText().trim()); //NOI18N
+                    }
+                }
             }
             //Default value for prefix
             if (!prefixWasTyped)
@@ -1057,7 +1079,9 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         } else if (FileType.TAG.equals(fileType)) {
             tagFileValid=true;
             if (wm!=null) {
-                if (!getNormalizedFolder().startsWith(TAG_FILE_FOLDER)) {
+                boolean isWebInfLocation = ((LocationItem)locationCB.getSelectedItem()).getFileObject().getName().equals("WEB-INF");
+                if (!getNormalizedFolder().startsWith("WEB-INF/"+TAG_FILE_FOLDER) &&
+                        !(getNormalizedFolder().startsWith(TAG_FILE_FOLDER) && isWebInfLocation)) {
                     tagFileValid=false;
                     return NbBundle.getMessage(TargetChooserPanelGUI.class,"MSG_TagFile");
                 }
@@ -1071,9 +1095,11 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             if (wm==null) {
                 if (!getNormalizedFolder().startsWith(TLD_IN_JAVALIB_FOLDER))
                     return NbBundle.getMessage(TargetChooserPanelGUI.class,"NOTE_TLDInJavalib");
-            } else
-                if (!getNormalizedFolder().startsWith("WEB-INF")) //NOI18N
-                    return NbBundle.getMessage(TargetChooserPanelGUI.class,"NOTE_TLDInWeb");              
+            } else {
+                boolean isWebInfLocation = ((LocationItem)locationCB.getSelectedItem()).getFileObject().getName().equals("WEB-INF");
+                if (!getNormalizedFolder().startsWith("WEB-INF") && !isWebInfLocation) //NOI18N
+                    return NbBundle.getMessage(TargetChooserPanelGUI.class,"NOTE_TLDInWeb");
+            }
             if (getUri().length()==0) //NOI18N
                 return NbBundle.getMessage(TargetChooserPanelGUI.class,"MSG_missingUri");
             if (getPrefix().length()==0) //NOI18N

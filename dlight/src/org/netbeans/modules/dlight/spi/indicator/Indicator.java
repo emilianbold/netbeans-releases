@@ -235,21 +235,21 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (component == null) {
-                    return;
-                }
-                component.setBorder(BorderFactory.createEtchedBorder());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (component == null) {
-                    return;
-                }
-                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
-            }
+//            @Override
+//            public void mouseEntered(MouseEvent e) {
+//                if (component == null) {
+//                    return;
+//                }
+//                component.setBorder(BorderFactory.createEtchedBorder());
+//            }
+//
+//            @Override
+//            public void mouseExited(MouseEvent e) {
+//                if (component == null) {
+//                    return;
+//                }
+//                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+//            }
 
             @Override
             public void mouseClicked(MouseEvent e) {

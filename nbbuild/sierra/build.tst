@@ -63,7 +63,7 @@
             <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
             <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
             <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise5/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
 
             <!-- BPEL sample 1 -->
             <buildpath location="${bpel.samples}/Asynchronous/Asynchronous/build.xml"/>
@@ -87,7 +87,7 @@
             <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
             <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
             <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise5/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
 
             <!-- BPEL sample 2 -->
             <buildpath location="${bpel.samples}/BluePrint3/BluePrint3/build.xml"/>
@@ -107,7 +107,7 @@
             <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
             <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
             <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise5/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
 
             <!-- XSLT sample -->
             <buildpath location="${xslt.samples}/Welcome/Welcome/build.xml"/>

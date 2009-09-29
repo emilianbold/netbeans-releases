@@ -82,9 +82,10 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     public static void revert(final VCSContext ctx) {
-        final File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        final File repository  = HgUtils.getRootFile(ctx);
-        if (repository == null) return;
+        final File files[] = HgUtils.getActionRoots(ctx);
+        if (files == null || files.length == 0) return;
+        final File repository = Mercurial.getInstance().getRepositoryRoot(files[0]);
+
         String rev = null;
 
         final RevertModifications revertModifications = new RevertModifications(repository, files);
@@ -199,7 +200,7 @@ public class RevertModificationsAction extends ContextAction {
 
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) {
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
         }
         Set<File> roots = context.getRootFiles();

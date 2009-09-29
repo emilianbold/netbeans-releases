@@ -84,19 +84,15 @@ public class AssignVariableHint extends AbstractRule {
     }
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         int lineBegin = -1;
         int lineEnd = -1;
-        try {
-            lineBegin = context.caretOffset > 0 ? Utilities.getRowStart(context.doc, context.caretOffset) : -1;
-            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, context.caretOffset) : -1;
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        lineBegin = context.caretOffset > 0 ? Utilities.getRowStart(context.doc, context.caretOffset) : -1;
+        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, context.caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && context.caretOffset > lineBegin) {
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(context.doc, lineBegin, lineEnd);
             phpParseResult.getProgram().accept(introduceFixVisitor);
