@@ -137,21 +137,32 @@ static int open_socket() {
     return sd;
 }
 
+/** 
+ * Socked descriptor. 
+ * Should be assigned ONLY in get_socket_descriptor and release_socket
+ */
+static __thread int _sd = 0;
+
+static void trace_sd(const char* text) {
+    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
+}
+
 static int get_socket_descriptor(int create) {
     // 0 means unitialized
     // -1 means that we failed to open a socket
-    static __thread int sd = 0; // socket descriptor
-    if (!create || sd > 0) {
-        return sd;
+    if (!create || _sd > 0) {
+        return _sd;
     }
-    if (sd == -1) {
+    if (_sd == -1) {
         return -1;
     }
-    if (sd == 0) {
-        sd = -1; // in the case of success, it will become > 0
+    if (_sd == 0) {
+        _sd = -1; // in the case of success, it will become > 0
+        trace_sd("opening socket 1");
     }
-    sd = open_socket();
-    return sd;
+    _sd = open_socket();
+    trace_sd("opening socket 2");
+    return _sd;
 }
 
 /* static int is_mine(const char *path) {
@@ -240,6 +251,7 @@ static int on_open(const char *path, int flags) {
     } else {
         //struct rfs_request;
         int path_len = strlen(path);
+        trace_sd("sending request");
         trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
         if (send(sd, path, path_len, 0) == -1) {
             perror("send");
@@ -294,13 +306,16 @@ on_startup(void) {
         my_dir = p;
     }
     trace("RFS startup; my dir: %s\n", my_dir);
+    _sd = 0;
+    trace_sd("startup");
 }
 
 static void release_socket() {
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        trace("agent closes socket sd=%d\n", sd);
-        close(sd);
+    if (_sd > 0) {
+        trace("agent closes socket _sd=%d &_sd=%X\n", _sd, &_sd);
+        close(_sd);
+        _sd = 0;
+        trace_sd("releasing socket");
     }
 }
 
