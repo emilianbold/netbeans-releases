@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -56,6 +57,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -89,6 +91,7 @@ public class CommentsPanel extends JPanel {
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
+    private final static int MAX_COMMENT_HEIGHT = 10000;
     private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
     private MouseAdapter listener;
@@ -193,6 +196,17 @@ public class CommentsPanel extends JPanel {
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         setupTextPane(textPane, text);
 
+        // Issue 172653 - JTextPane too big
+        JComponent pane = textPane;
+        if (textPane.getPreferredSize().height>Short.MAX_VALUE) {
+            pane = new JScrollPane(textPane);
+            pane.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"))); // NOI18N
+            textPane.setBorder(null);
+            Dimension dim = new Dimension(textPane.getPreferredSize());
+            dim.height = MAX_COMMENT_HEIGHT;
+            pane.setPreferredSize(dim);
+        }
+
         // Layout
         GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
             .add(leftLabel, 0, 0, Short.MAX_VALUE)
@@ -205,7 +219,7 @@ public class CommentsPanel extends JPanel {
             hGroup.add(stateLabel);
         }
         horizontalGroup.add(hGroup)
-        .add(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+            .add(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
             verticalGroup.addPreferredGap(LayoutStyle.UNRELATED);
         }
@@ -218,7 +232,7 @@ public class CommentsPanel extends JPanel {
         }
         verticalGroup.add(vGroup)
             .addPreferredGap(LayoutStyle.RELATED)
-            .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            .add(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
     private void setupTextPane(JTextPane textPane, String comment) {
