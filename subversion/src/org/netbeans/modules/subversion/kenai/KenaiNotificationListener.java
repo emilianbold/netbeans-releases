@@ -78,7 +78,7 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
         }
         File projectDir = notification.getProjectDirectory();
         if(!SvnUtils.isManaged(projectDir)) {
-            assert false : " project " + projectDir + " not managed";
+            assert false : " project " + projectDir + " not managed"; // NOI18N
             LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by svn"); // NOI18N
             return;
         }
@@ -141,7 +141,7 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                     if(CMD_DIFF.equals(e.getDescription())) {
                         Context ctx = new Context(files);
-                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(KenaiNotificationListener.class, "LBL_Remote_Changes", projectDir.getName()));
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(KenaiNotificationListener.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
                     } else {
                         try {
                             SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
