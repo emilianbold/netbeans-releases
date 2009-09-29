@@ -59,7 +59,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
     private volatile List<CsmDeclaration> declarators;
-
+    private static final List<CsmDeclaration> EMPTY = Collections.<CsmDeclaration>emptyList();
+    
     public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
@@ -91,6 +92,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
     private synchronized void render() {
         if (this.declarators == null) {
+            this.declarators = EMPTY;
             DSRenderer renderer = new DSRenderer();
             renderer.render(getAst(), null, null);
             this.declarators = renderer.declarators;
