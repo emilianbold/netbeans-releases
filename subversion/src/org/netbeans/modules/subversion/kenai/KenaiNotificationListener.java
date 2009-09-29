@@ -50,7 +50,11 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.notifications.NotificationsManager;
+import org.netbeans.modules.subversion.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
@@ -64,6 +68,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
+    
+    private static final String CMD_DIFF = "cmd_diff";                          // NOI18N
 
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
         if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
@@ -110,6 +116,11 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
         }
         if(notifyFiles.size() > 0) {
             notifyFileChange(notifyFiles.toArray(new File[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
+            try {
+                NotificationsManager.getInstance().notfied(files, Long.parseLong(revision));
+            } catch (NumberFormatException e) {
+                LOG.log(Level.WARNING, revision, e);
+            }
         }
     }
 
@@ -120,17 +131,23 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
                 KenaiNotificationListener.class,
                 "MSG_NotificationBubble_Description",                           // NOI18N
                 getFileNames(files),
-                url
+                url,
+                CMD_DIFF
             );
         pane.setText(msg);
 
         pane.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                    try {
-                        SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
-                    } catch (MalformedURLException ex) {
-                        LOG.log(Level.WARNING, null, ex);
+                    if(CMD_DIFF.equals(e.getDescription())) {
+                        Context ctx = new Context(files);
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(KenaiNotificationListener.class, "LBL_Remote_Changes", projectDir.getName()));
+                    } else {
+                        try {
+                            SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
+                        } catch (MalformedURLException ex) {
+                            LOG.log(Level.WARNING, null, ex);
+                        }
                     }
                 }
             }
