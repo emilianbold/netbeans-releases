@@ -51,7 +51,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
