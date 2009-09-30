@@ -239,7 +239,7 @@ public class JsfElExpressionTest extends TestBase {
 
         jsfVarModel.getContext(0);
 
-        String code = "#{Company.products.}";
+        String code = "#{y.}";
 
         doc.remove(0, doc.getLength());
         doc.insertString(0, code, null);
@@ -274,8 +274,6 @@ public class JsfElExpressionTest extends TestBase {
         WebModule wm = WebModule.getWebModule(file);
         assertNotNull(wm);
 
-        JsfElExpression expr = new JsfElExpression(wm, doc);
-
         //initialize the html extension
         JsfSupport.findFor(file);
         Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
@@ -308,13 +306,37 @@ public class JsfElExpressionTest extends TestBase {
         });
         JsfVariablesModel model = _jsfVarModel[0];
         int offset = doc.getText(0, doc.getLength()).indexOf('|'); //find pipe position in the document
+        //remove the pipe from the document
+        doc.remove(offset, 1);
 
         assertTrue(offset >= 0);
 
-        System.out.println(model.resolveExpression("x", offset));
-        System.out.println(model.resolveExpression("y", offset));
+        assertEquals("Company.products", model.resolveExpression("prop", offset));
+        assertEquals("Company.products.name", model.resolveExpression("prop.name", offset));
+        assertEquals("Company.products.name", model.resolveExpression("x", offset));
+        assertEquals("Company.products.name.amethod", model.resolveExpression("x.amethod", offset));
+        assertEquals("Company.products.name.toString", model.resolveExpression("y", offset));
+        assertEquals("Company.products.name.toString.toString", model.resolveExpression("y.toString", offset));
 
-        
+//        JsfElExpression expr = new JsfElExpression(wm, doc);
+//
+//        int parseCode = expr.parse(offset);
+//        System.out.println("parser code=" + parseCode);
+//        System.out.println("clazz=" + expr.getObjectClass());
+//        System.out.println("bundle name=" + expr.bundleName);
+//        System.out.println("bean name=" + expr.getBeanName());
+//        System.out.println("resolved expression=" + expr.getExpression());
+//        System.out.println("resolved expression code=" + expr.findContext(expr.getExpression()));
+//
+//        System.out.println("-----------------");
+//        List<CompletionItem> items = expr.getPropertyCompletionItems(expr.getObjectClass(), offset);
+//        for (CompletionItem item : items) {
+//            if (item instanceof ElCompletionItem.ELBean) {
+//                ElCompletionItem.ELBean jsfitem = (ElCompletionItem.ELBean) item;
+//                System.out.println(jsfitem.getItemText());
+//            }
+//        }
+
 
     }
 
