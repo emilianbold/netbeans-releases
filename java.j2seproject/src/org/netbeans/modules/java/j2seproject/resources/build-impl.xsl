@@ -278,6 +278,7 @@ is divided into following sections:
                 <property name="javadoc.preview" value="true"/>
                 <property name="application.args" value=""/>
                 <property name="source.encoding" value="${{file.encoding}}"/>
+                <property name="runtime.encoding" value="${{source.encoding}}"/>
                 <condition property="javadoc.encoding.used" value="${{javadoc.encoding}}">
                     <and>
                         <isset property="javadoc.encoding"/>
@@ -635,8 +636,8 @@ is divided into following sections:
                             </xsl:if>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
-                            <jvmarg value="-Dfile.encoding=${{source.encoding}}"/>
-                            <redirector inputencoding="${{source.encoding}}" outputencoding="${{source.encoding}}" errorencoding="${{source.encoding}}"/>
+                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
+                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -673,8 +674,8 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <jvmarg value="-Dfile.encoding=${{source.encoding}}"/>
-                            <redirector inputencoding="${{source.encoding}}" outputencoding="${{source.encoding}}" errorencoding="${{source.encoding}}"/>
+                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
+                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>

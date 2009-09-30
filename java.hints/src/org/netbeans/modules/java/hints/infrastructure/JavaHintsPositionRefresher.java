@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -69,6 +71,8 @@ import org.openide.util.NbBundle;
  * @author Max Sauer
  */
 public class JavaHintsPositionRefresher implements PositionRefresher {
+
+    private static final Logger LOG = Logger.getLogger(JavaHintsPositionRefresher.class.getName());
 
     @Override
     public Map<String, List<ErrorDescription>> getErrorDescriptionsAt(final Context context, final Document doc) {
@@ -136,8 +140,13 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             for (int i = rowStart; i <= rowEnd; i++) {
                 TreePath path = controller.getTreeUtilities().pathFor(i);
                 Tree leaf = path.getLeaf();
-                if (!encounteredLeafs.contains(leaf)) {
-                    errs.addAll(task.computeHints(controller, path));
+                if (leaf.getKind() != Tree.Kind.BLOCK && !encounteredLeafs.contains(leaf)) {
+                    List<ErrorDescription> leafHints = task.computeHints(controller, path);
+
+                    if (LOG.isLoggable(Level.FINE) && leafHints.size() != 0) {
+                        LOG.fine("### RowPosition: " + i + " leaf: " + leaf + " Kind: " + leaf.getKind() +" Err: " + leafHints.toString());
+                    }
+                    errs.addAll(leafHints);
                     encounteredLeafs.add(leaf);
                 }
             }
