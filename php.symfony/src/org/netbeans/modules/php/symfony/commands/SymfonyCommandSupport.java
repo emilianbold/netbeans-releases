@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,6 +128,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return externalProcessBuilder;
     }
 
+    @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
         ExternalProcessBuilder processBuilder = createCommand("list"); // NOI18N
         if (processBuilder == null) {
@@ -155,6 +157,11 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             LOGGER.log(Level.INFO, null, ex);
         }
         return freshCommands;
+    }
+
+    @Override
+    protected File getPluginsDirectory() {
+        return new File(FileUtil.toFile(phpModule.getSourceDirectory()), "plugins"); // NOI18N
     }
 
     class CommandsLineProcessor implements LineProcessor {
