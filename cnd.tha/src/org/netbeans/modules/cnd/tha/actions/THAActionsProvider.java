@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -297,12 +298,12 @@ public final class THAActionsProvider {
     void sendSignal() {
         if (0 < pid) {
             if (!EventQueue.isDispatchThread()){
-                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
             }else{
                 DLightExecutorService.submit(new Runnable() {
 
                     public void run() {
-                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
                     }
                 }, "Send signal USR1 to pid " + pid + " from THAActionsProvider.sendSignal()");//NOI18N
             }

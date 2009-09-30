@@ -58,6 +58,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.dlight.core.ui</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
                 <package>org.netbeans.modules.dlight.extras.api</package>
                 <package>org.netbeans.modules.dlight.extras.api.support</package>
