@@ -350,8 +350,8 @@ public abstract class VCSKenaiSupport {
         protected String getFileNames(final File[] files) {
             StringBuffer filesSb = new StringBuffer();
             for (int i = 0; i < files.length; i++) {
-                if (i == 4) {
-                    filesSb.append("...");                                      // NOI18N
+                if (i == 5) {
+                    filesSb.append("&nbsp;&nbsp;&nbsp;&nbsp;...");              // NOI18N                        // NOI18N
                     break;
                 }
                 File file = files[i];
