@@ -92,7 +92,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
         this.currentStatus = providers == null || providers.isEmpty() ?  tool.validateIndicatorDataProviders(targetToRepairFor) : ValidationStatus.invalidStatus(getMessage("NoIndicatorDataProviderFound"));//NOI18N
         if (providers == null || providers.isEmpty()){
-            if (!currentStatus.isKnown()){
+            if (!currentStatus.isKnown() || currentStatus.isValid()){
                 currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound"));
             }
         }

@@ -242,8 +242,8 @@ public class DwarfStatementList {
                 if (set == null) {
                     set = new HashSet<FileEntry>();
                     res.put(key, set);
-                    set.add(fileEntry);
                 }
+                set.add(fileEntry);
             }
             name2entry = res;
         }

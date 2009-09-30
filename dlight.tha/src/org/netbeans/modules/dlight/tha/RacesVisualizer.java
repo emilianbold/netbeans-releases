@@ -92,7 +92,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
     }
 
     public VisualizerContainer getDefaultContainer() {
-        return DefaultVisualizerContainer.getInstance();
+        return THAVisulaizerContainerTopComponent.findInstance();
     }
 
     public synchronized void refresh() {

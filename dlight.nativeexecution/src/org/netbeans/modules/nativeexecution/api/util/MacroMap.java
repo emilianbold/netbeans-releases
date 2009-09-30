@@ -88,6 +88,12 @@ public class MacroMap {
         }
     }
 
+    public final void putAll(String[] env) {
+        for (String envString : env) {
+            put(EnvUtils.getKey(envString), EnvUtils.getValue(envString));
+        }
+    }
+
     public String put(String key, String value) {
         if (value == null) {
             log.log(Level.INFO, "Attempt to set env variable '%s' with null value", key); // NOI18N
