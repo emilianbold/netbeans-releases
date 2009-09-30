@@ -201,6 +201,11 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         performTest("test/Test.java", "|\npublic class Test {\n }", "0:0-1:0:error:Incorrect Package");
     }
 
+    public void testHintCount173282() throws Exception {
+        performTest("test/Test.java", "class Test { static int statField; int field; public void method() { \n|String field = \"\"; \nSystem.out.println(field); Integer.parseInt(\"1\"); if(\"\"== \"\") { System.out.println(\"ok\"); } this.statField = 23; } }",
+                "1:7-1:12:verifier:Local variable hides a field");
+    }
+
     private void performTest(String fileName , String code, String expected) throws Exception {
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
