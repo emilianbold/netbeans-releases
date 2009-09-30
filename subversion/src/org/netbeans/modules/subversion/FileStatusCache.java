@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.subversion;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.regex.*;
 import org.netbeans.modules.versioning.util.ListenersSupport;
@@ -77,6 +79,11 @@ public class FileStatusCache {
      * Third parameter: new FileInformation object
      */
     public static final Object EVENT_FILE_STATUS_CHANGED = new Object();
+
+    /**
+     * Property indicating status of cache readiness
+     */
+    public static final String PROP_CACHE_READY = "subversion.cache.ready"; //NOI18N
 
     /**
      * A special map saying that no file inside the folder is managed.
@@ -668,6 +675,15 @@ public class FileStatusCache {
                 current != null && current.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) return true;        
         return false;
     }
+
+    PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
+    }
     
     // --- Package private contract ------------------------------------------
     
@@ -684,6 +700,7 @@ public class FileStatusCache {
             Subversion.getInstance().refreshAllAnnotations();
         } finally {
             ready = true;
+            propertySupport.firePropertyChange(PROP_CACHE_READY, false, true);
     }
     }
 
