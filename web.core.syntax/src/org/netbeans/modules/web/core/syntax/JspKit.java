@@ -466,7 +466,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         private boolean triggerJavaDefaultKeyTypedAction(final ActionEvent e, final JTextComponent target) {
             BaseDocument bdoc = (BaseDocument) target.getDocument();
             final boolean[] retcode = new boolean[1];
-            bdoc.render(new Runnable() {
+            bdoc.runAtomic(new Runnable() {
                 public void run() {
                     TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
                     if (javaTokenSequence != null) {
