@@ -131,6 +131,11 @@ public class JsfElExpression extends ELExpression {
 
     private static final Logger logger = Logger.getLogger(JsfElExpression.class.getName());
     
+    /** defines if the properties are limited to their context (true),
+     * or are available everywhere after the property context end offset (false)
+     */
+    private static final boolean NESTING_AWARE = false;
+
     private WebModule webModule;
     
     protected String bundleName;
@@ -181,7 +186,7 @@ public class JsfElExpression extends ELExpression {
                         Result result = resultIterator.getParserResult(offset);
                         if (result instanceof HtmlParserResult) {
                             JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
-                            _value[0] = model.resolveExpression(expr, result.getSnapshot().getEmbeddedOffset(offset));
+                            _value[0] = model.resolveExpression(expr, result.getSnapshot().getEmbeddedOffset(offset), NESTING_AWARE);
                         }
                     }
                 });

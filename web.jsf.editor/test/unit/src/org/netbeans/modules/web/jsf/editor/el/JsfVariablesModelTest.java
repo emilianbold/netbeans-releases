@@ -98,24 +98,24 @@ public class JsfVariablesModelTest extends TestBase {
         //test get element by offset
 
         //out of the contexts regions
-        assertNull(model.getContext(0));
-        assertNull(model.getContext(1600));
-        assertNull(model.getContext(1165));
+        assertNull(model.getContainingContext(0));
+        assertNull(model.getContainingContext(1600));
+        assertNull(model.getContainingContext(1165));
 
         //inside
-        assertEquals(first, model.getContext(390));
-        assertEquals(first, model.getContext(673));
-        assertEquals(first, model.getContext(1150));
+        assertEquals(first, model.getContainingContext(390));
+        assertEquals(first, model.getContainingContext(673));
+        assertEquals(first, model.getContainingContext(1150));
 
-        assertEquals(second, model.getContext(700));
-        assertEquals(second, model.getContext(1100));
+        assertEquals(second, model.getContainingContext(700));
+        assertEquals(second, model.getContainingContext(1100));
 
-        assertEquals(third, model.getContext(1200));
+        assertEquals(third, model.getContainingContext(1200));
 
         //boundaries - start is inclusive, end exclusive
-        assertEquals(first, model.getContext(385));
-        assertEquals(first, model.getContext(1114));
-        assertNull(model.getContext(1161));
+        assertEquals(first, model.getContainingContext(385));
+        assertEquals(first, model.getContainingContext(1114));
+        assertNull(model.getContainingContext(1161));
 
 
     }
@@ -163,7 +163,7 @@ public class JsfVariablesModelTest extends TestBase {
         JsfVariableContext third = contexts.next();
 
         //test resolving of expressions
-        assertEquals("ProductMB.all.name", model.resolveVariable(second));
+        assertEquals("ProductMB.all.name", model.resolveVariable(second, false));
 
     }
 }

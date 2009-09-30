@@ -39,10 +39,7 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -89,18 +86,13 @@ import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.editor.JsfHtmlExtension;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.TestBase;
-import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
-import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -122,7 +114,7 @@ public class JsfElExpressionTest extends TestBase {
         super(testName);
     }
 
-    public static Test suite() {
+    public static Test xsuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new JsfElExpressionTest("testResolveVariables"));
         return suite;
@@ -237,7 +229,7 @@ public class JsfElExpressionTest extends TestBase {
 
         assertNotNull(jsfVarModel);
 
-        jsfVarModel.getContext(0);
+        jsfVarModel.getContainingContext(0);
 
         String code = "#{y.}";
 
@@ -253,7 +245,6 @@ public class JsfElExpressionTest extends TestBase {
         System.out.println("bundle name=" + expr.bundleName);
         System.out.println("bean name=" + expr.getBeanName());
         System.out.println("resolved expression=" + expr.getExpression());
-        System.out.println("resolved expression code=" + expr.findContext(expr.getExpression()));
 
         System.out.println("-----------------");
         List<CompletionItem> items = expr.getPropertyCompletionItems(expr.getObjectClass(), offset);
@@ -311,12 +302,12 @@ public class JsfElExpressionTest extends TestBase {
 
         assertTrue(offset >= 0);
 
-        assertEquals("Company.products", model.resolveExpression("prop", offset));
-        assertEquals("Company.products.name", model.resolveExpression("prop.name", offset));
-        assertEquals("Company.products.name", model.resolveExpression("x", offset));
-        assertEquals("Company.products.name.amethod", model.resolveExpression("x.amethod", offset));
-        assertEquals("Company.products.name.toString", model.resolveExpression("y", offset));
-        assertEquals("Company.products.name.toString.toString", model.resolveExpression("y.toString", offset));
+        assertEquals("Company.products", model.resolveExpression("prop", offset, false));
+        assertEquals("Company.products.name", model.resolveExpression("prop.name", offset, false));
+        assertEquals("Company.products.name", model.resolveExpression("x", offset, false));
+        assertEquals("Company.products.name.amethod", model.resolveExpression("x.amethod", offset, false));
+        assertEquals("Company.products.name.toString", model.resolveExpression("y", offset, false));
+        assertEquals("Company.products.name.toString.toString", model.resolveExpression("y.toString", offset, false));
 
 //        JsfElExpression expr = new JsfElExpression(wm, doc);
 //
@@ -339,6 +330,55 @@ public class JsfElExpressionTest extends TestBase {
 
 
     }
+
+      public void testResolveNotEmbeddedVariables() throws BadLocationException, IOException, ParseException {
+        FileObject file = getTestFile("testWebProject/web/index_1.xhtml");
+        assertNotNull(file);
+        Document doc = getDefaultDocument(file);
+
+        WebModule wm = WebModule.getWebModule(file);
+        assertNotNull(wm);
+
+        //initialize the html extension
+        JsfSupport.findFor(file);
+        Collection<HtmlExtension> extensions = HtmlExtension.getRegisteredExtensions("text/xhtml");
+        assertNotNull(extensions);
+        assertEquals(1, extensions.size());
+        final HtmlExtension hext = extensions.iterator().next();
+
+        final JsfVariablesModel[] _jsfVarModel = new JsfVariablesModel[1];
+        //init the EL embedding
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+
+                //get declared variabled model
+                _jsfVarModel[0] = JsfVariablesModel.getModel(result);
+
+                //enable EL
+                ((JsfHtmlExtension) hext).checkELEnabled(result);
+                //block until the recolor AWT task finishes
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        //no-op
+                    }
+                });
+            }
+        });
+        JsfVariablesModel model = _jsfVarModel[0];
+        int offset = doc.getText(0, doc.getLength()).indexOf('|'); //find pipe position in the document
+        //remove the pipe from the document
+        doc.remove(offset, 1);
+
+        assertTrue(offset >= 0);
+
+        assertEquals("Company.products.name.toString", model.resolveExpression("y", offset, false));
+        assertEquals("Company.products.name.toString.toString", model.resolveExpression("y.toString", offset, false));
+      }
 
     private final class TestProjectFactory implements ProjectFactory {
 

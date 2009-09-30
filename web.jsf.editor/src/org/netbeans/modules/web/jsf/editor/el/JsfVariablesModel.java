@@ -134,7 +134,7 @@ public class JsfVariablesModel {
     }
 
     /** returns most leaf context which contains offset */
-    public JsfVariableContext getContext(int offset) {
+    public JsfVariableContext getContainingContext(int offset) {
         JsfVariableContext match = null;
         for(JsfVariableContext c : getContexts()) {
             if(c.getFrom() <= offset && c.getTo() > offset) {
@@ -148,6 +148,20 @@ public class JsfVariablesModel {
         }
         return match;
     }
+
+     /** returns most leaf context which contains offset */
+    public JsfVariableContext getPrecedingContext(int offset) {
+        JsfVariableContext match = null;
+        for(JsfVariableContext c : getContexts()) {
+            if(c.getFrom() < offset) {
+                match = c;
+            } else {
+                break;
+            }
+        }
+        return match;
+    }
+
 
     /** returns a list of context ancestors. The context's parent is first element in the array,
      * the root is the last one.
@@ -173,19 +187,29 @@ public class JsfVariablesModel {
         return ancestors;
     }
 
-    //XXX we'll likely need to change the algorith not to iterate
-    //the ancestors, but all preceeeding elements since the variable
-    //declarations seems to overlap the node contexts at least in some cases.
-    String resolveVariable(JsfVariableContext context) {
-        //value = prop.name
-        //var = x
 
-        // x => (prop.name)
+    /** returns a list of all contexts precessding the given context.
+     */
+    List<JsfVariableContext> getPredecessors(JsfVariableContext context, boolean includeItself) {
+        SortedSet<JsfVariableContext> head = getContexts().headSet(context);
+        List<JsfVariableContext> pre = new ArrayList<JsfVariableContext>();
+        for(JsfVariableContext c : head) {
+            pre.add(0, c);
+        }
+
+        if(includeItself) {
+            pre.add(0, context);
+        }
+
+        return pre;
+    }
+
+    String resolveVariable(JsfVariableContext context, boolean nestingAware) {
 
         Expression expr = Expression.parse(context.getVariableValue());
         String resolved = expr.getPostfix() != null ? expr.getPostfix() : "";
         
-        List<JsfVariableContext> ancestors = getAncestors(context, false);
+        List<JsfVariableContext> ancestors = nestingAware ? getAncestors(context, false) : getPredecessors(context, false);
         if(ancestors.isEmpty()) {
             //there are no ancestors which can be resolved
             return expr.getCleanExpression();
@@ -217,10 +241,13 @@ public class JsfVariablesModel {
         return resolved;
     }
 
-    public String resolveExpression(String expression, int offset) {
+    public String resolveExpression(String expression, int offset, boolean nestingAware) {
         Expression parsedExpression = Expression.parse(expression);
-        JsfVariableContext leaf = getContext(offset);
-        List<JsfVariableContext> ancestors = getAncestors(leaf, true);
+        JsfVariableContext leaf = nestingAware ? getContainingContext(offset) : getPrecedingContext(offset);
+        if(leaf == null) {
+            return null; //nothing to resolve
+        }
+        List<JsfVariableContext> ancestors = nestingAware ? getAncestors(leaf, true) : getPredecessors(leaf, true);
 
         JsfVariableContext match = null;
         //find a context which defines the given variableName
@@ -235,8 +262,25 @@ public class JsfVariablesModel {
             return null; //no context matches
         }
 
-        return resolveVariable(match) + (parsedExpression.getPostfix() != null ? "." + parsedExpression.getPostfix() : "");
+        return resolveVariable(match, nestingAware) + (parsedExpression.getPostfix() != null ? "." + parsedExpression.getPostfix() : "");
 
+    }
+
+    //order: the closest var is first
+    public List<JsfVariableContext> getAllAvailableVariables(int offset, boolean nestingAware) {
+        List<JsfVariableContext> vars = new ArrayList<JsfVariableContext>();
+        JsfVariableContext leaf = nestingAware ? getContainingContext(offset) : getPrecedingContext(offset);
+        if(leaf == null) {
+            return vars;
+        }
+        List<JsfVariableContext> ancestors = nestingAware ? getAncestors(leaf, true) : getPredecessors(leaf, true);
+         for(JsfVariableContext c : ancestors) {
+             //store the resolved type
+             c.setResolvedType(resolveVariable(c, nestingAware));
+             
+             vars.add(c);
+        }
+        return vars;
     }
 
     private static class Expression {
