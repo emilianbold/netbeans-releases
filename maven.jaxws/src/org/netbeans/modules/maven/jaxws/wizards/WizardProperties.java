@@ -56,6 +56,9 @@ public class WizardProperties {
     public static final String WSDL_PORT = "wsdlPort"; //NOI18N
     public static final String WSDL_SERVICE_HANDLER = "wsdlServiceHandler"; //NOI18N
     public static final String USE_PROVIDER = "useProvider"; //NOI18N
-     
+    public static final String USE_DISPATCH = "useDispatch"; // NOI18N
+    public static final String IS_STATELESS_BEAN = "endpointAsStatelessBean"; // NOI18N
+    
+    public static final String WSDL_SOURCE = "wsdlSource"; // NOI18N
     public static final String WSDL_DOWNLOAD_URL = "wsdlDownloadUrl"; // NOI18N
 }

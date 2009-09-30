@@ -84,7 +84,7 @@ public abstract class AbstractHgTest extends NbTestCase {
         Logger.getLogger("").addHandler(versionCheckBlocker);
         
         try {
-            Mercurial.getInstance().checkVersion();
+            Mercurial.getInstance().asyncInit();
             for (int i = 0; i < 20; i++) {                
                 Thread.sleep(200);
                 if(versionCheckBlocker.versionChecked) break;

@@ -41,9 +41,9 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
-import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,19 +51,33 @@ import org.netbeans.modules.kenai.ui.spi.MemberHandle;
  */
 public class MemberHandleImpl extends MemberHandle {
 
-    private KenaiUser delegate;
+    private KenaiProjectMember delegate;
     public MemberHandleImpl (KenaiProjectMember member) {
-        this.delegate = member.getKenaiUser();
+        this.delegate = member;
     }
 
     @Override
     public String getDisplayName() {
-        return delegate.getUserName();
+        return delegate.getKenaiUser().getUserName();
     }
 
     @Override
     public String getName() {
-        return delegate.getUserName();
+        return delegate.getKenaiUser().getUserName();
+    }
+
+    @Override
+    public String getRole() {
+        KenaiProjectMember.Role r = delegate.getRole();
+        if (r != null) {
+            switch (r) {
+                case ADMIN: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Admin"); // NOI18N
+                case DEVELOPER: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Developer"); // NOI18N
+                case CONTENT: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Content"); // NOI18N
+                case OBSERVER: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Observer"); // NOI18N
+            }
+        }
+        return null;
     }
 
     @Override
@@ -73,17 +87,17 @@ public class MemberHandleImpl extends MemberHandle {
 
     @Override
     public boolean isOnline() {
-        return delegate.isOnline();
+        return delegate.getKenaiUser().isOnline();
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        delegate.addPropertyChangeListener(listener);
+        delegate.getKenaiUser().addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        delegate.removePropertyChangeListener(listener);
+        delegate.getKenaiUser().removePropertyChangeListener(listener);
     }
 
 }

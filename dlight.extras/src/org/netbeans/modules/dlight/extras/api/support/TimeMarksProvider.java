@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.netbeans.modules.dlight.util.TimeFormatter;
 
 /**
  * @author Alexey Vladykin
@@ -59,6 +60,7 @@ public final class TimeMarksProvider implements AxisMarksProvider {
     }
     private static final int[] INTERVALS = {1, 5, 10, 30, 60, 300, 600};
     private static final String LABEL_TEXT = "99:99"; // NOI18N
+    private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
     public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
         if (viewportStart == viewportEnd || axisSize < 10) {
@@ -71,7 +73,7 @@ public final class TimeMarksProvider implements AxisMarksProvider {
             if (value % tickInterval == 0) {
                 String text = null;
                 if (value % labelInterval == 0) {
-                    text = formatTime(value);
+                    text = TIME_FORMATTER.format(value);
                 }
                 marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
             }
@@ -97,9 +99,5 @@ public final class TimeMarksProvider implements AxisMarksProvider {
             }
         }
         return INTERVALS[INTERVALS.length - 1];
-    }
-
-    private String formatTime(int seconds) {
-        return String.format("%d:%02d", seconds / 60, seconds % 60); // NOI18N
     }
 }

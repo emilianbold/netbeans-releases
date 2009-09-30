@@ -195,7 +195,7 @@ final class RubyStringCompleter extends RubyBaseCompleter {
                                 propose(item);
                                 return true;
                             } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
+                                // do nothing - see #154991
                             }
                         }
                     }

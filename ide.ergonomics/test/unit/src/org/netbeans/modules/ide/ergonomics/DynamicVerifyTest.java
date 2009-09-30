@@ -69,6 +69,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersReal").
             addTest(ServersNodeActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(MenuProfileActionsCheck.class, "testGetAll", "testCheckAllPretest").
+            addTest(LibrariesCheck.class, "testGetLibraries", "testCheckLibrariesPretest").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -84,6 +85,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersErgo").
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
+            addTest(LibrariesCheck.class, "testCheckLibrariesReal").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").

@@ -337,7 +337,21 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="ModelEvent" />
         <issue number="171194"/>
     </change>
-    
+        <change>
+        <api name="ViewModelAPI"/>
+        <summary>Introduction of AsynchronousModelFilter.</summary>
+        <version major="1" minor="20"/>
+        <date day="25" month="9" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API introduced AsynchronousModelFilter that
+            can be used by clients to override the default threading of their model implementations.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="AsynchronousModelFilter" />
+        <issue number="172694"/>
+    </change>
+
 
 </changes>
 

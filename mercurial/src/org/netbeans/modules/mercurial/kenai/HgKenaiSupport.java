@@ -108,19 +108,26 @@ public class HgKenaiSupport {
         return kenaiSupport != null ? kenaiSupport.forName(user) : null;
     }
 
-    public void removeVCSNoficationListener(PropertyChangeListener l) {
+    public String getRevisionUrl(String repositoryUrl, String revision) {
+        return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
+    }
+
+    private void removeVCSNoficationListener(PropertyChangeListener l) {
         if(kenaiSupport != null) {
             kenaiSupport.removeVCSNoficationListener(l);
         }
     }
 
-    public void addVCSNoficationListener(PropertyChangeListener l) {
+    private void addVCSNoficationListener(PropertyChangeListener l) {
         if(kenaiSupport != null) {
             kenaiSupport.addVCSNoficationListener(l);
         }
     }
 
-    public void register() {
+    public void registerVCSNoficationListener() {
+        if("true".equals(System.getProperty("kenai.vcs.notifications.ignore"))) {
+            return;
+        }
         addVCSNoficationListener(new KenaiNotificationListener());
     }
 

@@ -179,19 +179,30 @@ public final class NativeProcessInfo {
     }
 
     public List<String> getCommand() {
+        List<String> result = new ArrayList<String>();
+
         String cmd;
 
-        try {
-            cmd = macroExpander.expandPredefinedMacros(executable);
-        } catch (ParseException ex) {
-            cmd = executable;
-        }
+        if (commandLine != null) {
+            try {
+                cmd = macroExpander.expandPredefinedMacros(commandLine);
+            } catch (Exception ex) {
+                cmd = executable;
+            }
 
-        List<String> result = new ArrayList<String>();
-        result.add(cmd);
+            result.add(cmd);
+        } else {
+            try {
+                cmd = macroExpander.expandPredefinedMacros(executable);
+            } catch (Exception ex) {
+                cmd = executable;
+            }
 
-        if (!arguments.isEmpty()) {
-            result.addAll(arguments);
+            result.add(cmd);
+
+            if (!arguments.isEmpty()) {
+                result.addAll(arguments);
+            }
         }
 
         return result;

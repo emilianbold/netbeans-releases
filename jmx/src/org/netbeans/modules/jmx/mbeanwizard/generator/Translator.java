@@ -125,6 +125,7 @@ public class Translator {
         mbean.setWrapppedClass((wrappedClass != null));
         Boolean isExistingClassMXBean = (Boolean) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS_IS_MXBEAN);
+        if (isExistingClassMXBean == null) isExistingClassMXBean = Boolean.FALSE;
         mbean.setWrapppedClassIsMXBean(isExistingClassMXBean);
         if (wrappedClass != null) {
             String className = JavaModelHelper.getFullClassName(wrappedClass);

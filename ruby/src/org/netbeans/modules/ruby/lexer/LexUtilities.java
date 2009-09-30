@@ -452,7 +452,7 @@ public class LexUtilities {
                 }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
         
         return true;
@@ -527,8 +527,6 @@ public class LexUtilities {
 
             return balance;
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-
             return 0;
         }
     }
@@ -565,8 +563,6 @@ public class LexUtilities {
 
             return balance;
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-
             return 0;
         }
     }
@@ -1068,7 +1064,7 @@ public class LexUtilities {
                 return new OffsetRange(begin, end);
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991;
         }
         
         return OffsetRange.NONE;
@@ -1113,7 +1109,6 @@ public class LexUtilities {
                 lineStart = 0;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
             return lexOffset;
         }
         ts.move(lexOffset);
@@ -1223,7 +1218,7 @@ public class LexUtilities {
                 offset--;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         if (methodBegin > begin) {

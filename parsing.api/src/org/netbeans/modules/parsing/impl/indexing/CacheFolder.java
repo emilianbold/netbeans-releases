@@ -99,7 +99,11 @@ public final class CacheFolder {
 
     private static void storeSegments(FileObject folder) throws IOException {
         assert folder != null;
-        final FileObject segmentsFile = FileUtil.createData(folder, SEGMENTS_FILE);
+        //It's safer to use FileUtil.createData(File) than FileUtil.createData(FileObject, String)
+        //see issue #173094
+        final File _file = FileUtil.toFile(folder);
+        assert _file != null;
+        final FileObject segmentsFile = FileUtil.createData(new File(_file, SEGMENTS_FILE));
         final OutputStream out = segmentsFile.getOutputStream();
         try {
             segments.store(out,null);

@@ -46,7 +46,9 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -76,9 +78,9 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
         return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.EJB_ARCHS);
     }
     
-    private WizardDescriptor.Panel[] createPanels() {
+    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(eeLevels, archs, true, false)
+            new BasicWizardPanel(vg, eeLevels, archs, true, false)
         };
     }
     
@@ -99,7 +101,9 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
     
     public void initialize(WizardDescriptor wiz) {
         index = 0;
-        panels = createPanels();
+        ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
+
+        panels = createPanels(vg);
         this.wiz = wiz;
         // Make sure list of steps is accurate.
         String[] steps = createSteps();

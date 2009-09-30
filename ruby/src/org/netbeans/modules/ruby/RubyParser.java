@@ -233,7 +233,6 @@ public final class RubyParser extends Parser {
                 
                 return false;
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
                 return false;
             }
         }
@@ -350,7 +349,7 @@ public final class RubyParser extends Parser {
                 }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return false;

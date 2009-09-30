@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.junit.Ignore;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -63,7 +62,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         super(testName, execEnv);
     }
 
-    @ForAllEnvironments
+    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         log.setLevel(Level.ALL); // TODO: comment out
         setDefaultCompilerSet("GNU");
@@ -72,7 +71,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
 
-    @ForAllEnvironments
+    @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");

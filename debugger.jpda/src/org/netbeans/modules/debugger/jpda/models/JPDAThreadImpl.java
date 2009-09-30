@@ -598,11 +598,14 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @return length of current call stack
      */
     public int getStackDepth () {
+        accessLock.readLock().lock();
         try {
             return ThreadReferenceWrapper.frameCount0 (threadReference);
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (IncompatibleThreadStateException e) {
+        } finally {
+            accessLock.readLock().unlock();
         }
         return 0;
     }

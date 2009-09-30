@@ -11,6 +11,16 @@
         </xsl:element>
     </xsl:template>
 
+    <xsl:template match="filesystem/folder[@name='org-netbeans-api-project-libraries']/folder[@name='Libraries']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">org-netbeans-api-project-libraries</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">Libraries</xsl:attribute>
+                <xsl:apply-templates mode="libraries"/>
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
+
     <xsl:template match="filesystem/folder[@name='Services']/folder[@name='MIMEResolver']">
         <xsl:element name="folder">
             <xsl:attribute name="name">Services</xsl:attribute>
@@ -170,6 +180,20 @@
         </xsl:element>
     </xsl:template>
     <xsl:template match="attr" mode="mime-resolvers">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+
+    <!-- libraries -->
+    <xsl:template match="file" mode="libraries">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:call-template name="url">
+                <xsl:with-param name="url" select="@url"/>
+            </xsl:call-template>
+            <xsl:apply-templates mode="libraries"/>
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="attr" mode="libraries">
         <xsl:copy-of select="."/>
     </xsl:template>
 
