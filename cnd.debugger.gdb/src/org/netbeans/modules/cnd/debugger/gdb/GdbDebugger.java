@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
-import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -105,6 +104,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -405,14 +406,12 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.file_exec_and_symbols(pathMap.getRemotePath(pae.getExecutable().replace("\\", "/"), true)); // NOI18N
                 //gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 
-                String[] env = pae.getProfile().getEnvironment().getenv();
-                Map<String, String> mapEnv = new HashMap<String, String>(env.length);
-                EnvUtils.appendEnv(mapEnv, env);
+                MacroMap macroMap = MacroMap.forExecEnv(execEnv);
+                macroMap.putAll(pae.getProfile().getEnvironment().getenvAsMap());
                 
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, pae.getExecutable())) {
-                        EnvUtils.appendPath(mapEnv, EnvUtils.getKey(envEntry), EnvUtils.getValue(envEntry));
-                    }
+                    UnbufferSupport.initUnbuffer(execEnv, macroMap);
+                    
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS && !isUnitTest()) {
                         ioProxy = IOProxy.create(execEnv, iotab);
@@ -420,7 +419,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
 
                 // set project environment
-                for (Map.Entry<String, String> entry : mapEnv.entrySet()) {
+                for (Map.Entry<String, String> entry : macroMap.entrySet()) {
                     gdb.gdb_set("environment", entry.getKey() + '=' + entry.getValue()); // NOI18N
                 }
 

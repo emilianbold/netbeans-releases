@@ -39,12 +39,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.io.File;
-import java.util.Map;
-
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
 public class EnvUtils {
     private EnvUtils() {
@@ -67,39 +64,5 @@ public class EnvUtils {
         } else {
             return "";
         }
-    }
-
-    /**
-     * Converts environment array (of strings in 'a=b' format)
-     * into a map (key a, value b)
-     * if oldenv is not null then use it as a map
-     * @param env
-     * @return
-     */
-    public static void appendEnv(Map<String, String> oldenv, String[] env) {
-        for (String var : env) {
-            int idx = var.indexOf('=');
-            if (idx != -1) {
-                appendPath(oldenv, getKey(var), getValue(var));
-            }
-        }
-    }
-
-    /**
-     * Appends key=value pair to the env map.
-     * If key=oldvalue already existed in the map then new pair will be key=oldvalue:value
-     * (separator depends on the platform)
-     * @param env
-     * @param key
-     * @param value
-     * @return
-     */
-    public static boolean appendPath(Map<String, String> env, String key, String value) {
-        String oldVal = env.get(key);
-        if (oldVal != null) {
-            //TODO: check remote!
-            value = oldVal + File.pathSeparator + value;
-        }
-        return env.put(key, value) != null;
     }
 }
