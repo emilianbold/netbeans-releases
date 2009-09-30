@@ -561,7 +561,7 @@ public class Utilities {
 
                 if (deco != null) {
                     for (ModuleInfo depMI : deco.getDependening ()) {
-                        Module depM = Utilities.toModule (depMI);
+                        Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
