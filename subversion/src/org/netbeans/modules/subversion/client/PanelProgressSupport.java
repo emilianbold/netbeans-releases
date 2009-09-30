@@ -58,13 +58,20 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
     private JPanel progressComponent;
     private JLabel progressLabel;
     private JPanel panel;
-    
+
+    /**
+     *
+     * @param panel if null, progress will be displayed in the progress bar
+     */
     public PanelProgressSupport(JPanel panel) {
         this.panel = panel;        
     }
 
     @Override
     public void startProgress() {
+        if (panel == null) {
+            super.startProgress();
+        } else
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ProgressHandle progress = getProgressHandle(); // NOI18N
@@ -80,11 +87,14 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
                 panel.add(progressComponent);
                 panel.revalidate();
             }
-        });                                                
+        });
     }
 
     @Override
-    protected void finnishProgress() {        
+    protected void finnishProgress() {
+        if (panel == null) {
+            super.finnishProgress();
+        } else
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 PanelProgressSupport.super.finnishProgress();
