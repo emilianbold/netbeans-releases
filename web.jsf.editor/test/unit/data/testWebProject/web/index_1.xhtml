@@ -10,9 +10,8 @@
             </h:column>
             <h:column>
                 <c:set var="x" value="#{prop.name}">
-                    <c:set var="y" value="#{x.toString}">
-                        <h:outputText value="name='#{y.|}'"/>
-                    </c:set>
+                    <c:set var="y" value="#{x.toString}"/>
+                    <h:outputText value="name='#{y.|}'"/>
                 </c:set>
             </h:column>
         </h:dataTable>
