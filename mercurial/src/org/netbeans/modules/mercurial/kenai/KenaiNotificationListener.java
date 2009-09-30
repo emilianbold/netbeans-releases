@@ -41,6 +41,7 @@ package org.netbeans.modules.mercurial.kenai;
 
 import java.io.File;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
@@ -76,6 +77,8 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
         File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(new File[] { projectDir }, FileInformation.STATUS_LOCAL_CHANGE);
         List<VCSKenaiModification> modifications = notification.getModifications();
 
+        List<File> notifyFiles = new LinkedList<File>();
+        String revision = null;
         for (File file : files) {
             String path = HgUtils.getRelativePath(file);
             if(path == null) {
@@ -88,18 +91,27 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
                 resource = trim(resource);
                 LOG.finer(" changed file " + path + ", " + resource); // NOI18N
                 if(path.equals(resource)) {
-                    LOG.fine("  notifying " + file + ", " + notification); // NOI18N
-                    notifyFileChange(file, notification.getUri().toString(), modification.getId());
+                    LOG.fine("  will notify " + file + ", " + notification); // NOI18N
+                    notifyFiles.add(file);
+                    if(revision == null) {
+                        revision = modification.getId();
+                    }
+                    break;
                 }
             }
+        }
+        if(notifyFiles.size() > 0) {
+            notifyFileChange(notifyFiles.toArray(new File[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
         }
     }
 
     @Override
-    protected void setupPane(JTextPane pane, File file, String url, String revision) {
+    protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {
         String text = NbBundle.getMessage(
                 KenaiNotificationListener.class,
-                "MSG_NotificationBubble_Description", file.getName(), HgKenaiSupport.getInstance().getRevisionUrl(url, revision)); //NOI18N
+                "MSG_NotificationBubble_Description", 
+                getFileNames(files),
+                HgKenaiSupport.getInstance().getRevisionUrl(url, revision)); //NOI18N
         pane.setText(text);
 
         pane.addHyperlinkListener(new HyperlinkListener() {
