@@ -83,8 +83,13 @@ public class AnnotationsTest extends JellyTestCase {
             TestKit.waitText(mh);
             EditorOperator eo = new EditorOperator("Main.java");
             eo.clickMouse(40, 50, 1, InputEvent.BUTTON3_MASK);
-            JPopupMenuOperator pmo = new JPopupMenuOperator();
-            pmo.pushMenu("Close Annotations");
+
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+            node.performPopupAction("Mercurial|Hide Annotations");
+
+
+//            JPopupMenuOperator pmo = new JPopupMenuOperator();
+//            pmo.pushMenu("Close Annotations");
 
             stream.flush();
             stream.close();

@@ -321,6 +321,15 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$instan^ce_array3 = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
+    public void testVardoc166660() throws Exception {
+        //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
+        checkOccurrences(getTestPath(), "@var $testClass Test^Class", true);
+    }
+    public void testVardoc166660_1() throws Exception {
+        //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
+        checkOccurrences(getTestPath(), "@var $test^Class TestClass", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

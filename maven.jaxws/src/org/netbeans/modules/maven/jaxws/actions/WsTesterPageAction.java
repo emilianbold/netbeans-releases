@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.jaxws.WSStackUtils;
 import org.netbeans.modules.maven.jaxws.nodes.JaxWsNode;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
@@ -110,6 +111,11 @@ public class WsTesterPageAction extends NodeAction {
                                     if (httpConnection!=null) 
                                     httpConnection.disconnect();
                                 }
+                                // logging usage of action
+                                Object[] params = new Object[2];
+                                params[0] = LogUtils.WS_STACK_JAXWS;
+                                params[1] = "TEST SOAP"; // NOI18N
+                                LogUtils.logWsAction(params);
                             }
 
                         } catch (IOException ex) {

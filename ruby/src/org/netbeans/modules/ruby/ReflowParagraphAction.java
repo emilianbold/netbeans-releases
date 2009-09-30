@@ -169,7 +169,7 @@ public class ReflowParagraphAction extends BaseAction {
                 }
             }
             catch (BadLocationException ble){
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
         
@@ -203,7 +203,7 @@ public class ReflowParagraphAction extends BaseAction {
                 }
             }
             catch (BadLocationException ble){
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
 
@@ -321,7 +321,7 @@ public class ReflowParagraphAction extends BaseAction {
                 return new OffsetRange(start, end);
             }
             catch (BadLocationException ble){
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
 
             return OffsetRange.NONE;

@@ -100,6 +100,25 @@ public class AstNodeUtils {
         return matching;
     }
 
+    public static List<AstNode> getChildrenRecursivelly(AstNode node, AstNode.NodeFilter filter, boolean recurseOnlyMatching) {
+         List<AstNode> matching = new ArrayList<AstNode>();
+         getChildrenRecursivelly(matching, node, filter, recurseOnlyMatching);
+         return matching;
+    }
+
+    private static void getChildrenRecursivelly(List<AstNode> found, AstNode node, AstNode.NodeFilter filter, boolean recurseOnlyMatching) {
+        for(AstNode child : node.children()) {
+            if(filter.accepts(child)) {
+                found.add(child);
+                getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
+            } else {
+                if(!recurseOnlyMatching) {
+                    getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
+                }
+            }
+        }
+    }
+
     public static AstNode findDescendant(AstNode node, int astOffset) {
         return findDescendant(node, astOffset, false);
     }

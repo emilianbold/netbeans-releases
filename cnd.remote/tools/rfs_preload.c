@@ -53,6 +53,8 @@
 #include <netdb.h>
 #include <fcntl.h>
 
+#define RFS_PRELOAD 1 // rfs_utils.h needs this
+
 #include "rfs_controller.h"
 #include "rfs_util.h"
 
@@ -135,21 +137,32 @@ static int open_socket() {
     return sd;
 }
 
+/** 
+ * Socked descriptor. 
+ * Should be assigned ONLY in get_socket_descriptor and release_socket
+ */
+static __thread int _sd = 0;
+
+static void trace_sd(const char* text) {
+    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
+}
+
 static int get_socket_descriptor(int create) {
     // 0 means unitialized
     // -1 means that we failed to open a socket
-    static __thread int sd = 0; // socket descriptor
-    if (!create) {
-        return sd;
+    if (!create || _sd > 0) {
+        return _sd;
     }
-    if (sd == -1) {
+    if (_sd == -1) {
         return -1;
     }
-    if (sd == 0) {
-        sd = -1; // in the case of success, it will become > 0
+    if (_sd == 0) {
+        _sd = -1; // in the case of success, it will become > 0
+        trace_sd("opening socket 1");
     }
-    sd = open_socket();
-    return sd;
+    _sd = open_socket();
+    trace_sd("opening socket 2");
+    return _sd;
 }
 
 /* static int is_mine(const char *path) {
@@ -238,7 +251,8 @@ static int on_open(const char *path, int flags) {
     } else {
         //struct rfs_request;
         int path_len = strlen(path);
-        trace("Sending %s (%d bytes)\n", path, path_len);
+        trace_sd("sending request");
+        trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
         if (send(sd, path, path_len, 0) == -1) {
             perror("send");
         } else {
@@ -249,13 +263,13 @@ static int on_open(const char *path, int flags) {
                 perror("receive");
                 // TODO: correct error processing
             } else {
-                trace("Got %s for %s, %d\n", response_buf, path, flags);
+                trace("Got %s for %s, flags=%d, sd=%d\n", response_buf, path, flags, sd);
                 if (response_buf[0] == response_ok) {
                     result = true;
                 } else if (response_buf[0] == response_failure) {
                     result = false;
                 } else {
-                    trace("Protocol error\n");
+                    trace("Protocol error, sd=%d\n", sd);
                     result = false;
                 }
             }
@@ -287,11 +301,22 @@ on_startup(void) {
     } else {
         my_dir_len++;
         void *p = malloc(my_dir_len + 1);
-        strcat(p, my_dir);
+        strcpy(p, my_dir);
         strcat(p, "/");
         my_dir = p;
     }
     trace("RFS startup; my dir: %s\n", my_dir);
+    _sd = 0;
+    trace_sd("startup");
+}
+
+static void release_socket() {
+    if (_sd > 0) {
+        trace("agent closes socket _sd=%d &_sd=%X\n", _sd, &_sd);
+        close(_sd);
+        _sd = 0;
+        trace_sd("releasing socket");
+    }
 }
 
 void
@@ -299,10 +324,7 @@ __attribute__((destructor))
 on_shutdown(void) {
     trace("RFS shutdown\n");
     trace_shutdown();
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        close(sd);
-    }
+    release_socket();
 }
 
 typedef struct pthread_routine_data {
@@ -316,11 +338,7 @@ static void* pthread_routine_wrapper(void* data) {
     prd->user_start_routine(prd->arg);
     trace("User thread routine finished. Performing cleanup\n");
     free(data);
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        trace("Closing socked %d\n", sd);
-        close(sd);
-    }
+    release_socket();
     return 0;
 }
 
@@ -383,9 +401,11 @@ int open(const char *path, int flags, ...) {
     real_open(open, path, flags)
 }
 
+#if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
     real_open(open64, path, flags)
 }
+#endif
 
 int _open(const char *path, int flags, ...) {
     real_open(_open, path, flags)

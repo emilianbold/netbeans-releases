@@ -185,7 +185,7 @@ public class RhtmlKit extends HtmlKit {
                     }
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
         
@@ -207,7 +207,7 @@ public class RhtmlKit extends HtmlKit {
                     return true;
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
             
             return false;
@@ -265,7 +265,7 @@ public class RhtmlKit extends HtmlKit {
                     }
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
         

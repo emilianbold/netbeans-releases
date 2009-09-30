@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.util.Map;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
@@ -49,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class FunctionBreakpointImpl extends BreakpointImpl {
+public class FunctionBreakpointImpl extends BreakpointImpl<FunctionBreakpoint> {
     
     public FunctionBreakpointImpl(FunctionBreakpoint breakpoint, GdbDebugger debugger) {
         super(breakpoint, debugger);
@@ -58,6 +59,16 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
 
     @Override
     protected String getBreakpointCommand() {
-        return ((FunctionBreakpoint)getBreakpoint()).getFunctionName();
+        return getBreakpoint().getFunctionName();
+    }
+
+    @Override
+    protected void validationUpdate(Map<String, String> map) {
+        try {
+            getBreakpoint().setURL(map.get("fullname")); // NOI18N
+            getBreakpoint().setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
+        } catch (Exception ex) {
+            // do nothing
+        }
     }
 }

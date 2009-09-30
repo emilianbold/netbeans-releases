@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.MICommand;
  *
  * @author   Jan Jancura and Gordon Prieur
  */
-public abstract class BreakpointImpl implements PropertyChangeListener {
+public abstract class BreakpointImpl<B extends CndBreakpoint> implements PropertyChangeListener {
 
     /* valid breakpoint states */
     private static enum State {
@@ -70,13 +70,13 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected final GdbDebugger debugger;
-    private final CndBreakpoint breakpoint;
+    private final B breakpoint;
     private State state = State.UNVALIDATED;
     protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
-    protected BreakpointImpl(CndBreakpoint breakpoint, GdbDebugger debugger) {
+    protected BreakpointImpl(B breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
         this.breakpoint = breakpoint;
     }
@@ -147,14 +147,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 command.send();
             }
 
-            //TODO: not good to check for child type here
-            if (this instanceof FunctionBreakpointImpl) {
-                try {
-                    breakpoint.setURL(map.get("fullname")); // NOI18N
-                    breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
-                } catch (Exception ex) {
-                }
-            }
+            validationUpdate(map);
+            
             breakpoint.setValid();
             debugger.getBreakpointList().put(breakpointNumber, this);
             setRunWhenValidated(false);
@@ -167,6 +161,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 		setState(State.VALIDATION_FAILED);
 	    }
         }
+    }
+
+    /**
+     * Update implementation with the real breakpoint values if needed
+     */
+    protected void validationUpdate(Map<String, String> map) {
     }
 
     private static String canonicalPath(String path) {
@@ -315,7 +315,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
     }
 
-    public CndBreakpoint getBreakpoint() {
+    public B getBreakpoint() {
         return breakpoint;
     }
 

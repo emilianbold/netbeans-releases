@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
-import java.util.Iterator;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 /**
@@ -78,9 +77,7 @@ public final class Statistics {
     
     public static int fileObjects() {
         int retVal = 0;
-        Iterator it = FileObjectFactory.getInstances().iterator();
-        for (int i = 0; it.hasNext(); i++) {
-            FileObjectFactory fbs = (FileObjectFactory)it.next();
+        for (FileObjectFactory fbs : FileObjectFactory.getInstances()) {
             retVal += fileObjectsPerFileSystem(fbs);
         }
         
@@ -114,6 +111,7 @@ public final class Statistics {
             numberOfCalls = 0;
         }
 
+        @Override
         public String toString() {
             return description + ": " + numberOfCalls + " calls in " + elapsedTime + "ms";
         }

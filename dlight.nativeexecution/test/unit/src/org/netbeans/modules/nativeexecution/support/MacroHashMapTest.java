@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

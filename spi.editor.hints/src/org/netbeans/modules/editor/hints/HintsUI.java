@@ -126,6 +126,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_err_fixable"); // NOI18N
         fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_hint_fixable"); // NOI18N
         fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_verifier_fixable"); // NOI18N
+        fixableAnnotations.add("org-netbeans-spi-editor-hints-parser_annotation_warn_fixable"); // NOI18N
     }
 
     public static synchronized HintsUI getDefault() {
@@ -493,12 +494,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         cancel.set(false);
         
         if (doc instanceof BaseDocument) {
-            Annotations annotations = ((BaseDocument) doc).getAnnotations();
 
             try {
                 Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());
                 int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
-                AnnotationDesc activeAnnotation = annotations.getActiveAnnotation(line);
+                AnnotationDesc activeAnnotation = ((BaseDocument) doc).getAnnotations().getActiveAnnotation(line);
                 if (activeAnnotation == null) {
                     return false;
                 }
@@ -507,9 +507,13 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                     return false;
                 }
                 refresh(doc, comp.getCaretPosition());
+                Annotations annotations = ((BaseDocument) doc).getAnnotations();
                 AnnotationDesc desc = annotations.getAnnotation(line, type);
-                annotations.frontAnnotation(desc);
-                ParseErrorAnnotation annotation = findAnnotation(doc, desc, line);
+                ParseErrorAnnotation annotation = null;
+                if (desc != null) {
+                    annotations.frontAnnotation(desc);
+                    annotation = findAnnotation(doc, desc, line);
+                }
 
                 if (annotation == null) {
                     if (onlyActive) {

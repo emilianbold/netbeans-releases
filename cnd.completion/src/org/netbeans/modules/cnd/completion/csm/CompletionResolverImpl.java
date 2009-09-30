@@ -480,7 +480,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (fileReferncesContext != null && !fileReferncesContext.isCleaned()) {
                 fileReferncesContext.advance(offset);
             }
-            resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, fileReferncesContext, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
+            resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, fileReferncesContext, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY || queryScope == QueryScope.GLOBAL_QUERY);
             if (isEnough(strPrefix, match, resImpl.fileLocalVars)) {
                 return true;
             }

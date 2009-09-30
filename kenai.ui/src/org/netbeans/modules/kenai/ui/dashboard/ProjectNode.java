@@ -166,10 +166,13 @@ public class ProjectNode extends TreeListNode {
 //            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
 //                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true));
 //            btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
-            myPrjLabel.setIcon(isMemberProject
-                    ? ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true) // NOI18N
-                    : null);
-            myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
+            if (isMemberProject) {
+                myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
+                myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
+            } else {
+                myPrjLabel.setIcon(null);
+                myPrjLabel.setToolTipText(null);
+            }
             btnClose.setForeground(foreground, isSelected);
             return component;
         }
@@ -177,12 +180,12 @@ public class ProjectNode extends TreeListNode {
 
     @Override
     public Action getDefaultAction() {
-        return accessor.getDefaultAction(project);
+        return accessor.getDefaultAction(project, true);
     }
 
     @Override
     public Action[] getPopupActions() {
-        return accessor.getPopupActions(project);
+        return accessor.getPopupActions(project, true);
     }
 
     void setMemberProject(boolean isMemberProject) {

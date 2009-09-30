@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -147,6 +148,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 ProviderUtil.addPersistenceUnit(punit, Templates.getProject(wiz));
             }
             addEntityToPersistenceUnit(result);
+            PersistenceUtils.logUsage(EntityWizard.class, "USG_PERSISTENCE_ENTITY", null);
         } catch (InvalidPersistenceXmlException ipx){
             // just log for debugging purposes, at this point the user has
             // already been warned about an invalid persistence.xml

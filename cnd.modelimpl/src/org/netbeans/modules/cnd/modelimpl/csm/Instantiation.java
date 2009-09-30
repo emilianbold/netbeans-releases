@@ -1129,7 +1129,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
 
         public int getPointerDepth() {
             if (instantiationHappened()) {
-                return originalType.getPointerDepth() + instantiatedType.getPointerDepth();
+                return instantiatedType.getPointerDepth();
             } else {
                 return originalType.getPointerDepth();
             }

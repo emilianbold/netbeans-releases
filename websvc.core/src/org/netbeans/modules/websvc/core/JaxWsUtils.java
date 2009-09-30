@@ -1435,4 +1435,12 @@ public class JaxWsUtils {
         }
         return serviceName[0];
     }
+
+    public static J2eeModule getJ2eeModule(Project prj) {
+        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            return provider.getJ2eeModule();
+        }
+        return null;
+    }
 }

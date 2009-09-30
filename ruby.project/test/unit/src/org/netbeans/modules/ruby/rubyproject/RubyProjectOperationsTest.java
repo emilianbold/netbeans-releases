@@ -62,7 +62,6 @@ public class RubyProjectOperationsTest extends RubyProjectTestBase {
         
         FileObject[] expectedMetadataFiles = {
             prjDir.getFileObject("nbproject"),
-            prjDir.getFileObject("Rakefile"),
             prjDir.getFileObject("README"),
             prjDir.getFileObject("LICENSE"),
         };
@@ -72,6 +71,7 @@ public class RubyProjectOperationsTest extends RubyProjectTestBase {
             prjDir.getFileObject("lib"),
             prjDir.getFileObject("test"),
             prjDir.getFileObject("spec"),
+            prjDir.getFileObject("Rakefile"),
         };
         assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(project));
     }

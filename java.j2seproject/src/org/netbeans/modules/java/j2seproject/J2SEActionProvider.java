@@ -700,6 +700,10 @@ class J2SEActionProvider implements ActionProvider {
                 files = findSources(context);
                 rootz = project.getSourceRoots().getRoots();
             }
+            if (files == null) {
+                //The file was not found under the source roots
+                return null;
+            }
             FileObject file = files[0];
             String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
             p.setProperty("javac.includes", clazz); // NOI18N

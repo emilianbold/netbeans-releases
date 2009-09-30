@@ -285,7 +285,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
             JComboBox combo = (JComboBox) editorComponent;
             if (fileStatus == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || fileStatus == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 combo.setModel(new DefaultComboBoxModel(removeOptions));
-            } else if ((fileStatus & FileInformation.STATUS_IN_REPOSITORY) == 0) {
+            } else if ((fileStatus & (FileInformation.STATUS_IN_REPOSITORY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) == 0) {
                 if (info.isDirectory()) {
                     combo.setModel(new DefaultComboBoxModel(dirAddOptions));
                 } else {

@@ -253,7 +253,7 @@ public class AstUtilities {
                 offset--;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return comments;
@@ -1783,7 +1783,7 @@ public class AstUtilities {
                                     method = AstUtilities.findMethodAtOffset(root, astOffset);
                                 }
                             } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
+                                // do nothing - see #154991
                             }
                         }
                     }
@@ -1897,7 +1897,7 @@ public class AstUtilities {
                             testName[0] = removeLeadingWhiteSpace(sb.toString());
                         }
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        // do nothing - see #154991
                     }
                 }
             });

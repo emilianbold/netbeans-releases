@@ -199,10 +199,13 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
         for (FileObject fo : mappingFiles) {
             String path = fo.getPath();
             String resourceName = path.substring(srcRoot.length() + 1);
-            String packageName = resourceName.substring(0, resourceName.lastIndexOf("/"));
-            if (packageName.equals(targetPkgName)) {
-                fileData.add(new MappingFileData(fo, resourceName, null));
-            }
+            int separator = resourceName.lastIndexOf("/");
+            if (separator > 0) {
+                String packageName = resourceName.substring(0, separator);
+                if (packageName.equals(targetPkgName)) {
+                    fileData.add(new MappingFileData(fo, resourceName, null));
+                }
+            }            
         }
 
         return fileData;

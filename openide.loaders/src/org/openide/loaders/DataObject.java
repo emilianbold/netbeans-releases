@@ -996,7 +996,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * preferred advice is to override the method to:
      * <pre>
      * class MyDataObject extends {@link MultiDataObject} {
-     *   public Lookup getLookup() {
+     *   public &#64;Override Lookup getLookup() {
      *     return getCookieSet().getLookup();
      *   }
      * }

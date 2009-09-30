@@ -84,7 +84,7 @@ public class Hk2TargetModuleID implements TargetModuleID {
             if (!location.endsWith(File.separator)) {
                 location += File.separator;
             }
-            String key = docBaseURI+location;
+            String key = target.getServerUri()+docBaseURI+location;
             Hk2TargetModuleID retVal = knownModules.get(key);
             if (null == retVal) {
                 retVal = new Hk2TargetModuleID(target, docBaseURI, contextPath, location);

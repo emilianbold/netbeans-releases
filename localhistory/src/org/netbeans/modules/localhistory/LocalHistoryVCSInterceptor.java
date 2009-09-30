@@ -226,6 +226,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     public void afterChange(File file) {
         // just in case
         wasJustCreated.remove(file);
+        LocalHistory.getInstance().touch(file);
     }
 
     private void storeFile(File file) {

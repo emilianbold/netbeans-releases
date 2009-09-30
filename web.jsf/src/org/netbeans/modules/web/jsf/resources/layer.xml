@@ -103,6 +103,11 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFInfo.html"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJsfIterator"/>
             </file>
+            <!-- Facelet -->
+            <file name="JSP.xhtml" url="../facelets/resources/templates/simpleFacelets.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="0"/>
+            </file>
             <file name="JsfFromDB" url="templates/dummy.template">
                 <attr name="position" intvalue="1505"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.wizards.Bundle"/>
@@ -184,7 +189,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.jsf.wizards.JSFPageIterator.createJsfIterator"/>
             </file>
             <!-- Facelet -->
-            <file name="JSP.xhtml" url="templates/simpleFacelets.template">
+            <file name="JSP.xhtml" url="../facelets/resources/templates/simpleFacelets.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="0"/>
             </file>
@@ -205,14 +210,24 @@ made subject to such option by the copyright holder.
             </file>
 
             <file name="Template.xhtml" url="templates/dummy.template">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/Template.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.TemplateIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="position" intvalue="820"/>
+                <attr name="position" intvalue="821"/>
+            </file>
+            <file name="TemplateClient.xhtml" url="../facelets/resources/templates/htmlTemplateClient.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/TemplateClient.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.TemplateClientIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="831"/>
             </file>
             <!-- JSF Managed Bean --> 
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
@@ -237,7 +252,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="out.xhtml" url="templates/compositeComponent.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/facelets/resources/tag.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
                 <attr name="position" intvalue="75"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>

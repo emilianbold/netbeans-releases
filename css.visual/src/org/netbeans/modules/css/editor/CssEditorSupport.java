@@ -47,11 +47,9 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.model.CssModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JEditorPane;
 import org.netbeans.modules.css.editor.model.CssRule;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.netbeans.modules.css.editor.model.CssRuleItem;
@@ -62,10 +60,7 @@ import org.netbeans.modules.css.visual.ui.preview.CssPreviewTopComponent;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable.Listener;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.windows.TopComponent;
 
 /**
  * Editor Support for document of type text/css
@@ -85,6 +80,10 @@ public class CssEditorSupport {
     private static final CssEditorSupport INSTANCE = new CssEditorSupport();
     private static final boolean DEBUG = Boolean.getBoolean("issue_129209_debug");
 
+    //current values
+    private CssParserResult result;
+    private CssModel model;
+    
     public static synchronized CssEditorSupport getDefault() {
         return INSTANCE;
     }
@@ -232,8 +231,13 @@ public class CssEditorSupport {
     private synchronized void updateSelectedRule(CssParserResult result, int dotPos) {
         LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
 
+        if(this.result != result) {
+            //parser result changed, need to rebuild model
+            model = CssModel.create(result);
+            this.result = result;
+        }
+
         //find rule on the offset
-        CssModel model = CssModel.create(result);
         CssRule selectedRule = model.ruleForOffset(dotPos);
 
         LOGGER.log(Level.FINE, selectedRule == null ? "NO rule" : "found a rule");

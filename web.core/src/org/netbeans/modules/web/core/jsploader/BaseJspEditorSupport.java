@@ -170,7 +170,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                     if (evt.getNewValue() != null) {
                         //document loaded
                         restartParserTask();
-                        getDocument().addDocumentListener(DOCUMENT_LISTENER);
+                        ((Document)evt.getNewValue()).addDocumentListener(DOCUMENT_LISTENER);
                     } else {
                         //document closed
                         ((Document)evt.getOldValue()).removeDocumentListener(DOCUMENT_LISTENER);

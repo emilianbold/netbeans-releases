@@ -433,7 +433,7 @@ public class GotoTest implements TestLocator {
                                 cls = AstUtilities.findClassAtOffset(root, endOffset);
                             }
                         } catch (BadLocationException ble) {
-                            Exceptions.printStackTrace(ble);
+                            // do nothing - see #154991
                         }
                     }
 

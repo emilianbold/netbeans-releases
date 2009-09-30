@@ -383,11 +383,11 @@ public class GuardedDocument extends BaseDocument
 
         Style style =  styles.addStyle(styleName, parent);
         if (findLayer(layerName) == null) { // not created by default
+            readLock();
             try {
-                extWriteLock();
                 addStyledLayer(layerName, style);
             } finally {
-                extWriteUnlock();
+                readUnlock();
             }
         }
         return style;
@@ -437,8 +437,8 @@ public class GuardedDocument extends BaseDocument
      * @param s the style to set
      */
     public void setLogicalStyle(int pos, Style s) {
+        readLock();
         try {
-            extWriteLock();
             pos = Utilities.getRowStart(this, pos);
             String layerName = (String)stylesToLayers.get(s.getName());
             // remove all applied styles
@@ -459,7 +459,7 @@ public class GuardedDocument extends BaseDocument
         } catch (BadLocationException e) {
             // do nothing for invalid positions
         } finally {
-            extWriteUnlock();
+            readUnlock();
         }
     }
 

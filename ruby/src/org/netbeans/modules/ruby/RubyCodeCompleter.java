@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -506,7 +505,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991;
         }
 
         // Default behavior
@@ -865,7 +864,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     int lineStart = Utilities.getRowStart(doc, ts.offset());
                     line = doc.getText(lineStart, ts.offset()-lineStart).trim();
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
                     return false;
                 }
             } else {
@@ -1186,7 +1184,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             astLineBegin = AstUtilities.getAstOffset(ir, Utilities.getRowStart(doc, lexOffset));
             astLineEnd = AstUtilities.getAstOffset(ir, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
             return CodeCompletionResult.NONE;
         }
 
@@ -2278,7 +2275,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     }
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             } finally {
                 doc.readUnlock();
             }
@@ -2572,7 +2569,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     return QueryType.COMPLETION;
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
         

@@ -2528,9 +2528,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getInsertPrefix() {
-            return simpleName + "="; //NOI18N
+            return simpleName;
         }
-        
+
         public CompletionTask createDocumentationTask() {
             return JavaCompletionProvider.createDocTask(elementHandle);
         }
@@ -2569,6 +2569,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return rightText;
         }
         
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            super.substituteText(c, offset, len, toAdd != null ? toAdd : "="); //NOI18N
+        }
+
         public String toString() {
             return simpleName;
         }        

@@ -123,7 +123,7 @@ public class CssTCController implements PropertyChangeListener {
         }
         FileObject fob = tc.getLookup().lookup(FileObject.class);
         if (fob != null) {
-            String mimeType = (String) fob.getMIMEType();
+            String mimeType = fob.getMIMEType();
             if (mimeType != null && "text/x-css".equals(mimeType)) {
                 return true;
             }
