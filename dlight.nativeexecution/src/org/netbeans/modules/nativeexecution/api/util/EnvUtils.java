@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.nativeexecution.api.util;
 
 /**
  *
