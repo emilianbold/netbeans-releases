@@ -638,7 +638,7 @@ public class Utilities {
                 boolean matched = false;
                 if (u != null) {
                     boolean aggressive = beAggressive;
-                    if (isFirstClassModule(el.getUpdateUnit())) {
+                    if (aggressive && isFirstClassModule(el.getUpdateUnit())) {
                         aggressive = false;
                     }
                     // follow aggressive updates strategy
