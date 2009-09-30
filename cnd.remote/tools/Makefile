@@ -51,8 +51,8 @@ CFLAGS-Linux := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 CFLAGS-SunOS := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 CFLAGS-Mac_OS_X := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 
-LDFLAGS-LIB-Linux := -ldl -shared
-LDFLAGS-LIB-SunOS := -G -ldl -lsocket
+LDFLAGS-LIB-Linux := -shared -ldl
+LDFLAGS-LIB-SunOS := -shared -ldl -lsocket
 LDFLAGS-LIB-Mac_OS_X := -G -ldl
 
 LDFLAGS-APP-Linux := -lrt -lnsl -lresolv
