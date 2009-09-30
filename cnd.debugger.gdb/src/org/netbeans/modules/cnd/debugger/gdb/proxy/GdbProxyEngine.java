@@ -55,7 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.debugger.gdb.EnvUtils;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
