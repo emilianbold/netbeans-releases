@@ -73,7 +73,6 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -147,6 +146,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         }
 
         Util.allMimeTypes.add("text/x-java");
+        org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
     }
     
     static {
