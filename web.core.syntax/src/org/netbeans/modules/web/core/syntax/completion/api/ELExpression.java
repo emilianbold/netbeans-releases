@@ -155,8 +155,14 @@ public class ELExpression {
         return doc;
     }
     
-    public final int parse(int offset) {
-        myParseType = doParse(offset);
+    public final int parse(final int offset) {
+        final int[] retval = new int[1];
+        ((BaseDocument)doc).render(new Runnable() {
+            public void run() {
+                retval[0] = doParse(offset);
+            }
+        });
+        myParseType = retval[0];
         return myParseType;
     }
     
@@ -473,7 +479,6 @@ public class ELExpression {
         setContextOffset(offset);
 
         BaseDocument document = (BaseDocument) doc;
-        document.readLock();
         TokenHierarchy<BaseDocument> hi = TokenHierarchy.get(document);
         //find EL token sequence and its superordinate sequence
         TokenSequence<?> ts = hi.tokenSequence();
