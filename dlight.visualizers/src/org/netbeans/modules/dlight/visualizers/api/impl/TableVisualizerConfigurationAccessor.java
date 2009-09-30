@@ -5,7 +5,6 @@
 
 package org.netbeans.modules.dlight.visualizers.api.impl;
 
-import javax.swing.Action;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 
 /**

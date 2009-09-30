@@ -49,8 +49,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.support.CaseInsensitiveMacroMap;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.Utilities;
 
 /**
@@ -80,15 +79,8 @@ public final class NativeProcessInfo {
         this.unbuffer = false;
         this.workingDirectory = null;
         this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
-
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            envVariables = new CaseInsensitiveMacroMap(macroExpander);
-            isWindows = true;
-        } else {
-            envVariables = new MacroMap(macroExpander);
-            isWindows = false;
-        }
-
+        this.envVariables = MacroMap.forExecEnv(execEnv);
+        isWindows = execEnv.isLocal() && Utilities.isWindows();
         redirectError = false;
     }
 
@@ -159,7 +151,7 @@ public final class NativeProcessInfo {
         if (prepend) {
             envVariables.put(name, "${" + name + '}' + delimiter + path); // NOI18N
         } else {
-            envVariables.put(name, path + delimiter +"${" + name + '}'); // NOI18N
+            envVariables.put(name, path + delimiter + "${" + name + '}'); // NOI18N
         }
     }
 

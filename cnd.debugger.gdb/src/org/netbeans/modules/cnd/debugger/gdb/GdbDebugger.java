@@ -283,6 +283,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }, 30000);
             }
             String gdbCommand = profile.getGdbPath(pae.getConfiguration(), false);
+            if (gdbCommand == null) {
+                throw new GdbErrorException("Gdb command is empty, exiting"); //NOI18N;
+            }
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
@@ -294,7 +297,9 @@ public class GdbDebugger implements PropertyChangeListener {
             String[] debuggerEnv = new String[0];
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                 String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
-                debuggerEnv = new String[]{path}; //NOI18N
+                if (path != null) {
+                    debuggerEnv = new String[]{path}; //NOI18N
+                }
             }
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
@@ -1766,6 +1771,11 @@ public class GdbDebugger implements PropertyChangeListener {
                 resume();
                 return;
             } else if ("SIGINT".equals(signal)) { // NOI18N
+                gdb.stack_list_frames();
+                setStopped();
+                return;
+            } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) {
+                // see IZ 172855 (On windows we need to skip SIGTRAP)
                 gdb.stack_list_frames();
                 setStopped();
                 return;

@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,13 +44,12 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
@@ -64,13 +63,10 @@ public class UnbufferSupport {
     private static final HashMap<ExecutionEnvironment, String> cache =
             new HashMap<ExecutionEnvironment, String>();
 
-    public static void initUnbuffer(final NativeProcessInfo info, final MacroMap env) throws IOException {
+    public static void initUnbuffer(final ExecutionEnvironment execEnv, final MacroMap env) throws IOException {
+        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         // Setup LD_PRELOAD to load unbuffer library...
-        if (!info.isUnbuffer()) {
-            return;
-        }
 
-        final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
         final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
 
         boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
@@ -80,9 +76,9 @@ public class UnbufferSupport {
         String unbufferLib = null; // NOI18N
 
         try {
-            unbufferPath = info.macroExpander.expandPredefinedMacros(
+            unbufferPath = macroExpander.expandPredefinedMacros(
                     "bin/nativeexecution/$osname-$platform"); // NOI18N
-            unbufferLib = info.macroExpander.expandPredefinedMacros(
+            unbufferLib = macroExpander.expandPredefinedMacros(
                     "unbuffer.$soext"); // NOI18N
         } catch (ParseException ex) {
         }

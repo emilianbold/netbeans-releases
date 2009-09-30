@@ -65,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.windows.InputOutput;
 
 /**
@@ -332,7 +333,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     private void resume() {
-        CommonTasksSupport.sendSignal(execEnv, pid, "CONT", null); // NOI18N
+        CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGCONT, null);
     }
 
     private void terminate() {
