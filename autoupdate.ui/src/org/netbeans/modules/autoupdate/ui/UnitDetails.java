@@ -44,12 +44,14 @@ import java.awt.Color;
 import java.io.CharConversionException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -193,12 +195,12 @@ public class UnitDetails extends DetailsPanel {
     }
 
     private String getDependencies(Unit.Update uu, boolean collectDependencies) {
-        StringBuilder desc = new StringBuilder();
         if (!collectDependencies) {
             return "<i>" + getBundle("UnitDetails_Plugin_Collecting_Dependencies") + "</i><br>";
         }
 
         Unit u = uu;
+        Set<UpdateElement> internalUpdates = new HashSet<UpdateElement>();
         if (!(u instanceof Unit.InternalUpdate)) {
             OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
 
@@ -269,15 +271,7 @@ public class UnitDetails extends DetailsPanel {
                 for (UpdateElement ue : required) {
                     if (!requiredElementsCoveredByVisible.contains(ue) &&
                             !ue.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
-                        desc.append("&nbsp;&nbsp;&nbsp;&nbsp;" + ue.getDisplayName());
-                        if (ue.getUpdateUnit().getInstalled() != null) {
-                            desc.append(" [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->");
-                        } else {
-                            desc.append(" <span color=\"red\">new!</span> [");
-                        }
-
-                        desc.append(ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion());
-                        desc.append("]<br>");
+                        internalUpdates.add(ue);
                     }
                 }
             }
@@ -291,8 +285,7 @@ public class UnitDetails extends DetailsPanel {
 
             OperationContainer<InstallSupport> reiContainer = OperationContainer.createForInternalUpdate();
             reiContainer.add(iu.getRelevantElement());
-            Set<UpdateElement> internalUpdates = new HashSet<UpdateElement>();
-
+            
             for (OperationInfo<InstallSupport> info : updContainer.listAll()) {
                 internalUpdates.add(info.getUpdateElement());
                 for (UpdateElement r : info.getRequiredElements()) {
@@ -312,23 +305,42 @@ public class UnitDetails extends DetailsPanel {
                     }
                 }
             }
+        }
+        StringBuilder desc = new StringBuilder();
+        try {
+        
+        Set <UpdateElement> sorted = new TreeSet <UpdateElement> (new Comparator<UpdateElement> () {
 
-
-            for (UpdateElement ue : internalUpdates) {
-                desc.append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                desc.append(ue.getDisplayName());
-                if (ue.getUpdateUnit().getInstalled() != null) {
-                    desc.append(" [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->");
-                } else {
-                    desc.append(" <span color=\"red\">new!</span> [");
+                public int compare(UpdateElement o1, UpdateElement o2) {
+                    return o1.getDisplayName().compareTo(o2.getDisplayName());
                 }
+            
+        });
+        sorted.addAll(internalUpdates);
 
-                desc.append(ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion());
-                desc.append("]<br>");
-            }
+        for (UpdateElement ue : sorted) {
+            appendInternalUpdates(desc, ue);
+        }
+        } catch (Exception e) {
+            err.log(Level.INFO, "Exception", e);
         }
         return desc.toString();
     }
+
+    private void appendInternalUpdates(StringBuilder desc, UpdateElement ue) {
+        desc.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+        desc.append(ue.getDisplayName());
+        if (ue.getUpdateUnit().getInstalled() != null) {
+            desc.append(" [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->");
+        } else {
+            desc.append(" <span color=\"red\">new!</span> [");
+        }
+
+        desc.append(ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion());
+        desc.append("]<br>");
+    }
+
+
 
     private static String getBundle(String key) {
         return NbBundle.getMessage(UnitDetails.class, key);
