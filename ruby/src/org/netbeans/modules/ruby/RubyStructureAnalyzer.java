@@ -126,6 +126,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private List<AstMethodElement> methods;
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
     private RubyParseResult result;
+    private RubyIndex index;
     private RubyTypeInferencer typeInferencer;
     private boolean isTestFile;
 
@@ -255,7 +256,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         
         AstPath path = new AstPath();
         path.descend(root);
-        ContextKnowledge knowledge = new ContextKnowledge(null, root, result);
+        ContextKnowledge knowledge = new ContextKnowledge(index, root, result);
         this.typeInferencer = RubyTypeInferencer.create(knowledge);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
         scan(root, path, null, null, null);
@@ -989,10 +990,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         try {
             addedWithIndex = currentlyAnalyzingWithIndex.add(toAnalyze);
             if (addedWithIndex && result != null) {
-                // don't create index here as it takes time and
-                // might not be used at all, instead it's now created
-                // lazily in ContextKnowledge
-                //this.index = RubyIndex.get(result);
+                this.index = RubyIndex.get(result);
             }
             this.result = result;
             scan = scan(result);
