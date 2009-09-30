@@ -742,8 +742,12 @@ public class ELExpression {
                 }
                 return null;
             }
-            TypeMirror lastKnownType = controller.getElements().getTypeElement(
-                    beanType).asType();
+            TypeElement element = controller.getElements().getTypeElement(beanType);
+            // Fix for IZ#173351 - NullPointerException at org.netbeans.modules.web.core.syntax.completion.api.ELExpression$BaseELTaskClass.getTypeMirrorPreceedingCaret
+            TypeMirror lastKnownType = null;
+            if ( element!= null){
+                lastKnownType = element.asType();
+            }
             TypeMirror lastReturnType = null;
 
             Part parts[] = getParts( expression );
