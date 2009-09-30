@@ -94,7 +94,9 @@ public class DynamicVerifyTest extends NbTestCase {
         );
 
         all.addTest(full);
+        all.addTest(new WarningsCheck("testEnable"));
         all.addTest(ergonomics);
+        all.addTest(new WarningsCheck("testNoWarnings"));
 
         return all;
     }
