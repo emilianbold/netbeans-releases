@@ -182,8 +182,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
     private final List<GdbVariable> localVariables = new ArrayList<GdbVariable>();
-    private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
-    private final Map<Integer, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl>());
+    private final Map<Integer, BreakpointImpl<?>> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl<?>>();
+    private final Map<Integer, BreakpointImpl<?>> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl<?>>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
     private final Set<Integer> runAfterTokens = Collections.synchronizedSet(new HashSet<Integer>());
     private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
@@ -1121,7 +1121,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 int end = msg.indexOf('.', start); // NOI18N
                 if (end != -1) {
                     String breakpoinIdx = msg.substring(start, end).trim();
-                    BreakpointImpl breakpoint = findBreakpoint(breakpoinIdx);
+                    BreakpointImpl<?> breakpoint = findBreakpoint(breakpoinIdx);
                     if (breakpoint != null) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
@@ -1129,7 +1129,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
-                BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
+                BreakpointImpl<?> breakpoint = pendingBreakpointMap.remove(token);
                 if (breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
@@ -1650,7 +1650,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
-                BreakpointImpl impl = findBreakpoint(map.get("bkptno")); // NOI18N
+                BreakpointImpl<?> impl = findBreakpoint(map.get("bkptno")); // NOI18N
                 if (impl == null) {
                     int idx = temporaryBreakpoints.indexOf(map.get("bkptno")); // NOI18N
                     if (idx >= 0) {
@@ -1993,7 +1993,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param reason a reason why program is stopped
      */
     private boolean breakpointValidation(int token, Object o) {
-        BreakpointImpl impl = pendingBreakpointMap.get(token);
+        BreakpointImpl<?> impl = pendingBreakpointMap.get(token);
 
         if (impl != null) { // impl is null for the temporary bp set at main during startup
             if (o instanceof String) {
@@ -2418,7 +2418,7 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.set_unwindonsignal("off"); // NOI18N
         ArrayList<Integer> ids = new ArrayList<Integer>();
         synchronized (breakpointList) {
-            for (Map.Entry<Integer, BreakpointImpl> entry : breakpointList.entrySet()) {
+            for (Map.Entry<Integer, BreakpointImpl<?>> entry : breakpointList.entrySet()) {
                 if (entry.getValue().getBreakpoint().isEnabled()) {
                     ids.add(entry.getKey());
                 }
@@ -2499,11 +2499,11 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    public Map<Integer, BreakpointImpl> getBreakpointList() {
+    public Map<Integer, BreakpointImpl<?>> getBreakpointList() {
         return breakpointList;
     }
 
-    private BreakpointImpl findBreakpoint(String id) {
+    private BreakpointImpl<?> findBreakpoint(String id) {
         try {
             return breakpointList.get(Integer.valueOf(id));
         } catch (NumberFormatException nfe) {
