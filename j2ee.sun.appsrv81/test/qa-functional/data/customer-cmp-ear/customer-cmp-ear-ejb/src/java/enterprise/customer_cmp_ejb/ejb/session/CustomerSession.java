@@ -3,7 +3,7 @@
  *
  * Created on January 16, 2006, 6:38 PM
  *
- * Copyright 2004-2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2004-2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 

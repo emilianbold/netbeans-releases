@@ -20,7 +20,7 @@
 /*
  * ArrayUtil.java 1.0
  *
- * Copyright 2004-2006 Sun Microsystems, Inc. All Rights Reserved.
+ * Copyright 2004-2009 Sun Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.iep.model.lib;
 
