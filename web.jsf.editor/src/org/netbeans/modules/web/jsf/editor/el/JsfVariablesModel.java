@@ -152,7 +152,7 @@ public class JsfVariablesModel {
     /** returns a list of context ancestors. The context's parent is first element in the array,
      * the root is the last one.
      */
-    List<JsfVariableContext> getAncestors(JsfVariableContext context) {
+    List<JsfVariableContext> getAncestors(JsfVariableContext context, boolean includeItself) {
         SortedSet<JsfVariableContext> head = getContexts().headSet(context);
 
         JsfVariableContext[] head_array = head.toArray(new JsfVariableContext[]{});
@@ -164,6 +164,10 @@ public class JsfVariablesModel {
             if(c.getTo() > context.getTo()) {
                 ancestors.add(c);
             }
+        }
+
+        if(includeItself) {
+            ancestors.add(0, context);
         }
 
         return ancestors;
@@ -179,9 +183,14 @@ public class JsfVariablesModel {
         // x => (prop.name)
 
         Expression expr = Expression.parse(context.getVariableValue());
-        String resolved = expr.getPostfix();
+        String resolved = expr.getPostfix() != null ? expr.getPostfix() : "";
         
-        List<JsfVariableContext> ancestors = getAncestors(context);
+        List<JsfVariableContext> ancestors = getAncestors(context, false);
+        if(ancestors.isEmpty()) {
+            //there are no ancestors which can be resolved
+            return expr.getCleanExpression();
+        }
+
         List<JsfVariableContext> matching = new ArrayList<JsfVariableContext>();
         //gather matching contexts (those which baseObject fits to ancestor's variable name)
         for(JsfVariableContext c : ancestors) {
@@ -211,13 +220,11 @@ public class JsfVariablesModel {
     public String resolveExpression(String expression, int offset) {
         Expression parsedExpression = Expression.parse(expression);
         JsfVariableContext leaf = getContext(offset);
-        List<JsfVariableContext> ancestors = getAncestors(leaf);
-        List<JsfVariableContext> ancestorWithLeaf = new ArrayList<JsfVariableContext>(ancestors);
-        ancestorWithLeaf.add(0, leaf);
+        List<JsfVariableContext> ancestors = getAncestors(leaf, true);
 
         JsfVariableContext match = null;
         //find a context which defines the given variableName
-        for(JsfVariableContext c : ancestorWithLeaf) {
+        for(JsfVariableContext c : ancestors) {
             if(c.getVariableName().equals(parsedExpression.getBase())) {
                 match = c;
                 break;
@@ -270,6 +277,12 @@ public class JsfVariablesModel {
         public String getPostfix() {
             return postfix;
         }
-        
+
+        @Override
+        public String toString() {
+            return super.toString() + " (base=" + base +", postfix=" + postfix;
+        }
+
+
     }
 }

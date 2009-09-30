@@ -136,14 +136,14 @@ public class JsfVariablesModelTest extends TestBase {
 
         //test ancestors
         //second is embedded in first
-        List<JsfVariableContext> ancestors = model.getAncestors(second);
+        List<JsfVariableContext> ancestors = model.getAncestors(second, false);
         assertNotNull(ancestors);
         assertEquals(1, ancestors.size());
         JsfVariableContext parent = ancestors.get(0);
         assertSame(first, parent);
 
         //third is standalone
-        ancestors = model.getAncestors(third);
+        ancestors = model.getAncestors(third, false);
         assertNotNull(ancestors);
         assertEquals(0, ancestors.size());
     }
