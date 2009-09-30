@@ -93,6 +93,8 @@ public class NotificationsManager {
     private final SvnKenaiSupport supp;
     private Boolean enabled;
 
+    private Map<File, Long> notifiedFiles = new HashMap<File, Long>();
+
     private NotificationsManager () {
         files = new HashSet<File>();
         rp = new RequestProcessor("SubversionNotifications", 1, true);  //NOI18N
@@ -134,6 +136,12 @@ public class NotificationsManager {
         }
         if (refresh) {
             notificationTask.schedule(100);
+        }
+    }
+
+    public void notfied(File[] files, Long revision) {
+        for (File file : files) {
+            notifiedFiles.put(file, revision);
         }
     }
 

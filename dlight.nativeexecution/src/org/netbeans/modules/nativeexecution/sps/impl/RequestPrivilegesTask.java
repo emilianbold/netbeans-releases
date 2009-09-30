@@ -38,19 +38,23 @@
  */
 package org.netbeans.modules.nativeexecution.sps.impl;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.security.acl.NotOwnerException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.sps.impl.RequestPrivilegesTask.RequestPrivilegesTaskParams;
 import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.ui.GrantPrivilegesDialog;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
 public final class RequestPrivilegesTask implements Computable<RequestPrivilegesTaskParams, Boolean> {
@@ -59,56 +63,25 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
     private WeakReference<GrantPrivilegesDialog> dialogRef = null;
 
     public Boolean compute(RequestPrivilegesTaskParams args) throws InterruptedException {
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(
-                loc("TaskPrivilegesSupport_Progress_RequestPrivileges")); // NOI18N
+        final RequestPrivilegesTaskPerformer performer = new RequestPrivilegesTaskPerformer(args);
+        final Future<Boolean> result = NativeTaskExecutorService.submit(performer, "RequestPrivilegesTask"); // NOI18N
 
-        Process ppriv = null;
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(
+                loc("TaskPrivilegesSupport_Progress_RequestPrivileges"), new Cancellable() { // NOI18N
+
+            public boolean cancel() {
+                return result.cancel(true);
+            }
+        });
+
+        ph.start();
 
         try {
-            ph.start();
-
-            // An attempt to grant privileges using pfexec
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(args.support.getExecEnv());
-            npb.setExecutable("/bin/pfexec").setArguments("/bin/ppriv", "-s", // NOI18N
-                    "I+" + args.privilegesString, args.support.getPID()); // NOI18N
-
-            ppriv = npb.call();
-            int result = ppriv.waitFor();
-
-            if (result == 0) {
-                // pfexec succeeded ...
-                return Boolean.TRUE;
-            }
-
-            if (!args.askForPassword) {
-                return Boolean.FALSE;
-            }
-
-            if (dialogRef == null || dialogRef.get() == null) {
-                dialogRef = new WeakReference<GrantPrivilegesDialog>(
-                        new GrantPrivilegesDialog());
-            }
-
-            GrantPrivilegesDialog dialog = dialogRef.get();
-
-            while (true) {
-                if (dialog.askPassword()) {
-                    try {
-                        char[] clearPassword = dialog.getPassword();
-                        args.support.requestPrivileges(args.requestedPrivileges, dialog.getUser(), clearPassword);
-                        Arrays.fill(clearPassword, (char) 0);
-                        dialog.clearPassword();
-                        return Boolean.TRUE;
-                    } catch (NotOwnerException ex) {
-                        // wrong password or not enough privileges...
-                        // Continue with password requests...
-                    }
-                } else {
-                    throw new CancellationException();
-                }
-            }
-        } catch (IOException ex) {
-            log.fine("IOException in RequestPrivilegesTask : " + ex.toString()); // NOI18N
+            return result.get();
+        } catch (ExecutionException ex) {
+            log.fine("ExecutionException in RequestPrivilegesTask : " + ex.toString()); // NOI18N
+        } catch (CancellationException ex) {
+            // skip. Will return false
         } finally {
             ph.finish();
         }
@@ -164,6 +137,59 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
             hash = 79 * hash + (this.askForPassword ? 1 : 0);
             hash = 79 * hash + (this.support != null ? this.support.hashCode() : 0);
             return hash;
+        }
+    }
+
+    private class RequestPrivilegesTaskPerformer implements Callable<Boolean> {
+
+        private final RequestPrivilegesTaskParams args;
+
+        public RequestPrivilegesTaskPerformer(RequestPrivilegesTaskParams args) {
+            this.args = args;
+        }
+
+        public Boolean call() throws Exception {
+            Process ppriv = null;
+            // An attempt to grant privileges using pfexec
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(args.support.getExecEnv());
+            npb.setExecutable("/bin/pfexec").setArguments("/bin/ppriv", "-s", // NOI18N
+                    "I+" + args.privilegesString, args.support.getPID()); // NOI18N
+
+            ppriv = npb.call();
+            int result = ppriv.waitFor();
+
+            if (result == 0) {
+                // pfexec succeeded ...
+                return Boolean.TRUE;
+            }
+
+            if (!args.askForPassword) {
+                return Boolean.FALSE;
+            }
+
+            if (dialogRef == null || dialogRef.get() == null) {
+                dialogRef = new WeakReference<GrantPrivilegesDialog>(
+                        new GrantPrivilegesDialog());
+            }
+
+            GrantPrivilegesDialog dialog = dialogRef.get();
+
+            while (true) {
+                if (dialog.askPassword()) {
+                    try {
+                        char[] clearPassword = dialog.getPassword();
+                        args.support.requestPrivileges(args.requestedPrivileges, dialog.getUser(), clearPassword);
+                        Arrays.fill(clearPassword, (char) 0);
+                        dialog.clearPassword();
+                        return Boolean.TRUE;
+                    } catch (NotOwnerException ex) {
+                        // wrong password or not enough privileges...
+                        // Continue with password requests...
+                    }
+                } else {
+                    throw new CancellationException();
+                }
+            }
         }
     }
 }

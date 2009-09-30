@@ -21,7 +21,14 @@ package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
 import java.io.InputStream;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -32,9 +39,11 @@ import org.openide.util.HelpCtx;
 public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
     
     private TemplatePanelVisual component;
+    private WizardDescriptor wizard;
     
     /** Creates a new instance of TemplatePanel */
-    public TemplatePanel() {
+    public TemplatePanel(WizardDescriptor wizard) {
+        this.wizard = wizard;
         component = null;
     }
     
@@ -50,12 +59,29 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
     }
     
     public void readSettings(Object settings) {
+        wizard = (WizardDescriptor) settings;
     }
     
     public void storeSettings(Object settings) {
     }
     
     public boolean isValid() {
+        Project project = Templates.getProject(wizard);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+            if (preferences.get("Facelets", "").equals("")) { //NOI18N
+                ClassPath cp  = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+                boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
+                                          cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
+                                          cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
+                if (!faceletsPresent) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "No Facelets Libraries Found");
+                    return false;
+                }
+            }
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         return true;
     }
     

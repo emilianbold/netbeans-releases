@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,19 +90,18 @@ public class TreeModelRoot {
     private DefaultTreeFeatures treeFeatures;
     private ExplorerManager manager;
     
-    /** The children evaluator for view of this root. */
-    private TreeModelNode.LazyEvaluator childrenEvaluator;
-    /** The values evaluator for view of this root. */
-    private TreeModelNode.LazyEvaluator valuesEvaluator;
-
-    /** RequestProcessor to be used for evaluations. */
-    private RequestProcessor rp;
+    /** The children evaluator for view of this root. *
+    private final Map<RequestProcessor, TreeModelNode.LazyEvaluator> childrenEvaluators
+            = new WeakHashMap<RequestProcessor, TreeModelNode.LazyEvaluator>();
+    /** The values evaluator for view of this root. *
+    private final Map<RequestProcessor, TreeModelNode.LazyEvaluator> valuesEvaluators
+            = new WeakHashMap<RequestProcessor, TreeModelNode.LazyEvaluator>();
+     */
 
     public TreeModelRoot (Models.CompoundModel model, TreeView treeView) {
         this.model = model;
         this.manager = ExplorerManager.find(treeView);
         this.treeFeatures = new DefaultTreeFeatures(treeView);
-        getRP();
         modelListeners = new ModelChangeListener[] { new ModelChangeListener(model) };
         model.addModelListener (modelListeners[0]);
     }
@@ -111,7 +111,6 @@ public class TreeModelRoot {
         this.model = model.getMain();
         this.manager = ExplorerManager.find(treeView);
         this.treeFeatures = new DefaultTreeFeatures(treeView);
-        getRP();
         int nl = model.getModels().length;
         modelListeners = new ModelChangeListener[nl];
         for (int i = 0; i < nl; i++) {
@@ -125,7 +124,6 @@ public class TreeModelRoot {
         this.model = model;
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
-        getRP();
         modelListeners = new ModelChangeListener[] { new ModelChangeListener(model) };
         model.addModelListener (modelListeners[0]);
     }
@@ -135,7 +133,6 @@ public class TreeModelRoot {
         this.model = model.getMain();
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
-        getRP();
         int nl = model.getModels().length;
         modelListeners = new ModelChangeListener[nl];
         for (int i = 0; i < nl; i++) {
@@ -145,25 +142,6 @@ public class TreeModelRoot {
         }
     }
 
-    private void getRP() {
-        try {
-            java.lang.reflect.Field rpf = model.getClass().getDeclaredField("rp");
-            rpf.setAccessible(true);
-            this.rp = (RequestProcessor) rpf.get(model);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        /*if (rp == null) {
-            Exceptions.printStackTrace(new RuntimeException("NULL RP for "+model));
-        } else {
-            Exceptions.printStackTrace(new RuntimeException("RP for "+model+" is: "+rp));
-        }*/
-    }
-
-    public RequestProcessor getRequestProcessor() {
-        return rp;
-    }
-    
     public TreeFeatures getTreeFeatures () {
         return treeFeatures;
     }
@@ -241,20 +219,26 @@ public class TreeModelRoot {
 //            }
 //        });
 //    }
-    
-    synchronized TreeModelNode.LazyEvaluator getChildrenEvaluator() {
+
+    /*
+    synchronized TreeModelNode.LazyEvaluator getChildrenEvaluator(RequestProcessor rp) {
+        TreeModelNode.LazyEvaluator childrenEvaluator = childrenEvaluators.get(rp);
         if (childrenEvaluator == null) {
             childrenEvaluator = new TreeModelNode.LazyEvaluator(rp);
+            childrenEvaluators.put(rp, childrenEvaluator);
         }
         return childrenEvaluator;
     }
 
-    synchronized TreeModelNode.LazyEvaluator getValuesEvaluator() {
+    synchronized TreeModelNode.LazyEvaluator getValuesEvaluator(RequestProcessor rp) {
+        TreeModelNode.LazyEvaluator valuesEvaluator = valuesEvaluators.get(rp);
         if (valuesEvaluator == null) {
             valuesEvaluator = new TreeModelNode.LazyEvaluator(rp);
+            valuesEvaluators.put(rp, valuesEvaluator);
         }
         return valuesEvaluator;
     }
+     */
 
     public synchronized void destroy () {
         if (model != null) {

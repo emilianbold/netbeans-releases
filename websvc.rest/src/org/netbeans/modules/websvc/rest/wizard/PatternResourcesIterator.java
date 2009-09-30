@@ -49,6 +49,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
@@ -117,6 +119,17 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
                 }
             });
             generatorTask.schedule(50);
+
+            // logging usage of wizard
+            Object[] params = new Object[5];
+            params[0] = LogUtils.WS_STACK_JAXRS;
+            params[1] = project.getClass().getName();
+            J2eeModule j2eeModule = RestUtils.getJ2eeModule(project);
+            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+            params[3] = "REST FROM PATTERNS"; //NOI18N
+            params[4] = ((Pattern)wizard.getProperty(WizardProperties.PATTERN_SELECTION)).toString();
+            LogUtils.logWsWizard(params);
+
             dialog.open();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);

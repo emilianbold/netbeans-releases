@@ -71,7 +71,7 @@ public final class H2DataStorage extends SQLDataStorage {
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     private static final String tmpDir;
     private static final String url;
-    private String dbURL;
+    private final String dbURL;
     private final List<DataTableMetadata> tableMetadatas;
 
     static {
@@ -93,7 +93,7 @@ public final class H2DataStorage extends SQLDataStorage {
         } catch (CancellationException ex) {
         }
 
-        if (tempDir == null) {
+        if (tempDir == null || tempDir.trim().equals("")) {
             tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
         }
 
@@ -109,7 +109,7 @@ public final class H2DataStorage extends SQLDataStorage {
 
                 public boolean accept(File dir, String name) {
                     return dir.isDirectory() && name.startsWith("h2_db_dlight"); // NOI18N
-                }
+                    }
             });
             int generalNameLength = "h2_db_dlight".length();//NOI18N
             int newValue = 0;
@@ -129,7 +129,7 @@ public final class H2DataStorage extends SQLDataStorage {
                     }
                 }
             }, "H2DataStorage removing old data bases");//NOI18N
-        }
+            }
     }
 
     private void initStorageTypes() {
@@ -165,7 +165,7 @@ public final class H2DataStorage extends SQLDataStorage {
                 continue;
             }
             //if (!tdmd.getName().equals(STACK_METADATA_VIEW_NAME)) {
-                createTable(tdmd);
+            createTable(tdmd);
             //}
             this.tableMetadatas.add(tdmd);
         }
@@ -188,7 +188,6 @@ public final class H2DataStorage extends SQLDataStorage {
 //    public List<FunctionCall> getCallStack(int stackId) {
 //        return stackStorage.getStack(stackId);
 //    }
-
 //    public void flush() {
 //        try {
 //            stackStorage.flush();
@@ -196,7 +195,6 @@ public final class H2DataStorage extends SQLDataStorage {
 //            logger.log(Level.SEVERE, null, ex);
 //        }
 //    }
-
 //    public List<FunctionMetric> getMetricsList() {
 //        return stackStorage.getMetricsList();
 //    }
@@ -231,7 +229,6 @@ public final class H2DataStorage extends SQLDataStorage {
 //    public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
-
     @Override
     protected String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
@@ -244,7 +241,6 @@ public final class H2DataStorage extends SQLDataStorage {
 //    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
 //        return stackStorage.getThreadDump(timestamp, threadID, threadState);
 //    }
-
     public boolean hasData(DataTableMetadata data) {
         return data.isProvidedBy(tableMetadatas);
     }

@@ -61,13 +61,13 @@ final class ActiveRecordAssociationFinder {
 
     static final String[] AR_ASSOCIATIONS = {"belongs_to", "has_one", HAS_MANY, HAS_AND_BELONGS_TO_MANY};
 
-    private final ParserResult info;
+    private final RubyIndex index;
     private final SymbolNode closest;
     private final Node root;
     private final AstPath path;
 
-    public ActiveRecordAssociationFinder(ParserResult info, SymbolNode closest, Node root, AstPath path) {
-        this.info = info;
+    public ActiveRecordAssociationFinder(RubyIndex index, SymbolNode closest, Node root, AstPath path) {
+        this.index = index;
         this.closest = closest;
         this.root = root;
         this.path = path;
@@ -152,7 +152,7 @@ final class ActiveRecordAssociationFinder {
         if (className.length() == 0) {
             return DeclarationLocation.NONE;
         }
-        Set<IndexedClass> modelClasses = RubyIndex.get(info).getSubClasses(RubyIndex.ACTIVE_RECORD_BASE, null, className, false);
+        Set<IndexedClass> modelClasses = index.getSubClasses(RubyIndex.ACTIVE_RECORD_BASE, null, className, false);
         if (modelClasses.isEmpty()) {
             return DeclarationLocation.NONE;
         }

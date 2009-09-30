@@ -307,6 +307,17 @@ sources.
 FORMAT OF YOUR project.xml's MAIN CONFIGURATION SECTION
 -------------------------------------------------------
 
+The format of project.xml is controlled by XML Schema. For the main section of
+new modules, use:
+
+  http://www.netbeans.org/ns/nb-module-project/3.xsd
+
+If you wish to edit project.xml by hand rather than using the IDE's GUI, you
+should validate all changes against this schema. If using the IDE's XML text
+editor, just type Alt-Shift-F9 to validate the current document. (Make sure the
+file is valid BEFORE saving it, as the IDE will refuse to load a malformed
+project.xml.)
+
 You must specify the "code name base" of your module. This is the value of
 OpenIDE-Module in manifest.mf, *except* without any major release version (e.g.
 "/1"). In the future OpenIDE-Module might be generated from this, but not yet.

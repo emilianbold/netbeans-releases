@@ -163,13 +163,21 @@ public class ResultSetJXTable extends JXTableDecorator {
         b.addKeyListener(kl);
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(b));
 
-        DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
-        setDefaultEditor(java.sql.Date.class, dateEditor);
+        try {
+            DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
+            setDefaultEditor(java.sql.Date.class, dateEditor);
+        } catch (NullPointerException npe) {
+            mLogger.log(Level.WARNING, "While creating DatePickerCellEditor was thrown " + npe);
+        }
 
-        DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
-        dateTimeEditor.addKeyListener(kl);
-        setDefaultEditor(Timestamp.class, dateTimeEditor);
-        setDefaultEditor(java.util.Date.class, dateTimeEditor);
+        try{
+            DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
+            dateTimeEditor.addKeyListener(kl);
+            setDefaultEditor(Timestamp.class, dateTimeEditor);
+            setDefaultEditor(java.util.Date.class, dateTimeEditor);
+        } catch (NullPointerException npe) {
+            mLogger.log(Level.WARNING, "While creating DateTimePickerCellEditor was thrown " + npe);
+        }
     }
 
     protected KeyListener createControKeyListener() {
