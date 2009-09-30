@@ -253,7 +253,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
-            request.anchor = caretOffset - prefix.length();
+            
+            request.anchor = caretOffset
+                    // can't just use 'prefix.getLength()' here cos it might have been calculated with
+                    // the 'upToOffset' flag set to false
+                    - getPrefix(info, caretOffset, true).length();
+
             request.result = result;
             request.info = info;
             request.prefix = prefix;
