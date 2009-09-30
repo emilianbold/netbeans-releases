@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,8 +65,10 @@ import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -319,11 +320,19 @@ public class PHPTypeSearcher implements IndexSearcher {
             StringBuilder sb = new StringBuilder();
             boolean s = false;
             if (element instanceof IndexedFullyQualified) {
-                sb.append(((IndexedFullyQualified) element).getFullyQualifiedName());
-                s = true;
+                IndexedFullyQualified fqnElement = (IndexedFullyQualified) element;
+                if (!NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(fqnElement.getNamespaceName())) {
+                    if (element instanceof IndexedType) {
+                        sb.append(fqnElement.getFullyQualifiedName());
+                    } else {
+                        sb.append(fqnElement.getNamespaceName());
+                    }
+                    s = true;
+                }
             } else {
                 if (enclosingClass != null) {
-                    if (enclosingClass instanceof IndexedFullyQualified) {
+                    if (enclosingClass instanceof IndexedFullyQualified &&
+                            (!NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(((IndexedFullyQualified)enclosingClass).getNamespaceName()))) {
                         sb.append(((IndexedFullyQualified) enclosingClass).getFullyQualifiedName());
                     } else {
                         sb.append(enclosingClass.getName());
