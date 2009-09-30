@@ -79,7 +79,11 @@ public class MacroMap {
     }
 
     public final void putAll(MacroMap envVariables) {
-        for (Entry<String, String> entry : envVariables.map.entrySet()) {
+        putAll(envVariables.map);
+    }
+
+    public final void putAll(Map<String, String> map) {
+        for (Entry<String, String> entry : map.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }

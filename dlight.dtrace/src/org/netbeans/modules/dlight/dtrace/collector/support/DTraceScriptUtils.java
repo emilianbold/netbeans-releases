@@ -36,33 +36,60 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.dtrace.collector.support;
 
-package org.netbeans.modules.cnd.debugger.gdb;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Map;
 
 /**
- *
- * @author Egor Ushakov
+ * @author Alexey Vladykin
  */
-public class EnvUtils {
-    private EnvUtils() {
-        
+public final class DTraceScriptUtils {
+
+    private DTraceScriptUtils() {
     }
 
-    public static String getKey(String envEntry) {
-        int idx = envEntry.indexOf('=');
-        if (idx != -1) {
-            return envEntry.substring(0, idx);
-        } else {
-            return envEntry;
+    public static void appendToScript(File script, String text) throws IOException {
+        BufferedWriter w = new BufferedWriter(new FileWriter(script, true));
+        try {
+            w.write(text);
+        } finally {
+            w.close();
         }
     }
 
-    public static String getValue(String envEntry) {
-        int idx = envEntry.indexOf('=');
-        if (idx != -1) {
-            return envEntry.substring(idx + 1);
-        } else {
-            return "";
+    public static File mergeScripts(Map<String, URL> scripts) throws IOException {
+        File result = File.createTempFile("dlight", ".d"); // NOI18N
+        result.deleteOnExit();
+        BufferedWriter w = new BufferedWriter(new FileWriter(result));
+        try {
+            w.write("#!/usr/sbin/dtrace -ZCqs\n"); // NOI18N
+            for (Map.Entry<String, URL> entry : scripts.entrySet()) {
+                String prefix = entry.getKey();
+                URL url = entry.getValue();
+                BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()));
+                try {
+                    String replacement = "$1" + prefix; // NOI18N
+                    for (String line = r.readLine(); line != null; line = r.readLine()) {
+                        if (!line.startsWith("#!")) { // NOI18N
+                            w.write(line.replaceAll("(print[af]\\(\")", replacement)); // NOI18N
+                            w.write('\n'); // NOI18N
+                        }
+                    }
+                    w.write('\n'); // NOI18N
+                } finally {
+                    r.close();
+                }
+            }
+        } finally {
+            w.close();
         }
+        return result;
     }
 }
