@@ -26,19 +26,12 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
         if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
         }
-         if (newSession == null || !needToHandle(newSession)) {
+         if (newSession == null) {
              return;
          }
         if (newSession != null) {
             newSession.addSessionStateListener(this);
-        }
-
-        UIThread.invoke(new Runnable() {
-
-            public void run() {
-                DLightIndicatorsTopComponent.findInstance().setSession(newSession);
-            }
-        });
+        }     
     }
 
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {

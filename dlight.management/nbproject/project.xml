@@ -80,12 +80,12 @@
                 <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
+                <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.management.api</package>
                 <package>org.netbeans.modules.dlight.management.remote.spi</package>
-                <package>org.netbeans.modules.dlight.management.timeline</package>
                 <package>org.netbeans.modules.dlight.management.ui.spi</package>
             </friend-packages>
         </data>
