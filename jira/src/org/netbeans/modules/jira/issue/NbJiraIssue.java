@@ -1034,6 +1034,15 @@ public class NbJiraIssue extends Issue {
         return getFieldValue(taskData, f);
     }
 
+    String getSeenValue(IssueField f) {
+        Map<String, String> attr = getSeenAttributes();
+        String seenValue = attr != null ? attr.get(f.key) : null;
+        if(seenValue == null) {
+            seenValue = "";                                                     // NOI18N
+        }
+        return seenValue;
+    }
+    
     /**
      * Returns the given fields diplay value
      * @param f
