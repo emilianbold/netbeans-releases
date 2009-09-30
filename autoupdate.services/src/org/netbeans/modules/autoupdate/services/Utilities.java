@@ -558,14 +558,12 @@ public class Utilities {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
                 int type = d.getType();
                 String name = d.getName();
-
-                if (deco != null) {
-                    for (ModuleInfo depMI : deco.getDependening ()) {
+                for (ModuleInfo depMI : deco.getDependening ()) {
                         Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
-                        if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
+                        if (! depM.getProblems ().isEmpty ()) {
                             // skip this module because it has own problems already
                             continue;
                         }
@@ -589,7 +587,6 @@ public class Utilities {
                             }
                         }
                     }
-                }
             }
         }
         return moreRequested;
@@ -744,13 +741,13 @@ public class Utilities {
             // Dependency.TYPE_MODULE
             for (Dependency d : Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ())) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                if (deco != null) {
-                    for (ModuleInfo depMI : deco.getDependening ()) {
-                        Module depM = Utilities.toModule (depMI);
+                for (ModuleInfo depMI : deco.getDependening ()) {
+                        //Module depM = Utilities.toModule (depMI);
+                        Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
-                        if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
+                        if (! depM.getProblems ().isEmpty ()) {
                             // skip this module because it has own problems already
                             continue;
                         }
@@ -761,7 +758,6 @@ public class Utilities {
                                 brokenDependencies.add (toTry);
                             }
                         }
-                    }
                 }
             }
             // Dependency.TYPE_REQUIRES
@@ -775,13 +771,13 @@ public class Utilities {
                 deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
                 for (Dependency d : deps) {
                     DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                    if (deco != null) {
-                        for (ModuleInfo depMI : deco.getDependening ()) {
-                            Module depM = Utilities.toModule (depMI);
+                    for (ModuleInfo depMI : deco.getDependening ()) {
+                            //Module depM = Utilities.toModule (depMI);
+                            Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                             if (depM == null) {
                                 continue;
                             }
-                            if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
+                            if (! depM.getProblems ().isEmpty ()) {
                                 // skip this module because it has own problems already
                                 continue;
                             }
@@ -792,7 +788,6 @@ public class Utilities {
                                 }
                             }
                         }
-                    }
                 }
             }
         }
