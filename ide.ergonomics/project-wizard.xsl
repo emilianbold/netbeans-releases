@@ -116,7 +116,7 @@
                     <xsl:element name="folder">
                         <xsl:attribute name="name">Factories</xsl:attribute>
                         <xsl:element name="file">
-                            <xsl:attribute name="name">Ergonomics.instance</xsl:attribute>
+                            <xsl:attribute name="name"><xsl:value-of select="$filename"/>-ergonomics.instance</xsl:attribute>
                             <xsl:element name="attr">
                                 <xsl:attribute name="name">instanceCreate</xsl:attribute>
                                 <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.fod.FodDataObjectFactory.create</xsl:attribute>
