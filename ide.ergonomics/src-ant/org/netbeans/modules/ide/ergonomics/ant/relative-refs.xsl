@@ -19,8 +19,6 @@
         <xsl:if test="$myid = $pathid">
             <xsl:element name="{name()}">
                 <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-                <xsl:text>
-</xsl:text><xsl:comment>Path: <xsl:value-of select="@path"/></xsl:comment>
                 <xsl:variable name="orig" select="."/>
                 <xsl:for-each select="/descendant::folder[@path=$orig/@path]">
                     <xsl:apply-templates mode="project-wizard"/>
@@ -34,6 +32,7 @@
 
     <!-- ignore is iterated already -->
     <xsl:template match="folder" mode="project-wizard"/>
+    <xsl:template match="@path" mode="project-wizard"/>
     <xsl:template match="file" mode="project-wizard">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
