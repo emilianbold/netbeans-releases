@@ -46,6 +46,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -57,6 +58,7 @@ import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -177,7 +179,7 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator<?>> indicators = null;
+        List<Indicator<?>> indicators = new ArrayList<Indicator<?>>();;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
@@ -191,18 +193,20 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
             }
 
         }
-        Collections.sort(indicators, new Comparator<Indicator<?>>() {
+        if (indicators != null){
+            Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
-            public int compare(Indicator<?> o1, Indicator<?> o2) {
-                if (o1.getPosition() < o2.getPosition()) {
-                    return -1;
-                } else if (o2.getPosition() < o1.getPosition()) {
-                    return 1;
-                } else {
-                    return 0;
+                public int compare(Indicator<?> o1, Indicator<?> o2) {
+                    if (o1.getPosition() < o2.getPosition()) {
+                        return -1;
+                    } else if (o2.getPosition() < o1.getPosition()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
-            }
-        });
+            });
+        }
         setContent(session, indicators);
     }
 
@@ -210,11 +214,18 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
         JPanel panel = getNextPanel();
         panel.removeAll();
         panel.setLayout(new BorderLayout());
-        panel.add(new IndicatorsContainer((DataFilterManager) session, indicators), BorderLayout.CENTER);
-        indicatorPanels = new Vector<JComponent>(indicators.size());
-        indicatorPanels.setSize(indicators.size());
-        for (int i = 0; i < indicators.size(); ++i) {
-            indicatorPanels.set(i, indicators.get(i).getComponent());
+        if (indicators != null){
+            panel.add(new IndicatorsContainer((DataFilterManager) session, indicators), BorderLayout.CENTER);
+            indicatorPanels = new Vector<JComponent>(indicators.size());
+            indicatorPanels.setSize(indicators.size());
+            for (int i = 0; i < indicators.size(); ++i) {
+                indicatorPanels.set(i, indicators.get(i).getComponent());
+            }
+        }else{
+            indicatorPanels = null;
+            JLabel emptyLabel = new JLabel("");//NOI18N NbBundle.getMessage(THAIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
+            emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            panel.add(emptyLabel);
         }
         setActive();
         repaint();
