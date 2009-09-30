@@ -127,66 +127,12 @@
         name="-proxy-one-cluster"
         depends="-init-clusters,-init-one-cluster-propeties"
     >
-        <taskdef name="layerindex"
-             classname="org.netbeans.nbbuild.LayerIndex"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <layerindex resourceid="layers">
-            <modules dir=".">
-                <include name="modules/*.jar"/>
-            </modules>
-        </layerindex>
         <taskdef name="extractlayer"
              classname="org.netbeans.modules.ide.ergonomics.ant.ExtractLayer"
              classpath="${ergonomicsdir}/build/antclasses/:${src-ant.cp}"/>
         <taskdef name="l10nreplace"
              classname="org.netbeans.modules.ide.ergonomics.ant.L10NReplace"
              classpath="${ergonomicsdir}/build/antclasses/:${src-ant.cp}"/>
-
-        <mkdir dir="${proxytmp}/layers"/>
-        <copy todir="${proxytmp}/layers">
-            <resources refid="layers"/>
-        </copy>
-
-        <xmlcatalog id="xml.fs.catalog">
-            <dtd
-                    publicid="-//NetBeans//DTD Filesystem 1.0//EN"
-                    location="${ergonomicsdir}/../openide.filesystems/src/org/openide/filesystems/filesystem.dtd"
-                />
-            <dtd
-                    publicid="-//NetBeans//DTD Filesystem 1.1//EN"
-                    location="${ergonomicsdir}/../openide.filesystems/src/org/openide/filesystems/filesystem1_1.dtd"
-                />
-            <dtd
-                    publicid="-//NetBeans//DTD Filesystem 1.2//EN"
-                    location="${ergonomicsdir}/../openide.filesystems/src/org/openide/filesystems/filesystem1_2.dtd"
-                />
-        </xmlcatalog>
-
-        <xslt
-            basedir="${proxytmp}/layers/"
-            destdir="${proxytmp}/extracted/" style="${ergonomicsdir}/project-wizard.xsl"
-            useimplicitfileset="true" extension=".fragment"
-            filenameparameter="filename"
-        >
-            <xmlcatalog refid="xml.fs.catalog"/>
-            <param name="cluster.name" expression="${cluster.name}"/>
-        </xslt>
-
-        <concat destfile="${proxytmp}/${cluster.name}.xml">
-            <header>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;filesystem&gt;
-            </header>
-            <filterchain>
-                <ignoreblank byline="true"/>
-            </filterchain>
-            <fileset dir="${proxytmp}/extracted">
-            </fileset>
-            <footer>
-&lt;/filesystem&gt;
-            </footer>
-        </concat>
-
         <available
             file="${ergonomicsdir}/${cluster.name}.properties"
             value="${ergonomicsdir}/${cluster.name}.properties"
@@ -196,7 +142,6 @@
         <mkdir dir="${proxydir}"/>
         <extractlayer
             clusterName="${cluster.name}"
-            layer="${proxytmp}/${cluster.name}.xml"
             bundle="${proxydir}/Bundle.properties"
             destdir="${proxydir}"
             badgeicon="${ergonomicsdir}/src/org/netbeans/modules/ide/ergonomics/fod/badge.png"
