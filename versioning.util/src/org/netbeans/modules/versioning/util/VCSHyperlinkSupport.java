@@ -257,8 +257,10 @@ public class VCSHyperlinkSupport {
             try {
                 Rectangle startr = tui.modelToView(textPane, docstart, Position.Bias.Forward).getBounds();
                 Rectangle endr = tui.modelToView(textPane, docend, Position.Bias.Backward).getBounds();
-                Rectangle bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
-                this.bounds = bounds;
+                if(kenaiUser.getIcon() != null) {
+                    endr.x += kenaiUser.getIcon().getIconWidth();
+                }
+                this.bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
