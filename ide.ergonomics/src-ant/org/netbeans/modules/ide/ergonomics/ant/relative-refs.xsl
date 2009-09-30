@@ -43,25 +43,27 @@
                     </xsl:call-template>
                 </xsl:attribute>
             </xsl:if>
-            <xsl:apply-templates mode="project-wizard"/>
+            <xsl:apply-templates mode="replace-refs"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr[@name='SystemFileSystem.localizingBundle']" mode="project-wizard">
+    <xsl:template match="attr[@name='SystemFileSystem.localizingBundle']" mode="replace-refs">
         <xsl:element name="attr">
             <xsl:attribute name="name">SystemFileSystem.localizingBundle</xsl:attribute>
             <xsl:attribute name="stringvalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle</xsl:attribute>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr[@bundlevalue]" mode="project-wizard">
+    <xsl:template match="attr[@bundlevalue]" mode="replace-refs">
         <xsl:element name="attr">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:attribute name="bundlevalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle#<xsl:value-of select="substring-after(@bundlevalue, '#')"/></xsl:attribute>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr[@urlvalue]" mode="project-wizard">
+    <xsl:template match="attr[@urlvalue]" mode="replace-refs">
         <xsl:choose>
             <xsl:when test="contains(@urlvalue,'javax/swing/beaninfo/')">
-                <xsl:copy-of select="."/>
+                <xsl:element name="attr">
+                    <xsl:apply-templates select="@*" mode="replace-refs"/>
+                </xsl:element>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:element name="attr">
@@ -78,7 +80,7 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="attr[@name = 'iconBase' or @name='iconResource']" mode="project-wizard">
+    <xsl:template match="attr[@name = 'iconBase' or @name='iconResource']" mode="replace-refs">
         <xsl:element name="attr">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:attribute name="stringvalue">
@@ -91,8 +93,10 @@
             </xsl:attribute>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr" mode="project-wizard">
-        <xsl:copy-of select="."/>
+    <xsl:template match="@*|node()" mode="replace-refs">
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()" mode="replace-refs"/>
+        </xsl:copy>
     </xsl:template>
 
 
