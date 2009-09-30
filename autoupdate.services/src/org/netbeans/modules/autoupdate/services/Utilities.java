@@ -556,6 +556,9 @@ public class Utilities {
 
             for (Dependency d : dependencies) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
+                int type = d.getType();
+                String name = d.getName();
+
                 if (deco != null) {
                     for (ModuleInfo depMI : deco.getDependening ()) {
                         Module depM = Utilities.toModule (depMI);
@@ -568,7 +571,7 @@ public class Utilities {
                         }
                         for (Dependency toTry : depM.getDependencies ()) {
                             // check only relevant deps
-                            if (deco.equals (DependencyAggregator.getAggregator (toTry)) &&
+                            if (type == toTry.getType() && name.equals(toTry.getName()) &&
                                     ! DependencyChecker.checkDependencyModule (toTry, mi)) {
                                 UpdateUnit tryUU = UpdateManagerImpl.getInstance ().getUpdateUnit (depM.getCodeNameBase ());
                                 if (! tryUU.getAvailableUpdates ().isEmpty ()) {
