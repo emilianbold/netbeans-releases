@@ -66,7 +66,7 @@ public final class THAVisulaizerContainerTopComponent extends TopComponent imple
     private static THAVisulaizerContainerTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-    private static final String PREFERRED_ID = "THAVisulaizerContainerTopComponent";
+    private static final String PREFERRED_ID = "THAVisulaizerContainerTopComponent";//NOI18N
     private JPanel performanceMonitorViewsArea = new JPanel();
     private JComponent viewComponent;
     private String currentToolName;
@@ -75,8 +75,8 @@ public final class THAVisulaizerContainerTopComponent extends TopComponent imple
     public THAVisulaizerContainerTopComponent() {
         initComponents();
         initPerformanceMonitorViewComponents();
-        setName(NbBundle.getMessage(THAVisulaizerContainerTopComponent.class, "CTL_THAVisulaizerContainerTopComponent"));
-        setToolTipText(NbBundle.getMessage(THAVisulaizerContainerTopComponent.class, "HINT_THAVisulaizerContainerTopComponent"));
+        setName(NbBundle.getMessage(THAVisulaizerContainerTopComponent.class, "CTL_THAVisulaizerContainerTopComponent"));//NOI18N
+        setToolTipText(NbBundle.getMessage(THAVisulaizerContainerTopComponent.class, "HINT_THAVisulaizerContainerTopComponent"));//NOI18N
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
     }
@@ -122,15 +122,15 @@ public final class THAVisulaizerContainerTopComponent extends TopComponent imple
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(THAVisulaizerContainerTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
             return getDefault();
         }
         if (win instanceof THAVisulaizerContainerTopComponent) {
             return (THAVisulaizerContainerTopComponent) win;
         }
         Logger.getLogger(THAVisulaizerContainerTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID +//NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
     }
 
@@ -161,7 +161,7 @@ public final class THAVisulaizerContainerTopComponent extends TopComponent imple
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0");//NOI18N
         // TODO store your settings
     }
 
@@ -172,7 +172,7 @@ public final class THAVisulaizerContainerTopComponent extends TopComponent imple
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
+        String version = p.getProperty("version");//NOI18N
         // TODO read your settings according to their version
     }
 
