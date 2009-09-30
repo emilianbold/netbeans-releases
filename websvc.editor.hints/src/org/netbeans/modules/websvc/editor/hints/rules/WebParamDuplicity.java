@@ -49,6 +49,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -106,13 +107,20 @@ public class WebParamDuplicity extends Rule<VariableElement> implements WebServi
         Element methodEl = subject.getEnclosingElement();
         if (ElementKind.METHOD == methodEl.getKind()) {
             for (VariableElement var: ((ExecutableElement)methodEl).getParameters()) {
-                if (!var.getSimpleName().contentEquals(subject.getSimpleName())) {
+                Name paramName = var.getSimpleName();
+                if (!paramName.contentEquals(subject.getSimpleName())) {
                     AnnotationMirror paramAnn = Utilities.findAnnotation(var, ANNOTATION_WEBPARAM);
                     if (paramAnn != null) {
                         AnnotationValue val = Utilities.getAnnotationAttrValue(paramAnn, ANNOTATION_ATTRIBUTE_NAME);
-                        if (val != null && nameValue.equals(val.getValue())) {
+                        if (val != null) {
+                            if (nameValue.equals(val.getValue())) {
+                                return true;
+                            }
+                        } else if (paramName.contentEquals(nameValue.toString())) {
                             return true;
                         }
+                    } else if (paramName.contentEquals(nameValue.toString())) {
+                        return true;
                     }
                 }
             }
