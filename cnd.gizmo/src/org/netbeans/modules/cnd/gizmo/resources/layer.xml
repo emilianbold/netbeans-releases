@@ -5,6 +5,7 @@
         <folder name="Configurations">
             <folder name="Gizmo">
                 <attr name="displayedName" stringvalue="C/C++ Profiling"/>
+                <attr name="system" boolvalue="true"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
