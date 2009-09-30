@@ -49,6 +49,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -426,6 +429,17 @@ class J2SEActionProvider implements ActionProvider {
 
                     execProperties.put(JavaRunner.PROP_PLATFORM, J2SEProjectUtil.getActivePlatform(evaluator.getProperty("platform.active")));
                     execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
+                    String runtimeEnc = evaluator.getProperty(J2SEProjectProperties.RUNTIME_ENCODING);
+                    if (runtimeEnc != null) {
+                        try {
+                            Charset runtimeChs = Charset.forName(runtimeEnc);
+                            execProperties.put("runtime.encoding", runtimeChs); //NOI18N
+                        } catch (IllegalCharsetNameException ichsn) {
+                            LOG.warning("Illegal charset name: " + runtimeEnc); //NOI18N
+                        } catch (UnsupportedCharsetException uchs) {
+                            LOG.warning("Unsupported charset : " + runtimeEnc); //NOI18N
+                        }
+                    }
 
                     if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
                         try {
