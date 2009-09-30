@@ -90,6 +90,15 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/suite/resources/suite.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyApplication.html"/>
                 </file>
+                <file name="emptyBundle">
+                    <attr name="position" intvalue="1100"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createModuleIterator"/>
+                    <attr name="type" stringvalue="bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/bundle.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyBundle.html"/>
+                </file>
             </folder>
         </folder>
         <folder name="NetBeansModuleDevelopment">
@@ -220,6 +229,7 @@ made subject to such option by the copyright holder.
             <file name="templateNew2" url="../wizard/loader/templateNew2"/>
             <file name="templateresolver.xml" url="../wizard/loader/templateresolver.xml"/>
             <file name="moduleInstall.java" url="../wizard/moduleinstall/moduleInstall.javx"/>
+            <file name="moduleActivator.java" url="../wizard/moduleinstall/moduleActivator.javx"/>
             <file name="template_mypluginOptionsPanelController.java" url="../wizard/options/template_mypluginOptionsPanelController"/>
             <file name="template_mypluginPanel.java" url="../wizard/options/template_mypluginPanel"/>
             <file name="template_myplugin_formPanel.form" url="../wizard/options/template_myplugin_formPanel"/>
