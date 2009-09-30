@@ -247,10 +247,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (context == CompletionContext.NONE) {
                 return CodeCompletionResult.NONE;
             }
-            if (!context.equals(CompletionContext.PHPDOC)) {
-                prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
-            }
-
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
             request.anchor = caretOffset - prefix.length();
@@ -1205,10 +1201,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
                     }
 
-                    /*if ("\\".equals(prefix)){ //NOI18N
-                        prefix = ""; //NOI18N
-                    }*/
-
+                    if (prefix != null && prefix.startsWith("@")) {//NOI18N
+                        final TokenHierarchy<?> tokenHierarchy = info.getSnapshot().getTokenHierarchy();
+                        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, caretOffset) : null;
+                        if (tokenSequence != null) {
+                            tokenSequence.move(caretOffset);
+                            if (tokenSequence.moveNext() && tokenSequence.movePrevious()) {
+                                Token<PHPTokenId> token = tokenSequence.token();
+                                PHPTokenId id = token.id();
+                                if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_TOKEN)) {
+                                    prefix = prefix.substring(1);
+                                }
+                            }
+                        }
+                    }
                     return prefix;
                 }
             } finally {
