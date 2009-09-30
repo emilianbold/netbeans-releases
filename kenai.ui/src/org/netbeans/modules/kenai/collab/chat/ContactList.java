@@ -108,6 +108,7 @@ public class ContactList extends javax.swing.JPanel {
             if (filterModel.getSize()>0)
                 filterCombo.setSelectedIndex(0);
         }
+        Object selected = contactJList.getSelectedValue();
         listModel.clear();
         for (FakeRosterGroup group : roster.getGroups()) {
             if (group.getName().toLowerCase().contains(searchField.getText().toLowerCase())) {
@@ -122,6 +123,12 @@ public class ContactList extends javax.swing.JPanel {
                     listModel.addElement(i);
                 }
             }
+        }
+        if (selected != null) {
+            contactJList.setSelectedValue(selected, true);
+        }
+        if (contactJList.getSelectedIndex()<0 && listModel.size()>0) {
+            contactJList.setSelectedIndex(0);
         }
     }
 
