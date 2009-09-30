@@ -115,6 +115,9 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
             String name = id;
             if (tool != null) {
                 name = tool.getName();
+            }else{
+                //find tool in default configuratopm
+                name = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolByID(id).getName();
             }
             set.put(new BooleanNodeProp(gizmoOptions.getConfigurationByName(id),
                     true, id, name, gizmoOptions.getDescriptionByName(id)));
