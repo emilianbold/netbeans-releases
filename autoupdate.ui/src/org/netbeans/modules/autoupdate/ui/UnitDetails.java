@@ -208,7 +208,9 @@ public class UnitDetails extends DetailsPanel {
             Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
             Map<UpdateElement, Set<UpdateElement>> requiredMap = new HashMap<UpdateElement, Set<UpdateElement>>();
 
-            for (OperationInfo<InstallSupport> info : container.listAll()) {
+            List <OperationInfo<InstallSupport>> infos = container.listAll();
+
+            for (OperationInfo<InstallSupport> info : infos) {
                 Set<UpdateElement> reqs = requiredMap.get(uu.getRelevantElement());
                 if (reqs == null) {
                     reqs = info.getRequiredElements();
@@ -234,7 +236,7 @@ public class UnitDetails extends DetailsPanel {
                 }
                 required.addAll(reqs);
             }
-            for (OperationInfo<InstallSupport> i : container.listAll()) {
+            for (OperationInfo<InstallSupport> i : infos) {
                 if (!required.contains(i.getUpdateElement()) && !i.getUpdateUnit().equals(u.updateUnit)) {
                     required.add(i.getUpdateElement());
                 }
