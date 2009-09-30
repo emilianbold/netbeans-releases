@@ -49,6 +49,7 @@ public class JsfVariableContext implements Comparable {
     protected int to;
     protected String variableName;
     protected String variableValue;
+    protected String resolvedType;
 
     JsfVariableContext(int from, int to, String variableName, String variableType) {
         this.from = from;
@@ -71,6 +72,14 @@ public class JsfVariableContext implements Comparable {
 
     public int getFrom() {
         return from;
+    }
+
+    public String getResolvedType() {
+        return resolvedType;
+    }
+
+    void setResolvedType(String type) {
+        this.resolvedType = type;
     }
 
     @Override

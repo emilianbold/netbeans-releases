@@ -106,7 +106,7 @@ public class ELExpression {
     /** It is EL but we are not able to recognize it */
     public static final int EL_UNKNOWN = 5;
     /** The expression - result of the parsing */
-    private String expression;
+    protected String expression;
     private String replace;
     private boolean isDefferedExecution = false;
     private Document doc;
@@ -155,8 +155,14 @@ public class ELExpression {
         return doc;
     }
     
-    public final int parse(int offset) {
-        myParseType = doParse(offset);
+    public final int parse(final int offset) {
+        final int[] retval = new int[1];
+        ((BaseDocument)doc).render(new Runnable() {
+            public void run() {
+                retval[0] = doParse(offset);
+            }
+        });
+        myParseType = retval[0];
         return myParseType;
     }
     
@@ -473,127 +479,120 @@ public class ELExpression {
         setContextOffset(offset);
 
         BaseDocument document = (BaseDocument) doc;
-        String value = null;
-        document.readLock();
-        try {
-            TokenHierarchy<BaseDocument> hi = TokenHierarchy.get(document);
-            //find EL token sequence and its superordinate sequence
-            TokenSequence<?> ts = hi.tokenSequence();
-            TokenSequence<?> last = null;
-            for (;;) {
-                if (ts == null) {
-                    break;
-                }
-                if (ts.language() == ELTokenId.language()) {
-                    //found EL
-                    isDefferedExecution = last.token().text().toString().startsWith("#{"); //NOI18N
-                    if ( last.movePrevious() ){
-                        if ( JspTokenId.ATTR_VALUE == last.token().id() ){
-                            isAttribute = true;
-                            myAttributeValue = last.token().text().toString();
-                        }
-                        /*
-                         *  This is a little hack . I don't know why NoClassDefFoundError 
-                         *  appears in runtime. Compilation works perfectly. 
-                         */
-                        else if ( last.token().id().toString().equals("HTML")
-                                && last.language().mimeType().equals("text/xhtml"))// NOI18N
-                        {
-                            myXhtmlToken = last.token().text().toString();
-                        }
+        TokenHierarchy<BaseDocument> hi = TokenHierarchy.get(document);
+        //find EL token sequence and its superordinate sequence
+        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence<?> last = null;
+        for (;;) {
+            if (ts == null) {
+                break;
+            }
+            if (ts.language() == ELTokenId.language()) {
+                //found EL
+                isDefferedExecution = last.token().text().toString().startsWith("#{"); //NOI18N
+                if ( last.movePrevious() ){
+                    if ( JspTokenId.ATTR_VALUE == last.token().id() ){
+                        isAttribute = true;
+                        myAttributeValue = last.token().text().toString();
                     }
-                    break;
+                    /*
+                     *  This is a little hack . I don't know why NoClassDefFoundError
+                     *  appears in runtime. Compilation works perfectly.
+                     */
+                    else if ( last.token().id().toString().equals("HTML")
+                            && last.language().mimeType().equals("text/xhtml"))// NOI18N
+                    {
+                        myXhtmlToken = last.token().text().toString();
+                    }
+                }
+                break;
+            } else {
+                //not el, scan next embedded token sequence
+                ts.move(offset);
+                if (ts.moveNext() || ts.movePrevious()) {
+                    last = ts;
+                    ts = ts.embedded();
                 } else {
-                    //not el, scan next embedded token sequence
-                    ts.move(offset);
-                    if (ts.moveNext() || ts.movePrevious()) {
-                        last = ts;
-                        ts = ts.embedded();
+                    //no token, cannot embed
+                    return NOT_EL;
+                }
+            }
+        }
+
+        if (ts == null) {
+            return NOT_EL;
+        }
+
+
+        int diff = ts.move(offset);
+        if (diff == 0) {
+            if (!ts.movePrevious()) {
+                return EL_START;
+            }
+        } else if (!ts.moveNext()) {
+            return EL_START;
+        }
+
+        // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
+        // it can be start of the function or start of a simple expression.
+        Token<?> token = ts.token();
+        boolean rBracket = false;
+        while (rBracket ||
+                (!ELTokenCategories.OPERATORS.hasCategory(ts.token().id())
+                || ts.token().id() == ELTokenId.DOT ||
+                    ts.token().id() == ELTokenId.LBRACKET
+                    || ts.token().id() == ELTokenId.RBRACKET) &&
+                ts.token().id() != ELTokenId.WHITESPACE &&
+                (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
+                ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id())))
+        {
+            if ( ts.token().id() == ELTokenId.RBRACKET ){
+                rBracket = true;
+            }
+            else if ( ts.token().id() == ELTokenId.LBRACKET ){
+                rBracket = false;
+            }
+
+            //repeat until not ( and ' ' and keyword or number
+            if (expression == null) {
+                expression = ts.token().text().toString();
+                if ( ts.token().id() == ELTokenId.DOT  ||
+                        ts.token().id() == ELTokenId.LBRACKET)
+                {
+                    replace = "";
+                } else if (ts.token().text().length() >= (offset - ts.token().offset(hi))) {
+                    if (ts.token().offset(hi) <= offset) {
+                        expression = expression.substring(0, offset - ts.token().offset(hi));
+                        replace = expression;
                     } else {
-                        //no token, cannot embed
+                        // cc invoked within EL delimiter
                         return NOT_EL;
                     }
                 }
-            }
-
-            if (ts == null) {
-                return NOT_EL;
-            }
-
-
-            int diff = ts.move(offset);
-            if (diff == 0) {
-                if (!ts.movePrevious()) {
-                    return EL_START;
-                }
-            } else if (!ts.moveNext()) {
-                return EL_START;
-            }
-
-            // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
-            // it can be start of the function or start of a simple expression.
-            Token<?> token = ts.token();
-            boolean rBracket = false;
-            while (rBracket || 
-                    (!ELTokenCategories.OPERATORS.hasCategory(ts.token().id()) 
-                    || ts.token().id() == ELTokenId.DOT || 
-                        ts.token().id() == ELTokenId.LBRACKET
-                        || ts.token().id() == ELTokenId.RBRACKET) &&
-                    ts.token().id() != ELTokenId.WHITESPACE &&
-                    (!ELTokenCategories.KEYWORDS.hasCategory(ts.token().id()) ||
-                    ELTokenCategories.NUMERIC_LITERALS.hasCategory(ts.token().id()))) 
-            {
-                if ( ts.token().id() == ELTokenId.RBRACKET ){
-                    rBracket = true;
-                }
-                else if ( ts.token().id() == ELTokenId.LBRACKET ){
-                    rBracket = false;
-                }
-                
-                //repeat until not ( and ' ' and keyword or number
-                if (value == null) {
-                    value = ts.token().text().toString();
-                    if ( ts.token().id() == ELTokenId.DOT  || 
-                            ts.token().id() == ELTokenId.LBRACKET) 
-                    {
-                        replace = "";
-                    } else if (ts.token().text().length() >= (offset - ts.token().offset(hi))) {
-                        if (ts.token().offset(hi) <= offset) {
-                            value = value.substring(0, offset - ts.token().offset(hi));
-                            replace = value;
-                        } else {
-                            // cc invoked within EL delimiter
-                            return NOT_EL;
-                        }
-                    }
-                } else {
-                    value = ts.token().text().toString() + value;
-                    if (ts.token().id() == ELTokenId.TAG_LIB_PREFIX) {
-                        replace = value;
-                    }
-                }
-                token = ts.token();
-                myStartOffset = ts.offset();
-                if (!ts.movePrevious()) {
-                    //we are on the beginning of the EL token sequence
-                    break;
+            } else {
+                expression = ts.token().text().toString() + expression;
+                if (ts.token().id() == ELTokenId.TAG_LIB_PREFIX) {
+                    replace = expression;
                 }
             }
-
-            if (ELTokenCategories.OPERATORS.hasCategory(token.id() )
-                    || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) 
-            {
-                return EL_START;
+            token = ts.token();
+            myStartOffset = ts.offset();
+            if (!ts.movePrevious()) {
+                //we are on the beginning of the EL token sequence
+                break;
             }
+        }
 
-            if (token.id() != ELTokenId.IDENTIFIER && token.id() != ELTokenId.TAG_LIB_PREFIX) {
-                value = null;
-            } else if (value != null) {
-                return findContext(value);
-            }
-        } finally {
-            document.readUnlock();
-            expression = value;
+        if (ELTokenCategories.OPERATORS.hasCategory(token.id() )
+                || token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN)
+        {
+            return EL_START;
+        }
+
+        if (token.id() != ELTokenId.IDENTIFIER && token.id() != ELTokenId.TAG_LIB_PREFIX) {
+            expression = null;
+        } else if (expression != null) {
+            return findContext(expression); //can modify the expression field!
         }
         return NOT_EL;
     }
