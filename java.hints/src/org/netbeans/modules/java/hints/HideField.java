@@ -204,6 +204,38 @@ public class HideField extends AbstractHint {
 
         public void cancel() {
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FixImpl other = (FixImpl) obj;
+            if (this.caret != other.caret) {
+                return false;
+            }
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+            if (this.hideFieldByVariable != other.hideFieldByVariable) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + this.caret;
+            hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
+            hash = 17 * hash + (this.hideFieldByVariable ? 1 : 0);
+            return hash;
+        }
+
+        
     }
     
 }
