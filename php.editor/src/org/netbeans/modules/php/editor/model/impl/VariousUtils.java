@@ -251,6 +251,10 @@ public class VariousUtils {
             return "array"; //NOI18N
         } else if (expression instanceof VariableBase) {
             return extractTypeFroVariableBase((VariableBase) expression, allAssignments);//extractVariableTypeFromVariableBase(varBase);
+        } else if (expression instanceof Scalar) {
+            Scalar scalar = (Scalar) expression;
+            Type scalarType = scalar.getScalarType();
+            return scalarType.toString().toLowerCase();
         }
 
         return null;
