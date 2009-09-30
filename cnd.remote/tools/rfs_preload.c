@@ -253,9 +253,11 @@ static int on_open(const char *path, int flags) {
         int path_len = strlen(path);
         trace_sd("sending request");
         trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
-        if (send(sd, path, path_len, 0) == -1) {
+        int sent = send(sd, path, path_len, 0);
+        if (sent == -1) {
             perror("send");
         } else {
+            trace("%d bytes sent to sd=%d\n", sent, sd);
             char response_buf[512];
             memset(response_buf, 0, sizeof(response_buf));
             int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
@@ -308,6 +310,22 @@ on_startup(void) {
     trace("RFS startup; my dir: %s\n", my_dir);
     _sd = 0;
     trace_sd("startup");
+
+    const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
+    char *env_sleep = getenv(env_sleep_var);
+    if (env_sleep) {
+        int time = atoi(env_sleep);
+        if (time > 0) {
+            fprintf(stderr, "%s is set. Process %d, sleeping %d seconds...\n", env_sleep_var, getpid(), time);
+            fflush(stderr);
+            sleep(time);
+            fprintf(stderr, "... awoke.\n");
+            fflush(stderr);
+        } else {
+            fprintf(stderr, "Incorrect value, should be a positive integer: %s=%s\n", env_sleep_var, env_sleep);
+            fflush(stderr);
+        }
+    }
 }
 
 static void release_socket() {
@@ -384,13 +402,19 @@ int pthread_create(void *newthread,
     va_start(ap, flags); \
     mode = va_arg(ap, mode_t); \
     va_end(ap); \
-    static int (*prev)(const char *, int, mode_t); \
-    if (!prev) { \
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(function_name); \
-    } \
     int result = -1; \
     if (on_open(path, flags)) { \
-        result = prev(path, flags, mode); \
+        static int (*prev)(const char *, int, ...); \
+        if (!prev) { \
+            prev = (int (*)(const char *, int, ...)) get_real_addr(function_name); \
+        } \
+        if (prev) {\
+            result = prev(path, flags, mode); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function_name); \
+            errno = EFAULT; \
+            result = -1; \
+        } \
     } \
     trace("%s %s -> %d\n", #function_name, path, result); \
     inside_open--; \

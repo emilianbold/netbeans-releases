@@ -93,7 +93,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         final MacroMap env = info.getEnvVariables();
 
-        UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
 
         // Always prepend /bin and /usr/bin to PATH
 //        env.put("PATH", "/bin:/usr/bin:${PATH}"); // NOI18N
@@ -175,7 +177,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             env.put("PATH", path); // NOI18N
         }
 
-        UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
 
         pb.command(info.getCommand());
 
@@ -192,7 +196,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
                 String envVarName = envVars.containsKey(upperCaseKey) ? envVars.get(upperCaseKey) : entry.getKey();
                 val = entry.getValue();
-                
+
                 if (val != null) {
                     pb.environment().put(envVarName, val);
                     if (LOG.isLoggable(Level.FINEST)) {

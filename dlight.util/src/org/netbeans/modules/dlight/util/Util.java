@@ -106,7 +106,7 @@ public class Util {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
 
             if (hostInfo == null) {
-                throw new IOException("Failed to get local ExecutionEnvironment");
+                throw new IOException("Failed to get local ExecutionEnvironment"); // NOI18N
             }
 
             String prefix = "_dlight_" + getBriefName(url); // NOI18N
