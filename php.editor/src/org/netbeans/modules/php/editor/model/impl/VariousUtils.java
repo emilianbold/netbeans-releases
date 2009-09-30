@@ -81,6 +81,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
@@ -255,6 +257,12 @@ public class VariousUtils {
             Scalar scalar = (Scalar) expression;
             Type scalarType = scalar.getScalarType();
             return scalarType.toString().toLowerCase();
+        } else if (expression instanceof InfixExpression) {
+            InfixExpression infixExpression = (InfixExpression) expression;
+            OperatorType operator = infixExpression.getOperator();
+            if (operator.equals(OperatorType.CONCAT)) {
+                return Type.STRING.toString().toLowerCase();
+            }
         }
 
         return null;
