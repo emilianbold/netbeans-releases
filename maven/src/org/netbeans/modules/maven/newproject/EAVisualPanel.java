@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.newproject;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.MavenValidators;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -86,7 +87,11 @@ public final class EAVisualPanel extends JPanel  {
 
     void readSettings(WizardDescriptor wizardDescriptor) {
         fillTextFields(wizardDescriptor);
-        panel.getValidationGroup().addValidationGroup(vg, true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().addValidationGroup(vg, true);
+            }
+        });
     }
 
     void storeSettings(WizardDescriptor d) {
@@ -132,7 +137,11 @@ public final class EAVisualPanel extends JPanel  {
             d.putProperty("web_versionInfo", null);
             d.putProperty("web_archetype", null);
         }
-        panel.getValidationGroup().removeValidationGroup(vg);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().removeValidationGroup(vg);
+            }
+        });
     }
 
     private void fillTextFields(WizardDescriptor wiz) {

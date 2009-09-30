@@ -556,7 +556,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (panel.getArchetypes() != null) {
             d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));
         }
-        panel.getValidationGroup().removeValidationGroup(vg);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().removeValidationGroup(vg);
+            }
+        });
     }
     
     void read(WizardDescriptor settings) {
@@ -593,7 +597,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 }
             });
         }
-        panel.getValidationGroup().addValidationGroup(vg, true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().addValidationGroup(vg, true);
+            }
+        });
     }
 
     private void prepareAdditionalProperties(Archetype arch) {
