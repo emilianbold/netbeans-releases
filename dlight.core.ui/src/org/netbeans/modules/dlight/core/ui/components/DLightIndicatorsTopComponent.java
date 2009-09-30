@@ -46,6 +46,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -178,7 +179,7 @@ final class DLightIndicatorsTopComponent extends TopComponent implements Explore
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator<?>> indicators = null;
+        List<Indicator<?>> indicators = new ArrayList<Indicator<?>>();;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
