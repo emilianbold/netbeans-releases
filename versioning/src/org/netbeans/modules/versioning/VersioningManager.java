@@ -300,10 +300,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
     synchronized VersioningSystem getLocalHistory(File file) {
-        int files = 0;
-        for (File f : localHistoryFiles.keySet()) {
-            if(f.isFile()) files++;
-        }
         if (localHistory == null) return null;
 
         synchronized(localHistoryFiles) {
