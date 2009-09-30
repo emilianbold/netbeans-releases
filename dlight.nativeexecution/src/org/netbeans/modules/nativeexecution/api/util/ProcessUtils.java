@@ -89,7 +89,7 @@ public final class ProcessUtils {
         }
         List<String> err = readProcessError(p);
         for (String line : err) {
-            log.log(logLevel, line);
+            log.log(logLevel, "ERROR: " + line); // NOI18N
         }
     }
 

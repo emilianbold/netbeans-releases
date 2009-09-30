@@ -20,7 +20,7 @@ AS=gas
 
 # Macros
 CND_PLATFORM=GNU-Solaris-x86
-CND_CONF=Default
+CND_CONF=Release32
 CND_DISTDIR=dist
 
 # Include project Makefile
@@ -50,7 +50,7 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	cd . && ${MAKE} TRACE=1 DEBUG=-g
+	cd . && ${MAKE} DEBUG=-g all
 
 # Subprojects
 .build-subprojects:

@@ -164,13 +164,13 @@ class GraphPainter {
      * @param h  height of drawing area
      * @param ticks  whether to draw ticks on graph
      */
-    public void paint(Graphics g, int scale, List<AxisMark> yMarks, int viewportStart, int viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
+    public void paint(Graphics g, int scale, List<AxisMark> yMarks, long viewportStart, long viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
         synchronized (dataLock) {
             paintGradient(g, x, y, w, h);
             if (0 < w && 0 < h) {
                 paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
-                paintGraph(g, scale, viewportStart, viewportEnd, x, y, w, h);
-                dimInactiveRegions(g, viewportStart, viewportEnd, filterStart, filterEnd, x, y, w, h);
+                paintGraph(g, scale, (int) (viewportStart / 1000), (int) (viewportEnd / 1000), x, y, w, h);
+                dimInactiveRegions(g, (int) (viewportStart / 1000), (int) (viewportEnd / 1000), filterStart, filterEnd, x, y, w, h);
             }
         }
     }

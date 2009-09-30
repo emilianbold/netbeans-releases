@@ -76,7 +76,7 @@ class TreeTableVisualizerColumnModel extends ColumnModel {
 
 
 
-    public Class getType() {
+    public Class<?> getType() {
         return column.getColumnClass();
     }
 

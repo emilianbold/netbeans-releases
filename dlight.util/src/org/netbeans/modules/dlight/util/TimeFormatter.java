@@ -44,9 +44,23 @@ package org.netbeans.modules.dlight.util;
  */
 public final class TimeFormatter implements ValueFormatter {
 
+    private static final String NORMAL_FORMAT = "%d:%02d"; // NOI18N
+    private static final String MILLIS_FORMAT = "%d:%02d.%d"; // NOI18N
     private static final int SECONDS_PER_MINUTE = 60;
+    private static final int MILLIS_PER_SECOND = 1000;
 
-    public String format(int value) {
-        return String.format("%d:%02d", value / SECONDS_PER_MINUTE, value % SECONDS_PER_MINUTE); // NOI18N
+    public String format(long value) {
+        long seconds = value / MILLIS_PER_SECOND;
+        long millis = value % MILLIS_PER_SECOND;
+        if (millis == 0) {
+            return String.format(NORMAL_FORMAT,
+                    seconds / SECONDS_PER_MINUTE,
+                    seconds % SECONDS_PER_MINUTE);
+        } else {
+            return String.format(MILLIS_FORMAT,
+                    seconds / SECONDS_PER_MINUTE,
+                    seconds % SECONDS_PER_MINUTE,
+                    millis / 100);
+        }
     }
 }

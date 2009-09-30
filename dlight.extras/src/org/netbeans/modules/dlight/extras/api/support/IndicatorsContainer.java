@@ -81,14 +81,13 @@ public final class IndicatorsContainer extends JPanel
     private final ViewportBar viewportBar;
     private final JScrollBar hScrollBar;
     private final JScrollBar vScrollBar;
-    private final ViewportModel viewportModel;
+    private final DefaultViewportModel viewportModel;
     private final JLabel timeLabel;
     private boolean isAdjusting;
 
     public IndicatorsContainer(DataFilterManager filterManager, List<Indicator<?>> indicators) {
-        viewportModel = new DefaultViewportModel();
-        viewportModel.setLimits(new Range<Long>(0L, 0L));
-        viewportModel.setViewport(new Range<Long>(0L, EXTENT));
+        viewportModel = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
+        viewportModel.setMinViewportSize(1000L); // 1 second
         viewportModel.addChangeListener(this);
 
         indicatorsScrollPane = packIndicatorsIntoScrollPane(indicators, viewportModel);
@@ -201,7 +200,7 @@ public final class IndicatorsContainer extends JPanel
 
     private void adjust() {
         Range<Long> limits = viewportModel.getLimits();
-        timeLabel.setText(TIME_FORMATTER.format(Math.max(0, (int) TimeUnit.MILLISECONDS.toSeconds(limits.getEnd()) - 1)));
+        timeLabel.setText(TIME_FORMATTER.format(Math.max(0, limits.getEnd() - 1000)));
 
         Range<Long> viewport = viewportModel.getViewport();
         limits = limits.extend(viewport);

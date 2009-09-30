@@ -87,9 +87,8 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         graph.addData(new float[series.size()]); // 0th tick - all zeros
         timeMarksProvider = TimeMarksProvider.newInstance();
         valueMarksProvider = ValueMarksProvider.newInstance(formatter);
-        ViewportModel model = new DefaultViewportModel();
-        model.setLimits(new Range<Long>(0L, 0L));
-        model.setViewport(new Range<Long>(0L, EXTENT));
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
+        model.setMinViewportSize(1000L); // 1 second
         setViewportModel(model);
         setOpaque(true);
 //        ToolTipManager.sharedInstance().registerComponent(this);
@@ -139,9 +138,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         FontMetrics xfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_X_AXIS_FONT));
         FontMetrics yfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_Y_AXIS_FONT));
         Range<Long> viewport = viewportModel.getViewport();
-        int viewportStart = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getStart());
-        int viewportEnd = (int)TimeUnit.MILLISECONDS.toSeconds(viewport.getEnd());
-        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), xfm);
+        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewport.getStart(), viewport.getEnd(), getWidth(), xfm);
         List<AxisMark> valueMarks = valueMarksProvider.getAxisMarks(0, upperLimit, getHeight() - yfm.getAscent() / 2, yfm);
         int filterStart, filterEnd;
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
@@ -153,7 +150,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;
         }
-        graph.paint(g, upperLimit, valueMarks, viewportStart, viewportEnd, timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
+        graph.paint(g, upperLimit, valueMarks, viewport.getStart(), viewport.getEnd(), timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
     public void addData(float... newData) {
@@ -237,10 +234,8 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
                         break;
                     case HORIZONTAL:
                         Range<Long> viewport = viewportModel.getViewport();
-                        int viewportStart = (int)(viewport.getStart() / 1000);
-                        int viewportEnd = (int)(viewport.getEnd() / 1000);
                         FontMetrics xfm = g.getFontMetrics(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_X_AXIS_FONT));
-                        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewportStart, viewportEnd, getWidth(), xfm);
+                        List<AxisMark> timeMarks = timeMarksProvider.getAxisMarks(viewport.getStart(), viewport.getEnd(), getWidth(), xfm);
                         graph.paintHorizontalAxis(g, 0, 0, getWidth(), getHeight(), timeMarks, getBackground());
                         break;
                 }
