@@ -49,7 +49,9 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             final MacroMap envVars = info.getEnvVariables();
 
             // Setup LD_PRELOAD to load unbuffer library...
-            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
+            if (info.isUnbuffer()) {
+                UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
+            }
 
             // Always prepend /bin and /usr/bin to PATH
 //            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
