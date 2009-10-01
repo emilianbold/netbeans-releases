@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.html.editor;
 
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
@@ -53,7 +55,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.core.GsfEditorKitFactory.GsfEditorKit;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -129,6 +134,17 @@ public class HtmlAutoCompletion {
 
     private static void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, final char lastChar)
             throws BadLocationException {
+
+        //release68_beta hotfix >>>
+        //disable the autoindent in GSF based langs with defult GsfEditorKit
+        String mimeType = (String)doc.getProperty(BaseDocument.MIME_TYPE_PROP);
+        if(mimeType != null) {
+            EditorKit editorKit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
+            if(editorKit != null && editorKit instanceof GsfEditorKit) {
+                return ;
+            }
+        }
+        //<<<
 
         //we must not access the indent lock under the document lock!
         final boolean isHtmlContext[] = new boolean[1];
