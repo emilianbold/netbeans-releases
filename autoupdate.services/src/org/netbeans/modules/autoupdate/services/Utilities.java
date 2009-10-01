@@ -829,20 +829,20 @@ public class Utilities {
     private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
         if (mgr == null) {
             mgr = Main.getModuleSystem().getManager();
-        }
-        assert mgr != null;
-        if (mgr == null || specificationVersion == null) {
-            return mgr != null ? mgr.get(codeNameBase) : null;
-        } else {
-            Module m = mgr.get(codeNameBase);
-            if (m == null) {
+            assert mgr != null;
+            if (mgr == null) {
                 return null;
-            } else {
-                if (m.getSpecificationVersion () == null) {
-                    return null;
-                }
-                return m.getSpecificationVersion ().compareTo (specificationVersion) >= 0 ? m : null;
             }
+        }
+        Module m = mgr.get(codeNameBase);
+        if (specificationVersion == null || m == null) {
+            return m;
+        } else {
+            SpecificationVersion version = m.getSpecificationVersion();
+            if (version == null) {
+                return null;
+            }
+            return version.compareTo(specificationVersion) >= 0 ? m : null;
         }
     }
     
