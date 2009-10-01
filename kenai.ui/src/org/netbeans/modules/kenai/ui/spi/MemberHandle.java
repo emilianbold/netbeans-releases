@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
  * @author Jan Becicka
  */
 public abstract class MemberHandle implements Comparable <MemberHandle> {
+    public abstract String getFullName();
     public abstract String getDisplayName();
     public abstract String getName();
     public String getRole() { return null; }

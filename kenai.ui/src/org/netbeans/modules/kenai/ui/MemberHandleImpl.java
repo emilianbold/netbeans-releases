@@ -100,4 +100,9 @@ public class MemberHandleImpl extends MemberHandle {
         delegate.getKenaiUser().removePropertyChangeListener(listener);
     }
 
+    @Override
+    public String getFullName() {
+        return delegate.getKenaiUser().getFirstName() + " " + delegate.getKenaiUser().getLastName();
+    }
+
 }

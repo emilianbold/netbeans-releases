@@ -70,6 +70,7 @@ import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
+import org.netbeans.modules.kenai.ui.dashboard.UserNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -285,11 +286,14 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
                     result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                    result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
                     result.repaint();
                 }
             }
