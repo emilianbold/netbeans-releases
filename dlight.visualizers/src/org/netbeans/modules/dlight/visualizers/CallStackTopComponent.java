@@ -51,6 +51,7 @@ import org.openide.windows.WindowManager;
 //import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizer;
 
 /**
  * Top component which displays something.
@@ -173,11 +174,14 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolID, String toolName, Visualizer v) {
+    public void addVisualizer(String toolID, String toolName, Visualizer<?> v) {
         setContent(toolName, v.getComponent());
     }
 
     public void setContent(String toolName, JComponent component) {
+	if (component instanceof ThreadStackVisualizer) {
+	    toolName = ((ThreadStackVisualizer)component).getDisplayName();
+	}
         if (currentToolName != null && currentToolName.equals(toolName) &&
             viewComponent == component) {
             return;
@@ -197,7 +201,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         setContent(toolName, component);
     }
 
-    public void removeVisualizer(final Visualizer view) {
+    public void removeVisualizer(final Visualizer<?> view) {
         if (EventQueue.isDispatchThread()){
             closeCallStack(view);
         }else{
@@ -214,7 +218,7 @@ public final class CallStackTopComponent extends TopComponent implements Visuali
         requestActive();
     }
 
-    private void closeCallStack(Visualizer view) {
+    private void closeCallStack(Visualizer<?> view) {
         if (viewComponent != view.getComponent()) {
             return;
         }

@@ -70,10 +70,10 @@ public class PropertiesAction extends ContextAction {
     }
     
     public void performAction(ActionEvent e) {
-        File root = HgUtils.getRootFile(context);
-        if (root == null) {
-            return;
-        }
+        final File roots[] = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) return;
+        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+
         final PropertiesPanel panel = new PropertiesPanel();
 
         final PropertiesTable propTable;
@@ -114,6 +114,6 @@ public class PropertiesAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     } 
 }

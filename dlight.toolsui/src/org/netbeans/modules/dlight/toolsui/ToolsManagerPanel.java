@@ -359,7 +359,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     class MyListEditorPanel extends ListEditorPanel<DLightConfigurationUIWrapper> {
 
         public MyListEditorPanel(List<DLightConfigurationUIWrapper> list) {
-            super(list, null);
+            super(list);
             setPreferredSize(new Dimension(400, 300));
         }
 
@@ -372,12 +372,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 return null;
             }
             String newS = notifyDescriptor.getInputText();
-            return new DLightConfigurationUIWrapper(newS, allDLightTools);
+            return new DLightConfigurationUIWrapper(newS, newS, allDLightTools);
         }
 
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {
-            DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(getString("CopyOf", o.getName()), allDLightTools);
+            DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper("copyof" + o.getName(), getString("CopyOf", o.getDisplayName()), allDLightTools); // NOI18N
             List<DLightToolUIWrapper> tools = o.getTools();
             List<DLightToolUIWrapper> copyTools = copy.getTools();
             int i = 0;

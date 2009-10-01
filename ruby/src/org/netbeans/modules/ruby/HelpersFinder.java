@@ -58,13 +58,13 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 final class HelpersFinder {
 
     private static final String[] HELPER_METHODS = {"helper"};
-    private final ParserResult info;
+    private final RubyIndex index;
     private final SymbolNode closest;
     private final Node root;
     private final AstPath path;
 
-    public HelpersFinder(ParserResult info, SymbolNode closest, Node root, AstPath path) {
-        this.info = info;
+    public HelpersFinder(RubyIndex index, SymbolNode closest, Node root, AstPath path) {
+        this.index = index;
         this.closest = closest;
         this.root = root;
         this.path = path;
@@ -105,7 +105,7 @@ final class HelpersFinder {
         if (className == null) {
             return DeclarationLocation.NONE;
         }
-        Set<IndexedClass> result = RubyIndex.get(info).getClasses(className, Kind.EXACT, true, false, false);
+        Set<IndexedClass> result = index.getClasses(className, Kind.EXACT, true, false, false);
         if (result.isEmpty()) {
             return DeclarationLocation.NONE;
         }

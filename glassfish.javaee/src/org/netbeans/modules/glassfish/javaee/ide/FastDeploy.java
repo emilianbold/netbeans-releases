@@ -97,7 +97,7 @@ public class FastDeploy extends IncrementalDeployment {
      */
     public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, final File dir) {
         final String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
-        String contextRoot = null;
+        final String contextRoot = dm.getContextRoot(dir);
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
@@ -123,7 +123,7 @@ public class FastDeploy extends IncrementalDeployment {
             restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
-                        commonSupport.deploy(deployProgress, dir, moduleName);
+                        commonSupport.deploy(deployProgress, dir, moduleName, contextRoot);
                     } else {
                         deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
@@ -132,7 +132,7 @@ public class FastDeploy extends IncrementalDeployment {
             commonSupport.restartServer(restartProgress);
             return updateCRProgress;
         } else {
-            commonSupport.deploy(deployProgress, dir, moduleName);
+            commonSupport.deploy(deployProgress, dir, moduleName, contextRoot);
             return updateCRProgress;
         }
     }
@@ -177,13 +177,14 @@ public class FastDeploy extends IncrementalDeployment {
         if (null != changedFiles && changedFiles.length > 0 && null != changedFiles[0])
             ResourceRegistrationHelper.deployResources(changedFiles[0],dm);
 
+        final String contextRoot = dm.getContextRoot(changedFiles[0]);
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         if (hasChanges) {
-                            commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                            commonSupport.redeploy(progressObject, targetModuleID.getModuleID(), contextRoot);
                         } else {
                             progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
                         }
@@ -196,7 +197,7 @@ public class FastDeploy extends IncrementalDeployment {
             return updateCRObject;
         } else {
             if (hasChanges) {
-                commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+                commonSupport.redeploy(progressObject, targetModuleID.getModuleID(), contextRoot);
             } else {
                 progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
                         NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));

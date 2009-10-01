@@ -155,8 +155,9 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
             overviewNode = new OverviewNode();
             addSection(new SectionPanel(this,overviewNode,"overview")); //NOI18N
 
-            BigDecimal ver = new BigDecimal(webApp.getVersion());
-            boolean jee6 = ver.compareTo(new BigDecimal(3.0)) >= 0;
+            String ver = webApp.getVersion();
+            boolean jee6 = (ver == null) ? false :
+                new BigDecimal(ver).compareTo(new BigDecimal(3.0)) >= 0;
             boolean fragment = webApp instanceof WebFragment;
             if (jee6) {
                 if (fragment) {

@@ -22,12 +22,6 @@ self uint64_t vprev;
 this uint64_t vcurr;
 
 profile-100hz
-/pid == $1 && !vprev[curlwpsinfo->pr_addr]/
-{
-    vprev[curlwpsinfo->pr_addr] = vtimestamp;
-}
-
-profile-100hz
 /pid == $1/
 {
     this->vcurr = vtimestamp;
@@ -115,5 +109,4 @@ proc:::lwp-exit
     printf("%d %d %d %d %d %d", ts(), cpu, tid, 0x08 /*curthread->t_state*/, curthread->t_mstate, 0);
     ustack();
     printf("\n"); /* empty line indicates end of ustack */
-    vprev[curlwpsinfo->pr_addr] = 0;
 }

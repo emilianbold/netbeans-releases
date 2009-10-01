@@ -51,7 +51,7 @@ public class DLightConfigurationUIWrapper {
     private DLightConfiguration dlightConfiguration;
     private boolean custom;
     private String name;
-    private String displayedName;
+    private String displayName;
     private List<DLightToolUIWrapper> tools;
     private boolean profileOnRun;
     private boolean modified;
@@ -59,18 +59,18 @@ public class DLightConfigurationUIWrapper {
     public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
         this.dlightConfiguration = dlightConfiguration;
         this.name = dlightConfiguration.getConfigurationName();
-        this.displayedName = dlightConfiguration.getDisplayedName();
+        this.displayName = dlightConfiguration.getDisplayedName();
         this.profileOnRun = true;
         this.custom = false;
         initWrapper(allDLightTools);
     }
 
-    public DLightConfigurationUIWrapper(String name, List<DLightTool> allDLightTools) {
+    public DLightConfigurationUIWrapper(String name, String displayName, List<DLightTool> allDLightTools) {
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         this.dlightConfiguration = accessor.getDefaultConfiguration(manager);
         this.name = name;
-        this.displayedName =name;
+        this.displayName = displayName;
         this.custom = true;
         initWrapper(allDLightTools);
     }
@@ -108,7 +108,7 @@ public class DLightConfigurationUIWrapper {
 
     @Override
     public String toString() {
-        return displayedName;
+        return getDisplayName();
     }
 
     /**
@@ -220,5 +220,19 @@ public class DLightConfigurationUIWrapper {
         copy.setProfileOnRun(isProfileOnRun());
         copy.setModified(false);
         return copy;
+    }
+
+    /**
+     * @return the displayName
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * @param displayName the displayName to set
+     */
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }
