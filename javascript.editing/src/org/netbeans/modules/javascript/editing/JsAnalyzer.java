@@ -214,6 +214,23 @@ public class JsAnalyzer implements StructureScanner {
                             int start = range.getStart();
                             // Start the fold at the END of the line
                             start = GsfUtilities.getRowEnd(text, Math.min(start, text.length()));
+
+                            // find the nearest { and start the fold here. 
+                            int index = start;
+                            char c = text.charAt(index);
+                            if (c == '\n') {
+                                //skip new line at the end of the line
+                                index --;
+                            }
+                            do {
+                                c = text.charAt(index);
+                                index--;
+                            } while (index > 0 && c != '\n' && c != '{');
+
+                            if (c == '{') {
+                                start = index + 1;
+                            }
+                            
                             int end = range.getEnd();
                             if (start != (-1) && end != (-1) && start < end && end <= text.length()) {
                                 int lexStart = result.getSnapshot().getOriginalOffset(start);
