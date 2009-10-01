@@ -42,6 +42,7 @@ package org.netbeans.modules.web.core.syntax.completion.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -107,6 +108,8 @@ public class ELExpression {
     public static final int EL_UNKNOWN = 5;
     /** The expression - result of the parsing */
     protected String expression;
+    protected String resolvedExpression;
+
     private String replace;
     private boolean isDefferedExecution = false;
     private Document doc;
@@ -747,6 +750,7 @@ public class ELExpression {
             if ( element!= null){
                 lastKnownType = element.asType();
             }
+            TypeMirror lastFoundType = lastKnownType;
             TypeMirror lastReturnType = null;
 
             Part parts[] = getParts( expression );
@@ -773,11 +777,33 @@ public class ELExpression {
                 }
                 if (lastKnownType != null) {
                     String accessorName = getAccessorName(parts[i].getPart());
+                    
+                    //resolve iterable type if possible
+                    //this means that once the type is iterable
+                    //we cannot resolve methods of the iterable type itself,
+                    //just type of its items
+                    if ( controller.getTypes().isAssignable(
+                            controller.getTypes().erasure(lastKnownType),
+                                controller.getElements().getTypeElement(
+                                        Iterable.class.getCanonicalName()).asType())) {
+                        if ( lastKnownType instanceof DeclaredType ){
+                            List<? extends TypeMirror> typeArguments =
+                                ((DeclaredType)lastKnownType).getTypeArguments();
+                            if ( typeArguments.size() != 0 ){
+                                TypeMirror typeMirror = typeArguments.get(0);
+                                if ( typeMirror.getKind() == TypeKind.DECLARED){
+                                    lastFoundType = lastKnownType = typeMirror ;
+                                }
+                            }
+                        }
+                    }
+
+                    //get all methods of the type
                     List<ExecutableElement> allMethods = ElementFilter
                             .methodsIn(controller.getElements().getAllMembers(
                                     (TypeElement)controller.getTypes().asElement(
                                             lastKnownType)));
-                    
+
                     lastKnownType = null;
 
                     for (ExecutableElement method : allMethods) {
@@ -788,7 +814,7 @@ public class ELExpression {
                             lastReturnType = returnType;
 
                             if (returnType.getKind() == TypeKind.DECLARED) { // should always be true
-                                lastKnownType = returnType;
+                                lastFoundType = lastKnownType = returnType;
                                 break;
                             }
                             else if (returnType.getKind() == TypeKind.ARRAY) {
@@ -797,6 +823,7 @@ public class ELExpression {
                         }
 
                     }
+
                 }
                 if ( lastKnownType== null  && lastReturnType != null ) 
                 {
@@ -810,7 +837,7 @@ public class ELExpression {
                         TypeMirror typeMirror = ((ArrayType)lastReturnType).
                             getComponentType();
                         if ( typeMirror.getKind() == TypeKind.DECLARED){
-                            lastKnownType = typeMirror;
+                            lastFoundType = lastKnownType = typeMirror;
                         }
                         else if ( typeMirror.getKind() == TypeKind.ARRAY){
                             lastReturnType = typeMirror;
@@ -828,12 +855,12 @@ public class ELExpression {
                             if ( typeArguments.size() != 0 ){
                                 TypeMirror typeMirror = typeArguments.get(0);
                                 if ( typeMirror.getKind() == TypeKind.DECLARED){
-                                    lastKnownType = typeMirror ;
+                                    lastFoundType = lastKnownType = typeMirror ;
                                 }
                             }
                         }
                         if ( lastKnownType == null ){
-                            lastKnownType = controller.getElements().
+                            lastFoundType = lastKnownType = controller.getElements().
                                 getTypeElement(Object.class.getCanonicalName()).
                                 asType();
                         }
@@ -850,12 +877,12 @@ public class ELExpression {
                             if (typeArguments.size() == 2) {
                                 TypeMirror typeMirror = typeArguments.get(1);
                                 if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                    lastKnownType = typeMirror;
+                                    lastFoundType = lastKnownType = typeMirror;
                                 }
                             }
                         }
                         if (lastKnownType == null) {
-                            lastKnownType = controller.getElements()
+                            lastFoundType = lastKnownType = controller.getElements()
                                     .getTypeElement(
                                             Object.class.getCanonicalName()).
                                             asType();
@@ -868,7 +895,7 @@ public class ELExpression {
             if ( lastKnownType == null && handler!= null){
                 handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
             }
-            return lastKnownType;
+            return lastFoundType;
         }
 
         protected String getAccessorName(String propertyName) {
@@ -1064,6 +1091,10 @@ public class ELExpression {
 
     public String getExpression() {
         return expression;
+    }
+
+    public String getResolvedExpression() {
+        return resolvedExpression != null ? resolvedExpression : expression;
     }
 
     public String getReplace() {
