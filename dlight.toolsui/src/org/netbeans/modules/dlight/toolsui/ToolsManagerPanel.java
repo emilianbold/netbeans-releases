@@ -124,13 +124,17 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
         // save configurations and tools
         for (DLightConfigurationUIWrapper configuration : dLightConfigurations){
+            if (configuration.isCustom()){
+                DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName());
+                configuration.setDLightConfiguration(dlightConfiguration);
+            }
             for (DLightToolUIWrapper toolUI : configuration.getTools()){
                 if (toolUI.isModified()){
                     //if it was disabled and now enabled: should register
                     if (!toolUI.isEnabled()){
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
                     }else{
-                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool());
+                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), toolUI.isOnByDefault());
                     }
                 }
             }
@@ -374,7 +378,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             super.checkSelection(i);
             DLightConfigurationUIWrapper dLightConfigurationWrapper = getListData().elementAt(i);
             getEditButton().setEnabled(dLightConfigurationWrapper.isCustom());
-            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom());
+            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom() || DLightConfigurationSupport.getInstance().canRemoveConfiguration(dLightConfigurationWrapper.getName()));
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
