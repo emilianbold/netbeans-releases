@@ -179,8 +179,8 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
         .unbufferOutput(false)
-        .putAllEnvironmentVariables(envMap)
         .addNativeProcessListener(processChangeListener);
+        npb.getEnvironment().putAll(envMap);
         npb.redirectError();
 
         ExecutionDescriptor descr = new ExecutionDescriptor()

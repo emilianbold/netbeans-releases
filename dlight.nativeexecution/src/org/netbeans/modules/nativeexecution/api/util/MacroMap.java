@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.io.PrintStream;
 import org.netbeans.modules.nativeexecution.support.*;
 import java.text.ParseException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,52 +56,72 @@ import org.openide.util.Utilities;
  * This map is a wrapper of Map&lt;String, String&gt; that expangs
  * macros on insertion...
  */
-public class MacroMap {
+public class MacroMap implements Cloneable {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
+    private final ExecutionEnvironment execEnv;
     private final MacroExpander macroExpander;
     private final TreeMap<String, String> map;
+    private final boolean isWindows;
 
-    public MacroMap(MacroExpander macroExpander) {
-        this.macroExpander = macroExpander;
-        this.map = new TreeMap<String, String>();
-    }
+    private MacroMap(final ExecutionEnvironment execEnv) {
+        this.execEnv = execEnv;
+        this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
+        this.isWindows = execEnv.isLocal() && Utilities.isWindows();
 
-    public final static MacroMap forExecEnv(ExecutionEnvironment execEnv) {
-        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
-        final MacroMap result;
-
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            result = new CaseInsensitiveMacroMap(macroExpander);
+        if (isWindows) {
+            map = new TreeMap<String, String>(new CaseInsensitiveComparator());
         } else {
-            result = new MacroMap(macroExpander);
+            map = new TreeMap<String, String>();
         }
-
-        return result;
     }
 
-    public final void putAll(MacroMap envVariables) {
+    public final static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
+        return new MacroMap(execEnv);
+    }
+
+    public final void putAll(final MacroMap envVariables) {
+        if (envVariables == null) {
+            return;
+        }
+        
         putAll(envVariables.map);
     }
 
     public final void putAll(Map<String, String> map) {
+        if (map == null) {
+            return;
+        }
+
         for (Entry<String, String> entry : map.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
 
     public final void putAll(String[] env) {
+        if (env == null) {
+            return;
+        }
+        
         for (String envString : env) {
             put(EnvUtils.getKey(envString), EnvUtils.getValue(envString));
         }
     }
 
     public String put(String key, String value) {
+        if (key == null) {
+            throw new NullPointerException();
+        }
+        
         if (value == null) {
             log.log(Level.INFO, "Attempt to set env variable '%s' with null value", key); // NOI18N
         }
 
         String result = value;
+        
+        if (isWindows) {
+            key = key.toUpperCase();
+        }
 
         Map<String, String> oneElementMap = new HashMap<String, String>();
         String val = map.get(key);
@@ -117,6 +139,10 @@ public class MacroMap {
     }
 
     public String get(String key) {
+        if (key == null) {
+            throw new NullPointerException();
+        }
+
         return map.get(key);
     }
 
@@ -125,10 +151,10 @@ public class MacroMap {
         StringBuffer buf = new StringBuffer();
         buf.append("{"); // NOI18N
 
-        for (String key : map.keySet()) {
-            buf.append(key);
-            buf.append("="); // NOI18N
-            buf.append(get(key));
+        for (Entry<String, String> entry : map.entrySet()) {
+            buf.append(entry.getKey());
+            buf.append(" = "); // NOI18N
+            buf.append(entry.getValue());
             buf.append(", "); // NOI18N
         }
 
@@ -142,5 +168,60 @@ public class MacroMap {
 
     public final Set<Entry<String, String>> entrySet() {
         return map.entrySet();
+    }
+
+    @Override
+    public MacroMap clone() {
+        MacroMap clone = new MacroMap(execEnv);
+        clone.map.putAll(map);
+        return clone;
+    }
+
+    public void prependPathVariable(String name, String path) {
+        if (path == null) {
+            return;
+        }
+
+        String oldpath = get(name);
+        String newPath = path + (oldpath == null ? "" : (isWindows ? ';' : ':') + oldpath);
+        put(name, newPath);
+    }
+
+    public void appendPathVariable(String name, String path) {
+        if (path == null) {
+            return;
+        }
+        
+        String oldpath = get(name);
+        String newPath = (oldpath == null ? "" : oldpath + (isWindows ? ';' : ':')) + path;
+        put(name, newPath);
+    }
+
+    public void dump(PrintStream out) {
+        for (Entry<String, String> entry : entrySet()) {
+            out.printf("Environment: %s=%s\n", entry.getKey(), entry.getValue()); // NOI18N
+        }
+    }
+
+    private static class CaseInsensitiveComparator implements Comparator<String> {
+
+        public CaseInsensitiveComparator() {
+        }
+
+        public int compare(String s1, String s2) {
+            if (s1 == null && s2 == null) {
+                return 0;
+            }
+
+            if (s1 == null) {
+                return 1;
+            }
+
+            if (s2 == null) {
+                return -1;
+            }
+
+            return s1.toUpperCase().compareTo(s2.toUpperCase());
+        }
     }
 }
