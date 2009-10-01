@@ -93,7 +93,7 @@ public class ProcFSDataCollector
     private TasksCachedProcessor<DLightTarget, ValidationStatus> validator =
             new TasksCachedProcessor<DLightTarget, ValidationStatus>(new ProcFSDataCollectorValidator(), false);
     private DLightTarget target;
-    private volatile Future mainLoop;
+    private volatile Future<?> mainLoop;
     private final boolean msaEnabled, prstatEnabled;
     private final List<DataTableMetadata> providedDataTables;
     private SQLDataStorage sqlStorage;
@@ -290,8 +290,8 @@ public class ProcFSDataCollector
             this.reader = reader;
         }
 
-        private final long toMilliOffset(long timenano) {
-            return (timenano - processStartTime.get()) / 1000 / 1000;
+        private final long toNanoOffset(long timenano) {
+            return timenano - processStartTime.get();
         }
 
         public void run() {
@@ -316,7 +316,7 @@ public class ProcFSDataCollector
                     ProcFSDataCollector.this.notifyIndicators(Arrays.asList(
                             new DataRow(MSASQLTables.prstat.tableMetadata.getColumnNames(),
                             Arrays.asList(
-                            toMilliOffset(p_samplingInfo.timestamp),
+                            toNanoOffset(p_samplingInfo.timestamp),
                             p_samplingInfo.sample,
                             tinfo.pr_nlwp,
                             tinfo.pr_nzomb,
@@ -342,7 +342,7 @@ public class ProcFSDataCollector
 
                                 lwpsTracker.update(lwpUsage);
 
-                                insertMSAStatement.setLong(1, toMilliOffset(lwp_samplingInfo.timestamp));
+                                insertMSAStatement.setLong(1, toNanoOffset(lwp_samplingInfo.timestamp));
                                 insertMSAStatement.setLong(2, lwp_samplingInfo.sample);
                                 insertMSAStatement.setInt(3, lwp_usageInfo.pr_lwpid);
                                 insertMSAStatement.setLong(4, lwp_msaInfo.pr_utime);
@@ -420,7 +420,7 @@ public class ProcFSDataCollector
                 if (thread_started) {
                     try {
                         insertStatement.setInt(1, id);
-                        insertStatement.setLong(2, toMilliOffset(lwp_usageInfo.getUsageInfo().pr_create)); // USE MILLISECONDS PASSED FROM START
+                        insertStatement.setLong(2, toNanoOffset(lwp_usageInfo.getUsageInfo().pr_create)); // USE MILLISECONDS PASSED FROM START
                         insertStatement.executeUpdate();
                     } catch (SQLException ex) {
                         if (log.isLoggable(Level.FINE)) {
@@ -447,7 +447,7 @@ public class ProcFSDataCollector
 
                 for (LWPUsage deadThreadUsage : deadThreads) {
                     try {
-                        updateStatement.setLong(1, toMilliOffset(deadThreadUsage.getSamplingData().timestamp));
+                        updateStatement.setLong(1, toNanoOffset(deadThreadUsage.getSamplingData().timestamp));
                         updateStatement.setInt(2, deadThreadUsage.getUsageInfo().pr_lwpid);
                         updateStatement.executeUpdate();
                     } catch (SQLException ex) {

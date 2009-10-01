@@ -36,38 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.dlight.spi.indicator;
-
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataRow;
+package org.netbeans.modules.dlight.indicators;
 
 /**
- * This interface should be implemented by the users who would like to get
- * notifications from the infrastructure about changes of indicators (data).
- * To attach listener to the current DLightSession you can use
- * <pre>
- *     DLigthManager.getDefault().getActiveSession().addIndicatorNotificationListener();
- * </pre>
- * @author Maria Tishkova
+ * Aggregation function.
+ * Defines how to make a single value out of a series of values.
+ *
+ * @author Alexey Vladykin
  */
-public interface IndicatorNotificationsListener {
-  /**
-     * Invoked when new data is occurred.
-     * @param data data added
+public enum Aggregation {
+    /**
+     * First item of a series.
      */
-    void updated(List<DataRow> data);
+    FIRST,
 
     /**
-     * Invoked by indicator data provider when there is a good reason
-     * to repaint the indicator as soon as possible.
-     * (Normally indicators are repainted once a second during when target is
-     * running and not repainted when target has finished.)
+     * Last item of a series.
      */
-    void suggestRepaint();
+    LAST,
 
     /**
-     * Resets to the initial state
+     * Sum of all items in a series.
      */
-    void reset();
+    SUM,
+
+    /**
+     * Average value of items in a series.
+     */
+    AVERAGE
 }
