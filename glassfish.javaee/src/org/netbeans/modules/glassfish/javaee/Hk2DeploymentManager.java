@@ -542,36 +542,5 @@ public class Hk2DeploymentManager implements DeploymentManager {
         return result;
     }
 
-    public String getContextRoot (File dir) {
-        String contextRoot = ""; //NOI18N
-        FileObject fo = FileUtil.toFileObject(dir);
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (null != p) {
-            J2eeModuleProvider jmp = getProvider(p);
-            if (null != jmp) {
-                try {
-                    if (J2eeModule.Type.WAR.equals(jmp.getJ2eeModule().getType())) {
-                        contextRoot = jmp.getConfigSupport().getWebContextRoot();
-                        if(contextRoot == null || contextRoot.trim().length() == 0) {
-                            contextRoot = "/" ; //NOI18N
-                        }
-                    }
-                } catch (ConfigurationException ex) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, "Configuration Exception in obtaining context root", ex); // NOI18N
-                }
-            }
-        } else {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, "Could not find context root");   // NOI18N
-        }
-        return contextRoot;
-    }
-
-    private J2eeModuleProvider getProvider(Project project) {
-        J2eeModuleProvider provider = null;
-        if (project != null) {
-            org.openide.util.Lookup lookup = project.getLookup();
-            provider = lookup.lookup(J2eeModuleProvider.class);
-        }
-        return provider;
-    }
+    
 }
