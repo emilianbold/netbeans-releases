@@ -81,7 +81,8 @@ public class ValidPrimaryTableName extends JPAClassRule {
         
         if (JavaPersistenceQLKeywords.isKeyword(entityName)){
             return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"))};
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"),
+                    Severity.WARNING)};
         }
         
         
