@@ -99,9 +99,21 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfiguration gizmoConfiguration = dlightConfigurationUIWrapper.getDLightConfiguration();
         assert gizmoConfiguration != null;
         profileOnRunCheckBox.setSelected(dlightConfigurationUIWrapper.isProfileOnRun());
-        defaultDataProviderComboBox.removeAllItems();
-        defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
-        defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
+//        defaultDataProviderComboBox.removeAllItems();
+//        defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
+//        defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
+        // FIXUP: should be moved to tool
+//        String dataProvider;
+//        if (gizmoConfiguration.getDisplayedName().indexOf("DTrace") >= 0) {
+//            dataProvider = "DTrace"; // NOI18N
+//        }
+//        else if (gizmoConfiguration.getDisplayedName().indexOf("Studio") >= 0) {
+//            dataProvider = "Sun Studio"; // NOI18N
+//        }
+//        else {
+//            dataProvider = "Simple (indicators only)"; // NOI18N
+//        }
+        //dataProviderLabel2.setText(dataProvider);
         toolsTable = new ToolsTable(dlightConfigurationUIWrapper, dlightConfigurationUIWrapper.getTools(), new MySelectionListener());
         toolsList.setViewportView(toolsTable);
         toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
@@ -137,8 +149,8 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         public void valueChanged(ListSelectionEvent e) {
             DLightToolUIWrapper tool = getSelectedDLightToolWrapper();
-            toolNameLabelField.setText(tool.getDLightTool().getName());
-            onByDefaultCheckBox.setSelected(tool.isOnByDefault());
+//            toolNameLabelField.setText(tool.getDLightTool().getName());
+//            onByDefaultCheckBox.setSelected(tool.isOnByDefault());
             detailsLabel.setText(tool.getDLightTool().getDetailedName());
         }
     }
@@ -160,25 +172,23 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         profileConfigurationLabel = new javax.swing.JLabel();
         profileConfigurationComboBox = new javax.swing.JComboBox();
         profileOnRunCheckBox = new javax.swing.JCheckBox();
-        defaultDataProviderLabel = new javax.swing.JLabel();
-        defaultDataProviderComboBox = new javax.swing.JComboBox();
         toolsPanel = new javax.swing.JPanel();
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
         toolsLabel = new javax.swing.JLabel();
         toolPropertyPanel = new javax.swing.JPanel();
-        toolNameLabel = new javax.swing.JLabel();
-        onByDefaultCheckBox = new javax.swing.JCheckBox();
         detailsLabel = new javax.swing.JLabel();
-        toolNameLabelField = new javax.swing.JLabel();
-        updateButton = new javax.swing.JButton();
+        fillLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
+        profileConfigurationLabel.setLabelFor(profileConfigurationComboBox);
         profileConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileConfigurationLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(profileConfigurationLabel, gridBagConstraints);
 
         profileConfigurationComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -187,9 +197,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
         add(profileConfigurationComboBox, gridBagConstraints);
 
         profileOnRunCheckBox.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileOnRunCheckBox.text")); // NOI18N
@@ -200,24 +213,11 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(profileOnRunCheckBox, gridBagConstraints);
-
-        defaultDataProviderLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.defaultDataProviderLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(defaultDataProviderLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 12);
-        add(defaultDataProviderComboBox, gridBagConstraints);
 
         toolsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -235,90 +235,56 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         toolsPanel.add(toolsLabel, gridBagConstraints);
 
         toolPropertyPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         toolPropertyPanel.setLayout(new java.awt.GridBagLayout());
-
-        toolNameLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.toolNameLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        toolPropertyPanel.add(toolNameLabel, gridBagConstraints);
-
-        onByDefaultCheckBox.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.onByDefaultCheckBox.text")); // NOI18N
-        onByDefaultCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onByDefaultCheckBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
-        toolPropertyPanel.add(onByDefaultCheckBox, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
-        toolPropertyPanel.add(detailsLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 6);
-        toolPropertyPanel.add(toolNameLabelField, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        toolPropertyPanel.add(detailsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 12);
         toolsPanel.add(toolPropertyPanel, gridBagConstraints);
 
-        updateButton.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.updateButton.text")); // NOI18N
-        updateButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateButtonActionPerformed(evt);
-            }
-        });
+        fillLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.fillLabel.text")); // NOI18N
+        fillLabel.setMaximumSize(new java.awt.Dimension(300, 5));
+        fillLabel.setMinimumSize(new java.awt.Dimension(300, 5));
+        fillLabel.setPreferredSize(new java.awt.Dimension(300, 5));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 110);
-        toolsPanel.add(updateButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        toolsPanel.add(fillLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(toolsPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Coming soon....\nFrom this dialog the user will be able to (semi) automatically add new tools to list and update existing tools. Details TBD but could be via update center...", NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-    }//GEN-LAST:event_updateButtonActionPerformed
-
-    private void onByDefaultCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onByDefaultCheckBoxActionPerformed
-        DLightToolUIWrapper tool = getSelectedDLightToolWrapper();
-        tool.setOnByDefault(!tool.isOnByDefault());
-    }//GEN-LAST:event_onByDefaultCheckBoxActionPerformed
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
         Object item = profileConfigurationComboBox.getSelectedItem();
@@ -412,20 +378,15 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox defaultDataProviderComboBox;
-    private javax.swing.JLabel defaultDataProviderLabel;
     private javax.swing.JLabel detailsLabel;
+    private javax.swing.JLabel fillLabel;
     private javax.swing.JList jList1;
-    private javax.swing.JCheckBox onByDefaultCheckBox;
     private javax.swing.JComboBox profileConfigurationComboBox;
     private javax.swing.JLabel profileConfigurationLabel;
     private javax.swing.JCheckBox profileOnRunCheckBox;
-    private javax.swing.JLabel toolNameLabel;
-    private javax.swing.JLabel toolNameLabelField;
     private javax.swing.JPanel toolPropertyPanel;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
     private javax.swing.JPanel toolsPanel;
-    private javax.swing.JButton updateButton;
     // End of variables declaration//GEN-END:variables
     }
