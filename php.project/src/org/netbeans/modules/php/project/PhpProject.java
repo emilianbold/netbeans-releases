@@ -389,9 +389,8 @@ public class PhpProject implements Project {
     }
 
     boolean isVisible(FileObject fileObject) {
-        final File file = FileUtil.toFile(fileObject);
+        File file = FileUtil.toFile(fileObject);
         if (file == null) {
-            //added because #172139 caused NPE in GlobalVisibilityQueryImpl
             if (getIgnoredFileObjects().contains(fileObject)) {
                 return false;
             }
@@ -407,8 +406,8 @@ public class PhpProject implements Project {
         return ignored;
     }
 
+    // #172139 caused NPE in GlobalVisibilityQueryImpl
     public Set<FileObject> getIgnoredFileObjects() {
-        //added because #172139 caused NPE in GlobalVisibilityQueryImpl
         Set<FileObject> ignoredFileObjects = new HashSet<FileObject>();
         for (File file : getIgnoredFiles()) {
             FileObject fo = FileUtil.toFileObject(file);
