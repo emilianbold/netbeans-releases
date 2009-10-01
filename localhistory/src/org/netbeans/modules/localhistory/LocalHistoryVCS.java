@@ -47,6 +47,8 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
@@ -54,7 +56,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
+@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=LocalHistoryVCS.class)})
 public class LocalHistoryVCS extends VersioningSystem {
         
     public LocalHistoryVCS() {
