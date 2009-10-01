@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote;
+package org.netbeans.modules.cnd.execution.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.SetupProvider;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 
 /**
- * An implementation of SetupProvider which configures remote development so that its
- * setup step copies some shared libraries to the remote host.
  *
- * @author gordonp
+ * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
-public class CndRemoteSetupProvider implements SetupProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.execution.ErrorParserProvider.class)
+public class GCCErrorParserProvider extends ErrorParserProvider {
 
-    private Map<String, String> binarySetupMap;
-
-    public CndRemoteSetupProvider() {
-        binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put("unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
-        binarySetupMap.put("unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put("unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
-        binarySetupMap.put("unbuffer-Linux-x86_64.so", "bin/unbuffer-Linux-x86_64.so"); // NOI18N
-        binarySetupMap.put("unbuffer-SunOS-x86_64.so", "bin/unbuffer-SunOS-x86_64.so"); // NOI18N
-        binarySetupMap.put("unbuffer-SunOS-sparc_64.so", "bin/unbuffer-SunOS-sparc_64.so"); // NOI18N
+    @Override
+    public ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
+	return new GCCErrorParser(flavor, execEnv, relativeTo);
     }
 
-    public Map<String, String> getBinaryFiles() {
-        return binarySetupMap;
-    }
-
-    public Map<String, Double> getScriptFiles() {
-        return null;
+    @Override
+    public String getID() {
+	return "GNU";  // NOI18N
     }
 }

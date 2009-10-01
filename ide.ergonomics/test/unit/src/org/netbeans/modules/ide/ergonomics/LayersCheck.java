@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,32 +34,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
+package org.netbeans.modules.ide.ergonomics;
 
-import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import java.net.URL;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
+import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 
 /**
- * Case insensitive variant of <tt>MacroMap</tt>.
- * ... it stores keys in upper case
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+public class LayersCheck extends NbTestCase {
 
-public final class CaseInsensitiveMacroMap extends MacroMap {
-
-    public CaseInsensitiveMacroMap(MacroExpander macroExpander) {
-        super(macroExpander);
+    public LayersCheck(String name) {
+        super(name);
     }
 
-    @Override
-    public String put(String key, String value) {
-        return super.put(key.toUpperCase(), value);
+    public void testCanAllLayersBeParsed() throws Exception {
+        int cnt = 0;
+        for (FeatureInfo f : FeatureManager.features()) {
+            URL u = f.getLayerURL();
+            if (u == null) {
+                continue;
+            }
+            cnt++;
+            byte[] arr = new byte[1024 * 1024];
+            int r = u.openStream().read(arr);
+            if (r == -1) {
+                fail("Cannot read " + u);
+            }
+            if (r == arr.length) {
+                fail("Too big layer " + u);
+            }
+            String s = new String(arr, 0, r, "UTF-8");
+            if (s.contains("path=\"")) {
+                fail("There shall be no path attribute in " + u + ":\n" + s);
+            }
+        }
+        if (cnt == 0) {
+            fail("There are no layers! That is strange.");
+        }
     }
-
-    @Override
-    public String get(String key) {
-        return super.get(key.toUpperCase());
-    }
-
 }

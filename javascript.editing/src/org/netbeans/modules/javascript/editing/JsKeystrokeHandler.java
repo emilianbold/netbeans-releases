@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1105,7 +1105,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             // Attempt to find the left matching bracket for it
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
-            int bracketBalance = -1; // balance of the brackets or parenthesis
+            int bracketBalance = 0; // balance of the brackets or parenthesis
             Token<?extends JsTokenId> lastRBracket = token;
             ts.movePrevious();
             token = ts.token();
@@ -1116,7 +1116,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 int tokenIntId = token.id().ordinal();
 
                 if ((token.id() == JsTokenId.LPAREN) || (token.id() == JsTokenId.LBRACKET)) {
-                    if (tokenIntId == bracketIntId) {
+                    if (tokenIntId == leftBracketIntId) {
                         bracketBalance++;
 
                         if (bracketBalance == 0) {
@@ -1225,7 +1225,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
 
                 // If bracketBalance == 0 the bracket would be matched
                 // by the bracket that follows the last right bracket.
-                skipClosingBracket = (bracketBalance == 0);
+                //skipClosingBracket = (bracketBalance == 0);
             }
         }
 

@@ -91,14 +91,11 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             workingDirectory = new File(workingDirectory).getAbsolutePath();
         }
 
-        final MacroMap env = info.getEnvVariables();
+        final MacroMap env = info.getEnvironment().clone();
 
         if (info.isUnbuffer()) {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
-
-        // Always prepend /bin and /usr/bin to PATH
-//        env.put("PATH", "/bin:/usr/bin:${PATH}"); // NOI18N
 
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
@@ -141,15 +138,16 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         // Suspend is not supported on Windows.
 
-        final MacroMap env = info.getEnvVariables();
+        final MacroMap env = info.getEnvironment().clone();
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
-        final Map<String, String> envVars = new HashMap<String, String>();
 
-        // To deal with different cases of env vars names (Path vs. PATH)
-        // Create a map to make binding between upper-case name and used in
-        // pb.environment() name...
-        for (String key : pb.environment().keySet()) {
-            envVars.put(key.toUpperCase(), key);
+        // Do all env variables upper-case
+        Map<String, String> _env = new HashMap<String, String>(pb.environment());
+
+        pb.environment().clear();
+
+        for (Entry<String, String> envEntry : _env.entrySet()) {
+            pb.environment().put(envEntry.getKey().toUpperCase(), envEntry.getKey());
         }
 
         if (isInterrupted()) {
@@ -161,49 +159,21 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         // PATH variable..
 
         if (hostInfo.getShell() != null) {
-            String pathKey = envVars.get("PATH"); // NOI18N
-            if (pathKey == null) {
-                pathKey = "PATH"; // NOI18N
-            }
-            String path = env.get(pathKey); // NOI18N
-            String shellPath = new File(hostInfo.getShell()).getParent();
-
-            if (path != null) {
-                path = shellPath + ";" + path; // NOI18N
-            } else {
-                path = shellPath;
-            }
-
-            env.put("PATH", path); // NOI18N
+            env.appendPathVariable("PATH", new File(hostInfo.getShell()).getParent()); // NOI18N
         }
 
         if (info.isUnbuffer()) {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
 
+        for (Entry<String, String> envEntry : env.entrySet()) {
+            pb.environment().put(envEntry.getKey(), envEntry.getValue());
+        }
+
         pb.command(info.getCommand());
 
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
-        }
-
-
-        String val = null;
-
-        if (!env.isEmpty()) {
-            for (Entry<String, String> entry : env.entrySet()) {
-                String upperCaseKey = entry.getKey().toUpperCase();
-
-                String envVarName = envVars.containsKey(upperCaseKey) ? envVars.get(upperCaseKey) : entry.getKey();
-                val = entry.getValue();
-
-                if (val != null) {
-                    pb.environment().put(envVarName, val);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{envVarName, val}); // NOI18N
-                    }
-                }
-            }
         }
 
         String wdir = info.getWorkingDirectory(true);

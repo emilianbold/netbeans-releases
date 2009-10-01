@@ -7008,7 +7008,7 @@
   	var ctr = 0;
   	var _globalTimerList = [];
   	var runner = {
-  		run: function(){}
++ 		run: function(){}
   	};
   	var timer = null;
 + 	dojo._Animation.prototype._startTimer = function(){

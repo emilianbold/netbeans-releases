@@ -54,6 +54,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -87,6 +88,7 @@ public class DocumentModification1Test extends NbTestCase {
     /**
      * @throws java.lang.Exception
      */
+    @RandomlyFails
     public void testDocumentModification () throws Exception {
 
         // 1) register tasks and parsers

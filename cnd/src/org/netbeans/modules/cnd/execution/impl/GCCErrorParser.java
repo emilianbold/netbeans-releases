@@ -43,37 +43,68 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ScannerPattern;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider.Result;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider.Results;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
 public final class GCCErrorParser extends ErrorParser {
 
-    private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("^([a-zA-Z]:[^:\n]*|[^:\n]*):([0-9]+)[\\.:]([^:\n]*):([^\n]*)"); // NOI18N
-    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("^([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N
-    private static final Pattern GCC_ERROR_SCANNER_INTEL = Pattern.compile("^([^\\(\n]*)\\(([0-9]+)\\): ([^:\n]*): ([^\n]*)"); // NOI18N
-    private static final Pattern GCC_DIRECTORY_ENTER = Pattern.compile("[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Entering[\\w+\\s+]+`([^']*)'"); // NOI18N
-    private static final Pattern GCC_DIRECTORY_LEAVE = Pattern.compile("[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Leaving[\\w+\\s+]+`([^']*)'"); // NOI18N
-    private static final Pattern GCC_DIRECTORY_CD    = Pattern.compile("cd\\s+([\\S]+)[\\s;]");// NOI18N
-    private static final Pattern GCC_STACK_HEADER = Pattern.compile("In file included from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
-    private static final Pattern GCC_STACK_NEXT =   Pattern.compile("                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
-    private static final Pattern[] patterns = new Pattern[]{GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD,
-                                                            GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL,
-                                                            MSVCErrorParser.MSVC_WARNING_SCANNER, MSVCErrorParser.MSVC_ERROR_SCANNER};
+    private final List<Pattern> GCC_ERROR_SCANNER = new ArrayList<Pattern>();
+    private final List<Pattern> patterns = new ArrayList<Pattern>();
+    private Pattern GCC_DIRECTORY_ENTER;
+    private Pattern GCC_DIRECTORY_LEAVE;
+    private Pattern GCC_DIRECTORY_CD;
+    private Pattern GCC_STACK_HEADER;
+    private Pattern GCC_STACK_NEXT;
 
     private Stack<FileObject> relativesTo = new Stack<FileObject>();
     private Stack<Integer> relativesLevel = new Stack<Integer>();
     private ArrayList<StackIncludeItem> errorInludes = new ArrayList<StackIncludeItem>();
     private boolean isEntered;
 
-    public GCCErrorParser(ExecutionEnvironment execEnv, FileObject relativeTo) {
+    public GCCErrorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(execEnv, relativeTo);
         this.relativesTo.push(relativeTo);
         this.relativesLevel.push(0);
         this.isEntered = false;
+	init(flavor);
+    }
+
+    private void init(CompilerFlavor flavor) {
+	ScannerDescriptor scanner = flavor.getToolchainDescriptor().getScanner();
+	if (scanner.getEnterDirectoryPattern() != null) {
+	    GCC_DIRECTORY_ENTER = Pattern.compile(scanner.getEnterDirectoryPattern());
+	    patterns.add(GCC_DIRECTORY_ENTER);
+	}
+	if (scanner.getLeaveDirectoryPattern() != null) {
+	    GCC_DIRECTORY_LEAVE = Pattern.compile(scanner.getLeaveDirectoryPattern());
+	    patterns.add(GCC_DIRECTORY_LEAVE);
+	}
+	if (scanner.getChangeDirectoryPattern() != null) {
+	    GCC_DIRECTORY_CD = Pattern.compile(scanner.getChangeDirectoryPattern());
+	    patterns.add(GCC_DIRECTORY_CD);
+	}
+	if (scanner.getStackHeaderPattern() != null && scanner.getStackHeaderPattern() != null) {
+	    GCC_STACK_HEADER = Pattern.compile(scanner.getStackHeaderPattern());
+	    patterns.add(GCC_STACK_HEADER);
+	    GCC_STACK_NEXT = Pattern.compile(scanner.getStackHeaderPattern());
+	    patterns.add(GCC_STACK_NEXT);
+	}
+	for(ScannerPattern s : scanner.getPatterns()){
+	    Pattern pattern = Pattern.compile(s.getPattern());
+	    GCC_ERROR_SCANNER.add(pattern);
+	    patterns.add(pattern);
+	}
     }
 
     // FIXUP IZ#115960 and all other about EmptyStackException
@@ -91,8 +122,7 @@ public final class GCCErrorParser extends ErrorParser {
     }
 
     public Result handleLine(String line) throws IOException {
-        for (int pi = 0; pi < patterns.length; pi++) {
-            Pattern p = patterns[pi];
+        for (Pattern p : patterns) {
             Matcher m = p.matcher(line);
             boolean found = m.find();
             if (found && m.start() == 0) {
@@ -130,10 +160,10 @@ public final class GCCErrorParser extends ErrorParser {
                 if (relativeDir != null) {
                     relativesTo.push(relativeDir);
                 }
-                return NO_RESULT;
+                return ErrorParserProvider.NO_RESULT;
             } else {
                 popPath();
-                return NO_RESULT;
+                return ErrorParserProvider.NO_RESULT;
             }
         }
         if (m.pattern() == GCC_DIRECTORY_CD) {
@@ -149,13 +179,13 @@ public final class GCCErrorParser extends ErrorParser {
             if (relativeDir != null) {
                 relativesTo.push(relativeDir);
             }
-            return NO_RESULT;
+            return ErrorParserProvider.NO_RESULT;
         }
         if (m.pattern() == GCC_STACK_HEADER) {
             Results res = new Results();
             for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                 StackIncludeItem item = it.next();
-                res.add(item.line, null, false);
+                res.add(item.line, null);
             }
             errorInludes.clear();
             try {
@@ -191,8 +221,7 @@ public final class GCCErrorParser extends ErrorParser {
             errorInludes.add(new StackIncludeItem(null, line, 0));
             return new Results();
         }
-        if ((m.pattern() == GCC_ERROR_SCANNER) || (m.pattern() == GCC_ERROR_SCANNER_ANOTHER) || (m.pattern() == GCC_ERROR_SCANNER_INTEL) ||
-            (m.pattern() == MSVCErrorParser.MSVC_WARNING_SCANNER) || (m.pattern() == MSVCErrorParser.MSVC_ERROR_SCANNER)) {
+        if (GCC_ERROR_SCANNER.contains(m.pattern())) {
             Results res = new Results();
             try {
                 String file = m.group(1);
@@ -206,13 +235,13 @@ public final class GCCErrorParser extends ErrorParser {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {
-                                res.add(item.line, new OutputListenerImpl(item.fo, item.lineNumber), important);
+                                res.add(item.line, new OutputListenerImpl(item.fo, item.lineNumber, important));
                             } else {
-                                res.add(item.line, null, false);
+                                res.add(item.line, null);
                             }
                         }
                         errorInludes.clear();
-                        res.add(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1), important);
+                        res.add(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1, important));
                         return res;
                     }
                 }
@@ -220,10 +249,10 @@ public final class GCCErrorParser extends ErrorParser {
             }
             for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                 StackIncludeItem item = it.next();
-                res.add(item.line, null, false);
+                res.add(item.line, null);
             }
             errorInludes.clear();
-            res.add(line, null, false);
+            res.add(line, null);
             return res;
         }
         throw new IllegalArgumentException("Unknown pattern: " + m.pattern().pattern()); // NOI18N
