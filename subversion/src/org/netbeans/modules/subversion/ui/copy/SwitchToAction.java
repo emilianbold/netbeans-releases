@@ -219,7 +219,6 @@ public class SwitchToAction extends ContextAction {
                         // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
                         List<File> switchedFiles = SvnUtils.listRecursively(root);
                         File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
-                        Subversion.getInstance().getRefreshHandler().refreshImediately(false, fileArray);
                         // the cache fires status change events to trigger the annotation refresh
                         // unfortunatelly - we have to call the refresh explicitly for each file also
                         // from this place as the branch label was changed evern if the files status didn't
@@ -233,7 +232,7 @@ public class SwitchToAction extends ContextAction {
 
                     return null;
                 }
-            });
+            }, root);
         } catch (Exception e) {
             e.printStackTrace();
         }

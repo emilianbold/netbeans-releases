@@ -322,7 +322,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         scheduleWork(
-            new RefreshWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots, fullRescan, logStatistics, Arrays.asList(filesOrFileObjects), fsRefreshInterceptor),
+            new RefreshWork(scannedRoots2Dependencies, scannedBinaries, sourcesForBinaryRoots,
+                fullRescan, logStatistics,
+                filesOrFileObjects == null ? Collections.<Object>emptySet() : Arrays.asList(filesOrFileObjects),
+                fsRefreshInterceptor),
             wait);
     }
 
@@ -1958,6 +1961,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return false;
         }
 
+        public @Override boolean isCancelledBy(Work work) {
+            if (work instanceof RefreshWork) {
+                ((RefreshWork) work).addSuspects(files);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         // XXX: this should ideally be available directly from EditorRegistry
         private static Map<FileObject, Document> getEditorFiles() {
             Map<FileObject, Document> f2d = new HashMap<FileObject, Document>();
@@ -2263,7 +2275,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private final Set<URL> scannedBinaries;
         private final Set<URL> sourcesForBinaryRoots;
         private boolean fullRescan;
-        private final Set<Object> suspectFilesOdFileObjects;
+        private final Set<Object> suspectFilesOrFileObjects;
         private final FSRefreshInterceptor interceptor;
 
         private DependenciesContext depCtx;
@@ -2289,7 +2301,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             this.scannedBinaries = scannedBinaries;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.fullRescan = fullRescan;
-            this.suspectFilesOdFileObjects = new HashSet<Object>(suspectFilesOdFileObjects);
+            this.suspectFilesOrFileObjects = new HashSet<Object>(suspectFilesOdFileObjects);
             this.interceptor = interceptor;
         }
 
@@ -2306,9 +2318,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
                 Collections.reverse(depCtx.newRootsToScan);
 
-                if (suspectFilesOdFileObjects != null && suspectFilesOdFileObjects.size() > 0) {
+                if (suspectFilesOrFileObjects != null && suspectFilesOrFileObjects.size() > 0) {
                     Set<FileObject> suspects = new HashSet<FileObject>();
-                    for(Object fileOrFileObject : suspectFilesOdFileObjects) {
+                    for(Object fileOrFileObject : suspectFilesOrFileObjects) {
                         if (fileOrFileObject instanceof File) {
                             FileObject f = FileUtil.toFileObject((File) fileOrFileObject);
                             if (f != null) {
@@ -2471,19 +2483,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 if (((RefreshWork) newWork).fullRescan) {
                     fullRescan = true;
                 }
-                suspectFilesOdFileObjects.addAll(((RefreshWork) newWork).suspectFilesOdFileObjects);
+                suspectFilesOrFileObjects.addAll(((RefreshWork) newWork).suspectFilesOrFileObjects);
                 return true;
             } else if (newWork instanceof FileListWork) {
                 if (fullRescan) {
-                    // complicated, should check that newWork.root is reachable from suspectFilesOdFileObjects,
+                    // complicated, should check that newWork.root is reachable from suspectFilesOrFileObjects,
                     // but don't want to convert java.io.File to FileObjects at this moment as it could
                     // fire events from filesystems
                 } else if (!((FileListWork) newWork).forceRefresh) {
-                    suspectFilesOdFileObjects.add(URLCache.getInstance().findFileObject(((FileListWork) newWork).root));
+                    suspectFilesOrFileObjects.add(URLCache.getInstance().findFileObject(((FileListWork) newWork).root));
                     return true;
                 }
             }
             return false;
+        }
+
+        public void addSuspects(Collection<? extends FileObject> files) {
+            suspectFilesOrFileObjects.addAll(files);
         }
     } // End of RefreshWork class
 

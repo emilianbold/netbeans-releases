@@ -80,45 +80,41 @@ public final class IndexingBridge {
      * reindexing will be processed after the operation is finished.
      *
      * @param operation The operation to run.
+     * @param files Files or folders affected by the operation.
      * @return Whatever value is returned from the <code>operation</code>.
      *
      * @throws Exception Any exception thrown by the <code>operation</code> is going to be rethrown from
      *   this method.
      */
-    public <T> T runWithoutIndexing(Callable<T> operation) throws Exception {
+    public <T> T runWithoutIndexing(Callable<T> operation, File... files) throws Exception {
         IndexingBridgeProvider ibp = Lookup.getDefault().lookup(IndexingBridgeProvider.class);
         if (ibp != null) {
-            return ibp.runWithoutIndexing(operation);
+            return ibp.runWithoutIndexing(operation, files);
         } else {
-            return operation.call();
-        }
-    }
-
-    public void refreshFiles(File... files) {
-        final Set<File> parents = new HashSet<File>();
-        for (File f : files) {
-            File parent = f.getParentFile();
-            if (parent != null) {
-                parents.add(parent);
-                LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
-            }
-        }
-
-        if (parents.size() > 0) {
-            IndexingBridgeProvider ibp = Lookup.getDefault().lookup(IndexingBridgeProvider.class);
-            if (ibp != null) {
-                ibp.refreshFiles(parents.toArray(new File[parents.size()]));
-            } else {
-                // let's give the filesystem some time to wake up and to realize that the file has really changed
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+            try {
+                return operation.call();
+            } finally {
+                final Set<File> parents = new HashSet<File>();
+                for (File f : files) {
+                    File parent = f.getParentFile();
+                    if (parent != null) {
+                        parents.add(parent);
+                        LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
                     }
-                }, 100); // XXX: getDelay()
+                }
+
+                if (parents.size() > 0) {
+                    // let's give the filesystem some time to wake up and to realize that the file has really changed
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                        }
+                    }, 100); // XXX: getDelay()
+                }
             }
         }
     }
-    
+
     /**
      * This interface is supposed to be implemented by the actual bridge module
      * that connect the versioning and indexing infrastructure. Ordinary VCS support
@@ -138,14 +134,13 @@ public final class IndexingBridge {
          * </ul>
          *
          * @param operation The operation to run.
+         * @param files Files or folders affected by the operation.
          * @return Whatever value is returned from the <code>operation</code>.
          *
          * @throws Exception Any exception thrown by the <code>operation</code> is going to rethrown from
          *   this method.
          */
-        <T> T runWithoutIndexing(Callable<T> operation) throws Exception;
-
-        void refreshFiles(File... files);
+        <T> T runWithoutIndexing(Callable<T> operation, File... files) throws Exception;
     }
 
     // -----------------------------------------------------------------------

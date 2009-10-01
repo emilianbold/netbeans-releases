@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -66,7 +67,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka 
  */
 public class SvnClientInvocationHandler implements InvocationHandler {    
-        
+
+    private static final Logger LOG = Logger.getLogger(SvnClientInvocationHandler.class.getName());
+    
     protected static final String GET_SINGLE_STATUS = "getSingleStatus"; // NOI18N
     protected static final String GET_STATUS = "getStatus"; // NOI18N
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
@@ -116,6 +119,26 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         };
     }
 
+    private static String print(Object[] args) {
+        if (args == null || args.length == 0) {
+            return "no parameters"; //NOI18N
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for(Object a : args) {
+                sb.append("\n  "); //NOI18N
+                if (a == null) {
+                    sb.append("null"); //NOI18N
+                } else {
+                    sb.append(a.toString());
+                    sb.append(" : "); //NOI18N
+                    sb.append(a.getClass().getName());
+                }
+                sb.append("\n"); //NOI18N
+            }
+            return sb.toString();
+        }
+    }
+
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
@@ -127,8 +150,10 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 !method.getName().equals("merge"); //NOI18N
         
         try {
-            Logger.getLogger(SvnClientInvocationHandler.class.getName()).fine("~~~ SVN: invoking '" + method.getName() + "'");
-            //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("~~~ SVN: invoking '" + method.getName() + "' with " + print(args)); //NOI18N
+                //new Throwable("~~~ SVN: invoking '" + method.getName() + "'").printStackTrace();
+            }
 
             Callable<Object> c = new Callable<Object>() {
                 public Object call() throws Exception {
@@ -144,7 +169,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if (fsReadOnlyAction) {
                 return c.call();
             } else {
-                return IndexingBridge.getInstance().runWithoutIndexing(c);
+                File file = null;
+                if (args != null && args.length > 0 && args[0] instanceof File) {
+                    file = (File) args[0];
+                }
+                return IndexingBridge.getInstance().runWithoutIndexing(c, file);
             }
         } catch (Exception e) {
             try {
@@ -201,7 +230,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } finally {
             // whatever command was invoked, whatever the result is - 
             // call refresh for all files notified by the client adapter
-            Subversion.getInstance().getRefreshHandler().refresh(fsReadOnlyAction);
+            if (fsReadOnlyAction) {
+                Subversion.getInstance().getRefreshHandler().refresh();
+            }
         }
     }
 

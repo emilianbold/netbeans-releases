@@ -52,12 +52,15 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=IndexingBridgeProvider.class)
 public final class Bridge implements IndexingBridgeProvider {
 
-    public <T> T runWithoutIndexing(Callable<T> operation) throws Exception {
-        return IndexingManager.getDefault().runProtected(operation);
+    public <T> T runWithoutIndexing(final Callable<T> operation, final File... files) throws Exception {
+        return IndexingManager.getDefault().runProtected(new Callable<T>() {
+            public T call() throws Exception {
+                try {
+                    return operation.call();
+                } finally {
+                    IndexingManager.getDefault().refreshAllIndices(false, false, files);
+                }
+            }
+        });
     }
-
-    public void refreshFiles(File... files) {
-        IndexingManager.getDefault().refreshAllIndices(false, false, files);
-    }
-
 }
