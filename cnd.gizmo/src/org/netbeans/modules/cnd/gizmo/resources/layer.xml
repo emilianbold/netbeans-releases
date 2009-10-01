@@ -4,7 +4,7 @@
     <folder name="DLight">
         <folder name="Configurations">
             <folder name="Gizmo">
-                <attr name="displayedName" stringvalue="C/C++ Profiling"/>
+                <attr name="displayedName" stringvalue="C/C++ DTrace Extended"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
@@ -30,6 +30,67 @@
                     </file>
                 </folder>
             </folder>
+
+            <folder name="GizmoSunStudioStandard">
+                <attr name="displayedName" stringvalue="C/C++ Sun Studio Standard"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="MemoryToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
+            <folder name="GizmoDTraceStandard">
+                <attr name="displayedName" stringvalue="C/C++ DTrace Standard"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="MemoryToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
+            <folder name="GizmoSimple">
+                <attr name="displayedName" stringvalue="C/C++ Simple (indicators only)"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="MemoryToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
         </folder>
     </folder>
     <folder name="Actions">
