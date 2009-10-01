@@ -196,6 +196,9 @@ public class TemplateUtils {
                         if (assign.getType() == CPPTokenTypes.ASSIGNEQUAL) {
                             if (assign.getNextSibling() != null) {
                                 AST type = assign.getNextSibling();
+                                if(type != null && type.getType() == CPPTokenTypes.LITERAL_typename && type.getNextSibling() != null) {
+                                    type = type.getNextSibling();
+                                }
                                 if (type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                         || type.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                                     res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope, global, type));

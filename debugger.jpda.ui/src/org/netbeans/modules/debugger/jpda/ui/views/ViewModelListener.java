@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -139,6 +140,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List nodeActionsProviderFilters;
         List columnModels;
         List mm;
+        List asynchModelFilters;
         ContextProvider cp = e != null ? DebuggerManager.join(e, dm) : dm;
         treeModels =            cp.lookup (viewType, TreeModel.class);
         treeModelFilters =      cp.lookup (viewType, TreeModelFilter.class);
@@ -152,7 +154,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = cp.lookup (viewType, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewType, ColumnModel.class);
         mm =                    cp.lookup (viewType, Model.class);
-        RequestProcessor rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
+        asynchModelFilters =    cp.lookup (viewType, AsynchronousModelFilter.class);
+        //RequestProcessor rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
         
         List models = new ArrayList(11);
         models.add(treeModels);
@@ -167,9 +170,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         models.add(columnModels);
         models.add(mm);
         models.add(treeExpansionModelFilters);
-        if (rp != null) {
+        models.add(asynchModelFilters);
+        /*if (rp != null) {
             models.add(rp);
-        }
+        }*/
         
         if (view instanceof DebuggingView) {
             ((DebuggingView) view).setRootContext(

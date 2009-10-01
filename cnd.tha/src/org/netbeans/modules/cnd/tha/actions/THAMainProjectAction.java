@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author mt154047
  */
-public final class THAMainProjectAction extends AbstractAction implements PropertyChangeListener {
+public final class THAMainProjectAction extends AbstractAction implements PropertyChangeListener, Runnable {
 
     private Project currentProject = null;
     private final Action sensorMainAction;
@@ -83,18 +83,16 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
         putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                setEnabled(isEnabled());
-            }
-        });
-
+        SwingUtilities.invokeLater(this);
     }
-
+    
+    public void run() {
+        setEnabled(isEnabled());
+    }
+    
     private static String loc(String key, String... params) {
         try {
-            return NbBundle.getMessage(THAActionsProvider.class, key, params);
+            return NbBundle.getMessage(THAMainProjectAction.class, key, params);
         } catch (MissingResourceException e) {
             e.printStackTrace();
             return key;
@@ -162,7 +160,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         }
         if ("enabled".equals(evt.getPropertyName())) {
             setEnabled(isEnabled());
-            System.out.println("Source=" + evt.getSource()); // NOI18N
+//             System.out.println("Source=" + evt.getSource()); // NOI18N
         }
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;

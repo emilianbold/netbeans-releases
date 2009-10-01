@@ -443,13 +443,30 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         final TreeMaker maker = workingCopy.getTreeMaker();
 
-        return maker.Class(
+        switch(srcClass.getKind()) {
+            case INTERFACE:
+            case ANNOTATION_TYPE:
+                List<ExpressionTree> implemetnts =
+                    new ArrayList<ExpressionTree>();
+                implemetnts.add(maker.QualIdent(srcClass));
+                return maker.Class(
+                    maker.Modifiers(Collections.singleton(PUBLIC)),
+                    name,                                         //name
+                    Collections.<TypeParameterTree>emptyList(),   //type params
+                    null,                                         //extends
+                    implemetnts,                                  //implements
+                    members);                                     //members
+            default: // should be never happen. We'll generate a class anyway.
+            case CLASS:
+            case ENUM:
+                return maker.Class(
                     maker.Modifiers(Collections.singleton(PUBLIC)),
                     name,                                         //name
                     Collections.<TypeParameterTree>emptyList(),   //type params
                     maker.QualIdent(srcClass),                    //extends
                     Collections.<ExpressionTree>emptyList(),      //implements
                     members);                                     //members
+        }
     }
 
     /**

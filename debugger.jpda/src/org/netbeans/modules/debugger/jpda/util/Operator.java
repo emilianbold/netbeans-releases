@@ -273,11 +273,21 @@ public class Operator {
                             suspendedThread = debugger.getThread(thref);
                             eventAccessLock = suspendedThread.accessLock.writeLock();
                             eventAccessLock.lock();
-                            if (!ThreadReferenceWrapper.isSuspended(thref)) {
-                                // Can not do anything, someone already resumed the thread in the mean time.
-                                // The event is missed. We will therefore ignore it.
-                                logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
+                            try {
+                                if (!ThreadReferenceWrapper.isSuspended(thref)) {
+                                    // Can not do anything, someone already resumed the thread in the mean time.
+                                    // The event is missed. We will therefore ignore it.
+                                    logger.warning("!!\nMissed event "+eventSet+" thread "+thref+" is not suspended!\n");
+                                    continue;
+                                }
+                            } catch (ObjectCollectedExceptionWrapper e) {
+                                // O.K. the thread is gone...
                                 continue;
+                            } catch (IllegalThreadStateExceptionWrapper e) {
+                                // O.K. the thread is gone...
+                                continue;
+                            } catch (InternalExceptionWrapper e) {
+                                // ignore VM defects
                             }
                             // We check for multiple-suspension when event is received
                             try {

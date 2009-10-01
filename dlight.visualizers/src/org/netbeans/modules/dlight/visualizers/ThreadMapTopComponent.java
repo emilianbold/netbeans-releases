@@ -170,7 +170,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         return PREFERRED_ID;
     }
 
-    public void addVisualizer(String toolID, String toolName, Visualizer view) {
+    public void addVisualizer(String toolID, String toolName, Visualizer<?> view) {
         if (view instanceof ThreadMapVisualizer){
             ((ThreadMapVisualizer)view).setToolID(toolID);
         }
@@ -209,7 +209,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         repaint();
     }
 
-    public void removeVisualizer(final Visualizer view) {
+    public void removeVisualizer(final Visualizer<?> view) {
         if (EventQueue.isDispatchThread()){
             closePerformanceMonitor(view);
         }else{
@@ -230,7 +230,7 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         }
     }
 
-    private void closePerformanceMonitor(Visualizer view) {
+    private void closePerformanceMonitor(Visualizer<?> view) {
         if (viewComponent != view.getComponent()) {
             return;
         }

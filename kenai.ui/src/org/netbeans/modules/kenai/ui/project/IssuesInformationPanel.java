@@ -254,7 +254,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
                         public void actionPerformed(final ActionEvent e) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                            DashboardImpl.getInstance().addProject(pHandle, false);
+                            DashboardImpl.getInstance().addProject(pHandle, false, false);
                             RequestProcessor.getDefault().post(new Runnable() {
 
                                 public void run() {
@@ -272,7 +272,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                             try {
                                 if (instProj.getFeatures(Type.ISSUES).length > 0) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                                    DashboardImpl.getInstance().addProject(pHandle, false);
+                                    DashboardImpl.getInstance().addProject(pHandle, false, false);
                                     RequestProcessor.getDefault().post(new Runnable() {
 
                                         public void run() {

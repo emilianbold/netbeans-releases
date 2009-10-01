@@ -51,6 +51,7 @@ import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -122,6 +123,12 @@ public class ProjectTestRestServicesAction extends AbstractAction implements Pre
                 FileObject buildFo = Utils.findBuildXml(projects[0]);
                 if (buildFo != null) {
                     ActionUtils.runTarget(buildFo, new String[]{command}, p);
+
+                    // logging usage of action
+                    Object[] params = new Object[2];
+                    params[0] = LogUtils.WS_STACK_JAXRS;
+                    params[1] = "TEST"; // NOI18N
+                    LogUtils.logWsAction(params);
                 }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);

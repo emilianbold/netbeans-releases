@@ -78,6 +78,7 @@ public final class PopupUtil  {
         
     private static final String POPUP_NAME = "popupComponent"; //NOI18N
     private static JDialog popupWindow;
+    private static Frame owner;
     private static HideAWTListener hideListener = new HideAWTListener();
     
     // Singleton
@@ -85,15 +86,7 @@ public final class PopupUtil  {
     }
     
     
-    public static void showPopup( JComponent content, String title ) {
-        showPopup(content, title, -1, -1, false);
-    }
-    
-    public static void showPopup( JComponent content, String title, int x, int y, boolean undecorated ) {
-        showPopup(content, title, x, y, false, -1 );
-    }  
-
-    public static void showPopup( JComponent content, String title, int x, int y, boolean undecorated, int altHeight ) {        
+    public static void showPopup( JComponent content, Frame parent, int x, int y, boolean undecorated, int altHeight ) {
         if (popupWindow != null ) {
             return; // Content already showing
         }
@@ -104,7 +97,7 @@ public final class PopupUtil  {
         // 1. on linux, creates mediumweight popup taht doesn't refresh behind visible glasspane
         // 2. on mac, needs an owner frame otherwise hiding tooltip also hides the popup. (linux requires no owner frame to force heavyweight)
         // 3. the created window is not focusable window
-        
+        owner = parent;
         popupWindow = new JDialog( getMainWindow() );
         popupWindow.setName( POPUP_NAME );
         popupWindow.setUndecorated(undecorated);
@@ -119,16 +112,13 @@ public final class PopupUtil  {
 	if(a11yDesc != null && !a11yDesc.equals(""))
 	    popupWindow.getAccessibleContext().setAccessibleDescription(a11yDesc);
 	    
-        if ( title != null ) {
-            // popupWindow.setTitle( title );
-        }
         // popupWindow.setAlwaysOnTop( true );
         popupWindow.getContentPane().add(content);
         // popupWindow.addFocusListener( mfl );                        
         // content.addFocusListener( mfl );                        
                 
-        WindowManager.getDefault().getMainWindow().addWindowStateListener(hideListener);
-        WindowManager.getDefault().getMainWindow().addComponentListener(hideListener);
+        getMainWindow().addWindowStateListener(hideListener);
+        getMainWindow().addComponentListener(hideListener);
         resizePopup();
         
         if (x != (-1)) {
@@ -154,9 +144,10 @@ public final class PopupUtil  {
             popupWindow.setVisible( false );
             popupWindow.dispose();
         }
-        WindowManager.getDefault().getMainWindow().removeWindowStateListener(hideListener);
-        WindowManager.getDefault().getMainWindow().removeComponentListener(hideListener);
+        getMainWindow().removeWindowStateListener(hideListener);
+        getMainWindow().removeComponentListener(hideListener);
         popupWindow = null;
+        owner = null;
     }
 
     
@@ -192,7 +183,7 @@ public final class PopupUtil  {
 
     
     private static Frame getMainWindow() {
-        return WindowManager.getDefault().getMainWindow();
+        return owner != null ? owner : WindowManager.getDefault().getMainWindow();
     }
     
     // Innerclasses ------------------------------------------------------------
