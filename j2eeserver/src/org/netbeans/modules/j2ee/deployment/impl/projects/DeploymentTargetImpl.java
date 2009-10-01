@@ -117,7 +117,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             clientModule = moduleProvider.getJ2eeModule();
         }
 
-        if (clientModule.getType().equals(J2eeModule.Type.WAR)) {
+        if (clientModule != null && clientModule.getType().equals(J2eeModule.Type.WAR)) {
             url = findWebUrl(clientModule);
             if (url != null) {
                 if (partUrl.startsWith("/")) { // NOI18N
