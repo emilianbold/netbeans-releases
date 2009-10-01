@@ -146,6 +146,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
 
     public void invoke() {
         final ImplementOverridePanel panel = new ImplementOverridePanel(description, isImplement);
+        final int caretOffset = component.getCaretPosition();
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, 
                 NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N  //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
@@ -154,7 +155,6 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
-                    final int caretOffset = component.getCaretPosition();
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
