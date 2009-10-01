@@ -195,77 +195,25 @@ public class JsfElExpression extends ELExpression {
             }
 
             if(_value[0] != null) {
-                expression = _value[0]; //store the resolved variable expression
+                resolvedExpression = _value[0]; //store the resolved variable expression
                 return EL_JSF_BEAN;
             }
-//
-//            //This part look for variables defined in JSP/JSF code
-//
-//            //marek: this is hacky solution, both the original JSP and xhtml as well
-//            //the proper way to fix should be to introduce a ContextAwareObject/Factory
-//            //which providers are in mime lookup and the generic impl. use
-//            //them to get similar way how the ImplicitObjects
-//            FileObject fileObject = getFileObject();
-//            if (fileObject.getMIMEType().equals("text/xhtml")) { //NOI18N
-//                //we are in an xhtml file
-//                Source source = Source.create(getDocument());
-//                final int offset = getContextOffset();
-//                final int[] _value = new int[1];
-//                final String searchedVarAttributeValue = first;
-//                try {
-//                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-//                        @Override
-//                        public void run(ResultIterator resultIterator) throws Exception {
-//                            Result _result = resultIterator.getParserResult(offset);
-//                            if(_result instanceof HtmlParserResult) {
-//                                HtmlParserResult result = (HtmlParserResult)_result;
-//                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
-//                                AstNode leaf = result.findLeaf(astOffset);
-//
-//                                List<AstNode> match = AstNodeUtils.getAncestors(leaf, new AstNode.NodeFilter() {
-//                                    public boolean accepts(AstNode node) {
-//                                        return node.getAttribute(VALUE_NAME) != null &&
-//                                                node.getAttribute(VARIABLE_NAME) != null &&
-//                                                node.getAttribute(VARIABLE_NAME).unquotedValue().equals(searchedVarAttributeValue);
-//                                    }
-//                                });
-//
-//                                if(!match.isEmpty()) {
-//                                    AstNode closestMatch = match.get(0);
-//                                    bundleName = closestMatch.getAttribute(VALUE_NAME).unquotedValue();
-//                                    _value[0] = EL_JSF_BEAN_REFERENCE;
-//                                }
-//                            }
-//                        }
-//                    });
-//                } catch (ParseException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//
-//                if(_value[0] != 0) {
-//                    return _value[0];
-//                }
-//
-//            } else {
-                //try if in a JSP...
-                FileObject fileObject = getFileObject();
-                JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
-                if (contextInfo != null) {
-                    JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
-                    if (result != null) {
-                        Node.Nodes nodes = result.getNodes();
-                        Node node = findValue(nodes, first);
-                        if (node != null) {
-                            String ref_val = node.getAttributeValue(VALUE_NAME);
-                            bundleName = ref_val;
-                            return EL_JSF_BEAN_REFERENCE;
-                        }
+
+            //try if in a JSP...
+            FileObject fileObject = getFileObject();
+            JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
+            if (contextInfo != null) {
+                JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
+                if (result != null) {
+                    Node.Nodes nodes = result.getNodes();
+                    Node node = findValue(nodes, first);
+                    if (node != null) {
+                        String ref_val = node.getAttributeValue(VALUE_NAME);
+                        resolvedExpression = ref_val;
+                        return EL_JSF_BEAN_REFERENCE;
                     }
                 }
-//            }
-
-
-            //try to resolve composite component attributes
+            }
             
             
         } else if (dotIndex == -1 && bracketIndex == -1) {
@@ -300,36 +248,9 @@ public class JsfElExpression extends ELExpression {
     
     @Override 
     public String getObjectClass(){
-        String beanName = extractBeanName();
-        if (bundleName !=null && bundleName.startsWith("#{")) {//NOI18N
-            /**
-             * @author ads
-             *  The code below is hacky and incorrect.
-             *  I have changed this code to another due issue 
-             *  IZ#172824 - JSF code completion problems
-             */
-            //int pos = bundleName.indexOf(".");
-            //This is very bad idea !! setExpression(getExpression().replaceAll(beanName, bundleName.substring(2,bundleName.length()-1)));
-            /*if (pos != -1) {
-                beanName = bundleName.substring(2,pos);
-            } else {
-                beanName = bundleName.substring(2,bundleName.length()-1);
-            }*/
-            
-            return getIterableTypeName( bundleName.substring(2,bundleName.length()-1) );
-        }
-        
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
-        
-        for (FacesManagedBean bean : beans){
-            if (beanName.equals(bean.getManagedBeanName())){
-                return bean.getManagedBeanClass();
-            }
-        }
-        
-        return null;
+        return getTypeName( getResolvedExpression() );
     }
-    
+
     @Override
     public String getBeanName(){
         String beanName = extractBeanName();
@@ -346,7 +267,7 @@ public class JsfElExpression extends ELExpression {
     /*
      * Appears as fix for IZ#172824 - JSF code completion problems
      */
-    private String getIterableTypeName( final String varType ) {
+    private String getTypeName( final String varType ) {
         Part[] parts = getParts( varType );
         String name = null;
         if ( parts!= null && parts .length >0 ){
@@ -377,6 +298,13 @@ public class JsfElExpression extends ELExpression {
                     //unresolvable type
                     return ;
                 }
+                if(type.getKind() == TypeKind.DECLARED) {
+                    Element el = ((DeclaredType)type).asElement();
+                    if(el instanceof TypeElement) {
+                        result[0] = ((TypeElement)el).getQualifiedName().toString();
+                    }
+                }
+
                 TypeMirror erasedType = controller.getTypes().erasure(type);
                 TypeMirror iterable = controller.getTypes().erasure( controller.getElements().
                         getTypeElement(Iterable.class.getCanonicalName()).asType());
@@ -408,7 +336,7 @@ public class JsfElExpression extends ELExpression {
             }
         };
         inspectPropertiesTask.execute();
-        return result[0];
+        return result[0] != null ? result[0] : name;
     }
 
     private static final String ATTRS_ATTR_NAME = "attrs"; //NOI18N
