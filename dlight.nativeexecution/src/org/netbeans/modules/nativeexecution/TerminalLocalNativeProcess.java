@@ -51,7 +51,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -168,7 +167,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 LOG.log(Level.FINEST, "Working directory: {0}", wDir);
             }
 
-            final MacroMap env = info.getEnvVariables();
+            final MacroMap env = info.getEnvironment().clone();
 
             // setup DISPLAY variable for MacOS...
             if (isMacOS) {
@@ -195,13 +194,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 if (isWindows) {
                     String path = env.get("PATH"); // NOI18N
+                    // As we use sh to start... convert paths to shell's format
                     String newPath = WindowsSupport.getInstance().convertToAllShellPaths(path);
-                    newPath = "/bin:/usr/bin:" + newPath; // NOI18N
-                    env.put("PATH", newPath); // NOI18N
+                    env.put("PATH", "/bin:/usr/bin:" + newPath); // NOI18N
                 }
-
-                // Always prepend /bin and /usr/bin to PATH
-//                env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
                 OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos);
@@ -209,9 +205,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 fos.close();
 
                 if (LOG.isLoggable(Level.FINEST)) {
-                    for (Entry<String, String> entry : env.entrySet()) {
-                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{entry.getKey(), entry.getValue()}); // NOI18N
-                    }
+                    env.dump(System.err);
                 }
             }
 
