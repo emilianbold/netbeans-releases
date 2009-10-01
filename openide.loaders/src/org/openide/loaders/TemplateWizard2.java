@@ -384,7 +384,7 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     }
     private DataFolder getLocationDataFolder() {
         if (locationFolder != null) {
-            FileObject f = FileUtil.toFileObject(locationFolder);
+            FileObject f = FileUtil.toFileObject(FileUtil.normalizeFile(locationFolder));
             if (f != null && f.isFolder()) {
                 return DataFolder.findFolder(f);
             }
