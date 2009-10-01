@@ -66,14 +66,14 @@ public class ValidPrimaryTableName extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        String entityName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
-        
-        if (entityName.length() == 0){
+        String tableName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
+        String entityName = ((Entity) ctx.getModelElement()).getName();
+        if (tableName.length() == 0){
             return new ErrorDescription[]{createProblem(subject, ctx,
                     NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier"))};
         }
         
-        if (SQLKeywords.isSQL99ReservedKeyword(entityName)){
+        if (SQLKeywords.isSQL99ReservedKeyword(tableName)){
             return new ErrorDescription[]{createProblem(subject, ctx,
                     NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword"),
                     Severity.WARNING)};
