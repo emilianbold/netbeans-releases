@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -107,6 +108,12 @@ public class TestRestServicesAction extends NodeAction  {
                         }
                     }
                 }
+
+                // logging usage of action
+                Object[] params = new Object[2];
+                params[0] = LogUtils.WS_STACK_JAXRS;
+                params[1] = "TEST"; // NOI18N
+                LogUtils.logWsAction(params);
 
         }
     }

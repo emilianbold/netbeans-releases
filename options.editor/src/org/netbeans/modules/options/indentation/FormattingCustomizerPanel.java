@@ -634,7 +634,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
 
         public boolean isKeyOverridenForMimeType(String key, String mimeType) {
-            Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
+            Preferences p = projectPrefs != null ? projectPrefs : ProjectUtils.getPreferences(project, IndentUtils.class, true);
             p = p.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
             return p.get(key, null) != null;
         }

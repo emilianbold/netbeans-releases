@@ -980,4 +980,43 @@ public class IndentTestCase extends EditorBase {
             "        << \"Welcome ...\" << std::endl;\n"
             );
     }
+
+    /**
+     * test IZ:171413 multi-line statement incorrectly tabbed (spaced)
+     */
+    public void testIZ171413() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+                put(EditorOptions.newLineBeforeBrace, CodeStyle.BracePlacement.NEW_LINE.name());
+        setLoadDocumentText(
+            "for (Protein::bb_torsion_it_t _bbt_it = _prot_gap.Torsions().begin();\n"+
+            "        _bbt_it != _prot_gap.Torsions().end(); ++_bbt_it) |{\n"+
+            "    cout << _bbt_it->phi.getDihedral() << endl;\n"+
+            "}\n");
+        indentNewLine();
+        assertDocumentText("Incorrect identing IZ:171413 multi-line statement incorrectly tabbed (spaced)",
+            "for (Protein::bb_torsion_it_t _bbt_it = _prot_gap.Torsions().begin();\n"+
+            "        _bbt_it != _prot_gap.Torsions().end(); ++_bbt_it) \n"+
+            "{\n"+
+            "    cout << _bbt_it->phi.getDihedral() << endl;\n"+
+            "}\n");
+    }
+
+    public void testIZ168369() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                  "namespace A\n" +
+                  "{\n" +
+                  "/*|"
+                );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                  "namespace A\n" +
+                  "{\n" +
+                  "/*\n" +
+                  " * |"
+                );
+
+    }
 }

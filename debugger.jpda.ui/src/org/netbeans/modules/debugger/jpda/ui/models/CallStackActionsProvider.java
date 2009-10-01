@@ -198,14 +198,10 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         if (debugger.getCurrentCallStackFrame () != frame) {
             frame.makeCurrent ();
         } else {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    String language = DebuggerManager.getDebuggerManager ().
-                        getCurrentSession ().getCurrentLanguage ();
-                    SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-                    sp.showSource (frame, language);
-                }
-            });
+            String language = DebuggerManager.getDebuggerManager ().
+                getCurrentSession ().getCurrentLanguage ();
+            SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+            sp.showSource (frame, language);
         }
     }
 }

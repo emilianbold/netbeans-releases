@@ -58,8 +58,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
-    private List<CsmDeclaration> declarators;
-
+    private volatile List<CsmDeclaration> declarators;
+    private static final List<CsmDeclaration> EMPTY = Collections.<CsmDeclaration>emptyList();
+    
     public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
@@ -69,8 +70,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     }
 
     public List<CsmDeclaration> getDeclarators() {
-        if (declarators == null) {
-            declarators = new ArrayList<CsmDeclaration>();
+        if (declarators == null || this.declarators == EMPTY) {
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
         }
@@ -90,12 +90,20 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }
 
-    private void render() {
-        AstRenderer renderer = new DSRenderer();
-        renderer.render(getAst(), null, null);
+    private synchronized void render() {
+        if (this.declarators == null) {
+            // assign constant to prevent infinite recusion by calling this method in the same thread
+            this.declarators = EMPTY;
+            DSRenderer renderer = new DSRenderer();
+            renderer.render(getAst(), null, null);
+            // assign should be the latest operation
+            // prevent publishing list before it is completely constructed
+            this.declarators = renderer.declarators;
+        }
     }
 
     private class DSRenderer extends AstRenderer {
+        private List<CsmDeclaration> declarators = new ArrayList<CsmDeclaration>();
 
         public DSRenderer() {
             super((FileImpl) getContainingFile());

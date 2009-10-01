@@ -43,6 +43,7 @@ package org.netbeans.junit;
 import java.util.logging.Level;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestFailure;
 import junit.framework.TestResult;
 import test.pkg.not.in.junit.NbModuleSuiteException;
 
@@ -78,6 +79,8 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("One failure", 1, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());
+        TestFailure f = r.failures().nextElement();
+        assertEquals("Failure name", "testGenerateMsgOrException", ((TestCase)f.failedTest()).getName());
     }
 
     public void testFailOnException() {
@@ -92,5 +95,7 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("One failure", 1, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());
+        TestFailure f = r.failures().nextElement();
+        assertEquals("Failure name", "testGenerateMsgOrException", ((TestCase)f.failedTest()).getName());
     }
 }

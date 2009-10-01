@@ -67,6 +67,8 @@
 	            <equals arg1="${hg.root.translatedfiles}" arg2=""/> 
 	         </not>		
 		<isset property="ml.build"/>
+
+                <available file="${hg.root.translatedfiles}/src"/>
 	    </and>
         </condition>
     </target>

@@ -43,7 +43,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
 public class AddressBreakpoint extends CndBreakpoint implements Comparable {
     public static final String          PROP_ADDRESS_VALUE = "address"; // NOI18N

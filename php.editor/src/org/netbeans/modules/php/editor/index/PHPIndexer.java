@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -69,9 +70,9 @@ import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -253,6 +254,16 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
             }
             for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
+                Collection<? extends VariableName> declaredVariables = nsElement.getDeclaredVariables();
+                for (VariableName variableName : declaredVariables) {
+                    String varName = variableName.getName();
+                    String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+                    if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                        final String indexSignature = variableName.getIndexSignature();
+                        defaultDocument.addPair(FIELD_VAR, indexSignature, true, true);
+                        defaultDocument.addPair(FIELD_TOP_LEVEL, variableName.getName().toLowerCase(), true, true);
+                    }
+                }
                 if (nsElement.isDefaultNamespace()){
                     continue; // do not index default ns
                 }
@@ -302,7 +313,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 6;
+        public static final int VERSION = 7;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

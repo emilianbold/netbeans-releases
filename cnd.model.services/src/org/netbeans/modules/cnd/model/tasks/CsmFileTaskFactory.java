@@ -246,15 +246,17 @@ public abstract class CsmFileTaskFactory {
 
     private static CsmFile getCsmFile(FileObject fo, boolean allowStandalone) {
         CsmFile csmFile = null;
-        Document doc = CsmUtilities.getDocument(fo);
-        if (doc != null) {
-            csmFile = CsmUtilities.getCsmFile(doc, false);
-        }
-        if (csmFile == null) {
-            csmFile = CsmUtilities.getCsmFile(fo, false);
-        }
-        if (allowStandalone && csmFile == null) {
-            csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
+        if (fo != null) {
+            Document doc = CsmUtilities.getDocument(fo);
+            if (doc != null) {
+                csmFile = CsmUtilities.getCsmFile(doc, false);
+            }
+            if (csmFile == null) {
+                csmFile = CsmUtilities.getCsmFile(fo, false);
+            }
+            if (allowStandalone && csmFile == null) {
+                csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
+            }
         }
         return csmFile;
     }

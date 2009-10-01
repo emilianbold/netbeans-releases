@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -50,6 +51,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExtendedDelete;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -125,7 +129,39 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
             }
             return true;
         } else {
-            return false;
+            // #172199: maybe this should be somewhere (where?) else, essentially
+            // it's a bridge between explorer API and parsing API. Prior fixing #134716
+            // SafeDelete was performed even on multiselection and if the user opted for
+            // performing delete in the safe way all nodes/files were deleted in a single
+            // batch operation from RepositoryUpdater's perspective.
+            boolean delete = true;
+            for(int i = 0; i < nodes.length; i++) {
+                if (nodes[i].getLookup().lookup(DataObject.class) == null) {
+                    // not file-based node
+                    delete = false;
+                    break;
+                }
+            }
+            if (delete) {
+                try {
+                    FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                        public void run() throws IOException {
+                            for (int i = 0; i < nodes.length; i++) {
+                                try {
+                                    nodes[i].destroy();
+                                } catch (IOException ioe) {
+                                    LOGGER.log(Level.WARNING, null, ioe);
+                                }
+                            }
+                        }
+                    });
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, null, ioe);
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

@@ -123,7 +123,7 @@ public class RailsViews extends RubyAstRule {
         if (node.getNodeType() == NodeType.FCALLNODE) {
             String method = ((INameNode)node).getName();
             
-            if (method.startsWith("redirect_")) { // NOI18N
+            if (method.startsWith("redirect_") || method.equals("render")) { // NOI18N
                 return false;
             }
         }

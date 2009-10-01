@@ -44,7 +44,9 @@ made subject to such option by the copyright holder.
 <filesystem>
    <folder name="Templates">
         <folder name="WebServices">
+            <!-- defined in websvc.core
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
+            -->
             <file name="STSWizard.java">
              <attr name="position" intvalue="680"/>
              <attr name="template" boolvalue="true"/>

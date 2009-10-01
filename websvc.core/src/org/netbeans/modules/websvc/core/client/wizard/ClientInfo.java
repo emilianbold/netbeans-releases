@@ -599,7 +599,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     
     void store(WizardDescriptor d) {
         //        System.out.println("storing wizard properties");
-        
+        d.putProperty(ClientWizardProperties.WSDL_SOURCE, wsdlSource);
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL, getDownloadUrl());
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());

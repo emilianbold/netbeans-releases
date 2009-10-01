@@ -474,29 +474,20 @@ public final class LibrariesNode extends AbstractNode {
             Icon icon;
             Icon openedIcon;
             String displayName;
-            try {
-                URL url = file.toURI().toURL();
-                if (FileUtil.isArchiveFile(url)) {
-                    url = FileUtil.getArchiveRoot(url);
-                    icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
-                    displayName = file.getName();
-                }
-                else {
-                    String sURL = url.toExternalForm();
-                    if (!sURL.endsWith("/")) {  //NOI18N
-                        url = new URL (sURL+"/");   //NOI18N
-                    }
-                    icon = getFolderIcon (false);
-                    openedIcon = getFolderIcon (true);
-                    displayName = file.getAbsolutePath();
-                }
-                rootsList.add (url);
-                FileObject root = URLMapper.findFileObject (url);
-                if (root != null) {
-                    return new LibrariesSourceGroup (root,displayName,icon,openedIcon);
-                }
-            } catch (MalformedURLException e) {
-                Exceptions.printStackTrace(e);
+            final URL url = FileUtil.urlForArchiveOrDir(file);
+            if ("jar".equals(url.getProtocol())) {  //NOI18N
+                icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
+                displayName = file.getName();
+            }
+            else {                                
+                icon = getFolderIcon (false);
+                openedIcon = getFolderIcon (true);
+                displayName = file.getAbsolutePath();
+            }
+            rootsList.add (url);
+            FileObject root = URLMapper.findFileObject (url);
+            if (root != null) {
+                return new LibrariesSourceGroup (root,displayName,icon,openedIcon);
             }
             return null;
         }        

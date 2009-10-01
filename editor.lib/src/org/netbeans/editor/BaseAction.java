@@ -45,6 +45,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 import java.awt.event.ActionEvent;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -210,7 +211,14 @@ public abstract class BaseAction extends TextAction {
             if (bundleClass != null) {
                 // The bundle key is just the action's name
                 String bundleKey = (String)getValue(Action.NAME);
-                ret = NbBundle.getBundle(bundleClass).getString(bundleKey);
+                try {
+                    ret = NbBundle.getBundle(bundleClass).getString(bundleKey);
+                } catch (MissingResourceException mre) {
+                    MissingResourceException mre2 = new MissingResourceException("Can't find SHORT_DESCRIPTION for " + this //NOI18N
+                            + "; bundleClass=" + bundleClass + "; bundleKey=" + bundleKey, bundleClass.getName(), bundleKey); //NOI18N
+                    mre2.initCause(mre);
+                    throw mre2;
+                }
             } else { // default to slow deprecated findValue()
                 // getDefaultShortDescription() is only called once for non-null ret value
                 ret = getDefaultShortDescription();

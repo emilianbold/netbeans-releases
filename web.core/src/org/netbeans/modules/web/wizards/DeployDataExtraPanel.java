@@ -44,6 +44,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -83,7 +84,7 @@ class DeployDataExtraPanel extends BaseWizardPanel {
         fullRowC.weightx = 1.0;
         fullRowC.anchor = GridBagConstraints.WEST;
         fullRowC.fill = GridBagConstraints.HORIZONTAL;
-        fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.insets = new Insets(4, 0, 4, 0);
 
         // Table panel
         GridBagConstraints tablePanelC = new GridBagConstraints();
@@ -119,6 +120,11 @@ class DeployDataExtraPanel extends BaseWizardPanel {
     }
 
     public void setData() {
+        String displayName = null;
+        DataObject templateDo = wizard.getTemplate();
+        displayName = templateDo.getNodeDelegate ().getDisplayName ();
+        wizard.putProperty("NewFileWizard_Title", displayName);
+
         jLinstruction.setEnabled(deployData.makeEntry());
         paramPanel.setEnabled(deployData.makeEntry());
     }

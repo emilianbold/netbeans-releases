@@ -90,6 +90,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
+    static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
+    
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
@@ -136,7 +138,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX,
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
-                    "GlassFish_v3_Prelude", // NOI18N
+                    PRELUDE_DEFAULT_NAME, 
                     "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt", // NOI18N
                     "last-install-root", // NOI18N

@@ -182,7 +182,7 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
     }
 
     public @Override int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_ONLY_OPENED;
     }
 
     public @Override void componentOpened() {

@@ -619,6 +619,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ165976.cc", 15, 56, "IZ165976.cc", 4, 3);
     }
 
+    public void testIZ173311() throws Exception {
+        // IZ#173311 : Unresolved ids in function typedef
+        performTest("IZ173311.cc", 2, 30, "IZ173311.cc", 2, 26);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -76,6 +76,15 @@ public abstract class FaceletsLibrary {
         return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDisplayName() : getNamespace();
     }
 
+    @Override
+    public String toString() {
+        return "FaceletsLibrary(namespace=" + getNamespace() +
+                ", default prefix= " + getDefaultPrefix() +
+                ", tld library= " + getAssociatedTLDLibrary(); //NOI18N
+    }
+
+
+
      @Override
     public boolean equals(Object obj) {
          if(!(obj instanceof FaceletsLibrary)) {

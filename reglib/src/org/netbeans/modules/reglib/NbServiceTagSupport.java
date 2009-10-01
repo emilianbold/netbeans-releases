@@ -952,7 +952,7 @@ public class NbServiceTagSupport {
     private static String getSuperId () {
         String superId = "";
         File f = new File(USER_HOME + File.separator + DEFAULT_NETBEANS_DIR + File.separator + SUPER_IDENTITY_FILE_NAME);
-        if (f.exists()) {
+        if (f.exists() && f.length() > 0) {
             // read existing super Id
             try {
                 Reader r = new FileReader(f);

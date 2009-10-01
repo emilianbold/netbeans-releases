@@ -1120,10 +1120,12 @@ public class FormUtils
     // ---------
 
     /** Returns explicit property category classification (defined in
-     * propertyCategories table)for properties of given class.
+     * propertyCategories table) for properties of given class.
      * The returned array can be used in getPropertyCategory method to get
      * category for individual property. Used for SWING components to
      * correct their default (insufficient) classification.
+     * @return Object[] array of property categories for given bean class, or
+     *         null if nothing specified for the class
      */
     static Object[] getPropertiesCategoryClsf(Class beanClass,
                                               BeanDescriptor beanDescriptor)

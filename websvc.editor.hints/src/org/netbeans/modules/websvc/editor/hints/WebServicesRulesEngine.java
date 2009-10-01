@@ -78,6 +78,7 @@ public class WebServicesRulesEngine extends RulesEngine {
         operationRules.add(new InvalidExcludeAttribute());
         //parameters rules
         paramRules.add(new WebParamHolder());
+        paramRules.add(new WebParamDuplicity());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {

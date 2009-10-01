@@ -78,7 +78,7 @@ import org.openide.windows.OutputWriter;
 public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     private static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = CndUtils.getBoolean("cnd.modelimpl.trace.failed.include", false); // NOI18N
-    private final static boolean TRACE_INCLUDES = Boolean.getBoolean("cnd.trace.includes"); // NOI18N
+    private final static boolean TRACE_INCLUDES = CndUtils.getBoolean("cnd.trace.includes", false); // NOI18N
 
     /** Creates a new instance of CsmIncludeHyperlinkProvider */
     public CsmIncludeHyperlinkProvider() {

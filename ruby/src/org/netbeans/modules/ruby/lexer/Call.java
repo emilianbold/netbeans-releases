@@ -316,7 +316,7 @@ public class Call {
 
                 lineStart = Utilities.getRowStart(doc, offset);
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
 
             boolean dotted = false; // is this dotted expression? (e.g. foo.boo.)
@@ -432,7 +432,7 @@ public class Call {
                         return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    // do nothing - see #154991
                 }
             } else {
                 return Call.UNKNOWN;

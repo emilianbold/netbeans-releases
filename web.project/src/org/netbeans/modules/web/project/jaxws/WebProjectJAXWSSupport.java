@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectWebServicesSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
@@ -561,6 +562,8 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         if (fo==null) {
             try {
                 WSUtils.createJaxWsFileObject(project);
+                // logging first service creation
+                logWsDetected();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -574,6 +577,8 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         if (fo==null) {
             try {
                 WSUtils.createJaxWsFileObject(project);
+                // logging first service creation
+                logWsDetected();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -583,6 +588,14 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         return project.getWebModule().getWebservicesMetadataModel();
+    }
+
+    private void logWsDetected() {
+        Object[] params = new Object[3];
+        params[0] = LogUtils.WS_STACK_JAXWS;
+        params[1] = project.getClass().getName();
+        params[2] = "SERVICE"; // NOI18N
+        LogUtils.logWsDetect(params);
     }
     
 }

@@ -1203,7 +1203,7 @@ public class RADComponent {
 
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, getBeanInfo().getBeanDescriptor());
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        if (Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+        if (propsCats != null && Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
             try {
                 Object[] newPropsCats = new Object[propsCats.length+2*props.length];
                 for (int i=0; i<props.length; i++) {

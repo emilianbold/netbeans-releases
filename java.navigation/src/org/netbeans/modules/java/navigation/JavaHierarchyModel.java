@@ -107,7 +107,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
     /**
      */
-    public JavaHierarchyModel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
+    public JavaHierarchyModel(FileObject fileObject, Element[] elements) {
         super(null);
         this.fileObject = fileObject;
 
@@ -122,8 +122,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             elementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
         }
-
-        update(elements, compilationInfo);
     }
     
     public void update() {

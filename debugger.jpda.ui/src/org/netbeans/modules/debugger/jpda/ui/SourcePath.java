@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -278,32 +279,40 @@ public class SourcePath {
         }
     }
 
-    public boolean showSource (
+    /** Do not call in AWT */
+    public void showSource (
         JPDAThread t,
         String stratumn
     ) {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
+        String url;
         try {
-            return EditorContextBridge.getContext().showSource (
-                getURL (convertSlash (t.getSourcePath (stratumn)), true),
-                lineNumber,
-                debugger
-            );
+            url = getURL (convertSlash (t.getSourcePath (stratumn)), true);
         } catch (AbsentInformationException e) {
-            return EditorContextBridge.getContext().showSource (
-                getURL (
+            url = getURL (
                     convertClassNameToRelativePath (t.getClassName ()), true
-                ),
-                lineNumber,
-                debugger
-            );
+                );
         }
+        final int ln = lineNumber;
+        final String u = url;
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                EditorContextBridge.getContext().showSource (
+                    u,
+                    ln,
+                    debugger
+                );
+            }
+        });
     }
 
-    public boolean showSource (CallStackFrame csf, String stratumn) {
+    /** Do not call in AWT */
+    public void showSource (CallStackFrame csf, String stratumn) {
+        String url;
+        int lineNumber;
         try {
-            String url = getURL (
+            url = getURL (
                 convertSlash (csf.getSourcePath (stratumn)), true
             );
             if (url == null) {
@@ -316,51 +325,60 @@ public class SourcePath {
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
                         "Show Source: No URL for source path "+csf.getSourcePath (stratumn)+
                         "\nThe reason is likely no opened project for this source file.");
-                return false;
+                return ;
             }
-            int lineNumber = csf.getLineNumber (stratumn);
+            lineNumber = csf.getLineNumber (stratumn);
             if (lineNumber < 1) lineNumber = 1;
-            return EditorContextBridge.getContext().showSource (
-                url,
-                lineNumber,
-                debugger
-            );
         } catch (AbsentInformationException e) {
-            String url = getURL (
+            url = getURL (
                 convertClassNameToRelativePath (csf.getClassName ()), true
             );
             if (url == null) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
                         "Show Source: No source URL for class "+csf.getClassName()+
                         "\nThe reason is likely no opened project for the source file.");
-                return false;
+                return ;
             }
-            return EditorContextBridge.getContext().showSource (
-                url,
-                1,
-                debugger
-            );
+            lineNumber = 1;
         }
+        final int ln = lineNumber;
+        final String u = url;
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                EditorContextBridge.getContext().showSource (
+                    u,
+                    ln,
+                    debugger
+                );
+            }
+        });
     }
 
-    public boolean showSource (Field v) {
+    public void showSource (Field v) {
         String fieldName = ((Field) v).getName ();
         String className = className = ((Field) v).getClassName ();
         String url = getURL (
             EditorContextBridge.getRelativePath (className), true
         );
-        if (url == null) return false;
+        if (url == null) return ;
         int lineNumber = lineNumber = EditorContextBridge.getContext().getFieldLineNumber (
             url,
             className,
             fieldName
         );
         if (lineNumber < 1) lineNumber = 1;
-        return EditorContextBridge.getContext().showSource (
-            url,
-            lineNumber,
-            debugger
-        );
+        
+        final int ln = lineNumber;
+        final String u = url;
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                EditorContextBridge.getContext().showSource (
+                    u,
+                    ln,
+                    debugger
+                );
+            }
+        });
     }
 
     private static String convertSlash (String original) {

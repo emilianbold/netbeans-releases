@@ -93,7 +93,7 @@ void visit_file_data(int (*visitor) (file_data*, void*), void *data) {
     visit_file_data_impl(root, visitor, data);
 }
 
-file_data *find_file_data(const char* filename) {
+file_data *find_file_data(const char* filename, int create) {
     file_data *result = NULL;
     pthread_mutex_lock(&file_data_tree_mutex);
     if (root) {
@@ -112,11 +112,13 @@ file_data *find_file_data(const char* filename) {
                         break;
                     } else if(cmp < 0) {
                         curr = curr->left;
-                    } else { // cmp > 0
+                    } else if (create) { // cmp > 0
                         result = new_file_data(filename, file_state_pending);
                         result->left = curr->left; // right is nulled by new_file_data
                         curr->left = result;
                         break;
+                    } else {
+                        result = NULL;
                     }
                 } else {
                     curr->left = result = new_file_data(filename, file_state_pending);

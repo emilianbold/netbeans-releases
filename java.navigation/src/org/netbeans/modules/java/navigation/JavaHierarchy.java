@@ -128,7 +128,7 @@ public final class JavaHierarchy {
             }
             String title = NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", membersOf);            
             dialog.setTitle(title); // NOI18N
-            dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements, compilationController));
+            dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements));
             dialog.setVisible(true);
         }
     }    

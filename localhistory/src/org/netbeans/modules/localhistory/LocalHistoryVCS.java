@@ -75,14 +75,29 @@ public class LocalHistoryVCS extends VersioningSystem {
         if(file == null) {
             return null;
         }                
-        return LocalHistory.getInstance().isManagedByParent(file);        
-    }
+
+        LocalHistory lh = LocalHistory.getInstance();
+
+        if(lh.isOpenedOrTouched(file)) {
+            return file;
+        }
     
+        File a = lh.isManagedByParent(file);
+        if(a != null) {
+            return a;
+        }
+        return null;
+    }
+
     public VCSAnnotator getVCSAnnotator() {
         return LocalHistory.getInstance().getVCSAnnotator();
     }
     
     public VCSInterceptor getVCSInterceptor() {
         return LocalHistory.getInstance().getVCSInterceptor();
+    }
+
+    void managedFilesChanged() {
+        fireVersionedFilesChanged();
     }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -122,20 +122,20 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     
     private void selectionChanged(PropertyChangeEvent evt) {
         Node[] newSelection = ((Node[]) evt.getNewValue());
-        selected = true;
-        if(newSelection == null || newSelection.length == 0) {
-            selected = false;
-            showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));
-            return;
+        if ((newSelection != null) && (newSelection.length == 1)) {
+            StoreEntry se = newSelection[0].getLookup().lookup(StoreEntry.class);
+            if (se != null) {
+                selected = true;
+                refreshDiffPanel(se);
+                return;
+            }
         }
 
-        StoreEntry se = newSelection[0].getLookup().lookup(StoreEntry.class);
-        if( se == null ) {
-            selected = false;
-            showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_IllegalSelection"));
-            return;
-        }
-        refreshDiffPanel(se);                
+        selected = false;
+        String msgKey = (newSelection == null) || (newSelection.length == 0)
+                        ? "MSG_DiffPanel_NoVersion"                     //NOI18N
+                        : "MSG_DiffPanel_IllegalSelection";             //NOI18N
+        showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, msgKey));
     }           
     
     private void refreshDiffPanel(StoreEntry se) {  

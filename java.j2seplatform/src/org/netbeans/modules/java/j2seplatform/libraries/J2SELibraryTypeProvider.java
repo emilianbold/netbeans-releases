@@ -67,6 +67,7 @@ import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.logging.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -76,7 +77,9 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     private J2SELibraryTypeProvider () {
     }
 
-    private static final String LIB_PREFIX = "libs.";
+    private static final Logger LOG = Logger.getLogger(J2SELibraryTypeProvider.class.getName());
+
+    private static final String LIB_PREFIX = "libs.";       //NOI18N
     public static final String LIBRARY_TYPE = "j2se";       //NOI18N
     public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
     public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
@@ -272,7 +275,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             }
             if (this.contents.keySet().contains(contentType)) {
                 if (VOLUME_TYPES_REQUIRING_FOLDER.contains(contentType)) {
-                    path = check (path);
+                    path = check (path, name);
                 }
                 this.contents.put(contentType, new ArrayList<URL>(path));
                 this.firePropertyChange(PROP_CONTENT,null,null);
@@ -282,13 +285,19 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             }
         }
 
-        private static List<URL> check (final List<? extends URL> resources) {
+        private static List<URL> check (final List<? extends URL> resources, final String libName) {
             final List<URL> checkedResources = new ArrayList<URL>(resources.size());
             for (URL u : resources) {
                 final String surl = u.toString();
                 if (!surl.endsWith("/")) {              //NOI18N
                     try {
-                        u = new URL (surl+'/');         //NOI18N
+                        if (FileUtil.isArchiveFile(u)) {
+                            LOG.warning(String.format("Wrong Classpath entry %s in Library: %s", u.toString(), libName==null? "" : libName));   //NOI18N
+                            u = FileUtil.getArchiveRoot(u);
+                        }
+                        else {
+                            u = new URL (surl+'/');         //NOI18N
+                        }
                     } catch (MalformedURLException e) {
                         //Never thrown
                         Exceptions.printStackTrace(e);

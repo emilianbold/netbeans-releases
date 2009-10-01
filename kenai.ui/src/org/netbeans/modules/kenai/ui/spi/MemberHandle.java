@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 public abstract class MemberHandle implements Comparable <MemberHandle> {
     public abstract String getDisplayName();
     public abstract String getName();
+    public String getRole() { return null; }
     public abstract boolean hasMessages();
     public abstract boolean isOnline();
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);

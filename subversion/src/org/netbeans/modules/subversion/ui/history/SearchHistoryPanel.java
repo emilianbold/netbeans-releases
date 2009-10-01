@@ -110,6 +110,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.repositoryUrl = repositoryUrl;
         this.roots = new File[] { localRoot };
         this.criteria = criteria;
+        this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();

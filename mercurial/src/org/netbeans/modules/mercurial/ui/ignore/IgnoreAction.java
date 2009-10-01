@@ -122,13 +122,14 @@ public class IgnoreAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        final File[] repositories = HgUtils.getRepositoryRoots(context);
-        if(repositories == null || repositories.length == 0) return;
+        final Set<File> repositories = HgUtils.getRepositoryRoots(context);
+        if(repositories == null || repositories.size() == 0) return;
 
         final Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if(ctxFiles == null || ctxFiles.size() == 0) return;        
 
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repositories[0]);
+        File repository = repositories.iterator().next();
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
                 for (File repository : repositories) {
@@ -175,7 +176,7 @@ public class IgnoreAction extends ContextAction {
                 logger.output("");
             }
         };
-        support.start(rp, repositories[0], org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress"));
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress"));
 
     }
 

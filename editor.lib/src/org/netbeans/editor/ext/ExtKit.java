@@ -600,7 +600,10 @@ public class ExtKit extends BaseKit {
         }
     }
 
-    @EditorActionRegistration(name = toggleCaseIdentifierBeginAction, shortDescription = "")
+    @EditorActionRegistration(
+            name = toggleCaseIdentifierBeginAction,
+            shortDescription = editorBundleHash + toggleCaseIdentifierBeginAction
+    )
     public static class ToggleCaseIdentifierBeginAction extends BaseKitLocalizedAction {
 
         static final long serialVersionUID =584392193824931979L;

@@ -49,6 +49,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -230,6 +231,50 @@ public class AddCastTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testAddCastLiteral() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication3;\n" +
+            "\n" +
+            "public class Klasa {\n" +
+            "    public static void main(String[] args) {\n" +
+            "        int i = args.length & 0xFEFE;\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+        );
+        String golden =
+            "package javaapplication3;\n" +
+            "\n" +
+            "public class Klasa {\n" +
+            "    public static void main(String[] args) {\n" +
+            "        int i = (int) (args.length & 0xFEFE);\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                ExpressionTree init = var.getInitializer();
+                ExpressionTree cast = make.TypeCast(make.PrimitiveType(TypeKind.INT), make.Parenthesized(init));
+                workingCopy.rewrite(init, cast);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     /*
      * #94324 - second test. If the moved expression is changed, it is again
      * rewritten by VeryPretty - in this time, i do not see any solution for

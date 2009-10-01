@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 *
 * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
 */
-public class LineBreakpointImpl extends BreakpointImpl {
+public class LineBreakpointImpl extends BreakpointImpl<LineBreakpoint> {
 
     private String lastPath;
     

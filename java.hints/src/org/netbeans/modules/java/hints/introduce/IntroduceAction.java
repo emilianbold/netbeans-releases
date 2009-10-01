@@ -28,6 +28,7 @@
 package org.netbeans.modules.java.hints.introduce;
 
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,6 +36,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.modules.java.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
@@ -105,36 +107,54 @@ public final class IntroduceAction extends HintAction {
         }
     }
     
-    private String doPerformAction(JavaSource js,final int[] span) {
+    private String doPerformAction(final JavaSource js,final int[] span) {
         final Map<IntroduceKind, Fix> fixes = new EnumMap<IntroduceKind, Fix>(IntroduceKind.class);
         final Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
-        
-        try {
-            js.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
-                    IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages, new AtomicBoolean());
+
+        final AtomicBoolean cancel = new AtomicBoolean();
+        RunOffAWT.runOffAWT(new Runnable() {
+
+            public void run() {
+                try {
+                    js.runUserActionTask(new Task<CompilationController>() {
+
+                        public void run(CompilationController parameter) throws Exception {
+                            parameter.toPhase(Phase.RESOLVED);
+                            if (cancel.get()) {
+                                return;
+                            }
+                            IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages, cancel);
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            }, true);
-            
-            Fix fix = fixes.get(type);
-            
-            if (fix != null) {
-                fix.implement();
-                
-                return null;
             }
-            
-            String errorMessage = errorMessages.get(type);
-            
-            if (errorMessage != null)
-                return errorMessage;
-            
-            return "ERR_Invalid_Selection"; //XXX  //NOI18N
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+        }, NbBundle.getMessage(IntroduceAction.class, "LBL_Indroduce_Action"), cancel);
+
+        if (cancel.get()) {
             return null;
         }
+        
+        Fix fix = fixes.get(type);
+
+        if (fix != null) {
+            try {
+                fix.implement();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return null;
+        }
+
+        String errorMessage = errorMessages.get(type);
+
+        if (errorMessage != null) {
+            return errorMessage;
+        }
+
+        return "ERR_Invalid_Selection"; //XXX  //NOI18N
     }
     
     public static IntroduceAction createVariable() {

@@ -62,6 +62,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -155,7 +156,7 @@ public class ModuleListTest extends TestBase {
     @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testParseProperties() throws Exception {
         File basedir = file("ant.browsetask");
-        PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), false, false, "org.netbeans.modules.ant.browsetask");
+        PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), NbModuleType.NETBEANS_ORG, "org.netbeans.modules.ant.browsetask");
         String nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
@@ -163,23 +164,23 @@ public class ModuleListTest extends TestBase {
         assertEquals(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertNull(eval.getProperty("suite.dir"));
         basedir = file("openide.loaders");
-        eval = ModuleList.parseProperties(basedir, nbRootFile(), false, false, "org.openide.loaders");
+        eval = ModuleList.parseProperties(basedir, nbRootFile(), NbModuleType.NETBEANS_ORG, "org.openide.loaders");
         assertEquals("modules/org-openide-loaders.jar", eval.getProperty("module.jar"));
         basedir = new File(suite1, "action-project");
-        eval = ModuleList.parseProperties(basedir, suite1, true, false, "org.netbeans.examples.modules.action");
+        eval = ModuleList.parseProperties(basedir, suite1, NbModuleType.SUITE_COMPONENT, "org.netbeans.examples.modules.action");
         nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals(suite1, PropertyUtils.resolveFile(basedir, eval.getProperty("suite.dir")));
         basedir = new File(suite2, "misc-project");
-        eval = ModuleList.parseProperties(basedir, suite2, true, false, "org.netbeans.examples.modules.misc");
+        eval = ModuleList.parseProperties(basedir, suite2, NbModuleType.SUITE_COMPONENT, "org.netbeans.examples.modules.misc");
         nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull(nbdestdir);
         assertEquals(file("nbbuild/netbeans"), PropertyUtils.resolveFile(basedir, nbdestdir));
         assertEquals(file(suite2, "build/cluster"), PropertyUtils.resolveFile(basedir, eval.getProperty("cluster")));
         assertEquals(suite2, PropertyUtils.resolveFile(basedir, eval.getProperty("suite.dir")));
         basedir = new File(standaloneSuite3, "dummy-project");
-        eval = ModuleList.parseProperties(basedir, standaloneSuite3, false, true, "org.netbeans.examples.modules.dummy");
+        eval = ModuleList.parseProperties(basedir, standaloneSuite3, NbModuleType.STANDALONE, "org.netbeans.examples.modules.dummy");
         nbdestdir = eval.getProperty("netbeans.dest.dir");
         assertNotNull(nbdestdir);
         assertEquals(file(standaloneSuite3, "nbplatform"), PropertyUtils.resolveFile(basedir, nbdestdir));
@@ -222,7 +223,7 @@ public class ModuleListTest extends TestBase {
 
     @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testConcurrentScanningNBOrg() throws Exception {
-        ModuleList.refresh();
+        ModuleList.refresh();   // disable cache
         final ModuleList mlref[] = new ModuleList[1];
         Logger logger = Logger.getLogger(ModuleList.class.getName());
         Level origLevel = logger.getLevel();

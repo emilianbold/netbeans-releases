@@ -126,22 +126,32 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
     }
 
-    @Override
-    public Action getDefaultAction(ProjectHandle project) {
-        return getDetailsAction(project);
+    private Action getOpenAction(final ProjectHandle project) {
+        // this action is supposed to be used for openenig a project from My Projects
+        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
+            public void actionPerformed(ActionEvent e) {
+                Dashboard.getDefault().addProject(project, false, true);
+            }
+        };
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle project) {
-        if (Dashboard.getDefault().isMemberProject(project)) {
+    public Action getDefaultAction(ProjectHandle project, boolean opened) {
+        return opened ? getDetailsAction(project) : getOpenAction(project);
+    }
+
+    @Override
+    public Action[] getPopupActions(final ProjectHandle project, boolean opened) {
+        if (!opened) {
             return new Action[]{
+                        getOpenAction(project),
                         new RefreshAction(project),
                         (Action) getDetailsAction(project),
             };
         } else {
             return new Action[]{
-                        new RefreshAction(project),
                         new RemoveProjectAction(project),
+                        new RefreshAction(project),
                         (Action) getDetailsAction(project)
             };
         }

@@ -335,4 +335,9 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         // IZ#166620 : Code comlpetion does not show local variable inside for operator
         performTest("iz166620.cc", 6, 24);
     }
+
+    public void testIZ173049() throws Exception {
+        // IZ#173049 : Incorrect type resolution for template class functions
+        performTest("iz173049.cc", 16, 16);
+    }
 }

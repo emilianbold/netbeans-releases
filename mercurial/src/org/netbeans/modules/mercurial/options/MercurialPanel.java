@@ -292,7 +292,7 @@ final class MercurialPanel extends javax.swing.JPanel {
             }
         }
         HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
-	Mercurial.getInstance().checkVersion();
+	Mercurial.getInstance().asyncInit();
         HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
         HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
         HgModuleConfig.getDefault().setBackupOnRevertModifications(backupOnRevertModifications.isSelected());

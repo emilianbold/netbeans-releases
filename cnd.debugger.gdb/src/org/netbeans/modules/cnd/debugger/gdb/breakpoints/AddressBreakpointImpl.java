@@ -44,9 +44,9 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
  *
- * @author eu155513
+ * @author Egor Ushakov
  */
-public class AddressBreakpointImpl extends BreakpointImpl {
+public class AddressBreakpointImpl extends BreakpointImpl<AddressBreakpoint> {
     
     public AddressBreakpointImpl(AddressBreakpoint breakpoint, GdbDebugger debugger) {
         super(breakpoint, debugger);
@@ -55,6 +55,6 @@ public class AddressBreakpointImpl extends BreakpointImpl {
 
     @Override
     protected String getBreakpointCommand() {
-        return "*" + ((AddressBreakpoint)getBreakpoint()).getAddress(); // NOI18N
+        return "*" + getBreakpoint().getAddress(); // NOI18N
     }
 }

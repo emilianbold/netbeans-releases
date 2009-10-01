@@ -123,8 +123,11 @@ public class JspCompletionProvider implements CompletionProvider {
                 JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet<CompletionItem>();
                 JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
                 if (jspResultSet.getItems().size() > 0) {
-                    resultSet.setDocumentation(new DocItem((JspCompletionItem) jspResultSet.getItems().get(0)));
-                    resultSet.setAnchorOffset(jspResultSet.getAnchor());
+                    CompletionItem citem = jspResultSet.getItems().get(0);
+                    if(citem instanceof JspCompletionItem) {
+                        resultSet.setDocumentation(new DocItem((JspCompletionItem) citem));
+                        resultSet.setAnchorOffset(jspResultSet.getAnchor());
+                    }
                 }
 
             }

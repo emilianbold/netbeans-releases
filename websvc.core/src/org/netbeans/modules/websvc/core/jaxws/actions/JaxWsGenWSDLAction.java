@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
 import java.io.IOException;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -68,6 +69,13 @@ public class JaxWsGenWSDLAction extends CookieAction{
         if(cookie != null){
             try {
                 cookie.generateWSDL();
+                
+                // logging usage of action
+                Object[] params = new Object[2];
+                params[0] = LogUtils.WS_STACK_JAXWS;
+                params[1] = "GENERATE WSDL"; // NOI18N
+                LogUtils.logWsAction(params);
+
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
