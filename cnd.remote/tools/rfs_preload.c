@@ -53,9 +53,8 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#define RFS_PRELOAD 1 // rfs_utils.h needs this
-
-#include "rfs_controller.h"
+#include "rfs_protocol.h"
+#include "rfs_preload_socks.h"
 #include "rfs_util.h"
 
 /** the name of the directory under control, including trailing "\" */
@@ -102,68 +101,6 @@ static inline void print_dlsym() {
     }
 }
 #endif
-
-static int open_socket() {
-    int port = default_controller_port;
-    char *env_port = getenv("RFS_CONTROLLER_PORT");
-    if (env_port) {
-        port = atoi(env_port);
-    }
-    char* hostname = "localhost";
-    char *env_host = getenv("RFS_CONTROLLER_HOST");
-    if (env_host) {
-        hostname = env_host;
-    }
-    trace("Connecting %s:%d\n", hostname, port);
-    struct hostent *hp;
-    if ((hp = gethostbyname(hostname)) == 0) {
-        perror("gethostbyname");
-        return -1;
-    }
-    struct sockaddr_in pin;
-    memset(&pin, 0, sizeof (pin));
-    pin.sin_family = AF_INET;
-    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-    pin.sin_port = htons(port);
-    int sd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sd == -1) {
-        perror("socket");
-        return -1;
-    }
-    if (connect(sd, (struct sockaddr *) & pin, sizeof (pin)) == -1) {
-        perror("connect");
-        return -1;
-    }
-    return sd;
-}
-
-/** 
- * Socked descriptor. 
- * Should be assigned ONLY in get_socket_descriptor and release_socket
- */
-static __thread int _sd = 0;
-
-static void trace_sd(const char* text) {
-    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
-}
-
-static int get_socket_descriptor(int create) {
-    // 0 means unitialized
-    // -1 means that we failed to open a socket
-    if (!create || _sd > 0) {
-        return _sd;
-    }
-    if (_sd == -1) {
-        return -1;
-    }
-    if (_sd == 0) {
-        _sd = -1; // in the case of success, it will become > 0
-        trace_sd("opening socket 1");
-    }
-    _sd = open_socket();
-    trace_sd("opening socket 2");
-    return _sd;
-}
 
 /* static int is_mine(const char *path) {
     if (path[0] == '/') {
@@ -245,7 +182,7 @@ static int on_open(const char *path, int flags) {
         return true;
     }
     int result = false;
-    int sd = get_socket_descriptor(1);
+    int sd = get_socket(true);
     if (sd == -1) {
         trace("On open %s: sd == -1\n", path);
     } else {
@@ -284,7 +221,7 @@ static int on_open(const char *path, int flags) {
 void
 __attribute__((constructor))
 on_startup(void) {
-    trace_startup("RFS_PRELOAD_LOG");    
+    trace_startup("RFS_PRLD", "RFS_PRELOAD_LOG");
 //#if TRACE
 //    print_dlsym();
 //#endif
@@ -308,7 +245,7 @@ on_startup(void) {
         my_dir = p;
     }
     trace("RFS startup; my dir: %s\n", my_dir);
-    _sd = 0;
+    release_socket();
     trace_sd("startup");
 
     const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
@@ -325,15 +262,6 @@ on_startup(void) {
             fprintf(stderr, "Incorrect value, should be a positive integer: %s=%s\n", env_sleep_var, env_sleep);
             fflush(stderr);
         }
-    }
-}
-
-static void release_socket() {
-    if (_sd > 0) {
-        trace("agent closes socket _sd=%d &_sd=%X\n", _sd, &_sd);
-        close(_sd);
-        _sd = 0;
-        trace_sd("releasing socket");
     }
 }
 

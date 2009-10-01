@@ -37,21 +37,17 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <limits.h>
+#ifndef _RFS_PRELOAD_SOCKS_H
+#define	_RFS_PRELOAD_SOCKS_H
 
-enum {
-    true = 1,
-    false = 0
-};
+int get_socket(int create);
+void release_socket();
 
 #if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var);
-    void trace_shutdown();
+void trace_sd(const char* text);
 #else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
+#define trace_sd(...)
 #endif
+
+#endif	/* _RFS_PRELOAD_SOCKS_H */
+
