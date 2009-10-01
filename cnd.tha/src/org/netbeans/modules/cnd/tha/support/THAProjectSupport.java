@@ -297,7 +297,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
         THAInstrumentationSupport instrSupport = getInstrumentationSupport();
         ReconfigureProvider.getDefault().reconfigure(project, "-g "+instrSupport.getCompilerOptions(), // NOI18N
                 "-g "+instrSupport.getCompilerOptions(), instrSupport.getLinkerOptions()); // NOI18N
-        return false;
+        return true;
     }
 
     public List<String> undoInstrumentation() {
