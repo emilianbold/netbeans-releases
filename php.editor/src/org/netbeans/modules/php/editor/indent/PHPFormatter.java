@@ -296,11 +296,7 @@ public class PHPFormatter implements Formatter {
                 endOffset = doc.getLength();
             }
             
-            startOffset = Utilities.getFirstNonWhiteBwd(doc, startOffset);
-
-            if (startOffset < 0){
-                startOffset = context.startOffset();
-            }
+            startOffset = Utilities.getRowStart(doc, startOffset);
 
             final int firstLine = Utilities.getLineOffset(doc, startOffset);
             
