@@ -881,7 +881,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 return;
             }
             if (!explicitQuery) {                
-                hideAll();
+                hideCompletion(false);
                 return;
             }
         }
