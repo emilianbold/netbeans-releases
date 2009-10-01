@@ -73,16 +73,17 @@ public class ValidPrimaryTableName extends JPAClassRule {
                     NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier"))};
         }
         
-        if (JavaPersistenceQLKeywords.isKeyword(entityName)){
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"))};
-        }
-        
         if (SQLKeywords.isSQL99ReservedKeyword(entityName)){
             return new ErrorDescription[]{createProblem(subject, ctx,
                     NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword"),
                     Severity.WARNING)};
         }
+        
+        if (JavaPersistenceQLKeywords.isKeyword(entityName)){
+            return new ErrorDescription[]{createProblem(subject, ctx,
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"))};
+        }
+        
         
         return null;
     }
