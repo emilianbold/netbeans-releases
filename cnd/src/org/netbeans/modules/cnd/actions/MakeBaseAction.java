@@ -160,7 +160,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .addNativeProcessListener(processChangeListener);
         npb.redirectError();
         
-        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(execEnv, fileObject.getParent()));
+        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(project, execEnv, fileObject.getParent()));
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)
