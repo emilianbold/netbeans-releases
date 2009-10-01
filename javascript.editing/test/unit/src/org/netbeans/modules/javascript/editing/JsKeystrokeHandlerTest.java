@@ -319,6 +319,10 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertChar("x = (()^)", ')', "x = (())^");
     }
 
+    public void testParens7() throws Exception {
+        insertChar("x = ((^)", ')', "x = (()^)");
+    }
+
     public void testRegexp1() throws Exception {
         insertChar("x = ^", '/', "x = /^/");
     }
