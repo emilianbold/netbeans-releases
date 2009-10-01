@@ -84,7 +84,7 @@ public class MemberNode extends LeafNode {
             lbl = new TreeLabel(displayName) {
                 @Override
                 public String getToolTipText() {
-                    return user.isOnline() ? NbBundle.getMessage(MemberNode.class, "LBL_ONLINE_MEMBER_TOOLTIP") : null; // NOI18N
+                    return NbBundle.getMessage(UserNode.class, user.isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
                 }
             };
             lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());

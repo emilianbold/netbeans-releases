@@ -408,11 +408,11 @@ class FilesystemHandler extends VCSInterceptor {
         try {
             url = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.WARNING, "No repository root url found for managed file : [" + file + "]", ex);
+            Subversion.LOG.log(Level.FINE, "No repository root url found for managed file : [" + file + "]", ex); //NOI18N
             try {
                 url = SvnUtils.getRepositoryUrl(file); // try to falback
             } catch (SVNClientException ex1) {
-                Subversion.LOG.log(Level.WARNING, "No repository url found for managed file : [" + file + "]", ex1);
+                Subversion.LOG.log(Level.FINE, "No repository url found for managed file : [" + file + "]", ex1);
             }
         }
         return url != null ? url.toString() : null;

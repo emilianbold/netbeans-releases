@@ -266,7 +266,7 @@ public class ContactList extends javax.swing.JPanel {
     }//GEN-LAST:event_filterComboItemStateChanged
 
     private void contactJListKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contactJListKeyPressed
-        if (evt.isActionKey() && evt.getKeyCode()==KeyEvent.VK_ENTER) {
+        if (evt.getKeyCode()==KeyEvent.VK_ENTER) {
             ((ContactListItem) contactJList.getSelectedValue()).openChat();
         } else if (!evt.isActionKey() && ("" + evt.getKeyChar()).trim().length()!=0 && evt.getKeyChar()!='\uffff') {
             searchPanel.setVisible(true);

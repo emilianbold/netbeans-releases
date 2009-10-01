@@ -47,6 +47,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
@@ -64,9 +65,11 @@ public class MemberAccessorImpl extends MemberAccessor {
     @Override
     public List<MemberHandle> getMembers(ProjectHandle project) {
         ArrayList<MemberHandle> handles = new ArrayList();
+        ProjectHandleImpl prj = (ProjectHandleImpl) project;
         try {
-            for (KenaiProjectMember member : ((ProjectHandleImpl) project).getKenaiProject().getMembers()) {
-                handles.add(new MemberHandleImpl(member));
+            KenaiUser owner = prj.getKenaiProject().getOwner();
+            for (KenaiProjectMember member : prj.getKenaiProject().getMembers()) {
+                handles.add(new MemberHandleImpl(member, owner.equals(member.getKenaiUser())));
             }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
