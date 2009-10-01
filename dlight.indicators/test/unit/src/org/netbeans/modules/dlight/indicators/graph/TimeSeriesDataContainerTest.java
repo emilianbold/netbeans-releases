@@ -51,13 +51,13 @@ public class TimeSeriesDataContainerTest {
 
     @Test
     public void testEmpty() {
-        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1);
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1, false);
         assertNull(c.get(0));
     }
 
     @Test
     public void testFirst() {
-        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1);
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1, false);
         c.put(0, new float[] {1});
         c.put(0, new float[] {2});
         assertEquals(1f, c.get(0)[0], 0);
@@ -65,7 +65,7 @@ public class TimeSeriesDataContainerTest {
 
     @Test
     public void testLast() {
-        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.LAST, 1);
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.LAST, 1, false);
         c.put(0, new float[] {1});
         c.put(0, new float[] {2});
         assertEquals(2f, c.get(0)[0], 0);
@@ -73,7 +73,7 @@ public class TimeSeriesDataContainerTest {
 
     @Test
     public void testSum() {
-        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.SUM, 1);
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.SUM, 1, false);
         c.put(0, new float[] {1});
         c.put(0, new float[] {2});
         assertEquals(3f, c.get(0)[0], 0);
@@ -81,7 +81,7 @@ public class TimeSeriesDataContainerTest {
 
     @Test
     public void testAverage() {
-        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.AVERAGE, 1);
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.AVERAGE, 1, false);
         c.put(0, new float[] {1});
         c.put(0, new float[] {2});
         assertEquals(1.5f, c.get(0)[0], 0);
