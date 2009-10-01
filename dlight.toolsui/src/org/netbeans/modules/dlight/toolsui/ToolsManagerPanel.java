@@ -103,17 +103,17 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 //        defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
 //        defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
         // FIXUP: should be moved to tool
-        String dataProvider;
-        if (gizmoConfiguration.getDisplayedName().indexOf("DTrace") >= 0) {
-            dataProvider = "DTrace"; // NOI18N
-        }
-        else if (gizmoConfiguration.getDisplayedName().indexOf("Studio") >= 0) {
-            dataProvider = "Sun Studio"; // NOI18N
-        }
-        else {
-            dataProvider = "Simple (indicators only)"; // NOI18N
-        }
-        dataProviderLabel2.setText(dataProvider);
+//        String dataProvider;
+//        if (gizmoConfiguration.getDisplayedName().indexOf("DTrace") >= 0) {
+//            dataProvider = "DTrace"; // NOI18N
+//        }
+//        else if (gizmoConfiguration.getDisplayedName().indexOf("Studio") >= 0) {
+//            dataProvider = "Sun Studio"; // NOI18N
+//        }
+//        else {
+//            dataProvider = "Simple (indicators only)"; // NOI18N
+//        }
+        //dataProviderLabel2.setText(dataProvider);
         toolsTable = new ToolsTable(dlightConfigurationUIWrapper, dlightConfigurationUIWrapper.getTools(), new MySelectionListener());
         toolsList.setViewportView(toolsTable);
         toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
@@ -172,7 +172,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         profileConfigurationLabel = new javax.swing.JLabel();
         profileConfigurationComboBox = new javax.swing.JComboBox();
         profileOnRunCheckBox = new javax.swing.JCheckBox();
-        dataProviderLabel = new javax.swing.JLabel();
         toolsPanel = new javax.swing.JPanel();
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
@@ -180,10 +179,10 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolPropertyPanel = new javax.swing.JPanel();
         detailsLabel = new javax.swing.JLabel();
         fillLabel = new javax.swing.JLabel();
-        dataProviderLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
+        profileConfigurationLabel.setLabelFor(profileConfigurationComboBox);
         profileConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileConfigurationLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -219,14 +218,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(profileOnRunCheckBox, gridBagConstraints);
-
-        dataProviderLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.dataProviderLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
-        add(dataProviderLabel, gridBagConstraints);
 
         toolsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -293,13 +284,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(toolsPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
-        add(dataProviderLabel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
@@ -394,8 +378,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel dataProviderLabel;
-    private javax.swing.JLabel dataProviderLabel2;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JLabel fillLabel;
     private javax.swing.JList jList1;
