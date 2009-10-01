@@ -127,7 +127,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         THAProjectSupport support = new THAProjectSupport(project);
 
-        ProjectConfigurationProvider pcp = project.getLookup().lookup(ProjectConfigurationProvider.class);
+        ProjectConfigurationProvider<?> pcp = project.getLookup().lookup(ProjectConfigurationProvider.class);
 
         if (pcp != null) {
             pcp.addPropertyChangeListener(support);
@@ -335,7 +335,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         if (mc.getCppRequired().getValue()) {
-            String ccOptions = mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue();
+            String ccOptions = mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue();
             String ccInstrOption = instrSupport.getCompilerOptions();
             idx = ccOptions.indexOf(ccInstrOption);
             if (idx >= 0) {
@@ -352,7 +352,8 @@ public final class THAProjectSupport implements PropertyChangeListener {
             setModified();
         }
         if (changed) {
-            List<String> res = new ArrayList<String>(2);
+            List<String> res = new ArrayList<String>(3);
+            res.add("save"); // NOI18N
             res.add("clean"); // NOI18N
             res.add("build"); // NOI18N
             return res;
