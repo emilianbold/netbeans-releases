@@ -54,8 +54,4 @@ public abstract class MemberHandle implements Comparable <MemberHandle> {
     public abstract boolean isOnline();
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
-
-    public int compareTo(MemberHandle o) {
-        return getDisplayName().compareToIgnoreCase(o.getDisplayName());
-    }
 }
