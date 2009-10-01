@@ -153,11 +153,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Make"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
-        .putAllEnvironmentVariables(envMap)
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
+        npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         
         LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(project, execEnv, fileObject.getParent()));

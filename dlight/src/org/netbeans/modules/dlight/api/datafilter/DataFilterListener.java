@@ -43,6 +43,11 @@ import java.util.List;
 
 public interface DataFilterListener {
 
+    /**
+     * This method is invoked in non-UI thread
+     * @param newSet
+     * @param isAdjusting
+     */
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting);
 
 }

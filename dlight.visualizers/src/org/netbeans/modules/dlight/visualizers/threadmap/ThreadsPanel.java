@@ -113,6 +113,7 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -1322,7 +1323,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
         this.timeFilters = timeFilters;
-        updateUI();
+        UIThread.invoke(new Runnable() {
+            public void run() {
+                updateUI();
+            }
+        });        
     }
 
     Collection<TimeIntervalDataFilter> getTimeIntervalSelection(){

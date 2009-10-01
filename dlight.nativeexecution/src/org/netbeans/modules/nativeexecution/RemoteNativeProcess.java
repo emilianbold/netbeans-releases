@@ -46,7 +46,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
             final String sh = hostInfo.getShell();
-            final MacroMap envVars = info.getEnvVariables();
+            final MacroMap envVars = info.getEnvironment().clone();
 
             // Setup LD_PRELOAD to load unbuffer library...
             if (info.isUnbuffer()) {

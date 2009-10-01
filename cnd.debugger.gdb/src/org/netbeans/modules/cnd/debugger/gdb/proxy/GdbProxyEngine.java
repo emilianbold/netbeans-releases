@@ -55,13 +55,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -147,15 +147,15 @@ public class GdbProxyEngine {
 
         npb.setWorkingDirectory(workingDirectory);
 
+        final MacroMap environment = npb.getEnvironment();
+
         if (debuggerEnvironment != null) {
-            for (String str : debuggerEnvironment) {
-                npb.putEnvironmentVariable(EnvUtils.getKey(str), EnvUtils.getValue(str));
-            }
+            environment.putAll(debuggerEnvironment);
         }
 
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();
-            npb.appendPathVariable(pathname, cspath);
+            environment.appendPathVariable(pathname, cspath);
         }
 
         final NativeProcess proc = npb.call();
