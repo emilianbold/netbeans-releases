@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
@@ -121,9 +122,10 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable("/bin/env"); // NOI18N
-        npb.addEnvironmentVariable("PATH", "/firstPath:$PATH:${ZZZ}_${platform}"); // NOI18N
-        npb.addEnvironmentVariable("PATH", "$PATH:/secondPath"); // NOI18N
-        npb.addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N
+        MacroMap env = npb.getEnvironment();
+        env.put("PATH", "/firstPath:$PATH:${ZZZ}_${platform}"); // NOI18N
+        env.put("PATH", "$PATH:/secondPath"); // NOI18N
+        env.put("XXX", "It WORKS!"); // NOI18N
 
         try {
             Process p = npb.call();
