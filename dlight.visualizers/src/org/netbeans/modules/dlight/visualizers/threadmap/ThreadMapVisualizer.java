@@ -129,7 +129,8 @@ public class ThreadMapVisualizer extends JPanel implements
                         UIThread.invoke(new Runnable() {
 
                             public void run() {
-                                StackNameProvider stackNameProvider = new StackNameProvider(){
+                                StackNameProvider stackNameProvider = new StackNameProvider() {
+
                                     public String getStackName(ThreadSnapshot snapshot) {
                                         String name = "";
                                         MSAState msa = snapshot.getState();
@@ -139,7 +140,7 @@ public class ThreadMapVisualizer extends JPanel implements
                                         }
                                         long time = ThreadStateColumnImpl.timeInervalToMilliSeconds(snapshot.getTimestamp());
                                         String at = TimeLineUtils.getMillisValue(time);
-                                        return NbBundle.getMessage(ThreadMapVisualizer.class, "ThreadStackVisualizerStackAt1",  //NOI18N
+                                        return NbBundle.getMessage(ThreadMapVisualizer.class, "ThreadStackVisualizerStackAt1", //NOI18N
                                                 name, dataManager.findThreadName(snapshot.getThreadInfo().getThreadId()), at);
                                     }
                                 };
@@ -148,7 +149,7 @@ public class ThreadMapVisualizer extends JPanel implements
                         });
                         session.cleanAllDataFilter(ThreadDumpFilter.class);
                         session.addDataFilter(new ThreadDumpFilter(query.getStartTime(), threadDump), false);
-                        
+
                     }
                 }, "Thread Dump  request from Thread Map Visualizer");//NOI18N
 
@@ -189,18 +190,32 @@ public class ThreadMapVisualizer extends JPanel implements
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //filter out with the time
         if (session != null) {
-            Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
-            lastTimeFilters = timeFilters;
-            setTimeIntervalSelection(timeFilters);
-            final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(lastTimeFilters, true));
-            UIThread.invoke(new Runnable() {
+            if (EventQueue.isDispatchThread()) {
+                DLightExecutorService.submit(new Runnable() {
 
-                public void run() {
-                    updateList(null, summaryData);
-                }
-            });
+                    public void run() {
+                        update();
+                    }
+                }, "ThreadMapVisualizer. Request Data when filters are changed");//NOI18N
+
+            }else{
+                update();
+            }
         }
 
+    }
+
+    private final void update() {
+        final Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
+        lastTimeFilters = timeFilters;
+        setTimeIntervalSelection(timeFilters);
+        final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(timeFilters, true));
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                updateList(null, summaryData);
+            }
+        });
     }
 
     private final void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
@@ -360,7 +375,7 @@ public class ThreadMapVisualizer extends JPanel implements
                 startTimeStamp = 0;
                 timerSupport.stop();
                 dataManager.shutdown();
-                syncFillModel();
+                refresh();
                 break;
             case RUNNING:
             case STARTING:

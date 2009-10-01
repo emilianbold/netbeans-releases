@@ -378,8 +378,23 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return io;
     }
 
-    public void addDataFilter(DataFilter filter, boolean isAdjusting) {
+    public void addDataFilter(final DataFilter filter, final boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
+        if (EventQueue.isDispatchThread()) {
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    addDataFilterImpl(filter, isAdjusting);
+                }
+            }, "DLigthSession.addDataFIlter should be invoked in Non-AWT thread");//NOI18N
+
+        } else {
+            addDataFilterImpl(filter, isAdjusting);
+        }
+
+    }
+
+    private final void addDataFilterImpl(final DataFilter filter, final boolean isAdjusting) {
         if (filter instanceof TimeIntervalDataFilter) {
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
