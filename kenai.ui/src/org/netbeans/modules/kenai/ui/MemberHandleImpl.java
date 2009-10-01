@@ -52,8 +52,10 @@ import org.openide.util.NbBundle;
 public class MemberHandleImpl extends MemberHandle {
 
     private KenaiProjectMember delegate;
-    public MemberHandleImpl (KenaiProjectMember member) {
+    private boolean isOwner;
+    public MemberHandleImpl (KenaiProjectMember member, boolean isOwner) {
         this.delegate = member;
+        this.isOwner = isOwner;
     }
 
     @Override
@@ -69,15 +71,20 @@ public class MemberHandleImpl extends MemberHandle {
     @Override
     public String getRole() {
         KenaiProjectMember.Role r = delegate.getRole();
+        String result = null;
         if (r != null) {
             switch (r) {
-                case ADMIN: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Admin"); // NOI18N
-                case DEVELOPER: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Developer"); // NOI18N
-                case CONTENT: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Content"); // NOI18N
-                case OBSERVER: return NbBundle.getMessage(MemberHandleImpl.class, "Role.Observer"); // NOI18N
+                case ADMIN: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Admin"); break;// NOI18N
+                case DEVELOPER: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Developer");break; // NOI18N
+                case CONTENT: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Content");break; // NOI18N
+                case OBSERVER: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Observer");break; // NOI18N
             }
         }
-        return null;
+        if (isOwner) {
+            result += ", " + NbBundle.getMessage(MemberHandleImpl.class, "Role.Owner");
+        }
+
+        return result;
     }
 
     @Override
@@ -103,6 +110,21 @@ public class MemberHandleImpl extends MemberHandle {
     @Override
     public String getFullName() {
         return delegate.getKenaiUser().getFirstName() + " " + delegate.getKenaiUser().getLastName();
+    }
+
+    public int compareTo(MemberHandle o) {
+        MemberHandleImpl other = (MemberHandleImpl) o;
+        if (this.isOwner) {
+            return -1;
+        }
+        if (other.isOwner) {
+            return 1;
+        }
+
+        int res = this.delegate.getRole().compareTo(other.delegate.getRole());
+        if (res==0)
+            return getDisplayName().compareToIgnoreCase(o.getDisplayName());
+        return res;
     }
 
 }
