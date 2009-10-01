@@ -57,12 +57,12 @@ import org.openide.windows.WindowManager;
 public abstract class PhpModule {
 
     /**
-     * {@see ProjectInformation#getName}
+     * See {@link org.netbeans.api.project.ProjectInformation#getName}.
      */
     public abstract String getName();
 
     /**
-     * {@see ProjectInformation#getDisplayName}
+     * See {@link org.netbeans.api.project.ProjectInformation#getDisplayName}.
      */
     public abstract String getDisplayName();
 
