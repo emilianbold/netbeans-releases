@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
 
         <condition property="clusters" value="${main.clusters}" else="${main.clusters},${fx.clusters}"> 
-            <equals arg1="javafx.build" arg2="1"/>
+            <equals arg1="javafx.build" arg2="0"/>
         </condition>
 
     </target>
@@ -194,7 +194,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="fx.module" value="javafx(${javafx-title})"/>
 
         <condition property="modules" value="${main.modules}" else="${main.modules},${fx.module}"> 
-            <equals arg1="javafx.build" arg2="1"/>
+            <equals arg1="javafx.build" arg2="0"/>
         </condition>
     </target>    
 
@@ -260,7 +260,7 @@ Microsystems, Inc. All Rights Reserved.
                                           "/>
 
         <condition property="bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
-            <equals arg1="javafx.build" arg2="1"/>
+            <equals arg1="javafx.build" arg2="0"/>
         </condition>
     </target>
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
