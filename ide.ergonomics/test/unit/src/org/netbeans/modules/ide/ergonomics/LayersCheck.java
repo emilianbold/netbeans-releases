@@ -70,7 +70,7 @@ public class LayersCheck extends NbTestCase {
                 fail("Too big layer " + u);
             }
             String s = new String(arr, 0, r, "UTF-8");
-            if (s.contains("\"path\"")) {
+            if (s.contains("path=\"")) {
                 fail("There shall be no path attribute in " + u + ":\n" + s);
             }
         }

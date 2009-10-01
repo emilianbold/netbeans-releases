@@ -21,7 +21,7 @@
                 <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
                 <xsl:variable name="orig" select="."/>
                 <xsl:for-each select="/descendant::folder[@path=$orig/@path]">
-                    <xsl:apply-templates mode="project-wizard"/>
+                    <xsl:apply-templates mode="replace-refs"/>
                     <xsl:apply-templates select="folder"/>
                 </xsl:for-each>
             </xsl:element>
@@ -31,9 +31,9 @@
 <!-- apply the mappings -->
 
     <!-- ignore is iterated already -->
-    <xsl:template match="folder" mode="project-wizard"/>
-    <xsl:template match="@path" mode="project-wizard"/>
-    <xsl:template match="file" mode="project-wizard">
+    <xsl:template match="folder" mode="replace-refs"/>
+    <xsl:template match="@path" mode="replace-refs"/>
+    <xsl:template match="file" mode="replace-refs">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:if test="@url">
