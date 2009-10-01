@@ -106,8 +106,7 @@ public class HgHookImpl extends HgHook {
 
             Format format = VCSHooksConfig.getInstance().getHgIssueInfoTemplate();
             String formatString = format.getFormat();
-            formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
+            formatString = HookUtils.prepareFormatString(formatString, "id", "summary");
             
             Issue issue = getIssue();
             if (issue == null) {
@@ -139,12 +138,12 @@ public class HgHookImpl extends HgHook {
         VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
 
         if(context.getFiles().length == 0) {
-            LOG.warning("calling hg afterCommit for zero files");               // NOI18N
+            LOG.warning("calling hg afterCommit for zero files");                   // NOI18N
             return;
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg afterCommit start for " + file);                // NOI18N
+        LOG.log(Level.FINE, "hg afterCommit start for " + file);                    // NOI18N
 
         if (!isLinkSelected() &&
             !isResolveSelected())
@@ -155,7 +154,7 @@ public class HgHookImpl extends HgHook {
 
         Issue issue = getIssue();
         if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+            LOG.log(Level.FINE, " no issue set for " + file);                       // NOI18N
             return;
         }
 
@@ -167,10 +166,7 @@ public class HgHookImpl extends HgHook {
             String message = context.getLogEntries()[0].getMessage();
 
             String formatString = VCSHooksConfig.getInstance().getHgRevisionTemplate().getFormat();
-            formatString = formatString.replaceAll("\\{changeset\\}", "\\{0\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{author\\}",    "\\{1\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{date\\}",      "\\{2\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{message\\}",   "\\{3\\}");           // NOI18N
+            formatString = HookUtils.prepareFormatString(formatString, "changeset", "author", "date", "message"); // NOI18N
 
             msg = new MessageFormat(formatString).format(
                     new Object[] {
