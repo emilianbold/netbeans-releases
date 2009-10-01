@@ -1361,7 +1361,7 @@ itor tabs #66700).
             Mercurial.LOG.log(Level.FINE, "No defalt pull available for managed file : [" + file + "]");
             remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
 
-            Mercurial.LOG.log(Level.WARNING, "No defalt pull or push available for managed file : [" + file + "]");
+            Mercurial.LOG.log(Level.INFO, "No defalt pull or push available for managed file : [" + file + "]");
         }
         if(remotePath != null) {
             remotePath = remotePath.trim();

@@ -40,28 +40,19 @@
 package org.netbeans.modules.subversion.kenai;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.notifications.NotificationsManager;
-import org.netbeans.modules.subversion.ui.diff.DiffAction;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
-import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -69,8 +60,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
     
-    private static final String CMD_DIFF = "cmd_diff";                          // NOI18N
-
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
         if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
             LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
@@ -126,32 +115,7 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
 
     @Override
     protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {        
-        String msg =
-            NbBundle.getMessage(
-                KenaiNotificationListener.class,
-                "MSG_NotificationBubble_Description",                           // NOI18N
-                getFileNames(files),
-                url,
-                CMD_DIFF
-            );
-        pane.setText(msg);
-
-        pane.addHyperlinkListener(new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                    if(CMD_DIFF.equals(e.getDescription())) {
-                        Context ctx = new Context(files);
-                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(KenaiNotificationListener.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
-                    } else {
-                        try {
-                            SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
-                        } catch (MalformedURLException ex) {
-                            LOG.log(Level.WARNING, null, ex);
-                        }
-                    }
-                }
-            }
-        });
+        NotificationsManager.getInstance().setupPane(pane, files, getFileNames(files), projectDir, url, revision);
     }
 
 }
