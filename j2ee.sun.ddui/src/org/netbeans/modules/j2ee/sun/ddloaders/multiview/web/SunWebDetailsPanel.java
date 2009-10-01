@@ -250,10 +250,15 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
     private class ContextRootEditorModel extends TextItemEditorModel {
 
         public ContextRootEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
-            super(synchronizer, true, true);
+            super(synchronizer, false, false);
         }
 
         protected String getValue() {
+            String contextRoot = sunWebApp.getContextRoot();
+            if (contextRoot == null || contextRoot.trim().length() == 0) {
+                sunWebApp.setContextRoot("/"); //NOI18N
+                synchronizer.requestUpdateData();
+            }
             return sunWebApp.getContextRoot();
         }
 
