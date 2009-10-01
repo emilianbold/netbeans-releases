@@ -390,7 +390,7 @@ public class PhpProject implements Project {
 
     boolean isVisible(FileObject fileObject) {
         final File file = FileUtil.toFile(fileObject);
-        if (file != null) {
+        if (file == null) {
             //added because #172139 caused NPE in GlobalVisibilityQueryImpl
             if (getIgnoredFileObjects().contains(fileObject)) {
                 return false;
