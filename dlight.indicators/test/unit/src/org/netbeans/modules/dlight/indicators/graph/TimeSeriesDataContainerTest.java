@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
  */
 public class TimeSeriesDataContainerTest {
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void testEmpty() {
         TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1, false);
         assertNull(c.get(0));
