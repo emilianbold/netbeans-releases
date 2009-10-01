@@ -1090,11 +1090,12 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             ts.moveNext();
 
             Token<?extends JsTokenId> nextToken = ts.token();
-
+            boolean endOfJs = false;
             while ((nextToken != null) && (nextToken.id() == bracketId)) {
                 token = nextToken;
 
                 if (!ts.moveNext()) {
+                    endOfJs = true;
                     break;
                 }
 
@@ -1107,7 +1108,10 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = 0; // balance of the brackets or parenthesis
             Token<?extends JsTokenId> lastRBracket = token;
-            ts.movePrevious();
+            if (!endOfJs) {
+                // move on the las bracket || parent
+                ts.movePrevious();
+            }
             token = ts.token();
 
             boolean finished = false;
