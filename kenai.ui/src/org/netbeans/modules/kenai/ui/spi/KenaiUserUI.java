@@ -52,6 +52,7 @@ import org.netbeans.modules.kenai.api.Kenai.Status;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -120,7 +121,7 @@ public final class KenaiUserUI {
 
                 final Kenai kenai = Kenai.getDefault();
                 if (kenai.getStatus() != Status.ONLINE) {
-                    if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(KenaiUserUI.class, "MSG_GO_ONLINE"), NbBundle.getMessage(KenaiUserUI.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
+                    if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE"), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
 
                             public void run() {
