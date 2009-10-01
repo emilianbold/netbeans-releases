@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
 final class ToolsConfiguration {
 
     private static final String ENABLE_BY_DEFAULT_ATTRIBUTE = "enabledByDefault";//NOI18N
-    private static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
+    static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
     private final FileObject rootFolder;
     private boolean useRootFolder = false;
     private List<DLightTool> cachedList = null;
