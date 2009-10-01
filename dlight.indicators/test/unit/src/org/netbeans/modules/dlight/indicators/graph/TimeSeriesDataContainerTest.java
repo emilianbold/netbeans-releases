@@ -37,37 +37,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.indicator;
+package org.netbeans.modules.dlight.indicators.graph;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.junit.Test;
+import org.netbeans.modules.dlight.indicators.Aggregation;
+import static org.junit.Assert.*;
 
 /**
- * This interface should be implemented by the users who would like to get
- * notifications from the infrastructure about changes of indicators (data).
- * To attach listener to the current DLightSession you can use
- * <pre>
- *     DLigthManager.getDefault().getActiveSession().addIndicatorNotificationListener();
- * </pre>
- * @author Maria Tishkova
+ *
+ * @author Alexey Vladykin
  */
-public interface IndicatorNotificationsListener {
-  /**
-     * Invoked when new data is occurred.
-     * @param data data added
-     */
-    void updated(List<DataRow> data);
+public class TimeSeriesDataContainerTest {
 
-    /**
-     * Invoked by indicator data provider when there is a good reason
-     * to repaint the indicator as soon as possible.
-     * (Normally indicators are repainted once a second during when target is
-     * running and not repainted when target has finished.)
-     */
-    void suggestRepaint();
+    @Test(expected=IllegalArgumentException.class)
+    public void testEmpty() {
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1, false);
+        assertNull(c.get(0));
+    }
 
-    /**
-     * Resets to the initial state
-     */
-    void reset();
+    @Test
+    public void testFirst() {
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.FIRST, 1, false);
+        c.put(0, new float[] {1});
+        c.put(0, new float[] {2});
+        assertEquals(1f, c.get(0)[0], 0);
+    }
+
+    @Test
+    public void testLast() {
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.LAST, 1, false);
+        c.put(0, new float[] {1});
+        c.put(0, new float[] {2});
+        assertEquals(2f, c.get(0)[0], 0);
+    }
+
+    @Test
+    public void testSum() {
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.SUM, 1, false);
+        c.put(0, new float[] {1});
+        c.put(0, new float[] {2});
+        assertEquals(3f, c.get(0)[0], 0);
+    }
+
+    @Test
+    public void testAverage() {
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.AVERAGE, 1, false);
+        c.put(0, new float[] {1});
+        c.put(0, new float[] {2});
+        assertEquals(1.5f, c.get(0)[0], 0);
+    }
 }

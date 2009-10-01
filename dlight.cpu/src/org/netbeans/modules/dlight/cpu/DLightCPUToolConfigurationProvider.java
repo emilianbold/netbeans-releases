@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.cpu;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -246,32 +247,39 @@ public final class DLightCPUToolConfigurationProvider
 
         private final List<Column> usrColumns;
         private final List<Column> sysColumns;
-        private int usr;
-        private int sys;
 
         public DataRowToCpu(List<Column> usrColumns, List<Column> sysColumns) {
             this.usrColumns = new ArrayList<Column>(usrColumns);
             this.sysColumns = new ArrayList<Column>(sysColumns);
         }
 
-        public void addDataRow(DataRow row) {
+        @Override
+        public float[] getData(DataRow row) {
+            float[] result = null;
             for (String columnName : row.getColumnNames()) {
                 for (Column usrColumn : usrColumns) {
                     if (usrColumn.getColumnName().equals(columnName)) {
-                        usr = DataUtil.toInt(row.getData(columnName));
+                        if (result == null) {
+                            result = new float[2];
+                        }
+                        result[1] = DataUtil.toInt(row.getData(columnName));
                     }
                 }
                 for (Column sysColumn : sysColumns) {
                     if (sysColumn.getColumnName().equals(columnName)) {
-                        sys = DataUtil.toInt(row.getData(columnName));
+                        if (result == null) {
+                            result = new float[2];
+                        }
+                        result[0] = DataUtil.toInt(row.getData(columnName));
                     }
                 }
             }
+            return result;
         }
 
-        public void tick(float[] data, Map<String, String> details) {
-            data[0] = sys;
-            data[1] = usr;
+        @Override
+        public Map<String, String> getDetails() {
+            return Collections.emptyMap();
         }
     }
 }
