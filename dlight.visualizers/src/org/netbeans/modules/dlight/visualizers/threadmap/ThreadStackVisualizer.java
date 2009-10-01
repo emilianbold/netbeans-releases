@@ -86,10 +86,10 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private DLightSession session;
     private List<DataFilter> filters;
 
-    private static final class Lock {
-    }
+    private static final class Lock { }
+    private static final class UiLock { }
     private final Object lock = new Lock();
-    private final Object uiLock = new String("ThreadStackVisualizer.stackPanel.UI.Lock");//NOI18N
+    private final Object uiLock = new UiLock();
     private boolean needUpdate = false;
 
     ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
