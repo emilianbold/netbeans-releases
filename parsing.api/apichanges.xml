@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="vcs-indexing-bridge">
+      <api name="ParsingAPI"/>
+      <summary>IndexingManager extended to support integration with VCS</summary>
+      <version major="1" minor="24"/>
+      <date day="1" month="10" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="yes"/>
+      <description>
+          <p>
+              Added <code>IndexingManager.refreshAllIndices(boolean fullRescan, boolean wait, File... filesOrFolders)</code>,
+              <code>&lt;T&gt; T IndexingManager.runProtected(Callable&lt;T&gt; operation)</code>
+          </p>
+      </description>
+      <issue number="167098"/>
+  </change>
   <change id="IndexingManager.refreshAllIndices">
       <api name="ParsingAPI"/>
       <summary>Added IndexingManager.refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders)</summary>

@@ -201,19 +201,26 @@ public final class IndexingManager {
     }
 
     /**
-     * Schedules a new job that will reindex all known roots thay lie under the
-     * <code>folders</code>. This method does the same as {@link #refreshAllIndices(boolean, boolean, org.openide.filesystems.FileObject[])}
+     * Schedules a new job that will reindex known source roots determined by
+     * <code>filesOrFolder</code> parameter.
+     * This method does the same as {@link #refreshAllIndices(boolean, boolean, org.openide.filesystems.FileObject[])}
      * with <code>fullRescan == true</code> and <code>wait == false</code>.
      *
      * 
-     * @param folders The list of folders that may contain some of previously
-     *   indexed roots. Can be <code>null</code> in which case all indices for
+     * @param filesOrFolders The list of files or folders that should be refreshed.
+     *   This can be a mixture of files or folders that either lie under some source
+     *   root or contain (folders) source roots. The files lying under a source root
+     *   will simply be rescanned. The folders lying under a source root will be rescanned
+     *   recursively. Files lying outside of all source roots will be ignored. Folders
+     *   lying outside of all source folders will be checked for source roots that they
+     *   contain and these source roots will be rescanned.
+     *   <p>Can be <code>null</code> in which case all indices for
      *   all roots will be refreshed.
      *
      * @since 1.11
      */
-    public void refreshAllIndices(FileObject... folders) {
-        refreshAllIndices(true, false, folders);
+    public void refreshAllIndices(FileObject... filesOrFolders) {
+        refreshAllIndices(true, false, filesOrFolders);
     }
 
     /**
