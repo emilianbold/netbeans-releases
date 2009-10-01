@@ -412,7 +412,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 lastMethodExitBreakpointListener.destroy();
                 lastMethodExitBreakpointListener = null;
                 lastOperation.setReturnValue(returnValue);
-            } else if (lastOperation != null && INIT.equals(lastOperation.getMethodName())) {
+            } else if (MethodBreakpointImpl.canGetMethodReturnValues(vm) &&
+                       lastOperation != null && INIT.equals(lastOperation.getMethodName())) {
                 // Set Void as a return value of constructor:
                 lastOperation.setReturnValue(new ReturnVariableImpl((JPDADebuggerImpl) debugger, /*vm.mirrorOfVoid() - JDK 6 and newer only!!!*/null, "", INIT));
             }

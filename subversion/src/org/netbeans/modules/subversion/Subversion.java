@@ -150,7 +150,7 @@ public class Subversion {
     private void asyncInit() {
         getRequestProcessor().post(new Runnable() {
             public void run() {
-                SvnKenaiSupport.getInstance().register();
+                SvnKenaiSupport.getInstance().registerVCSNoficationListener();
             }
         }, 500);
     }

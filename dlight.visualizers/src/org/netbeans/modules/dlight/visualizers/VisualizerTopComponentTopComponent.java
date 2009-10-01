@@ -197,7 +197,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         repaint();
     }
 
-    public void addVisualizer(String toolID,String toolName, Visualizer view) {
+    public void addVisualizer(String toolID,String toolName, Visualizer<?> view) {
         setContent(toolName, view.getComponent());
         view.refresh();
 
@@ -208,7 +208,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         requestActive();
     }
 
-    public void removeVisualizer(final Visualizer v) {
+    public void removeVisualizer(final Visualizer<?> v) {
         if (EventQueue.isDispatchThread()){
             closePerformanceMonitor(v);
         }else{
@@ -281,7 +281,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     }
 
-    public void closePerformanceMonitor(Visualizer view) {
+    public void closePerformanceMonitor(Visualizer<?> view) {
 //    view.stopMonitor();
 //        closePerformanceMonitor(viewComponent);
         if (viewComponent != view.getComponent()){//nothing to do

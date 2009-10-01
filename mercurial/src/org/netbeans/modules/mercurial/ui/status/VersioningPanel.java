@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
@@ -73,13 +73,11 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.LinkedList;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Exception;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots.
@@ -96,14 +94,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private String                      branchInfo;
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
-    private Thread                      refreshViewThread;
     
     private HgProgressSupport           hgProgressSupport;
     private static final RequestProcessor   rp = new RequestProcessor("MercurialView", 1, true);  // NOI18N
     
     private final NoContentPanel noContentComponent = new NoContentPanel();
-    
-    private static final int HG_UPDATE_TARGET_LIMIT = 100;
     
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -243,7 +238,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         // XXX attach Cancelable hook
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
         try {
-            refreshViewThread = Thread.currentThread();
             Thread.interrupted();  // clear interupted status
             ph.start();
             final SyncFileNode [] nodes = getNodes(context, displayStatuses);  // takes long
@@ -306,46 +300,27 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             });
         }
     }
-
-    
-
-    private void setRepositoryBranchInfo(String rev, String changeset){
-        String branchInfo = null;
-        if (rev != null && !rev.equals("-1")) {
-            branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                    "CTL_VersioningView_BranchInfo", // NOI18N
-                    rev, changeset);
-        } else {
-            branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                    "CTL_VersioningView_BranchInfoNotCommitted"); // NOI18N
-        }
-        String repositoryStatus = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_StatusTitle", branchInfo); // NOI18N
-        if( !repositoryStatus.equals(statusLabel.getText())){
-            statusLabel.setText(repositoryStatus);
-        }
-    }
-
-    private String[] getRepositoryBranchInfo(File root){
-        String infoStr = null;
-        try {
-            infoStr = HgCommand.getBranchInfo(root);
-        } catch (HgException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return infoStr == null ? null: infoStr.split(":");
-    }
     
     private SyncFileNode [] getNodes(VCSContext context, int includeStatus) {
-        HgFileNode [] fnodes = mercurial.getNodes(context, includeStatus);
-        SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
-        for (int i = 0; i < fnodes.length; i++) {
-            if (Thread.interrupted()) return null;
-            HgFileNode fnode = fnodes[i];
+        File [] files = Mercurial.getInstance().getFileStatusCache().listFiles(context, includeStatus);
+        Set<File> repositories = HgUtils.getRepositoryRoots(context);
+
+        java.util.List<HgFileNode> fnodes = new LinkedList<HgFileNode>();
+        for (File file : files) {
+            if(repositories.contains(mercurial.getRepositoryRoot(file))) {
+                fnodes.add(new HgFileNode(file));
+            }
+        }
+        SyncFileNode [] nodes = new SyncFileNode[fnodes.size()];
+        int i = 0;
+        for (HgFileNode fnode : fnodes) {
+            if (Thread.interrupted()) return null;            
             nodes[i] = new SyncFileNode(fnode, this);
+            i++;
         }
         return nodes;
     }
-    
+
     public int getDisplayStatuses() {
         return displayStatuses;
     }

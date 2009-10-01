@@ -125,7 +125,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private void checkELEnabled(HtmlParserResult result) {
+    public void checkELEnabled(HtmlParserResult result) {
         Document doc = result.getSnapshot().getSource().getDocument(true);
         InputAttributes inputAttributes = (InputAttributes) doc.getProperty(InputAttributes.class);
         if (inputAttributes == null) {

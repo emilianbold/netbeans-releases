@@ -44,5 +44,5 @@ package org.netbeans.modules.dlight.util;
  */
 public interface ValueFormatter {
 
-    String format(int value);
+    String format(long value);
 }

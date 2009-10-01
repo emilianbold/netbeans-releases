@@ -155,7 +155,7 @@ public class RunFocusedTest extends BaseAction {
                         }
                     }
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    // do nothing - see #154991
                 }
             }
         }

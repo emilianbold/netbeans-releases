@@ -139,7 +139,7 @@ public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer
                 projectNameLabel.setText(null);
                 projectRepoLabel.setText(feature.getLocation());
                 projectRepoLabel.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-                projectRepoLabel.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+                projectRepoLabel.setForeground(list.getForeground());
                 repoTypeLabel.setText(null);
             } else {
                 projectNameLabel.setText(project.getDisplayName() + " (" + project.getName() + ")"); // NOI18N

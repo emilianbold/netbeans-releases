@@ -564,8 +564,14 @@ public class Outline extends ETable {
                             Object lastChild = getOutlineModel().getChild(ourObject, cCount - 1);
                             TreePath lastChildPath = path.pathByAddingChild(lastChild);
                             int lastRow = getLayoutCache().getRowForPath(lastChildPath);
-                            Rectangle rect = getCellRect(lastRow, 0, true);
-                            scrollRectToVisible(rect);
+                            Rectangle rectLast = getCellRect(lastRow, 0, true);
+                            Rectangle rectFirst = getCellRect(getLayoutCache().getRowForPath(path), 0, true);
+                            Rectangle rectFull = new Rectangle(
+                                    rectFirst.x,
+                                    rectFirst.y,
+                                    rectLast.x + rectLast.width - rectFirst.x,
+                                    rectLast.y + rectLast.height - rectFirst.y);
+                            scrollRectToVisible(rectFull);
                         }
                         
                     } else {

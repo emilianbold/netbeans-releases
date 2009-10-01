@@ -61,7 +61,7 @@ public class Deadlock126640Test extends ServerRegistryTestBase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINEST;
     }
 
     public void testMain() throws InterruptedException {

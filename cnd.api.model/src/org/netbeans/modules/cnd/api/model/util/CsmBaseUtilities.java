@@ -209,7 +209,22 @@ public class CsmBaseUtilities {
         }
         return clazz;
     }   
-        
+
+    public static CsmClass getFunctionClassByQualifiedName(CsmFunction fun) {
+        if (fun != null) {
+            String className = fun.getQualifiedName().toString().replaceAll("(.*)::.*", "$1"); // NOI18N
+            CsmObject obj = CsmClassifierResolver.getDefault().findClassifierUsedInFile(className, fun.getContainingFile(), false);
+            if (CsmKindUtilities.isClassifier(obj)) {
+                CsmClassifier cls = (CsmClassifier) obj;
+                cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, fun.getContainingFile());
+                if (CsmKindUtilities.isClass(cls)) {
+                    return (CsmClass) cls;
+                }
+            }
+        }
+        return null;
+    }
+
     public static CsmClass getObjectClass(CsmObject obj) {
         CsmClass objClass = null;
         if (CsmKindUtilities.isFunction(obj)) {

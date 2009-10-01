@@ -586,6 +586,7 @@ public class LayerUtilsTest extends LayerTestBase {
         NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
         cmf = new CreatedModifiedFiles(module2);
         cmf.add(cmf.createLayerEntry("bar", null, null, "Bar", null));
+        cmf.add(cmf.createLayerEntry("baz", null, null, null, Collections.<String,Object>singletonMap("displayName", "Display Label of Baz")));  // #173220 displayName as stringvalue
         cmf.add(cmf.createLayerEntry("test-module2-MyAction.instance", null, null, null, null));
         cmf.add(cmf.createLayerEntry("test-module2-some-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceClass", "test.module2.SomeAction")));
         cmf.add(cmf.createLayerEntry("test-module2-another-action.instance", null, null, null, Collections.<String,Object>singletonMap("instanceCreate", "newvalue:test.module2.AnotherAction")));
@@ -604,6 +605,7 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "right display name for platform file", "Templates/Project/APISupport", "NetBeans Modules");
         assertDisplayName(fs, "label for file in suite", "foo", "Foo");
         assertDisplayName(fs, "label for file in this project", "bar", "Bar");
+        assertDisplayName(fs, "non-localized label for file in this project", "baz", "Display Label of Baz");
         assertDisplayName(fs, "right display name for apisupport-defined action", "Actions/Tools/org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance", "NetBeans Platforms");
         assertDisplayName(fs, "label for simple instance", "test-module2-MyAction.instance", "<instance of MyAction>");
         assertDisplayName(fs, "label for instanceClass", "test-module2-some-action.instance", "<instance of SomeAction>");

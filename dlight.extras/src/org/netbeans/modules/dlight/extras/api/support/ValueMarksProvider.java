@@ -38,18 +38,18 @@
  */
 package org.netbeans.modules.dlight.extras.api.support;
 
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
-import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.util.DLightMath;
 import org.netbeans.modules.dlight.util.ValueFormatter;
 
 /**
  * @author Alexey Vladykin
  */
-public final class ValueMarksProvider implements AxisMarksProvider {
+public final class ValueMarksProvider extends AbstractCachingAxisMarksProvider {
 
     public static ValueMarksProvider newInstance() {
         return new ValueMarksProvider(null);
@@ -62,23 +62,23 @@ public final class ValueMarksProvider implements AxisMarksProvider {
     private final ValueFormatter formatter;
 
     private ValueMarksProvider(ValueFormatter formatter) {
-        super();
         this.formatter = formatter;
     }
 
-    public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+    @Override
+    protected List<AxisMark> getAxisMarksImpl(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
         List<AxisMark> marks = new ArrayList<AxisMark>();
         createMarks(viewportStart, viewportEnd, 0, axisSize, axisFontMetrics, marks);
         marks.add(new AxisMark(axisSize, formatValue(viewportEnd)));
         return marks;
     }
 
-    private void createMarks(int minVal, int maxVal, int minPos, int maxPos, FontMetrics axisFontMetrics, List<AxisMark> marks) {
+    private void createMarks(long minVal, long maxVal, int minPos, int maxPos, FontMetrics axisFontMetrics, List<AxisMark> marks) {
         if (maxPos - minPos <= axisFontMetrics.getAscent()) {
             return;
         }
         int midPos = (minPos + maxPos) / 2;
-        int midVal = (minVal + maxVal) / 2;
+        long midVal = (minVal + maxVal) / 2;
         if (axisFontMetrics.getAscent() <= midPos - minPos) {
             createMarks(minVal, midVal, minPos, midPos, axisFontMetrics, marks);
         }
@@ -88,7 +88,7 @@ public final class ValueMarksProvider implements AxisMarksProvider {
         }
     }
 
-    private String formatValue(int value) {
+    private String formatValue(long value) {
         if (formatter == null) {
             return String.valueOf(value);
         } else {

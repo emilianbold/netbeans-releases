@@ -263,7 +263,7 @@ class CountedModel implements TreeModel, ExtendedNodeModel, CheckNodeModel, Tabl
         }
     }
 
-    private void countCall(String methodName, Object... params) {
+    protected void countCall(String methodName, Object... params) {
         CountedCall cc = new CountedCall(methodName, params);
         if (!countedCalls.add(cc)) {
             for (CountedCall ecc : countedCalls) {
