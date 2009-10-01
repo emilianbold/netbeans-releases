@@ -39,10 +39,6 @@
 
 INSTALLDIR = /dev/null
 
-PRELOAD_NAME=rfs_preload
-CONTROLLER_NAME=rfs_controller
-FILEDATA_NAME=rfs_filedata
-
 ifdef DEBUG
     C_DBG_FLAGS := -g
 endif
@@ -106,58 +102,34 @@ endif
 
 testit :sh= uname -s
 
-DIST=../release/bin
-BUILD=./build
+DIST_BASE=../release/bin
+BUILD_BASE=./build
 
-PLATFORM_DIR=$(OSNAME)-$(PLATFORM)
-PLATFORM_DIST=${DIST}/${PLATFORM_DIR}
-PLATFORM_BUILD=${BUILD}/${PLATFORM_DIR}
+DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
+BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-PRELOAD_PATH=${PLATFORM_DIST}/${PRELOAD_NAME}.so
-PRELOAD_OBJ=${PLATFORM_BUILD}/${PRELOAD_NAME}.o
+all: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller
 
-CONTROLLER_PATH=${PLATFORM_DIST}/${CONTROLLER_NAME}
-CONTROLLER_OBJ=${PLATFORM_BUILD}/${CONTROLLER_NAME}.o
-FILEDATA_OBJ=${PLATFORM_BUILD}/${FILEDATA_NAME}.o
-
-all: check init ${PRELOAD_PATH} ${CONTROLLER_PATH}
+#object files
+${BUILD}/%.o : %.c
+	gcc ${CFLAGS} -o $@ $<
 
 #library:
-${PRELOAD_PATH}: ${PRELOAD_OBJ}
-	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${PRELOAD_PATH} ${PRELOAD_OBJ}
-
-${PRELOAD_OBJ}: ${PRELOAD_NAME}.c
-	gcc ${CFLAGS} -o ${PRELOAD_OBJ} ${PRELOAD_NAME}.c
+${DIST}/rfs_preload.so: ${BUILD}/rfs_preload.o
+	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${BUILD}/rfs_preload.o
 
 #appliction:
-${CONTROLLER_PATH}: ${CONTROLLER_OBJ} ${FILEDATA_OBJ}
-	gcc ${LDFLAGS_APP} -o ${CONTROLLER_PATH} ${CONTROLLER_OBJ} ${FILEDATA_OBJ}
-
-${CONTROLLER_OBJ}: ${CONTROLLER_NAME}.c
-	gcc ${CFLAGS} -o ${CONTROLLER_OBJ} ${CONTROLLER_NAME}.c
-
-${FILEDATA_OBJ}: ${FILEDATA_NAME}.c
-	gcc ${CFLAGS} -o ${FILEDATA_OBJ} ${FILEDATA_NAME}.c
+${DIST}/rfs_controller: ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o
+	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o
 
 clean:
-	rm -rf ${PLATFORM_BUILD} ${PLATFORM_DIST}
-
-cleanall:
 	rm -rf ${BUILD} ${DIST}
 
-install: all
-	@if [ -n "$(INSTALLDIR)" -a -d $(INSTALLDIR) ]; \
-	then \
-		mkdir -p $(INSTALLDIR); \
-		cp ${LIB_PATH} $(INSTALLDIR); \
-		echo "Installing ${LIB_NAME}-${PLATFORM_DIR}.$(SOEXT) in $(INSTALLDIR)"; \
-	else \
-		echo "Error: Missing INSTALLDIR"; \
-		exit 1; \
-	fi
+cleanall:
+	rm -rf ${BUILD_BASE} ${DIST_BASE}
 
 init:
-	@mkdir -p ${PLATFORM_BUILD} ${DIST}/${PLATFORM_DIR}
+	@mkdir -p ${BUILD} ${DIST}
 
 check:
 	@if [ -n "$(testit)" ]; \
@@ -168,11 +140,11 @@ check:
 
 
 test: test_build
-	${PLATFORM_BUILD}/rfs_filedata_test
+	${BUILD}/rfs_filedata_test
 
 test_build: all
-	gcc ${CFLAGS} -o ${PLATFORM_BUILD}/rfs_filedata_test.o test/rfs_filedata_test.c
-	gcc ${LDFLAGS_APP} -o ${PLATFORM_BUILD}/rfs_filedata_test ${FILEDATA_OBJ} ${PLATFORM_BUILD}/rfs_filedata_test.o
+	gcc ${CFLAGS} -o ${BUILD}/rfs_filedata_test.o test/rfs_filedata_test.c
+	gcc ${LDFLAGS_APP} -o ${BUILD}/rfs_filedata_test ${BUILD}/rfs_filedata.o ${BUILD}/rfs_filedata_test.o
 
 test_platform:
 	@echo "UNAME_S = [${UNAME_S}]"
