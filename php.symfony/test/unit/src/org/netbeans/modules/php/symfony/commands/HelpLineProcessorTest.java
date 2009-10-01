@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
@@ -140,6 +141,11 @@ public class HelpLineProcessorTest extends NbTestCase {
 
         @Override
         public FileObject getTestDirectory() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public PhpModuleProperties getProperties() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

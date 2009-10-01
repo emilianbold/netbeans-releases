@@ -79,6 +79,15 @@ public abstract class PhpModule {
     public abstract FileObject getTestDirectory();
 
     /**
+     * Get the current {@link PhpModuleProperties properties} of this PHP module.
+     * Please note that caller should not hold this properties because they can
+     * change very often (if user changes Run Configuration).
+     * @return the current {@link PhpModuleProperties properties}
+     * @since 1.19
+     */
+    public abstract PhpModuleProperties getProperties();
+
+    /**
      * Gets PHP module for the given {@link FileObject}.
      * @param fo {@link FileObject} to get PHP module for
      * @return PHP module or <code>null</code> if not found
