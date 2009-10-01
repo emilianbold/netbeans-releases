@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution.api;
 
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import java.io.IOException;
-import java.util.Map;
 import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeListener;
@@ -49,6 +48,8 @@ import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
@@ -64,6 +65,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
  * execution in an external terminal.
  * <p>
  */
+// @NotThreadSafe
 public final class NativeProcessBuilder implements Callable<Process> {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
@@ -133,6 +135,10 @@ public final class NativeProcessBuilder implements Callable<Process> {
         return this;
     }
 
+    public MacroMap getEnvironment() {
+        return info.getEnvironment();
+    }
+
     /**
      * Creates a new {@link NativeProcess} based on the properties configured
      * in this builder.
@@ -174,106 +180,6 @@ public final class NativeProcessBuilder implements Callable<Process> {
     public NativeProcessBuilder setWorkingDirectory(String workingDirectory) {
         info.setWorkingDirectory(workingDirectory);
         return this;
-    }
-
-    /**
-     * DEPRECATED
-     * <b>USE putEnvironmentVariable instead!</b>
-     *
-     * Configures additional environment variable for the command.
-     * 
-     * Process subsequently created by the call() method on this builder
-     * will be executed with configured environment variables.
-     * 
-     * <p>
-     * By default no additional environment variables are configured.
-     * <p>
-     *
-     * @param name name of the variable
-     * @param value value of the variable
-     * @return this
-     */
-    @Deprecated
-    public NativeProcessBuilder addEnvironmentVariable(String name, String value) {
-        info.putEnvironmentVariable(name, value);
-        return this;
-    }
-
-    /**
-     *
-     * Configures additional environment variable for the command.
-     *
-     * Process subsequently created by the call() method on this builder
-     * will be executed with configured environment variables.
-     *
-     * <p>
-     * By default no additional environment variables are configured.
-     * <p>
-     *
-     * @param name name of the variable
-     * @param value value of the variable
-     * @return this
-     */
-    public NativeProcessBuilder putEnvironmentVariable(String name, String value) {
-        return addEnvironmentVariable(name, value);
-    }
-
-    /**
-     * DEPRECATED
-     * <b>USE putAllEnvironmentVariables instead!</b>
-     * Configures additional environment variable for the command.
-     *
-     * Process subsequently created by the call() method on this builder
-     * will be executed with configured environment variables.
-     *
-     * <p>
-     * By default no additional environment variables are configured.
-     * <p>
-     *
-     * @param envs map of value, name of additional env variables
-     * @return this
-     */
-    @Deprecated
-    public NativeProcessBuilder addEnvironmentVariables(Map<String, String> envs) {
-        if (envs == null || envs.isEmpty()) {
-            return this;
-        }
-
-        info.putAllEnvironmentVariables(envs);
-        return this;
-    }
-
-    public NativeProcessBuilder putPathVariable(String name, String path) {
-        info.putEnvironmentVariable(name, "");
-        info.addPathVariable(name, path, false);
-        return this;
-    }
-
-    public NativeProcessBuilder appendPathVariable(String name, String path) {
-        info.addPathVariable(name, path, false);
-        return this;
-    }
-
-    public NativeProcessBuilder prependPathVariable(String name, String path) {
-        info.addPathVariable(name, path, true);
-        return this;
-    }
-
-    /**
-     * Configures additional environment variable for the command.
-     *
-     * Process subsequently created by the call() method on this builder
-     * will be executed with configured environment variables.
-     *
-     * <p>
-     * By default no additional environment variables are configured.
-     * <p>
-     *
-     * @param envs map of value, name of additional env variables
-     * @return this
-     */
-    public NativeProcessBuilder putAllEnvironmentVariables(Map<String, String> envs) {
-        return addEnvironmentVariables(envs);
     }
 
     /**
