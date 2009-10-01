@@ -108,18 +108,18 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
      */
     public void setFlat(boolean f) {
 
-        Color controlDkShadow = Color.lightGray;
-        if (UIManager.getColor("controlDkShadow") != null) { // NOI18N
-            controlDkShadow = UIManager.getColor("controlDkShadow"); // NOI18N
-        }
-        Color controlLtHighlight = Color.black;
-        if (UIManager.getColor("controlLtHighlight") != null) { // NOI18N
-            controlLtHighlight = UIManager.getColor("controlLtHighlight"); // NOI18N
-        }
-        Color buttonFocusColor = Color.blue; // NOI18N
-        if (UIManager.getColor("Button.focus") != null) { // NOI18N
-            buttonFocusColor = UIManager.getColor("Button.focus"); // NOI18N
-        }
+//        Color controlDkShadow = Color.lightGray;
+//        if (UIManager.getColor("controlDkShadow") != null) { // NOI18N
+//            controlDkShadow = UIManager.getColor("controlDkShadow"); // NOI18N
+//        }
+//        Color controlLtHighlight = Color.black;
+//        if (UIManager.getColor("controlLtHighlight") != null) { // NOI18N
+//            controlLtHighlight = UIManager.getColor("controlLtHighlight"); // NOI18N
+//        }
+//        Color buttonFocusColor = Color.blue; // NOI18N
+//        if (UIManager.getColor("Button.focus") != null) { // NOI18N
+//            buttonFocusColor = UIManager.getColor("Button.focus"); // NOI18N
+//        }
         flat = f ? Boolean.TRUE : Boolean.FALSE;
     }
 
@@ -556,7 +556,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
     }
 
     /** Table cell renderer component. Paints focus border on property panel. */
-    static class FocusedPropertyPanel extends PropertyPanel {
+    private static class FocusedPropertyPanel extends PropertyPanel {
         //XXX delete this class when new property panel is committed
 
         boolean focused;
@@ -784,7 +784,7 @@ abstract class FunctionsListSheetCell extends AbstractCellEditor implements Tabl
         }
     }
 
-    private class ComplexRenderer extends JPanel{
+    private static class ComplexRenderer extends JPanel{
         private double whole;
         private double part;
         private String toDraw;

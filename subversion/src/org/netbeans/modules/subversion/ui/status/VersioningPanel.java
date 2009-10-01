@@ -168,7 +168,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
             if (tc == null) return;
             tc.setActivatedNodes((Node[]) evt.getNewValue());
-        } 
+        } else if (FileStatusCache.PROP_CACHE_READY.equals(evt.getPropertyName()) && Boolean.TRUE.equals(evt.getNewValue())) {
+            reScheduleRefresh(0);
+        }
     }
 
     /**
@@ -189,7 +191,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         super.addNotify();
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         subversion.getStatusCache().addVersioningListener(this);
-//        subversion.addVersioningListener(this);
+        subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
@@ -197,7 +199,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     public void removeNotify() {
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
-//        subversion.removeVersioningListener(this);
+        subversion.getStatusCache().removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }

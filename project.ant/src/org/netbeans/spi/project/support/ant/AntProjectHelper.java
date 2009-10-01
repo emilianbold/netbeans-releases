@@ -563,6 +563,7 @@ public final class AntProjectHelper {
      */
     void ensureProjectXmlUnmodified(String msg, boolean doSave) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        synchronized (modifiedMetadataPaths) {
         if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
             IllegalStateException ise = new IllegalStateException(msg);
             if (addedProjectXmlPath != null) {
@@ -576,6 +577,7 @@ public final class AntProjectHelper {
                     LOG.log(Level.INFO, null, x);
                 }
             }
+        }
         }
     }
     

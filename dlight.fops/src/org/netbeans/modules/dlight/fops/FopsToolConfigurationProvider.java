@@ -40,10 +40,8 @@ package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -59,8 +57,8 @@ import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.util.BytesFormatter;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.util.ValueFormatter;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,16 +70,6 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
     private static final String FILE_COUNT_ID = "file-count"; // NOI18N
 
     private static final int INDICATOR_POSITION = 400;
-
-    private static final int BINARY_ORDER = 1024;
-    private static final int DECIMAL_ORDER = 1000;
-    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
-
-    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
-    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
-    static {
-        FRAC_FORMAT.setMaximumFractionDigits(1);
-    }
 
     public FopsToolConfigurationProvider() {
     }
@@ -148,7 +136,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
         indicatorConfiguration.setTitle(getMessage("Indicator.Title")); // NOI18N
-        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.setGraphScale(1024);
         indicatorConfiguration.addTimeSeriesDescriptors(
                 new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), TimeSeriesDescriptor.Kind.LINE), // NOI18N
                 new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
@@ -157,11 +145,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         indicatorConfiguration.addDetailDescriptors(
                 new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
-        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
-            public String format(int value) {
-                return formatValue(value);
-            }
-        });
+        indicatorConfiguration.setLabelFormatter(new BytesFormatter());
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
@@ -180,21 +164,6 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(FopsToolConfigurationProvider.class, name);
-    }
-
-    private static String formatValue(long value) {
-        double dbl = value;
-        int i = 0;
-        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
-            dbl /= BINARY_ORDER;
-            ++i;
-        }
-        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
-            dbl /= BINARY_ORDER;
-            ++i;
-        }
-        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
-        return nf.format(dbl) + SUFFIXES[i];
     }
 
     private static class DataRowToFops implements DataRowToTimeSeries {

@@ -48,6 +48,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -124,7 +125,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private void checkELEnabled(HtmlParserResult result) {
+    public void checkELEnabled(HtmlParserResult result) {
         Document doc = result.getSnapshot().getSource().getDocument(true);
         InputAttributes inputAttributes = (InputAttributes) doc.getProperty(InputAttributes.class);
         if (inputAttributes == null) {
@@ -249,7 +250,7 @@ public class JsfHtmlExtension extends HtmlExtension {
                 //undeclared prefix, check if a taglib contains it as
                 //default prefix. If so, offer it in the cc w/ tag autoimport function
                 for (FaceletsLibrary lib : libs.values()) {
-                    if (lib.getDefaultPrefix().equals(tagNamePrefix)) {
+                    if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().equals(tagNamePrefix)) {
                         //match
                         items.addAll(queryLibrary(context, lib, tagNamePrefix, true));
                     }
@@ -318,6 +319,33 @@ public class JsfHtmlExtension extends HtmlExtension {
 
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
         FaceletsLibrary flib = libs.get(namespace);
+        if(flib == null) {
+            //#171735 - strange, how can the flib be null???
+            StringBuffer msg = new StringBuffer();
+
+            msg.append("Cannot find facelets library when completing tag " + queriedNode.toString() +
+                    ", namespace prefix=" + nsPrefix +
+                    ", namespace = " + namespace +
+                    ", declared libraries: "); //NOI18N
+
+            for(String uri : declaredNS.keySet()) {
+                msg.append(uri);
+                msg.append(" => "); //NOI18N
+                msg.append(declaredNS.get(uri));
+                msg.append(", "); //NOI18N
+            }
+
+            msg.append(", facelets libraries: "); //NOI18N
+
+            for(String uri : libs.keySet()) {
+                msg.append(uri);
+                msg.append(" => "); //NOI18N
+                msg.append(declaredNS.get(uri));
+                msg.append(", "); //NOI18N
+            }
+            throw new IllegalStateException(msg.toString());
+            //<<< end of issue debug
+        }
         TldLibrary lib = flib.getAssociatedTLDLibrary();
 
         if (lib != null) {

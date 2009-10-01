@@ -42,13 +42,13 @@
  *
  * Created on Aug 25, 2009, 3:24:56 PM
  */
-
 package org.netbeans.modules.cnd.tha.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.cnd.tha.support.THAConfigurationImpl;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -61,9 +61,13 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
     THAConfigurationPanel() {
         initComponents();
         // combo box contents set here to allow NOI18N
-        startCollectingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "At the startup", "Manually" })); // NOI18N
+        startCollectingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[]{
+            NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.startCollectingComboBox.startup"),
+            NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.startCollectingComboBox.manually")})); // NOI18N
         startCollectingComboBox.setSelectedIndex(0);
-        collectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Deadlocks", "Dataraces and Deadlocks" })); // NOI18N
+        collectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[]{
+            NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.collectComboBox.deadlocks"),
+            NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.collectComboBox.races")})); // NOI18N
         collectComboBox.setSelectedIndex(0);
         startCollectingComboBox.addActionListener(new ActionListener() {
 
@@ -76,9 +80,23 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 NbPreferences.forModule(THAConfigurationPanel.this.getClass()).putInt("CollectedData", collectComboBox.getSelectedIndex());//NOI18N
+                setProgressBarValue();
             }
         });
         collectComboBox.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("CollectedData", 0)); // NOI18N
+        overheadProgressBar.setMinimum(0);
+        overheadProgressBar.setMaximum(10);
+        setProgressBarValue();
+
+    }
+
+
+    private void setProgressBarValue(){
+        int comboBoxIndex = collectComboBox.getSelectedIndex();
+        overheadProgressBar.setValue(comboBoxIndex == 0 ? 7 : 10);
+        overheadProgressBar.setString(comboBoxIndex == 0 ?
+            NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.overheadProgressBar.medium") :
+            NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.overheadProgressBar.high"));
     }
 
     /** This method is called from within the constructor to
@@ -95,15 +113,13 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         startCollectingComboBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        overheadProgressBar = new javax.swing.JProgressBar();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel2.text")); // NOI18N
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel3.text")); // NOI18N
-
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -112,15 +128,17 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2)
+                    .add(jLabel1)
                     .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(startCollectingComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(collectComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 184, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(70, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(overheadProgressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 129, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(startCollectingComboBox, 0, 190, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(collectComboBox, 0, 190, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -133,27 +151,23 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(startCollectingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(22, Short.MAX_VALUE))
+                .add(32, 32, 32)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(jLabel3, 0, 0, Short.MAX_VALUE)
+                    .add(overheadProgressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox collectComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JProgressBar overheadProgressBar;
     private javax.swing.JComboBox startCollectingComboBox;
     // End of variables declaration//GEN-END:variables
 
-
-    THAConfiguration getTHAConfiguration(){
+    THAConfiguration getTHAConfiguration() {
         return THAConfigurationImpl.create(startCollectingComboBox.getSelectedIndex() == 0, collectComboBox.getSelectedIndex() != 0);
     }
-    
 }

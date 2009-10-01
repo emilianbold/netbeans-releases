@@ -41,6 +41,8 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.OutputStream;
@@ -225,6 +227,30 @@ public class TreePathHandleTest extends NbTestCase {
                 assertFalse(handle.equals((Object) ""));
                 assertTrue(handle.equals(handle));
 
+            }
+        }, true);
+    }
+
+    public void testEmptyMod() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+
+        writeIntoFile(file, "package test; public class test { String a; }");
+
+        JavaSource js = JavaSource.forFileObject(file);
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+
+        js.runUserActionTask(new  Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+
+                TypeElement test = parameter.getElements().getTypeElement("test.test");
+
+                TreePath path  = parameter.getTrees().getPath(test);
+                TreePath field = new TreePath(path, ((ClassTree) path.getLeaf()).getMembers().get(1));
+                TreePath mods  = new TreePath(field, ((VariableTree) field.getLeaf()).getModifiers());
+
+                assertSame(mods.getLeaf(), TreePathHandle.create(mods, parameter).resolve(parameter).getLeaf());
             }
         }, true);
     }
