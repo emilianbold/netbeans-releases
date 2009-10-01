@@ -170,15 +170,17 @@ public final class UIUtils {
      * @return true if logged in, false otherwise
      */
     @Deprecated
-    public static synchronized boolean tryLogin() {
+    public static synchronized boolean tryLogin(boolean force) {
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
-        String online = preferences.get(LOGIN_STATUS_PREF, "false"); // NOI18N
-        if (!Boolean.parseBoolean(online)) {
-            return false;
+        if (!force) {
+            String online = preferences.get(LOGIN_STATUS_PREF, "false"); // NOI18N
+            if (!Boolean.parseBoolean(online)) {
+                return false;
+            }
         }
 
         String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
@@ -188,7 +190,7 @@ public final class UIUtils {
         String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), Boolean.parseBoolean(preferences.get(ONLINE_STATUS_PREF, "true")));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(ONLINE_STATUS_PREF, "true")));
         } catch (KenaiException ex) {
             return false;
         }
