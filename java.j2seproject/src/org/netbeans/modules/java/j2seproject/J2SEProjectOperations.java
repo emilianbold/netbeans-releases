@@ -329,7 +329,13 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
                         // #131857: SyncFailedException : check for file existence before FileUtil.copyFile
                         FileObject oldFile = privateFolder.getFileObject(fo.getName(), fo.getExt());
                         if (oldFile != null) {
-                            oldFile.delete();
+                            //Probably delete outside of IDE + move. First try to repair FS cache
+                            privateFolder.refresh();
+                            oldFile = privateFolder.getFileObject(fo.getName(), fo.getExt());
+                            if (oldFile != null) {
+                                //The file still exists, delete it.
+                                oldFile.delete();
+                            }
                         }
 
                         FileUtil.copyFile(fo, privateFolder, fo.getName());
