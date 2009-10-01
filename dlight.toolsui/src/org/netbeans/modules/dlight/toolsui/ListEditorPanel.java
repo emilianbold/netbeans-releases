@@ -63,17 +63,10 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
     private JList targetList = null;
     protected Vector<E> listData = new Vector<E>();
     private boolean allowedToRemoveAll = true;
-    protected JButton[] extraButtons;
     private boolean isChanged = false;
 
     public ListEditorPanel(List<E> objects) {
-        this(objects, null);
-    }
-
-    public ListEditorPanel(List<E> objects, JButton[] extraButtons) {
         initComponents();
-
-        this.extraButtons = extraButtons;
 
         scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
 
@@ -135,14 +128,6 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
             targetList.requestFocus();
         } else {
             addButton.requestFocus();
-        }
-
-        // Add extra buttons
-        if (extraButtons != null) {
-            int index = 1; // strt index
-            for (int i = 0; i < extraButtons.length; i++) {
-                addExtraButton(extraButtons[i], index++);
-            }
         }
 
         checkSelection();

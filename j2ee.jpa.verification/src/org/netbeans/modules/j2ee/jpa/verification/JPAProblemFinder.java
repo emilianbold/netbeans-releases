@@ -100,12 +100,11 @@ public abstract class JPAProblemFinder {
     private final static String PERSISTENCE_SCOPES_LISTENER = "jpa.verification.scopes_listener"; //NOI18N
     private final static Object singleInstanceLock = new Object();
     private static JPAProblemFinder runningInstance = null;
+    private static boolean usgLogged;
     
     public JPAProblemFinder(FileObject file){
         assert file != null;
         this.file = file;
-        //if classes use something japa related this event is logged, should be once per class  open, may need verification
-        PersistenceUtils.logUsage(JPAProblemFinder.class, "USG_PERSISTENCE_DETECTED", null);//NOI18N
     }
     
     public void run(final CompilationInfo info) throws Exception{
@@ -259,6 +258,10 @@ public abstract class JPAProblemFinder {
         
         if (context.isJPAClass()){
             context.setAccessType(JPAHelper.findAccessType(javaClass, context.getModelElement()));
+            if(!usgLogged) {
+                usgLogged = true;
+                PersistenceUtils.logUsage(JPAProblemFinder.class, "USG_PERSISTENCE_DETECTED", new String[]{"CLASS"});//NOI18N
+            }
         }
         
         return context;

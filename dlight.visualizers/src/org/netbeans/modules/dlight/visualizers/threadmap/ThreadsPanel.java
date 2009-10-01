@@ -103,8 +103,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -141,9 +139,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String ZOOM_OUT_TOOLTIP = messages.getString("ThreadsPanel_ZoomOutToolTip"); // NOI18N
     private static final String FIXED_SCALE_TOOLTIP = messages.getString("ThreadsPanel_FixedScaleToolTip"); // NOI18N
     private static final String SCALE_TO_FIT_TOOLTIP = messages.getString("ThreadsPanel_ScaleToFitToolTip"); // NOI18N
-    private static final String THREADS_MONITORING_DISABLED_1_MSG = messages.getString("ThreadsPanel_ThreadsMonitoringDisabled1Msg"); // NOI18N
-    private static final String THREADS_MONITORING_DISABLED_2_MSG = messages.getString("ThreadsPanel_ThreadsMonitoringDisabled2Msg"); // NOI18N
-    private static final String NO_PROFILING_MSG = messages.getString("ThreadsPanel_NoProfilingMsg"); // NOI18N
     private static final String THREADS_COLUMN_NAME = messages.getString("ThreadsPanel_ThreadsColumnName"); // NOI18N
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
@@ -164,7 +159,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String VIEW_MODE_MSA_FULL = messages.getString("ThreadsPanel_FulleMSAViewMode");//NOI18N
     private static final String VIEW_MODE_COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ViewModeComboAccessName"); // NOI18N
     private static final String VIEW_MODE_COMBO_ACCESS_DESCR = messages.getString("ThreadsPanel_ViewModeComboAccessDescr"); // NOI18N
-    private static final String ENABLE_THREADS_MONITORING_BUTTON_ACCESS_NAME = messages.getString("ThreadsPanel_EnableThreadsMonitoringAccessName"); // NOI18N
     private static final String SHOW_LABEL_TEXT = messages.getString("ThreadsPanel_ShowLabelText"); // NOI18N
     private static final String VIEW_MODE_LABEL_TEXT = messages.getString("ThreadsPanel_ViewModeLabelText"); // NOI18N
     // -----
@@ -184,15 +178,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private DefaultComboBoxModel comboModel;
     private DefaultComboBoxModel viewModeComboModel;
     private DefaultComboBoxModel comboModelWithSelection;
-    private JButton enableThreadsMonitoringButton;
     private JButton scaleToFitButton;
     private JButton zoomInButton;
     private JButton zoomOutButton;
     private JComboBox threadsSelectionCombo;
     private JComboBox viewModeSelectionCombo;
-    private JLabel enableThreadsMonitoringLabel1;
-    private JLabel enableThreadsMonitoringLabel2;
-    private JLabel enableThreadsMonitoringLabel3;
     private JPanel legendPanel;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showLegend;
@@ -448,36 +438,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         notificationPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 15));
         notificationPanel.setBorder(dataPanel.getBorder());
         notificationPanel.setBackground(table.getBackground());
-
-        Border myRolloverBorder = new CompoundBorder(new FlatToolBar.FlatRolloverButtonBorder(Color.GRAY, Color.LIGHT_GRAY),
-                new FlatToolBar.FlatMarginBorder());
-
-        enableThreadsMonitoringLabel1 = new JLabel(THREADS_MONITORING_DISABLED_1_MSG);
-        enableThreadsMonitoringLabel1.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 3));
-        enableThreadsMonitoringLabel1.setForeground(Color.DARK_GRAY);
-
-        enableThreadsMonitoringButton = new JButton(new ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/visualizers/threadmap/resources/threadsView.png"))); // NOI18N
-        enableThreadsMonitoringButton.setContentAreaFilled(false);
-        enableThreadsMonitoringButton.setMargin(new Insets(3, 3, 0, 0));
-        enableThreadsMonitoringButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        enableThreadsMonitoringButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        enableThreadsMonitoringButton.setRolloverEnabled(true);
-        enableThreadsMonitoringButton.setBorder(myRolloverBorder);
-        enableThreadsMonitoringButton.getAccessibleContext().setAccessibleName(ENABLE_THREADS_MONITORING_BUTTON_ACCESS_NAME);
-
-        enableThreadsMonitoringLabel2 = new JLabel(THREADS_MONITORING_DISABLED_2_MSG);
-        enableThreadsMonitoringLabel2.setBorder(BorderFactory.createEmptyBorder(20, 3, 20, 0));
-        enableThreadsMonitoringLabel2.setForeground(Color.DARK_GRAY);
-
-        enableThreadsMonitoringLabel3 = new JLabel(NO_PROFILING_MSG);
-        enableThreadsMonitoringLabel3.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 0));
-        enableThreadsMonitoringLabel3.setForeground(Color.DARK_GRAY);
-        enableThreadsMonitoringLabel3.setVisible(false);
-
-        notificationPanel.add(enableThreadsMonitoringLabel1);
-        notificationPanel.add(enableThreadsMonitoringButton);
-        notificationPanel.add(enableThreadsMonitoringLabel2);
-        notificationPanel.add(enableThreadsMonitoringLabel3);
 
         setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
         setLayout(new BorderLayout());
@@ -900,12 +860,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     }
 
     // ---------------------------------------------------------------------------------------
-    // Handling profiling started & finished and threads monitoring enabled & disabled
-    public void addThreadsMonitoringActionListener(ActionListener listener) {
-        enableThreadsMonitoringButton.addActionListener(listener);
-    }
-
-    // ---------------------------------------------------------------------------------------
     // Listeners
     /**
      * Invoked when the scrollbar is moved.
@@ -978,26 +932,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     public boolean hasView() {
         return !notificationPanel.isShowing();
-    }
-
-    public void profilingSessionFinished() {
-        enableThreadsMonitoringButton.setEnabled(false);
-        enableThreadsMonitoringLabel1.setVisible(false);
-        enableThreadsMonitoringLabel2.setVisible(false);
-        enableThreadsMonitoringButton.setVisible(false);
-        enableThreadsMonitoringLabel3.setVisible(true);
-    }
-
-    public void profilingSessionStarted() {
-        enableThreadsMonitoringButton.setEnabled(true);
-        enableThreadsMonitoringLabel1.setVisible(true);
-        enableThreadsMonitoringLabel2.setVisible(true);
-        enableThreadsMonitoringButton.setVisible(true);
-        enableThreadsMonitoringLabel3.setVisible(false);
-    }
-
-    public void removeThreadsMonitoringActionListener(ActionListener listener) {
-        enableThreadsMonitoringButton.removeActionListener(listener);
     }
 
     @Override
