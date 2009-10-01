@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
@@ -97,7 +98,37 @@ public class NativeExecutor implements Runnable {
     private PrintWriter out;
     private PrintWriter err;
     private Writer outputListener;
+    private Project project;
     
+    /**
+     * The real constructor. This class is used to manage native execution, but run and build.
+     */
+    public NativeExecutor(
+	    Project project,
+	    ExecutionEnvironment execEnv,
+            String runDir,
+            String executable,
+            String arguments,
+            String[] envp,
+            String tabName,
+            String actionName,
+            boolean parseOutputForErrors,
+            boolean showInput,
+            boolean unbuffer) {
+	this.project = project;
+        this.execEnv = execEnv;
+        this.runDir = runDir;
+        executable = LinkSupport.resolveWindowsLink(executable);
+        this.executable = executable;
+        this.arguments = arguments;
+        this.envp = envp;
+        this.tabName = tabName;
+        this.actionName = actionName;
+        this.parseOutputForErrors = parseOutputForErrors;
+        this.showInput = showInput;
+        this.unbuffer = unbuffer;
+    }
+
     /**
      * The real constructor. This class is used to manage native execution, but run and build.
      */
@@ -112,19 +143,9 @@ public class NativeExecutor implements Runnable {
             boolean parseOutputForErrors,
             boolean showInput,
             boolean unbuffer) {
-        this.execEnv = execEnv;
-        this.runDir = runDir;
-        executable = LinkSupport.resolveWindowsLink(executable);
-        this.executable = executable;
-        this.arguments = arguments;
-        this.envp = envp;
-        this.tabName = tabName;
-        this.actionName = actionName;
-        this.parseOutputForErrors = parseOutputForErrors;
-        this.showInput = showInput;
-        this.unbuffer = unbuffer;
+	this(null, execEnv, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput, unbuffer);
     }
-    
+
     /** targets may be null to indicate default target */
     /*@Deprecated*/
     public NativeExecutor(
@@ -244,7 +265,7 @@ public class NativeExecutor implements Runnable {
             originalWriter = new OutputWriterProxy(originalWriter, outputListener);
         }
         if (parseOutputForErrors) {
-            out = new PrintWriter(new OutputWindowWriter(execEnv, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(project,execEnv, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
         } else {
             out = originalWriter;
         }

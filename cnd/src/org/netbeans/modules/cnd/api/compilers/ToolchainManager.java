@@ -229,7 +229,9 @@ public final class ToolchainManager {
 
     public interface ScannerDescriptor {
 
-        List<ScannerPattern> getPatterns();
+        String getID();
+
+	List<ScannerPattern> getPatterns();
 
         String getChangeDirectoryPattern();
 
@@ -240,6 +242,8 @@ public final class ToolchainManager {
         String getStackHeaderPattern();
 
         String getStackNextPattern();
+
+	List<String> getFilterOutPatterns();
     }
 
     public interface ScannerPattern {
