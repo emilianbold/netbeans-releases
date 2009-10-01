@@ -43,9 +43,10 @@ ifdef DEBUG
     C_DBG_FLAGS := -g
 endif
 
-CFLAGS-Linux := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
-CFLAGS-SunOS := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
-CFLAGS-Mac_OS_X := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
+CFLAGS-COMMON := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE -Wimplicit -Werror
+CFLAGS-Linux := ${CFLAGS-COMMON}
+CFLAGS-SunOS := ${CFLAGS-COMMON}
+CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
 LDFLAGS-LIB-Linux := -shared -ldl
 LDFLAGS-LIB-SunOS := -shared -ldl -lsocket
@@ -115,12 +116,12 @@ ${BUILD}/%.o : %.c
 	gcc ${CFLAGS} -o $@ $<
 
 #library:
-${DIST}/rfs_preload.so: ${BUILD}/rfs_preload.o
-	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${BUILD}/rfs_preload.o
+${DIST}/rfs_preload.so: ${BUILD}/rfs_preload.o ${BUILD}/rfs_preload_socks.o ${BUILD}/rfs_util.o
+	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${BUILD}/rfs_preload.o ${BUILD}/rfs_preload_socks.o ${BUILD}/rfs_util.o
 
 #appliction:
-${DIST}/rfs_controller: ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o
-	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o
+${DIST}/rfs_controller: ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o ${BUILD}/rfs_util.o
+	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o ${BUILD}/rfs_util.o
 
 clean:
 	rm -rf ${BUILD} ${DIST}

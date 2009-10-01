@@ -1,5 +1,9 @@
 #include <stdlib.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
@@ -12,13 +16,15 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include <sys/fcntl.h>
 
-#define RFS_CONTROLLER 1 // rfs_utils.h needs this
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
 
-#include "rfs_controller.h"
+#include "rfs_protocol.h"
 #include "rfs_util.h"
 #include "rfs_filedata.h"
+
+ 
 
 #if TRACE
 static int emulate = false;
@@ -43,13 +49,14 @@ static void serve_connection(void* data) {
         memset(request, 0, sizeof (request));
         errno = 0;
         size = recv(conn_data->sd, request, sizeof (request), 0);
-        if (size == -1 || size == 0) { // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
-            if (errno == ECONNRESET) {
-                trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
-            } else if (errno != 0) {
+        if (size == 0 || (size == -11 && errno == ECONNRESET)) { // not sure (size == -1 && errno == ECONNRESET) ever happens
+            trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
+            break;
+        } else if (size == -1) {
+            if (errno != 0) {
                 perror("error getting message");
             }
-            break; 
+            break;
         }
 
         file_data *fd = find_file_data(request, true);
@@ -168,7 +175,7 @@ static void init_files() {
 }
 
 int main(int argc, char* argv[]) {
-    trace_startup("RFS_CONTROLLER_LOG");
+    trace_startup("RFS_CNTL", "RFS_CONTROLLER_LOG");
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);
