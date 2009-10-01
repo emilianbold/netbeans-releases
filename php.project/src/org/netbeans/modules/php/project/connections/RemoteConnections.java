@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
@@ -68,17 +69,18 @@ import org.openide.util.NbBundle;
 public final class RemoteConnections {
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
+
+    private static final RemoteConnections INSTANCE = new RemoteConnections();
     // Do not change arbitrary - consult with layer's folder OptionsExport
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
-
     private final ConfigManager configManager;
     private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
     RemoteConnectionsPanel panel = null;
 
     public static RemoteConnections get() {
-        return new RemoteConnections();
+        return INSTANCE;
     }
 
     private RemoteConnections() {
@@ -120,6 +122,14 @@ public final class RemoteConnections {
             saveRemoteConnections();
         }
         return changed;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        configManager.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        configManager.removeChangeListener(listener);
     }
 
     List<RemoteConnectionProvider> getConnectionProviders() {
