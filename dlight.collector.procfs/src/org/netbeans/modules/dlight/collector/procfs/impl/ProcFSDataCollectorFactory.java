@@ -36,31 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.reader.api;
+package org.netbeans.modules.dlight.collector.procfs.impl;
 
-import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
-import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
-import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.dlight.collector.procfs.ProcFSDCConfiguration;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
-public final class ProcReaderFactory {
+@ServiceProviders({
+    @ServiceProvider(service = DataCollectorFactory.class),
+    @ServiceProvider(service = IndicatorDataProviderFactory.class)
+})
+public class ProcFSDataCollectorFactory implements DataCollectorFactory<ProcFSDCConfiguration>,
+        IndicatorDataProviderFactory<ProcFSDCConfiguration> {
 
-    private ProcReaderFactory() {
+    public ProcFSDataCollector create(ProcFSDCConfiguration configuration) {
+        return new ProcFSDataCollector(configuration);
     }
 
-    public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
-        final ProcReaderImpl reader;
+    public String getID() {
+        return ProcFSDCConfiguration.ID;
+    }
 
-        if (execEnv.isLocal()) {
-            reader = new LocalProcReader(pid);
-        } else {
-            reader = new RemoteProcReader(execEnv, pid);
-        }
-
-        // TODO: fixme (this is to switch endian if required... but now bad
-        // method is used)
-        reader.init(pid);
-
-        return reader;
+    public void reset() {
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

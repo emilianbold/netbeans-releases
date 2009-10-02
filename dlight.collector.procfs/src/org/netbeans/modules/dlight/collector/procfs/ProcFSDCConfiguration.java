@@ -36,31 +36,51 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.reader.api;
+package org.netbeans.modules.dlight.collector.procfs;
 
-import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
-import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
-import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
+import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
+import org.netbeans.modules.dlight.collector.procfs.impl.ProcFSDCConfigurationAccessor;
 
-public final class ProcReaderFactory {
+public class ProcFSDCConfiguration implements
+        DataCollectorConfiguration,
+        IndicatorDataProviderConfiguration {
 
-    private ProcReaderFactory() {
+    public final static String ID = "dlight.MSADataCollectorConfiguration"; // NOI18N
+    private int procInfoSampling; // sampling period for procinfo count... 0 - do not collect.
+    private int msaSampling; // sampling period for msa... 0 - do not collect.
+
+    static {
+        ProcFSDCConfigurationAccessor.setDefault(new ProcFSDCConfigurationAccessorImpl());
     }
 
-    public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
-        final ProcReaderImpl reader;
+    public String getID() {
+        return ID;
+    }
 
-        if (execEnv.isLocal()) {
-            reader = new LocalProcReader(pid);
-        } else {
-            reader = new RemoteProcReader(execEnv, pid);
+    /**
+     * Indicates that Threads count should be collected.
+     * @param msPeriod - sampling period in milliseconds. 0 means turn off LWPs
+     * count collection
+     */
+    public void collectProcInfo(int samplingPeriod) {
+        procInfoSampling = samplingPeriod;
+    }
+
+    public void collectMSA(int samplingPeriod) {
+        msaSampling = samplingPeriod;
+    }
+
+    private static final class ProcFSDCConfigurationAccessorImpl extends ProcFSDCConfigurationAccessor {
+
+        @Override
+        public int procInfoSampling(ProcFSDCConfiguration configuration) {
+            return configuration.procInfoSampling;
         }
 
-        // TODO: fixme (this is to switch endian if required... but now bad
-        // method is used)
-        reader.init(pid);
-
-        return reader;
+        @Override
+        public int msaSampling(ProcFSDCConfiguration configuration) {
+            return configuration.msaSampling;
+        }
     }
 }

@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.collector.procfs.impl;
 
 import java.io.IOException;
 import java.util.concurrent.CancellationException;

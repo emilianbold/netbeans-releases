@@ -36,31 +36,22 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.reader.api;
+package org.netbeans.modules.nativeexecution.spi;
 
-import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
-import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
-import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 
-public final class ProcReaderFactory {
-
-    private ProcReaderFactory() {
-    }
-
-    public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
-        final ProcReaderImpl reader;
-
-        if (execEnv.isLocal()) {
-            reader = new LocalProcReader(pid);
-        } else {
-            reader = new RemoteProcReader(execEnv, pid);
-        }
-
-        // TODO: fixme (this is to switch endian if required... but now bad
-        // method is used)
-        reader.init(pid);
-
-        return reader;
-    }
+/**
+ *
+ * @author ak119685
+ */
+public interface ProcessInfoProvider {
+    /**
+     * Returns information about the process (see ProcessInfo);
+     * This method may *block* current thread for some time
+     *
+     * May return null
+     * 
+     * @return ProcessInfo or null if no info is available.
+     */
+    public ProcessInfo getProcessInfo();
 }
