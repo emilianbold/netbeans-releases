@@ -79,43 +79,44 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
-    const int bufsize = 512;
-    char request[bufsize];
-    char response[bufsize];
-    int size;
+
+    const int maxsize = PATH_MAX + 32;
+    char buffer[maxsize];
+    struct package *pkg = (struct package *) &buffer;
+
     while (1) {
         trace("Waiting for a data to arrive, sd=%d...\n", conn_data->sd);
-        memset(request, 0, sizeof (request));
         errno = 0;
-        size = recv(conn_data->sd, request, sizeof (request), 0);
-        if (size == 0 || (size == -11 && errno == ECONNRESET)) { // not sure (size == -1 && errno == ECONNRESET) ever happens
+        enum sr_result recv_res = pkg_recv(conn_data->sd, pkg, maxsize);
+        if (recv_res == sr_reset) {
             trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
             break;
-        } else if (size == -1) {
+        } else if (recv_res == sr_failure) {
             if (errno != 0) {
                 perror("error getting message");
             }
             break;
         }
-
-        file_data *fd = find_file_data(request, true);
         
-        trace("Request=%s size=%d sd=%d\n", request, size, conn_data->sd);
-        if (fd != NULL && fd->state == file_state_pending) {
+        trace("Request=%s sd=%d\n", pkg->data, conn_data->sd);
 
+        char response[64];
+        file_data *fd = find_file_data(pkg->data, true);
+
+        if (fd != NULL && fd->state == file_state_pending) {
             /* TODO: this is a very primitive sync!  */
             pthread_mutex_lock(&mutex);
 
-            fprintf(stdout, "%s\n", request);
+            fprintf(stdout, "%s\n", pkg->data);
             fflush(stdout);
 
-            memset(response, 0, sizeof (response));
             #if TRACE
-            if (emulate)
-                response[0] = response_ok;
-            else
+                if (emulate) {
+                    response[0] = response_ok;
+                    response[1] = 0;
+                } else
             #endif
-            gets(response);
+            fgets(response, sizeof response, stdin);
             fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
             pthread_mutex_unlock(&mutex);
             trace("Got reply=%s from sd=%d set %X->state to %d\n", response, conn_data->sd, fd, fd->state);
@@ -129,10 +130,13 @@ static void serve_connection(void* data) {
             trace("Already known; filled reply: %s\n", response);
         }
 
-        if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
+        enum sr_result send_res = pkg_send(conn_data->sd, pkg_reply, response);
+        if (send_res == sr_failure) {
             perror("send");
-        } else {
-            trace("%d bytes sent sd=%d\n", size, conn_data->sd);
+        } else if (send_res == sr_reset) {
+            perror("send");
+        } else { // success
+            trace("reply for %s sent sd=%d\n", pkg->data, conn_data->sd);
         }
         
     }
