@@ -1684,8 +1684,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 synchronized (CompletionImpl.this) {
                     if (completionResult != null) {
                         if (!isAllResultsFinished(completionResult.getResultSets())) {
-                            layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
-                                    null, -1, CompletionImpl.this, null, null, 0);
+                            pleaseWaitTimer.restart();
                         }
                     }
                 }
