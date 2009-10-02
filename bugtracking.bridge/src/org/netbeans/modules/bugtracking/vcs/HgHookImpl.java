@@ -67,6 +67,10 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mercurial.hooks.spi.HgHook.class)
 public class HgHookImpl extends HgHook {
+
+    private static final String[] SUPPORTED_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
+    private static final String[] SUPPORTED_REVISION_VARIABLES = new String[] {"changeset", "author", "date", "message"}; // NOI18N
+
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
@@ -106,7 +110,7 @@ public class HgHookImpl extends HgHook {
 
             Format format = VCSHooksConfig.getInstance().getHgIssueInfoTemplate();
             String formatString = format.getFormat();
-            formatString = HookUtils.prepareFormatString(formatString, "id", "summary");
+            formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_ISSUE_INFO_VARIABLES);
             
             Issue issue = getIssue();
             if (issue == null) {
@@ -166,7 +170,7 @@ public class HgHookImpl extends HgHook {
             String message = context.getLogEntries()[0].getMessage();
 
             String formatString = VCSHooksConfig.getInstance().getHgRevisionTemplate().getFormat();
-            formatString = HookUtils.prepareFormatString(formatString, "changeset", "author", "date", "message"); // NOI18N
+            formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_REVISION_VARIABLES); // NOI18N
 
             msg = new MessageFormat(formatString).format(
                     new Object[] {
@@ -274,8 +278,10 @@ public class HgHookImpl extends HgHook {
                 new FormatPanel(
                     VCSHooksConfig.getInstance().getHgRevisionTemplate(),
                     VCSHooksConfig.getDefaultHgRevisionTemplate(),
+                    SUPPORTED_REVISION_VARIABLES,
                     VCSHooksConfig.getInstance().getHgIssueInfoTemplate(),
-                    VCSHooksConfig.getDefaultIssueInfoTemplate());
+                    VCSHooksConfig.getDefaultIssueInfoTemplate(),
+                    SUPPORTED_ISSUE_INFO_VARIABLES);
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgRevisionTemplate(p.getIssueFormat());
             VCSHooksConfig.getInstance().setHgIssueInfoTemplate(p.getCommitFormat());

@@ -69,6 +69,10 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.subversion.hooks.spi.SvnHook.class)
 public class SvnHookImpl extends SvnHook {
+
+    private static final String[] SUPPORT_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
+    private static final String[] SUPPORT_REVISION_VARIABLES = new String[] {"revision", "author", "date", "message"};  // NOI18N
+
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
@@ -110,7 +114,7 @@ public class SvnHookImpl extends SvnHook {
 
             final Format format = VCSHooksConfig.getInstance().getSvnIssueInfoTemplate();
             String formatString = format.getFormat();
-            formatString = HookUtils.prepareFormatString(formatString, "id", "summary");
+            formatString = HookUtils.prepareFormatString(formatString, SUPPORT_ISSUE_INFO_VARIABLES);
 
             Issue issue = getIssue();
             if (issue == null) {
@@ -171,7 +175,7 @@ public class SvnHookImpl extends SvnHook {
             String message = logEntry.getMessage();
 
             String formatString = VCSHooksConfig.getInstance().getSvnRevisionTemplate().getFormat();
-            formatString = HookUtils.prepareFormatString(formatString, "revision", "author", "date", "message"); // NOI18N
+            formatString = HookUtils.prepareFormatString(formatString, SUPPORT_REVISION_VARIABLES); // NOI18N
 
             msg = new MessageFormat(formatString).format(
                     new Object[] {
@@ -243,8 +247,10 @@ public class SvnHookImpl extends SvnHook {
                 new FormatPanel(
                     VCSHooksConfig.getInstance().getSvnRevisionTemplate(),
                     VCSHooksConfig.getDefaultSvnRevisionTemplate(),
+                    SUPPORT_REVISION_VARIABLES,
                     VCSHooksConfig.getInstance().getSvnIssueInfoTemplate(),
-                    VCSHooksConfig.getDefaultIssueInfoTemplate());
+                    VCSHooksConfig.getDefaultIssueInfoTemplate(),
+                    SUPPORT_ISSUE_INFO_VARIABLES);
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setSvnRevisionTemplate(p.getIssueFormat());
             VCSHooksConfig.getInstance().setSvnIssueInfoTemplate(p.getCommitFormat());

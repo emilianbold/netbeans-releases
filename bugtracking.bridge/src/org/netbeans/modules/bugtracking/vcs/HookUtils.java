@@ -71,4 +71,22 @@ public class HookUtils {
         return formatString;
     }
 
+    /**
+     * Determines if the given string contains some other sequences
+     * enclosed by {} then the given variables.
+     *
+     * @param txt
+     * @param variables
+     * @return
+     */
+    public static boolean containsUnsupportedVariables(String txt, String... variables) {
+        txt = prepareFormatString(txt, variables);
+        int idx = txt.indexOf("'{");                                          // NOI18N
+        if(idx < 0) {
+            return false;
+        }
+        idx = txt.indexOf("'}", idx);                                         // NOI18N
+        return idx > 0;
+    }
+
 }
