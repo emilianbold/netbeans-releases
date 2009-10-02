@@ -154,6 +154,7 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.dlight</friend>
+                <friend>org.netbeans.modules.dlight.collector.procfs</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.db.derby</friend>

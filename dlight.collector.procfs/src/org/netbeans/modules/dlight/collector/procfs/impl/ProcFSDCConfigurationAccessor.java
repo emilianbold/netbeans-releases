@@ -36,31 +36,38 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.reader.api;
+package org.netbeans.modules.dlight.collector.procfs.impl;
 
-import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
-import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
-import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.dlight.collector.procfs.ProcFSDCConfiguration;
 
-public final class ProcReaderFactory {
+public abstract class ProcFSDCConfigurationAccessor {
 
-    private ProcReaderFactory() {
+    private static volatile ProcFSDCConfigurationAccessor DEFAULT;
+
+    public ProcFSDCConfigurationAccessor() {
     }
 
-    public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
-        final ProcReaderImpl reader;
-
-        if (execEnv.isLocal()) {
-            reader = new LocalProcReader(pid);
-        } else {
-            reader = new RemoteProcReader(execEnv, pid);
+    public static ProcFSDCConfigurationAccessor getDefault() {
+        ProcFSDCConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
         }
 
-        // TODO: fixme (this is to switch endian if required... but now bad
-        // method is used)
-        reader.init(pid);
-
-        return reader;
+        try {
+            Class.forName(ProcFSDCConfiguration.class.getName(), true, ProcFSDCConfiguration.class.getClassLoader());
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
+
+    public static void setDefault(ProcFSDCConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public abstract int procInfoSampling(ProcFSDCConfiguration configuration);
+
+    public abstract int msaSampling(ProcFSDCConfiguration configuration);
 }

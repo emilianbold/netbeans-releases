@@ -36,30 +36,30 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
-import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
-import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+import java.util.concurrent.TimeUnit;
 
-@ServiceProviders({
-    @ServiceProvider(service = DataCollectorFactory.class),
-    @ServiceProvider(service = IndicatorDataProviderFactory.class)
-})
-public class ProcFSDataCollectorFactory implements DataCollectorFactory<ProcFSDCConfiguration>,
-        IndicatorDataProviderFactory<ProcFSDCConfiguration> {
+/**
+ * This interface is supposed to contain additional information about the process
+ * also for now it is supposed that this information is created once and doesn't
+ * changed... (?)
+ * I.e. for now, if it is created - all calls to getters are fast.
+ *
+ * @author ak119685
+ */
+public interface ProcessInfo {
 
-    public ProcFSDataCollector create(ProcFSDCConfiguration configuration) {
-        return new ProcFSDataCollector(configuration);
-    }
-
-    public String getID() {
-        return ProcFSDCConfiguration.ID;
-    }
-
-    public void reset() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    /**
+     * Currently this method returns the timestamp of process creation.
+     * This is NOT an astronomic timestamp. It is some time offset, starting
+     * from some point... (like System.nanoTime())
+     *
+     * But it is guaranteed that timer starting point is the same for different
+     * processes on the same ExecutionEnvironment
+     *
+     * @param unit - returned timestamp units.
+     * @return timestamp of process creation
+     */
+    long getCreationTimestamp(TimeUnit unit);
 }

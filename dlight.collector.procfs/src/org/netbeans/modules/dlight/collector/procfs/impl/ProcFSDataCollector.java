@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.collector.procfs.impl;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -63,10 +63,10 @@ import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.collector.procfs.ProcFSDCConfiguration;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables.msa;
-import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
 import org.netbeans.modules.dlight.procfs.api.LWPUsage;
 import org.netbeans.modules.dlight.procfs.api.PStatus;
 import org.netbeans.modules.dlight.procfs.api.PStatus.ThreadsInfo;
@@ -247,7 +247,8 @@ public class ProcFSDataCollector
             return;
         }
 
-        final ProcReader reader = ProcReaderFactory.getReader(target.getExecEnv(), (AttachableTarget) target);
+        final int pid = ((AttachableTarget) target).getPID();
+        final ProcReader reader = ProcReaderFactory.getReader(target.getExecEnv(), pid);
 
         mainLoop = DLightExecutorService.scheduleAtFixedRate(
                 new FetchAndUpdateTask(reader),
