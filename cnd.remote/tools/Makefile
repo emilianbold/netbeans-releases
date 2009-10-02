@@ -115,13 +115,16 @@ all: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller
 ${BUILD}/%.o : %.c
 	gcc ${CFLAGS} -o $@ $<
 
+PRELOAD_OBJFILES := ${BUILD}/rfs_preload.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
+CONTROLLER_OBJFILES := ${BUILD}/rfs_controller.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_filedata.o
+
 #library:
-${DIST}/rfs_preload.so: ${BUILD}/rfs_preload.o ${BUILD}/rfs_preload_socks.o ${BUILD}/rfs_util.o
-	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${BUILD}/rfs_preload.o ${BUILD}/rfs_preload_socks.o ${BUILD}/rfs_util.o
+${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
+	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 
 #appliction:
-${DIST}/rfs_controller: ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o ${BUILD}/rfs_util.o
-	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${BUILD}/rfs_controller.o ${BUILD}/rfs_filedata.o ${BUILD}/rfs_util.o
+${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
+	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
 
 clean:
 	rm -rf ${BUILD} ${DIST}
@@ -141,11 +144,13 @@ check:
 
 
 test: test_build
-	${BUILD}/rfs_filedata_test
+	${BUILD}/test_rfs_filedata
 
 test_build: all
-	gcc ${CFLAGS} -o ${BUILD}/rfs_filedata_test.o test/rfs_filedata_test.c
-	gcc ${LDFLAGS_APP} -o ${BUILD}/rfs_filedata_test ${BUILD}/rfs_filedata.o ${BUILD}/rfs_filedata_test.o
+	#gcc ${CFLAGS} -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
+	#gcc ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
+	gcc ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
+	gcc ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 
 test_platform:
 	@echo "UNAME_S = [${UNAME_S}]"

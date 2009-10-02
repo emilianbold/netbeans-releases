@@ -61,9 +61,6 @@
 static const char *my_dir = 0;
 static int my_dir_len;
 
-//static char* curr_dir = 0;
-//static int curr_dir_len = 0;
-
 #define get_real_addr(name) _get_real_addr(#name, name);
 
 static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
@@ -187,29 +184,36 @@ static int on_open(const char *path, int flags) {
         trace("On open %s: sd == -1\n", path);
     } else {
         //struct rfs_request;
-        int path_len = strlen(path);
         trace_sd("sending request");
-        trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
-        int sent = send(sd, path, path_len, 0);
-        if (sent == -1) {
+        trace("Sending \"%s\" to sd=%d\n", path, sd);
+        enum sr_result send_res = pkg_send(sd, pkg_request, path);
+        if (send_res == sr_failure) {
             perror("send");
-        } else {
-            trace("%d bytes sent to sd=%d\n", sent, sd);
-            char response_buf[512];
-            memset(response_buf, 0, sizeof(response_buf));
-            int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
-            if (response_size == -1) {
-                perror("receive");
-                // TODO: correct error processing
-            } else {
-                trace("Got %s for %s, flags=%d, sd=%d\n", response_buf, path, flags, sd);
-                if (response_buf[0] == response_ok) {
-                    result = true;
-                } else if (response_buf[0] == response_failure) {
-                    result = false;
+        } else if (send_res == sr_reset) {
+            perror("Connection reset by peer when sending request");
+        } else { // success
+            trace("Request for \"%s\" sent to sd=%d\n", path, sd);
+            const int maxsize = 256;
+            char buffer[maxsize + sizeof(int)];
+            struct package *pkg = (struct package *) &buffer;
+            enum sr_result recv_res = pkg_recv(sd, pkg, maxsize);
+            if (recv_res == sr_failure) {
+                perror("Error receiving response");
+            } else if (recv_res == sr_reset) {
+                perror("Connection reset by peer when receiving response");
+            } else { // success
+                if (pkg->kind == pkg_reply) {
+                    trace("Got %s for %s, flags=%d, sd=%d\n", pkg->data, path, flags, sd);
+                    if (pkg->data[0] == response_ok) {
+                        result = true;
+                    } else if (pkg->data[0] == response_failure) {
+                        result = false;
+                    } else {
+                        trace("Protocol error, sd=%d\n", sd);
+                        result = false;
+                    }
                 } else {
-                    trace("Protocol error, sd=%d\n", sd);
-                    result = false;
+                    trace("Protocol error: get pkg_kind %d instead of %d\n", pkg->kind, pkg_reply);
                 }
             }
         }
@@ -244,7 +248,11 @@ on_startup(void) {
         strcat(p, "/");
         my_dir = p;
     }
-    trace("RFS startup; my dir: %s\n", my_dir);
+
+    static int startup_count = 0;
+    startup_count++;
+    trace("RFS startup (%d) my dir: %s\n", startup_count, my_dir);
+
     release_socket();
     trace_sd("startup");
 
@@ -268,7 +276,9 @@ on_startup(void) {
 void
 __attribute__((destructor))
 on_shutdown(void) {
-    trace("RFS shutdown\n");
+    static int shutdown_count = 0;
+    shutdown_count++;
+    trace("RFS shutdown (%d)\n", shutdown_count);
     trace_shutdown();
     release_socket();
 }

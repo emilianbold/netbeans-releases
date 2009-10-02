@@ -37,57 +37,69 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include <sys/socket.h>
 
 #include "rfs_util.h"
+#include "rfs_protocol.h"
 
-#if TRACE
+// Actual package layout:
+//  char kind;
+//  char[2] 2-bytes size representation (high byte first)
+//  char[] data 0-32K bytes null-terminated string
 
-static const char* pattern = "%u #%s[%d]: ";
-static const char* prefix = 0;
-
-static unsigned long get_timestamp() {
-    struct timespec tp;
-    clock_gettime(CLOCK_REALTIME, &tp);
-    return tp.tv_sec*1000000000+tp.tv_nsec;
-}
-
-FILE *trace_file;
-void trace(const char *format, ...) {
-    fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
-    va_list args;
-    va_start (args, format);
-    vfprintf(trace_file, format, args);
-    va_end (args);
-    fflush(trace_file);
-}
-
-void trace_startup(const char* _prefix, const char* env_var) {
-    prefix = _prefix;
-    char *file_name = env_var ? getenv(env_var) : NULL;
-    if (file_name) {
-        trace_file = fopen(file_name, "a");
-        if (trace_file) {
-            fprintf(stderr, "Redirecting trace to %s\n", file_name);
-            fprintf(trace_file, "\n\n--------------------\n");
-            fflush(trace_file);
+static int do_send(int sd, const char* buffer, int size) {
+    int sent = 0;
+    while (sent < size) {
+        int sent_now = send(sd, buffer + sent, size - sent, 0);
+        if (sent_now == -1) {
+            return false;
         } else {
-            fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
-            trace_file = stderr;
+            sent += sent_now;
         }
-    } else {
-        trace_file = stderr;
     }
-    char dir[PATH_MAX];
-    getcwd(dir, sizeof dir);
-    trace("started in %s\n", dir);
+    return true;
 }
 
-void trace_shutdown() {
-    if (trace_file && trace_file != stderr) {
-        fclose(trace_file);
+enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf) {
+    int size = strlen(buf) + 1;
+    char header[3];
+    header[0] = (char) kind;
+    header[1] = size & 0xff00; // high byte
+    header[2] = size & 0x00ff; // low byte
+    if (do_send(sd, header, sizeof header)) {
+        if (do_send(sd, buf, size)) {
+            return sr_success;
+        }
     }
+    return sr_failure;
 }
 
-#endif
+enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
+    // clear pkg
+    p->kind = pkg_null;
+    memset(p->data, 0, max_data_size);
+    // get kind and size
+    char buffer[3];
+    int received;
+    received = recv(sd, buffer, 3, 0); // 3-rd is for kind
+    if (received != 3) {
+        return sr_failure;
+    }
+    p->kind = (enum pkg_kind) buffer[0];
+    int size = buffer[1]*256 + buffer[2];
+    if (size > max_data_size) {
+        errno = EMSGSIZE;
+        return sr_failure;
+    }
+    received = recv(sd, p->data, size, 0);
+    if (received == 0) {
+        return sr_reset;
+    }
+    if (received != size) {
+        return sr_failure;
+    }
+    return sr_success;
+}

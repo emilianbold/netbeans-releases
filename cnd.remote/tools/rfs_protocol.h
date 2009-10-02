@@ -47,4 +47,31 @@ enum response_kind {
     response_failure = '0'
 };
 
+enum pkg_kind {
+    pkg_null = '0',
+    pkg_handshake = 'h',
+    pkg_request = 'q',
+    pkg_reply = 'r'
+};
+
+/**
+ * The below is the representation of a package in program.
+ * This does not mean its fields has exactly such size when passing via sockets.
+ * That's pkg_send and pkg_recv that is responsibe for how the data is represented when passing via sockets.
+ */
+struct package {
+    enum pkg_kind kind;
+    char data[];
+};
+
+enum sr_result {
+    sr_success = 1,
+    sr_failure = 0,
+    sr_reset = -1 // reset by peer
+};
+
+enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf);
+
+enum sr_result pkg_recv(int sd, struct package* p, short max_data_size);
+
 #endif // _RFS_CONTROLLER_H
