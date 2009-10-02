@@ -326,6 +326,11 @@ public final class KenaiProject {
         return members;
     }
 
+    public synchronized KenaiUser getOwner() throws KenaiException {
+        fetchDetailsIfNotAvailable();
+        return KenaiUser.forName(data.owner);
+    }
+
     /**
      * get features of given type
      * @param type

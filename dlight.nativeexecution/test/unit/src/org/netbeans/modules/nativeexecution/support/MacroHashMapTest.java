@@ -80,9 +80,7 @@ public class MacroHashMapTest {
     @Test
     public void test() {
         System.out.println("put"); // NOI18N
-        MacroExpander expander = MacroExpanderFactory.getExpander(
-                ExecutionEnvironmentFactory.getLocal());
-        MacroMap m = new CaseInsensitiveMacroMap(expander);
+        MacroMap m = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
 
         m.put("PAtH", "/bin:$PATH:/home/$USER"); // NOI18N
         m.put("USER", "UserName"); // NOI18N
@@ -92,7 +90,7 @@ public class MacroHashMapTest {
 
         System.out.println(m.toString());
 
-        m = new MacroMap(expander);
+        m = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
 
         m.put("PAtH", "/bin:$PATH:/home/$USER"); // NOI18N
         m.put("USER", "UserName"); // NOI18N

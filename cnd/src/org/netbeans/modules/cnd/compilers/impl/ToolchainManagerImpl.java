@@ -645,6 +645,7 @@ public final class ToolchainManagerImpl {
                         ScannerDescriptor scanner = descriptor.getScanner();
                         if (scanner != null) {
                             element = doc.createElement("scanner"); // NOI18N
+                            element.setAttribute("id", scanner.getID()); // NOI18N
                             writeScanner(doc, element, scanner);
                             root.appendChild(element);
                         }
@@ -1011,6 +1012,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("pattern", scanner.getLeaveDirectoryPattern()); // NOI18N
             element.appendChild(c);
         }
+        for (String pattern : scanner.getFilterOutPatterns()) {
+            c = doc.createElement("filter_out"); // NOI18N
+            c.setAttribute("pattern", pattern); // NOI18N
+            element.appendChild(c);
+        }
     }
 
     private void writeLinker(Document doc, Element element, LinkerDescriptor linker) {
@@ -1249,12 +1255,14 @@ public final class ToolchainManagerImpl {
      */
     static final class Scanner {
 
+        String id;
         List<ErrorPattern> patterns = new ArrayList<ErrorPattern>();
         String changeDirectoryPattern;
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
         String stackHeaderPattern;
         String stackNextPattern;
+        List<String> filterOut = new ArrayList<String>();
     }
 
     /**
@@ -1698,11 +1706,15 @@ public final class ToolchainManagerImpl {
                 }
                 return;
             }
-            if (path.indexOf(".scanner.") > 0) { // NOI18N
+            if (path.endsWith(".scanner")) { // NOI18N
                 if (!isScanerOverrided) {
                     v.scanner = new Scanner();
                     isScanerOverrided = true;
+		    v.scanner.id = getValue(attributes, "id"); // NOI18N
                 }
+		return;
+	    }
+            if (path.indexOf(".scanner.") > 0) { // NOI18N
                 Scanner s = v.scanner;
                 if (path.endsWith(".error")) { // NOI18N
                     ErrorPattern e = new ErrorPattern();
@@ -1726,6 +1738,8 @@ public final class ToolchainManagerImpl {
                     s.stackHeaderPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".stack_next")) { // NOI18N
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
+                } else if (path.endsWith(".filter_out")) { // NOI18N
+                    s.filterOut.add(getValue(attributes, "pattern")); // NOI18N
                 }
                 return;
             }
@@ -2332,12 +2346,17 @@ public final class ToolchainManagerImpl {
 
         private Scanner s;
         private List<ScannerPattern> patterns;
+        private List<String> filterOut;
 
         private ScannerDescriptorImpl(Scanner s) {
             this.s = s;
         }
 
-        public List<ScannerPattern> getPatterns() {
+	public String getID() {
+	    return s.id;
+	}
+
+	public List<ScannerPattern> getPatterns() {
             if (patterns == null) {
                 patterns = new ArrayList<ScannerPattern>();
                 for (ErrorPattern p : s.patterns) {
@@ -2366,6 +2385,16 @@ public final class ToolchainManagerImpl {
         public String getStackNextPattern() {
             return s.stackNextPattern;
         }
+
+	public List<String> getFilterOutPatterns() {
+	    if (filterOut == null){
+                filterOut = new ArrayList<String>();
+		if (s.filterOut != null) {
+		    filterOut.addAll(s.filterOut);
+		}
+	    }
+	    return filterOut;
+	}
     }
 
     private static final class ScannerPatternImpl implements ScannerPattern {

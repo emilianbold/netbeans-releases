@@ -93,6 +93,7 @@ public final class DLightConfiguration {
     private final DLightConfigurationOptions configurationOptions;
     private final String displayedName;
     private final boolean isHidden;
+    private final boolean isSystem;
     private final DLightConfigurationOptionsListener listener = new DLightConfigurationOptionsListenerImpl();
 
     static DLightConfiguration create(FileObject configurationRoot) {
@@ -115,6 +116,7 @@ public final class DLightConfiguration {
         this.configurationOptions = getConfigurationOptions();
         this.displayedName = configurationRoot.getAttribute("displayedName") == null ? configurationRoot.getName() : (String)configurationRoot.getAttribute("displayedName");//NOI18N
         this.isHidden = configurationRoot.getAttribute("hidden") != null && (Boolean)configurationRoot.getAttribute("hidden"); // NOI18N
+        this.isSystem = configurationRoot.getAttribute("system") != null && (Boolean)configurationRoot.getAttribute("system"); // NOI18N
 
     }
 
@@ -122,6 +124,9 @@ public final class DLightConfiguration {
         return displayedName;
     }
 
+    boolean isSystem(){
+        return isSystem;
+    }
 
 
     final ToolsConfiguration getToolsConfiguration(){

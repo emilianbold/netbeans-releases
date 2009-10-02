@@ -64,6 +64,7 @@ public class DynamicVerifyTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().
             addTest(DynamicVerifyTest.class).
             addTest(ProjectTemplatesCheck.class).
+            addTest(LayersCheck.class).
             addTest(FilesAndAttributesCheck.class, "testGetAllTemplates", "testCheckAllTemplatesPretest").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggers").
             addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersReal").

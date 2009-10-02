@@ -132,12 +132,6 @@ public class DLightConfigurationUIWrapper {
         return custom;
     }
 
-    /**
-     * @param custom the custom to set
-     */
-    public void setCustom(boolean custom) {
-        this.custom = custom;
-    }
 
     /**
      * @return the dLightConfiguration

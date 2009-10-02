@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -829,20 +829,20 @@ public class Utilities {
     private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
         if (mgr == null) {
             mgr = Main.getModuleSystem().getManager();
-        }
-        assert mgr != null;
-        if (mgr == null || specificationVersion == null) {
-            return mgr != null ? mgr.get(codeNameBase) : null;
-        } else {
-            Module m = mgr.get(codeNameBase);
-            if (m == null) {
+            assert mgr != null;
+            if (mgr == null) {
                 return null;
-            } else {
-                if (m.getSpecificationVersion () == null) {
-                    return null;
-                }
-                return m.getSpecificationVersion ().compareTo (specificationVersion) >= 0 ? m : null;
             }
+        }
+        Module m = mgr.get(codeNameBase);
+        if (specificationVersion == null || m == null) {
+            return m;
+        } else {
+            SpecificationVersion version = m.getSpecificationVersion();
+            if (version == null) {
+                return null;
+            }
+            return version.compareTo(specificationVersion) >= 0 ? m : null;
         }
     }
     

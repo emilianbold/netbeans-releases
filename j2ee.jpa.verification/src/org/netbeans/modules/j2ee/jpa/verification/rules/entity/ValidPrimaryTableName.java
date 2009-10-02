@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -66,23 +66,25 @@ public class ValidPrimaryTableName extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        String entityName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
-        
-        if (entityName.length() == 0){
+        String tableName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
+        String entityName = ((Entity) ctx.getModelElement()).getName();
+        if (tableName.length() == 0){
             return new ErrorDescription[]{createProblem(subject, ctx,
                     NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier"))};
         }
         
-        if (JavaPersistenceQLKeywords.isKeyword(entityName)){
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"))};
-        }
-        
-        if (SQLKeywords.isSQL99ReservedKeyword(entityName)){
+        if (SQLKeywords.isSQL99ReservedKeyword(tableName)){
             return new ErrorDescription[]{createProblem(subject, ctx,
                     NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword"),
                     Severity.WARNING)};
         }
+        
+        if (JavaPersistenceQLKeywords.isKeyword(entityName)){
+            return new ErrorDescription[]{createProblem(subject, ctx,
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"),
+                    Severity.WARNING)};
+        }
+        
         
         return null;
     }
