@@ -89,7 +89,7 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
         return sr_failure;
     }
     p->kind = (enum pkg_kind) buffer[0];
-    int size = buffer[1]*256 + buffer[2];
+    int size =  ((0x0FF & buffer[1])) * 256 + ((0x0FF & buffer[2]));
     if (size > max_data_size) {
         errno = EMSGSIZE;
         return sr_failure;
