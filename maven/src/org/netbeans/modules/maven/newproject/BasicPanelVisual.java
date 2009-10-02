@@ -165,19 +165,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 Validators.JAVA_PACKAGE_NAME));
         vg.add(projectNameTextField, Validators.merge(true,
                 MavenValidators.createArtifactIdValidators(),
-                Validators.REQUIRE_VALID_FILENAME,
-                new Validator<String>() {
-                    public boolean validate(Problems problems, String compName, String model) {
-                        File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText()), model).getAbsoluteFile());
-                        File[] kids = destFolder.listFiles();
-                        if (destFolder.exists() && kids != null && kids.length > 0) {
-                            // Folder exists and is not empty
-                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
-                            return false;
-                        }
-                        return true;
-                    }
-                }));
+                Validators.REQUIRE_VALID_FILENAME
+              ));
 
         vg.add(projectLocationTextField, Validators.merge(true,
 //                        Validators.FILE_MUST_BE_DIRECTORY,
@@ -196,13 +185,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                             problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path"));
                             return false;
                         }
-                        File destFolder = FileUtil.normalizeFile(new File(new File(model), projectNameTextField.getText()).getAbsoluteFile());
-                        File[] kids = destFolder.listFiles();
-                        if (destFolder.exists() && kids != null && kids.length > 0) {
-                            // Folder exists and is not empty
-                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
-                            return false;
-                        }
                         return true;
                     }
                 }));
@@ -217,6 +199,14 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                                  getCommandLineMavenVersion()));
                     return false;
                 }
+                File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText().trim()), projectNameTextField.getText().trim()).getAbsoluteFile());
+                File[] kids = destFolder.listFiles();
+                if (destFolder.exists() && kids != null && kids.length > 0) {
+                    // Folder exists and is not empty
+                    problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
+                    return false;
+                }
+
                 return true;
             }
         });
@@ -783,8 +773,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (txtPackage.getDocument() == doc) {
             changedPackage = txtPackage.getText().trim().length() != 0;
         }
-        
-        panel.fireChangeEvent(); // Notify that the panel changed
+        if (vg != null) {
+            vg.validateAll(); // Notify that the panel changed
+        }
     }
     
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
