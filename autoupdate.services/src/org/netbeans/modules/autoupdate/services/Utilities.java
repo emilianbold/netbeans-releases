@@ -473,23 +473,34 @@ public class Utilities {
     public static Set<UpdateElement> findRequiredUpdateElements (UpdateElement element,
             Collection<ModuleInfo> infos,
             Set<Dependency> brokenDependencies,
-            boolean aggressive) {
-        UpdateElementImpl el = Trampoline.API.impl(element);
+            boolean topAggressive) {
+
         Set<UpdateElement> retval = new HashSet<UpdateElement> ();
-        switch (el.getType ()) {
+        switch (element.getUpdateUnit().getType ()) {
         case KIT_MODULE :
         case MODULE :
-            Set<Dependency> deps = new HashSet<Dependency> (((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ());
+            ModuleUpdateElementImpl el = (ModuleUpdateElementImpl) Trampoline.API.impl(element);
+            Set<Dependency> deps = new HashSet<Dependency> (el.getModuleInfo ().getDependencies ());
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
             Set<Dependency> newones;
+            
+            int max_counter = el.getType().equals(UpdateManager.TYPE.KIT_MODULE) ? 1 : 0;
+            int counter = max_counter;
+            boolean aggressive = topAggressive && counter > 0;
+
             while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element, aggressive)).isEmpty ()) {
                 deps = newones;
+
+                aggressive = aggressive && (counter --) > 0;
             }
-            
+
             Set<Dependency> moreBroken = new HashSet<Dependency> ();
             Set<ModuleInfo> tmp = new HashSet<ModuleInfo> (availableInfos);
-            
+
             Set<UpdateElement> more;
+            
+            counter = max_counter;
+            aggressive = topAggressive && counter > 0;
             while (retval.addAll (more = handleBackwardCompatability (tmp, moreBroken, aggressive))) {
                 if (! moreBroken.isEmpty ()) {
                     brokenDependencies.addAll (moreBroken);
@@ -500,15 +511,17 @@ public class Utilities {
                     //infos.addAll (Trampoline.API.impl (el).getModuleInfos ());
                     tmp.add (((ModuleUpdateElementImpl) Trampoline.API.impl (e)).getModuleInfo ());
                 }
+                aggressive = aggressive && (counter--) > 0;
             }
             if (! moreBroken.isEmpty ()) {
                 brokenDependencies.addAll (moreBroken);
             }
-            
+
             break;
         case STANDALONE_MODULE :
         case FEATURE :
-            FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) el;
+            FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) Trampoline.API.impl(element);
+            aggressive = topAggressive;
             for (ModuleUpdateElementImpl module : feature.getContainedModuleElements ()) {
                 retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies, aggressive));
             }
@@ -517,7 +530,7 @@ public class Utilities {
             getLogger ().log (Level.INFO, "CUSTOM_HANDLED_COMPONENT doesn't care about required elements."); // XXX
             break;
         default:
-            assert false : "Not implement for type " + el.getType () + " of UpdateElement " + el;
+            assert false : "Not implement for type " + element.getUpdateUnit() + " of UpdateElement " + element;
         }
         return retval;
     }
@@ -635,7 +648,7 @@ public class Utilities {
                 boolean matched = false;
                 if (u != null) {
                     boolean aggressive = beAggressive;
-                    if (aggressive && isFirstClassModule(el.getUpdateUnit())) {
+                    if (aggressive && (isFirstClassModule(el.getUpdateUnit()) || u.getType() ==  UpdateManager.TYPE.KIT_MODULE)) {
                         aggressive = false;
                     }
                     // follow aggressive updates strategy
