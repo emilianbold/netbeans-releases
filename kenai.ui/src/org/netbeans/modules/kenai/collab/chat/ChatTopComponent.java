@@ -321,6 +321,14 @@ public class ChatTopComponent extends TopComponent {
         }
     }
 
+    public void insertToActiveChat(String message) {
+        Component selectedComponent = chats.getSelectedComponent();
+        if (selectedComponent instanceof ChatPanel) {
+            ChatPanel chatPanel = (ChatPanel) selectedComponent;
+            chatPanel.insertToInputArea(message);
+        }
+    }
+
     public static final String createPrivateName(String name) {
         return "private." + name;
     }
