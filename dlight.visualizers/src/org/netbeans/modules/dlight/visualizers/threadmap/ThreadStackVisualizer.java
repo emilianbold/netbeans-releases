@@ -45,7 +45,6 @@ import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
@@ -87,11 +86,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private DLightSession session;
     private List<DataFilter> filters;
 
-    private static final class Lock {
-    }
-
-    private static final class UiLock {
-    }
+    private static final class Lock { }
+    private static final class UiLock { }
     private final Object lock = new Lock();
     private final Object uiLock = new UiLock();
     private boolean needUpdate = false;
@@ -160,7 +156,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                     UIThread.invoke(new Runnable() {
 
                         public void run() {
-                            synchronized (uiLock) {
+                            synchronized(uiLock){
                                 stackPanel.clean();
                                 stackPanel.setRootVisible(rootName);
                                 for (int i = 0, size = snapshots.length; i < size; i++) {
@@ -227,7 +223,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             if (!needUpdate) {
                 return;
             }
-            Collection<ThreadDumpFilter> dumpFilters = getDataFilter(filters.toArray(new DataFilter[0]), ThreadDumpFilter.class);
+            Collection<ThreadDumpFilter> dumpFilters = getDataFilter(ThreadDumpFilter.class);
             if (dumpFilters != null && !dumpFilters.isEmpty()) {
 
                 //get first
@@ -258,22 +254,23 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
     }
 
-    private <T extends DataFilter> Collection<T> getDataFilter(final DataFilter[] dataFilters, Class<T> clazz) {
-        final Collection<T> result = new ArrayList<T>();
-        for (DataFilter f : dataFilters) {
-            if (f.getClass() == clazz) {
-                result.add(clazz.cast(f));
-            } else {
-                try {
-                    Class<? extends T> r = f.getClass().asSubclass(clazz);
+    private <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
+        synchronized (lock) {
+            Collection<T> result = new ArrayList<T>();
+            for (DataFilter f : filters) {
+                if (f.getClass() == clazz) {
                     result.add(clazz.cast(f));
-                } catch (ClassCastException e) {
+                } else {
+                    try {
+                        Class<? extends T> r = f.getClass().asSubclass(clazz);
+                        result.add(clazz.cast(f));
+                    } catch (ClassCastException e) {
+                    }
+
                 }
-
             }
+            return result;
         }
-        return result;
-
     }
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
@@ -295,8 +292,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         synchronized (lock) {
             //check new and old one's
             this.filters = newSet;
-
-            needUpdate = !getDataFilter(filters.toArray(new DataFilter[0]), ThreadDumpFilter.class).isEmpty();
+            needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
         }
 
 
