@@ -70,7 +70,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     private DataFilterManager manager;
     private final ChangeListener startTimeChangeListener = new StartTimeSpinnerListener();
     private final ChangeListener endTimeChangeListener = new EndTimeSpinnerListener();
-    private final Object uiLock = new String("TimeIntervalPanel.uiLock");//NOI8N
+    private final Object uiLock = new String("TimeIntervalPanel.uiLock"); // NOI18N
 
     /** Creates new form TimeIntervalPanel */
     public TimeIntervalPanel(DataFilterManager manager) {
