@@ -53,6 +53,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -110,6 +111,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     private void setEmptyContent() {
+	assert SwingUtilities.isEventDispatchThread();
         cardLayout.show(this, "empty");//NOI18N
         emptyPanel.removeAll();
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
@@ -157,6 +159,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
                         public void run() {
                             synchronized(uiLock){
+				assert SwingUtilities.isEventDispatchThread();
                                 stackPanel.clean();
                                 stackPanel.setRootVisible(rootName);
                                 for (int i = 0, size = snapshots.length; i < size; i++) {
@@ -291,10 +294,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
         synchronized (lock) {
             //check new and old one's
-            this.filters = newSet;
+            this.filters = new ArrayList<DataFilter>(newSet);
             needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
         }
-
-
     }
 }
