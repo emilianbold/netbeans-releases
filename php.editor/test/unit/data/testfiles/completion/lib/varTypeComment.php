@@ -14,7 +14,7 @@ function printMyName() {
     /* @var $hello VarTypeCommentTest */
     $hello = new DOMAttr();
 
-    /* @var $hello2 type */
+    /*second comment*//* @var $hello2 type */
     $hello2 = get_browser();
 }
 ?>

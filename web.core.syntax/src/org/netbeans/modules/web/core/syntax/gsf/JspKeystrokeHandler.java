@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.openide.util.Exceptions;
 
 public class JspKeystrokeHandler implements KeystrokeHandler {
 
@@ -61,47 +62,75 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
+    //runs w/o document readlock
+    //runs in AWT, we can safely exit the document lock before reformatting
     @Override
-    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+    public boolean afterCharInserted(final Document doc, final int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         if ('>' != ch) {
             return false;
         }
-        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, JspTokenId.language());
-        if (ts == null) {
-            return false;
-        }
-        ts.move(caretOffset);
-        boolean found = false;
-        while (ts.movePrevious()) {
-            if (ts.token().id() == JspTokenId.SYMBOL && (
-                    ts.token().text().toString().equals("<") ||
-                    ts.token().text().toString().equals("</"))) {
-                found = true;
-                break;
-            }
-            if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
-                break;
-            }
-            if (ts.token().id() != JspTokenId.ATTRIBUTE &&
-                ts.token().id() != JspTokenId.ATTR_VALUE &&
-                ts.token().id() != JspTokenId.TAG &&
-                ts.token().id() != JspTokenId.ENDTAG &&
-                ts.token().id() != JspTokenId.SYMBOL &&
-                ts.token().id() != JspTokenId.EOL &&
-                ts.token().id() != JspTokenId.WHITESPACE) {
-                break;
-            }
-        }
-        if (!found) {
-            return false;
-        }
-        int lineStart = Utilities.getRowFirstNonWhite((BaseDocument)doc, ts.offset());
-        if (lineStart != ts.offset()) {
-            return false;
-        }
-        final Indent indent = Indent.get(doc);
-        indent.reindent(lineStart, caretOffset); //already locked
 
+        final int[] lineStart = new int[1];
+        ((BaseDocument) doc).render(new Runnable() {
+
+            public void run() {
+                TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, caretOffset, JspTokenId.language());
+                if (ts == null) {
+                    return;
+                }
+                ts.move(caretOffset);
+                boolean found = false;
+                while (ts.movePrevious()) {
+                    if (ts.token().id() == JspTokenId.SYMBOL && (ts.token().text().toString().equals("<") ||
+                            ts.token().text().toString().equals("</"))) {
+                        found = true;
+                        break;
+                    }
+                    if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
+                        break;
+                    }
+                    if (ts.token().id() != JspTokenId.ATTRIBUTE &&
+                            ts.token().id() != JspTokenId.ATTR_VALUE &&
+                            ts.token().id() != JspTokenId.TAG &&
+                            ts.token().id() != JspTokenId.ENDTAG &&
+                            ts.token().id() != JspTokenId.SYMBOL &&
+                            ts.token().id() != JspTokenId.EOL &&
+                            ts.token().id() != JspTokenId.WHITESPACE) {
+                        break;
+                    }
+                }
+                if (!found) {
+                    return;
+                }
+                try {
+                    lineStart[0] = Utilities.getRowFirstNonWhite((BaseDocument) doc, ts.offset());
+                    if (lineStart[0] != ts.offset()) {
+                        lineStart[0] = -1; //do not reindent
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+        });
+
+        if(lineStart[0] != -1) {
+            final Indent indent = Indent.get(doc);
+            indent.lock();
+            try {
+                ((BaseDocument)doc).runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            indent.reindent(lineStart[0], caretOffset); 
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } finally {
+                indent.unlock();
+            }
+        }
         return false;
     }
 

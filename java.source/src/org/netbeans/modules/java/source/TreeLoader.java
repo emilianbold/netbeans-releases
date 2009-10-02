@@ -144,7 +144,8 @@ public class TreeLoader extends LazyTreeLoader {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
                 JavacTaskImpl jti = context.get(JavacTaskImpl.class);
                 if (fo != null && jti != null) {
-                    Log.instance(context).nerrors = 0;
+                    final Log log = Log.instance(context);
+                    log.nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                     try {
@@ -154,6 +155,7 @@ public class TreeLoader extends LazyTreeLoader {
                             dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                         return true;
                     } finally {
+                        log.nerrors = 0;
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
                             dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());
                         }

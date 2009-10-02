@@ -606,10 +606,23 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             //TODO: global variables or vars from other files
             //assert varN != null : CodeUtils.extractVariableName((Variable)leftHandSide);
             if (varN != null) {
-                //Map<String, VariableNameImpl> allAssignments = vars.get(scope);
+                Map<String, AssignmentImpl> allAssignments = new HashMap<String, AssignmentImpl>();
+                if (scope instanceof VariableScope) {
+                    VariableScope variableScope = (VariableScope)scope;
+                    Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
+                    for (VariableName variableName : declaredVariables) {
+                        if (variableName instanceof VariableNameImpl) {
+                            VariableNameImpl vni = (VariableNameImpl) variableName;
+                            AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
+                            if (ai != null) {
+                                allAssignments.put(vni.getName(), ai);
+                            }
+                        }
+                    }
+                }
                 Variable var = ((Variable) leftHandSide);
                 varN.createElement(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
-                        Collections.<String, AssignmentImpl>emptyMap());
+                        allAssignments);
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
             }
         } else if (leftHandSide instanceof FieldAccess) {

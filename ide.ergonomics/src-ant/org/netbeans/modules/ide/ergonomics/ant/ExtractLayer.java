@@ -59,6 +59,8 @@ import javax.imageio.ImageIO;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
@@ -77,6 +79,7 @@ import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FileNameMapper;
 import org.apache.tools.zip.ZipEntry;
+import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -311,16 +314,28 @@ implements FileNameMapper {
         copy.execute();
 
         try {
-            URL u = ExtractLayer.class.getResource("relative-refs.xsl");
-            StreamSource xslt = new StreamSource(u.openStream());
+            URL fu = ExtractLayer.class.getResource("full-paths.xsl");
+            URL ru = ExtractLayer.class.getResource("relative-refs.xsl");
+            StreamSource fxslt = new StreamSource(fu.openStream());
+            StreamSource rxslt = new StreamSource(ru.openStream());
 
             TransformerFactory fack = TransformerFactory.newInstance();
-            Transformer t = fack.newTransformer(xslt);
-            t.setParameter("cluster.name", clusterName);
+            Transformer ft = fack.newTransformer(fxslt);
+            Transformer rt = fack.newTransformer(rxslt);
+            rt.setParameter("cluster.name", clusterName);
 
             StreamSource orig = new StreamSource(layer);
-            StreamResult gen = new StreamResult(new File(output, "layer.xml"));
-            t.transform(orig, gen);
+            DOMResult tmpRes = new DOMResult();
+            ft.transform(orig, tmpRes);
+
+            Node filesystem = tmpRes.getNode().getFirstChild();
+            String n = filesystem.getNodeName();
+            assert n.equals("filesystem") : n;
+            if (filesystem.getChildNodes().getLength() > 0) {
+                DOMSource tmpSrc = new DOMSource(tmpRes.getNode());
+                StreamResult gen = new StreamResult(new File(output, "layer.xml"));
+                rt.transform(tmpSrc, gen);
+            }
         } catch (Exception ex) {
             throw new BuildException(ex);
         }

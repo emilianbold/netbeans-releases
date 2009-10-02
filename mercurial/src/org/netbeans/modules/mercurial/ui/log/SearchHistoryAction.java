@@ -41,81 +41,64 @@
 
 package org.netbeans.modules.mercurial.ui.log;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import javax.swing.*;
 import java.io.File;
-import java.util.*;
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
 
 /**
  * Opens Search History Component.
  * 
  * @author Maros Sandor
  */
-public class SearchHistoryAction extends ContextAction {
-    private final VCSContext context;
+public abstract class SearchHistoryAction extends ContextAction {
     static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
-        
-    public SearchHistoryAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-    
+    private final VCSContext context;
+    private File repositoryRoot;
+    private File[] files;
+
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_SearchHistory"; // NOI18N
     }
 
-    protected int getFileEnabledStatus() {
-        return FILE_ENABLED_STATUS;
+    public SearchHistoryAction (VCSContext context) {
+        this.context = context;
     }
 
-    protected int getDirectoryEnabledStatus() {
-        return DIRECTORY_ENABLED_STATUS;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
+    protected VCSContext getContext () {
+        return context;
     }
 
-    public void performAction(ActionEvent e) {
-        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", Utils.getContextDisplayName(context)); // NOI18N
-        openHistory(context, title ); 
-    }
-    
-    public static void openHistory(final VCSContext context, final String title) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (context == null) return;
-                outputSearchContextTab(context, "MSG_Log_Title", false);
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
-                tc.setDisplayName(title);
-                tc.open();
-                tc.requestActive();
-                Set<File> s = context.getFiles();
-                if(s != null) {
-                    File[] files = s.toArray(new File[s.size()]);
-                    if (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files)) {
-                        tc.search();
-                    }
-                }
-            }
-        });
+    @Override
+    public boolean isEnabled() {
+        return HgUtils.isFromHgRepository(context);
     }
 
-    private static void outputSearchContextTab(VCSContext context, String title, boolean bRootOnly) {
-        File root = HgUtils.getRootFile(context);
-        String loggerId = (root != null) ? new HgURL(root).toHgCommandUrlStringWithoutUserInfo()
-                                               : null;
+    protected static void outputSearchContextTab (File repositoryRoot, String title) {
+        OutputLogger logger = openLogger(repositoryRoot, title);
+        logger.output(NbBundle.getMessage(SearchHistoryAction.class, "MSG_LOG_ROOT_CONTEXT_SEP")); // NOI18N
+        logger.output(repositoryRoot.getAbsolutePath());
+        closeLog(logger);
+    }
+
+    protected static void outputSearchContextTab (File repositoryRoot, File[] files, String title) {
+        OutputLogger logger = openLogger(repositoryRoot, title);
+        logger.output(NbBundle.getMessage(SearchHistoryAction.class, "MSG_LOG_CONTEXT_SEP")); // NOI18N
+        for (File f : files) {
+            logger.output(f.getAbsolutePath());
+        }
+        closeLog(logger);
+    }
+
+    private static OutputLogger openLogger (File repositoryRoot, String title) {
+        String loggerId = (repositoryRoot != null) ? new HgURL(repositoryRoot).toHgCommandUrlStringWithoutUserInfo() : null;
         OutputLogger logger = OutputLogger.getLogger(loggerId);
         logger.outputInRed(
                 NbBundle.getMessage(SearchHistoryAction.class,
@@ -123,125 +106,31 @@ public class SearchHistoryAction extends ContextAction {
         logger.outputInRed(
                 NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_Log_Title_Sep")); // NOI18N
-        if(bRootOnly){
-            logger.output(
-                    NbBundle.getMessage(SearchHistoryAction.class,
-                    "MSG_LOG_ROOT_CONTEXT_SEP")); // NOI18N
-            logger.output(root.getAbsolutePath());
-        }else{
-            File[] files = context.getFiles().toArray(new File[0]);
-            logger.output(
-                    NbBundle.getMessage(SearchHistoryAction.class,
-                    "MSG_LOG_CONTEXT_SEP")); // NOI18N
-            for (File f : files) {
-                logger.output(f.getAbsolutePath());
-            }
-        }
+        return logger;
+    }
+
+    private static void closeLog (OutputLogger logger) {
         logger.outputInRed(""); // NOI18N
         logger.closeLog();
     }
 
-    /**
-     * Opens the Seach History panel to view Mercurial Incoming Changesets that will be sent on next Pull from remote repo
-     * using: hg incoming - to get the data
-     * 
-     * @param title title of the search
-     * @param commitMessage commit message to search for
-     * @param username user name to search for
-     * @param date date of the change in question
-     */ 
-    public static void openIncoming(final VCSContext context, final String title) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (context == null) return;
-                outputSearchContextTab(context, "MSG_LogIncoming_Title", true);
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
-                tc.setDisplayName(title);
-                tc.open();
-                tc.requestActive();
-                tc.searchIncoming();
+    protected File getRepositoryRoot () {
+        if (repositoryRoot == null && context != null) {
+            final File roots[] = HgUtils.getActionRoots(context);
+            if (roots != null && roots.length > 0) {
+                repositoryRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
             }
-        });
-    }
-    /**
-     * Opens the Seach History panel to view Mercurial Out Changesets that will be sent on next Push to remote repo
-     * using: hg out - to get the data
-     * 
-     * @param title title of the search
-     * @param commitMessage commit message to search for
-     * @param username user name to search for
-     * @param date date of the change in question
-     */ 
-    public static void openOut(final VCSContext context, final String title) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (context == null) return;
-                outputSearchContextTab(context, "MSG_LogOut_Title", true);
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
-                tc.setDisplayName(title);
-                tc.open();
-                tc.requestActive();
-                tc.searchOut();
-            }
-        });
-    }
-
-    /**
-     * Opens the Seach History panel with given pre-filled values. The search is executed in default context
-     * (all open projects). 
-     * 
-     * @param title title of the search
-     * @param commitMessage commit message to search for
-     * @param username user name to search for
-     * @param date date of the change in question
-     */ 
-    public static void openSearch(String title, String commitMessage, String username, Date date) {
-        openSearch(getDefaultContext(), title, commitMessage, username, date);
-    }
-
-    public static void openSearch(VCSContext context, String title, String commitMessage, String username, Date date) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        // annotations do not include time information, we must search whole day
-        c.add(Calendar.DATE, 1);
-        Date to = c.getTime();
-        c.setTime(date);
-        c.add(Calendar.DATE, -1);
-        Date from = c.getTime();
-        
-        if (commitMessage != null && commitMessage.indexOf('\n') != -1) {
-            commitMessage = commitMessage.substring(0, commitMessage.indexOf('\n'));
         }
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context, commitMessage, username, from, to);
-        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title); // NOI18N
-        tc.setDisplayName(tcTitle);
-        tc.open();
-        tc.requestActive();
-        tc.search();
+        return repositoryRoot;
     }
 
-    /**
-     * Opens search panel with a diff view fixed on a line
-     * @param file file to search history for
-     * @param lineNumber number of a line to fix on
-     */
-    public static void openSearch(final File file, final int lineNumber) {
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(file, new SearchHistoryTopComponent.DiffResultsViewFactory() {
-            @Override
-            DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
-                return new DiffResultsViewForLine(panel, results, lineNumber);
+    protected File[] getFiles () {
+        if (files == null) {
+            File repository = getRepositoryRoot();
+            if (repository != null) {
+                files = HgUtils.filterForRepository(context, repository, false);
             }
-        });
-        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", file.getName()); // NOI18N
-        tc.setDisplayName(tcTitle);
-        tc.open();
-        tc.requestActive();
+        }
+        return files;
     }
-
-    private static VCSContext getDefaultContext() {
-        Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
-        
-        return nodes != null ? VCSContext.forNodes(nodes): VCSContext.EMPTY;
-    }
-
 }

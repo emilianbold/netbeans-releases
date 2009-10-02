@@ -1,42 +1,8 @@
-<!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright 2008 Sun Microsystems, Inc. All rights reserved.
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
-particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
-
-Contributor(s):
-
-Portions Copyrighted 2008 Sun Microsystems, Inc.
--->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2009 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
 <html>
     <head>
         <title>Debugging Python Applications</title>
@@ -44,54 +10,50 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <h3>Debugging Python Applications</h3>
+        <h2>Debugging Python Applications</h2>
         <p>Debugging is the process of examining your application for errors.
             The process of debugging is accomplished by setting breakpoints and
             watches in your code and running it in the debugger.
             This enables you to execute your code one line at a time and examine
         the state of your application in order to discover any problems.</p>
 
-        <h3>Setting up your Python project for debugging</h3>
+        <h3>Setting Up Python Projects for Debugging</h3>
         <ol>
-            <li><b>Check Debugger's Options:</b> Go to <b>Tools > Options > Python </b> and
-            click on the <b>Debugger</b> tab :</li>
+            <li>Check Debugger options: Go to Tools > Options > Python and
+            click on the Debugger tab :</li>
             <ul>
-                <li><b>Debugger listening starting port:</b> When debugging, for better
-                    isolation the debugger is automatically started in a separate
-                    process and communicates with Netbeans IDE over an IP socket.
+                <li><b>Debugger listening starting port:</b> For better
+                    isolation when debugging, the debugger is automatically started in a separate
+                    process and communicates with the IDE over an IP socket.
                     This field specifies the port number where the debugger process
-                is listening for incoming Netbeans Python debugging solicitations. </li>
-                <li><b>Debugging shell colors and fonts:</b>This group of button may be used to customized
-                the debugging shell coloring</li>
-
-                <li><b>Stop at first line: </b> When checked the debugger will initially stop at the
-                    first line of the debugger's script. When unchecked the debugger will stop at
-                the first found breakpoint in script.</li>
+                is listening for incoming Python debugging solicitations. </li>
+                <li><b>Debugging shell colors and fonts:</b>This group of buttons customizes
+                the debugging shell colors.</li>
+                <li><b>Stop at first line: </b> When checked, the debugger will stop at the
+                    first line of the debugger script. When unchecked the debugger will stop at
+                the first breakpoint found in the script.</li>
             </ul>
-
-            <li><b>Setting the breakpoints:</b> In the Source Editor, click in the left
-            margin next to the desired line, where you want to set a breakpoint.</li>
-
-
+           <li><b>Setting the breakpoints:</b> In the Source Editor, click in the left
+            margin next to the desired line of code where you want to set a breakpoint.</li>
         </ol>
-        <h3>Starting the debugger</h3>
-        <p>After the breakpoints have been set, click on <b>Debug</b> and select
-        the appropriate option to start the debugging session
+        <h3>Starting the Debugger</h3>
+        <p>After the breakpoints have been set, click on Debug and select the appropriate option to start the debugging session.</p>
         <ul>
-            <li>If there is more than one project open, <b>Ctrl + F5</b> will start the
-            debugging session on the main project</li>
-            <li>To start off a debugging session on any particular Python file,
-            focus on the file and then the keystroke <b>Ctrl + Shift + F5</b> will
-            start the debugging session</li>
-        </ul></p>
-
+            <li>If there is more than one project open, <b>Ctrl + F5</b> will start the debugging session on the main project.</li>
+            <li>To start a debugging session on a particular Python file, select the file and type <tt>Ctrl + Shift + F5</tt>.</li>
+        </ul>
         <h3>Debugger Windows</h3>
-        <p>Besides the default shell window, there are other windows which display
-        other runtime configuration of the application currently being debugged:
-        <ol>
+        <p>In addition to the Default Shell window, there are windows which display
+        other runtime configurations of the application currently being debugged:</p>
+        <ul>
             <li><b>Call Stack Window</b></li>
             <li><b>Local Variables Window</b></li>
             <li><b>Threads Window</b></li>
-        </ol></p>
+        </ul>
+<dl><dt><a name="seealso">See also</a></dt>
+<dd><dd><a href="help-quickref.html">Python Project Tasks: Quick Reference</a></dd>
+</dl>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
     </body>
 </html>

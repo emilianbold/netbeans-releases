@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -119,6 +120,11 @@ public class TestResourceUriAction extends NodeAction  {
                                 httpConnection.disconnect();
                             }
                         }
+                        // logging usage of action
+                        Object[] params = new Object[2];
+                        params[0] = LogUtils.WS_STACK_JAXRS;
+                        params[1] = "TEST RESOURCE"; // NOI18N
+                        LogUtils.logWsAction(params);
                     }
 
                 } catch (IOException ex) {

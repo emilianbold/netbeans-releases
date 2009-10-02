@@ -881,6 +881,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz166897.cc", 12, 19, "iz166897.cc", 5, 5);
     }
 
+    public void testIZ159422() throws Exception {
+        // IZ#159422 : Unresolved ids in function definition with field like declaration
+        performTest("iz159422.cc", 10, 5, "iz159422.cc", 5, 5);
+        performTest("iz159422.cc", 16, 28, "iz159422.cc", 5, 5);
+        performTest("iz159422.cc", 16, 22, "iz159422.cc", 4, 5);
+        performTest("iz159422.cc", 8, 27, "iz159422.cc", 4, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

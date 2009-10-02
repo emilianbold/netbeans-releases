@@ -290,13 +290,6 @@ class WebActionProvider implements ActionProvider {
                 if (isDebugged()) {
                     p.setProperty("is.debugged", "true");
                 }
-                // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
-                if (isEjbRefAndNoJ2eeApp(project)) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                }
                 if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
                     p.setProperty("forceRedeploy", "true"); //NOI18N
                 } else {
@@ -393,13 +386,6 @@ class WebActionProvider implements ActionProvider {
                 if (isDebugged()) {
                     p.setProperty("is.debugged", "true");
                 }
-                // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
-                if (isEjbRefAndNoJ2eeApp(project)) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                }
                 if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
                     p.setProperty("forceRedeploy", "true"); //NOI18N
                 } else {
@@ -429,13 +415,6 @@ class WebActionProvider implements ActionProvider {
                 }
                 if (isDebugged()) {
                     p.setProperty("is.debugged", "true");
-                }
-                // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
-                if (isEjbRefAndNoJ2eeApp(project)) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
                 }
 
                 boolean keepDebugging = setJavaScriptDebuggerProperties(p);
@@ -542,14 +521,6 @@ class WebActionProvider implements ActionProvider {
 
             if (isDebugged()) {
                 p.setProperty("is.debugged", "true");
-            }
-// 51462 - if there's an ejb reference, but no j2ee app, debug will not work
-            if (isEjbRefAndNoJ2eeApp(project)) {
-                NotifyDescriptor nd;
-                nd =
-                        new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                return null;
             }
 
             boolean keepDebugging = setJavaScriptDebuggerProperties(p);
@@ -1133,53 +1104,6 @@ class WebActionProvider implements ActionProvider {
             }
         }
         return null;
-    }
-
-    private boolean isEjbRefAndNoJ2eeApp(Project p) {
-        WebModule wmod = WebModule.getWebModule(p.getProjectDirectory());
-        if (wmod != null) {
-            boolean hasEjbLocalRefs = false;
-            try {
-                wmod.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Boolean>() {
-                    public Boolean run(WebAppMetadata metadata) {
-                        // return true if there is an ejb reference in this module
-                        return !metadata.getEjbLocalRefs().isEmpty();
-                    }
-                });
-            } catch (IOException e) {
-                // ignore
-            }
-            if (hasEjbLocalRefs && !isInJ2eeApp(p)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isInJ2eeApp(Project p) {
-        Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
-        Iterator iter = globalPath.iterator();
-        while (iter.hasNext()) {
-            FileObject sourceRoot = (FileObject) iter.next();
-            Project project = FileOwnerQuery.getOwner(sourceRoot);
-            if (project != null) {
-                Object j2eeApplicationProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
-                if (j2eeApplicationProvider != null) { // == it is j2ee app
-                    J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider) j2eeApplicationProvider;
-                    J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
-                    if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
-                        J2eeModuleProvider affectedPrjProvider =
-                                (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-                        if (affectedPrjProvider != null) {
-                            if (Arrays.asList(j2eeModules).contains(affectedPrjProvider)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private boolean isDebugged() {
