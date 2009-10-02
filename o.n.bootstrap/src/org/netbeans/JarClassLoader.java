@@ -71,6 +71,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
@@ -362,7 +366,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private String resPrefix;
         private File file;
 
-        private JarFile jar;
+        private Future<JarFile> fjar;
         private boolean dead;
         private int requests;
         private int used;
@@ -415,21 +419,33 @@ public class JarClassLoader extends ProxyClassLoader {
             }
         }
         
-        JarFile getJarFile(String forWhat) throws IOException {
+        JarFile getJarFile(final String forWhat) throws IOException {
+            boolean init = false;
             synchronized(sources) {
                 requests++;
                 used++;
-                if (jar == null) {
-                    long now = System.currentTimeMillis();
-                    jar = new JarFile(file, false);
-                    long took = System.currentTimeMillis() - now;
-                    opened(this, forWhat);
-                    if (took > 500) {
-                        LOGGER.log(Level.WARNING, "Opening " + file + " took " + took + " ms"); // NOI18N
+                if (fjar == null) {
+                    fjar = sources.get(this);
+                    if (fjar == null) {
+                        init = true;
+                        fjar = new FutureTask<JarFile>(new Callable<JarFile>() {
+                            public JarFile call() throws Exception {
+                                long now = System.currentTimeMillis();
+                                JarFile ret = new JarFile(file, false);
+                                long took = System.currentTimeMillis() - now;
+                                opened(JarClassLoader.JarSource.this, forWhat);
+                                if (took > 500) {
+                                    LOGGER.log(Level.WARNING, "Opening " + file + " took " + took + " ms"); // NOI18N
+                                }
+                                return ret;
+                            }
+                        });
+                        sources.put(this, fjar);
                     }
                 }
-                return jar;
             }
+            if (init) ((FutureTask)fjar).run();
+            return callGet();
         }
         
         private void releaseJarFile() {
@@ -508,7 +524,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     }
                 }
             } catch (IOException ioe) {
-                LOGGER.log(Level.FINE, null, ioe);
+                LOGGER.log(Level.WARNING, null, ioe);
             } finally {
                 releaseJarFile();
             }
@@ -569,19 +585,30 @@ public class JarClassLoader extends ProxyClassLoader {
             LOGGER.log(Level.FINE, "#21114: replacing {0} with {1}", new Object[] {orig, temp});
         }
         
+        private JarFile callGet() throws IOException {
+            try {
+                return fjar.get();
+            } catch (InterruptedException ex) {
+                throw (IOException)new IOException().initCause(ex);
+            } catch (ExecutionException ex) {
+                throw (IOException)new IOException().initCause(ex);
+            }            
+        }
+
         private void doCloseJar() throws IOException {
+            JarFile jar = null;
             synchronized(sources) {
-                if (jar != null) {
-                    if (!sources.remove(this)) {
+                if (fjar != null) {
+                    jar = callGet();
+                    if (sources.remove(this) == null) {
                         LOGGER.warning("Can't remove " + this);
                     }
                     LOGGER.log(Level.FINE, "Closing JAR {0}", jar.getName());
-                    jar.close();
-                    jar = null;
+                    fjar = null;
                     LOGGER.log(Level.FINE, "Remaining open JARs: {0}", sources.size());
                 }
             }
-            
+            if (jar != null) jar.close();
         }
 
         /** Delete any temporary JARs we were holding on to.
@@ -602,24 +629,20 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         // JarFile pool tracking
-        private static final Set<JarSource> sources = new HashSet<JarSource>();
+        private static final Map<JarSource, Future<JarFile>> sources = new HashMap<JarSource, Future<JarFile>>();
         private static int LIMIT = Integer.getInteger("org.netbeans.JarClassLoader.limit_fd", 300);
 
         static void opened(JarSource source, String forWhat) {
             synchronized (sources) {
-                assert !sources.contains(source) : "Failed for " + source.file.getPath() + "\n";
-
                 if (sources.size() > LIMIT) {
                     // close something
                     JarSource toClose = toClose();
                     try {
                         toClose.doCloseJar();
                     } catch (IOException ioe) {
-                        LOGGER.log(Level.FINE, null, ioe);
+                        LOGGER.log(Level.WARNING, null, ioe);
                     }
                 }
-                
-                sources.add(source); // now register the newly opened
                 LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});
                 LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
             }
@@ -627,11 +650,11 @@ public class JarClassLoader extends ProxyClassLoader {
 
         // called under lock(sources) 
         private static JarSource toClose() { 
-            assert Thread.holdsLock(sources); 
+            assert Thread.holdsLock(sources);
              
             int min = Integer.MAX_VALUE; 
             JarSource candidate = null; 
-            for (JarSource act : sources) {
+            for (JarSource act : sources.keySet()) {
                 // aging: slight exponential decay of all opened sources?
                 act.requests = 5*act.requests/6;
                 
