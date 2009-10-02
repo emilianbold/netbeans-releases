@@ -722,7 +722,11 @@ public class KenaiSearchPanel extends JPanel {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
-                    project.fetchProjectImage(false); // a project image will be needed, prepare it in advance
+                    try {
+                        project.getProjectIcon(); // a project image will be needed, prepare it in advance
+                    } catch (KenaiException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     if (PanelType.OPEN.equals(panelType)) {
                         addElementLater(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {

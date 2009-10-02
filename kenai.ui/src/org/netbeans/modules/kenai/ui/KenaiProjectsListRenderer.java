@@ -96,7 +96,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
             String description = searchInfo.kenaiProject.getDescription();
             description = description.replaceAll("\n+", " "); // NOI18N
             description = description.replaceAll("\t+", " "); // NOI18N
-            Icon icon = searchInfo.kenaiProject.getProjectIcon(false);
+            Icon icon = searchInfo.kenaiProject.getProjectIcon();
             if (icon != null) {
                 Image im = ImageUtilities.icon2Image(icon);
                 im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
