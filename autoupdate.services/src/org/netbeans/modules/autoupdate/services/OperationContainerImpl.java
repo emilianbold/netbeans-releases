@@ -224,6 +224,9 @@ public final class OperationContainerImpl<Support> {
                 //TODO: what if elImpl instanceof FeatureUpdateElementImpl ?
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
+                if(eagerEl.getUpdateUnit().isPending()) {
+                    continue;
+                }
                 UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
                 List <ModuleInfo> infos = new ArrayList <ModuleInfo>();
                 if(impl instanceof ModuleUpdateElementImpl) {
