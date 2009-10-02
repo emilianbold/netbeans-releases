@@ -439,7 +439,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                             }
                             for (UpdateElement upd : info.getRequiredElements()) {
                                 if (upd.getUpdateUnit().getInstalled() != null &&
-                                        !info.getUpdateUnit().isPending()) {
+                                        !upd.getUpdateUnit().isPending()) {
                                     list.add(upd);
                                 }
                             }
