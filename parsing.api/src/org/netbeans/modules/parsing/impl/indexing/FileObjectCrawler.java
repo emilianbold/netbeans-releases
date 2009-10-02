@@ -149,9 +149,6 @@ public final class FileObjectCrawler extends Crawler {
             final Stats stats, final ClassPath.Entry entry,
             final StringBuilder relativePathBuilder)
     {
-        if (relativePathBuilder.length() > 0) {
-            relativePathBuilder.append('/'); //NOI18N
-        }
         int parentPathEnd = relativePathBuilder.length();
 
         for (FileObject fo : fos) {
@@ -163,12 +160,15 @@ public final class FileObjectCrawler extends Crawler {
                 continue;
             }
 
-            String relativePath = relativePathBuilder.append(fo.getNameExt()).toString();
+            relativePathBuilder.append(fo.getNameExt());
+            boolean folder = fo.isFolder();
+            if (folder) relativePathBuilder.append('/');
+            String relativePath = relativePathBuilder.toString();
             try {
                 if (entry != null && !entry.includes(relativePath)) {
                     continue;
                 }
-                if (fo.isFolder()) {
+                if (folder) {
                     if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, relativePathBuilder)) {
                         return false;
                     }

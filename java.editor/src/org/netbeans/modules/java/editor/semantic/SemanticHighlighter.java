@@ -87,6 +87,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -453,6 +454,8 @@ public class SemanticHighlighter extends JavaParserResultTask {
         
         private final Map<Element, ImportTree> element2Import = new HashMap<Element, ImportTree>();
         private final Map<String, ImportTree> method2Import = new HashMap<String, ImportTree>();
+        private final Map<String, Collection<ImportTree>> simpleName2UnresolvableImports = new HashMap<String, Collection<ImportTree>>();
+        private final Set<ImportTree> unresolvablePackageImports = new HashSet<ImportTree>();
         private final Map<ImportTree, TreePath/*ImportTree*/> import2Highlight = new HashMap<ImportTree, TreePath>();
         
         private Set<Element> additionalUsedTypes; //types used *before* the imports has been processed (ie. annotations in package-info.java)
@@ -726,7 +729,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 addUse(decl, type, expr, c);
             }
             
-            typeUsed(decl, expr);
+            typeUsed(decl, expr, type);
         }
         
         private void handleJavadoc(Element classMember) {
@@ -734,7 +737,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 return;
             }
             for (Element el : JavadocImports.computeReferencedElements(info, classMember)) {
-                typeUsed(el, null);
+                typeUsed(el, null, EnumSet.of(UseTypes.CLASS_USE));
             }
         }
         
@@ -1043,15 +1046,24 @@ public class SemanticHighlighter extends JavaParserResultTask {
                                 element2Import.put(te, tree);
                             }
                             import2Highlight.put(tree, getCurrentPath());
+                        } else {
+                            unresolvablePackageImports.add(tree);
+                            import2Highlight.put(tree, getCurrentPath());
                         }
                     }
                 } else {
                     Element decl = info.getTrees().getElement(new TreePath(getCurrentPath(), tree.getQualifiedIdentifier()));
 
-                    if (decl != null && decl.asType().getKind() != TypeKind.ERROR //unresolvable imports should not be marked as unused
-                            && !additionalUsedTypes.contains(decl)) {
-                        element2Import.put(decl, tree);
-                        import2Highlight.put(tree, getCurrentPath());
+                    if (decl != null && !additionalUsedTypes.contains(decl)) {
+                        if (decl.asType().getKind() != TypeKind.ERROR) {
+                            element2Import.put(decl, tree);
+                            import2Highlight.put(tree, getCurrentPath());
+                        } else {
+                            if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
+                                addUnresolvableImport(((MemberSelectTree) tree.getQualifiedIdentifier()).getIdentifier(), tree);
+                                import2Highlight.put(tree, getCurrentPath());
+                            }
+                        }
                     }
                 }
             } else {
@@ -1060,35 +1072,44 @@ public class SemanticHighlighter extends JavaParserResultTask {
                     Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
 
                     if (   decl != null
-                        && decl.asType().getKind() != TypeKind.ERROR //unresolvable imports should not be marked as unused
                         && (decl.getKind().isClass() || decl.getKind().isInterface())) {
-                        Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
-                        boolean assign = false;
+                        if (decl.asType().getKind() != TypeKind.ERROR) {
+                            Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
+                            boolean assign = false;
 
-                        for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
-                            if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
-                                continue;
-                            }
-                            if (e.getKind() == ElementKind.METHOD) {
-                                method2Import.put(e.getSimpleName().toString() + e.asType().toString(), tree);
-                                assign = true;
-                                continue;
+                            for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
+                                if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
+                                    continue;
+                                }
+                                if (e.getKind() == ElementKind.METHOD) {
+                                    method2Import.put(e.getSimpleName().toString() + e.asType().toString(), tree);
+                                    assign = true;
+                                    continue;
+                                }
+
+                                if (e.getKind().isField()) {
+                                    element2Import.put(e, tree);
+                                    assign = true;
+                                    continue;
+                                }
+
+                                if (e.getKind().isClass() || e.getKind().isInterface()) {
+                                    element2Import.put(e, tree);
+                                    assign = true;
+                                    continue;
+                                }
                             }
 
-                            if (e.getKind().isField()) {
-                                element2Import.put(e, tree);
-                                assign = true;
-                                continue;
+                            if (!assign) {
+                                addUnresolvableImport(qualIdent.getIdentifier(), tree);
                             }
-
-                            if (e.getKind().isClass() || e.getKind().isInterface()) {
-                                element2Import.put(e, tree);
-                                assign = true;
-                                continue;
+                            import2Highlight.put(tree, getCurrentPath());
+                        } else {
+                            if (!isStar(tree)) {
+                                addUnresolvableImport(qualIdent.getIdentifier(), tree);
+                            } else {
+                                unresolvablePackageImports.add(tree);
                             }
-                        }
-
-                        if (assign) {
                             import2Highlight.put(tree, getCurrentPath());
                         }
                     }
@@ -1096,6 +1117,18 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
             super.visitImport(tree, null);
             return null;
+        }
+
+        private void addUnresolvableImport(Name name, ImportTree imp) {
+            String key = name.toString();
+
+            Collection<ImportTree> l = simpleName2UnresolvableImports.get(key);
+
+            if (l == null) {
+                simpleName2UnresolvableImports.put(key, l = new LinkedList<ImportTree>());
+            }
+
+            l.add(imp);
         }
         
         @Override
@@ -1185,7 +1218,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 tp = new TreePath(getCurrentPath(), ident);
             }
             
-            typeUsed(info.getTrees().getElement(tp), tp);
+            typeUsed(info.getTrees().getElement(tp), tp, EnumSet.of(UseTypes.CLASS_USE));
             handlePossibleIdentifier(tp, EnumSet.of(UseTypes.EXECUTE), info.getTrees().getElement(getCurrentPath()), true, true);
             
             Element clazz = info.getTrees().getElement(tp);
@@ -1430,21 +1463,50 @@ public class SemanticHighlighter extends JavaParserResultTask {
             return super.visitWildcard(node, p);
         }
         
-        private void typeUsed(Element decl, TreePath expr) {
+        private void typeUsed(Element decl, TreePath expr, Collection<UseTypes> type) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
-                ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
+                if (decl.asType().getKind() != TypeKind.ERROR) {
+                    ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
 
-                if (imp != null) {
-                    if (import2Highlight.remove(imp) == null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
+                    if (imp != null) {
+                        if (isStar(imp)) {
+                            //TODO: explain
+                            handleUnresolvableImports(decl, type, false);
+                        }
+                        if (import2Highlight.remove(imp) == null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
+                            additionalUsedTypes.add(decl);
+                        }
+                    } else {
                         additionalUsedTypes.add(decl);
                     }
                 } else {
-                    additionalUsedTypes.add(decl);
+                    handleUnresolvableImports(decl, type, true);
+                }
+            }
+        }
+
+        private void handleUnresolvableImports(Element decl, Collection<UseTypes> type, boolean removeStarImports) {
+            Collection<ImportTree> imps = simpleName2UnresolvableImports.get(decl.getSimpleName().toString());
+
+            if (imps != null) {
+                for (ImportTree imp : imps) {
+                    if (type.contains(UseTypes.CLASS_USE) || imp.isStatic()) {
+                        import2Highlight.remove(imp);
+                    }
+                }
+            } else {
+                if (removeStarImports) {
+                    //TODO: explain
+                    for (ImportTree unresolvable : unresolvablePackageImports) {
+                        if (type.contains(UseTypes.CLASS_USE) || unresolvable.isStatic()) {
+                            import2Highlight.remove(unresolvable);
+                        }
+                    }
                 }
             }
         }
     }
-    
+
     public static interface ErrorDescriptionSetter {
         
         public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports);
