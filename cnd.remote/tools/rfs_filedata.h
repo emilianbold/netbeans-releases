@@ -69,7 +69,7 @@ typedef struct file_data {
  * if it does not exist, creates one, inserts it into the tree and
  * returns a reference to the newly inserted one
  */
-file_data *find_file_data(const char* filename);
+file_data *find_file_data(const char* filename, int create);
 
 /**
  * Visits all file_data elements - calls function passed as a 1-st parameter

@@ -229,14 +229,48 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
     }
 
+    public Collection<? extends String> getTypeNames(int offset) {
+        if (representsThis()) {
+            ClassScope classScope = (ClassScope) getInScope();
+            return Collections.singletonList(classScope.getName());
+        }
+        AssignmentImpl assignment = findVarAssignment(offset);
+        while(assignment != null) {
+            Collection<String> typeNames = assignment.getTypeNames();
+            if (typeNames.isEmpty()) {
+                AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
+                if (nextAssignment != null && !nextAssignment.equals(assignment)) {
+                    assignment = nextAssignment;
+                    continue;
+                }
+            }
+            if (assignment.isIsArray()) {
+                return Collections.singleton("array");//NOI18N
+            }
+            return typeNames;
+        }
+
+        return Collections.emptyList();
+    }
+
     public Collection<? extends TypeScope> getTypes(int offset) {
-        List<? extends TypeScope> empty = Collections.emptyList();
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope);
         }
         AssignmentImpl assignment = findVarAssignment(offset);
-        return (assignment != null) ? assignment.getTypes() : empty;
+        while(assignment != null) {
+            Collection<TypeScope> types = assignment.getTypes();
+            if (types.isEmpty()) {
+                AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
+                if (nextAssignment != null && !nextAssignment.equals(assignment)) {
+                    assignment = nextAssignment;
+                    continue;
+                } 
+            }
+            return types;
+        }
+        return Collections.emptyList();
     }
 
     public boolean isGloballyVisible() {
@@ -266,15 +300,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-        if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-            sb.append(varName.toLowerCase()).append(";");//NOI18N
-            sb.append(varName).append(";");//NOI18N
-            sb.append(";");//NOI18N
-            sb.append(getOffset()).append(";");//NOI18N
-            return sb.toString();
-        }
-        return null;
+        sb.append(varName.toLowerCase()).append(";");//NOI18N
+        sb.append(varName).append(";");//NOI18N
+        sb.append(";");//NOI18N
+        sb.append(getOffset()).append(";");//NOI18N
+        return sb.toString();
     }
 
     void createLazyFieldAssignment(FieldAccess fieldAccess, Assignment node, Scope scope) {

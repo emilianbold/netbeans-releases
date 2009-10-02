@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -54,6 +55,11 @@ public class EAWizardPanel implements WizardDescriptor.Panel,
      */
     private EAVisualPanel component;
     private WizardDescriptor wizardDescriptor;
+    private final ValidationGroup validationGroup;
+
+    EAWizardPanel(ValidationGroup vg) {
+        validationGroup = vg;
+    }
 
     public EAVisualPanel getComponent() {
         if (component == null) {
@@ -69,8 +75,12 @@ public class EAWizardPanel implements WizardDescriptor.Panel,
     // return new HelpCtx(SampleWizardPanel1.class);
     }
 
+    ValidationGroup getValidationGroup() {
+        return validationGroup;
+    }
+
     public boolean isValid() {
-        return getComponent().valid(wizardDescriptor);
+        return wizardDescriptor.isValid();
     }
 
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0

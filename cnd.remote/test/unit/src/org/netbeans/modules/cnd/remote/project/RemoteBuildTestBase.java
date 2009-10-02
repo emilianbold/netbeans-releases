@@ -126,7 +126,8 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         if (syncFactory == null) {
             syncFactory = RemoteSyncFactory.getDefault();
         }
-        ServerRecord rec = ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
+        RemoteServerRecord rec = (RemoteServerRecord) ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
+        rec.setSyncFactory(syncFactory);
         assertNotNull("Null ServerRecord for " + env, rec);
     }
 

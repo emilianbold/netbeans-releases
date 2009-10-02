@@ -78,7 +78,6 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
@@ -121,9 +120,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private Future<Boolean> task;
     private Future<Boolean> detailedTask;
-    private final Object queryLock = new String(FunctionsListViewVisualizer.class + " query lock"); // NOI18N
-    private final Object detailsQueryLock = new String(FunctionsListViewVisualizer.class + " details query lock"); // NOI18N
-    private final Object uiLock = new String(FunctionsListViewVisualizer.class + " UI lock"); // NOI18N
+    private final Object queryLock = FunctionsListViewVisualizer.class.getName() + " query lock"; // NOI18N
+    private final Object detailsQueryLock = FunctionsListViewVisualizer.class.getName() + " details query lock"; // NOI18N
+    private final Object uiLock = FunctionsListViewVisualizer.class.getName() + " UI lock"; // NOI18N
     private JToolBar buttonsToolbar;
     private JButton refresh;
     private boolean isEmptyContent;
@@ -765,7 +764,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         sourceInfo = result;
                     }
                 }
-                return sourceInfo;
+                return result;
             } else {
                 setEnabled(false);
                 functionCallNode.fire();
@@ -800,7 +799,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private class VisualizerImplSessionStateListener implements SessionStateListener {
+    private static class VisualizerImplSessionStateListener implements SessionStateListener {
 
         public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
             //throw new UnsupportedOperationException("Not supported yet.");

@@ -59,7 +59,6 @@ import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
@@ -81,8 +80,6 @@ public final class DLightCPUToolConfigurationProvider
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
-    private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
-    private static final int SECONDS_PER_MINUTE = 60;
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
@@ -165,8 +162,6 @@ public final class DLightCPUToolConfigurationProvider
                 Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
                 Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
-        indicatorConfiguration.addDetailDescriptors(
-                new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0))); // NOI18N
 
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
@@ -251,7 +246,6 @@ public final class DLightCPUToolConfigurationProvider
 
         private final List<Column> usrColumns;
         private final List<Column> sysColumns;
-        private int seconds;
         private int usr;
         private int sys;
 
@@ -276,14 +270,8 @@ public final class DLightCPUToolConfigurationProvider
         }
 
         public void tick(float[] data, Map<String, String> details) {
-            ++seconds;
             data[0] = sys;
             data[1] = usr;
-            details.put(TIME_DETAIL_ID, formatTime(seconds));
         }
-    }
-
-    private static String formatTime(int seconds) {
-        return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
     }
 }

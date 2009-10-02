@@ -302,7 +302,14 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        // It is quite a normal situation when CancellationException
+                        // is thrown (for example, on some very short runs.. The
+                        // "calculation" of a host info could be initiated by an
+                        // executor and when program is done, all such (sub)processes
+                        // are cancelled... )
+                        // so just skip this exception and do not show it to
+                        // users ...
+                        // Exceptions.printStackTrace(ex);
                     }
                     if (hostInfo != null) {
                         processorsNumber = hostInfo.getCpuNum();

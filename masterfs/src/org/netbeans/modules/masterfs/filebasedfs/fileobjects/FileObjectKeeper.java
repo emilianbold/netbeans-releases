@@ -107,8 +107,12 @@ final class FileObjectKeeper implements FileChangeListener {
                     final BaseFileObj prevFO = factory.getCachedOnly(f);
                     if (prevFO == null) {
                         BaseFileObj who = factory.getValidFileObject(f, Caller.Others);
-                        LOG.log(Level.FINE, "External change detected {0}", who);
-                        who.fireFileChangedEvent(expected);
+                        if (who != null) {
+                            LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
+                            who.fireFileChangedEvent(expected);
+                        } else {
+                            LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
+                        }
                     } else {
                         prevFO.refresh(expected, true);
                     }

@@ -70,23 +70,11 @@ final class MultipleCallStackRootNode extends AbstractNode {
         return new Action[]{prefferedAction};
     }
 
-
-
- 
-
     synchronized void add(final StackRootNode node) {
-        if (!Children.MUTEX.isReadAccess()) {
-            Children.MUTEX.writeAccess(new Runnable() {
+        children.add(node);
+        setChildren(Children.LEAF);
+        setChildren(new MultipleCallStackRootChildren(children));
 
-                public void run() {
-                    children.add(node);
-                    setChildren(Children.LEAF);
-                    setChildren(new MultipleCallStackRootChildren(children));
-                }
-            });
-
-
-        }
     }
 
     void removeAll() {
