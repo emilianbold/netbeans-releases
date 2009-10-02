@@ -2068,7 +2068,10 @@ public class GdbDebugger implements PropertyChangeListener {
             conf = (MakeConfiguration)conf.cloneConf();
             conf.setDevelopmentHost(new DevelopmentHostConfiguration(exEnv));
 
-            String path = getExecutableOrSharedLibrary(pinfo, conf);
+            String path = getBuildResult(pinfo, conf);
+            if (target.checkExecutable() && !isExecutableOrSharedLibrary(conf, path)) {
+                path = null;
+            }
 
             if (path != null) {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
@@ -2094,11 +2097,6 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
             }
         }
-    }
-
-    private static String getExecutableOrSharedLibrary(ProjectInformation pinfo, MakeConfiguration conf) {
-        String buildResult = getBuildResult(pinfo, conf);
-        return isExecutableOrSharedLibrary(conf, buildResult) ? buildResult : null;
     }
 
     /**
