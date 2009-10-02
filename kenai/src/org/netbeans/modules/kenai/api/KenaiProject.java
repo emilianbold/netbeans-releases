@@ -181,23 +181,6 @@ public final class KenaiProject {
     }
 
     /**
-     * Synchronously (!) loads the image of the project from the server.
-     * You should call this method before you need the image of the project, so that you avoid
-     * remote image loading on AWT thread. Do not call this method from AWT thread...
-     * @param forceReload Forces reloading image from the server (in case that image for a Kenai project was already cached)
-     */
-    public void fetchProjectImage(boolean forceReload) {
-        if (projectIcon == null || forceReload) {
-            try {
-                BufferedImage img = ImageIO.read(new URL(getImageUrl()));
-                projectIcon = new ImageIcon(img);
-            } catch (IOException ex) {
-                Logger.getLogger(KenaiProject.class.getName()).log(Level.FINE, "Kenai project icon loading failed.", ex); //NOI18N
-            }
-        }
-    }
-
-    /**
      * is this project bookmarked?
      * @return true if bookmarked and logged in<br>
      *         false otherwise
@@ -229,14 +212,19 @@ public final class KenaiProject {
     }
 
     /**
-     * Returns the image of the project, method can load it if needed (synchronous load). If you call this method in AWT thread,
-     * make sure that you have image already cached locally. Use {@link #fetchProjectImage(boolean)}. for caching the image outside the AWT thread.
-     * @param loadIfNeeded indicates if image should be loaded and cached if it wasn't already cached. If false, this method may return null.
-     * @return the image of the project or null, if loading image fails or if image is not cached and loadIfNeeded is false
+     * Returns the image of the project, method can load it if needed
+     * (synchronous load).
+     * @return the image of the project or null, if loading image fails
+     * @throws KenaiException
      */
-    public Icon getProjectIcon(boolean loadIfNeeded) {
-        if (projectIcon == null && loadIfNeeded) {
-            fetchProjectImage(false);
+    public Icon getProjectIcon() throws KenaiException {
+        if (projectIcon==null) {
+            try {
+                BufferedImage img = ImageIO.read(new URL(getImageUrl()));
+                projectIcon = new ImageIcon(img);
+            } catch (IOException ex) {
+                Logger.getLogger(KenaiProject.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         return projectIcon;
     }
@@ -414,6 +402,7 @@ public final class KenaiProject {
             features = null;
             members = null;
             licenses = null;
+            projectIcon = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }

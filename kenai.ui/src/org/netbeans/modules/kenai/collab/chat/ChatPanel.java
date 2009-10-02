@@ -451,6 +451,16 @@ public class ChatPanel extends javax.swing.JPanel {
         UIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
     }
 
+    void insertToInputArea(String message) {
+        if (message==null)
+            return;
+        try {
+            outbox.getDocument().insertString(outbox.getCaretPosition(), message, null);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     private class NotificationsEnabledAction extends MouseAdapter implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             JCheckBoxMenuItem m = (JCheckBoxMenuItem) e.getSource();
