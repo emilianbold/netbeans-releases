@@ -1065,7 +1065,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     if (PredefinedSymbols.SUPERGLOBALS.contains(notDollaredName)) {
                         continue;
                     }
-                    String typeName = ModelUtils.getFirst(varName.getTypeNames(position));
+                    final Collection<? extends String> typeNames = varName.getTypeNames(position);
+                    String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames);//NOI18N
                     if (typeName != null && typeName.contains("@")) {//NOI18N
                         typeName = null;
                     }

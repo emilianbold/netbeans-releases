@@ -48,5 +48,6 @@ import java.util.Collection;
 public interface TypeAssignments {
     Collection<? extends String> getTypeNames(int offset);
     Collection<? extends TypeScope> getTypes(int offset);
+    Collection<? extends TypeScope> getArrayAccessTypes(int offset);
     Collection<? extends TypeScope> getFieldTypes(FieldElement element, int offset);
 }

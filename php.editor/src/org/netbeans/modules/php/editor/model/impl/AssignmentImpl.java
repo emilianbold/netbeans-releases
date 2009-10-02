@@ -59,13 +59,13 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     //TODO: typeName should be list or array to keep mixed types
     private Union2<String,Collection<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
-    private boolean isArray;
+    private boolean arrayAccess;
 
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         this(container, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
         if (assignment.getLeftHandSide() instanceof ArrayAccess) {
-            isArray = true;
+            arrayAccess = true;
         }
     }
 
@@ -127,8 +127,6 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     
     public Collection<? extends TypeScope> getTypes() {
         List<? extends TypeScope> empty = Collections.emptyList();
-        FileScope topScope = ModelUtils.getFileScope(this);
-        //TODO: cache the value
         Collection<? extends TypeScope> types = typesFromUnion();
         if (types != null) {
             return types;
@@ -164,10 +162,12 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
         return getClass().getName()+":"+ toString() + ":" + String.valueOf(getOffset());//NOI18N
     }
 
-    /**
-     * @return the isArray
-     */
-    public boolean isIsArray() {
-        return isArray;
+    public boolean isArrayAccess() {
+        final String tpName = typeNameFromUnion();
+        return arrayAccess || (tpName != null && tpName.equals("array"));//NOI18N
+    }
+
+    public void setAsArrayAccess(boolean arrayAccess) {
+        this.arrayAccess = arrayAccess;
     }
 }
