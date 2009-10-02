@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.gizmo.options;
 
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -99,6 +102,11 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private IntConfiguration dataProvider;
     private DataProvidersCollection currentDPCollection = DataProvidersCollection.DEFAULT;
     public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
+
+    public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
+    private String[] configurationNames;
+    private DLightConfiguration[] configurations;
+    private IntConfiguration gizmoConfigurations = null;
 
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
@@ -169,6 +177,63 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             setDataProviderValue(DataProvider.SIMPLE);
 
         }
+        
+        // Gizmo configurations
+        if (gizmoConfigurations == null) {
+            List<String> names = new ArrayList<String>();
+            List<DLightConfiguration> confs = new ArrayList<DLightConfiguration>();
+            DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
+            DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
+            for (DLightConfiguration dLightConfiguration : accessor.getDLightConfigurations(manager)) {
+                if (!DLightConfigurationAccessor.getDefault().isHidden(dLightConfiguration)){
+                    if (dLightConfiguration.getConfigurationName().startsWith("Gizmo")) { // NOI18N
+                        if (platform.indexOf("Solaris") >= 0) { // NOI18N
+                            // All
+                        }
+                        else if (platform.indexOf("Linux") >= 1) { // NOI18N
+                            // No DTrace
+                            if (dLightConfiguration.getConfigurationName().indexOf("DTrace") >= 0) { // NOI18N
+                                continue;
+                            }
+                        }
+                        else if (dLightConfiguration.getConfigurationName().indexOf("Simple") < 0) { // NOI18N
+                            // Only Simple
+                            continue;
+                        }
+                        // FIXUP: filter platform and set default based on SS and platform
+                        names.add(dLightConfiguration.getDisplayedName());
+                        confs.add(dLightConfiguration);
+                    }
+                }
+            }
+            configurationNames = names.toArray(new String[names.size()]);
+            configurations = confs.toArray(new DLightConfiguration[confs.size()]);
+            // Figure out default;
+            int defConf = 0;
+            if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
+                if (hasSunStudio) {
+                    defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
+                }
+                else {
+                    defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
+                }
+            }
+            else {
+                defConf = getConfigurationIndexByName("GizmoSimple"); // NOI18N
+            }
+            gizmoConfigurations = new IntConfiguration(null, defConf, configurationNames, null);
+        }
+    }
+
+    private int getConfigurationIndexByName(String name) {
+        int index = 0;
+        for (DLightConfiguration dlightConfiguration : configurations) {
+            if (dlightConfiguration.getConfigurationName().equals(name)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
     }
 
     public Collection<String> getNames() {
@@ -320,6 +385,20 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         getDataProvider().setValue(value);
         checkPropertyChange(DATA_PROVIDER_PROP, oldValue, getDataProviderValue());
     }
+    
+    /**
+     * @return the gizmoConfigurations
+     */
+    public IntConfiguration getGizmoConfigurations() {
+        return gizmoConfigurations;
+    }
+
+    /**
+     * @param gizmoConfigurations the gizmoConfigurations to set
+     */
+    public void setGizmoConfigurations(IntConfiguration gizmoConfigurations) {
+        this.gizmoConfigurations = gizmoConfigurations;
+    }
 
     public boolean shared() {
         return false;
@@ -361,6 +440,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         oldDValue = getDataProviderValue();
         getDataProvider().assign(gizmoOptions.getDataProvider());
         checkPropertyChange(DATA_PROVIDER_PROP, oldDValue, getDataProviderValue());
+        getGizmoConfigurations().assign(gizmoOptions.getGizmoConfigurations());
     }
 
     @Override
@@ -376,6 +456,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         }
 
         clone.setDataProvider(getDataProvider().clone());
+        clone.setGizmoConfigurations(getGizmoConfigurations().clone());
         return clone;
     }
 

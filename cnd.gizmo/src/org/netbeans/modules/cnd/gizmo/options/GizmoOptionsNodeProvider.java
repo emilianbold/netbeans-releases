@@ -103,12 +103,13 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, GizmoOptionsImpl.PROFILE_ON_RUN_PROP, getString("profileonrun_txt"), getString("profileonrun_help"))); // NOI18N
-        set.put(new IntNodeProp(gizmoOptions.getDataProvider(), true, GizmoOptionsImpl.DATA_PROVIDER_PROP, getString("dataprovider_txt"), getString("dataprovider_help"))); // NOI18N
+        set.put(new IntNodeProp(gizmoOptions.getGizmoConfigurations(), true, GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help"))); // NOI18N
         sheet.put(set);
 
         set = new Sheet.Set();
         set.setName("Indicators"); // NOI18N
-        set.setDisplayName(getString("IndicatorsName"));//NOI18B
+        set.setDisplayName("To Be Removed from here and down.....");//NOI18N
+        set.put(new IntNodeProp(gizmoOptions.getDataProvider(), true, GizmoOptionsImpl.DATA_PROVIDER_PROP, getString("dataprovider_txt"), getString("dataprovider_help"))); // NOI18N
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         for (String id : gizmoOptions.getNames()){
             DLightTool tool = gizmoConfiguration.getToolByID(id);
