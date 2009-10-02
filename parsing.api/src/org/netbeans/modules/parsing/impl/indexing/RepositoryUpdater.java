@@ -1964,11 +1964,13 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public @Override boolean isCancelledBy(Work work) {
             if (work instanceof RefreshWork) {
-                ((RefreshWork) work).addSuspects(files);
-                return true;
-            } else {
-                return false;
+                RefreshWork rw = (RefreshWork) work;
+                if (!rw.fullRescan && !forceRefresh) {
+                    ((RefreshWork) work).addSuspects(files);
+                    return true;
+                }
             }
+            return false;
         }
 
         // XXX: this should ideally be available directly from EditorRegistry
@@ -2270,12 +2272,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
     } // End of RefreshEifIndices class
 
-    private static final class RefreshWork extends AbstractRootsWork {
+    /* test */ static final class RefreshWork extends AbstractRootsWork {
 
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Set<URL> scannedBinaries;
         private final Set<URL> sourcesForBinaryRoots;
-        private boolean fullRescan;
         private final Set<Object> suspectFilesOrFileObjects;
         private final FSRefreshInterceptor interceptor;
 
@@ -2287,7 +2288,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Set<URL> sourcesForBinaryRoots,
                 boolean fullRescan,
                 boolean logStatistics,
-                Collection<Object> suspectFilesOdFileObjects,
+                Collection<? extends Object> suspectFilesOrFileObjects,
                 FSRefreshInterceptor interceptor)
         {
             super(false, false, true, fullRescan, logStatistics);
@@ -2295,14 +2296,12 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             Parameters.notNull("scannedRoots2Depencencies", scannedRoots2Depencencies); //NOI18N
             Parameters.notNull("scannedBinaries", scannedBinaries); //NOI18N
             Parameters.notNull("sourcesForBinaryRoots", sourcesForBinaryRoots); //NOI18N
-            Parameters.notNull("suspectFilesOdFileObjects", suspectFilesOdFileObjects); //NOI18N
             Parameters.notNull("interceptor", interceptor); //NOI18N
 
             this.scannedRoots2Dependencies = scannedRoots2Depencencies;
             this.scannedBinaries = scannedBinaries;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
-            this.fullRescan = fullRescan;
-            this.suspectFilesOrFileObjects = new HashSet<Object>(suspectFilesOdFileObjects);
+            this.suspectFilesOrFileObjects = suspectFilesOrFileObjects == null ? new HashSet<Object>() : new HashSet<Object>(suspectFilesOrFileObjects);
             this.interceptor = interceptor;
         }
 
@@ -2319,7 +2318,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
                 Collections.reverse(depCtx.newRootsToScan);
 
-                if (suspectFilesOrFileObjects != null && suspectFilesOrFileObjects.size() > 0) {
+                if (suspectFilesOrFileObjects.size() > 0) {
                     Set<FileObject> suspects = new HashSet<FileObject>();
                     for(Object fileOrFileObject : suspectFilesOrFileObjects) {
                         if (fileOrFileObject instanceof File) {
@@ -2714,7 +2713,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
     private static abstract class AbstractRootsWork extends Work {
 
-        private final boolean fullRescan;
+        protected boolean fullRescan;
         private boolean logStatistics;
 
         protected AbstractRootsWork(boolean followUpJob, boolean checkEditor, boolean supportsProgress, boolean fullRescan, boolean logStatistics) {
