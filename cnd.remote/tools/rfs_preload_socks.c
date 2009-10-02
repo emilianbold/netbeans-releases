@@ -112,6 +112,17 @@ int get_socket(int create) {
     }
     _sd = open_socket();
     trace_sd("opening socket 2");
+    if (_sd > 0) {
+        char buf[32];
+        sprintf(buf, "%d", getpid());
+        trace("Sending handshake package (%s) to sd=%d\n", buf, _sd);
+        enum sr_result res = pkg_send(_sd, pkg_handshake, buf);
+        if (res == sr_reset) {
+            fprintf(stderr, "Connection reset by peer when sending a handshake package\n");
+        } else if (res == sr_failure) {
+            perror("Error sending a handshake package");
+        }
+    }
     return _sd;
 }
 

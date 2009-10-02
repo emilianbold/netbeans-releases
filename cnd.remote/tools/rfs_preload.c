@@ -167,7 +167,7 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            trace("Can not resolve path %s\n", path);
+            fprintf(stderr, "Can not resolve path %s\n", path);
             inside = 0;
             return false;
         }

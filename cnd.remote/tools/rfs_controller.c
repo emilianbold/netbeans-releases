@@ -84,8 +84,11 @@ static void serve_connection(void* data) {
     char buffer[maxsize];
     struct package *pkg = (struct package *) &buffer;
 
+    int first = true;
+    char requestor_id[32];
+
     while (1) {
-        trace("Waiting for a data to arrive, sd=%d...\n", conn_data->sd);
+        trace("Waiting for a data to arrive from %s, sd=%d...\n", requestor_id, conn_data->sd);
         errno = 0;
         enum sr_result recv_res = pkg_recv(conn_data->sd, pkg, maxsize);
         if (recv_res == sr_reset) {
@@ -97,8 +100,19 @@ static void serve_connection(void* data) {
             }
             break;
         }
-        
-        trace("Request=%s sd=%d\n", pkg->data, conn_data->sd);
+
+        trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
+        enum pkg_kind expected_kind = first ? pkg_handshake : pkg_request;
+        if (pkg->kind != expected_kind) {
+            fprintf(stderr, "prodocol error: got %s instead of %s from %s\n", pkg_kind_to_string(pkg->kind), pkg_kind_to_string(expected_kind), requestor_id);
+            break;
+        }
+
+        if (first) {
+            first = false;
+            strncpy(requestor_id, pkg->data, sizeof requestor_id);
+            continue;
+        }
 
         char response[64];
         file_data *fd = find_file_data(pkg->data, true);
@@ -136,12 +150,11 @@ static void serve_connection(void* data) {
         } else if (send_res == sr_reset) {
             perror("send");
         } else { // success
-            trace("reply for %s sent sd=%d\n", pkg->data, conn_data->sd);
-        }
-        
+            trace("reply for %s sent to %s sd=%d\n", pkg->data, requestor_id, conn_data->sd);
+        }        
     }
     close(conn_data->sd);
-    trace("Connection to %s:%d closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
+    trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
 }
 
 static void create_dir(const char* path) {
