@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
+import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
@@ -59,6 +60,7 @@ import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
 import org.netbeans.modules.dlight.extras.api.support.TimeMarksProvider;
 import org.netbeans.modules.dlight.extras.api.support.ValueMarksProvider;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
@@ -70,7 +72,6 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
 
     private static final long EXTENT = 20000; // 20 seconds
-
     private final GraphPainter graph;
     private ViewportModel viewportModel;
     private int upperLimit;
@@ -145,8 +146,8 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
         if (tmpTimeFilter != null) {
             Range<Long> filterInterval = tmpTimeFilter.getInterval();
-            filterStart = (int)TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
-            filterEnd = (int)TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
+            filterStart = (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
+            filterEnd = (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
         } else {
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;
@@ -188,7 +189,13 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         synchronized (timeFilterLock) {
             if (newTimeFilter != timeFilter) {
                 timeFilter = newTimeFilter;
-                repaintAll();
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        repaintAll();
+                    }
+                });
+                    
             }
         }
     }
@@ -204,6 +211,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     }
 
     private static enum AxisOrientation {
+
         HORIZONTAL,
         VERTICAL
     }
