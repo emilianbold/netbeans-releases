@@ -278,6 +278,7 @@ public class WatchPanel {
         int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
                          org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
         sp.setPreferredSize(new Dimension(w, h));
+        /*
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
         int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent();
         Insets eInsets = editorPane.getInsets();
@@ -286,7 +287,7 @@ public class WatchPanel {
                 size +
                 eInsets.bottom + eInsets.top +
                 spInsets.bottom + spInsets.top));
-        
+        */
         textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
         panel.setLayout (new BorderLayout ());
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
@@ -332,10 +333,13 @@ public class WatchPanel {
         sp.setViewportView(panel);
         
         int preferredHeight = referenceTextField.getPreferredSize().height;
-        if (sp.getPreferredSize().height < preferredHeight) {
+        Dimension spDim = sp.getPreferredSize();
+        if (spDim.height < preferredHeight) {
             sp.setPreferredSize(referenceTextField.getPreferredSize());
+        } else {
+            sp.setPreferredSize(spDim);
         }
-        sp.setMinimumSize(sp.getPreferredSize());
+        sp.setMinimumSize(spDim);
         
         setupUI(editorPane);
         
