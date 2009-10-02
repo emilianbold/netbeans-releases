@@ -210,12 +210,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             configurationNames = names.toArray(new String[names.size()]);
             configurations = confs.toArray(new DLightConfiguration[confs.size()]);
             // Figure out default;
-<<<<<<< local
-            int defConf = 0;
-            if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
-                if (hasSunStudio || platform.indexOf("Linux") >= 0) { // NOI18N
-                    defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
-=======
             int defConf = -1;
             if (preferredConfigurationName != null) {
                 defConf = getConfigurationIndexByName(preferredConfigurationName);
@@ -228,7 +222,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
                     } else {
                         defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
                     }
->>>>>>> other
                 } else {
                     defConf = getConfigurationIndexByName("GizmoSimple"); // NOI18N
                 }
