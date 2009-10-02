@@ -906,6 +906,9 @@ public final class GemPanel extends JPanel {
         );
 
         proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
+        allVersionsCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.allVersionsCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
+        descriptionCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.descriptionCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
+        verboseCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.verboseCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.settingsPanel.TabConstraints.tabTitle"), settingsPanel); // NOI18N
 
