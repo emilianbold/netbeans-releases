@@ -43,11 +43,8 @@ package org.netbeans.modules.cnd.gizmo.options;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -66,12 +63,12 @@ import org.openide.util.NbBundle;
 
 public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
-    private static enum DataProvidersCollection {
-
-        DEFAULT,
-        LINUX,
-        WINDOWS
-    }
+//    private static enum DataProvidersCollection {
+//
+//        DEFAULT,
+//        LINUX,
+//        WINDOWS
+//    }
     private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
     private final PropertyChangeSupport pcs;
@@ -86,20 +83,20 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 //    public static final int SUN_STUDIO = 0;
 //    public static final int DTRACE = 1;
 //    public static final int SIMPLE = 2;
-    private static final String[] DATA_PROVIDER_NAMES = {
-        getString("SunStudio"),
-        getString("DTrace"),
-        getString("Simple")
-    };
-    private static final String[] LINUX_DATA_PROVIDER_NAMES = {
-        getString("Simple"),
-        getString("SunStudio")
-    };
-    private static final String[] WINDOWS_DATA_PROVIDER_NAMES = {
-        getString("Simple")
-    };
+//    private static final String[] DATA_PROVIDER_NAMES = {
+//        getString("SunStudio"),
+//        getString("DTrace"),
+//        getString("Simple")
+//    };
+//    private static final String[] LINUX_DATA_PROVIDER_NAMES = {
+//        getString("Simple"),
+//        getString("SunStudio")
+//    };
+//    private static final String[] WINDOWS_DATA_PROVIDER_NAMES = {
+//        getString("Simple")
+//    };
 //    private IntConfiguration dataProvider;
-    private DataProvidersCollection currentDPCollection = DataProvidersCollection.DEFAULT;
+//    private DataProvidersCollection currentDPCollection = DataProvidersCollection.DEFAULT;
     public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
     public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
     private String[] configurationNames;
@@ -114,7 +111,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 //        toolDescriptions = new HashMap<String, String>();
         profileOnRun = new BooleanConfiguration(null, true, null, null);
 //        dataProvider = new IntConfiguration(null, 0, DATA_PROVIDER_NAMES, null);
-        currentDPCollection = DataProvidersCollection.DEFAULT;
+//        currentDPCollection = DataProvidersCollection.DEFAULT;
     }
 
     public DLightConfiguration getDLightConfiguration() {
