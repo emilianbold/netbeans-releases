@@ -57,7 +57,9 @@ LDFLAGS-APP-SunOS := -lrt -lnsl -lsocket -lresolv
 LDFLAGS-APP-Mac_OS_X := -lrt -lnsl -lsocket -lresolv
 
 ifdef 64BITS
-    FLAG64 := -m64
+    FLAG32_64 := -m64
+else
+    FLAG32_64 := -m32
 endif
 
 # The following sets UNAME_S to a platform dependent string. Since
@@ -77,9 +79,9 @@ endif
 
 DEBUG := 
 TRACE := 0
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64} -DTRACE=${TRACE} ${DEBUG} ${EXTRA_CFLAGS}
-LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG64}
-LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG64} ${DEBUG}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${DEBUG} ${EXTRA_CFLAGS}
+LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64}
+LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
 
 ifneq (${TRACE}, 0)
 	LDFLAGS_LIB_TRACE = -lrt
