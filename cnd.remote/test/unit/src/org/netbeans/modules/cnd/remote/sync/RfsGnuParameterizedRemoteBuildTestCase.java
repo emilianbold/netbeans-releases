@@ -91,9 +91,21 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBa
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         long time = System.currentTimeMillis();
+        addPropertyFromRcFile(rcFile, "cnd.rfs.preload.sleep");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.preload.log");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.log");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.port");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.host");
         buildProject(makeProject, buildCommand, 60*6, TimeUnit.SECONDS);
         time = System.currentTimeMillis() - time;
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
+    }
+
+    private void addPropertyFromRcFile(RcFile rcFile, String varName) {
+        String value = rcFile.get(SECTION, varName);
+        if (value != null && value.length() > 0) {
+            System.setProperty(varName, value);
+        }
     }
 
     @Conditional(section=SECTION, key = "measure.build")

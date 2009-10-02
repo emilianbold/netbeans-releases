@@ -53,17 +53,13 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#define RFS_PRELOAD 1 // rfs_utils.h needs this
-
-#include "rfs_controller.h"
+#include "rfs_protocol.h"
+#include "rfs_preload_socks.h"
 #include "rfs_util.h"
 
 /** the name of the directory under control, including trailing "\" */
 static const char *my_dir = 0;
 static int my_dir_len;
-
-//static char* curr_dir = 0;
-//static int curr_dir_len = 0;
 
 #define get_real_addr(name) _get_real_addr(#name, name);
 
@@ -102,68 +98,6 @@ static inline void print_dlsym() {
     }
 }
 #endif
-
-static int open_socket() {
-    int port = default_controller_port;
-    char *env_port = getenv("RFS_CONTROLLER_PORT");
-    if (env_port) {
-        port = atoi(env_port);
-    }
-    char* hostname = "localhost";
-    char *env_host = getenv("RFS_CONTROLLER_HOST");
-    if (env_host) {
-        hostname = env_host;
-    }
-    trace("Connecting %s:%d\n", hostname, port);
-    struct hostent *hp;
-    if ((hp = gethostbyname(hostname)) == 0) {
-        perror("gethostbyname");
-        return -1;
-    }
-    struct sockaddr_in pin;
-    memset(&pin, 0, sizeof (pin));
-    pin.sin_family = AF_INET;
-    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-    pin.sin_port = htons(port);
-    int sd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sd == -1) {
-        perror("socket");
-        return -1;
-    }
-    if (connect(sd, (struct sockaddr *) & pin, sizeof (pin)) == -1) {
-        perror("connect");
-        return -1;
-    }
-    return sd;
-}
-
-/** 
- * Socked descriptor. 
- * Should be assigned ONLY in get_socket_descriptor and release_socket
- */
-static __thread int _sd = 0;
-
-static void trace_sd(const char* text) {
-    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
-}
-
-static int get_socket_descriptor(int create) {
-    // 0 means unitialized
-    // -1 means that we failed to open a socket
-    if (!create || _sd > 0) {
-        return _sd;
-    }
-    if (_sd == -1) {
-        return -1;
-    }
-    if (_sd == 0) {
-        _sd = -1; // in the case of success, it will become > 0
-        trace_sd("opening socket 1");
-    }
-    _sd = open_socket();
-    trace_sd("opening socket 2");
-    return _sd;
-}
 
 /* static int is_mine(const char *path) {
     if (path[0] == '/') {
@@ -245,34 +179,41 @@ static int on_open(const char *path, int flags) {
         return true;
     }
     int result = false;
-    int sd = get_socket_descriptor(1);
+    int sd = get_socket(true);
     if (sd == -1) {
         trace("On open %s: sd == -1\n", path);
     } else {
         //struct rfs_request;
-        int path_len = strlen(path);
         trace_sd("sending request");
-        trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
-        int sent = send(sd, path, path_len, 0);
-        if (sent == -1) {
+        trace("Sending \"%s\" to sd=%d\n", path, sd);
+        enum sr_result send_res = pkg_send(sd, pkg_request, path);
+        if (send_res == sr_failure) {
             perror("send");
-        } else {
-            trace("%d bytes sent to sd=%d\n", sent, sd);
-            char response_buf[512];
-            memset(response_buf, 0, sizeof(response_buf));
-            int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
-            if (response_size == -1) {
-                perror("receive");
-                // TODO: correct error processing
-            } else {
-                trace("Got %s for %s, flags=%d, sd=%d\n", response_buf, path, flags, sd);
-                if (response_buf[0] == response_ok) {
-                    result = true;
-                } else if (response_buf[0] == response_failure) {
-                    result = false;
+        } else if (send_res == sr_reset) {
+            perror("Connection reset by peer when sending request");
+        } else { // success
+            trace("Request for \"%s\" sent to sd=%d\n", path, sd);
+            const int maxsize = 256;
+            char buffer[maxsize + sizeof(int)];
+            struct package *pkg = (struct package *) &buffer;
+            enum sr_result recv_res = pkg_recv(sd, pkg, maxsize);
+            if (recv_res == sr_failure) {
+                perror("Error receiving response");
+            } else if (recv_res == sr_reset) {
+                perror("Connection reset by peer when receiving response");
+            } else { // success
+                if (pkg->kind == pkg_reply) {
+                    trace("Got %s for %s, flags=%d, sd=%d\n", pkg->data, path, flags, sd);
+                    if (pkg->data[0] == response_ok) {
+                        result = true;
+                    } else if (pkg->data[0] == response_failure) {
+                        result = false;
+                    } else {
+                        trace("Protocol error, sd=%d\n", sd);
+                        result = false;
+                    }
                 } else {
-                    trace("Protocol error, sd=%d\n", sd);
-                    result = false;
+                    trace("Protocol error: get pkg_kind %d instead of %d\n", pkg->kind, pkg_reply);
                 }
             }
         }
@@ -284,7 +225,7 @@ static int on_open(const char *path, int flags) {
 void
 __attribute__((constructor))
 on_startup(void) {
-    trace_startup("RFS_PRELOAD_LOG");    
+    trace_startup("RFS_P", "RFS_PRELOAD_LOG");
 //#if TRACE
 //    print_dlsym();
 //#endif
@@ -307,8 +248,12 @@ on_startup(void) {
         strcat(p, "/");
         my_dir = p;
     }
-    trace("RFS startup; my dir: %s\n", my_dir);
-    _sd = 0;
+
+    static int startup_count = 0;
+    startup_count++;
+    trace("RFS startup (%d) my dir: %s\n", startup_count, my_dir);
+
+    release_socket();
     trace_sd("startup");
 
     const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
@@ -328,19 +273,12 @@ on_startup(void) {
     }
 }
 
-static void release_socket() {
-    if (_sd > 0) {
-        trace("agent closes socket _sd=%d &_sd=%X\n", _sd, &_sd);
-        close(_sd);
-        _sd = 0;
-        trace_sd("releasing socket");
-    }
-}
-
 void
 __attribute__((destructor))
 on_shutdown(void) {
-    trace("RFS shutdown\n");
+    static int shutdown_count = 0;
+    shutdown_count++;
+    trace("RFS shutdown (%d)\n", shutdown_count);
     trace_shutdown();
     release_socket();
 }

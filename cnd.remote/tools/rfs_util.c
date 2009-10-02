@@ -38,20 +38,56 @@
  */
 
 #include <stdio.h>
-#include <unistd.h>
-#include <limits.h>
+#include <stdlib.h>
 
-enum {
-    true = 1,
-    false = 0
-};
+#include "rfs_util.h"
 
 #if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var);
-    void trace_shutdown();
-#else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
+
+static const char* pattern = "%u #%s[%d]: ";
+static const char* prefix = 0;
+
+static unsigned long get_timestamp() {
+    struct timespec tp;
+    clock_gettime(CLOCK_REALTIME, &tp);
+    return tp.tv_sec*1000000000+tp.tv_nsec;
+}
+
+FILE *trace_file;
+void trace(const char *format, ...) {
+    fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
+    va_list args;
+    va_start (args, format);
+    vfprintf(trace_file, format, args);
+    va_end (args);
+    fflush(trace_file);
+}
+
+void trace_startup(const char* _prefix, const char* env_var) {
+    prefix = _prefix;
+    char *file_name = env_var ? getenv(env_var) : NULL;
+    if (file_name) {
+        trace_file = fopen(file_name, "a");
+        if (trace_file) {
+            fprintf(stderr, "Redirecting trace to %s\n", file_name);
+            fprintf(trace_file, "\n\n--------------------\n");
+            fflush(trace_file);
+        } else {
+            fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
+            trace_file = stderr;
+        }
+    } else {
+        trace_file = stderr;
+    }
+    char dir[PATH_MAX];
+    getcwd(dir, sizeof dir);
+    trace("started in %s\n", dir);
+}
+
+void trace_shutdown() {
+    if (trace_file && trace_file != stderr) {
+        fclose(trace_file);
+    }
+}
+
 #endif

@@ -37,21 +37,69 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <limits.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include <sys/socket.h>
 
-enum {
-    true = 1,
-    false = 0
-};
+#include "rfs_util.h"
+#include "rfs_protocol.h"
 
-#if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var);
-    void trace_shutdown();
-#else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
-#endif
+// Actual package layout:
+//  char kind;
+//  char[2] 2-bytes size representation (high byte first)
+//  char[] data 0-32K bytes null-terminated string
+
+static int do_send(int sd, const char* buffer, int size) {
+    int sent = 0;
+    while (sent < size) {
+        int sent_now = send(sd, buffer + sent, size - sent, 0);
+        if (sent_now == -1) {
+            return false;
+        } else {
+            sent += sent_now;
+        }
+    }
+    return true;
+}
+
+enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf) {
+    int size = strlen(buf) + 1;
+    char header[3];
+    header[0] = (char) kind;
+    header[1] = size & 0xff00; // high byte
+    header[2] = size & 0x00ff; // low byte
+    if (do_send(sd, header, sizeof header)) {
+        if (do_send(sd, buf, size)) {
+            return sr_success;
+        }
+    }
+    return sr_failure;
+}
+
+enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
+    // clear pkg
+    p->kind = pkg_null;
+    memset(p->data, 0, max_data_size);
+    // get kind and size
+    char buffer[3];
+    int received;
+    received = recv(sd, buffer, 3, 0); // 3-rd is for kind
+    if (received != 3) {
+        return sr_failure;
+    }
+    p->kind = (enum pkg_kind) buffer[0];
+    int size =  ((0x0FF & buffer[1])) * 256 + ((0x0FF & buffer[2]));
+    if (size > max_data_size) {
+        errno = EMSGSIZE;
+        return sr_failure;
+    }
+    received = recv(sd, p->data, size, 0);
+    if (received == 0) {
+        return sr_reset;
+    }
+    if (received != size) {
+        return sr_failure;
+    }
+    return sr_success;
+}
