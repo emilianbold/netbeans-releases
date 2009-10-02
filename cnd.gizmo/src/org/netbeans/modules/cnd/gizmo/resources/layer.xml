@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="DLight">
         <folder name="Configurations">
-            <folder name="Gizmo">
+            <folder name="GizmoDTraceExtended">
                 <attr name="displayedName" stringvalue="C/C++ DTrace Extended"/>
                 <attr name="system" boolvalue="true"/>
                 <attr name="category" stringvalue="Gizmo"/>
@@ -22,11 +22,11 @@
                     </file>
                     <file name="ThreadMapToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
-                        <attr name="enabledByDefault" boolvalue="false"/>
+                        <attr name="enabledByDefault" boolvalue="true"/>
                     </file>
                     <file name="FopsToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
-                        <attr name="enabledByDefault" boolvalue="false"/>
+                        <attr name="enabledByDefault" boolvalue="true"/>
                     </file>
                 </folder>
                 <folder name="ConfigurationOptions">
