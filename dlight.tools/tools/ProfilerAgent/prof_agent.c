@@ -191,7 +191,7 @@ INSTRUMENT(pthread_barrier_wait, , )
 INSTRUMENT(pthread_mutex_timedlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_rwlock_timedrdlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_rwlock_timedwrlock, VOID1P, ACTUAL1)
-INSTRUMENT(pthread_spin_lock, , )
+//INSTRUMENT(pthread_spin_lock, , )
 //INSTRUMENT(pthread_cleanup_push);
 
 static int (* ORIG(pthread_create))(void *newthread,
