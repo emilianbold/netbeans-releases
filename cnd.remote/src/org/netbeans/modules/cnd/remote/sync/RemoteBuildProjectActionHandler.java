@@ -187,11 +187,11 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
         env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
 
-        addRemoteEnv(env2add, "cnd.rfs.preload.sleep", "RFS_PRELOAD_SLEEP");
-        addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG");
-        addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG");
-        addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT");
-        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST");
+        addRemoteEnv(env2add, "cnd.rfs.preload.sleep", "RFS_PRELOAD_SLEEP"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
         for (Map.Entry<String, String> entry : env2add.entrySet()) {
