@@ -459,15 +459,19 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
 
             public void run() {
-                final Icon projectIcon = proj.getProjectIcon(true);
+                final Icon projectIcon;
+                try {
+                    projectIcon = proj.getProjectIcon();
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
                         projectImage.setIcon(projectIcon);
                     }
                 });
-
+                } catch (KenaiException ex) {
+                    Exceptions.printStackTrace(ex);
            }
+            }
         });
 
         // Set label for www - make it link
