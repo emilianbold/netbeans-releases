@@ -348,6 +348,10 @@ public final class DtraceDataCollector
         return extraArgs;
     }
 
+    /*package*/ void packageVisibleSuggestIndicatorsRepaint() {
+        super.suggestIndicatorsRepaint();
+    }
+
     private void targetFinished(DLightTarget target) {
         if (!isSlave) {
             if (dtraceRunner != null) {
@@ -522,7 +526,7 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        this.dtraceRunner = new DTraceRunner(target.getExecEnv(), taskCommand, getOutputProcessor());
+        this.dtraceRunner = new DTraceRunner(this, target.getExecEnv(), taskCommand, getOutputProcessor());
 
         log.fine("DtraceDataCollector (" + dtraceRunner.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
@@ -623,6 +627,7 @@ public final class DtraceDataCollector
         public void close() {
             DataRow dataRow = parser.processClose();
             addDataRow(dataRow);
+            suggestIndicatorsRepaint();
         }
     }
 
@@ -657,6 +662,7 @@ public final class DtraceDataCollector
             for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                 entry.getValue().getOutputProcessor().close();
             }
+            suggestIndicatorsRepaint();
         }
     }
 

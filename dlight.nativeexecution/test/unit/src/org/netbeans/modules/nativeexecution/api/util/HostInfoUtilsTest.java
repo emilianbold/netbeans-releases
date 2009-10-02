@@ -322,7 +322,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         String testFileName = "some (" + new Random().nextInt() + ") file"; // NOI18N
         CommonTasksSupport.mkDir(env, testDir, null);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.addEnvironmentVariable("PATH", "$PATH:/bin:/usr/bin"); // NOI18N
+        npb.getEnvironment().put("PATH", "$PATH:/bin:/usr/bin"); // NOI18N
         npb.setExecutable("touch").setArguments(testDir + "/" + testFileName); // NOI18N
         npb.call().waitFor();
 

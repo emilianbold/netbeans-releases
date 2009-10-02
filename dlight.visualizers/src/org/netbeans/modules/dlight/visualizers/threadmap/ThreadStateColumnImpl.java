@@ -80,7 +80,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     static long timeStampToMilliSeconds(long timeStamp) {
-        return timeStamp;
+        return timeStamp / 1000000; // timestamp is in nanoseconds
     }
 
     static int timeInervalToMilliSeconds(long samplingInterval) {

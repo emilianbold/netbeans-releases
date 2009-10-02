@@ -81,10 +81,11 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     private final Object timeFilterLock = new Object();
     private volatile TimeIntervalDataFilter timeFilter;
 
-    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
+    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series, TimeSeriesDataContainer data) {
         upperLimit = scale;
-        graph = new GraphPainter(series);
-        graph.addData(new float[series.size()]); // 0th tick - all zeros
+        TimeSeriesDataContainer container = data;
+        container.setTimeSeriesPlot(this);
+        graph = new GraphPainter(series, container);
         timeMarksProvider = TimeMarksProvider.newInstance();
         valueMarksProvider = ValueMarksProvider.newInstance(formatter);
         DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
@@ -153,12 +154,6 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         graph.paint(g, upperLimit, valueMarks, viewport.getStart(), viewport.getEnd(), timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
-    public void addData(float... newData) {
-        graph.addData(newData);
-        viewportModel.setLimits(new Range<Long>(0L, TimeUnit.SECONDS.toMillis(graph.getDataSize())));
-        repaintAll();
-    }
-
     public ViewportModel getViewportModel() {
         return viewportModel;
     }
@@ -198,7 +193,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         }
     }
 
-    private void repaintAll() {
+    public void repaintAll() {
         repaint();
         if (hAxis != null) {
             hAxis.repaint();

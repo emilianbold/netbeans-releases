@@ -88,7 +88,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
      * @return <code>true</code> if indicator was successfuly subscribed,
      * <code>false</code> otherwise
      */
-    public final boolean subscribe(Indicator indicator) {
+    public final boolean subscribe(Indicator<?> indicator) {
         List<DataTableMetadata.Column> indicatorColumns = IndicatorAccessor.getDefault().getMetadataColumns(indicator);
 
         // if this provider provides at least one column of information
@@ -120,7 +120,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
      * Use this method to unsubscribe from this data provider
      * @param indicator indicator to unsubscribe
      */
-    public final void unsubscribe(Indicator indicator) {
+    public final void unsubscribe(Indicator<?> indicator) {
         removeIndicatorDataProviderListener(indicator);
     }
 
@@ -134,6 +134,12 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     protected final void notifyIndicators(List<DataRow> data) {
         for (IndicatorNotificationsListener l : notificationListeners) {
             l.updated(data);
+        }
+    }
+
+    protected final void suggestIndicatorsRepaint() {
+        for (IndicatorNotificationsListener l : notificationListeners) {
+            l.suggestRepaint();
         }
     }
 

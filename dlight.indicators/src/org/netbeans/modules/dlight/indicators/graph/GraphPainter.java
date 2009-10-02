@@ -50,7 +50,6 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.util.DLightMath;
@@ -77,15 +76,14 @@ class GraphPainter {
     private final List<TimeSeriesDescriptor> descriptors;
     private final int seriesCount;
 
-    private List<float[]> data;
-    private final Object dataLock = new Object();
+    private TimeSeriesDataContainer data;
 
 //    private BufferedImage cachedImage;
 
-    public GraphPainter(List<TimeSeriesDescriptor> descriptors) {
+    public GraphPainter(List<TimeSeriesDescriptor> descriptors, TimeSeriesDataContainer data) {
         this.descriptors = descriptors;
         seriesCount = descriptors.size();
-        data = new ArrayList<float[]>(1000);
+        this.data = data;
 //        initCacheImage();
     }
 
@@ -98,21 +96,6 @@ class GraphPainter {
 //        }
 //        cachedImage = newImage;
 //    }
-
-    public void addData(float... newData) {
-        synchronized (dataLock) {
-            if (newData.length != seriesCount) {
-                throw new IllegalArgumentException(
-                        String.format("New data size %d differs from series count %d", //NOI18N
-                        newData.length, seriesCount));
-            }
-            data.add(newData.clone());
-        }
-     }
-
-    public int getDataSize() {
-        return data.size();
-    }
 
     public int calculateUpperLimit(float... data) {
         float absLimit = 0;
@@ -165,13 +148,11 @@ class GraphPainter {
      * @param ticks  whether to draw ticks on graph
      */
     public void paint(Graphics g, int scale, List<AxisMark> yMarks, long viewportStart, long viewportEnd, List<AxisMark> xMarks, int filterStart, int filterEnd, int x, int y, int w, int h, boolean ticks) {
-        synchronized (dataLock) {
-            paintGradient(g, x, y, w, h);
-            if (0 < w && 0 < h) {
-                paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
-                paintGraph(g, scale, (int) (viewportStart / 1000), (int) (viewportEnd / 1000), x, y, w, h);
-                dimInactiveRegions(g, (int) (viewportStart / 1000), (int) (viewportEnd / 1000), filterStart, filterEnd, x, y, w, h);
-            }
+        paintGradient(g, x, y, w, h);
+        if (0 < w && 0 < h) {
+            paintGrid(g, x, y, w, h, xMarks, yMarks, ticks);
+            paintGraph(g, scale, (int) (viewportStart / 1000), (int) (viewportEnd / 1000), x, y, w, h);
+            dimInactiveRegions(g, (int) (viewportStart / 1000), (int) (viewportEnd / 1000), filterStart, filterEnd, x, y, w, h);
         }
     }
 

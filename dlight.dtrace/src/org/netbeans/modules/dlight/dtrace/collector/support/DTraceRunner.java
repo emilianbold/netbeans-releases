@@ -57,15 +57,17 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 public final class DTraceRunner implements Runnable {
 
     private static final String EOF_MARKER = "__DTRACE_EOF_MARKER__"; // NOI18N
-    private static final int SMALL_TIMEOUT = 10;
+    private static final int SMALL_TIMEOUT = 5;
     private static final int BIG_TIMEOUT = 30;
 
+    private final DtraceDataCollector dtraceCollector;
     private final Future<Integer> dtraceTask;
     private final AtomicBoolean dataFlag;
     private final AtomicBoolean eofFlag;
     private final AtomicBoolean shutdownFlag;
 
-    public DTraceRunner(ExecutionEnvironment execEnv, String command, LineProcessor outProcessor) {
+    public DTraceRunner(DtraceDataCollector dtraceCollector, ExecutionEnvironment execEnv, String command, LineProcessor outProcessor) {
+        this.dtraceCollector = dtraceCollector;
         this.dataFlag = new AtomicBoolean();
         this.eofFlag = new AtomicBoolean();
         this.shutdownFlag = new AtomicBoolean();
@@ -131,6 +133,7 @@ public final class DTraceRunner implements Runnable {
                 ticksWithoutData = 0;
             } else {
                 ++ticksWithoutData;
+                dtraceCollector.packageVisibleSuggestIndicatorsRepaint();
                 //System.out.println(ticksWithoutData + "s without data");
                 if (SMALL_TIMEOUT <= ticksWithoutData) {
                     break;
