@@ -218,7 +218,7 @@ static void init_files() {
 }
 
 int main(int argc, char* argv[]) {
-    trace_startup("RFS_CNTL", "RFS_CONTROLLER_LOG");
+    trace_startup("RFS_C", "RFS_CONTROLLER_LOG");
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);

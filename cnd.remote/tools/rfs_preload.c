@@ -225,7 +225,7 @@ static int on_open(const char *path, int flags) {
 void
 __attribute__((constructor))
 on_startup(void) {
-    trace_startup("RFS_PRLD", "RFS_PRELOAD_LOG");
+    trace_startup("RFS_P", "RFS_PRELOAD_LOG");
 //#if TRACE
 //    print_dlsym();
 //#endif
