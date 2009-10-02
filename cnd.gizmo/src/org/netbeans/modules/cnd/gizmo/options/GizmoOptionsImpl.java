@@ -105,6 +105,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private String[] configurationNames;
     private DLightConfiguration[] configurations;
     private IntConfiguration gizmoConfigurations = null;
+    private String preferredConfigurationName = null;
 
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
@@ -117,9 +118,15 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public DLightConfiguration getDLightConfiguration() {
+        if (configurations == null || gizmoConfigurations == null || gizmoConfigurations.getValue() < 0 || gizmoConfigurations.getValue() >= configurations.length) {
+            return null;
+        }
         return configurations[gizmoConfigurations.getValue()];
     }
 
+    public void setPreferredDLightConfiguration(String name) {
+        preferredConfigurationName = name;
+    }
     
 
     public void init(Configuration conf) {
@@ -203,15 +210,24 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             configurationNames = names.toArray(new String[names.size()]);
             configurations = confs.toArray(new DLightConfiguration[confs.size()]);
             // Figure out default;
-            int defConf = 0;
-            if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
-                if (hasSunStudio || platform.indexOf("Linux") >= 0) {
-                    defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
+            int defConf = -1;
+            if (preferredConfigurationName != null) {
+                defConf = getConfigurationIndexByName(preferredConfigurationName);
+                preferredConfigurationName = null;
+            }
+            if (defConf == -1) {
+                if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
+                    if (hasSunStudio || platform.indexOf("Linux") >= 0) {
+                        defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
+                    } else {
+                        defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
+                    }
                 } else {
-                    defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
+                    defConf = getConfigurationIndexByName("GizmoSimple"); // NOI18N
                 }
-            } else {
-                defConf = getConfigurationIndexByName("GizmoSimple"); // NOI18N
+            }
+            if (defConf == -1) {
+                defConf = 0;
             }
             gizmoConfigurations = new IntConfiguration(null, defConf, configurationNames, null);
         }
@@ -292,15 +308,15 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return toolConfigurations.get(toolName);
     }
 
-    public boolean isConfigurationModified(String toolName) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
-        //in case different from the default
-        DLightTool tool = gizmoConfiguration.getToolByID(toolName);
-        if (toolConfigurations.get(toolName) != null && tool != null && (tool.isEnabled() != toolConfigurations.get(toolName).getValue())) {
-            return true;
-        }
-        return false;
-    }
+//    public boolean isConfigurationModified(String toolName) {
+//        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+//        //in case different from the default
+//        DLightTool tool = gizmoConfiguration.getToolByID(toolName);
+//        if (toolConfigurations.get(toolName) != null && tool != null && (tool.isEnabled() != toolConfigurations.get(toolName).getValue())) {
+//            return true;
+//        }
+//        return false;
+//    }
 
     public String getDescriptionByName(String toolName) {
         return toolDescriptions.get(toolName);
