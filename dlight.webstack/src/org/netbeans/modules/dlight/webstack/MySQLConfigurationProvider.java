@@ -63,7 +63,7 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
 
   public DLightToolConfiguration create() {
     final String toolName = getMessage("MysqlTool.Name"); // NOI18N
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
+    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("mysql.id", toolName);
     List<Column> mysqlColumns = Arrays.asList(
             new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
             new Column("query", String.class, getMessage("Column.SqlQuery"), null), // NOI18N
