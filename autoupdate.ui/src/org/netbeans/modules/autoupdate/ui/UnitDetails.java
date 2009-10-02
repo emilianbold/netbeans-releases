@@ -219,25 +219,22 @@ public class UnitDetails extends DetailsPanel {
 
                 for (UpdateElement req : reqs) {
                     if (req.getUpdateUnit().getInstalled() != null && !req.getUpdateUnit().isPending()) {
-
+                        required.add(req);
                         Set<UpdateElement> requiredElements = requiredMap.get(req);
                         if (requiredElements == null) {
                             requiredElements = OperationContainer.createForUpdate().add(req).getRequiredElements();
                             requiredMap.put(req, requiredElements);
                         }
                         for (UpdateElement e : requiredElements) {
-                            if (!required.contains(e)) {
-                                required.add(e);
-                            }
+                            required.add(e);
                         }
                     } else {
                         //OperationContainer.createForInstall().
                     }
-                }
-                required.addAll(reqs);
+                }                
             }
             for (OperationInfo<InstallSupport> i : infos) {
-                if (!required.contains(i.getUpdateElement()) && !i.getUpdateUnit().equals(u.updateUnit)) {
+                if (!i.getUpdateUnit().equals(u.updateUnit)) {
                     required.add(i.getUpdateElement());
                 }
             }
