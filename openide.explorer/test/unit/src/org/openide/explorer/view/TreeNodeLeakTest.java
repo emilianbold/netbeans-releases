@@ -62,7 +62,11 @@ public final class TreeNodeLeakTest extends NbTestCase {
     public TreeNodeLeakTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
 
     private static Node createNode(String name, Node ... sub) {
         Children ch = Children.LEAF;
