@@ -276,10 +276,6 @@ public class DetectorTest extends TestBase {
         performTest("ConstructorUsedByThis");
     }
     
-    public void testUnresolvableImportsAreNotUnused() throws Exception {
-        performTest("UnresolvableImportsAreNotUnused");
-    }
-    
     public void testEnums() throws Exception {
         performTest("Enums");
     }

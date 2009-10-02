@@ -124,7 +124,7 @@ public final class JavadocImports {
                 if (ref != null && ref.fqn != null && ref.fqn.length() > 0) {
                     String fqn = ref.fqn.toString();
                     TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
-                    if (type != null && type.getKind() == TypeKind.DECLARED) {
+                    if (type != null && (type.getKind() == TypeKind.DECLARED || type.getKind() == TypeKind.ERROR)) {
                         DeclaredType declaredType = (DeclaredType) type;
                         if (result == null) {
                             result = new HashSet<TypeElement>();
