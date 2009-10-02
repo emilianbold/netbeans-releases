@@ -321,6 +321,7 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
         private final List<Column> threadColumns;
         private final List<Column> lockColumns;
+        private int locks;
 
         public DataRowToSync(List<Column> threadColumns, List<Column> lockColumns) {
             this.threadColumns = new ArrayList<Column>(threadColumns);
@@ -329,9 +330,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
         @Override
         public float[] getData(DataRow row) {
+            // Warning! Threads and locks can come in different data rows!
             boolean success = false;
             int threads = 0;
-            int locks = 0;
             for (String columnName : row.getColumnNames()) {
                 for (Column threadColumn : threadColumns) {
                     if (threadColumn.getColumnName().equals(columnName)) {
@@ -341,7 +342,6 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                 }
                 for (Column lockColumn : lockColumns) {
                     if (lockColumn.getColumnName().equals(columnName)) {
-                        success = true;
                         locks = DataUtil.toInt(row.getData(columnName));
                     }
                 }
