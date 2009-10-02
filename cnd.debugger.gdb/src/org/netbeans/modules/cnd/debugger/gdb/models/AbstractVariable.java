@@ -479,15 +479,17 @@ public abstract class AbstractVariable implements LocalVariable {
         return fields.toArray(new Field[fields.size()]);
     }
 
-    // We can NOT use names for equals
-    // otherwise trees mixes instances when updating
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
+        // DO NOT use name here!
+        // (tree model starts to mix variables)
         return super.equals(o);
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
+        // DO NOT use name here!
+        // (tree model starts to mix variables)
         return super.hashCode();
     }
 
