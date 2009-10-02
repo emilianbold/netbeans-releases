@@ -174,27 +174,18 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     //Static Action Factory Methods
-    public static Action createAddProjectAction (Project p, SourceRoots sources) {
-        if (sources.getRoots().length == 0) {
-            return null;
-        }
-        return new AddProjectAction(p, sources.getRoots()[0]);
+    public static Action createAddProjectAction (Project p, SourceRoots sources) {        
+        return new AddProjectAction(p, sources);
     }
 
     public static Action createAddLibraryAction (ReferenceHelper helper, 
-            SourceRoots sources, LibraryChooser.Filter filter) {
-        if (sources.getRoots().length == 0) {
-            return null;
-        }
-        return new AddLibraryAction(helper, sources.getRoots()[0], 
+            SourceRoots sources, LibraryChooser.Filter filter) {        
+        return new AddLibraryAction(helper, sources, 
                 filter != null ? filter : EditMediator.createLibraryFilter());
     }
 
-    public static Action createAddFolderAction (AntProjectHelper p, SourceRoots sources) {
-        if (sources.getRoots().length == 0) {
-            return null;
-        }
-        return new AddFolderAction(p, sources.getRoots()[0]);
+    public static Action createAddFolderAction (AntProjectHelper p, SourceRoots sources) {        
+        return new AddFolderAction(p, sources);
     }
     
     /**
@@ -606,12 +597,12 @@ public final class LibrariesNode extends AbstractNode {
     private static class AddProjectAction extends AbstractAction {
 
         private final Project project;
-        private final FileObject projectSourcesArtifact;
+        private final SourceRoots sources;
 
-        public AddProjectAction (Project project, FileObject projectSourcesArtifact) {
+        public AddProjectAction (Project project, SourceRoots sources) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddProject_Action" ) );
             this.project = project;
-            this.projectSourcesArtifact = projectSourcesArtifact;
+            this.sources = sources;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -623,7 +614,17 @@ public final class LibrariesNode extends AbstractNode {
                 }
         }
 
+        @Override
+        public boolean isEnabled() {
+            return this.sources.getRoots().length > 0;
+        }
+
         private void addArtifacts (AntArtifactItem[] artifactItems) {
+            final FileObject[] roots = this.sources.getRoots();
+            if (roots.length == 0) {
+                return;
+            }
+            final FileObject projectSourcesArtifact = roots[0];
             AntArtifact[] artifacts = new AntArtifact[artifactItems.length];
             URI[] artifactURIs = new URI[artifactItems.length];
             for (int i = 0; i < artifactItems.length; i++) {
@@ -642,13 +643,13 @@ public final class LibrariesNode extends AbstractNode {
     private static class AddLibraryAction extends AbstractAction {
 
         private final LibraryChooser.Filter filter;
-        private final FileObject projectSourcesArtifact;
+        private final SourceRoots sourceRoots;
         private ReferenceHelper refHelper;
 
-        public AddLibraryAction(ReferenceHelper refHelper, FileObject projectSourcesArtifact, LibraryChooser.Filter filter) {
+        public AddLibraryAction(ReferenceHelper refHelper, SourceRoots sourceRoots, LibraryChooser.Filter filter) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.refHelper = refHelper;
-            this.projectSourcesArtifact = projectSourcesArtifact;
+            this.sourceRoots = sourceRoots;
             this.filter = filter;
         }
 
@@ -661,7 +662,17 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
+        public boolean isEnabled() {
+            return this.sourceRoots.getRoots().length > 0;
+        }
+
         private void addLibraries (Library[] libraries) {
+            final FileObject[] roots = this.sourceRoots.getRoots();
+            if (roots.length == 0) {
+                return;
+            }
+            final FileObject projectSourcesArtifact = roots[0];
             try {
                 ProjectClassPathModifier.addLibraries(libraries,
                         projectSourcesArtifact, ClassPath.COMPILE);
@@ -675,12 +686,12 @@ public final class LibrariesNode extends AbstractNode {
     private static class AddFolderAction extends AbstractAction {
 
         private final AntProjectHelper helper;
-        private final FileObject projectSourcesArtifact;
+        private final SourceRoots sources;
 
-        public AddFolderAction (AntProjectHelper helper, FileObject projectSourcesArtifact) {
+        public AddFolderAction (AntProjectHelper helper, SourceRoots sources) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddFolder_Action" ) );
             this.helper = helper;
-            this.projectSourcesArtifact = projectSourcesArtifact;
+            this.sources = sources;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -718,7 +729,17 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
+        public boolean isEnabled() {
+            return this.sources.getRoots().length > 0;
+        }
+
         private void addJarOrFolder (String[] filePaths, final String[] pathBasedVariables, FileFilter fileFilter, File base) {
+            final FileObject[] roots = this.sources.getRoots();
+            if (roots.length == 0) {
+                return;
+            }
+            final FileObject projectSourcesArtifact = roots[0];
             for (int i=0; i<filePaths.length;i++) {
                 try {
                     //Check if the file is acceted by the FileFilter,
