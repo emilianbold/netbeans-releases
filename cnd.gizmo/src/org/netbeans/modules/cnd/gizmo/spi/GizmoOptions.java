@@ -65,21 +65,21 @@ public interface GizmoOptions {
      */
     void setProfileOnRunValue(boolean profileOnRunValue);
 
-    boolean getValueByName(String name);
-
-    void setValueByName(String name, boolean value);
+//    boolean getValueByName(String name);
+//
+//    void setValueByName(String name, boolean value);
 
     Collection<String> getNames();
 
-    /**
-     * @return the dataProvider
-     */
-    DataProvider getDataProviderValue();
-
-    /**
-     * @param dataProvider the dataProvider to set
-     */
-    void setDataProviderValue(DataProvider dataProvider);
+//    /**
+//     * @return the dataProvider
+//     */
+//    DataProvider getDataProviderValue();
+//
+//    /**
+//     * @param dataProvider the dataProvider to set
+//     */
+//    void setDataProviderValue(DataProvider dataProvider);
 
     void init(Configuration conf);
 }
