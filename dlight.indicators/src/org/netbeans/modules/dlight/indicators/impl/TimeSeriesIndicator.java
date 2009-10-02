@@ -187,10 +187,7 @@ public final class TimeSeriesIndicator
         this.data.grow(tickCounter);
         ++tickCounter;
         graph.getViewportModel().setLimits(new Range<Long>(null, 1000L * tickCounter));
-        for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
-            legend.updateDetail(entry.getKey(), entry.getValue());
-        }
-        graph.repaintAll();
+        refresh();
     }
 
     @Override
@@ -212,6 +209,13 @@ public final class TimeSeriesIndicator
 
     @Override
     public void suggestRepaint() {
+        refresh();
+    }
+
+    private void refresh() {
+        for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
+            legend.updateDetail(entry.getKey(), entry.getValue());
+        }
         graph.repaintAll();
     }
 

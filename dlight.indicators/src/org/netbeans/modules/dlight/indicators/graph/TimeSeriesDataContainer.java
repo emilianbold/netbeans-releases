@@ -105,7 +105,7 @@ public final class TimeSeriesDataContainer {
         if (newData.length != arraySize) {
             throw new IllegalArgumentException("Wrong data size"); // NOI18N
         }
-        int bucketId = (int) (timestamp / bucketSize);
+        int bucketId = (int) Math.ceil((double) timestamp / (double) bucketSize);
         grow(bucketId + 1);
         Bucket bucket = list.get(bucketId);
         if (bucket == null) {

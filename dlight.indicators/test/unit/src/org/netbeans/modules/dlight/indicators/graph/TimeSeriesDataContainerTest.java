@@ -86,4 +86,17 @@ public class TimeSeriesDataContainerTest {
         c.put(0, new float[] {2});
         assertEquals(1.5f, c.get(0)[0], 0);
     }
+
+    @Test
+    public void testBucketMapping() {
+        TimeSeriesDataContainer c = new TimeSeriesDataContainer(10, Aggregation.SUM, 1, false);
+        c.put(0, new float[] {0});
+        assertEquals(0, c.get(0)[0], 0);
+        c.put(1, new float[] {1});
+        c.put(9, new float[] {9});
+        c.put(10, new float[] {10});
+        assertEquals(20, c.get(1)[0], 0);
+        c.put(11, new float[] {11});
+        assertEquals(11, c.get(2)[0], 0);
+    }
 }

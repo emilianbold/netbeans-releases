@@ -124,16 +124,17 @@ public final class DTraceRunner implements Runnable {
                 return;
             }
 
-            if (!sleepOneSecond() || eofFlag.get()) {
+            if (eofFlag.get() || !sleepOneSecond()) {
                 break;
             }
+
+            dtraceCollector.packageVisibleSuggestIndicatorsRepaint();
 
             if (dataFlag.getAndSet(false)) {
                 //System.out.println("Got data");
                 ticksWithoutData = 0;
             } else {
                 ++ticksWithoutData;
-                dtraceCollector.packageVisibleSuggestIndicatorsRepaint();
                 //System.out.println(ticksWithoutData + "s without data");
                 if (SMALL_TIMEOUT <= ticksWithoutData) {
                     break;
