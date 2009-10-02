@@ -343,6 +343,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 expr = arrayAccess.getName();
             }
             (new FieldAccessVisitor(ColoringAttributes.STATIC_FIELD_SET)).scan(expr);
+            super.visit(node);
 
         }
 

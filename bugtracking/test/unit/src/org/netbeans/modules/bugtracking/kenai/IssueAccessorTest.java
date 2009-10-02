@@ -257,7 +257,7 @@ public class IssueAccessorTest extends NbTestCase {
     }
 
     private static Repository getKenaiRepository(KenaiProject kp) throws KenaiException {
-        return KenaiRepositories.getInstance().getRepository(kp);
+        return KenaiRepositoryUtils.getInstance().getRepository(kp);
     }
 
     private static class TestRepository extends Repository {

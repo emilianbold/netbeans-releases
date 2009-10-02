@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.debugger.gdb.attach;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import javax.swing.JPanel;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -80,31 +79,40 @@ import org.openide.util.RequestProcessor;
  */
 public class GdbAttachPanel extends JPanel implements ProcessListReader {
     
-    private ProcessList procList;
+    private ProcessList procList = null;
     private final AttachTableModel processModel = new AttachTableModel();
-    private final Controller controller;
+    private Controller controller = null;
     private static String lastFilterValue = "";
     private static boolean showAll = false;
+    private boolean updateColumns = true;
     
     /** Creates new form GdbAttachPanel */
     public GdbAttachPanel() {
-        controller = new GdbAttachController();
         initComponents();
-        initHostCombo();
-        procList = new ProcessList(getCurrentExecutionEnvironment());
+        postComponentsInit();
+        updateProcessList(true);
+    }
+
+    private void postComponentsInit() {
+        for (ServerRecord serverRecord : ServerList.getRecords()) {
+            hostComboBox.addItem(serverRecord);
+        }
+        // Initialize the filter
+        filterField.setText(lastFilterValue);
+        allCheckBox.setSelected(showAll);
+
+        // Fill the Projects combo box
+        fillProjectsCombo(projectCB);
+        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                hostComboBoxItemStateChanged(evt);
+            }
+        });
         filterField.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
                 filterTextChanged();
             }
         });
-        postComponentsInit();
-    }
-
-    private void initHostCombo() {
-        Collection<? extends ServerRecord> records = ServerList.getRecords();
-        for (ServerRecord serverRecord : records) {
-            hostComboBox.addItem(serverRecord);
-        }
     }
 
     private ExecutionEnvironment getCurrentExecutionEnvironment() {
@@ -113,25 +121,28 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
 
     private synchronized void filterTextChanged() {
         lastFilterValue = filterField.getText();
-        updateProcessList();
+        updateProcessList(false);
     }
     
-    private void postComponentsInit() {
+    private void setupColumns() {
+        processModel.setColumnCount(0);
         for (AttachTableColumn hdr : procList.getColumnHeaders()) {
             processModel.addColumn(hdr);
         }
-        setupCommandColumn();
-
-        // Initialize the filter
-        filterField.setText(lastFilterValue);
-        allCheckBox.setSelected(showAll);
-        // list will not be updated if text is empty
-        if (lastFilterValue.length() == 0) {
-            updateProcessList();
+        // setup CommandColumn
+        // last column should be the command column and needs to be enlarged
+        //TableColumn tc = processTable.getColumn(procList.getArgsHeader());
+        //tc.setPreferredWidth(300);
+        //tc.setMinWidth(75);
+        int size = processTable.getColumnModel().getColumnCount();
+        for (int i = 0; i < size; i++) {
+            TableColumn column = processTable.getColumnModel().getColumn(i);
+            if (column.getIdentifier() != null && column.getIdentifier().equals(procList.getArgsHeader())) {
+                column.setPreferredWidth(300);
+                column.setMinWidth(75);
+                break;
+            }
         }
-        
-        // Fill the Projects combo box
-        fillProjectsCombo(projectCB);
     }
 
     public static void fillProjectsCombo(JComboBox comboBox) {
@@ -148,24 +159,12 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             }
         }
     }
-
-    private void setupCommandColumn() {
-        // last column should be the command column and needs to be enlarged
-        //TableColumn tc = processTable.getColumn(procList.getArgsHeader());
-        //tc.setPreferredWidth(300);
-        //tc.setMinWidth(75);
-        int size = processTable.getColumnModel().getColumnCount();
-        for (int i = 0; i < size; i++) {
-            TableColumn column = processTable.getColumnModel().getColumn(i);
-            if (column.getIdentifier() != null && column.getIdentifier().equals(procList.getArgsHeader())) {
-                column.setPreferredWidth(300);
-                column.setMinWidth(75);
-                break;
-            }
-        }
-    }
     
-    private void updateProcessList() {
+    private void updateProcessList(boolean createPS) {
+        if (createPS) {
+            procList = new ProcessList(getCurrentExecutionEnvironment());
+            updateColumns = true;
+        }
         // Get the process list
         if (showAll) {
             procList.requestFull(this);
@@ -175,6 +174,9 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     }
 
     Controller getController() {
+        if (controller == null) {
+            controller = new GdbAttachController();
+        }
         return controller;
     }
 
@@ -187,7 +189,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
      */
     public void processListCallback(List<String> list) {
         Pattern re = getFilterRE();
-        final Vector<Vector> rows = new Vector<Vector>();
+        final Vector<Vector<String>> rows = new Vector<Vector<String>>();
         for (String line : list) {
             Vector<String> row = new Vector<String>();
             StringTokenizer tok = new StringTokenizer(line);
@@ -210,6 +212,10 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (updateColumns) {
+                    setupColumns();
+                    updateColumns = false;
+                }
                 processModel.setRowCount(0);
                 for (Vector obj : rows) {
                     processModel.addRow(obj);
@@ -408,11 +414,6 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         });
 
         hostComboBox.setRenderer(new MyDevHostListCellRenderer());
-        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                hostComboBoxItemStateChanged(evt);
-            }
-        });
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(GdbAttachPanel.class, "GdbAttachPanel.jLabel1.text")); // NOI18N
 
@@ -423,22 +424,22 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             .add(layout.createSequentialGroup()
                 .add(projectLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectCB, 0, 502, Short.MAX_VALUE))
+                .add(projectCB, 0, 517, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(allCheckBox)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(hostComboBox, 0, 519, Short.MAX_VALUE))
+                .add(hostComboBox, 0, 534, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(filterLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(filterField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE))
+                .add(filterField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(procLabel)
                 .addContainerGap())
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -465,18 +466,8 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
 
     private void allCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allCheckBoxActionPerformed
         showAll = allCheckBox.isSelected();
-        updateProcessList();
+        updateProcessList(false);
     }//GEN-LAST:event_allCheckBoxActionPerformed
-
-    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
-        final ExecutionEnvironment exEnv = getCurrentExecutionEnvironment();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                procList = new ProcessList(exEnv);
-                updateProcessList();
-            }
-        });
-    }//GEN-LAST:event_hostComboBoxItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox allCheckBox;
@@ -490,6 +481,15 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     private javax.swing.JComboBox projectCB;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
+
+    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {                                              
+        final ExecutionEnvironment exEnv = getCurrentExecutionEnvironment();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                updateProcessList(true);
+            }
+        });
+    }             
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
         public abstract void documentChanged(DocumentEvent e);

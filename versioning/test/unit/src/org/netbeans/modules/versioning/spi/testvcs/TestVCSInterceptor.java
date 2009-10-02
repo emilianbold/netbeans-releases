@@ -72,8 +72,14 @@ public class TestVCSInterceptor extends VCSInterceptor {
         return super.isMutable(file);
     }
 
-    public String getAttribute(File file, String attrName) {
-        return "http://a.repository.far.far.away/" + file.getName();
+    @Override
+    public Object getAttribute(File file, String attrName) {
+        if(attrName.equals("ProvidedExtensions.VCSManaged")) {
+            return true;
+        } else if (attrName.equals("ProvidedExtensions.RemoteLocation")) {
+            return "http://a.repository.far.far.away/" + file.getName();
+        }
+        return null;
     }
 
     public boolean beforeCreate(File file, boolean isDirectory) {

@@ -29,6 +29,7 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -78,6 +79,7 @@ public class RailsProjectOption extends AdvancedOption {
                     public void run() {
                         boolean logical = FoldersListSettings.getDefault().getLogicalView();
                         component.setLogicalChosen(logical);
+                        component.setIndexVendorGemsOnly(RubyPreferences.isIndexVendorGemsOnly());
                     }
                 });
         }
@@ -102,6 +104,7 @@ public class RailsProjectOption extends AdvancedOption {
                     public void run() {
                         boolean logical = component.getLogicalChosen();
                         FoldersListSettings.getDefault().setLogicalView(logical);
+                        RubyPreferences.setIndexVendorGemsOnly(component.getIndexVendorGemsOnly());
                     }
                 });
         }

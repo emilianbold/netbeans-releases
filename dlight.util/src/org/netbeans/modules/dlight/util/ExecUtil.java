@@ -55,79 +55,90 @@ import org.openide.util.Exceptions;
  * Util class
  */
 public final class ExecUtil {
-  static private final Logger log = DLightLogger.getLogger(ExecUtil.class);
-  
-  public static void setExecutionPermissions(final List<String> files) {
-    if (files.isEmpty()) {
-      return;
-    }
 
-    List<String> paths = new ArrayList<String>();
-    for (String f : files) {
-      String fullPath = getFullPath(f);
-      if (new File(fullPath).exists()) {
-        paths.add(fullPath);
-      }
-    }
+    static private final Logger log = DLightLogger.getLogger(ExecUtil.class);
 
-    List<String> commands = new ArrayList<String>();
-    commands.add("/bin/chmod"); // NOI18N
-    commands.add("755"); // NOI18N
-    commands.addAll(paths);
-    ProcessBuilder pb = new ProcessBuilder(commands);
-    try {
-      pb.start();
-    } catch (IOException ex) {
-      ex.printStackTrace();
-    //Gizmo.err.log("Cannot set execution permissions of files! " + ex.getMessage()); // NOI18N
-    }
-  }
-
-  public static String getFullPath(String relpath) {
-    File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
-    if (file != null && file.exists()) {
-      return file.getAbsolutePath();
-    }
-    return relpath;
-  }
-
-  private static List<Integer> runScript(String script, String params) {
-    log.finest("Run script " + script + " " + params);//NOI18N
-    List<Integer> res = new ArrayList<Integer>();
-
-    File scriptFile = InstalledFileLocator.getDefault().locate("bin/" + script, null, false);//NOI18N
-
-    if (scriptFile == null) {
-      log.severe("Script " + script + " not found!");//NOI18N
-      return Collections.emptyList();
-    }
-
-    try {
-      Process process = Runtime.getRuntime().exec("/bin/sh " + scriptFile.getAbsolutePath() + " " + params);//NOI18N
-
-      InputStream is = process.getInputStream();
-      InputStreamReader reader = new InputStreamReader(Channels.newInputStream(Channels.newChannel(is)));
-
-      int c;
-      StringBuilder sb = new StringBuilder();
-
-      while ((c = reader.read()) != -1) {
-        if (c == '\n') {//NOI18N
-          res.add(Integer.parseInt(sb.toString().trim()));
-          sb = new StringBuilder();
-        } else {
-          sb.append((char) c);
+    public static void setExecutionPermissions(final List<String> files) {
+        if (files.isEmpty()) {
+            return;
         }
-      }
 
-      process.destroy();
-    } catch (ClosedByInterruptException ex) {
-      // ignore
-    } catch (IOException ex) {
-      Exceptions.printStackTrace(ex);
+        List<String> paths = new ArrayList<String>();
+        for (String f : files) {
+            String fullPath = getFullPath(f);
+            if (new File(fullPath).exists()) {
+                paths.add(fullPath);
+            }
+        }
+
+        List<String> commands = new ArrayList<String>();
+        commands.add("/bin/chmod"); // NOI18N
+        commands.add("755"); // NOI18N
+        commands.addAll(paths);
+        ProcessBuilder pb = new ProcessBuilder(commands);
+        try {
+            pb.start();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            //Gizmo.err.log("Cannot set execution permissions of files! " + ex.getMessage()); // NOI18N
+        }
     }
 
-    return res;
-  }
+    public static String getFullPath(String relpath) {
+        File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
 
+        if (file != null && file.exists()) {
+            return file.getAbsolutePath();
+        }
+
+        return relpath;
+    }
+
+    private static List<Integer> runScript(String script, String params) {
+        log.finest("Run script " + script + " " + params);//NOI18N
+        List<Integer> res = new ArrayList<Integer>();
+
+        File scriptFile = InstalledFileLocator.getDefault().locate("bin/" + script, null, false);//NOI18N
+
+        if (scriptFile == null) {
+            log.severe("Script " + script + " not found!");//NOI18N
+            return Collections.emptyList();
+        }
+
+        InputStreamReader reader = null;
+
+        try {
+            Process process = Runtime.getRuntime().exec("/bin/sh " + scriptFile.getAbsolutePath() + " " + params);//NOI18N
+
+            InputStream is = process.getInputStream();
+            reader = new InputStreamReader(Channels.newInputStream(Channels.newChannel(is)));
+
+            int c;
+            StringBuilder sb = new StringBuilder();
+
+            while ((c = reader.read()) != -1) {
+                if (c == '\n') {//NOI18N
+                    res.add(Integer.parseInt(sb.toString().trim()));
+                    sb = new StringBuilder();
+                } else {
+                    sb.append((char) c);
+                }
+            }
+
+            process.destroy();
+        } catch (ClosedByInterruptException ex) {
+            // ignore
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+
+        return res;
+    }
 }

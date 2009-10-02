@@ -363,6 +363,27 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertSame(DeclarationLocation.NONE, loc);
     }
     
+    public void testGoto16588a() {
+        assertNotNull(project);
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("lib/widget.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("spec/lib/widget_spec.rb", loc.getFileObject());
+    }
+
+    public void testGoto16588b() {
+        assertNotNull(project);
+        DeclarationLocation loc = gotoTest.findTested(getProjFile("spec/lib/widget_spec.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("lib/widget.rb", loc.getFileObject());
+    }
+
+    public void testGoto16588c() {
+        assertNotNull(project);
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("lib/gadget.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("test/lib/test_gadget.rb", loc.getFileObject());
+    }
+
     public void testRSpecSingle() {
         assertNotNull(project);
         

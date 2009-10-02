@@ -75,7 +75,7 @@ public class DefaultTreeExpansionManager {
         DefaultTreeExpansionManager newManager = get(newCM);
         Map<Object, Set<Object>> expandedNodes;
         synchronized (oldManager) {
-            expandedNodes = new java.util.HashMap(oldManager.expandedNodes);
+            expandedNodes = new java.util.HashMap<Object, Set<Object>>(oldManager.expandedNodes);
         }
         synchronized (newManager) {
             newManager.expandedNodes.putAll(expandedNodes);

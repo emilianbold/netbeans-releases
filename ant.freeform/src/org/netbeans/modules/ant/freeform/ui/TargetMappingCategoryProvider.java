@@ -50,7 +50,9 @@ import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -59,17 +61,14 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-public class TargetMappingCategoryProvider implements org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of TargetMappingCustomizerProvider */
-    public TargetMappingCategoryProvider() {
-    }
+@CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=700)
+public class TargetMappingCategoryProvider implements CompositeCategoryProvider {
     
     public Category createCategory(Lookup context) {
         FreeformProject project = context.lookup(FreeformProject.class);
         assert project != null;
         if (project.usesAntScripting()) {
-            return org.netbeans.spi.project.ui.support.ProjectCustomizer.Category.create("targetMapping",   //NOI18N
+            return ProjectCustomizer.Category.create("targetMapping",   //NOI18N
                     NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_Targets"), null);  //NOI18N
         }
         return null;

@@ -57,8 +57,10 @@ import java.awt.Color;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.paralleladviser.api.ParallelAdviser;
+import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -68,12 +70,14 @@ import org.openide.windows.TopComponent;
  *
  * @author Nick Krasilnikov
  */
-public final class ParallelAdviserTopComponent extends TopComponent {
+public final class ParallelAdviserTopComponent extends TopComponent implements ParallelAdviserTipsProviderListener{
 
     private static ParallelAdviserTopComponent instance;
     // path to the icon used by the component and its open action
     public static final String ICON_PATH = "org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/paralleladviser.png"; // NOI18N
     private static final String PREFERRED_ID = "ParallelAdviserTopComponent"; // NOI18N
+
+    private boolean updateTips = true;
 
     private ParallelAdviserTopComponent() {
         initComponents();
@@ -81,6 +85,37 @@ public final class ParallelAdviserTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(ParallelAdviserTopComponent.class, "HINT_ParallelAdviserTopComponent")); // NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         updateTips();
+        ParallelAdviser.addListener(this);
+    }
+
+    public void tipsChanged() {
+        if (isShowing()) {
+            Runnable updateView = new Runnable() {
+
+                public void run() {
+                    updateTips();
+                    updateTips = false;
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                updateView.run();
+            } else {
+                SwingUtilities.invokeLater(updateView);
+            }
+        } else {
+            updateTips = true;
+        }
+    }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        if(aFlag) {
+            if(updateTips) {
+                updateTips();
+                updateTips = false;
+            }
+        }
     }
 
     /**
@@ -175,7 +210,7 @@ public final class ParallelAdviserTopComponent extends TopComponent {
     public
     @Override
     int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
 }

@@ -151,10 +151,9 @@ public class BugzillaAutoupdate {
         }
         boolean ret = isSupportedVersion(version);
         if(!ret) {
-            Bugzilla.LOG.log(Level.WARNING,
-                         "Supported Bugzilla versions are <= {0}. The bugzilla repository [{1}] has version {2}. " + // NOI18N
-                         "Please check the UC for a newer plugin.", // NOI18N
-                         new Object[] {SUPPORTED_BUGZILLA_VERSION, repository.getUrl(), version});
+            Bugzilla.LOG.log(Level.INFO,
+                         "Bugzilla repository [{0}] has version {1}. ", // NOI18N
+                         new Object[] {repository.getUrl(), version});
         }
         return ret;
     }

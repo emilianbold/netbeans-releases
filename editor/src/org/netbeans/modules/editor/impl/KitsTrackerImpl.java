@@ -301,7 +301,24 @@ public final class KitsTrackerImpl extends KitsTracker {
     }
 
     private static FileObject findKitRegistration(FileObject folder) {
+        Set<FileObject> filesWithInstanceOfAttribute = new HashSet<FileObject>();
+        Set<FileObject> otherFiles = new HashSet<FileObject>();
+
         for(FileObject f : folder.getChildren()) {
+            if (f.getAttribute("instanceOf") != null) { //NOI18N
+                filesWithInstanceOfAttribute.add(f);
+            } else {
+                otherFiles.add(f);
+            }
+        }
+
+        for(FileObject f : filesWithInstanceOfAttribute) {
+            if (isInstanceOf(f, EditorKit.class, false)) {
+                return f;
+            }
+        }
+
+        for(FileObject f : otherFiles) {
             if (isInstanceOf(f, EditorKit.class, false)) {
                 return f;
             }

@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.jaxrpc.project.customizer;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -59,16 +58,10 @@ import org.openide.util.NbBundle;
  *
  * @author mkuchtiak
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", position=600)
 public class JaxRpcCompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String WEBSERVICECLIENTS = "JaxRpcClients"; //NOI18N
-
-    private String name;
-    
-    /** Creates a new instance of J2SECompositePanelProvider */
-    public JaxRpcCompositePanelProvider(String name) {
-        this.name = name;
-    }
 
     public ProjectCustomizer.Category createCategory(Lookup context) {
         //hide WEBSERVICECLIENTS if project doe not support jaxrpc client bug 112675
@@ -82,38 +75,24 @@ public class JaxRpcCompositePanelProvider implements ProjectCustomizer.Composite
             }
         }
         ResourceBundle bundle = NbBundle.getBundle( JaxRpcCompositePanelProvider.class );
-        ProjectCustomizer.Category toReturn = null;
-        if (WEBSERVICECLIENTS.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
+        return ProjectCustomizer.Category.create(
                     WEBSERVICECLIENTS,
                     bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
                     null);
-        }
-        assert toReturn != null : "No category for name:" + name; // NOI18N
-        return toReturn;
     }
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        String nm = category.getName();
-        if (WEBSERVICECLIENTS.equals(nm)) {
-            List serviceClientsSettings = null;
-            Project project = (Project)context.lookup(Project.class);
-            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            if (clientSupport != null) {
-                serviceClientsSettings = clientSupport.getServiceClients();
-            }
-            if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-                return new CustomizerWSClientHost(project, serviceClientsSettings );
-            } else {
-                return new NoWebServiceClientsPanel();
-            }
+        List serviceClientsSettings = null;
+        Project project = context.lookup(Project.class);
+        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+        if (clientSupport != null) {
+            serviceClientsSettings = clientSupport.getServiceClients();
         }
-        return new JPanel();
-
-    }
-
-    public static JaxRpcCompositePanelProvider createJaxRpcClients() {
-        return new JaxRpcCompositePanelProvider(WEBSERVICECLIENTS);
+        if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
+            return new CustomizerWSClientHost(project, serviceClientsSettings );
+        } else {
+            return new NoWebServiceClientsPanel();
+        }
     }
 
 }

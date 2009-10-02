@@ -326,31 +326,17 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public String getModuleVersion() {
-        // we don't want to use MetadataModel here as it can block
-        String version = null;
-        try {
-            FileObject ddFO = getDeploymentDescriptor();
-            if (ddFO != null) {
-                AppClient appClient = DDProvider.getDefault().getDDRoot(ddFO);
-                version = appClient.getVersion().toString();
-            }
-        } catch (IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+        Profile p = Profile.fromPropertiesString(project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM));
+        if (p == null) {
+            p = Profile.JAVA_EE_6_FULL;
         }
-        if (version == null) {
-            Profile p = Profile.fromPropertiesString(project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM));
-            if (p == null) {
-                p = Profile.JAVA_EE_6_FULL;
-            }
-            if (Profile.JAVA_EE_5.equals(p)) {
-                version = AppClient.VERSION_5_0;
-            } else if (Profile.J2EE_14.equals(p)) {
-                version = AppClient.VERSION_1_4;
-            } else {
-                version = AppClient.VERSION_6_0;
-            }
+        if (Profile.JAVA_EE_5.equals(p)) {
+            return AppClient.VERSION_5_0;
+        } else if (Profile.J2EE_14.equals(p)) {
+            return AppClient.VERSION_1_4;
+        } else {
+            return AppClient.VERSION_6_0;
         }
-        return version;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

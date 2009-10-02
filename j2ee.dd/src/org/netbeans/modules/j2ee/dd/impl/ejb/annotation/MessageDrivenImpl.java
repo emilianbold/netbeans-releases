@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.dd.impl.ejb.annotation;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
@@ -68,6 +70,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.PersistenceContextRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.PersistenceUnitRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.SecurityIdentity;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
@@ -85,6 +88,8 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
     private ServiceRef[] serviceRefs = null;
+    private EjbRef[] ejbRefs;
+    private EjbLocalRef[] ejbLocalRefs;
     
     public MessageDrivenImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
@@ -143,7 +148,21 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         }
         serviceRefs = CommonAnnotationHelper.getServiceRefs(getHelper(), getTypeElement());
     }
-    
+
+    private void initLocalAndRemoteEjbRefs() {
+        if (ejbRefs != null && ejbLocalRefs != null) {
+            return;
+        }
+
+        final List<EjbRef> resultEjbRefs = new ArrayList<EjbRef>();
+        final List<EjbLocalRef> resultEjbLocalRefs = new ArrayList<EjbLocalRef>();
+
+        EjbRefHelper.setEjbRefsForClass(getHelper(), getTypeElement(), resultEjbRefs, resultEjbLocalRefs);
+
+        ejbRefs = resultEjbRefs.toArray(new EjbRef[resultEjbRefs.size()]);
+        ejbLocalRefs = resultEjbLocalRefs.toArray(new EjbLocalRef[resultEjbLocalRefs.size()]);
+    }
+
     // <editor-fold desc="Model implementation">
     public String getEjbName() {
         return name;
@@ -509,7 +528,8 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     }
 
     public EjbRef[] getEjbRef() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        initLocalAndRemoteEjbRefs();
+        return ejbRefs;
     }
 
     public int removeEjbRef(EjbRef value) {
@@ -541,7 +561,8 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     }
 
     public EjbLocalRef[] getEjbLocalRef() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        initLocalAndRemoteEjbRefs();
+        return ejbLocalRefs;
     }
 
     public int addEjbLocalRef(EjbLocalRef value) {

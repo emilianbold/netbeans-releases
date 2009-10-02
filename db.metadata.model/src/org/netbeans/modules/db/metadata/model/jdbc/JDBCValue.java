@@ -112,6 +112,31 @@ public class JDBCValue extends ValueImplementation {
         return new JDBCValue(name, type, length, precision, radix, scale, nullable);
     }
 
+    /**
+     * Create a value from a row in DBMD.getColumns(). For ODBC connection
+     * are different names of attributes.
+     *
+     * @param rs the result set from getColumns, assumed to be at a valid row
+     * @return a newly created JDBCValue instance
+     * @throws java.sql.SQLException
+     */
+    public static JDBCValue createTableColumnValueODBC(ResultSet rs) throws SQLException {
+        String name = rs.getString("COLUMN_NAME");
+        SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+        int length = 0;
+        int precision = 0;
+        if (JDBCUtils.isCharType(type)) {
+            length = rs.getInt("LENGTH");
+        } else {
+            precision = rs.getInt("PRECISION");
+        }
+        short scale = rs.getShort("SCALE");
+        short radix = rs.getShort("RADIX");
+        Nullable nullable = JDBCUtils.getColumnNullable(rs.getShort("NULLABLE"));
+
+        return new JDBCValue(name, type, length, precision, radix, scale, nullable);
+    }
+
     public JDBCValue(String name, SQLType type, int length, int precision, short radix, short scale, Nullable nullable) {
         this.name = name;
         this.type = type;

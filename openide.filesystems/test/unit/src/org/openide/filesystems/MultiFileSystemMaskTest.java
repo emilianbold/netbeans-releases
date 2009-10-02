@@ -249,4 +249,55 @@ public class MultiFileSystemMaskTest extends NbTestCase {
     
     // XXX test create -> mask -> recreate in same MFS
     
+    public void testMultipleMaskLayers() throws Exception {
+        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+            TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
+                "folder/file1_hidden",
+                "folder/file1",
+            }),
+            TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
+                "folder2/file2_hidden",
+            }),
+        });
+        fs.setPropagateMasks(false);
+        try {
+            // this is surprising, but it seems to be the behaviour:
+            assertEquals("folder/file1 is not hidden !?",
+                "file1",
+                childrenNames(fs));
+        } finally {
+            TestUtilHid.destroyXMLFileSystem(getName() + "1");
+            TestUtilHid.destroyXMLFileSystem(getName() + "2");
+            TestUtilHid.destroyXMLFileSystem(getName() + "3");
+        }
+    }
+    public void testPropagateMultipleMaskLayersSimple() throws Exception {
+        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+            TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
+                "folder/file1_hidden",
+                "folder/file1",
+            }),
+        });
+        fs.setPropagateMasks(true);
+        assertEquals("folder/file1 is hidden",
+            "file1_hidden",
+            childrenNames(fs)
+        );
+    }
+    public void testPropagateMultipleMaskLayersComplex() throws Exception {
+        MultiFileSystem fs = new MultiFileSystem(new FileSystem[] {
+            TestUtilHid.createXMLFileSystem(getName() + "3", new String[] {
+                "folder/file1_hidden",
+                "folder/file1",
+            }),
+            TestUtilHid.createXMLFileSystem(getName() + "1", new String[] {
+                "folder/file2_hidden",
+            }),
+        });
+        fs.setPropagateMasks(true);
+        assertEquals("folder/file1 is hidden",
+            "file1_hidden/file2_hidden",
+            childrenNames(fs)
+        );
+    }
 }

@@ -61,6 +61,12 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         super(testName);
     }
 
+    public void testConstants53() throws Exception {
+        checkCompletion("testfiles/php53/completion/constants53/constants.php", "echo CONSTANT_XY^", false);
+    }
+    public void testConstants52() throws Exception {
+        checkCompletion("testfiles/php53/completion/constants53/constants.php", "echo CONSTANT_AB^", false);
+    }
     public void testNamespacesInClsDeclaration() throws Exception {
         checkCompletion("testfiles/php53/completion/namespaces/clsdeclaration.php", "\\test\\ns\\cls\\ctx\\Ca^", false);
     }
@@ -87,7 +93,8 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
             ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "testfiles/php53/completion/namespaces"))
+                FileUtil.toFileObject(new File(getDataDir(), "testfiles/php53/completion/namespaces")),
+                FileUtil.toFileObject(new File(getDataDir(), "testfiles/php53/completion/constants53")),
             })
         );
     }

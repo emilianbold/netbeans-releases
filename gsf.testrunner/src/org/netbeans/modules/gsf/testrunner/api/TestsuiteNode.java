@@ -165,6 +165,7 @@ public class TestsuiteNode extends AbstractNode {
                 switch (status){
                     case ABORTED: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
                     case PENDING: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
+                    case SKIPPED: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
                     case PASSED: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
                     case FAILED:
                     case ERROR: return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error_16.png"); //NOI18N
@@ -226,6 +227,11 @@ public class TestsuiteNode extends AbstractNode {
             displayName = NbBundle.getMessage(
                                           TestsuiteNode.class,
                                           "MSG_TestsuiteAborted",        //NOI18N
+                                          suiteName);
+        } else if (report.isSkipped()){
+            displayName = NbBundle.getMessage(
+                                          TestsuiteNode.class,
+                                          "MSG_TestsuiteSkipped",        //NOI18N
                                           suiteName);
         } else if (!report.completed){
             boolean containsFailed = containsFailed();
@@ -290,6 +296,8 @@ public class TestsuiteNode extends AbstractNode {
             result = "MSG_TestsuiteFailed"; //NOI18N
         } else if (Status.PENDING == status) {
             result = "MSG_TestsuitePending"; //NOI18N
+        } else if (Status.SKIPPED == status) {
+            result = "MSG_TestsuiteSkipped"; //NOI18N
         } else {
             result = "MSG_TestsuitePassed"; //NOI18N
         }

@@ -92,11 +92,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
     }
 
     public VisualizerContainer getDefaultContainer() {
-        return DefaultVisualizerContainer.getInstance();
+        return THAVisulaizerContainerTopComponent.findInstance();
     }
 
     public synchronized void refresh() {
         if (refreshTask == null) {
+            @SuppressWarnings("unchecked")
             final MasterSlaveView<Datarace, DataraceTHANodeFactory> view = (MasterSlaveView<Datarace, DataraceTHANodeFactory>) getComponent();
             refreshTask = RequestProcessor.getDefault().post(new Runnable() {
 
@@ -136,7 +137,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
                     stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.image2Icon(CallStackUISupport.downBadge), snap.getStack());//NOI18N
                 }
             }
-            stackPanel.expandAll();
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    stackPanel.expandAll();
+                }
+            }, 500);
             return stackPanel;
         }
     }

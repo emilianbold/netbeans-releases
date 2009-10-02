@@ -58,19 +58,6 @@ made subject to such option by the copyright holder.
 
         </folder>
     </folder>
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-ant-freeform">
-            <folder name="Customizer">
-                <file name="org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>
-                
-                <file name="org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance">
-                    <attr name="position" intvalue="500"/>
-                </file>
-                </folder>
-        </folder>
-    </folder>
     <folder name="ProjectXMLCatalog">
         <folder name="freeform-project-web">
             <file name="1.xsd" url="freeform-project-web.xsd"/>

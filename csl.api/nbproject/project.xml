@@ -348,6 +348,10 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -359,6 +363,11 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

@@ -388,7 +388,7 @@ public class RunTask extends Task
         log(Bundle.getMessage("MSG_ExecCmd", commandLine), Project.MSG_VERBOSE); // No I18N
 	int i = 0;
         try {
-            exec.execute();
+            i = exec.execute();
         } catch (IllegalThreadStateException itse) {
             //workaround for bug #85200, ITSE here is a race condition caused by JDK
             log(itse.getLocalizedMessage(), Project.MSG_VERBOSE);
@@ -409,7 +409,7 @@ public class RunTask extends Task
                 log(itse.getLocalizedMessage(), Project.MSG_VERBOSE);
             }
         }
-        if (otaRunCommandLine != null)
+        if (i == 0 && otaRunCommandLine != null)
         {
             otaRunCommandLine = EMapFormat.format(otaRunCommandLine, args);
             exec = new Execute();

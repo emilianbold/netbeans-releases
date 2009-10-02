@@ -461,7 +461,7 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
             }
         }
 
-        DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex, dropBefore );
+        DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex-1, dropBefore );
 
         DataShadow shadow = DataShadow.create( backingFolder, dobj );
 
@@ -486,7 +486,7 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
      */
     private boolean moveButton( DataObject ob, int dropIndex, boolean dropBefore ) throws IOException {
         //find out which button is currently under the drag cursor
-        DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex, dropBefore );
+        DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex-1, dropBefore );
 
         if( sourceToolbar != currentToolbar ) {
             //move button to the new toolbar

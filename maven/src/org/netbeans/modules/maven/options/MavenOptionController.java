@@ -62,7 +62,13 @@ import org.openide.util.Lookup;
  * controller for maven2 settings in the options dialog.
  * @author Milos Kleint
  */
-class MavenOptionController extends OptionsPanelController {
+@OptionsPanelController.SubRegistration(
+    id=MavenOptionController.OPTIONS_SUBPATH,
+    displayName="#TIT_Maven_Category"
+//    toolTip="#TIP_Maven_Category"
+)
+public class MavenOptionController extends OptionsPanelController {
+    public static final String OPTIONS_SUBPATH = "Maven"; // NOI18N
     public static final String TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + //NOI18N
             "<settings xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +//NOI18N
             "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">" +//NOI18N
@@ -73,7 +79,7 @@ class MavenOptionController extends OptionsPanelController {
     /**
      * Creates a new instance of MavenOptionController
      */
-    MavenOptionController() {
+    public MavenOptionController() {
         listeners = new ArrayList<PropertyChangeListener>();
     }
 
@@ -120,7 +126,7 @@ class MavenOptionController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(MavenAdvancedOption.class);
+        return new HelpCtx("org.netbeans.modules.maven.options.MavenAdvancedOption");
     }
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {

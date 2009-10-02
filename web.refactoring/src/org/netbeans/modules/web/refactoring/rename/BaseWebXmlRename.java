@@ -65,10 +65,28 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
  
     public final Problem prepare(RefactoringElementsBag refactoringElements) {
         
+        Problem problem = null;
+        Problem current = null;
         for (RenameItem item : getRenameItems()){
             
             String newName = item.getNewFqn();
             String oldFqn = item.getOldFqn();
+            
+            /*
+             * Additional fix for IZ#153294 - Error message when renaming a package that contains a dash character
+             */
+            if ( item.getProblem()!= null) {
+                if ( problem == null ){
+                    problem = item.getProblem();
+                    current = problem;
+                }
+                else {
+                    current.setNext( item.getProblem());
+                    current = item.getProblem();
+                }
+                continue;
+            }
+            
             
             for (Servlet servlet : getServlets(oldFqn)){
                 refactoringElements.add(getRefactoring(), new ServletRenameElement(newName, oldFqn, webModel, webDD, servlet));
@@ -99,7 +117,7 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
             }
         }
         
-        return null;
+        return problem;
     }
     
     private abstract static class WebRenameElement extends WebRefactoringElement{

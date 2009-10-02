@@ -127,8 +127,12 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                 }
             }
             new RegisterSampleDatabase();
-            DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
-            DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
+            if (! panel.getDerbySystemHome().equals(DerbyOptions.getDefault().getSystemHome())) {
+                DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
+            }
+            if (! panel.getInstallLocation().equals(DerbyOptions.getDefault().getLocation())) {
+                DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
+            }
             return true;
         }
     }

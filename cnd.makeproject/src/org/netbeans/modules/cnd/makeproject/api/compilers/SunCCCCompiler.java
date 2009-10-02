@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -54,8 +55,21 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         super(env, flavor, kind, name, displayName, path);
     }
     
-    protected abstract String getCompilerStderrCommand();
-    protected abstract String getCompilerStderrCommand2();
+    protected String getCompilerStderrCommand() {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null) {
+            return " " + compiler.getIncludeFlags(); // NOI18N
+        }
+        return null;
+    }
+
+    protected String getCompilerStderrCommand2() {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null) {
+            return " " + compiler.getMacroFlags(); // NOI18N
+        }
+        return null;
+    }
     
     protected Pair getFreshSystemIncludesAndDefines() {
         Pair res = new Pair();

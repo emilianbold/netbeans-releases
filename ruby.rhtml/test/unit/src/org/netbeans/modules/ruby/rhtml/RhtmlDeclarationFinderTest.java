@@ -63,7 +63,7 @@ public class RhtmlDeclarationFinderTest extends RhtmlTestBase {
     }
 
     public void testDeclaration2() throws Exception {
-        checkDeclaration("testfiles/app/views/users/show.erb", "<li><%= link_to 'Account', :controller => 'users', :ac^tion => 'show',", "users_controller.rb", 0);
+        checkDeclaration("testfiles/app/views/users/show.erb", "<li><%= link_to 'Account', :controller => 'users', :ac^tion => 'show',", "users_controller.rb", 138);
     }
 
     public void testDeclaration3() throws Exception {

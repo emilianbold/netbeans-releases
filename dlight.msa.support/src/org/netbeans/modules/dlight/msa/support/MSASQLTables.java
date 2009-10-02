@@ -59,16 +59,16 @@ public final class MSASQLTables {
         public final static Column LWP_ID = MSASQLTables.LWP_ID;
         public final static Column TIMESTAMP = MSASQLTables.TIMESTAMP;
         public final static Column SAMPLE = MSASQLTables.SAMPLE;
-        public final static Column LWP_MSA_USR = new DataTableMetadata.Column("lwp_msa_usr", Float.class); // NOI18N
-        public final static Column LWP_MSA_SYS = new DataTableMetadata.Column("lwp_msa_sys", Float.class); // NOI18N
-        public final static Column LWP_MSA_TRP = new DataTableMetadata.Column("lwp_msa_trp", Float.class); // NOI18N
-        public final static Column LWP_MSA_TFL = new DataTableMetadata.Column("lwp_msa_tfl", Float.class); // NOI18N
-        public final static Column LWP_MSA_DFL = new DataTableMetadata.Column("lwp_msa_dfl", Float.class); // NOI18N
-        public final static Column LWP_MSA_KFL = new DataTableMetadata.Column("lwp_msa_kfl", Float.class); // NOI18N
-        public final static Column LWP_MSA_LCK = new DataTableMetadata.Column("lwp_msa_lck", Float.class); // NOI18N
-        public final static Column LWP_MSA_SLP = new DataTableMetadata.Column("lwp_msa_slp", Float.class); // NOI18N
-        public final static Column LWP_MSA_LAT = new DataTableMetadata.Column("lwp_msa_lat", Float.class); // NOI18N
-        public final static Column LWP_MSA_STP = new DataTableMetadata.Column("lwp_msa_stp", Float.class); // NOI18N
+        public final static Column LWP_MSA_USR = new DataTableMetadata.Column("lwp_msa_usr", Long.class); // NOI18N
+        public final static Column LWP_MSA_SYS = new DataTableMetadata.Column("lwp_msa_sys", Long.class); // NOI18N
+        public final static Column LWP_MSA_TRP = new DataTableMetadata.Column("lwp_msa_trp", Long.class); // NOI18N
+        public final static Column LWP_MSA_TFL = new DataTableMetadata.Column("lwp_msa_tfl", Long.class); // NOI18N
+        public final static Column LWP_MSA_DFL = new DataTableMetadata.Column("lwp_msa_dfl", Long.class); // NOI18N
+        public final static Column LWP_MSA_KFL = new DataTableMetadata.Column("lwp_msa_kfl", Long.class); // NOI18N
+        public final static Column LWP_MSA_LCK = new DataTableMetadata.Column("lwp_msa_lck", Long.class); // NOI18N
+        public final static Column LWP_MSA_SLP = new DataTableMetadata.Column("lwp_msa_slp", Long.class); // NOI18N
+        public final static Column LWP_MSA_LAT = new DataTableMetadata.Column("lwp_msa_lat", Long.class); // NOI18N
+        public final static Column LWP_MSA_STP = new DataTableMetadata.Column("lwp_msa_stp", Long.class); // NOI18N
         public final List<Column> columns = Arrays.asList(
                 TIMESTAMP, SAMPLE, LWP_ID,
                 LWP_MSA_USR, LWP_MSA_SYS, LWP_MSA_TRP,

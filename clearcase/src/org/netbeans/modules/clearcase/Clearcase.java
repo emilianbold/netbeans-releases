@@ -161,7 +161,13 @@ public class Clearcase {
             log.getOut().close();        
             log.getErr().close();        
         }
-    }    
+    }
+
+    public void focusLog() {
+        if (log != null) {
+            log.select();
+        }
+    }
     
     public ClearcaseClient getClient() {
         return client;

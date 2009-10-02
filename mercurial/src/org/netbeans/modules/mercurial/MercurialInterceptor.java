@@ -57,7 +57,6 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

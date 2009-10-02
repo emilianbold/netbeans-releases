@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -53,7 +54,6 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -72,6 +72,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
+import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.treelist.TreeList;
 import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
@@ -79,9 +80,11 @@ import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  * Singleton providing access to Kenai Dashboard window.
@@ -132,7 +135,22 @@ public final class DashboardImpl extends Dashboard {
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     private DashboardImpl() {
-        dashboardComponent = new JScrollPane();
+        dashboardComponent = new JScrollPane() {
+            @Override
+            public void requestFocus() {
+                Component view = getViewport().getView();
+                if (view != null) {
+                    view.requestFocus();
+                } else {
+                    super.requestFocus();
+                }
+            }
+            @Override
+            public boolean requestFocusInWindow() {
+                Component view = getViewport().getView();
+                return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
+            }
+        };
         dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
@@ -149,10 +167,11 @@ public final class DashboardImpl extends Dashboard {
         userNode = new UserNode(this);
         userNode.set(login, false);
         model.addRoot(-1, userNode);
-        openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"));
+        openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
 
-        myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"));
+        myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"), // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
             model.addRoot(-1, myProjectsNode);
         }
@@ -291,10 +310,15 @@ public final class DashboardImpl extends Dashboard {
      * @param project
      * @param isMemberProject
      */
-    public void addProject( ProjectHandle project, boolean isMemberProject ) {
+    @Override
+    public void addProject( final ProjectHandle project, boolean isMemberProject, boolean select ) {
         synchronized( LOCK ) {
-            if( openProjects.contains(project) )
+            if( openProjects.contains(project) ) {
+                if (select) {
+                    selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
+                }
                 return;
+            }
 
             if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
                 memberProjects.add(project);
@@ -306,6 +330,13 @@ public final class DashboardImpl extends Dashboard {
             switchMemberProjects();
             if( isOpened() ) {
                 switchContent();
+                if (select) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
+                        }
+                    });
+                }
             }
         }
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
@@ -450,6 +481,12 @@ public final class DashboardImpl extends Dashboard {
                         dashboardComponent.invalidate();
                         dashboardComponent.revalidate();
                         dashboardComponent.repaint();
+                        // hack: ensure the dashboard component has focus (when
+                        // added to already visible and activated TopComponent)
+                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardComponent);
+                        if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
+                            treeList.requestFocus();
+                        }
                     }
                 }
             }

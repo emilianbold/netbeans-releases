@@ -68,28 +68,27 @@ public class DetailsAction {
                 if (t != null && !t.isFinished()) {
                     t.cancel();
                 }
-                final ProgressHandle[] handle = new ProgressHandle[1];
-                handle[0] = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenKenaiProjectAction")); //NOI18N
-                handle[0].start();
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenKenaiProjectAction")); //NOI18N
+                handle.setInitialDelay(0);
+                handle.start();
                 t = RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
+                        try {
+                            final KenaiProject kenaiProj = Kenai.getDefault().getProject(proj);
+                            SwingUtilities.invokeLater(new Runnable() {
 
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            public void run() {
-                                try {
-                                    KenaiProject kenaiProj = Kenai.getDefault().getProject(proj);
+                                public void run() {
                                     kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
                                     tc.open();
                                     tc.requestActive();
-                                } catch (KenaiException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } finally {
-                                    handle[0].finish();
                                 }
-                            }
-                        });
+                            });
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            handle.finish();
+                        }
                     }
                 });
             }

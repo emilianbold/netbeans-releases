@@ -107,7 +107,12 @@ public class CopyTransformer extends RefactoringVisitor {
             if (currentClass == null) {
                 Logger.getLogger("org.netbeans.modules.refactoring.java").severe("Cannot resolve tree " + tree + "\n file: " + workingCopy.getFileObject().getPath()); // NOI18N
             } else {
-                if (!currentClass.getNestingKind().isNested() && ((workingCopy.getCompilationUnit().getTypeDecls().size() == 1) || tree.getSimpleName().toString().equals(oldName))) {
+                if (!currentClass.getNestingKind().isNested() && 
+                        ( (workingCopy.getCompilationUnit().getTypeDecls().size() == 1) ||
+                           tree.getSimpleName().toString().equals(oldName) ||
+                           tree.getSimpleName().toString().equals(oldName + "_1")
+                        )
+                    ) {
                     Tree nju = make.setLabel(tree, newName);
                     rewrite(tree, nju);
                 }

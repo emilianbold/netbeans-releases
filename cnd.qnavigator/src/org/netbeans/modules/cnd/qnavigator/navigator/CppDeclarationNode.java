@@ -199,6 +199,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
     
     public int compareTo(CppDeclarationNode o) {
+        int res = compareToWithoutOffset(o);
+        if (res == 0) {
+            res = object.getStartOffset() - o.object.getStartOffset();
+        }
+        return res;
+    }
+
+    public int compareToWithoutOffset(CppDeclarationNode o) {
         int res = 0;
         switch(model.getFilter().getSortMode()) {
             case Name:
@@ -225,9 +233,6 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     res = weight/10 - o.weight/10;
                 }
                 break;
-        }
-        if (res == 0) {
-            res = object.getStartOffset() - o.object.getStartOffset();
         }
         return res;
     }

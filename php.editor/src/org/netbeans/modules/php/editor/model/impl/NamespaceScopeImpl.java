@@ -40,8 +40,8 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -64,6 +64,10 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     ConstantElementImpl createElement(ASTNodeInfo<Scalar> node) {
+        ConstantElementImpl retval = new ConstantElementImpl(this, node);
+        return retval;
+    }
+    ConstantElementImpl createElement(ConstantDeclarationInfo node) {
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }

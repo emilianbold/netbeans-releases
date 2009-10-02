@@ -42,6 +42,8 @@ package org.netbeans.modules.kenai.ui.project;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
@@ -65,8 +67,9 @@ import org.openide.util.RequestProcessor;
 )
 public final class kenaiProjectTopComponent extends TopComponent implements PropertyChangeListener {
 
-    RequestProcessor SingleDataRequestProcessor = new RequestProcessor("KENAI_SINGLE_DATA_REQUEST_PROCESSOR", 1, true); //NOI18N
-    RequestProcessor SingleImageRequestProcessor = new RequestProcessor("KENAI_SINGLE_IMG_REQUEST_PROCESSOR", 1, true); //NOI18N
+    private final RequestProcessor SingleDataRequestProcessor = new RequestProcessor("KENAI_SINGLE_DATA_REQUEST_PROCESSOR", 1, true); //NOI18N
+    private final RequestProcessor SingleImageRequestProcessor = new RequestProcessor("KENAI_SINGLE_IMG_REQUEST_PROCESSOR", 1, true); //NOI18N
+    private final ImageIcon loadingIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/wait.gif", true);
 
     private RequestProcessor.Task loadingImageTask = null;
     private RequestProcessor.Task loadingDynamicContentTask = null;
@@ -74,7 +77,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     public static final String linkImageHTML = String.format("<img src=\"%s\" style=\"padding-right: 3px;\">", kenaiProjectTopComponent.class.getResource("/org/netbeans/modules/kenai/ui/resources/insertlink-bottom.png"));
 
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
 
     private static final String PREFERRED_ID = "kenaiProjectTopComponent"; //NOI18N
     private static final String KENAI_URL = Kenai.getDefault().getUrl().toString(); //NOI18N
@@ -426,6 +429,11 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         return PREFERRED_ID;
     }
 
+    /**
+     * Refreshes all content of the Kenai project details TC, including dynamic content panels
+     * @param proj project whose info should be loaded in TC
+     * @param hardReinit if true, the dynamic content is reloaded from the server even if the project is the same as the one that is opened
+     */
     public void reinitialize(final KenaiProject proj, boolean hardReinit) {
         // must be here because of the specific contents
         instProj = proj;
@@ -433,7 +441,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
             public void run() {
                 // reset header and description text
-                projectImage.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/wait.gif", true));
+                projectImage.setIcon(loadingIcon);
                 projectsDetailsHeader.setText(proj.getDisplayName());
                 try {
                     projectsDetailsText.setText(proj.getDescription().replaceAll("\r?\n", " ").replaceAll("\r", " ")); //NOI18N
@@ -451,17 +459,87 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
 
             public void run() {
-                proj.cacheProjectImage();
+                final Icon projectIcon = proj.getProjectIcon(true);
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        projectImage.setIcon(proj.getProjectIcon(false));
+                        projectImage.setIcon(projectIcon);
                     }
                 });
-            }
+
+           }
         });
 
-    
+        // Set label for www - make it link
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                wwwLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + proj.getWebLocation().getPath())); //NOI18N
+                wwwLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
+                wwwLabel.setToolTipText(KENAI_URL + proj.getWebLocation().getPath());
+                wwwLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                URLClickListener.selfRegister(wwwLabel, proj.getWebLocation());
+            }
+        });
+        KenaiFeature[] _wiki = null;
+        KenaiFeature[] _down = null;
+        try {
+            _wiki = proj.getFeatures(KenaiService.Type.WIKI);
+            _down = proj.getFeatures(KenaiService.Type.DOWNLOADS);
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+      
+        if (_down != null && _down.length > 0) {
+            final KenaiFeature down = _down[0];
+            // Set label for downloads - make it link
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    downloadsLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + down.getWebLocation().getPath())); //NOI18N
+                    downloadsLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
+                    downloadsLabel.setToolTipText(KENAI_URL + down.getWebLocation().getPath());
+                    downloadsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    URLClickListener.selfRegister(downloadsLabel, down.getWebLocation());
+                }
+            });
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    downloadsLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.text")); //NOI18N
+                    downloadsLabel.setIcon(null);
+                    downloadsLabel.setToolTipText(""); //NOI18N
+                    downloadsLabel.setCursor(Cursor.getDefaultCursor());
+                    URLClickListener.deregisterAll(downloadsLabel);
+                }
+            });
+        }
+        if (_wiki != null && _wiki.length > 0) {
+            final KenaiFeature wiki = _wiki[0];
+            // Set label for wiki - make it link
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    wikiLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + wiki.getWebLocation().getPath())); //NOI18N
+                    wikiLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
+                    wikiLabel.setToolTipText(KENAI_URL + wiki.getWebLocation().getPath());
+                    wikiLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    URLClickListener.selfRegister(wikiLabel, wiki.getWebLocation());
+                }
+            });
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    wikiLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.text")); //NOI18N
+                    wikiLabel.setIcon(null);
+                    wikiLabel.setToolTipText(""); //NOI18N
+                    wikiLabel.setCursor(Cursor.getDefaultCursor());
+                    URLClickListener.deregisterAll(wikiLabel);
+                }
+            });
+        }
         // Refresh the dynamic content
         if (hardReinit) {
             if (loadingDynamicContentTask != null && !loadingDynamicContentTask.isFinished()) {
@@ -492,55 +570,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     }
                 }
             });
-        }
-
-        // Set default text and icon for labels with www, wiki and downloads
-        wwwLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wwwLabel.text")); //NOI18N
-        wwwLabel.setToolTipText(""); //NOI18N
-        URLClickListener.deregisterAll(wwwLabel);
-        wikiLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.text")); //NOI18N
-        wikiLabel.setIcon(null);
-        wikiLabel.setToolTipText(""); //NOI18N
-        wikiLabel.setCursor(Cursor.getDefaultCursor());
-        URLClickListener.deregisterAll(wikiLabel);
-        downloadsLabel.setText(NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.text")); //NOI18N
-        downloadsLabel.setIcon(null);
-        downloadsLabel.setToolTipText(""); //NOI18N
-        downloadsLabel.setCursor(Cursor.getDefaultCursor());
-        URLClickListener.deregisterAll(downloadsLabel);
-
-        // Set label for www - make it link
-        wwwLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + proj.getWebLocation().getPath())); //NOI18N
-        wwwLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
-        wwwLabel.setToolTipText(KENAI_URL + proj.getWebLocation().getPath());
-        wwwLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        URLClickListener.selfRegister(wwwLabel, proj.getWebLocation());
-        KenaiFeature[] _features = null;
-        try {
-            _features = proj.getFeatures();
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (_features == null) {
-            return;
-        }
-        for (int i = 0; i < _features.length; i++) {
-            final KenaiFeature kenaiFeature = _features[i];
-            if (kenaiFeature.getType().equals(KenaiService.Type.DOWNLOADS)) {
-                // Set label for downloads - make it link
-                downloadsLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + kenaiFeature.getWebLocation().getPath())); //NOI18N
-                downloadsLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
-                downloadsLabel.setToolTipText(KENAI_URL + kenaiFeature.getWebLocation().getPath());
-                downloadsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                URLClickListener.selfRegister(downloadsLabel, kenaiFeature.getWebLocation());
-            } else if (kenaiFeature.getType().equals(KenaiService.Type.WIKI)) {
-                // Set label for wiki - make it link
-                wikiLabel.setText(String.format("<html><a href=\"blank\">%s</a></html>", KENAI_URL + kenaiFeature.getWebLocation().getPath())); //NOI18N
-                wikiLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
-                wikiLabel.setToolTipText(KENAI_URL + kenaiFeature.getWebLocation().getPath());
-                wikiLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                URLClickListener.selfRegister(wikiLabel, kenaiFeature.getWebLocation());
-            }
         }
     }
 

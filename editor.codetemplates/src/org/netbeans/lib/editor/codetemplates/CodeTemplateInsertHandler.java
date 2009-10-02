@@ -313,18 +313,21 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             for (CodeTemplateParameter master : masterParameters) {
                 CodeTemplateParameterImpl masterImpl = CodeTemplateParameterImpl.get(master);
                 if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(master.getName())) {
-                    caretTextRegion = masterImpl.textRegion();
+                    // Add explicit ${cursor} as last into text sync group to jump to it by TAB as last param
+                    caretTextRegion = masterImpl.textRegion(); 
                     completionInvoke = master.getHints().get(CodeTemplateParameter.COMPLETION_INVOKE_HINT_NAME) != null;
+                } else {
+                    textSyncGroup.addTextSync(masterImpl.textRegion().textSync());
                 }
-                textSyncGroup.addTextSync(masterImpl.textRegion().textSync());
             }
             
             if (caretTextRegion == null) { // no specific ${cursor} parameter
                 Position caretFixedPos = TextRegion.createFixedPosition(completeInsertString.length());
-                TextSync caretTextSync = new TextSync(new TextRegion(caretFixedPos, caretFixedPos));
+                caretTextRegion = new TextRegion(caretFixedPos, caretFixedPos);
+                TextSync caretTextSync = new TextSync(caretTextRegion);
                 caretTextSync.setCaretMarker(true);
-                textSyncGroup.addTextSync(caretTextSync);
             }
+            textSyncGroup.addTextSync(caretTextRegion.textSync());
             
             // For nested template expanding or when without parameters
             // just update the caret position and release

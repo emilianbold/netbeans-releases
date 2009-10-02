@@ -3,15 +3,15 @@ platform11
 # application cluster second
 nb6.8
 # ergonomics cluster if present
-ergonomics1
+ergonomics2
 # and now the rest
 ide12
-java2
+java3
 xml2
 apisupport1
 webcommon1
 websvccommon1
-enterprise5
+enterprise6
 mobility8
 profiler3
 ruby2
@@ -22,9 +22,9 @@ soa2
 identity2
 uml6
 harness
-cnd2
-dlight1
-groovy1
+cnd3
+dlight2
+groovy2
 extra
 javafx2
 javacard1

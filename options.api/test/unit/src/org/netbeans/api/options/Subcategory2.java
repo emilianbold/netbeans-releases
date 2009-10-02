@@ -54,6 +54,9 @@ public class Subcategory2 extends AdvancedOption {
     public static final String DISPLAY_NAME = "Subcategory2 display name";
     public static String currentSubpath;
 
+    @SuppressWarnings("deprecation")
+    public Subcategory2() {}
+
     @Override
     public String getDisplayName() {
         return DISPLAY_NAME;

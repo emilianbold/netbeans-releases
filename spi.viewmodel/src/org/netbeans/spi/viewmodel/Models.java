@@ -55,7 +55,9 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -63,10 +65,13 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.modules.viewmodel.AsynchronousModel;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
+import org.netbeans.modules.viewmodel.HyperCompoundModel;
 import org.netbeans.modules.viewmodel.OutlineTable;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
 
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.openide.awt.Actions;
 import org.openide.explorer.view.TreeView;
 import org.openide.nodes.Node;
@@ -84,7 +89,8 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     /** Cached default implementations of expansion models. */
-    private static WeakHashMap<Object, DefaultTreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, DefaultTreeExpansionModel>();
+    private static final WeakHashMap<Object, DefaultTreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, DefaultTreeExpansionModel>();
+    
     /**
      * Empty model - returns default root node with no children.
      */
@@ -112,7 +118,11 @@ public final class Models {
         CompoundModel compoundModel
     ) {
         OutlineTable ot = new OutlineTable ();
-        ot.setModel (compoundModel);
+        if (compoundModel != null && compoundModel.isHyperModel()) {
+            ot.setModel(compoundModel.createHyperModel());
+        } else {
+            ot.setModel (compoundModel);
+        }
         return ot;
     }
     
@@ -130,7 +140,11 @@ public final class Models {
         CompoundModel compoundModel,
         TreeView treeView
     ) {
-        return new TreeModelRoot (compoundModel, treeView).getRootNode();
+        if (compoundModel != null && compoundModel.isHyperModel()) {
+            return new TreeModelRoot (compoundModel.createHyperModel(), treeView).getRootNode();
+        } else {
+            return new TreeModelRoot (compoundModel, treeView).getRootNode();
+        }
     }
     
     /**
@@ -150,7 +164,11 @@ public final class Models {
             System.out.println (compoundModel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                ((OutlineTable) view).setModel (compoundModel);
+                if (compoundModel != null && compoundModel.isHyperModel()) {
+                    ((OutlineTable) view).setModel (compoundModel.createHyperModel());
+                } else {
+                    ((OutlineTable) view).setModel (compoundModel);
+                }
             }
         });
     }
@@ -187,35 +205,41 @@ public final class Models {
     // TODO: Add createCompoundModel(List models, String propertiesHelpID, RequestProcessor rp)
     // Or instead of RP use some interface that could provide the desired thread to run in (current, AWT, RP thread,...)
     public static CompoundModel createCompoundModel (List models, String propertiesHelpID) {
-        List<TreeModel>                 treeModels;
-        List<TreeModelFilter>           treeModelFilters;
-        List<TreeExpansionModel>        treeExpansionModels;
-        List<TreeExpansionModelFilter>  treeExpansionModelFilters;
-        List<NodeModel>                 nodeModels;
-        List<NodeModelFilter>           nodeModelFilters;
-        List<TableModel>                tableModels;
-        List<TableModelFilter>          tableModelFilters;
-        List<NodeActionsProvider>       nodeActionsProviders;
-        List<NodeActionsProviderFilter> nodeActionsProviderFilters;
-        List<ColumnModel>               columnModels;
+        if (models.size() > 1 && models.get(0) instanceof CompoundModel && models.get(1) instanceof CompoundModel) {
+            // Hypermodel
+            ArrayList<CompoundModel> subModels = new ArrayList<CompoundModel>();
+            CompoundModel mainModel = null;
+            TreeModelFilter treeFilter = null;
+            for (Object o : models) {
+                if (o instanceof CompoundModel) {
+                    if (subModels.contains((CompoundModel) o)) {
+                        mainModel = (CompoundModel) o;
+                        continue;
+                    }
+                    subModels.add((CompoundModel) o);
+                } else if (o instanceof TreeModelFilter) {
+                    treeFilter = (TreeModelFilter) o;
+                }
+            }
+            if (mainModel == null) mainModel = subModels.get(0);
+            return new CompoundModel(mainModel, subModels.toArray(new CompoundModel[]{}), treeFilter, propertiesHelpID);
+        }
+
+        ModelLists ml = new ModelLists();
         List<? extends Model>           otherModels;
-        RequestProcessor                rp = null;
         
         // Either the list contains 10 lists of individual models + one list of mixed models
-        //  + optional TreeExpansionModelFilter(s) + optional RequestProcessor
+        //  + optional TreeExpansionModelFilter(s) + optional AsynchronousModelFilter(s)
         // ; or the models directly
         boolean hasLists = false;
-        if (models.size() == 11 || models.size() == 12 || models.size() == 13) {
+        int modelsSize = models.size();
+        if (11 <= modelsSize && modelsSize <= 14) {
             Iterator it = models.iterator ();
             boolean failure = false;
             while (it.hasNext ()) {
                 Object model = it.next();
                 if (!(model instanceof List)) {
-                    if (model instanceof RequestProcessor && !it.hasNext()) {
-                        failure = false;
-                    } else {
-                        failure = true;
-                    }
+                    failure = true;
                     break;
                 }
             }
@@ -224,91 +248,63 @@ public final class Models {
             }
         }
         if (hasLists) { // We have 11 or 12 lists of individual models + optional RP
-            treeModels =            (List<TreeModel>)       models.get(0);
-            treeModelFilters =      (List<TreeModelFilter>) models.get(1);
-            revertOrder(treeModelFilters);
-            treeExpansionModels =   (List<TreeExpansionModel>) models.get(2);
-            nodeModels =            (List<NodeModel>) models.get(3);
-            nodeModelFilters =      (List<NodeModelFilter>) models.get(4);
-            revertOrder(nodeModelFilters);
-            tableModels =           (List<TableModel>) models.get(5);
-            tableModelFilters =     (List<TableModelFilter>) models.get(6);
-            revertOrder(tableModelFilters);
-            nodeActionsProviders =  (List<NodeActionsProvider>) models.get(7);
-            nodeActionsProviderFilters = (List<NodeActionsProviderFilter>) models.get(8);
-            revertOrder(nodeActionsProviderFilters);
-            columnModels =          (List<ColumnModel>) models.get(9);
+            ml.treeModels =            (List<TreeModel>)       models.get(0);
+            ml.treeModelFilters =      (List<TreeModelFilter>) models.get(1);
+            revertOrder(ml.treeModelFilters);
+            ml.treeExpansionModels =   (List<TreeExpansionModel>) models.get(2);
+            ml.nodeModels =            (List<NodeModel>) models.get(3);
+            ml.nodeModelFilters =      (List<NodeModelFilter>) models.get(4);
+            revertOrder(ml.nodeModelFilters);
+            ml.tableModels =           (List<TableModel>) models.get(5);
+            ml.tableModelFilters =     (List<TableModelFilter>) models.get(6);
+            revertOrder(ml.tableModelFilters);
+            ml.nodeActionsProviders =  (List<NodeActionsProvider>) models.get(7);
+            ml.nodeActionsProviderFilters = (List<NodeActionsProviderFilter>) models.get(8);
+            revertOrder(ml.nodeActionsProviderFilters);
+            ml.columnModels =          (List<ColumnModel>) models.get(9);
             otherModels =           (List<? extends Model>) models.get(10);
-            if (models.size() > 11) { // TreeExpansionModelFilter or RequestProcessor
-                if (models.get(11) instanceof List) {
-                    treeExpansionModelFilters = (List<TreeExpansionModelFilter>) models.get(11);
-                } else {
-                    rp = (RequestProcessor) models.get(11);
-                    treeExpansionModelFilters = Collections.emptyList();
-                }
+            if (modelsSize > 11) { // TreeExpansionModelFilter
+                ml.treeExpansionModelFilters = (List<TreeExpansionModelFilter>) models.get(11);
+                //if (modelsSize > 12) { // AsynchronousModel
+                //    ml.asynchModels = (List<AsynchronousModel>) models.get(12);
+                    if (modelsSize > 12) { // AsynchronousModelFilter
+                        ml.asynchModelFilters = (List<AsynchronousModelFilter>) models.get(12);
+                    }
+                //}
             } else {
-                treeExpansionModelFilters = Collections.emptyList();
+                ml.treeExpansionModelFilters = Collections.emptyList();
             }
             //treeExpansionModelFilters = (models.size() > 11) ? (List<TreeExpansionModelFilter>) models.get(11) : (List<TreeExpansionModelFilter>) Collections.EMPTY_LIST;
-            if (models.size() > 12) {
-                rp = (RequestProcessor) models.get(12);
-            }
         } else { // We have the models, need to find out what they implement
-            treeModels =           new LinkedList<TreeModel> ();
-            treeModelFilters =     new LinkedList<TreeModelFilter> ();
-            treeExpansionModels =  new LinkedList<TreeExpansionModel> ();
-            treeExpansionModelFilters = new LinkedList<TreeExpansionModelFilter> ();
-            nodeModels =           new LinkedList<NodeModel> ();
-            nodeModelFilters =     new LinkedList<NodeModelFilter> ();
-            tableModels =          new LinkedList<TableModel> ();
-            tableModelFilters =    new LinkedList<TableModelFilter> ();
-            nodeActionsProviders = new LinkedList<NodeActionsProvider> ();
-            nodeActionsProviderFilters = new LinkedList<NodeActionsProviderFilter> ();
-            columnModels =         new LinkedList<ColumnModel> ();
+            ml.treeModels =           new LinkedList<TreeModel> ();
+            ml.treeModelFilters =     new LinkedList<TreeModelFilter> ();
+            ml.treeExpansionModels =  new LinkedList<TreeExpansionModel> ();
+            ml.treeExpansionModelFilters = new LinkedList<TreeExpansionModelFilter> ();
+            ml.nodeModels =           new LinkedList<NodeModel> ();
+            ml.nodeModelFilters =     new LinkedList<NodeModelFilter> ();
+            ml.tableModels =          new LinkedList<TableModel> ();
+            ml.tableModelFilters =    new LinkedList<TableModelFilter> ();
+            ml.nodeActionsProviders = new LinkedList<NodeActionsProvider> ();
+            ml.nodeActionsProviderFilters = new LinkedList<NodeActionsProviderFilter> ();
+            //ml.asynchModels =         new LinkedList<AsynchronousModel> ();
+            ml.asynchModelFilters =   new LinkedList<AsynchronousModelFilter> ();
+            ml.columnModels =         new LinkedList<ColumnModel> ();
             otherModels =          (List<? extends Model>) models;
         }
-            
-        Iterator it = otherModels.iterator ();
-        while (it.hasNext ()) {
-            Object model = it.next ();
-            boolean first = model.getClass ().getName ().endsWith ("First");
-            if (model instanceof TreeModel)
-                treeModels.add((TreeModel) model);
-            if (model instanceof TreeModelFilter)
-                if (first)
-                    treeModelFilters.add((TreeModelFilter) model);
-                else
-                    treeModelFilters.add(0, (TreeModelFilter) model);
-            if (model instanceof TreeExpansionModel)
-                treeExpansionModels.add((TreeExpansionModel) model);
-            if (model instanceof TreeExpansionModelFilter)
-                if (first)
-                    treeExpansionModelFilters.add((TreeExpansionModelFilter) model);
-                else
-                    treeExpansionModelFilters.add(0, (TreeExpansionModelFilter) model);
-            if (model instanceof NodeModel)
-                nodeModels.add((NodeModel) model);
-            if (model instanceof NodeModelFilter)
-                if (first)
-                    nodeModelFilters.add((NodeModelFilter) model);
-                else
-                    nodeModelFilters.add(0, (NodeModelFilter) model);
-            if (model instanceof TableModel)
-                tableModels.add((TableModel) model);
-            if (model instanceof TableModelFilter)
-                if (first)
-                    tableModelFilters.add((TableModelFilter) model);
-                else
-                    tableModelFilters.add(0, (TableModelFilter) model);
-            if (model instanceof NodeActionsProvider)
-                nodeActionsProviders.add((NodeActionsProvider) model);
-            if (model instanceof NodeActionsProviderFilter)
-                if (first)
-                    nodeActionsProviderFilters.add((NodeActionsProviderFilter) model);
-                else
-                    nodeActionsProviderFilters.add(0, (NodeActionsProviderFilter) model);
-            if (model instanceof ColumnModel)
-                columnModels.add((ColumnModel) model);
+
+        ml.addOtherModels(otherModels);
+        DefaultTreeExpansionModel defaultExpansionModel = null;
+        if (ml.treeExpansionModels.isEmpty()) {
+            synchronized (defaultExpansionModels) {
+                defaultExpansionModel = defaultExpansionModels.get(models);
+                if (defaultExpansionModel != null) {
+                    defaultExpansionModel = defaultExpansionModel.cloneForNewModel();
+                } else {
+                    defaultExpansionModel = new DefaultTreeExpansionModel();
+                }
+                defaultExpansionModels.put(models, defaultExpansionModel);
+            }
+            ml.treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
         }
         /*
         System.out.println("Tree Models = "+treeModels);
@@ -322,46 +318,62 @@ public final class Models {
         System.out.println("Node Action Provider Filters = "+nodeActionsProviderFilters);
         System.out.println("Column Models = "+columnModels);
          */
-        if (treeModels.isEmpty ()) {
+        return createCompoundModel(ml, propertiesHelpID);
+    }
+
+    private  static CompoundModel createCompoundModel (ModelLists ml, String propertiesHelpID) {
+        if (ml.treeModels.isEmpty ()) {
             TreeModel etm = new EmptyTreeModel();
-            treeModels = Collections.singletonList(etm);
+            ml.treeModels = Collections.singletonList(etm);
         }
         DefaultTreeExpansionModel defaultExpansionModel = null;
-        if (treeExpansionModels.isEmpty()) {
-            defaultExpansionModel = defaultExpansionModels.get(models);
-            if (defaultExpansionModel != null) {
-                defaultExpansionModel = defaultExpansionModel.cloneForNewModel();
-            } else {
-                defaultExpansionModel = new DefaultTreeExpansionModel();
+        if (ml.treeExpansionModels.isEmpty()) {
+            synchronized (defaultExpansionModels) {
+                defaultExpansionModel = defaultExpansionModels.get(ml);
+                if (defaultExpansionModel != null) {
+                    defaultExpansionModel = defaultExpansionModel.cloneForNewModel();
+                } else {
+                    defaultExpansionModel = new DefaultTreeExpansionModel();
+                }
+                defaultExpansionModels.put(ml, defaultExpansionModel);
             }
-            defaultExpansionModels.put(models, defaultExpansionModel);
-            treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
+            ml.treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
+        } else if (ml.treeExpansionModels.size() == 1) {
+            if (ml.treeExpansionModels.get(0) instanceof DefaultTreeExpansionModel) {
+                defaultExpansionModel = (DefaultTreeExpansionModel) ml.treeExpansionModels.get(0);
+            }
         }
+        /*if (ml.asynchModels.isEmpty()) {
+            ml.asynchModels = Collections.singletonList((AsynchronousModel) new DefaultAsynchronousModel());
+        }*/
         
         CompoundModel cm = new CompoundModel (
             createCompoundTreeModel (
-                new DelegatingTreeModel (treeModels),
-                treeModelFilters
+                new DelegatingTreeModel (ml.treeModels),
+                ml.treeModelFilters
             ),
             createCompoundTreeExpansionModel(
-                new DelegatingTreeExpansionModel (treeExpansionModels),
-                treeExpansionModelFilters
+                new DelegatingTreeExpansionModel (ml.treeExpansionModels),
+                ml.treeExpansionModelFilters
             ),
             createCompoundNodeModel (
-                new DelegatingNodeModel (nodeModels),
-                nodeModelFilters
+                new DelegatingNodeModel (ml.nodeModels),
+                ml.nodeModelFilters
             ),
             createCompoundNodeActionsProvider (
-                new DelegatingNodeActionsProvider (nodeActionsProviders),
-                nodeActionsProviderFilters
+                new DelegatingNodeActionsProvider (ml.nodeActionsProviders),
+                ml.nodeActionsProviderFilters
             ),
-            columnModels,
+            ml.columnModels,
             createCompoundTableModel (
-                new DelegatingTableModel (tableModels),
-                tableModelFilters
+                new DelegatingTableModel (ml.tableModels),
+                ml.tableModelFilters
             ),
-            propertiesHelpID,
-            rp
+            createCompoundAsynchronousModel (
+                new DefaultAsynchronousModel(),//new DelegatingAsynchronousModel (ml.asynchModels),
+                ml.asynchModelFilters
+            ),
+            propertiesHelpID
         );
         if (defaultExpansionModel != null) {
             defaultExpansionModel.setCompoundModel(cm);
@@ -526,6 +538,16 @@ public final class Models {
             expansionModel = new CompoundTreeExpansionModel (expansionModel, filter);
         }
         return expansionModel;
+    }
+
+    private static AsynchronousModel createCompoundAsynchronousModel (
+            AsynchronousModel asynchModel,
+            List<AsynchronousModelFilter> filters
+    ) {
+        for (AsynchronousModelFilter filter : filters) {
+            asynchModel = new CompoundAsynchronousModel (asynchModel, filter);
+        }
+        return asynchModel;
     }
     
     
@@ -1389,6 +1411,26 @@ public final class Models {
                 models [i].addModelListener (l);
         }
 
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                TreeModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingTreeModel) {
+                    ((DelegatingTreeModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
+        }
+
         /** 
          * Unregisters given listener.
          *
@@ -1568,6 +1610,21 @@ public final class Models {
         
     }
 
+    private final static class  CompoundAsynchronousModel implements AsynchronousModel {
+        private AsynchronousModel asynchModel;
+        private AsynchronousModelFilter asynchModelFilter;
+
+        CompoundAsynchronousModel(AsynchronousModel asynchModel, AsynchronousModelFilter asynchModelFilter) {
+            this.asynchModel = asynchModel;
+            this.asynchModelFilter = asynchModelFilter;
+        }
+
+        public Executor asynchronous(CALL asynchCall, Object node) throws UnknownTypeException {
+            return asynchModelFilter.asynchronous(asynchModel.asynchronous(asynchCall, node), asynchCall, node);
+        }
+
+    }
+
     /**
      * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
      * from given list of TableModels. DelegatingTableModel asks all underlaying 
@@ -1722,6 +1779,26 @@ public final class Models {
                 models [i].addModelListener (l);
         }
 
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                TableModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingTableModel) {
+                    ((DelegatingTableModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
+        }
+
         /** 
          * Unregisters given listener.
          *
@@ -1864,7 +1941,7 @@ public final class Models {
             return new String (sb);
         }
     }
-    
+
     private static class DefaultTreeExpansionModel implements TreeExpansionModel {
         
         private Reference<CompoundModel> cmRef;
@@ -1924,6 +2001,19 @@ public final class Models {
             return new DefaultTreeExpansionModel(cmRef.get());
         }
 
+    }
+
+    private static final class DefaultAsynchronousModel implements AsynchronousModel {
+
+        public Executor asynchronous(CALL asynchCall, Object node) {
+            if (asynchCall.equals(CALL.CHILDREN) || asynchCall.equals(CALL.VALUE)) {
+                // For backward compatibility
+                return AsynchronousModelFilter.DEFAULT;
+            } else {
+                return AsynchronousModelFilter.CURRENT_THREAD;
+            }
+        }
+        
     }
 
     /**
@@ -2069,6 +2159,26 @@ public final class Models {
             int i, k = models.length;
             for (i = 0; i < k; i++)
                 models [i].addModelListener (l);
+        }
+
+        /**
+         * Registers given listener.
+         *
+         * @param l the listener to add
+         */
+        void addModelListener (ModelListener l, Set<Model> modelsListenersAddedTo) {
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                NodeModel m = models [i];
+                if (!modelsListenersAddedTo.add(m)) {
+                    continue;
+                }
+                if (m instanceof DelegatingNodeModel) {
+                    ((DelegatingNodeModel) m).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    m.addModelListener (l);
+                }
+            }
         }
 
         /** 
@@ -3112,13 +3222,17 @@ public final class Models {
         private ColumnModel[]   columnModels;
         private TableModel      tableModel;
         private TreeExpansionModel treeExpansionModel;
+        private AsynchronousModel asynchModel;
+
+        private CompoundModel   mainSubModel;
+        private CompoundModel[] subModels;
+        private TreeModelFilter subModelsFilter;
         
         // <RAVE>
         // New field, setter/getter for propertiesHelpID, which is used
         // for property sheet help
         private String propertiesHelpID = null;
         // </RAVE>
-        private RequestProcessor rp;
         
         // init ....................................................................
 
@@ -3137,8 +3251,8 @@ public final class Models {
             NodeActionsProvider nodeActionsProvider,
             List<ColumnModel> columnModels,
             TableModel tableModel,
-            String propertiesHelpID,
-            RequestProcessor rp
+            AsynchronousModel asynchModel,
+            String propertiesHelpID
         ) {
             if (treeModel == null) throw new NullPointerException ();
             if (treeModel == null) throw new NullPointerException ();
@@ -3157,8 +3271,35 @@ public final class Models {
             this.columnModels = columnModels.toArray (
                 new ColumnModel [columnModels.size ()]
             );
+            this.asynchModel = asynchModel;
             this.propertiesHelpID = propertiesHelpID;
-            this.rp = rp;
+        }
+
+        private CompoundModel(CompoundModel mainSubModel,
+                              CompoundModel[] models,
+                              TreeModelFilter treeFilter,
+                              String propertiesHelpID) {
+            this.mainSubModel = mainSubModel;
+            this.subModels = models;
+            this.subModelsFilter = treeFilter;
+            this.propertiesHelpID = propertiesHelpID;
+        }
+
+        /*CompoundModel[] getSubModels() {
+            return subModels;
+        }
+
+        TreeModelFilter getSubModelsFilter() {
+            return subModelsFilter;
+        }*/
+
+        boolean isHyperModel() {
+            return subModels != null;
+        }
+
+        HyperCompoundModel createHyperModel() {
+            if (!isHyperModel()) throw new IllegalStateException();
+            return new HyperCompoundModel(mainSubModel, subModels, subModelsFilter);
         }
 
         // <RAVE>
@@ -3401,12 +3542,26 @@ public final class Models {
          * @param l the listener to add
          */
         public void addModelListener (ModelListener l) {
-            treeModel.addModelListener (l);
-            if (nodeModel != treeModel) {
-                nodeModel.addModelListener (l);
+            Set<Model> modelsListenersAddedTo = new HashSet<Model>();
+            if (treeModel instanceof DelegatingTreeModel) {
+                ((DelegatingTreeModel) treeModel).addModelListener(l, modelsListenersAddedTo);
+            } else {
+                treeModel.addModelListener (l);
+                modelsListenersAddedTo.add(treeModel);
             }
-            if (tableModel != treeModel && tableModel != nodeModel) {
-                tableModel.addModelListener (l);
+            if (nodeModel != treeModel && !modelsListenersAddedTo.contains(nodeModel)) {
+                if (nodeModel instanceof DelegatingNodeModel) {
+                    ((DelegatingNodeModel) nodeModel).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    nodeModel.addModelListener (l);
+                }
+            }
+            if (tableModel != treeModel && tableModel != nodeModel && !modelsListenersAddedTo.contains(tableModel)) {
+                if (tableModel instanceof DelegatingTableModel) {
+                    ((DelegatingTableModel) tableModel).addModelListener(l, modelsListenersAddedTo);
+                } else {
+                    tableModel.addModelListener (l);
+                }
             }
             if (treeExpansionModel instanceof CompoundTreeExpansionModel) {
                 ((CompoundTreeExpansionModel) treeExpansionModel).addModelListener(l);
@@ -3433,6 +3588,21 @@ public final class Models {
 
         @Override
         public String toString () {
+            /*String str = super.toString () +
+                   "\n  TreeModel = " + treeModel +
+                   "\n  NodeModel = " + nodeModel +
+                   "\n  TableModel = " + tableModel +
+                   "\n  NodeActionsProvider = " + nodeActionsProvider +
+                   "\n  ColumnsModel = " + java.util.Arrays.asList(columnModels);
+            if (str.indexOf("WatchesTableModel") > 0) {
+                return "CompoundModel [WATCHES]";
+            }
+            if (str.indexOf("EvaluatorTableModel") > 0) {
+                return "CompoundModel [EVALUATOR]";
+            }
+            if (str.indexOf("VariablesTableModel") > 0) {
+                return "CompoundModel [VARIABLES]";
+            }*/
             return super.toString () + 
                    "\n  TreeModel = " + treeModel +
                    "\n  NodeModel = " + nodeModel +
@@ -3526,5 +3696,108 @@ public final class Models {
             }
         }
 
+        // AsynchronousModel
+
+        public Executor asynchronous(CALL asynchCall, Object node) throws UnknownTypeException {
+            return asynchModel.asynchronous(asynchCall, node);
+        }
+
     }
+
+    private static final class ModelLists extends Object {
+
+        public List<TreeModel>                 treeModels = Collections.emptyList();
+        public List<TreeModelFilter>           treeModelFilters = Collections.emptyList();
+        public List<TreeExpansionModel>        treeExpansionModels = Collections.emptyList();
+        public List<TreeExpansionModelFilter>  treeExpansionModelFilters = Collections.emptyList();
+        public List<NodeModel>                 nodeModels = Collections.emptyList();
+        public List<NodeModelFilter>           nodeModelFilters = Collections.emptyList();
+        public List<TableModel>                tableModels = Collections.emptyList();
+        public List<TableModelFilter>          tableModelFilters = Collections.emptyList();
+        public List<NodeActionsProvider>       nodeActionsProviders = Collections.emptyList();
+        public List<NodeActionsProviderFilter> nodeActionsProviderFilters = Collections.emptyList();
+        public List<ColumnModel>               columnModels = Collections.emptyList();
+        //public List<AsynchronousModel>         asynchModels = Collections.emptyList();
+        public List<AsynchronousModelFilter>   asynchModelFilters = Collections.emptyList();
+
+        public void addOtherModels(List<? extends Model> otherModels) {
+            Iterator it = otherModels.iterator ();
+            while (it.hasNext ()) {
+                Object model = it.next ();
+                boolean first = model.getClass ().getName ().endsWith ("First");
+                if (model instanceof TreeModel) {
+                    treeModels = new ArrayList<TreeModel>(treeModels);
+                    treeModels.add((TreeModel) model);
+                }
+                if (model instanceof TreeModelFilter) {
+                    treeModelFilters = new ArrayList<TreeModelFilter>(treeModelFilters);
+                    if (first)
+                        treeModelFilters.add((TreeModelFilter) model);
+                    else
+                        treeModelFilters.add(0, (TreeModelFilter) model);
+                }
+                if (model instanceof TreeExpansionModel) {
+                    treeExpansionModels = new ArrayList<TreeExpansionModel>(treeExpansionModels);
+                    treeExpansionModels.add((TreeExpansionModel) model);
+                }
+                if (model instanceof TreeExpansionModelFilter) {
+                    treeExpansionModelFilters = new ArrayList<TreeExpansionModelFilter>(treeExpansionModelFilters);
+                    if (first)
+                        treeExpansionModelFilters.add((TreeExpansionModelFilter) model);
+                    else
+                        treeExpansionModelFilters.add(0, (TreeExpansionModelFilter) model);
+                }
+                if (model instanceof NodeModel) {
+                    nodeModels = new ArrayList<NodeModel>(nodeModels);
+                    nodeModels.add((NodeModel) model);
+                }
+                if (model instanceof NodeModelFilter) {
+                    nodeModelFilters = new ArrayList<NodeModelFilter>(nodeModelFilters);
+                    if (first)
+                        nodeModelFilters.add((NodeModelFilter) model);
+                    else
+                        nodeModelFilters.add(0, (NodeModelFilter) model);
+                }
+                if (model instanceof TableModel) {
+                    tableModels = new ArrayList<TableModel>(tableModels);
+                    tableModels.add((TableModel) model);
+                }
+                if (model instanceof TableModelFilter) {
+                    tableModelFilters = new ArrayList<TableModelFilter>(tableModelFilters);
+                    if (first)
+                        tableModelFilters.add((TableModelFilter) model);
+                    else
+                        tableModelFilters.add(0, (TableModelFilter) model);
+                }
+                if (model instanceof NodeActionsProvider) {
+                    nodeActionsProviders = new ArrayList<NodeActionsProvider>(nodeActionsProviders);
+                    nodeActionsProviders.add((NodeActionsProvider) model);
+                }
+                if (model instanceof NodeActionsProviderFilter) {
+                    nodeActionsProviderFilters = new ArrayList<NodeActionsProviderFilter>(nodeActionsProviderFilters);
+                    if (first)
+                        nodeActionsProviderFilters.add((NodeActionsProviderFilter) model);
+                    else
+                        nodeActionsProviderFilters.add(0, (NodeActionsProviderFilter) model);
+                }
+                /*if (model instanceof AsynchronousModel) {
+                    asynchModels = new ArrayList<AsynchronousModel>(asynchModels);
+                    asynchModels.add((AsynchronousModel) model);
+                }*/
+                if (model instanceof AsynchronousModelFilter) {
+                    asynchModelFilters = new ArrayList<AsynchronousModelFilter>(asynchModelFilters);
+                    if (first)
+                        asynchModelFilters.add((AsynchronousModelFilter) model);
+                    else
+                        asynchModelFilters.add(0, (AsynchronousModelFilter) model);
+                }
+
+                if (model instanceof ColumnModel) {
+                    columnModels = new ArrayList<ColumnModel>(columnModels);
+                    columnModels.add((ColumnModel) model);
+                }
+            }
+        }
+    }
+
 }

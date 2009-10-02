@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,9 +61,11 @@ public class DLightExecutorService {
     private final static RequestProcessor processor = new RequestProcessor(PREFIX, 50);
     private final static Object lock;
 
-
     static {
-        lock = new String(DLightExecutorService.class.getName());
+        lock = DLightExecutorService.class.getName() + "Lock"; // NOI18N
+    }
+
+    private DLightExecutorService() {
     }
 
     public static <T> Future<T> submit(final Callable<T> task, final String name) {
@@ -88,12 +91,12 @@ public class DLightExecutorService {
         });
     }
 
-    public static Future scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
+    public static ScheduledFuture<?> scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
         synchronized (lock) {
             final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
                     new TaskThreadFactory(descr));
 
-            final Future future = service.scheduleAtFixedRate(task, 0, period, unit);
+            final ScheduledFuture<?> future = service.scheduleAtFixedRate(task, 0, period, unit);
 
             submit(new Runnable() {
 
@@ -107,7 +110,7 @@ public class DLightExecutorService {
 
                     // When try to shutdown service without
                     // AccessController.doPrivileged get security exception...
-                    
+
                     AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
                         public Object run() {

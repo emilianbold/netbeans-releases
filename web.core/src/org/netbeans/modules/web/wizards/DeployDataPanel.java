@@ -41,6 +41,7 @@
 package org.netbeans.modules.web.wizards;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.FocusEvent;
@@ -50,10 +51,12 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
@@ -79,6 +82,11 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         setName(NbBundle.getMessage(DeployDataPanel.class, "TITLE_ddpanel_"+fileType));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class, "ACSD_deployment"));
         initComponents();
+        
+        if ( !Utilities.isJavaEE6(wizard) ){
+            myDescriptorCheckBoxPanel.remove( jCBservlet );
+        }
+        
         fireChangeEvent();
     }
 
@@ -94,7 +102,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         fullRowC.gridwidth = 8;
         fullRowC.anchor = GridBagConstraints.WEST;
         fullRowC.fill = GridBagConstraints.HORIZONTAL;
-        fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.insets = new Insets(4, 0, 4, 0);
 
         // Initial label
         GridBagConstraints firstC = new GridBagConstraints();
@@ -111,7 +119,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         tfC.gridy = 0;
         tfC.gridwidth = 7;
         tfC.fill = GridBagConstraints.HORIZONTAL;
-        tfC.insets = new Insets(4, 20, 4, 60);
+        tfC.insets = new Insets(4, 20, 4, 0);
 
         // Short textfield
         GridBagConstraints stfC = new GridBagConstraints();
@@ -143,11 +151,14 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         tfC.gridy++;
         // PENDING - whether it's selected needs to depend on the
         // previous panel...
+        myDescriptorCheckBoxPanel = new JPanel();
+        myDescriptorCheckBoxPanel.setLayout( new FlowLayout(FlowLayout.LEFT, 0, 0));
         jCBservlet = new JCheckBox(NbBundle.getMessage(DeployDataPanel.class, "LBL_addtodd"), true);
         jCBservlet.setMnemonic(NbBundle.getMessage(DeployDataPanel.class, "LBL_add_mnemonic").charAt(0));
         jCBservlet.addItemListener(this);
         jCBservlet.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class, "ACSD_addtodd")); // NOI18N
-        this.add(jCBservlet, fullRowC);
+        myDescriptorCheckBoxPanel.add(jCBservlet);
+        this.add(myDescriptorCheckBoxPanel, fullRowC);
 
         // 3. Classname
         tfC.gridy++;
@@ -261,6 +272,12 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
     }
 
     void setData() {
+
+        String displayName = null;
+        DataObject templateDo = wizard.getTemplate();
+        displayName = templateDo.getNodeDelegate ().getDisplayName ();
+        wizard.putProperty("NewFileWizard_Title", displayName);
+        
         deployData.setClassName(evaluator.getClassName());
         jTFclassname.setText(deployData.getClassName());
 
@@ -330,6 +347,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
     }
 
     // Variables declaration
+    private JPanel myDescriptorCheckBoxPanel;
     private JCheckBox jCBservlet;
     private JTextField jTFclassname;
     private JTextField jTFname;

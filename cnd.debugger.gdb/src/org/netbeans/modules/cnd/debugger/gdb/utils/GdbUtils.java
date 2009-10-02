@@ -882,4 +882,19 @@ public class GdbUtils {
         }
         return exe;
     }
+
+    public static double parseVersionString(String msg) throws NumberFormatException {
+        int dot = msg.indexOf('.');
+
+        int first = dot - 1;
+        while (first > 0 && Character.isDigit(msg.charAt(first))) {
+            first--;
+        }
+
+        int last = dot + 1;
+        while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
+            last++;
+        }
+        return Double.parseDouble(msg.substring(first+1, last));
+    }
 }

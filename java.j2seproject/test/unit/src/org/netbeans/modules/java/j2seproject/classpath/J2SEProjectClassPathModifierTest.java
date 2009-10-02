@@ -42,11 +42,8 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.URL;
 import java.util.Collections;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -56,12 +53,11 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -69,7 +65,6 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -197,6 +192,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertEquals(0,cpRoots.length);
     }
 
+    @RandomlyFails // NB-Core-Build #3223; javac.classpath="" after addition
     public void testProjectLibrary() throws Exception {
         assertEquals(Collections.emptyList(), getPrjLibRefs());
         URL base = getWorkDir().toURI().toURL();

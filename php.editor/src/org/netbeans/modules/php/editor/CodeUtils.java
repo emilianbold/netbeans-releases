@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -84,6 +85,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -98,6 +102,27 @@ public class CodeUtils {
     private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
 
     private CodeUtils() {
+    }
+
+    @CheckForNull
+    public static FileObject getFileObject(Document doc) {
+        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof FileObject) {
+            return (FileObject)sdp;
+        }
+        if (sdp instanceof DataObject) {
+            return ((DataObject)sdp).getPrimaryFile();
+        }
+        return null;
+    }
+
+    public static  boolean isPhp_53(FileObject file) {
+        Parameters.notNull("file", file);
+        PhpLanguageOptions.Properties props = PhpLanguageOptions.getDefault().getProperties(file);
+        if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+            return true;
+        }
+        return false;
     }
 
     //TODO: extracting name needs to be take into account namespaces

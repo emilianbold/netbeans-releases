@@ -48,24 +48,24 @@
 
 
     <!-- Sun GlassFish V3 properties   -->
-    <property name="glassfish.v3.sun.build.type"      value="preview"/>
+    <property name="glassfish.v3.sun.build.type"      value="fcs"/>
     <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
     <!--
     <property name="glassfish.v3.sun.build.number"    value="28e"/>
     -->
     <loadresource property="glassfish.v3.sun.build.number">
-          <url url="${glassfish.v3.sun.location.prefix}/trunk-latest/archive/bundles"/>
+          <url url="${glassfish.v3.sun.location.prefix}/fcs/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)sges-v3-${glassfish.v3.sun.build.type}-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)sges-v3-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
     <property name="glassfish.v3.sun.display.version" value="v3 b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3-b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.build.type}-${glassfish.v3.sun.version}.zip"/>
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.version}.zip"/>
     <property name="glassfish_v3_sun_location_ml" value="${glassfish_v3_sun_location}"/>
     <!--<property name="glassfish_v3_sun_location_ml"     value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles-ml/sges-v3-${glassfish.v3.sun.build.type}-ml.zip"/-->
     <!--
@@ -76,18 +76,18 @@
 
 
     <!-- GlassFish V3 properties   -->   
-    <property name="glassfish.v3.build.type"      value="preview"/>
+    <property name="glassfish.v3.build.type"      value="fcs"/>
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
     <!--
     <property name="glassfish.v3.build.number"    value="28c"/>
     -->
     
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/trunk-latest/archive/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/fcs/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)glassfish-v3-${glassfish.v3.build.type}-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)glassfish-v3-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
@@ -95,7 +95,7 @@
     <property name="glassfish.v3.display.version" value="v3 b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-b${glassfish.v3.build.number}"/>    
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
     <!--
     <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-prelude.zip"/>
@@ -108,10 +108,6 @@
     <property name="openesb.version" value="v2"/>
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
-
-    <!-- JavaFX Properties -->
-    <property name="javafx_location"     value="${javafx_builds_host}/lastSuccessfulBuild/artifact/zips/javafx-cluster-mac.zip"/>
-    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/zips/javafx-sdk-mac.zip"/>
 
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         

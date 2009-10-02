@@ -44,6 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.XMLFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -55,11 +57,16 @@ import static java.util.Calendar.*;
  * @author Jindrich Sedek
  */
 class LogFormatter extends XMLFormatter{
-    private String javaHome;
-    private String userHome;
-    private String netbeansUserDir;
-    private String netbeansHome;
-    private List<String> installDirs;
+    private final Pattern javaHome;
+    private final Pattern userHome;
+    private final Pattern netbeansUserDir;
+    private final Pattern netbeansHome;
+    private final List<Pattern> installDirs;
+    private final Pattern filePrefix = Pattern.compile("file:", Pattern.LITERAL);
+    private final Pattern nbjclPrefix = Pattern.compile("nbjcl:", Pattern.LITERAL);
+    private final Pattern jarPrefix = Pattern.compile("jar:", Pattern.LITERAL);
+    private final Pattern hexPattern = Pattern.compile("@[0-9a-fA-F]*");
+    
     /** Creates a new instance of LogFormatter */
     public LogFormatter() {
         javaHome = convert(System.getProperty("java.home", ""));// NOI18N
@@ -69,22 +76,24 @@ class LogFormatter extends XMLFormatter{
         String nbdirsStr = System.getProperty("netbeans.dirs");// NOI18N
         if (nbdirsStr != null){
             String [] fields = nbdirsStr.split(File.pathSeparator);
+            Pattern [] resultFields = new Pattern[fields.length];
             for (int i = 0; i < fields.length; i++) {
-                fields[i] = convert(fields[i]);
+                resultFields[i] = convert(fields[i]);
             }
-            installDirs = Arrays.asList(fields);
+            installDirs = Arrays.asList(resultFields);
         }else{
             installDirs = Collections.emptyList();
         }
     }
     
-    private String convert(String str){
+    private Pattern convert(String str){
         try{
-            return new File(str).toURI().toURL().toString();
+            String name = new File(str).toURI().toURL().toString();
+            return Pattern.compile(name, Pattern.LITERAL);
         }catch(MalformedURLException exc){
             Logger.getLogger(LogFormatter.class.getName()).log(Level.INFO, "unaccessible file", exc);// NOI18N
         }
-        return "";
+        return null;
     }
     
     private void a2(StringBuffer sb, int x) {
@@ -112,6 +121,9 @@ class LogFormatter extends XMLFormatter{
                 sb.append(ch);
             }
         }
+    }
+    private String doReplace(String where, Pattern pattern, String replacement){
+        return pattern.matcher(where).replaceAll(Matcher.quoteReplacement(replacement));
     }
     
     private void printFrame(StackTraceElement frame, StringBuffer sb){
@@ -152,25 +164,24 @@ class LogFormatter extends XMLFormatter{
                 if (index!= -1){
                     fileName = fileName.substring(0, index);
                 }
-                fileName = fileName.replace("jar:", "");// NOI18N
-                if (javaHome.length() > 0){
-                    fileName = fileName.replace(javaHome, "${java.home}");// NOI18N
+                fileName = doReplace(fileName, jarPrefix, "");// NOI18N
+                if (javaHome != null){
+                    fileName = doReplace(fileName, javaHome, "${java.home}");// NOI18N
                 }
-                if (netbeansHome.length() > 0){
-                    fileName = fileName.replace(netbeansHome, "${netbeans.home}");// NOI18N
+                if (netbeansHome != null){
+                    fileName = doReplace(fileName, netbeansHome, "${netbeans.home}");// NOI18N
                 }
-                if (netbeansUserDir.length() > 0){
-                    fileName = fileName.replace(netbeansUserDir, "${user.dir}");// NOI18N
+                if (netbeansUserDir != null){
+                    fileName = doReplace(fileName, netbeansUserDir, "${user.dir}");// NOI18N
                 }
-                for (Iterator<String> it = installDirs.iterator(); it.hasNext();) {
-                    String nextDir = it.next();
-                    fileName = fileName.replace(nextDir, "${netBeansDir}");// NOI18N
+                for (Iterator<Pattern> it = installDirs.iterator(); it.hasNext();) {
+                    fileName = doReplace(fileName, it.next(), "${netBeansDir}");// NOI18N
                 }
-                if (userHome.length() > 0){
-                    fileName = fileName.replace(userHome, "${user.home}");// NOI18N
+                if (userHome != null){
+                    fileName = doReplace(fileName, userHome, "${user.home}");// NOI18N
                 }
-                fileName = fileName.replace("file:", "");// NOI18N
-                fileName = fileName.replace("nbjcl:", "");// NOI18N
+                fileName = doReplace(fileName, filePrefix, "");// NOI18N
+                fileName = doReplace(fileName, nbjclPrefix, "");// NOI18N
                 escape(sb, fileName);
             }
         }
@@ -333,7 +344,7 @@ class LogFormatter extends XMLFormatter{
         return sb.toString();
     }
     
-    private static String paramToString(Object obj) {
+    private String paramToString(Object obj) {
         if (obj == null) {
             return "null"; // NOI18N
         }
@@ -357,7 +368,7 @@ class LogFormatter extends XMLFormatter{
                     a.getClass().getName().endsWith("$DelegateAction") && // NOI18N
                     a.getClass().getName().startsWith("org.openide") // NOI18N
                     ) {
-                return a.toString().replaceAll("@[0-9a-fA-F]*", "," + a.getValue(Action.NAME)); // NOI18N
+                return hexPattern.matcher(a.toString()).replaceAll("," + a.getValue(Action.NAME));
             }
             return a.getClass().getName() + '[' + a.getValue(Action.NAME) + ']';
         }

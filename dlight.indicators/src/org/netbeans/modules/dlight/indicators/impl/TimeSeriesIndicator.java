@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -55,7 +57,6 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
@@ -65,8 +66,10 @@ import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
  * Indicator capable of drawing one or more time series.
@@ -77,6 +80,7 @@ public final class TimeSeriesIndicator
         extends Indicator<TimeSeriesIndicatorConfiguration>
         implements ViewportAware, DataFilterListener {
 
+    private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
     private final DataRowToTimeSeries dataRowHandler;
     private final GraphPanel<TimeSeriesPlot, Legend> panel;
     private final TimeSeriesPlot graph;
@@ -99,14 +103,20 @@ public final class TimeSeriesIndicator
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration) {
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         TimeSeriesPlot graph = new TimeSeriesPlot(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration));
-        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
-        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        graph.setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
+        Dimension graphSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_HEIGHT));
         graph.setMinimumSize(graphSize);
         graph.setPreferredSize(graphSize);
-        Dimension valueAxisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        Dimension valueAxisSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_HEIGHT));
         graph.getVerticalAxis().setMinimumSize(valueAxisSize);
         graph.getVerticalAxis().setPreferredSize(valueAxisSize);
-        Dimension timeAxisSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.HORIZONTAL_AXIS_HEIGHT);
+        Dimension timeAxisSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_X_AXIS_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_X_AXIS_HEIGHT));
         graph.getHorizontalAxis().setMinimumSize(timeAxisSize);
         graph.getHorizontalAxis().setPreferredSize(timeAxisSize);
         return graph;
@@ -125,6 +135,7 @@ public final class TimeSeriesIndicator
         if (needed) {
             final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus());
             repairPanel.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent e) {
                     final Future<Boolean> repairResult = getRepairActionProvider().asyncRepair();
                     DLightExecutorService.submit(new Callable<Boolean>() {
@@ -149,12 +160,14 @@ public final class TimeSeriesIndicator
                 }
             });
             UIThread.invoke(new Runnable() {
+
                 public void run() {
                     panel.setOverlay(repairPanel);
                 }
             });
         } else {
-            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
+            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()),
+                    false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             UIThread.invoke(new Runnable() {
                 public void run() {
                     panel.setOverlay(label);
@@ -185,7 +198,13 @@ public final class TimeSeriesIndicator
     @Override
     public void updated(List<DataRow> data) {
         for (DataRow row : data) {
-            dataRowHandler.addDataRow(row);
+            try {
+                dataRowHandler.addDataRow(row);
+            } catch (Exception ex) {
+                if (log.isLoggable(Level.WARNING)) {
+                    log.log(Level.WARNING, "Exception while updating indicator", ex); // NOI18N
+                }
+            }
         }
     }
 

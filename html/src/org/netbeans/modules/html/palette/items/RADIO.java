@@ -48,6 +48,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxParserContext;
 import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
@@ -153,7 +154,8 @@ public class RADIO implements ActiveEditorDrop {
 
         List<String> names = new ArrayList<String>();
         //search for the input tags
-        SyntaxParserResult parseResult = SyntaxParser.parse(code);
+        SyntaxParserContext context = SyntaxParserContext.createContext(code);
+        SyntaxParserResult parseResult = SyntaxParser.parse(context);
         for(SyntaxElement e : parseResult.getElements()) {
             if(e.type() == SyntaxElement.TYPE_TAG) {
                 SyntaxElement.Tag tag = (SyntaxElement.Tag)e;

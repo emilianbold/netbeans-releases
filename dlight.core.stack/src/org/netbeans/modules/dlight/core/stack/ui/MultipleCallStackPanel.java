@@ -36,12 +36,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyVetoException;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -56,27 +57,29 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataPro
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mt154047
  */
-public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider{
+public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
+
     private final ExplorerManager manager = new ExplorerManager();
     private final MultipleCallStackRootNode rootNode;
     private final BeanTreeView treeView;
     private Lookup lookup;
     private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
 
-
-
-    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider){
+    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
-        treeView = new BeanTreeView();
+        treeView = new MyOwnBeanTreeView();
         treeView.setRootVisible(false);
         add(treeView);
         Action expandAll = new AbstractAction(NbBundle.getMessage(MultipleCallStackPanel.class, "ExpandAll")) {//NOI18N
@@ -94,13 +97,10 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)){
+                if (SwingUtilities.isRightMouseButton(e)) {
                     popup.show(MultipleCallStackPanel.this, e.getX(), e.getY());
                 }
             }
-
-
-
         });
         ActionMap map = new ActionMap();
         map.put("org.openide.actions.PopupAction", expandAll);//NOI18N
@@ -109,50 +109,58 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         treeView.setActionMap(map);
     }
 
-    public static final  MultipleCallStackPanel createInstance(){
+    public static final MultipleCallStackPanel createInstance() {
         return new MultipleCallStackPanel(null);
     }
 
-
-    public static final  MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider){
+    public static final MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
         return new MultipleCallStackPanel(sourceFileInfoDataProvider);
     }
 
-    public void clean(){
+    public void clean() {
         rootNode.removeAll();
         treeView.setRootVisible(false);
     }
 
     @Override
     public void addNotify() {
-      //  rootNode.update();
+        //  rootNode.update();
         super.addNotify();
         treeView.expandAll();
-        
+
     }
 
-
-    public void expandAll(){
+    public void expandAll() {
+        if (manager.getRootContext() == null) {
+            return;
+        }
         treeView.expandAll();
     }
 
-    public void setRootVisible(String rootName){
+    public void scrollToRoot() {
+        //     Component c  = treeView.getComponents();
+        treeView.getViewport().setViewPosition(new Point(0, 0));
+
+
+    }
+
+    public void setRootVisible(String rootName) {
         treeView.setRootVisible(true);
         rootNode.setDisplayName(rootName);
     }
 
-    public final void add(String rootName, Icon icon, List<FunctionCall> stack){
+    public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
         rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack));
     }
 
-    public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack){
+    public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
         treeView.setRootVisible(false);
         rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack));
     }
 
-    public void update(){
-
+    public void update() {
     }
+
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -161,6 +169,32 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         return lookup;
     }
 
+    private final class MyOwnBeanTreeView extends BeanTreeView {
 
- 
+        MyOwnBeanTreeView() {
+            super();
+        }
+
+        @Override
+        public void expandAll() {
+            super.expandAll();
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        manager.setSelectedNodes(new Node[]{rootNode});
+                    } catch (PropertyVetoException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }, 500);
+
+
+        }
+
+        void scroolToRoot() {
+            tree.scrollRowToVisible(0);
+
+        }
+    }
 }

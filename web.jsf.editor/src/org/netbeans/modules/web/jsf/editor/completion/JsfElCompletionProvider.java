@@ -42,20 +42,31 @@
 package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
+import org.netbeans.modules.web.jsf.editor.el.JsfVariableContext;
+import org.netbeans.modules.web.jsf.editor.el.JsfVariablesModel;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 /**
  *
  * @author Petr Pisl
@@ -87,21 +98,21 @@ public class JsfElCompletionProvider implements CompletionProvider{
             this.creationCaretOffset = caretOffset;
         }
         
-        protected void query(CompletionResultSet resultSet, Document doc, int offset) {
+        protected void query(CompletionResultSet resultSet, Document doc, final int offset) {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = null;
             if (fObject != null)
                 wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                JsfElExpression elExpr = new JsfElExpression (wm, doc);
-                ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
+                final JsfElExpression elExpr = new JsfElExpression (wm, doc);
+                final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
 
                 int elParseType = elExpr.parse(offset);
-                int anchor = offset - elExpr.getReplace().length();
+                final int anchor = offset - elExpr.getReplace().length();
                 
                 switch (elParseType){
                     case JsfElExpression.EL_START:
-                        String replace = elExpr.getReplace();
+                        final String replace = elExpr.getReplace();
 
                         // check managed beans
                         List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
@@ -123,6 +134,29 @@ public class JsfElCompletionProvider implements CompletionProvider{
                                                 bundle.getBaseName()));
                             }
                         }
+
+                        // look through declared jsf variables
+                        Source source = Source.create(doc);
+                        try {
+                            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    Result result = resultIterator.getParserResult(offset);
+                                    if (result instanceof HtmlParserResult) {
+                                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
+                                        List<JsfVariableContext> contexts = model.getAllAvailableVariables(offset, false);
+                                        for(JsfVariableContext var : contexts) {
+                                            if(var.getVariableName().startsWith(replace)) {
+                                              complItems.add(new ElCompletionItem.ELProperty(var.getVariableName(), anchor, var.getResolvedType()));
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (ParseException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+
                         break;
                     case JsfElExpression.EL_JSF_BEAN:
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(
@@ -133,7 +167,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
                         complItems.addAll(items);
                         break;
                     case JsfElExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(
+                        List<CompletionItem> bitems = elExpr.getPropertyKeysCompletionItems(
                                 elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
@@ -157,6 +191,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
             resultSet.finish();
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }

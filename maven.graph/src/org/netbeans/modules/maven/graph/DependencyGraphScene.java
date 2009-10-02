@@ -433,6 +433,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         protected void performLayout() {
             Rectangle rectangle = null;
             List<? extends Widget> toFit = widgets != null ? widgets : depScene.getChildren();
+            if (toFit == null) {
+                return;
+            }
+
             for (Widget widget : toFit) {
                 if (rectangle == null) {
                     rectangle = widget.convertLocalToScene (widget.getBounds ());

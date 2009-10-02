@@ -49,10 +49,8 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author mkleint
- */
+// This customizer should be located in existing Run category
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", position=632)
 public class ManagementCompositePanelProvider
         implements ProjectCustomizer.CompositeCategoryProvider {
     
@@ -69,43 +67,22 @@ public class ManagementCompositePanelProvider
     
     private static final String MANAGEMENT = "Management"; // NOI18N
     
-    private String name;
-    
-    /** Creates a new instance of J2SECompositePanelProvider */
-    public ManagementCompositePanelProvider(String name) {
-        this.name = name;
-    }
-    
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ResourceBundle bundle = NbBundle.getBundle(ManagementCompositePanelProvider.class);
-        ProjectCustomizer.Category toReturn = null;
-        if (MANAGEMENT.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
+        return ProjectCustomizer.Category.create(
                     MANAGEMENT,
                     bundle.getString("LBL_Config_Management"),// NOI18N
-                    null,
                     null);
-        }
-        assert toReturn != null : "No category for name:" + name;// NOI18N
-        return toReturn;
     }
     
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        String nm = category.getName();
-        
-        if (MANAGEMENT.equals(nm)) {
-            Project project = context.lookup(Project.class);
-            MonitoringPanel mp = 
-                    new MonitoringPanel(project, 
-                    J2SEProjectType.isPlatformGreaterThanJDK15(project));
-            
-            category.setOkButtonListener(mp);
-            return mp;
-        }
-        return null;
+        Project project = context.lookup(Project.class);
+        MonitoringPanel mp =
+                new MonitoringPanel(project,
+                J2SEProjectType.isPlatformGreaterThanJDK15(project));
+
+        category.setOkButtonListener(mp);
+        return mp;
     }
     
-    public static ManagementCompositePanelProvider createManagement() {
-        return new ManagementCompositePanelProvider(MANAGEMENT);
-    }
 }

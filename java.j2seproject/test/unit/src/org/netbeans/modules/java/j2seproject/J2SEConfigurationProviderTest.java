@@ -167,7 +167,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
             // also OK, not of correct type
         }
         assertEquals(Collections.emptySet(), l.events());
-        EditableProperties ep = new EditableProperties();
+        EditableProperties ep = new EditableProperties(true);
         ep.setProperty("config", "debug");
         p.getUpdateHelper().putProperties("nbproject/private/config.properties", ep);
         assertEquals("debug", pcp.getActiveConfiguration().getDisplayName());

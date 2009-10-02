@@ -77,11 +77,6 @@
         <!-- Build JRuby from source (using its own build files -->
         <antcall target="build-jruby-bin"/>
 
-        <chmod perm="ugo+x">
-          <fileset dir="${jruby_dir}/">
-            <include name="bin/*"/>
-          </fileset>
-        </chmod>
     </target>
 
     <target name="clean" depends="projectized-common.clean">

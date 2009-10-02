@@ -238,7 +238,9 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                 }
                             }
                             File file = new File(path);
-                            if (CndFileUtils.exists(file)) {
+                            //if (CndFileUtils.exists(file)) {
+                            // do not use CndFileUtils. It results in a lot of GC
+                            if (file.exists()) {
                                 unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
                             }
                         }
@@ -259,11 +261,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         HashSet<String> set = new HashSet<String>();
         gatherSubFolders(new File(root), set);
         HashSet<String> map = new HashSet<String>();
-        for (Iterator it = set.iterator(); it.hasNext();){
+        for (Iterator<String> it = set.iterator(); it.hasNext();){
             if (isStoped.get()) {
                 break;
             }
-            File d = new File((String)it.next());
+            File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {

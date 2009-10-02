@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -75,6 +76,8 @@ class JBStartRunnable implements Runnable {
 
     private final static String STARTUP_SH = File.separator + "bin" + File.separator + "run.sh";
     private final static String STARTUP_BAT = File.separator + "bin" + File.separator + "run.bat";
+
+    private static final SpecificationVersion JDK_14 = new SpecificationVersion("1.4");
 
     private JBDeploymentManager dm;
     private String instanceName;
@@ -162,9 +165,15 @@ class JBStartRunnable implements Runnable {
             }
         }
 
+        // get Java platform that will run the server
+        JavaPlatform platform = (startServer.getMode() != JBStartServer.MODE.PROFILE ? properties.getJavaPlatform() : profilerSettings.getJavaPlatform());
+
         if (startServer.getMode() == JBStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
             // if in debug mode and the debug options not specified manually
-            javaOptsBuilder.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
+            if (platform.getSpecification().getVersion().compareTo(JDK_14) <= 0) {
+                javaOptsBuilder.append(" -classic");
+            }
+            javaOptsBuilder.append(" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
                             append(dm.getDebuggingPort()).
                             append(",server=y,suspend=n"); // NOI18N
         } 
@@ -180,9 +189,6 @@ class JBStartRunnable implements Runnable {
 
         // create new environment for server
         javaOpts = javaOptsBuilder.toString();
-       // System.out.println("**** JBStartRunnable: javaOpts = "+ javaOpts);
-        // get Java platform that will run the server
-        JavaPlatform platform = (startServer.getMode() != JBStartServer.MODE.PROFILE ? properties.getJavaPlatform() : profilerSettings.getJavaPlatform());
         String javaHome = getJavaHome(platform);
 
         String envp[] = new String[] {

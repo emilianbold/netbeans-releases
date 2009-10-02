@@ -71,6 +71,8 @@ public class SecurityRoles extends PersistentObject implements Refreshable {
             return false;
         }
 
+        // The same problem as for IZ#172425 - Servlet 3.0 model is not updated properly
+        roles.clear();
         AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectStringArray("value", new ArrayValueHandler() { // NOI18N
             public Object handleArray(List<AnnotationValue> arrayMembers) {

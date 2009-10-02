@@ -41,10 +41,13 @@
 
 package org.netbeans.modules.subversion;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -80,6 +83,7 @@ public class OutputLogger implements ISVNNotifyListener {
             return new NullLogger();
         }
     }
+    private AbstractAction action;
     
     private OutputLogger(SVNUrl repositoryRoot) {
         repositoryRootString = repositoryRoot.toString();
@@ -225,7 +229,19 @@ public class OutputLogger implements ISVNNotifyListener {
         }
         return log;
     }
-    
+
+    public Action getOpenOuptutAction() {
+        if(action == null) {
+            action = new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    writable = true;
+                    getLog().select();
+                }
+            };
+        }
+        return action;
+    }
+
     private static class NullLogger extends OutputLogger {
 
         public void logCommandLine(String commandLine) {

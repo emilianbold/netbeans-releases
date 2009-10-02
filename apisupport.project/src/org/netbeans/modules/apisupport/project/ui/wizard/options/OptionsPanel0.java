@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
@@ -83,13 +85,13 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     }
     
     /** Returns array of IDs of primary panels (categories) from project's layer. 
-     * Advanced (Miscellaneous) is added as first item.
+     * Advanced is added as first item.
      * @return array of IDs
      */
     private String[] getPrimaryIdsFromLayer() {
         ArrayList<String> primaryIds = new ArrayList<String>();
-        FileSystem layerFS = LayerUtils.layerForProject(this.data.getProject()).layer(false);
-        if(layerFS != null) {
+        try {
+            FileSystem layerFS = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
             FileObject optionsDialogFO = layerFS.findResource("OptionsDialog"); //NOI18N
             if(optionsDialogFO != null) {
                 FileObject[] children = optionsDialogFO.getChildren();
@@ -101,8 +103,11 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                 }
                 Collections.sort(primaryIds);
             }
+        } catch (IOException x) {
+            Logger.getLogger(OptionsPanel0.class.getName()).log(Level.INFO, null, x);
         }
-        primaryIds.add(0, DataModel.MISCELLANEOUS_LABEL);
+        primaryIds.remove("Advanced"); // NOI18N
+        primaryIds.add(0, "Advanced"); // NOI18N
         return primaryIds.toArray(new String[primaryIds.size()]);
     }
     
@@ -115,8 +120,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
             categoryNameField.getDocument().addDocumentListener(fieldsDL);
             secondaryPanelTitle.getDocument().addDocumentListener(fieldsDL);
             iconField.getDocument().addDocumentListener(fieldsDL);
-            primaryPanelTitle.getDocument().addDocumentListener(fieldsDL);
-            tooltipField1.getDocument().addDocumentListener(fieldsDL);
             primaryKwField.getDocument().addDocumentListener(fieldsDL);
             secondaryKwField.getDocument().addDocumentListener(fieldsDL);
             if(primaryPanelCombo.getEditor().getEditorComponent() instanceof JTextField) {
@@ -130,8 +133,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
             categoryNameField.getDocument().removeDocumentListener(fieldsDL);
             secondaryPanelTitle.getDocument().removeDocumentListener(fieldsDL);
             iconField.getDocument().removeDocumentListener(fieldsDL);
-            primaryPanelTitle.getDocument().removeDocumentListener(fieldsDL);
-            tooltipField1.getDocument().removeDocumentListener(fieldsDL);
             fieldsDL = null;
         }
     }
@@ -169,12 +170,10 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
             retCode = data.setDataForSecondaryPanel(
                     primaryPanelCombo.getEditor().getItem().toString(),
                     secondaryPanelTitle.getText(),
-                    tooltipField1.getText(),
                     secondaryKwField.getText());
         } else {
             assert optionsCategoryButton.isSelected();
             retCode = data.setDataForPrimaryPanel(
-                    primaryPanelTitle.getText(),
                     categoryNameField.getText(),
                     iconField.getText(),
                     allowSecondaryPanelsCheckBox.isSelected(),
@@ -212,8 +211,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_OptionsPanel0"));
         advancedButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_Advanced"));
         optionsCategoryButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LBL_OptionsCategory"));
-        primaryPanelTitle.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Title"));
-        tooltipField1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Tooltip"));
         secondaryPanelTitle.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
         categoryNameField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CategoryName"));
         iconField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_IconPath"));
@@ -244,10 +241,8 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         iconButton.setEnabled(!advancedEnabled);
         iconField.setEnabled(!advancedEnabled);
         iconLbl.setEnabled(!advancedEnabled);
-        primaryPanelTitle.setEnabled(!advancedEnabled);
         primaryKwField.setEnabled(!advancedEnabled);
         primKeywordsLabel.setEnabled(!advancedEnabled);
-        titleLbl.setEnabled(!advancedEnabled);
         allowSecondaryPanelsCheckBox.setEnabled(!advancedEnabled);
     
         primaryPanelComboLbl.setEnabled(advancedEnabled);
@@ -256,8 +251,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         secondaryKwField.setEditable(advancedEnabled);
         keywordsLabel.setEnabled(advancedEnabled);
         displayNameLbl1.setEnabled(advancedEnabled);
-        tooltipField1.setEnabled(advancedEnabled);
-        tooltipLbl1.setEnabled(advancedEnabled);
     }
     
     /** This method is called from within the constructor to
@@ -276,10 +269,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         categoryNameField = new javax.swing.JTextField();
         displayNameLbl1 = new javax.swing.JLabel();
         secondaryPanelTitle = new javax.swing.JTextField();
-        tooltipLbl1 = new javax.swing.JLabel();
-        tooltipField1 = new javax.swing.JTextField();
-        titleLbl = new javax.swing.JLabel();
-        primaryPanelTitle = new javax.swing.JTextField();
         iconLbl = new javax.swing.JLabel();
         iconField = new javax.swing.JTextField();
         iconButton = new javax.swing.JButton();
@@ -319,15 +308,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
 
         displayNameLbl1.setLabelFor(secondaryPanelTitle);
         org.openide.awt.Mnemonics.setLocalizedText(displayNameLbl1, bundle.getString("LBL_DisplaName")); // NOI18N
-
-        tooltipLbl1.setLabelFor(tooltipField1);
-        org.openide.awt.Mnemonics.setLocalizedText(tooltipLbl1, bundle.getString("LBL_Tooltip")); // NOI18N
-
-        titleLbl.setLabelFor(primaryPanelTitle);
-        org.openide.awt.Mnemonics.setLocalizedText(titleLbl, bundle.getString("LBL_Title")); // NOI18N
-        titleLbl.setEnabled(false);
-
-        primaryPanelTitle.setEnabled(false);
 
         iconLbl.setLabelFor(iconField);
         org.openide.awt.Mnemonics.setLocalizedText(iconLbl, org.openide.util.NbBundle.getMessage(OptionsPanel0.class, "LBL_Icon")); // NOI18N
@@ -386,43 +366,42 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                     .add(layout.createSequentialGroup()
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(tooltipLbl1)
                             .add(displayNameLbl1)
                             .add(primaryPanelComboLbl)
                             .add(keywordsLabel))
                         .add(22, 22, 22)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(secondaryKwField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
-                            .add(primaryPanelCombo, 0, 403, Short.MAX_VALUE)
-                            .add(secondaryPanelTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
-                            .add(tooltipField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
-                        .add(10, 10, 10))
-                    .add(layout.createSequentialGroup()
-                        .add(13, 13, 13)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(categoryNameLbl)
-                            .add(iconLbl)
-                            .add(primKeywordsLabel))
-                        .add(19, 19, 19)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(primaryKwField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(iconField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(iconButton))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, categoryNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, primaryPanelTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
+                            .add(secondaryKwField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
+                            .add(primaryPanelCombo, 0, 406, Short.MAX_VALUE)
+                            .add(secondaryPanelTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE))
                         .add(10, 10, 10))
                     .add(layout.createSequentialGroup()
                         .add(235, 235, 235)
-                        .add(dummyPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(13, 13, 13)
-                        .add(titleLbl)
-                        .add(373, 373, 373)))
+                        .add(dummyPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(optionsCategoryButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 400, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(categoryNameLbl)
+                    .add(iconLbl))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(iconField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(iconButton)
+                        .add(18, 18, 18))
+                    .add(layout.createSequentialGroup()
+                        .add(categoryNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                        .addContainerGap())))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(primKeywordsLabel)
+                .add(49, 49, 49)
+                .add(primaryKwField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
@@ -441,38 +420,29 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(displayNameLbl1)
                     .add(secondaryPanelTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(tooltipLbl1)
-                    .add(tooltipField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(keywordsLabel)
                     .add(secondaryKwField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(22, 22, 22)
+                .add(18, 18, 18)
                 .add(optionsCategoryButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(titleLbl)
-                    .add(primaryPanelTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(categoryNameLbl)
                     .add(categoryNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(iconLbl)
-                    .add(iconButton)
-                    .add(iconField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(iconField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(iconButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(primKeywordsLabel)
                     .add(primaryKwField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(allowSecondaryPanelsCheckBox)
-                .add(22, 22, 22)
-                .add(dummyPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(56, 56, 56))
+                .add(68, 68, 68)
+                .add(dummyPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         advancedButton.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -485,12 +455,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         displayNameLbl1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.displayNameLbl1.AccessibleContext.accessibleDescription")); // NOI18N
         secondaryPanelTitle.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.displayNameField1.AccessibleContext.accessibleName")); // NOI18N
         secondaryPanelTitle.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.displayNameField1.AccessibleContext.accessibleDescription")); // NOI18N
-        tooltipLbl1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.tooltipLbl1.AccessibleContext.accessibleDescription")); // NOI18N
-        tooltipField1.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.tooltipField1.AccessibleContext.accessibleName")); // NOI18N
-        tooltipField1.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.tooltipField1.AccessibleContext.accessibleDescription")); // NOI18N
-        titleLbl.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.titleLbl.AccessibleContext.accessibleDescription")); // NOI18N
-        primaryPanelTitle.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.titleField.AccessibleContext.accessibleName")); // NOI18N
-        primaryPanelTitle.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.titleField.AccessibleContext.accessibleDescription")); // NOI18N
         iconLbl.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.iconLbl.AccessibleContext.accessibleDescription")); // NOI18N
         iconField.getAccessibleContext().setAccessibleName(getMessage("OptionsPanel0.iconField.AccessibleContext.accessibleName")); // NOI18N
         iconField.getAccessibleContext().setAccessibleDescription(getMessage("OptionsPanel0.iconField.AccessibleContext.accessibleDescription")); // NOI18N
@@ -572,12 +536,8 @@ private void primaryPanelComboActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JTextField primaryKwField;
     private javax.swing.JComboBox primaryPanelCombo;
     private javax.swing.JLabel primaryPanelComboLbl;
-    private javax.swing.JTextField primaryPanelTitle;
     private javax.swing.JTextField secondaryKwField;
     private javax.swing.JTextField secondaryPanelTitle;
-    private javax.swing.JLabel titleLbl;
-    private javax.swing.JTextField tooltipField1;
-    private javax.swing.JLabel tooltipLbl1;
     // End of variables declaration//GEN-END:variables
     
 }

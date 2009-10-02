@@ -27,6 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+
 #include "bmp.h"
 
 Bitmap::Bitmap() {
@@ -44,7 +46,7 @@ Bitmap::~Bitmap() {
 }
 
 void Bitmap::Load(string filename) {
-    FILE* file = fopen(filename.c_str(), (char *) &"a+b");
+    FILE* file = fopen(filename.c_str(), (char *) &"rb");
     // obtaining file size
     fseek(file, 0, SEEK_END);
     int fileSize = ftell(file);
@@ -69,7 +71,7 @@ void Bitmap::Load(string filename) {
 }
 
 void Bitmap::Save(string filename) {
-    FILE* file = fopen(filename.c_str(), (char *) &"a+b");
+    FILE* file = fopen(filename.c_str(), (char *) &"wb+");
     // writing header
     fwrite(&fileHeader, 1, sizeof (fileHeader), file);
     // writing data

@@ -104,6 +104,7 @@ public class LuceneIndex implements IndexImpl {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
                 store();
+                System.gc();
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
             }

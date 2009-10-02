@@ -45,13 +45,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
+import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -59,13 +71,18 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.NbBundle;
 
 /**
- * Reponsible for copying files from remote host
+ * Reponsible for copying files from remote host.
+ * Each instance of the RemoteFileSupport class corresponds to a remote server
+ * 
  * @author Vladimir Kvashin
  */
-public class RemoteFileSupport {
+public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
 
+    private final PendingFilesQueue pendingFilesQueue = new PendingFilesQueue();
+    private RemoteFileSystemNotifier notifier;
     private final ExecutionEnvironment execEnv;
 
     /** File transfer statistics */
@@ -77,13 +94,14 @@ public class RemoteFileSupport {
     private final Object mainLock = new Object();
     private Map<File, Object> locks = new HashMap<File, Object>();
 
+    private final Map<ExecutionEnvironment, Boolean> cancels = new HashMap<ExecutionEnvironment, Boolean>();
+
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
         resetStatistic();
     }
-
 
     private Object getLock(File file) {
         synchronized(mainLock) {
@@ -115,8 +133,9 @@ public class RemoteFileSupport {
         }
     }
 
-    public void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException {
-        checkConnection(execEnv);
+    private void syncFile(File file, String remotePath) throws IOException, InterruptedException, ExecutionException, CancellationException {
+        CndUtils.assertTrue(file.isFile());
+        checkConnection(file, remotePath);
         Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), null);
         try {
             int rc = task.get().intValue();
@@ -141,44 +160,53 @@ public class RemoteFileSupport {
 
     }
 
-    public void ensureDirSync(File dir, String remotePath) throws IOException {
+    /**
+     * Ensured that the directory is synchronized
+     */
+    public void ensureDirSync(File dir, String remoteDir) throws IOException, CancellationException {        
         // TODO: synchronization
         if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
                 if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
-                    syncDirStruct(dir, remotePath);
+                    syncDirStruct(dir, remoteDir);
                     removeLock(dir);
                 }
             }
         }
     }
 
-    /*package-local for test purposes*/
-    void syncDirStruct(File dir, String remotePath) throws IOException {
-        checkConnection(execEnv);
+    private void syncDirStruct(File dir, String remoteDir) throws IOException, CancellationException {
         if (dir.exists()) {
-            assert dir.isDirectory();
+            CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         } else {
             if( !dir.mkdirs()) {
                 throw new IOException("Can not create directory " + dir.getAbsolutePath()); //NOI18N
             }
         }
+        checkConnection(dir, remoteDir);
         NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
         // TODO: error processing
-        processBuilder.setWorkingDirectory(remotePath);
+        processBuilder.setWorkingDirectory(remoteDir);
         processBuilder.setCommandLine("ls -1F"); // NOI18N
         processBuilder.redirectError();
         NativeProcess process = processBuilder.call();
         final InputStream is = process.getInputStream();
         final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
         String fileName;
+        RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
         while ((fileName = rdr.readLine()) != null) {
             boolean directory = fileName.endsWith("/"); // NOI18N
             File file = new File(dir, fileName);
-            boolean result = directory ? file.mkdirs() : file.createNewFile();
+            try {
+                boolean result = directory ? file.mkdirs() : file.createNewFile();
+            } catch (IOException ex) {
+                RemoteUtil.LOGGER.warning("Error creating " + (directory ? "directory" : "file") +
+                        ' ' + file.getAbsolutePath() + ": " + ex.getMessage());
+                throw ex;
+            }
             // TODO: error processing
-                RemoteUtil.LOGGER.finest("\t" + fileName);
+            RemoteUtil.LOGGER.finest("\tcreating " + fileName);
             file.createNewFile(); // TODO: error processing
         }
         rdr.close();
@@ -201,32 +229,106 @@ public class RemoteFileSupport {
         return fileCopyCount;
     }
 
-    private final Map<ExecutionEnvironment, Boolean> cancels = new HashMap<ExecutionEnvironment, Boolean>();
-
-    private void checkConnection(ExecutionEnvironment execEnv) throws IOException, CancellationException {
+    private void checkConnection(File localFile, String remotePath) throws IOException, CancellationException {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            synchronized (cancels) {
-                Boolean cancel = cancels.get(execEnv);
-                if (cancel != null && cancel.booleanValue()) {
-                    throw new CancellationException();
+            RemoteUtil.LOGGER.finest("Adding notification for " + execEnv + ":" + remotePath); //NOI18N
+            pendingFilesQueue.add(localFile, remotePath);
+            getNotifier().showIfNeed();
+            throw new CancellationException();
+        }
+    }
+
+    private RemoteFileSystemNotifier getNotifier() {
+        synchronized  (this) {
+            if (notifier == null) {
+                notifier = new RemoteFileSystemNotifier(execEnv, this);
+            }
+            return notifier;
+        }
+    }
+
+    public List<String> getPendingFiles() {
+        return pendingFilesQueue.getPendingFiles();
+    }
+
+    // NB: it is always called in a specially created thread
+    public void connected() {
+        ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(getClass(), "Progress_Title", RemoteFileSystemNotifier.getDisplayName(execEnv)));
+        handle.start();
+        handle.switchToDeterminate(pendingFilesQueue.size());
+        int cnt = 0;
+        try {
+            PendingFile pendingFile;
+            // die after half a minute inactivity period
+            while ((pendingFile = pendingFilesQueue.poll(1, TimeUnit.SECONDS)) != null) {
+                try {
+                    if (pendingFile.localFile.isDirectory()) {
+                        ensureDirSync(pendingFile.localFile, pendingFile.remotePath);
+                    } else {
+                        ensureFileSync(pendingFile.localFile, pendingFile.remotePath);
+                    }                    
+                    handle.progress(NbBundle.getMessage(getClass(), "Progress_Message", pendingFile.remotePath), cnt++); // NOI18N
+                } catch (InterruptedIOException ex) {
+                    break; // TODO: error processing (store pending files?)
+                } catch (IOException ex) {
+                    ex.printStackTrace(); // TODO: error processing (show another notification?)
+                } catch (ExecutionException ex) {
+                    ex.printStackTrace(); // TODO: error processing (show another notification?)
                 }
             }
-            if (SwingUtilities.isEventDispatchThread()) {
-                CndUtils.assertNonUiThread();
-                throw new IOException("Should never be called from AWT thread"); //NOI18N
+        } catch (InterruptedException ex) {
+            // TODO: error processing (store pending files?)
+        } finally {
+            handle.finish();
+            RemoteCodeModelUtils.scheduleReparse(execEnv);
+        }
+    }
+
+    private static class PendingFile {
+        public final File localFile;
+        public final String remotePath;
+        public PendingFile(File localFile, String remotePath) {
+            this.localFile = localFile;
+            this.remotePath = remotePath;
+        }
+    }
+
+    /**
+     * NB: the class is not optimized, for in fact it's used from CndFileUtils,
+     * which perform all necessary caching.
+     */
+    private static class PendingFilesQueue {
+
+        private final BlockingQueue<PendingFile> queue = new LinkedBlockingQueue<PendingFile>();
+        private final Set<String> remoteAbsPaths = new TreeSet<String>();
+
+        public synchronized void add(File localFile, String remotePath) {
+            if (remoteAbsPaths.add(remotePath)) {
+                queue.add(new PendingFile(localFile, remotePath));
             }
-            try {
-                if (!ConnectionManager.getInstance().connectTo(execEnv)) {
-                    throw new IOException("Can not connect to " + execEnv); //NOI18N
-                }
-            } catch (CancellationException ex) {
-                synchronized(cancels) {
-                    cancels.put(execEnv, Boolean.TRUE);
-                }
-                throw ex;
-            } catch (IOException ex) {
-                throw ex;
+        }
+
+        public synchronized PendingFile take() throws InterruptedException {
+            PendingFile pendingFile = queue.take();
+            remoteAbsPaths.remove(pendingFile.remotePath);
+            return pendingFile;
+        }
+
+        public synchronized PendingFile poll(long timeout, TimeUnit unit) throws InterruptedException {
+            PendingFile pendingFile = queue.poll(timeout, unit);
+            if (pendingFile != null) {
+                remoteAbsPaths.remove(pendingFile.remotePath);
             }
+            return pendingFile;
+        }
+        
+        public synchronized List<String> getPendingFiles() {
+            return Collections.unmodifiableList(new ArrayList<String>(remoteAbsPaths));
+        }
+
+        public int size() {
+            return remoteAbsPaths.size();
         }
     }
 }

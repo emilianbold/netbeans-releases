@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
@@ -81,7 +80,15 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     static long timeStampToMilliSeconds(long timeStamp) {
-        return TimeUnit.NANOSECONDS.toMillis(timeStamp);
+        return timeStamp;
+    }
+
+    static int timeInervalToMilliSeconds(long samplingInterval) {
+        return (int) (samplingInterval / 1000 / 1000);
+    }
+
+    static long timeInervalToNanoSeconds(long samplingInterval) {
+        return samplingInterval * 1000 * 1000;
     }
 
     static MSAState point2MSA(ThreadsPanel panel, ThreadState state, Point point){
@@ -208,13 +215,15 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
                             int x; // Begin of rectangle
                             int xx; // End of rectangle
 
-                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp()) - panel.getViewStart()) * factor), 0);
+                            ThreadState threadStateAt = threadData.getThreadStateAt(index);
+                            x = Math.max((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadStateAt.getTimeStamp()) - panel.getViewStart()) * factor), 0);
 
                             if (index < (threadData.size() - 1)) {
                                 xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index + 1).getTimeStamp()) - panel.getViewStart()) * factor), width);
                             } else {
                                 //xx = Math.min((int) ((dataEnd - panel.getViewStart()) * factor), width + 1);
-                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadData.getThreadStateAt(index).getTimeStamp() + panel.getInterval()) - panel.getViewStart()) * factor), width);
+                                int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(threadStateAt.getMSASamplePeriod());
+                                xx = Math.min((int) ((float) (ThreadStateColumnImpl.timeStampToMilliSeconds(threadStateAt.getTimeStamp()) + interval - panel.getViewStart()) * factor), width);
                             }
                             if (x <= point.x && point.x < xx) {
                                 return index;
@@ -257,11 +266,11 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         this.stackProvider = stackProvider;
     }
 
-    public void setSummary(int sum) {
+    public void setRunning(int sum) {
         comparable.set(sum);
     }
 
-    public int getSummary() {
+    public int getRunning() {
         return comparable.get();
     }
 
@@ -288,7 +297,13 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
         return !list.get(list.size()-1).getMSAState(0, false).equals(MSAState.ThreadFinished);
     }
 
+    void updateName(String newName) {
+        info.setThreadName(newName);
+    }
 
+    void resetName() {
+        info.resetName();
+    }
 
     void add(ThreadState state) {
         list.add(state);

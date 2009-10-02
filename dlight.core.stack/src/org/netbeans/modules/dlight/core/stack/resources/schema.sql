@@ -1,10 +1,19 @@
 CREATE TABLE Func (
     func_id INT NOT NULL,
-    func_name VARCHAR(255) NOT NULL,
-    func_full_name VARCHAR(255) NOT NULL,
+    func_name VARCHAR(16384) NOT NULL,
+    func_full_name VARCHAR(16384) NOT NULL,
+--    time_incl BIGINT NOT NULL DEFAULT 0,
+--    time_excl BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (func_id)
+);
+
+CREATE TABLE FuncMetricAggr (
+    func_id INT NOT NULL,
+    bucket_id BIGINT NOT NULL,
     time_incl BIGINT NOT NULL DEFAULT 0,
     time_excl BIGINT NOT NULL DEFAULT 0,
-    PRIMARY KEY (func_id)
+    PRIMARY KEY (func_id, bucket_id)
+--  FOREIGN KEY (func_id) REFERENCES (Func.func_id)
 );
 
 CREATE TABLE Node (

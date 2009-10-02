@@ -47,7 +47,7 @@ AWK=${AWK-"nawk"}
 function classpath() {
 
     local nbdist=${NBDIST-"../nbbuild/netbeans"}
-    local cnddist=${CNDDIST-"${nbdist}/cnd2"}
+    local cnddist=${CNDDIST-"${nbdist}/cnd3"}
 
     CP=""
 
@@ -292,7 +292,7 @@ function params() {
 function main() {
 
     local nbdist=${NBDIST-"../nbbuild/netbeans"}
-    local cnddist=${CNDDIST-"${nbdist}/cnd2"}
+    local cnddist=${CNDDIST-"${nbdist}/cnd3"}
 
     JAVA="${JAVA-`which java`}"
     DEFS=""

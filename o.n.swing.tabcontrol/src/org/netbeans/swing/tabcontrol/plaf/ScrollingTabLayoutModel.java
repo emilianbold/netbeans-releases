@@ -221,6 +221,7 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
         if (width < getMinimumLeftClippedWidth()) {
             int toBeShown = makeVisibleTab != -1 ?
                     makeVisibleTab : sel.getSelectedIndex();
+            toBeShown = Math.min(widths.length-1, toBeShown);
             if (toBeShown != -1) {
                 widths[toBeShown] = width;
             } else {

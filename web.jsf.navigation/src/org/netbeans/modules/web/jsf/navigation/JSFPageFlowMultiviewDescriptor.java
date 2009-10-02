@@ -187,12 +187,6 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
 
         public void componentOpened() {
-            //Add Properties Window
-            final WindowManager wm = WindowManager.getDefault();
-            final TopComponent properties = wm.findTopComponent("properties"); // NOI18N
-            if (properties != null && !properties.isOpened()) {
-                properties.open();
-            }
             tc.registerListeners();
 //            tc.startBackgroundPinAddingProcess();
             LOG.finest("PageFlowEditor componentOpened");

@@ -47,10 +47,12 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import org.netbeans.modules.css.visual.model.CssProperties;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.netbeans.modules.css.visual.model.FontModel;
-import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyWithUnitData;
 import org.netbeans.modules.css.visual.model.TextDecorationData;
 import org.netbeans.modules.css.visual.model.PropertyData;
@@ -59,12 +61,15 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.model.Utils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Font Style editor.
@@ -75,9 +80,31 @@ public class FontStyleEditor extends StyleEditor {
     
     ColorSelectionField colorField =  new ColorSelectionField();
     TextDecorationData textDecorationData = new TextDecorationData();
-    
-    FontModel fontModel = new FontModel();
-    DefaultListModel fontFamilies = fontModel.getFontFamilySetList();
+
+    //allow to GC the request processor and its thread when possible
+    private static WeakReference<RequestProcessor> RP_WR;
+    private static RequestProcessor createRP() {
+        return new RequestProcessor(FontStyleEditor.class.getName(), 1);
+    }
+    private static synchronized RequestProcessor getRequestProcessor() {
+        if(RP_WR != null) {
+            RequestProcessor rp = RP_WR.get();
+            if(rp == null) {
+                rp = createRP();
+                RP_WR = new WeakReference<RequestProcessor>(rp);
+                return rp;
+            } else {
+                return rp;
+            }
+        } else {
+            RequestProcessor rp = createRP();
+            RP_WR = new WeakReference<RequestProcessor>(rp);
+            return rp;
+        }
+    }
+
+    FontModel fontModel;
+    DefaultListModel fontFamilies;
     
     DefaultListModel fontSizes;
     DefaultComboBoxModel fontSizeUnits;
@@ -106,46 +133,89 @@ public class FontStyleEditor extends StyleEditor {
                 setFontColor();
             }
         });//NOI18N
-        initialize();
+
+        //lazy initialize the font model, its creation can be very slow, cannot happen in AWT
+        FutureTask<FontModel> modelTask = new FutureTask<FontModel>(FontModel.getFontModel()) {
+          @Override
+            protected void done() {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            try {
+                                initialize(get());
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        getRequestProcessor().execute(modelTask);
     }
     
-    private void initialize(){
+    private void initialize(FontModel model){
         // Set the font family to the GUI
-        fontModel = new FontModel();
+        fontModel = model;
         fontFamilies = fontModel.getFontFamilySetList();
+
         fontFaceList.setModel(fontFamilies);
-        
+
         // Set the font size to the GUI
-        fontSizes= fontModel.getFontSizeList();
+        fontSizes = fontModel.getFontSizeList();
         fontSizeList.setModel(fontSizes);
-        
-        fontSizeUnits= fontModel.getFontSizeUnitList();
+
+        fontSizeUnits = fontModel.getFontSizeUnitList();
         fontSizeUnitCombo.setModel(fontSizeUnits);
         fontSizeUnitCombo.setSelectedItem("px");
-        
+
         // Set the font Style to the GUI
         fontStyles = fontModel.getFontStyleList();
         fontStyleComboBox.setModel(fontStyles);
-        
+
         // Set the font Weight to the GUI
         fontWeights = fontModel.getFontWeightList();
         fontWeightComboBox.setModel(fontWeights);
-        
+
         // Set the font Variant to the GUI
         fontVariants = fontModel.getFontVariantList();
         fontVariantComboBox.setModel(fontVariants);
-        
+
         FontMetrics fontMetrics = fontSizeField.getFontMetrics(fontSizeField.getFont());
         int width = fontMetrics.stringWidth((String) fontSizes.get(0)) + 10;
         int height = (fontMetrics.getHeight() + 10) > 25 ? fontMetrics.getHeight() + 10 : 25;
         fontSizeField.setPreferredSize(new Dimension(width, height));
+
     }
-    
+
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
+        //set the values lazily
+        //since a request processor with throughput one is used, this taks
+        //will run after the fond model initialization is done
+        getRequestProcessor().execute(new LazyInitCssPropertyValues(cssStyleData));
+    }
+
+    private class LazyInitCssPropertyValues implements Runnable {
+        private CssRuleContent cssStyleData;
+        private LazyInitCssPropertyValues(CssRuleContent cssStyleData) {
+            this.cssStyleData = cssStyleData;
+        }
+        public void run() {
+            _setCssPropertyValues(cssStyleData);
+        }
+    }
+
     /**
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssRuleContent cssStyleData){
+    private void _setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
         
         String fontFamily = cssStyleData.getProperty(CssProperties.FONT_FAMILY);

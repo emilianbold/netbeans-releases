@@ -36,76 +36,100 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
 import java.util.concurrent.Future;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilter  {
+public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
+
     private boolean accept = false;
     private int caretOffset;
     private CompletionContext context;
+    private static final RequestProcessor requestProcessor = new RequestProcessor("PHPCodeTemplateFilter");//NOI18N
+    private final Task postedTask;
 
-    public PHPCodeTemplateFilter(JTextComponent component, int offset) {
+    public PHPCodeTemplateFilter(final JTextComponent component, final int offset) {
         this.caretOffset = offset;
-        try {
-            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
-            if (!f.isDone()) {
-                f.cancel(true);
-            }
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+        if (SwingUtilities.isEventDispatchThread()) {
+            postedTask = requestProcessor.post(new Runnable() {
+                public void run() {
+                    parseDocument(component);
+                }
+            });
+
+        } else {
+            postedTask = null;
+            parseDocument(component);
         }
     }
 
-
     public boolean accept(CodeTemplate template) {
-        if (template.getContexts().contains("php-code")) //NOI18N
-        {
-            if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
-                return template.getAbbreviation().equals("fnc");//NOI18N
+        try {
+            if ((postedTask == null || postedTask.waitFinished(300)) && template.getContexts().contains("php-code")) {
+                if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+                    return template.getAbbreviation().equals("fnc"); //NOI18N
+                    }
+                return accept;
             }
-            return accept;
+        } catch (InterruptedException ex) {
         }
-        return true;
+        return false;
     }
 
     @Override
-    public void run(ResultIterator resultIterator) throws Exception {
-        ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-        BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
-        if (document != null) {
-            document.readLock();
-
-            try {
-                context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
-                switch (context) {
-                    case EXPRESSION:
-                        accept = true;
-                        break;
-                    case CLASS_CONTEXT_KEYWORDS:
-                        accept = true;
-                        break;
+    public  void run(ResultIterator resultIterator) throws Exception {
+        ParserResult parameter = null;
+        String mimeType = resultIterator.getSnapshot().getMimeType();
+        if (!mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
+            for (Embedding e : resultIterator.getEmbeddings()) {
+                if (e.getMimeType().equals(FileUtils.PHP_MIME_TYPE)) {
+                    resultIterator = resultIterator.getResultIterator(e);
+                    break;
                 }
-            } finally {
-                document.readUnlock();
+            }
+            mimeType = resultIterator.getSnapshot().getMimeType();
+        }
+        if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
+            parameter = (ParserResult) resultIterator.getParserResult();
+            BaseDocument document = (BaseDocument) parameter.getSnapshot().getSource().getDocument(false);
+            if (document != null) {
+                document.readLock();
+
+                try {
+                    context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
+                    switch (context) {
+                        case EXPRESSION:
+                            accept = true;
+                            break;
+                        case CLASS_CONTEXT_KEYWORDS:
+                            accept = true;
+                            break;
+                    }
+                } finally {
+                    document.readUnlock();
+                }
             }
         }
     }
@@ -114,6 +138,17 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new PHPCodeTemplateFilter(component, offset);
+        }
+    }
+
+    private void parseDocument(final JTextComponent component) {
+        try {
+            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
+            if (!f.isDone()) {
+                f.cancel(true);
+            }
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 }

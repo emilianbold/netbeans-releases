@@ -53,6 +53,8 @@
 #include <netdb.h>
 #include <fcntl.h>
 
+#define RFS_PRELOAD 1 // rfs_utils.h needs this
+
 #include "rfs_controller.h"
 #include "rfs_util.h"
 
@@ -135,21 +137,32 @@ static int open_socket() {
     return sd;
 }
 
+/** 
+ * Socked descriptor. 
+ * Should be assigned ONLY in get_socket_descriptor and release_socket
+ */
+static __thread int _sd = 0;
+
+static void trace_sd(const char* text) {
+    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
+}
+
 static int get_socket_descriptor(int create) {
     // 0 means unitialized
     // -1 means that we failed to open a socket
-    static __thread int sd = 0; // socket descriptor
-    if (!create) {
-        return sd;
+    if (!create || _sd > 0) {
+        return _sd;
     }
-    if (sd == -1) {
+    if (_sd == -1) {
         return -1;
     }
-    if (sd == 0) {
-        sd = -1; // in the case of success, it will become > 0
+    if (_sd == 0) {
+        _sd = -1; // in the case of success, it will become > 0
+        trace_sd("opening socket 1");
     }
-    sd = open_socket();
-    return sd;
+    _sd = open_socket();
+    trace_sd("opening socket 2");
+    return _sd;
 }
 
 /* static int is_mine(const char *path) {
@@ -187,6 +200,8 @@ static char * my_realpath(const char *file_name, char *resolved_name, int resolv
     return resolved_name;
 }*/
 
+static int __thread inside_open = 0;
+
 /**
  * Called upon opening a file; returns "boolean" success
  * @return true means "ok" (either file is in already sync,
@@ -194,6 +209,10 @@ static char * my_realpath(const char *file_name, char *resolved_name, int resolv
  * false means that the file is ourm, but can't be synched
  */
 static int on_open(const char *path, int flags) {
+    if (inside_open != 1) {
+        trace("%s inside_open == %d   returning\n", path, inside_open);
+        return true; // recursive call to open
+    }
     static int __thread inside = 0;
     if (inside) {
         trace("%s recursive - returning\n", path);
@@ -232,10 +251,13 @@ static int on_open(const char *path, int flags) {
     } else {
         //struct rfs_request;
         int path_len = strlen(path);
-        trace("Sending %s (%d bytes)\n", path, path_len);
-        if (send(sd, path, path_len, 0) == -1) {
+        trace_sd("sending request");
+        trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
+        int sent = send(sd, path, path_len, 0);
+        if (sent == -1) {
             perror("send");
         } else {
+            trace("%d bytes sent to sd=%d\n", sent, sd);
             char response_buf[512];
             memset(response_buf, 0, sizeof(response_buf));
             int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
@@ -243,13 +265,13 @@ static int on_open(const char *path, int flags) {
                 perror("receive");
                 // TODO: correct error processing
             } else {
-                trace("Got %s for %s, %d\n", response_buf, path, flags);
+                trace("Got %s for %s, flags=%d, sd=%d\n", response_buf, path, flags, sd);
                 if (response_buf[0] == response_ok) {
                     result = true;
                 } else if (response_buf[0] == response_failure) {
                     result = false;
                 } else {
-                    trace("Protocol error\n");
+                    trace("Protocol error, sd=%d\n", sd);
                     result = false;
                 }
             }
@@ -281,11 +303,38 @@ on_startup(void) {
     } else {
         my_dir_len++;
         void *p = malloc(my_dir_len + 1);
-        strcat(p, my_dir);
+        strcpy(p, my_dir);
         strcat(p, "/");
         my_dir = p;
     }
     trace("RFS startup; my dir: %s\n", my_dir);
+    _sd = 0;
+    trace_sd("startup");
+
+    const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
+    char *env_sleep = getenv(env_sleep_var);
+    if (env_sleep) {
+        int time = atoi(env_sleep);
+        if (time > 0) {
+            fprintf(stderr, "%s is set. Process %d, sleeping %d seconds...\n", env_sleep_var, getpid(), time);
+            fflush(stderr);
+            sleep(time);
+            fprintf(stderr, "... awoke.\n");
+            fflush(stderr);
+        } else {
+            fprintf(stderr, "Incorrect value, should be a positive integer: %s=%s\n", env_sleep_var, env_sleep);
+            fflush(stderr);
+        }
+    }
+}
+
+static void release_socket() {
+    if (_sd > 0) {
+        trace("agent closes socket _sd=%d &_sd=%X\n", _sd, &_sd);
+        close(_sd);
+        _sd = 0;
+        trace_sd("releasing socket");
+    }
 }
 
 void
@@ -293,10 +342,7 @@ __attribute__((destructor))
 on_shutdown(void) {
     trace("RFS shutdown\n");
     trace_shutdown();
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        close(sd);
-    }
+    release_socket();
 }
 
 typedef struct pthread_routine_data {
@@ -310,11 +356,7 @@ static void* pthread_routine_wrapper(void* data) {
     prd->user_start_routine(prd->arg);
     trace("User thread routine finished. Performing cleanup\n");
     free(data);
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        trace("Closing socked %d\n", sd);
-        close(sd);
-    }
+    release_socket();
     return 0;
 }
 
@@ -352,88 +394,49 @@ int pthread_create(void *newthread,
     return res;
 }*/
 
+#define real_open(function_name, path, flags) \
+    inside_open++; \
+    trace("%s %s %d\n", #function_name, path, flags); \
+    va_list ap; \
+    mode_t mode; \
+    va_start(ap, flags); \
+    mode = va_arg(ap, mode_t); \
+    va_end(ap); \
+    int result = -1; \
+    if (on_open(path, flags)) { \
+        static int (*prev)(const char *, int, ...); \
+        if (!prev) { \
+            prev = (int (*)(const char *, int, ...)) get_real_addr(function_name); \
+        } \
+        if (prev) {\
+            result = prev(path, flags, mode); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function_name); \
+            errno = EFAULT; \
+            result = -1; \
+        } \
+    } \
+    trace("%s %s -> %d\n", #function_name, path, result); \
+    inside_open--; \
+    return result;
+
+
 int open(const char *path, int flags, ...) {
-    trace("open %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(open);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(open, path, flags)
 }
 
+#if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
-    trace("open64 %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(open64);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(open64, path, flags)
 }
+#endif
 
 int _open(const char *path, int flags, ...) {
-    trace("_open %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(_open);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(_open, path, flags)
 }
 
 int _open64(const char *path, int flags, ...) {
-    trace("_open64 %s %d\n", path, flags);
-
-    va_list ap;
-    mode_t mode;
-
-    va_start(ap, flags);
-    mode = va_arg(ap, mode_t);
-    va_end(ap);
-
-    static int (*prev)(const char *, int, mode_t);
-    if (!prev) {
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(_open64);
-    }
-    if (on_open(path, flags)) {
-        return prev(path, flags, mode);
-    } else {
-        return -1;
-    }
+    real_open(_open64, path, flags)
 }
 
 /* int lstat64(const char *_RESTRICT_KYWD path, struct stat64 *_RESTRICT_KYWD buf)

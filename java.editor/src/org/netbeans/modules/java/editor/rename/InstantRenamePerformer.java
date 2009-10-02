@@ -211,7 +211,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 }
             }, "Instant Rename", js, Phase.RESOLVED);
             
-            if (changePoints != null && wasResolved[0]) {
+            if (wasResolved[0]) {
                 if (changePoints != null) {
                     doInstantRename(changePoints, target, caret, ident);
                 } else {

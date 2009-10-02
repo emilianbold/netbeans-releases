@@ -72,6 +72,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
 
 /**
  * @author Tomas Mysik
@@ -458,7 +459,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
         RemoteConfiguration selected = runAsRemoteWeb.getRemoteConfiguration();
         assert selected != null;
-        if (selected == RunAsRemoteWeb.NO_REMOTE_CONFIGURATION) {
+        if (selected == NO_REMOTE_CONFIGURATION) {
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
         }
 

@@ -52,9 +52,9 @@ import org.openide.util.ImageUtilities;
 
 /**
  * This class represents one category (like "Fonts & Colors"
- * or "Editor") in Options Dialog. Its instances should
- * be registered in layers and created by <code>createCategory</code> factory
- * method as follows:
+ * or "Editor") in Options Dialog.
+ * <p>Normally panels are registered using one of the annotations in {@link OptionsPanelController}.
+ * They may also be registered in a layer manually as follows:
  *
  *   <pre style="background-color: rgb(255, 255, 153);">
  *   &lt;folder name="OptionsDialog"&gt;

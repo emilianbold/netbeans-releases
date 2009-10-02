@@ -314,7 +314,18 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 
     @Override
     public void componentOpened() {
-        manager.setRootContext(createRootNode());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final Node root = createRootNode();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        manager.setRootContext(root);
+                    }
+                });
+            }
+
+        });
+        manager.setRootContext(new AbstractNode(Children.LEAF));
     }
 
     @Override

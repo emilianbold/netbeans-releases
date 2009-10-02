@@ -41,9 +41,12 @@
 package org.netbeans.modules.css.editor.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -51,7 +54,15 @@ import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * A domain object model representing CSS file backed up by 
@@ -63,27 +74,24 @@ public final class CssModel {
 
     private static final Logger LOGGER = Logger.getLogger(CssModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    
     private final List<CssRule> rules = new ArrayList<CssRule>(10);
+    private final Collection<String> imported_files = new ArrayList<String>();
     private Snapshot snapshot;
 
-    
     public static CssModel create(CssParserResult result) {
-         return new CssModel(result.getSnapshot(), result.root());
+        return new CssModel(result.getSnapshot(), result.root());
     }
-
 
     private CssModel(Snapshot snapshot, SimpleNode root) {
         this.snapshot = snapshot;
         //check for null which may happen if the source is severely broken
         //if it happens, the model contains just empty list of rules
-        if(root != null) {
+        if (root != null) {
             updateModel(snapshot, root);
         }
     }
 
     //--- API methods ---
-
     /** @return an instance of the source Snapshot of the parser result used to construct this model. */
     public Snapshot getSnapshot() {
         return snapshot;
@@ -92,6 +100,52 @@ public final class CssModel {
     /** @return List of {@link CssRule}s or null if the document hasn't been parsed yet. */
     public List<CssRule> rules() {
         return rules;
+    }
+
+    public Collection<String> getImportedFileNames() {
+        return imported_files;
+    }
+
+    public Collection<FileObject> getImportedFiles() {
+        FileObject baseFolder = snapshot.getSource().getFileObject().getParent();
+        Collection<FileObject> files = new ArrayList<FileObject>();
+        for (String fileNamePath : getImportedFileNames()) {
+            FileObject file = baseFolder.getFileObject(fileNamePath);
+            if (file != null) {
+                files.add(file);
+            }
+        }
+        return files;
+    }
+
+    public Collection<CssModel> getImportedFileModels() {
+        final Collection<CssModel> models = new ArrayList<CssModel>();
+        for (FileObject importedFile : getImportedFiles()) {
+            if (importedFile.isValid() && importedFile.getMIMEType().equals(Css.CSS_MIME_TYPE)) {
+                try {
+                    Source source = Source.create(importedFile);
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                            models.add(CssModel.create(result));
+                        }
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return models;
+    }
+
+    public Collection<CssModel> getImportedFileModelsRecursively() {
+        Collection<CssModel> allModels = new ArrayList<CssModel>();
+        for(CssModel model : getImportedFileModels()) {
+            allModels.add(model);
+            allModels.addAll(model.getImportedFileModelsRecursively());
+        }
+        return allModels;
     }
 
     /** Finds a rule on the given offset.
@@ -114,62 +168,67 @@ public final class CssModel {
     }
 
     //--- private methods ---
-
     private synchronized void updateModel(final Snapshot snapshot, SimpleNode root) {
         synchronized (rules) {
             NodeVisitor styleRuleVisitor = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {
-                        if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
-                            //find curly brackets
-                            Token t = node.jjtGetFirstToken();
-                            Token last = node.jjtGetLastToken();
+                    if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
+                        //find curly brackets
+                        Token t = node.jjtGetFirstToken();
+                        Token last = node.jjtGetLastToken();
 
-                            int openCurlyBracketOffset = -1;
-                            int closeCurlyBracketOffset = -1;
-                            ArrayList<Integer> semicolons = new ArrayList<Integer>();
-                            ArrayList<Integer> colons = new ArrayList<Integer>();
-                            while (t != null && t.offset <= last.offset) { //also include the last token
-                                if (t.kind == CssParserConstants.LBRACE) {
-                                    openCurlyBracketOffset = t.offset;
-                                } else if (t.kind == CssParserConstants.RBRACE) {
-                                    closeCurlyBracketOffset = t.offset;
-                                } else if (t.kind == CssParserConstants.SEMICOLON) {
-                                    semicolons.add(Integer.valueOf(t.offset));
-                                } else if (t.kind == CssParserConstants.COLON) {
-                                    colons.add(Integer.valueOf(t.offset));
-                                }
-                                t = t.next;
+                        int openCurlyBracketOffset = -1;
+                        int closeCurlyBracketOffset = -1;
+                        ArrayList<Integer> semicolons = new ArrayList<Integer>();
+                        ArrayList<Integer> colons = new ArrayList<Integer>();
+                        while (t != null && t.offset <= last.offset) { //also include the last token
+                            if (t.kind == CssParserConstants.LBRACE) {
+                                openCurlyBracketOffset = t.offset;
+                            } else if (t.kind == CssParserConstants.RBRACE) {
+                                closeCurlyBracketOffset = t.offset;
+                            } else if (t.kind == CssParserConstants.SEMICOLON) {
+                                semicolons.add(Integer.valueOf(t.offset));
+                            } else if (t.kind == CssParserConstants.COLON) {
+                                colons.add(Integer.valueOf(t.offset));
                             }
-
-                            //parse style rule
-                            SimpleNode selectortList = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTSELECTORLIST);
-                            SimpleNode[] declarations = SimpleNodeUtil.getChildrenByType(node, CssParserTreeConstants.JJTDECLARATION);
-                            List<CssRuleItem> ruleItems = new ArrayList<CssRuleItem>(declarations.length);
-                            for (int i = 0; i < declarations.length; i++) {
-                                SimpleNode declaration = declarations[i];
-                                SimpleNode property = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTPROPERTY);
-                                SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTEXPR);
-
-                                if(property == null || value == null) {
-                                    //likely a parse error, do not create the rule
-                                    return ;
-                                }
-
-                                int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
-                                int colonOffset = i < colons.size() ? colons.get(i) : -1; //missing colon in declaration
-
-                                CssRuleItem ruleItem = new CssRuleItem(property.image().trim(), property.startOffset(), value.image().trim(), value.startOffset(), colonOffset, semicolonOffset);
-
-                                ruleItems.add(ruleItem);
-                            }
-
-                            String ruleName = selectortList.image().trim();
-                            CssRule rule = new CssRule(snapshot, ruleName, selectortList.startOffset(),
-                                    openCurlyBracketOffset, closeCurlyBracketOffset, ruleItems);
-                            rules.add(rule);
-
+                            t = t.next;
                         }
+
+                        //parse style rule
+                        SimpleNode selectortList = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTSELECTORLIST);
+                        SimpleNode[] declarations = SimpleNodeUtil.getChildrenByType(node, CssParserTreeConstants.JJTDECLARATION);
+                        List<CssRuleItem> ruleItems = new ArrayList<CssRuleItem>(declarations.length);
+                        for (int i = 0; i < declarations.length; i++) {
+                            SimpleNode declaration = declarations[i];
+                            SimpleNode property = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTPROPERTY);
+                            SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTEXPR);
+
+                            if (property == null || value == null) {
+                                //likely a parse error, do not create the rule
+                                return;
+                            }
+
+                            int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
+                            int colonOffset = i < colons.size() ? colons.get(i) : -1; //missing colon in declaration
+
+                            CssRuleItem ruleItem = new CssRuleItem(property.image().trim(), property.startOffset(), value.image().trim(), value.startOffset(), colonOffset, semicolonOffset);
+
+                            ruleItems.add(ruleItem);
+                        }
+
+                        String ruleName = selectortList.image().trim();
+                        CssRule rule = new CssRule(snapshot, ruleName, selectortList.startOffset(),
+                                openCurlyBracketOffset, closeCurlyBracketOffset, ruleItems);
+                        rules.add(rule);
+
+                    } else if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE) {
+                        Token importedFile = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
+                        if (importedFile != null) {
+                            imported_files.add(SimpleNodeUtil.unquotedValue(importedFile.image));
+                        }
+
+                    }
                 }
             };
 
@@ -179,11 +238,11 @@ public final class CssModel {
                 LOGGER.fine("CssModel parse tree:"); //NOI18N
                 LOGGER.fine(root.dump());
                 LOGGER.fine("CssModel structure:"); //NOI18N
-                for(CssRule rule : rules) {
+                for (CssRule rule : rules) {
                     LOGGER.fine(rule.toString());
                 }
             }
-            
+
         }
     }
 }

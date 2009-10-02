@@ -45,13 +45,13 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -81,15 +81,14 @@ import org.w3c.dom.NodeList;
  * The action provides the standard presenters, so may be used
  * e.g. in menu items.
  */
-public class AntActionInstance implements
-        InstanceCookie, Action,
+public class AntActionInstance extends AbstractAction
+        implements InstanceCookie,
         Presenter.Menu, Presenter.Toolbar,
         ChangeListener, PropertyChangeListener
 {
     
     private boolean inited;
     private final AntProjectCookie proj;
-    private transient PropertyChangeSupport changeSupport;
     
     public AntActionInstance (AntProjectCookie proj) {
         this.proj = proj;
@@ -126,7 +125,6 @@ public class AntActionInstance implements
         inited = true;
         proj.addChangeListener(WeakListeners.change(this, proj));
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjects.getDefault()));
-        changeSupport = new PropertyChangeSupport(this);
     }
     
     public void actionPerformed (ActionEvent ignore) {
@@ -143,7 +141,7 @@ public class AntActionInstance implements
         });
     }
     
-    public boolean isEnabled () {
+    public @Override boolean isEnabled() {
         if (proj.getFile() == null) {
             return false; // cannot run script not on disk
         }
@@ -175,11 +173,11 @@ public class AntActionInstance implements
         return true;
     }
     
-    public void setEnabled (boolean b) {
+    public @Override void setEnabled(boolean b) {
         assert false;
     }
     
-    public Object getValue (String key) {
+    public @Override Object getValue(String key) {
         if (Action.NAME.equals (key)) {
             Element el = proj.getProjectElement ();
             if (el != null) {
@@ -198,25 +196,12 @@ public class AntActionInstance implements
                 String pname = el.getAttribute ("name"); // NOI18N
                 int idx = Mnemonics.findMnemonicAmpersand(pname);
                 if (idx != -1) {
-                    // XXX this is wrong, should use some method in Mnemonics...
-                    return pname.charAt(idx + 1);
+                    return Integer.valueOf(pname.charAt(idx + 1));
                 }
             }
             return 0; // #: 13084
         }
-        return null;
-    }
-    
-    public void putValue (String key, Object value) {
-        // ignore
-    }
-    
-    public final void addPropertyChangeListener (PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-    
-    public final void removePropertyChangeListener (PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
+        return super.getValue(key);
     }
     
     public JMenuItem getMenuPresenter () {
@@ -254,14 +239,14 @@ public class AntActionInstance implements
     public void stateChanged (ChangeEvent ignore) {
         // Ant script changed; maybe the project name changed with it.
         // Or maybe it is now misparsed.
-        changeSupport.firePropertyChange(Action.NAME, null, getValue (Action.NAME));
-        changeSupport.firePropertyChange("enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
-        changeSupport.firePropertyChange(Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
+        firePropertyChange(Action.NAME, null, getValue (Action.NAME));
+        firePropertyChange("enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        firePropertyChange(Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         // Open projects list may have changed.
-        changeSupport.firePropertyChange("enabled", null, isEnabled() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        firePropertyChange("enabled", null, isEnabled() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
     }
     
 }

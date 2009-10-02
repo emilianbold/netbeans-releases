@@ -56,7 +56,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 
@@ -123,13 +122,11 @@ public class CompilationDependencyTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         
         FileObject javaFo = testingProject.getSourceDirectory().getFileObject("org/example/testing").createData("JavaFile.java");
-        FileLock lock = javaFo.lock();
-        PrintStream ps = new PrintStream(javaFo.getOutputStream(lock));
+        PrintStream ps = new PrintStream(javaFo.getOutputStream());
         ps.println("package org.example.testing;");
         ps.println("import org.netbeans.modules.openide.windows.*;");
         ps.println("public class JavaFile {}");
         ps.close();
-        lock.releaseLock();
         
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, null);
         et.waitFinished();

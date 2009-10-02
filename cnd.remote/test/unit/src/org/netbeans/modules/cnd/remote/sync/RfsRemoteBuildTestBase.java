@@ -58,10 +58,4 @@ public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
     public RfsRemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
 }

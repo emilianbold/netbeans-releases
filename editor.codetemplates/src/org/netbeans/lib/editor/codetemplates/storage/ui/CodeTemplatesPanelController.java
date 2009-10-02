@@ -53,12 +53,17 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.SubRegistration(
+    location="Editor",
+    id="CodeTemplates",
+    displayName="#CTL_CodeTemplates_DisplayName",
+    keywords="#KW_CodeTemplates",
+    keywordsCategory="Editor/CodeTemplates",
+    position=300
+//    toolTip="#CTL_CodeTemplates_ToolTip"
+)
 public final class CodeTemplatesPanelController extends OptionsPanelController {
 
-    public CodeTemplatesPanelController() {
-        
-    }
-    
     public void update () {
         getCodeTemplatesPanel ().update ();
     }

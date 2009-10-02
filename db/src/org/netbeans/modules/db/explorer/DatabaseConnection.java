@@ -624,12 +624,6 @@ public class DatabaseConnection implements DBConnection {
         } catch (SQLException e) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, e.getMessage()); // NOI18N
 
-            //commented out for 3.6 release, need to solve for next Studio release
-            // hack for Pointbase Network Server
-            //            if(drv.equals(PointbasePlus.DRIVER))
-            //                if(e.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
-            //                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
-
             propertySupport.firePropertyChange("failed", null, null);
 
             // For Java Studio Enterprise.

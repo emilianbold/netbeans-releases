@@ -70,6 +70,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -320,6 +321,8 @@ public class ConvertAnonymousToInner extends AbstractHint {
     static void convertAnonymousToInner(WorkingCopy copy, TreePath newClassToConvert) {
         TreeMaker make = copy.getTreeMaker();
         NewClassTree nct = (NewClassTree) newClassToConvert.getLeaf();
+
+        nct = GeneratorUtilities.get(copy).importComments(nct, newClassToConvert.getCompilationUnit());
         
         Set<VariableElement> usedElementVariables = new LinkedHashSet<VariableElement>();
         

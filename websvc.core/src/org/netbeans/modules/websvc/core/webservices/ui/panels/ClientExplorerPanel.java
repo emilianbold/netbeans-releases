@@ -56,6 +56,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.netbeans.modules.websvc.spi.support.DefaultClientSelectionPanel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,9 +109,14 @@ public class ClientExplorerPanel extends DefaultClientSelectionPanel {
             }
 
         }
-        Node[] projectNodes = new Node[projectNodeList.size()];
-        projectNodeList.<Node>toArray(projectNodes);
-        rootChildren.add(projectNodes);
+        if (projectNodeList.size() > 0) {
+            Node[] projectNodes = new Node[projectNodeList.size()];
+            projectNodeList.<Node>toArray(projectNodes);
+            rootChildren.add(projectNodes);
+        } else {
+            Node noClients = new NoServicesNode();
+            rootChildren.add(new Node[]{noClients});
+        }
         return explorerClientRoot;
     }
 
@@ -137,7 +143,17 @@ public class ClientExplorerPanel extends DefaultClientSelectionPanel {
         public Image getOpenedIcon(int type) {
             return rootNode.getOpenedIcon(type);
         }
-
     }
+
+    private class NoServicesNode extends AbstractNode {
+
+        NoServicesNode() {
+            super(Children.LEAF);
+            setIconBaseWithExtension("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png"); //NOI18N
+            setName("no_ws_clients"); //NOI18N
+            setDisplayName(NbBundle.getMessage(ClientExplorerPanel.class, "LBL_no_ws_clients"));
+        }
+    }
+
 
 }

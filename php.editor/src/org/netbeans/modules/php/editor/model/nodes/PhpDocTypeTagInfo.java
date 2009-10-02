@@ -45,6 +45,7 @@ import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
@@ -54,7 +55,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
  * @author Radek Matous
  */
 public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
-
     private PHPDocTypeTag typeTag;
     private Kind kind;
     private String typeName;
@@ -65,23 +65,18 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         this.kind = kind;
         this.typeName = typeName;
     }
-    public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Scope scope) {
+
+    public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Kind kind) {
         List<PhpDocTypeTagInfo> retval = new ArrayList<PhpDocTypeTagInfo>();
         List<PHPDocNode> types = typeTag.getTypes();
-        Kind kind = Kind.CLASS;
         if (!types.isEmpty()) {
             for (PHPDocNode docNode : types) {
-                retval.add(new PhpDocTypeTagInfo(typeTag, docNode, docNode.getValue(), kind));
+                retval.add(new PhpDocTypeTagInfo(typeTag, docNode, docNode.getValue(), Kind.CLASS));
             }
         }
-        if (typeTag instanceof PHPDocVarTypeTag) {
-            if (scope instanceof ClassScope) {
-                kind = Kind.FIELD;
-            } else {
-                kind = Kind.VARIABLE;
-            }
-            PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) typeTag;            
-            if (types.isEmpty()) {                
+        if (!kind.equals(Kind.CLASS) && typeTag instanceof PHPDocVarTypeTag) {
+            PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) typeTag;
+            if (types.isEmpty()) {
                 retval.add(new PhpDocTypeTagInfo(typeTag, varTypeTag.getVariable(), varTypeTag.getVariable().getValue(), kind));
             } else {
                 for (PHPDocNode docNode : types) {
@@ -90,6 +85,16 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
             }
         }
         return retval;
+    }
+
+    public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Scope scope) {
+        Kind kind = Kind.CLASS;
+        if (scope instanceof ClassScope) {
+            kind = Kind.FIELD;
+        } else {
+            kind = Kind.VARIABLE;
+        }
+        return create(typeTag, kind);
     }
 
     public PHPDocTypeTag getTypeTag() {
@@ -135,8 +140,15 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
             return new OffsetRange(node.getStartOffset()+1, node.getStartOffset()+getName().length());
         }
         QualifiedName typeQN = QualifiedName.create(typeName);
-        final int nsNameLength = typeQN.toNamespaceName(typeQN.getKind().isFullyQualified()).toString().length();
-        final int startOffset = node.getStartOffset() + (nsNameLength > 0 ? (nsNameLength+1) : 0);
+        final QualifiedName namespaceName = typeQN.toNamespaceName(typeQN.getKind().isFullyQualified());
+        final int nsNameLength = namespaceName.toString().length();
+        int startOffset = node.getStartOffset();
+        if (nsNameLength > 0) {
+            startOffset += nsNameLength;
+            if (namespaceName.getSegments().size() > 1) {
+                startOffset += 1;
+            }
+        }
         return new OffsetRange(startOffset, startOffset+typeQN.toName().toString().length());
     }
 

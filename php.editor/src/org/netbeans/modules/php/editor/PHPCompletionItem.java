@@ -43,7 +43,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -63,16 +67,20 @@ import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -86,6 +94,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     protected final CompletionRequest request;
     private final ElementHandle element;
     private QualifiedNameKind generateAs;
+    private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -179,12 +188,31 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         if (elem instanceof IndexedFullyQualified) {
             IndexedFullyQualified ifq = (IndexedFullyQualified) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
-            if (generateAs == null) {
-                generateAs = qn.getKind();
-            } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
-                    ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
-                //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
-                generateAs = QualifiedNameKind.FULLYQUALIFIED;
+            final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+            Properties props = fileObject != null ? PhpLanguageOptions.getDefault().getProperties(fileObject) : null;
+            if (props != null && props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+                if (generateAs == null) {
+                    CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
+                    switch (codeCompletionType) {
+                        case FULLY_QUALIFIED:
+                            template.append(ifq.getFullyQualifiedName());
+                            return template.toString();
+                        case UNQUALIFIED:
+                            template.append(getName());
+                            return template.toString();
+                        case SMART:
+                            generateAs = qn.getKind();
+                            break;
+                    }
+
+                } else if (generateAs.isQualified() && (ifq instanceof IndexedType) &&
+                        ifq.getNamespaceName().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+                    //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
+                    generateAs = QualifiedNameKind.FULLYQUALIFIED;
+                }
+            } else {
+                template.append(getName());
+                return template.toString();
             }
             switch(generateAs) {
                 case FULLYQUALIFIED:
@@ -313,6 +341,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
+            if (CLS_KEYWORDS.contains(getName())) {                
+                scheduleShowingCompletion();
+            }
             KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
             if (type == null) {
                 return null;
@@ -501,6 +532,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(getName());
                 }
                 builder.append("::${cursor}"); //NOI18N
+                scheduleShowingCompletion();
                 return builder.toString();
             }
             return superTemplate;
@@ -962,5 +994,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public  String prefix;
         public  String currentlyEditedFileURL;
         PHPIndex index;
+    }
+    private static void scheduleShowingCompletion() {
+        if (OptionsUtils.autoCompletionTypes()) {
+            service.schedule(new Runnable() {
+
+                public void run() {
+                    Completion.get().showCompletion();
+                }
+            }, 750, TimeUnit.MILLISECONDS);
+        }
     }
 }

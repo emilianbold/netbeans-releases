@@ -503,13 +503,22 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ForEachStatement node) {
-        if (node.getKey() instanceof Variable) {
-            Variable var = (Variable) node.getKey();
+        Expression key = node.getKey();
+        while (key instanceof Reference) {
+            key = ((Reference) key).getExpression();
+        }
+
+        if (key instanceof Variable) {
+            Variable var = (Variable) key;
             varStack.addVariableDefinition(var);
         }
-        
-        if (node.getValue() instanceof Variable) {
-            Variable var = (Variable) node.getValue();
+        Expression value = node.getValue();
+        while (value instanceof Reference) {
+            value = ((Reference) value).getExpression();
+        }
+
+        if (value instanceof Variable) {
+            Variable var = (Variable) value;
             varStack.addVariableDefinition(var);
         }
         

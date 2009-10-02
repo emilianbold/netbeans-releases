@@ -376,7 +376,7 @@ public class BugzillaRepository extends Repository {
 
     public void removeQuery(BugzillaQuery query) {
         BugzillaConfig.getInstance().removeQuery(this, query);
-        getIssueCache().removeQuery(name);
+        getIssueCache().removeQuery(query.getStoredQueryName());
         getQueriesIntern().remove(query);
         stopRefreshing(query);
     }

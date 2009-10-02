@@ -109,7 +109,7 @@ public class ELSyntax extends Syntax {
     public ELSyntax() {
         tokenContextPath = ELTokenContext.contextPath;
     }
-
+    
     /** This is core function of analyzer and it returns one of following numbers:
     * a) token number of next token from scanned text
     * b) EOL when end of line was found in scanned buffer

@@ -83,6 +83,40 @@ public final class DataUtil {
     }
 
     /**
+     * Shortcut for {@link #toLong(java.lang.Object, long)}
+     * with <code>defaultValue = 0</code>.
+     *
+     * @param obj  converted object
+     * @return conversion result
+     */
+    public static long toLong(Object obj) {
+        return toLong(obj, 0);
+    }
+
+    /**
+     * Tries to convert given object to long.
+     * <code>Number</code> subclasses are converted using <code>longValue()</code> method.
+     * <code>String</code>s are parsed with <code>Long.parseLong()</code>.
+     * In case string is malformed, or object is of any other class,
+     * or <code>null</code> is given, default value is returned.
+     *
+     * @param obj  converted object
+     * @param defaultValue  what to return if conversion fails
+     * @return coversion result
+     */
+    public static long toLong(Object obj, long defaultValue) {
+        if (obj instanceof Number) {
+            return ((Number) obj).longValue();
+        } else if (obj instanceof String) {
+            try {
+                return Long.parseLong((String) obj);
+            } catch (NumberFormatException ex) {
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
      * Shortcut for {@link #toFloat(java.lang.Object, float)}
      * with <code>defaultValue = 0</code>.
      *
@@ -114,5 +148,16 @@ public final class DataUtil {
             }
         }
         return defaultValue;
+    }
+
+    /**
+     * Extracts timestamp (if any) from data row.
+     *
+     * @param row  data row
+     * @return  timestamp, or <code>-1</code> if not available
+     */
+    public static long getTimestamp(DataRow row) {
+        Object timestamp = row.getData("timestamp"); // NOI18N
+        return toLong(timestamp, -1);
     }
 }

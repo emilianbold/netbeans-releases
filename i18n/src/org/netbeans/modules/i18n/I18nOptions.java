@@ -96,6 +96,9 @@ public class I18nOptions {
      * Hidden property which serializes last resource data object used by i18n module. */
     public static final String PROP_LAST_RESOURCE2 = "lastResource2"; // NOI18N
 
+    private static final Logger LOG =
+            Logger.getLogger("org.netbeans.modules.i18n.I18nOptions"); // NOI18N
+
     
     private I18nOptions() {}
 
@@ -218,8 +221,7 @@ public class I18nOptions {
                 try {
                     retval.add(fo.getFileSystem());
                 } catch (FileStateInvalidException ex) {
-                        Logger.getLogger(I18nOptions.class.getName())
-                              .log(Level.INFO, null, ex);
+                        LOG.log(Level.INFO, null, ex);
                 }
             }
         }        
@@ -241,6 +243,12 @@ public class I18nOptions {
         FileObject pfo = srcDataObject.getPrimaryFile();
         ClassPath cp = ClassPath.getClassPath(pfo, ClassPath.EXECUTE);
 
+        // #167334
+        if(cp == null) {
+            LOG.info("Unable to find FileObject due to ClassPath is null");
+            return null;
+        }
+
         for(FileObject fo : getRoots(cp)) {
             try {
                 FileSystem fs = fo.getFileSystem();
@@ -251,7 +259,7 @@ public class I18nOptions {
                     }
                 }
             } catch (FileStateInvalidException ex) {
-                Logger.getLogger(I18nOptions.class.getName()).log(Level.INFO, null, ex);
+                LOG.log(Level.INFO, null, ex);
             }
         }
         
@@ -260,6 +268,7 @@ public class I18nOptions {
 
 
     private static List<FileObject> getRoots(ClassPath cp) {
+        assert cp != null;
         ArrayList<FileObject> l = new ArrayList<FileObject>(cp.entries().size());
         for (ClassPath.Entry e : cp.entries()) {
 

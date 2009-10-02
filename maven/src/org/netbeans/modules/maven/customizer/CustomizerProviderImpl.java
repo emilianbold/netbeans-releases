@@ -87,9 +87,12 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -135,9 +138,32 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
-        project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
         try {
             init();
+            //#171958 start
+            try {
+                handle.getPOMModel().sync();
+            } catch (IOException ex) {
+                Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
+            }
+            if (!handle.getPOMModel().getState().equals(State.VALID)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CustomizerProviderImpl.class, "ERR_MissingPOM"), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
+            try {
+                handle.getProfileModel().sync();
+            } catch (IOException ex) {
+                Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for profiles.xml file", ex); //NOI18N
+            }
+            if (!handle.getProfileModel().getState().equals(State.VALID)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CustomizerProviderImpl.class, "ERR_MissingProfilesXml"), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
+            //#171958 end
+
+            project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
             OptionListener listener = new OptionListener();
             Lookup context = Lookups.fixed(new Object[] { project, handle});
             Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/org-netbeans-modules-maven/Customizer", //NOI18N

@@ -44,17 +44,12 @@ package org.netbeans.modules.uihandler;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
-import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ChoiceView;
 import org.openide.nodes.Node;
@@ -144,23 +139,16 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-    
-    public void addRecord(LogRecord r, Node owner) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+    void setText(String content){
         try {
-            int offset = text.getDocument().getLength();
-            owner.setValue("offset", offset); // NOI18N
-            TimeToFailure.logAction();
-            LogRecords.write(os, r);
-            text.getDocument().insertString(offset, os.toString("UTF-8"), null); // NOI18N
+            text.getDocument().remove(0, text.getDocument().getLength());
+            text.getDocument().insertString(0, content, null);
             text.getCaret().setDot(0);
-        } catch (IOException ex) {
-            Installer.LOG.log(Level.WARNING, null, ex);
         } catch (BadLocationException ex) {
-            Installer.LOG.log(Level.WARNING, null, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
-    
     
     public void propertyChange(PropertyChangeEvent ev) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName())) {

@@ -289,3 +289,7 @@ test/unit/sound_item_test.rb
 test/unit/test_helper.rb
 test/unit/user_call_log_test.rb
 test/unit/user_call_request_test.rb
+lib/widget.rb
+spec/lib/widget_spec.rb
+lib/gadget.rb
+test/lib/test_gadget.rb

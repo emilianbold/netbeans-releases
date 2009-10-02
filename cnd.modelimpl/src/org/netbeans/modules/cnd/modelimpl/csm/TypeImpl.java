@@ -341,12 +341,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             CsmTemplateParameterType parType = (CsmTemplateParameterType) type;
             CsmTemplateParameter par = parType.getParameter();
             if (CsmKindUtilities.isClassifierBasedTemplateParameter(par)) {
-                CsmType defType = (CsmType) par.getDefaultValue();
-                if (defType == null) {
-                    canonicalText = TemplateUtils.TYPENAME_STRING;
-                } else {
-                    canonicalText = getCanonicalText(defType);
-                }
+                canonicalText = TemplateUtils.TYPENAME_STRING;
             }
         }
         if (canonicalText == null) {

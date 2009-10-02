@@ -43,7 +43,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 
@@ -51,8 +51,6 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
  * @author Alexey Vladykin
  */
 public abstract class ProcDataProviderEngineTestBase extends NbTestCase implements DataRowConsumer {
-
-    private static final char[] EOL = { '\n' };
 
     public ProcDataProviderEngineTestBase(String name) {
         super(name);
@@ -64,12 +62,11 @@ public abstract class ProcDataProviderEngineTestBase extends NbTestCase implemen
         return new File(getDataDir(), dataFilePath);
     }
 
-    protected void doTest(File dataFile, InputProcessor processor) throws IOException {
+    protected void doTest(File dataFile, LineProcessor processor) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(dataFile));
         String line;
         while ((line = reader.readLine()) != null) {
-            processor.processInput(line.toCharArray());
-            processor.processInput(EOL);
+            processor.processLine(line);
         }
         compareReferenceFiles();
     }

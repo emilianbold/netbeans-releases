@@ -41,6 +41,7 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -89,6 +90,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
+    static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
+    
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
@@ -118,7 +121,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     new String[0],
-                    true, new String[]{"docs/javaee6-doc-api.zip"}); // NOI18N
+                    true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                    new String[] {"--nopassword"}); // NOI18N
         }
         return ee6Provider;
     }
@@ -134,14 +138,15 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX,
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
-                    "GlassFish_v3_Prelude", // NOI18N
+                    PRELUDE_DEFAULT_NAME, 
                     "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt", // NOI18N
                     "last-install-root", // NOI18N
                     new String[0],
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     false,
-                    new String[]{"docs/javaee6-doc-api.zip"}); // NOI18N
+                    new String[]{"docs/javaee6-doc-api.zip"},  // NOI18N
+                    null);
         }
         return preludeProvider;
     }
@@ -166,12 +171,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private String[] excludedFiles;
     private boolean needsJdk6;
     private String[] javadocFilenames;
+    private List noPasswordOptions;
 
     private GlassfishInstanceProvider(String[] uriFragments, String[] instancesDirNames,
             String displayName, String propName, String defaultName, String personalName,
             String installName, String direct, String indirect, String prefKey,
             String[] requiredFiles, String[] excludedFiles, boolean needsJdk6,
-            String[] javadocFilenames) {
+            String[] javadocFilenames,
+            String[] noPasswordOptionsArray) {
         this.instancesDirNames = instancesDirNames;
         this.displayName = displayName;
         this.uriFragments = uriFragments;
@@ -186,6 +193,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         this.excludedFiles = excludedFiles;
         this.needsJdk6 = needsJdk6;
         this.javadocFilenames = javadocFilenames;
+        this.noPasswordOptions = new ArrayList<String>();
+        if (null != noPasswordOptionsArray) {
+            noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
+        }
         //init();
     }
 
@@ -642,7 +653,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
                             
-                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this); // NOI18N
+                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this,true); // NOI18N
                             cd.start();
                         }
                     }
@@ -651,5 +662,25 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
+    }
+
+    String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, String domainDir, String portBase, String uname, String domain) {
+        List<String> retVal = new ArrayList<String>();
+        retVal.addAll(Arrays.asList(new String[] {startScript,
+                    "-client",  // NOI18N
+                    "-jar",  // NOI18N
+                    jarLocation,
+                    "create-domain", //NOI18N
+                    "--user", //NOI18N
+                    uname,
+                    "--domaindir", //NOI18N
+                    domainDir,
+                    "--portbase", //NOI18N
+                    portBase,}));
+        if (noPasswordOptions.size() > 0) {
+            retVal.addAll(noPasswordOptions);
+        }
+        retVal.add(domain);
+        return retVal.toArray(new String[retVal.size()]);
     }
 }

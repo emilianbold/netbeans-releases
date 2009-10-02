@@ -63,6 +63,7 @@ import org.openide.filesystems.FileUtil;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
+    private static final boolean TRACE = false;
 
    private final ModelImpl model;
    private final NativeProject nativeProject;
@@ -73,34 +74,69 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     }
     
     public void fileAdded(NativeFileItem fileItem) {
+        if (TRACE) {
+            System.err.println("Native event fileAdded:"); // NOI18N
+            System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+        }
 	onProjectItemAdded(fileItem);
     }
 
     public void filesAdded(List<NativeFileItem> fileItems) {
+        if (TRACE) {
+            System.err.println("Native event filesAdded:"); // NOI18N
+            for(NativeFileItem fileItem: fileItems){
+                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            }
+        }
 	for (List<NativeFileItem> list : divideByProjects(fileItems)){
 	    onProjectItemAdded(list);
 	}
     }
 
     public void fileRemoved(NativeFileItem fileItem) {
+        if (TRACE) {
+            System.err.println("Native event fileRemoved:"); // NOI18N
+            System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+        }
 	onProjectItemRemoved(fileItem);
     }
 
     public void filesRemoved(List<NativeFileItem> fileItems) {
+        if (TRACE) {
+            System.err.println("Native event filesRemoved:"); // NOI18N
+            for(NativeFileItem fileItem: fileItems){
+                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            }
+        }
 	for (List<NativeFileItem> list : divideByProjects(fileItems)){
 	    onProjectItemRemoved(list);
 	}
     }
 
     public void fileRenamed(String oldPath, NativeFileItem newFileIetm){
+        if (TRACE) {
+            System.err.println("Native event fileRenamed:"); // NOI18N
+            System.err.println("\tOld Name:"+oldPath); // NOI18N
+            System.err.println("\tNew Name:"+newFileIetm.getFile().getAbsolutePath()); // NOI18N
+        }
 	onProjectItemRenamed(oldPath, newFileIetm);
     }
 
     public void filePropertiesChanged(NativeFileItem fileItem) {
+        if (TRACE) {
+            System.err.println("Native event filesPropertiesChanged:"); // NOI18N
+            System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+        }
 	onProjectItemChanged(fileItem);
     }
 
     public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
+        if (TRACE) {
+            System.err.println("Native event filesPropertiesChanged:"); // NOI18N
+            for(NativeFileItem fileItem: fileItems){
+                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            }
+        }
 	// FIXUP for #109425
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
@@ -117,6 +153,12 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
    }
 
     public void filesPropertiesChanged() {
+        if (TRACE) {
+            System.err.println("Native event projectPropertiesChanged:"); // NOI18N
+            for(NativeFileItem fileItem : nativeProject.getAllFiles()){
+                System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
+            }
+        }
 	// FIXUP for #109425
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
@@ -145,12 +187,12 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     private Collection<List<NativeFileItem>> divideByProjects(List<NativeFileItem> fileItems){
 	Map<NativeProject,List<NativeFileItem>> res = new HashMap<NativeProject,List<NativeFileItem>>();
 	for(NativeFileItem item : fileItems){
-	    NativeProject nativeProject = item.getNativeProject();
-	    if (nativeProject != null){
-		List<NativeFileItem> list = res.get(nativeProject);
+	    NativeProject aNativeProject = item.getNativeProject();
+	    if (aNativeProject != null){
+		List<NativeFileItem> list = res.get(aNativeProject);
 		if (list == null){
 		    list =new ArrayList<NativeFileItem>();
-		    res.put(nativeProject,list);
+		    res.put(aNativeProject,list);
 		}
 		list.add(item);
 	    }
@@ -263,11 +305,11 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         assert nativeFile.getNativeProject() != null : "must have container project";
         ProjectBase csmProject = null;
         try {
-            NativeProject nativeProject = nativeFile.getNativeProject();
-	    assert(nativeProject != null) : "NativeFileItem should never return null NativeProject";
-            if (nativeProject != null) {
-                csmProject = createIfNeeded ? (ProjectBase) model._getProject(nativeProject) :
-                    (ProjectBase) model.findProject(nativeProject);
+            NativeProject aNnativeProject = nativeFile.getNativeProject();
+	    assert(aNnativeProject != null) : "NativeFileItem should never return null NativeProject";
+            if (aNnativeProject != null) {
+                csmProject = createIfNeeded ? (ProjectBase) model._getProject(aNnativeProject) :
+                    (ProjectBase) model.findProject(aNnativeProject);
             }
         } catch(NullPointerException ex) {
             ex.printStackTrace();

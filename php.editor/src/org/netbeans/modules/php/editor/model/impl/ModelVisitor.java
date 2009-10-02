@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -486,13 +487,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ConstantDeclaration node) {
-        //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
-        //TODO: constants can be also in program scope php53
-        //assert scope != null && scope instanceof TypeScope;
-        List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
-        for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
-            occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, modelBuilder));
+        if (scope instanceof NamespaceScope) {
+            List<? extends ConstantDeclarationInfo> constantDeclarationInfos = ConstantDeclarationInfo.create(node);
+            for (ConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
+                ConstantElementImpl createElement = modelBuilder.getCurrentNameSpace().createElement(nodeInfo);
+                occurencesBuilder.prepare(nodeInfo, createElement);
+            }
+        } else {
+            List<? extends ClassConstantDeclarationInfo> constantDeclarationInfos = ClassConstantDeclarationInfo.create(node);
+            for (ClassConstantDeclarationInfo nodeInfo : constantDeclarationInfos) {
+                occurencesBuilder.prepare(nodeInfo, ModelElementFactory.create(nodeInfo, modelBuilder));
+            }
         }
         super.visit(node);
     }
@@ -600,10 +606,23 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             //TODO: global variables or vars from other files
             //assert varN != null : CodeUtils.extractVariableName((Variable)leftHandSide);
             if (varN != null) {
-                //Map<String, VariableNameImpl> allAssignments = vars.get(scope);
+                Map<String, AssignmentImpl> allAssignments = new HashMap<String, AssignmentImpl>();
+                if (scope instanceof VariableScope) {
+                    VariableScope variableScope = (VariableScope)scope;
+                    Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
+                    for (VariableName variableName : declaredVariables) {
+                        if (variableName instanceof VariableNameImpl) {
+                            VariableNameImpl vni = (VariableNameImpl) variableName;
+                            AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
+                            if (ai != null) {
+                                allAssignments.put(vni.getName(), ai);
+                            }
+                        }
+                    }
+                }
                 Variable var = ((Variable) leftHandSide);
                 varN.createElement(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
-                        Collections.<String, AssignmentImpl>emptyMap());
+                        allAssignments);
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
             }
         } else if (leftHandSide instanceof FieldAccess) {

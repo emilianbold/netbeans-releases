@@ -63,18 +63,15 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=400)
 public class ClasspathCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of ClasspathCategoryProvider */
-    public ClasspathCategoryProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("classpath", //NOI18N
-                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null, null);
+                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null);
             return cat;
         }
         return null;

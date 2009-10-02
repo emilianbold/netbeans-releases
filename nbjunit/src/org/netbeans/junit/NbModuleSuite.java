@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -684,13 +685,26 @@ public class NbModuleSuite {
                     }
                 }
             }
+
+            //in case we're running code coverage, load the coverage libraries
+            if (System.getProperty("code.coverage.classpath") != null)
+            {
+                File coveragePath = new File(System.getProperty("code.coverage.classpath"));
+                if (coveragePath.isDirectory()) {
+                    for (File jar : coveragePath.listFiles()) {
+                        if (jar.getName().endsWith(".jar")) {
+                            bootCP.add(jar.toURI().toURL());
+                        }
+                    }
+                }
+            }            
             
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
             URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), junit);
             Class<?> main = loader.loadClass("org.netbeans.Main"); // NOI18N
             Assert.assertEquals("Loaded by our classloader", loader, main.getClassLoader());
-            Method m = main.getDeclaredMethod("main", String[].class); // NOI18N
+            Method m = main.getDeclaredMethod("main", String[].class); // NOI18N            
 
             System.setProperty("java.util.logging.config", "-");
             System.setProperty("netbeans.logger.console", "true");
@@ -763,9 +777,9 @@ public class NbModuleSuite {
                         Class<? extends TestCase> sndClazz =
                             testLoader.loadClass(item.clazz.getName()).asSubclass(TestCase.class);
                         if (item.fileNames == null) {
-                            toRun.addTest(new NbTestSuite(sndClazz));
+                            toRun.addTest(new NbTestSuiteLogCheck(sndClazz));
                         } else {
-                            NbTestSuite t = new NbTestSuite();
+                            NbTestSuite t = new NbTestSuiteLogCheck();
                             t.addTests(sndClazz, item.fileNames);
                             toRun.addTest(t);
                         }
@@ -1140,7 +1154,7 @@ public class NbModuleSuite {
                 if (previous.equals(xml)) {
                     return;
                 }
-                LOG.info("rewrite module file: " + file);
+                LOG.fine("rewrite module file: " + file);
                 charDump(previous);
                 LOG.fine("new----");
                 charDump(xml);
@@ -1182,5 +1196,24 @@ public class NbModuleSuite {
                 default: return s.substring(len - 2);
             }
         }
+
     } // end of S
+
+    private static class NbTestSuiteLogCheck extends NbTestSuite {
+        public NbTestSuiteLogCheck() {
+        }
+        public NbTestSuiteLogCheck(Class<? extends TestCase> clazz) {
+            super(clazz);
+        }
+
+        @Override
+        public void runTest(Test test, TestResult result) {
+            int e = result.errorCount();
+            int f = result.failureCount();
+            super.runTest(test, result);
+            if (e == result.errorCount() && f == result.failureCount()) {
+                NbModuleLogHandler.checkFailures((TestCase) test, result);
+            }
+        }
+    }
 }

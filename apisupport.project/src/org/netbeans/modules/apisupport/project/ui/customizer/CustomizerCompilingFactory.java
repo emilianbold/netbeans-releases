@@ -50,11 +50,12 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(
+    projectType="org-netbeans-modules-apisupport-project",
+    category="Build",
+    position=100
+)
 public class CustomizerCompilingFactory implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of CustomizerCompilingFactory */
-    public CustomizerCompilingFactory() {
-    }
     
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(

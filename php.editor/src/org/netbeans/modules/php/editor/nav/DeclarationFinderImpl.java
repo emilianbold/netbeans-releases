@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.util.Collection;
+import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -57,7 +58,14 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
+import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -72,6 +80,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
+        return getReferenceSpan(ts, caretOffset);
+    }
+
+    public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset) {
         ts.move(caretOffset);
         if (ts.moveNext()) {
             Token<PHPTokenId> token = ts.token();
@@ -84,11 +96,69 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 for (int i = 0; i < 2 && ts.movePrevious(); i++) {
                     token = ts.token();
                     id = token.id();
-                    if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) ||
-                            id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
+                    if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
+                        return retval;
+                    } if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) {//NOI18N
                         return retval;
                     }
                 }
+            } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
+                PHPDocCommentParser docParser = new PHPDocCommentParser();
+                PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length()-3, token.toString());
+                ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
+                PhpDocTypeTagInfo node = null;
+                PHPDocTypeTag typeTag = null;
+                if (hierarchy != null && hierarchy.length > 0) {
+                    if (hierarchy[0] instanceof PHPDocTypeTag) {
+                        typeTag = (PHPDocTypeTag) hierarchy[0];
+                        if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
+                            List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS);
+                            for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
+                                if (typeTagInfo.getKind().equals(Kind.CLASS)) {
+                                    node = typeTagInfo;
+                                    break;
+                                }
+                            }
+                            if (node == null || !node.getRange().containsInclusive(caretOffset)) {
+                                tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.VARIABLE);
+                                for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
+                                    if (typeTagInfo.getKind().equals(Kind.VARIABLE)) {
+                                        node = typeTagInfo;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getOriginalNode().getValue().toUpperCase())) {
+                                return node.getRange().containsInclusive(caretOffset) ? node.getRange() : OffsetRange.NONE;
+                            }
+                        }
+                    }
+                }
+            } else if (id.equals(PHPTokenId.PHP_COMMENT) && token.text() != null) {
+                String text = token.text().toString();
+                final String dollaredVar = "@var";
+                if (text.contains(dollaredVar)) {
+                    String[] segments = text.split("\\s");
+                    for (int i = 0; i < segments.length; i++) {
+                        String seg = segments[i];
+                        if (seg.equals(dollaredVar) && segments.length > i+2) {
+                            for (int j = 1; j <= 2 ; j++) {
+                                seg = segments[i + j];
+                                if (seg != null && seg.trim().length() > 0) {
+                                    int indexOf = text.indexOf(seg);
+                                    assert indexOf != -1;
+                                    indexOf += ts.offset();
+                                    OffsetRange range = new OffsetRange(indexOf, indexOf + seg.length());
+                                    if (range.containsInclusive(caretOffset)) {
+                                        return range;
+                                    }
+                                }
+                            }
+                            return OffsetRange.NONE;
+                        }
+                    }
+                }
+
             }
         }
         return OffsetRange.NONE;

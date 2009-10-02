@@ -49,8 +49,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.support.CaseInsensitiveMacroMap;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.Utilities;
 
 /**
@@ -80,15 +79,8 @@ public final class NativeProcessInfo {
         this.unbuffer = false;
         this.workingDirectory = null;
         this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
-
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            envVariables = new CaseInsensitiveMacroMap(macroExpander);
-            isWindows = true;
-        } else {
-            envVariables = new MacroMap(macroExpander);
-            isWindows = false;
-        }
-
+        this.envVariables = MacroMap.forExecEnv(execEnv);
+        isWindows = execEnv.isLocal() && Utilities.isWindows();
         redirectError = false;
     }
 
@@ -145,13 +137,27 @@ public final class NativeProcessInfo {
      * @param name
      * @param value
      */
-    public void addEnvironmentVariable(final String name, final String value) {
+    public void putEnvironmentVariable(final String name, final String value) {
         envVariables.put(name, value);
     }
 
-    public void addEnvironmentVariables(Map<String, String> envs) {
-        for (String key : envs.keySet()) {
-            addEnvironmentVariable(key, envs.get(key));
+    public void addPathVariable(String name, String path, boolean prepend) {
+        char delimiter = ':';
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            name = name.toUpperCase();
+            delimiter = ';';
+        }
+
+        if (prepend) {
+            envVariables.put(name, "${" + name + '}' + delimiter + path); // NOI18N
+        } else {
+            envVariables.put(name, path + delimiter + "${" + name + '}'); // NOI18N
+        }
+    }
+
+    public void putAllEnvironmentVariables(Map<String, String> envs) {
+        for (Map.Entry<String, String> entry : envs.entrySet()) {
+            putEnvironmentVariable(entry.getKey(), entry.getValue());
         }
     }
 
@@ -165,19 +171,30 @@ public final class NativeProcessInfo {
     }
 
     public List<String> getCommand() {
+        List<String> result = new ArrayList<String>();
+
         String cmd;
 
-        try {
-            cmd = macroExpander.expandPredefinedMacros(executable);
-        } catch (ParseException ex) {
-            cmd = executable;
-        }
+        if (commandLine != null) {
+            try {
+                cmd = macroExpander.expandPredefinedMacros(commandLine);
+            } catch (Exception ex) {
+                cmd = executable;
+            }
 
-        List<String> result = new ArrayList<String>();
-        result.add(cmd);
+            result.add(cmd);
+        } else {
+            try {
+                cmd = macroExpander.expandPredefinedMacros(executable);
+            } catch (Exception ex) {
+                cmd = executable;
+            }
 
-        if (!arguments.isEmpty()) {
-            result.addAll(arguments);
+            result.add(cmd);
+
+            if (!arguments.isEmpty()) {
+                result.addAll(arguments);
+            }
         }
 
         return result;

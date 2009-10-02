@@ -191,6 +191,7 @@ public class HgHookImpl extends HgHook {
             LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
         }
         LOG.log(Level.FINE, "hg afterCommit end for " + file);                  // NOI18N
+        VCSHooksConfig.logHookUsage("HG", getSelectedRepository()); // NOI18N
     }
 
     @Override

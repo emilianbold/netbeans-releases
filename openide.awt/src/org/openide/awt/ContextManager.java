@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -163,7 +164,8 @@ class ContextManager extends Object {
     private <T> boolean isEnabledOnData(Lookup.Result<T> result, Class<T> type, ContextSelection selectMode) {
         switch (selectMode) {
             case EXACTLY_ONE:
-                return result.allItems().size() == 1;
+                Collection<Lookup.Item<T>> instances = new HashSet<Lookup.Item<T>>(result.allItems());
+                return instances.size() == 1;
             case ANY:
                 return !result.allItems().isEmpty();
             case EACH: {

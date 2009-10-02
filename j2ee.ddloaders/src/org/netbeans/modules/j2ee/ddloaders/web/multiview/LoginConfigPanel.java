@@ -232,8 +232,14 @@ public class LoginConfigPanel extends SectionInnerPanel {
                 loginConfig.setAuthMethod(authMethod);
                 
                 // Revive any previously set values.
-                if (!authMethod.equals(NONE)) {
-                    loginConfig.setRealmName(realmNameTF.getText());
+                if (!authMethod.equals(NONE) ) {
+                    // Fix for IZ#158041 - setting to FORM Authentication, web.xml adds not needed <realm-name/> sub element
+                    if ( realmNameTF.getText().length() >0 ){
+                        loginConfig.setRealmName(realmNameTF.getText());
+                    }
+                    else {
+                        loginConfig.setRealmName( null );
+                    }
                 }
                 if (authMethod.equals(FORM)) {
                     FormLoginConfig formLoginConfig = getFormLoginConfig();
@@ -245,7 +251,14 @@ public class LoginConfigPanel extends SectionInnerPanel {
             updateVisualState(authMethod);
             
         } else if (source == realmNameTF) {
-            getLoginConfig().setRealmName((String) value);
+            // Fix for IZ#158041 - setting to FORM Authentication, web.xml adds not needed <realm-name/> sub element
+            if ( ((String) value).length() >0 ){
+                getLoginConfig().setRealmName((String) value);
+            }
+            else {
+                getLoginConfig().setRealmName( null );
+            }
+            //getLoginConfig().setRealmName((String) value);
         } else if (source == loginPageTF) {
             getFormLoginConfig().setFormLoginPage((String) value);
         } else if (source == errorPageTF) {

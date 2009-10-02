@@ -41,11 +41,16 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -55,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -114,16 +120,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
     }
 
-    private void remoteControllerCleanup() {
+    private synchronized void remoteControllerCleanup() {
         // nobody calls this concurrently => no synchronization
         if (remoteControllerProcess != null) {
             remoteControllerProcess.destroy();
-            // until #170502 is fixed
-            try {
-                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID()); // NOI18N
-            } catch (IOException e) {
-                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
-            }
             remoteControllerProcess = null;
         }
     }
@@ -132,25 +132,37 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         final Env env = pae.getProfile().getEnvironment();
 
-        String remoteControllerPath = RfsSetupProvider.getController(execEnv);
-        if (remoteControllerPath == null) {
-            return;
+        String remoteControllerPath;
+        String ldLibraryPath;
+        try {
+            remoteControllerPath = RfsSetupProvider.getControllerPath(execEnv);
+            CndUtils.assertTrue(remoteControllerPath != null);
+            ldLibraryPath = RfsSetupProvider.getLdLibraryPath(execEnv);
+            CndUtils.assertTrue(ldLibraryPath != null);
+        } catch (ParseException ex) {
+            throw new ExecutionException(ex);
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
         // nobody calls this concurrently => no synchronization
         remoteControllerCleanup(); // just in case
         pb.setExecutable(remoteControllerPath); //I18N
+        pb.setWorkingDirectory(remoteDir);
         remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
-        final InputStream rcStream = remoteControllerProcess.getInputStream();
+        final InputStream rcInputStream = remoteControllerProcess.getInputStream();
+        final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
         RfsLocalController localController = new RfsLocalController(
-                execEnv, localDir,  remoteDir, rcStream,
-                remoteControllerProcess.getOutputStream(), err, privProjectStorageDir);
+                execEnv, localDir,  remoteDir, rcInputStream,
+                rcOutputStream, err, privProjectStorageDir);
+
+        feedFiles(rcOutputStream);
+        //try { rcOutputStream.flush(); Thread.sleep(10000); } catch (InterruptedException e) {}
+
         // read port
-        String line = new BufferedReader(new InputStreamReader(rcStream)).readLine();
+        String line = new BufferedReader(new InputStreamReader(rcInputStream)).readLine();
         String port;
         if (line != null && line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
@@ -166,20 +178,31 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         RemoteUtil.LOGGER.fine("Remote Controller listens port " + port); // NOI18N
         RequestProcessor.getDefault().post(localController);
 
+        String preload = RfsSetupProvider.getPreloadName(execEnv);
+        CndUtils.assertTrue(preload != null);
+        // to be able to trace what we're doing, first put it all to a map
+        Map<String, String> env2add = new HashMap<String, String>();
 
-        String preload = RfsSetupProvider.getPreload(execEnv);
-        assert preload != null;
-        env.putenv("LD_PRELOAD", preload); // NOI18N
-        env.putenv("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
-        env.putenv("RFS_CONTROLLER_PORT", port); // NOI18N
+        env2add.put("LD_PRELOAD", preload); // NOI18N
+        env2add.put("LD_LIBRARY_PATH", ldLibraryPath); // NOI18N
+        env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
+        env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
         
         String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
         if (preloadLog != null) {
-            env.putenv("RFS_PRELOAD_LOG", preloadLog); // NOI18N
+            env2add.put("RFS_PRELOAD_LOG", preloadLog); // NOI18N
         }
         String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
         if (controllerLog != null) {
-            env.putenv("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
+            env2add.put("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
+        }
+
+        RemoteUtil.LOGGER.fine("Setting environment:");
+        for (Map.Entry<String, String> entry : env2add.entrySet()) {
+            if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
+                RemoteUtil.LOGGER.fine(String.format("\t%s=%s", entry.getKey(), entry.getValue()));
+            }
+            env.putenv(entry.getKey(), entry.getValue());
         }
         
         delegate.addExecutionListener(new ExecutionListener() {
@@ -244,6 +267,62 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 err.printf("%s\n", message); // NOI18N
             }
         }
+    }
+
+    /**
+     * Feeds remote controller with the list of files and their lengths
+     * @param rcOutputStream
+     */
+    private void feedFiles(OutputStream rcOutputStream) {
+        PrintWriter writer = new PrintWriter(rcOutputStream);
+        NonFlashingFilter filter = new NonFlashingFilter(privProjectStorageDir, execEnv);
+        File[] children = localDir.listFiles(filter);
+        for (File child : children) {
+            feedFilesImpl(writer, child, null, filter);
+        }
+        writer.printf("\n"); // NOI18N
+        writer.flush();
+    }
+
+    private static void feedFilesImpl(PrintWriter writer, File file, String base, FileFilter filter) {
+        // it is assumed that the file itself was already filtered
+        String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
+        if (file.isDirectory()) {
+            String text = String.format("D %s", fileName); // NOI18N
+            writer.println(text); // adds LF
+            writer.flush(); //TODO: remove?
+            File[] children = file.listFiles(filter);
+            for (File child : children) {
+                String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
+                feedFilesImpl(writer, child, newBase, filter);
+            }
+        } else {
+            String text = String.format("%d %s", file.length(), fileName); // NOI18N
+            writer.println(text); // adds LF
+            writer.flush(); //TODO: remove?
+        }
+    }
+
+    private static class NonFlashingFilter extends TimestampAndSharabilityFilter {
+
+        public NonFlashingFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+            super(privProjectStorageDir, executionEnvironment);
+        }
+
+        @Override
+        public boolean acceptImpl(File file) {
+            return super.acceptImpl(file);
+        }
+
+        @Override
+        public void flush() {
+            // do nothing, since fake (empty) fies were sent!
+        }
+    }
+
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
     }
 
     private static class ErrorReader implements Runnable {

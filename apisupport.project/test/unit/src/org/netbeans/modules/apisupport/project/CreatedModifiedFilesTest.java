@@ -68,7 +68,6 @@ import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -484,16 +483,11 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
             is.close();
         }
         m.removeAttribute("OpenIDE-Module-Localizing-Bundle", null);
-        FileLock lock = mf.lock();
+        OutputStream os = mf.getOutputStream();
         try {
-            OutputStream os = mf.getOutputStream(lock);
-            try {
-                m.write(os);
-            } finally {
-                os.close();
-            }
+            m.write(os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation op = cmf.createLayerEntry("f", null, null, "F!", null);

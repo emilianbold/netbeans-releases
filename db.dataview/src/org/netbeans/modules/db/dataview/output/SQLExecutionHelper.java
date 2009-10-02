@@ -99,7 +99,7 @@ class SQLExecutionHelper {
                 }
                 NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(nd);
-                return;
+                throw new IllegalStateException(msg);
             }
 
             DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);

@@ -71,14 +71,14 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
 
     private static String[] tests = new String[]{
         "testMethodBreakpointCreation",
-       /* "testMethodBreakpointPrefilledConstructor",
+        "testMethodBreakpointPrefilledConstructor",
         "testMethodBreakpointPrefilledMethod",
         "testMethodBreakpointFunctionalityInPrimaryClass",
-        "testMethodBreakpointFunctionalityInSecondClass",*/
+        "testMethodBreakpointFunctionalityInSecondClass",
         "testMethodBreakpointFunctionalityOnAllMethods",
-        /*"testMethodBreakpointFunctionalityOnExit",
+        "testMethodBreakpointFunctionalityOnExit",
         "testConditionalMethodBreakpointFunctionality",
-        "testMethodBreakpointsValidation"*/
+        "testMethodBreakpointsValidation"
     };
     
     //MainWindowOperator.StatusTextTracer stt = null;
@@ -226,19 +226,25 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
             setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
+            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:39");
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
+            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:114");
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");            
+            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:50");
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:121");
+            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:121");
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:32");
+
+            //TODO: change if neccessary once http://www.netbeans.org/issues/show_bug.cgi?id=172027 is resolved
+            if (System.getProperty("java.version").startsWith("1.6"))
+            {
+                Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:32");
+                new ContinueAction().perform();
+            }
+
+            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
-            new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+            Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

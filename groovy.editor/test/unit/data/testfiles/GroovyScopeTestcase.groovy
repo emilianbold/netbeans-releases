@@ -46,4 +46,12 @@ class TestCase {
         new TestCase()
     }
 
+    def test (Object xy = 0 ) {
+        xy = 5
+
+        [1,2,3].each { value ->
+            println value+" "+(value*value)
+        }
+    }
+
 }

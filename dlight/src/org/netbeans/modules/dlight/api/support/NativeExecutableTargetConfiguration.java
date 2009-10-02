@@ -99,6 +99,9 @@ public final class NativeExecutableTargetConfiguration {
     }
 
     public String putInfo(String name, String value) {
+        if (name == null || value == null){
+            throw new IllegalArgumentException("Null is not allowed as an argument of this method");//NOI18N
+        }
         return info.put(name, value);
     }
 

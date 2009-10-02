@@ -50,18 +50,19 @@ import org.openide.util.NbBundle;
  *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registrations({
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=310),
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ruby-railsprojects", position=251),
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-php-project", position=375)
+})
 public final class JSLibraryCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
     private static final String JS_LIBRARIES = "JSLib"; // NOI18N
-    
-    public JSLibraryCustomizerProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 JS_LIBRARIES,
                 NbBundle.getMessage(JSLibraryCustomizerProvider.class, "LBL_Config_JavaScript_Libraries"), //NOI18N
-                null,
-                (Category[]) null);
+                null);
     }
 
     public JComponent createComponent(Category category, Lookup context) {
@@ -69,10 +70,6 @@ public final class JSLibraryCustomizerProvider implements ProjectCustomizer.Comp
         assert project != null;
         
         return new CustomizerJSLibraries(category, project);
-    }
-    
-    public static JSLibraryCustomizerProvider createJSLibraries() {
-        return new JSLibraryCustomizerProvider();
     }
     
 }

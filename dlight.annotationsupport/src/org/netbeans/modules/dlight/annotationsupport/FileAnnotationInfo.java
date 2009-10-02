@@ -142,7 +142,7 @@ public class FileAnnotationInfo {
             String tt = "";
             for (String col : getColumnNames()) {
                 if (tt.length() > 0) {
-                    tt += " "; // NOI18N
+                    tt += " | "; // NOI18N
                 }
                 tt += col;
             }

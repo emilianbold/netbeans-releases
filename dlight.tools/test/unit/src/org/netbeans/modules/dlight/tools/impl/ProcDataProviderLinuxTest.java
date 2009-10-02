@@ -40,7 +40,7 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.IOException;
 import org.junit.Test;
-import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.LineProcessor;
 
 /**
  * @author Alexey Vladykin
@@ -53,7 +53,7 @@ public class ProcDataProviderLinuxTest extends ProcDataProviderEngineTestBase {
 
     @Test
     public void testProfilingDemo() throws IOException {
-        InputProcessor processor = new ProcDataProviderLinux(this, null).newInputProcessor(null);
+        LineProcessor processor = new ProcDataProviderLinux(this, null);
         doTest(getDataFile(), processor);
     }
 

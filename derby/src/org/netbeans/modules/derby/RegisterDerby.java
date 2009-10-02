@@ -63,6 +63,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -82,7 +83,7 @@ public class RegisterDerby implements DatabaseRuntime {
     private static final Logger LOGGER = Logger.getLogger(RegisterDerby.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
-    private static final int START_TIMEOUT = 5; // seconds
+    private static final int START_TIMEOUT = 0; // seconds
     
     private static RegisterDerby reg=null;
     
@@ -298,7 +299,7 @@ public class RegisterDerby implements DatabaseRuntime {
             );
 
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
-            if (waitTime > 0) {
+            if (waitTime >= 0) {
                 // to make sure the server is up and running
                 boolean canStart = waitStart(ee, waitTime);
                 if (!canStart) {
@@ -314,10 +315,14 @@ public class RegisterDerby implements DatabaseRuntime {
         }
     }
     
-    private boolean waitStart(ExecSupport execSupport, int waitTime) {
+    private boolean waitStart(final ExecSupport execSupport, int waitTime) {
         boolean started = false;
         String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");
-        ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage);
+        ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage, new Cancellable() {
+            public boolean cancel() {
+                return execSupport.interruptWaiting();
+            }
+        });
         progress.start();
         try {
             while (!started) {
@@ -413,7 +418,7 @@ public class RegisterDerby implements DatabaseRuntime {
         if (waitIfNotStarted) {
             return start(START_TIMEOUT);
         } else {
-            start(0);
+            start(-1);
             return false;
         }
     }

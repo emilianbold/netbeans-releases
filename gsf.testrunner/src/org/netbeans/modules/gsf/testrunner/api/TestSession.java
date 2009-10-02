@@ -293,6 +293,8 @@ public class TestSession {
                 report.setFailures(report.getFailures() + 1);
             } else if (testcase.getStatus() == Status.PENDING) {
                 report.setPending(report.getPending() + 1);
+            } else if (testcase.getStatus() == Status.SKIPPED) {
+                report.setSkipped(true);
             }
         }
         addReportToSessionResult(report);

@@ -86,25 +86,12 @@ public class ArchiveURLMapper extends URLMapper {
                         JarFileSystem jfs = (JarFileSystem) fs;
                         File archiveFile = jfs.getJarFile();
                         if (isRoot(archiveFile)) {
-// XXX: commented out to create same URLs as URLMapper.DefaultURLMapper.
-//                            StringTokenizer tk = new StringTokenizer (fo.getPath(),"/");            //NOI18N
-//                            StringBuffer offset = new StringBuffer ();
-//                            while (tk.hasMoreTokens()) {
-//                                offset.append('/');                                                 //NOI18N
-//                                // The encoding is needed to create a valid URI.
-//                                // Otherwise the URI constructor throws URISyntaxException
-//                                // Todo: It causes problems with JarURLConnection
-//                                // which determines the entryName by String.substring(int,int)
-//                                offset.append(URLEncoder.encode(tk.nextToken(),"UTF-8"));           //NOI18N
-//                            }
-//                            if (offset.length()==0) {
-//                                offset.append('/');                                                 //NOI18N
-//                            }
-                            return new URL ("jar:"+archiveFile.toURI()+"!/"+fo.getPath()+
-                                    ((fo.isFolder() && !fo.isRoot()) ? "/" : "")); // NOI18N
+                            return new URL("jar:" + archiveFile.toURI() + "!/" +
+                                    new URI(null, fo.getPath(), null).getRawSchemeSpecificPart() +
+                                    (fo.isFolder() && !fo.isRoot() ? "/" : "")); // NOI18N
                         }
                     }
-                } catch (IOException e) {
+                } catch (/*IO,URISyntax*/Exception e) {
                     Exceptions.printStackTrace(e);
                 }
             }
@@ -135,6 +122,7 @@ public class ArchiveURLMapper extends URLMapper {
                     if (archiveFile == null) {
                         archiveFile = copyJAR(fo, archiveFileURI);
                     }
+                    // XXX new URI("substring").getPath() might be better?
                     String offset = path.length()>index+2 ? URLDecoder.decode(path.substring(index+2),"UTF-8"): "";   //NOI18N
                     JarFileSystem fs = getFileSystem(archiveFile);
                     FileObject resource = fs.findResource(offset);

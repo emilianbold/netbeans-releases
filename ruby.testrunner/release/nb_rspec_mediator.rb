@@ -72,6 +72,8 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     overall_start_time = Time.now
     example_groups.each do |example_group|
       next if exclude?(example_group)
+      # see IZ 172141 - skip EGs w/o examples
+      next unless example_group.number_of_examples > 0
       example_group_start_time = Time.now
       puts "%RSPEC_SUITE_STARTING% #{example_group.description}"
       success = success & run_example_group(example_group)

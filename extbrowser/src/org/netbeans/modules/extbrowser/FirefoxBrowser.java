@@ -80,7 +80,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
             }
             return Boolean.TRUE;
         }
-        return (Utilities.isUnix() && !Utilities.isMac()) ? Boolean.FALSE : Boolean.TRUE;
+        return (Utilities.isUnix()) ? Boolean.FALSE : Boolean.TRUE;
     }
     
     /** Getter for browser name
@@ -103,6 +103,8 @@ public class FirefoxBrowser extends ExtWebBrowser {
 
         if (Utilities.isWindows()) {
             impl = new NbDdeBrowserImpl(this);
+        } else if (Utilities.isMac()) {
+            impl = new MacBrowserImpl(this);
         } else if (Utilities.isUnix() && !Utilities.isMac()) {
             impl = new UnixBrowserImpl(this);
         } else {
@@ -138,6 +140,13 @@ public class FirefoxBrowser extends ExtWebBrowser {
             retValue = new NbProcessDescriptor (prg, params);
             return retValue;            
         
+        // Mac
+        } else if (Utilities.isMac()) {
+            params += "-a firefox {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
+            retValue = new NbProcessDescriptor ("/usr/bin/open", params, // NOI18N
+                    ExtWebBrowser.UnixBrowserFormat.getHint());
+            return retValue;
+
         //Unix
         } else { 
             
@@ -170,7 +179,7 @@ public class FirefoxBrowser extends ExtWebBrowser {
             retValue = new NbProcessDescriptor(
                 prg,
                 "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
-                NbBundle.getMessage(FirefoxBrowser.class, "MSG_BrowserExecutorHint")
+                ExtWebBrowser.UnixBrowserFormat.getHint()
             );
         }
         return retValue;    

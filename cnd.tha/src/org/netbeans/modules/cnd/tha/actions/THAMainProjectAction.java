@@ -41,9 +41,7 @@ package org.netbeans.modules.cnd.tha.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.MissingResourceException;
-import java.util.concurrent.CancellationException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -61,12 +59,10 @@ import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -74,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author mt154047
  */
-public final class THAMainProjectAction extends AbstractAction implements PropertyChangeListener {
+public final class THAMainProjectAction extends AbstractAction implements PropertyChangeListener, Runnable {
 
     private Project currentProject = null;
     private final Action sensorMainAction;
@@ -87,18 +83,16 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
         putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                setEnabled(isEnabled());
-            }
-        });
-
+        SwingUtilities.invokeLater(this);
     }
-
+    
+    public void run() {
+        setEnabled(isEnabled());
+    }
+    
     private static String loc(String key, String... params) {
         try {
-            return NbBundle.getMessage(THAActionsProvider.class, key, params);
+            return NbBundle.getMessage(THAMainProjectAction.class, key, params);
         } catch (MissingResourceException e) {
             e.printStackTrace();
             return key;
@@ -119,17 +113,6 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         return ServerListUI.ensureRecordOnline(execEnv);
     }
     public void actionPerformed(ActionEvent e) {
-        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
-        MakeConfiguration mc = mcd.getActiveConfiguration();
-        ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
-        try {
-            ConnectionManager.getInstance().connectTo(execEnv);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
         if (!THAProjectSupport.isSupported(currentProject)) {
             return;
         }
@@ -177,7 +160,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         }
         if ("enabled".equals(evt.getPropertyName())) {
             setEnabled(isEnabled());
-            System.out.println("Source=" + evt.getSource()); // NOI18N
+//             System.out.println("Source=" + evt.getSource()); // NOI18N
         }
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;
@@ -225,10 +208,12 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
                 }
                 THAMainProjectAction.this.currentProject = project;
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
-                MakeConfiguration mc = mcd.getActiveConfiguration();
-                mc.addPropertyChangeListener(THAMainProjectAction.this);
-                Configurations c = mcd.getConfs();
-                c.addPropertyChangeListener(THAMainProjectAction.this);
+                if (mcd != null){
+                    MakeConfiguration mc = mcd.getActiveConfiguration();
+                    mc.addPropertyChangeListener(THAMainProjectAction.this);
+                    Configurations c = mcd.getConfs();
+                    c.addPropertyChangeListener(THAMainProjectAction.this);
+                }
 
             } else {
                 THAMainProjectAction.this.currentProject = null;

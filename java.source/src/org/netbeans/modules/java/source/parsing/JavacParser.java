@@ -118,9 +118,7 @@ import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.util.LowMemoryEvent;
-import org.netbeans.modules.java.source.util.LowMemoryListener;
-import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -471,16 +469,12 @@ public class JavacParser extends Parser {
         JavaSource.Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
         Phase currentPhase = currentInfo.getPhase();        
-        LowMemoryNotifier lm = null;
         LMListener lmListener = null;
         if (hasMoreFiles) {
-            lm = LowMemoryNotifier.getDefault();
-            assert lm != null;
             lmListener = new LMListener ();
-            lm.addLowMemoryListener (lmListener);
         }                                
         try {
-            if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
+            if (lmListener != null && lmListener.isLowMemory()) {
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
@@ -522,7 +516,7 @@ public class JavacParser extends Parser {
 
                 logTime (currentFile,currentPhase,(end-start));
             }                
-            if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
+            if (lmListener != null && lmListener.isLowMemory()) {
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
@@ -536,7 +530,7 @@ public class JavacParser extends Parser {
                 long end = System.currentTimeMillis();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
            }
-            if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
+            if (lmListener != null && lmListener.isLowMemory()) {
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
@@ -551,7 +545,7 @@ public class JavacParser extends Parser {
                 long end = System.currentTimeMillis ();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
             }
-            if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
+            if (lmListener != null && lmListener.isLowMemory()) {
                 currentInfo.needsRestart = true;
                 return currentPhase;
             }
@@ -581,11 +575,6 @@ public class JavacParser extends Parser {
         }
 
         finally {
-            if (hasMoreFiles) {
-                assert lm != null;
-                assert lmListener != null;
-                lm.removeLowMemoryListener (lmListener);
-            }
             currentInfo.setPhase(currentPhase);
             currentInfo.parserCrashed = parserError;
         }
@@ -867,7 +856,8 @@ public class JavacParser extends Parser {
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
-                    block = task.reparseMethodBody(cu, orig, newBody, firstInner);                
+                    Map<JCTree,String> docComments = new HashMap<JCTree, String>();
+                    block = task.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
                     }
@@ -881,6 +871,8 @@ public class JavacParser extends Parser {
                         }
                         return false;
                     }
+                    ((JCTree.JCCompilationUnit)cu).docComments.keySet().removeAll(fav.docOwners);
+                    ((JCTree.JCCompilationUnit)cu).docComments.putAll(docComments);                    
                     long end = System.currentTimeMillis();                
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));
@@ -981,18 +973,7 @@ public class JavacParser extends Parser {
         }
                
     }
-    
-    /**
-     * The MBean memory listener
-     */
-    private static class LMListener implements LowMemoryListener {
-        private final AtomicBoolean lowMemory = new AtomicBoolean (false);
         
-        public void lowMemory(LowMemoryEvent event) {
-            lowMemory.set(true);
-        }        
-    }
-    
     /**
      * Lexer listener used to detect partial reparse
      */

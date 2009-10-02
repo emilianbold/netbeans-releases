@@ -47,6 +47,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -225,6 +227,10 @@ public final class ProfilesTracker {
         }
     });
     
+    // #172043 - this is here to keep all folder FileObjects that we have traversed in the memory
+    // so that FileSystems would know about them and fired events correctly
+    private final Set<FileObject> trackedFolders = new HashSet<FileObject>();
+    
     private void rebuild() {
         PropertyChangeEvent event = null;
 
@@ -258,6 +264,7 @@ public final class ProfilesTracker {
                     boolean modulesFile = ((Boolean) info[2]);
 
                     if (profileHome != null) {
+                        trackedFolders.add(profileHome.getParent());
                         profileOrigin = profileHome.getPath();
 
                         if (displayName == null) {
@@ -311,6 +318,12 @@ public final class ProfilesTracker {
                 event = new PropertyChangeEvent(this, PROP_PROFILES, profiles, newProfiles);
                 profiles = newProfiles;
                 profilesByDisplayName = newProfilesByDisplayName;
+            }
+
+            for(Iterator<FileObject> i = trackedFolders.iterator(); i.hasNext(); ) {
+                if (!i.next().isValid()) {
+                    i.remove();
+                }
             }
         }
 

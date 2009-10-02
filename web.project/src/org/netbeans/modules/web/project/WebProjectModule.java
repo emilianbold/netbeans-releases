@@ -43,15 +43,12 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.io.File;
-import javax.swing.Action;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -118,41 +115,6 @@ public class WebProjectModule extends ModuleInstall {
                 }
             }
         });
-    }
-    
-    public static Action compile() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_COMPILE_SINGLE, 
-                       NbBundle.getMessage(WebProjectModule.class, "LBL_CompileFile_Action"), // NOI18N
-                       null );
-    }
-            
-    public static Action run() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_RUN_SINGLE, 
-                       NbBundle.getMessage(WebProjectModule.class, "LBL_RunFile_Action"), // NOI18N
-                       null );
-    }
-    
-    public static Action debug() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_DEBUG_SINGLE, 
-                       NbBundle.getMessage(WebProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
-                       null );
-    }
-
-    public static Action htmlRun() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_RUN_SINGLE, 
-                       NbBundle.getMessage(WebProjectModule.class, "LBL_RunFile_Action"), // NOI18N
-                       null );
-    }
-
-    public static Action htmlDebug() {
-        return FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_DEBUG_SINGLE, 
-                       NbBundle.getMessage(WebProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
-                       null );
     }
     
 }

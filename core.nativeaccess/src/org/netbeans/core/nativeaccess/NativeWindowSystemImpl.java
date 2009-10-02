@@ -59,6 +59,8 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
     private static final Logger LOG = Logger.getLogger(NativeWindowSystemImpl.class.getName());
 
     public boolean isWindowAlphaSupported() {
+        if( !is32Bit() )
+            return false;
         boolean res = false;
         try {
             res = WindowUtils.isWindowAlphaSupported();
@@ -72,6 +74,16 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
             LOG.log(Level.INFO, null, e);
         }
         return res;
+    }
+
+    private static boolean is32Bit() {
+        String osarch = System.getProperty("os.arch"); //NOI18N
+        for (String x : new String[]{"i386", "i486", "i586", "i686"}) { //NOI18N
+            if (x.equals(osarch)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setWindowAlpha(Window w, float alpha) {

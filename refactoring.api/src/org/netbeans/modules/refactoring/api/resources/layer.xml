@@ -62,9 +62,10 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-SafeDeleteAction.instance"/>
                 <attr name="position" intvalue="350"/>
             </file>
-            <file name="RefactoringContextAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringContextAction.instance"/>
+            <file name="RefactoringContextAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RefactoringContextAction"/>
                 <attr name="position" intvalue="400"/>
+                <attr name="misplaced.action.allowed" boolvalue="true"/>
             </file>
             <file name="UndoSeparator.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -128,9 +129,6 @@ made subject to such option by the copyright holder.
         </file>
         <file name="RefactoringAll.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-        </file>
-        <file name="RefactoringContextAction.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.refactoring.spi.impl.RefactoringContextAction"/>
         </file>
     </folder>
 

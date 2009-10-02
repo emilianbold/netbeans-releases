@@ -58,7 +58,6 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -221,21 +220,11 @@ final class CreatedModifiedFilesProvider  {
             }
             
             assert zipedTarget != null;
-            FileLock fLock = null;
-            OutputStream os = null;
-            
+            OutputStream os = zipedTarget.getOutputStream();
             try {
-                fLock = zipedTarget.lock();
-                os = zipedTarget.getOutputStream(fLock);
                 createZipFile(os, folderToZip, files);
             } finally {
-                if (os != null) {
-                    os.close();
-                }
-                
-                if (fLock != null) {
-                    fLock.releaseLock();
-                }
+                os.close();
             }
         }
         

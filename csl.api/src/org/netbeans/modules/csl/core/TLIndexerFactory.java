@@ -76,7 +76,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     private static final Logger LOG = Logger.getLogger (TLIndexerFactory.class.getName());
 
     public static final String  INDEXER_NAME = "TLIndexer"; //NOI18N
-    public static final int     INDEXER_VERSION = 2;
+    public static final int     INDEXER_VERSION = 3;
 
     public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
     public static final String FIELD_DESCRIPTION = "description"; //NOI18N
@@ -219,7 +219,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                     true
                 );
 
-                int originalOffset = snapshot.getOriginalOffset(error.getStartPosition());
+                // #172100, ParserResult.getDiagnostics() uses document offsets rather then snapshot offsets
+                int originalOffset = error.getStartPosition();
                 int lineNumber = 1;
                 if (originalOffset >= 0) {
                     int idx = Collections.binarySearch(lineStartOffsets, originalOffset);

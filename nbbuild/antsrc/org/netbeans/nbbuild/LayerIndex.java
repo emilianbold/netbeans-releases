@@ -73,6 +73,7 @@ import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.ResourceCollection;
@@ -233,34 +234,23 @@ public class LayerIndex extends Task {
                     prefix += n;
                     register(prefix);
                 } else if (qName.equals("attr") && attributes.getValue("name").equals("SystemFileSystem.localizingBundle")) {
-                    String bundlepath = attributes.getValue("stringvalue").replace('.', '/') + ".properties";
-                    Properties props = new Properties();
-                    try {
-                        ZipEntry entry = jf.getEntry(bundlepath);
-                        if (entry == null) {
-                            /* Should be covered by ValidateLayerConsistencyTest.testLocalizingBundles:
-                            log(bundlepath + " not found in reference from " + prefix + " in " + cnb, Project.MSG_WARN);
-                             */
-                            return;
+                    String bundle = attributes.getValue("stringvalue");
+                    if (bundle != null) {
+                        loadDisplayName(bundle,prefix.replaceAll("/$", ""));
+                    } else {
+                        log("No stringvalue for SystemFileSystem.localizingBundle on " + prefix + " in " + cnb, Project.MSG_WARN);
+                    }
+                } else if (qName.equals("attr") && attributes.getValue("name").equals("displayName")) {
+                    String bundleKey = attributes.getValue("bundlevalue");
+                    if (bundleKey != null) {
+                        String[] bundlevalue = bundleKey.split("#", 2);
+                        loadDisplayName(bundlevalue[0], bundlevalue[1]);
+                    } else {
+                        String literal = attributes.getValue("stringvalue");
+                        if (literal != null) {
+                            loadDisplayName(literal);
                         }
-                        props.load(jf.getInputStream(entry));
-                    } catch (IOException x) {
-                        throw new SAXException(x);
                     }
-                    String key = prefix.replaceAll("/$", "");
-                    String label = props.getProperty(key);
-                    if (label == null) {
-                        /* Should be covered by ValidateLayerConsistencyTest.testLocalizingBundles:
-                        log("Key " + key + " not found in " + bundlepath + " from " + cnb, Project.MSG_WARN);
-                         */
-                        return;
-                    }
-                    SortedMap<String,String> cnb2label = labels.get(prefix);
-                    if (cnb2label == null) {
-                        cnb2label = new TreeMap<String,String>();
-                        labels.put(prefix, cnb2label);
-                    }
-                    cnb2label.put(cnb, label);
                 } else if (qName.equals("attr") && attributes.getValue("name").equals("position")) {
                     String intvalue = attributes.getValue("intvalue");
                     if (intvalue != null && /* #107550 */ !intvalue.equals("0")) {
@@ -271,6 +261,37 @@ public class LayerIndex extends Task {
                         }
                     }
                 }
+            }
+            private void loadDisplayName(String bundle, String key) throws SAXException {
+                Properties props = new Properties();
+                try {
+                    ZipEntry entry = jf.getEntry(bundle.replace('.', '/') + ".properties");
+                    if (entry == null) {
+                        /* Should be covered by ValidateLayerConsistencyTest.testLocalizingBundles:
+                        log(bundle + " not found in reference from " + prefix + " in " + cnb, Project.MSG_WARN);
+                         */
+                        return;
+                    }
+                    props.load(jf.getInputStream(entry));
+                } catch (IOException x) {
+                    throw new SAXException(x);
+                }
+                String label = props.getProperty(key);
+                if (label == null) {
+                    /* Should be covered by ValidateLayerConsistencyTest.testLocalizingBundles:
+                    log("Key " + key + " not found in " + bundle + " from " + cnb, Project.MSG_WARN);
+                     */
+                    return;
+                }
+                loadDisplayName(label);
+            }
+            private void loadDisplayName(String label) {
+                SortedMap<String,String> cnb2label = labels.get(prefix);
+                if (cnb2label == null) {
+                    cnb2label = new TreeMap<String,String>();
+                    labels.put(prefix, cnb2label);
+                }
+                cnb2label.put(cnb, label);
             }
             @Override
             public void endElement(String uri, String localName, String qName) throws SAXException {

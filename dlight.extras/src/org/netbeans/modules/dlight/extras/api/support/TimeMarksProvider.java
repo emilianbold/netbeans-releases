@@ -40,15 +40,16 @@ package org.netbeans.modules.dlight.extras.api.support;
 
 import java.awt.FontMetrics;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
-import org.netbeans.modules.dlight.extras.api.AxisMarksProvider;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.netbeans.modules.dlight.util.TimeFormatter;
 
 /**
  * @author Alexey Vladykin
  */
-public final class TimeMarksProvider implements AxisMarksProvider {
+public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
 
     public static TimeMarksProvider newInstance() {
         return new TimeMarksProvider();
@@ -56,30 +57,47 @@ public final class TimeMarksProvider implements AxisMarksProvider {
 
     private TimeMarksProvider() {
     }
+    private static final int[] INTERVALS = {100, 500, 1000, 5000, 10000, 30000, 60000, 300000, 600000};
+    private static final String LABEL_TEXT = "99:99"; // NOI18N
+    private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
-    private static final int[] INTERVALS = {1, 5, 10, 30, 60};
-
-    public List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
-        int pixelsPerSecond = axisSize / (viewportEnd - viewportStart);
-        int secondsPerMark = 1;
-        for (int i = 0; i < INTERVALS.length; ++i) {
-            secondsPerMark = INTERVALS[i];
-            if (4 * axisFontMetrics.stringWidth(formatTime(viewportEnd)) / 3 <= secondsPerMark * pixelsPerSecond) {
-                break;
-            }
+    @Override
+    protected List<AxisMark> getAxisMarksImpl(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics) {
+        if (viewportStart == viewportEnd || axisSize < 10) {
+            return Collections.emptyList();
         }
+        long tickInterval = getTickInterval(viewportEnd - viewportStart, axisSize);
+        long labelInterval = getLabelInterval(viewportEnd - viewportStart, axisSize, axisFontMetrics);
         List<AxisMark> marks = new ArrayList<AxisMark>();
-        for (int value = viewportStart; value < viewportEnd; ++value) {
-            String text = null;
-            if (value % secondsPerMark == 0) {
-                text = formatTime(value);
+        for (long value = viewportStart; value <= viewportEnd; ++value) {
+            if (value % tickInterval == 0) {
+                String text = null;
+                if (value % labelInterval == 0) {
+                    text = TIME_FORMATTER.format(value);
+                }
+                marks.add(new AxisMark((int) DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
             }
-            marks.add(new AxisMark(DLightMath.map(value, viewportStart, viewportEnd, 0, axisSize), text));
         }
         return marks;
     }
 
-    private String formatTime(int seconds) {
-        return String.format("%d:%02d", seconds / 60, seconds % 60);
+    private long getTickInterval(long viewportSize, int axisSize) {
+        float pixelsPerMilli = (float) axisSize / viewportSize;
+        for (int i = 0; i < INTERVALS.length; ++i) {
+            if (10 <= INTERVALS[i] * pixelsPerMilli) {
+                return INTERVALS[i];
+            }
+        }
+        return INTERVALS[INTERVALS.length - 1];
+    }
+
+    private long getLabelInterval(long viewportSize, int axisSize, FontMetrics axisFontMetrics) {
+        float pixelsPerMilli = (float) axisSize / viewportSize;
+        for (int i = 0; i < INTERVALS.length; ++i) {
+            if (4 * axisFontMetrics.stringWidth(LABEL_TEXT) / 3 <= INTERVALS[i] * pixelsPerMilli) {
+                return INTERVALS[i];
+            }
+        }
+        return INTERVALS[INTERVALS.length - 1];
     }
 }

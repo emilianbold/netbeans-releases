@@ -234,6 +234,34 @@ public class BlockCompareTest extends NbTestCase {
         assertTrue(!bc.emptyX());
         assertTrue(bc.emptyY());
 
+        bc = BlockCompare.get(1,2,2,3);
+        assertTrue(bc.before());
+        assertTrue(!bc.after());
+        assertTrue(!bc.inside());
+        assertTrue(!bc.insideStrict());
+        assertTrue(!bc.contains());
+        assertTrue(!bc.containsStrict());
+        assertTrue(!bc.equal());
+        assertTrue(!bc.overlap());
+        assertTrue(!bc.overlapStart());
+        assertTrue(!bc.overlapEnd());
+        assertTrue(!bc.emptyX());
+        assertTrue(!bc.emptyY());
+
+        bc = BlockCompare.get(2,3,1,2);
+        assertTrue(!bc.before());
+        assertTrue(bc.after());
+        assertTrue(!bc.inside());
+        assertTrue(!bc.insideStrict());
+        assertTrue(!bc.contains());
+        assertTrue(!bc.containsStrict());
+        assertTrue(!bc.equal());
+        assertTrue(!bc.overlap());
+        assertTrue(!bc.overlapStart());
+        assertTrue(!bc.overlapEnd());
+        assertTrue(!bc.emptyX());
+        assertTrue(!bc.emptyY());
+
         bc.toString(); // just test that it does not throw an exception
     }
 

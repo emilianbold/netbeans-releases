@@ -41,20 +41,28 @@
 
 package org.netbeans.core.ui.options.general;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -69,6 +77,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
     private GeneralOptionsModel     model;
     private HtmlBrowser.FactoryEditor editor;
     private AdvancedProxyPanel advancedPanel;
+//    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private boolean valid = true;
 
     
     /** 
@@ -76,6 +86,15 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
      */
     public GeneralOptionsPanel () {
         initComponents ();
+
+        Color nbErrorForeground = UIManager.getColor("nb.errorForeground");
+        if (nbErrorForeground == null) {
+            nbErrorForeground = new Color(255, 0, 0);
+        }
+        errorLabel.setForeground(nbErrorForeground);
+        Image img = ImageUtilities.loadImage("org/netbeans/core/ui/resources/error.gif"); //NOI18N
+        errorLabel.setIcon(new ImageIcon(img));
+        errorLabel.setVisible(false);
         
         loc (lWebBrowser, "Web_Browser");
         loc (lWebProxy, "Web_Proxy");
@@ -95,6 +114,20 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         cbWebBrowser.addActionListener (this);
         tfProxyHost.addActionListener (this);
         tfProxyPort.addActionListener (this);
+        tfProxyPort.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                validatePortValue();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                validatePortValue();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                validatePortValue();
+            }
+        });
         
         ButtonGroup bgProxy = new ButtonGroup ();
         bgProxy.add (rbNoProxy);
@@ -165,6 +198,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jUsageCheck = new javax.swing.JCheckBox();
         lblUsageInfo = new javax.swing.JLabel();
         lblLearnMore = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
 
         lWebBrowser.setLabelFor(cbWebBrowser);
         org.openide.awt.Mnemonics.setLocalizedText(lWebBrowser, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lWebBrowser.text")); // NOI18N
@@ -236,6 +270,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
             }
         });
 
+        errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -246,7 +282,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lWebBrowser)
                         .add(18, 18, 18)
-                        .add(cbWebBrowser, 0, 1131, Short.MAX_VALUE)
+                        .add(cbWebBrowser, 0, 1132, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editBrowserButton))
                     .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1291, Short.MAX_VALUE)
@@ -260,11 +296,14 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                             .add(layout.createSequentialGroup()
                                 .add(17, 17, 17)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(bMoreProxy)
+                                    .add(layout.createSequentialGroup()
+                                        .add(bMoreProxy)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1105, Short.MAX_VALUE))
                                     .add(layout.createSequentialGroup()
                                         .add(lProxyHost)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 957, Short.MAX_VALUE)
+                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1016, Short.MAX_VALUE)
                                         .add(12, 12, 12)
                                         .add(lProxyPort)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -274,10 +313,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                         .add(lUsage)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblUsageInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1171, Short.MAX_VALUE)
+                            .add(lblUsageInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1205, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jUsageCheck)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 838, Short.MAX_VALUE))
                             .add(lblLearnMore))))
                 .add(0, 0, 0))
         );
@@ -307,7 +346,9 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(tfProxyHost, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lProxyPort))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(bMoreProxy)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(bMoreProxy)
+                    .add(errorLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -325,6 +366,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         bMoreProxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AD")); // NOI18N
         editBrowserButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.editBrowserButton.AN")); // NOI18N
         editBrowserButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.editBrowserButton.AD")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleName(""); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBrowserButtonActionPerformed
@@ -358,6 +400,8 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         advancedPanel = new AdvancedProxyPanel (model);
     }
     DialogDescriptor dd = new DialogDescriptor (advancedPanel, loc ("LBL_AdvancedProxyPanel_Title"));
+    advancedPanel.setDialogDescriptor(dd);
+    dd.createNotificationLineSupport();
     advancedPanel.update (tfProxyHost.getText (), tfProxyPort.getText ());
     DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
     if (DialogDescriptor.OK_OPTION.equals (dd.getValue ())) {
@@ -407,6 +451,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton bMoreProxy;
     private javax.swing.JComboBox cbWebBrowser;
     private javax.swing.JButton editBrowserButton;
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JCheckBox jUsageCheck;
@@ -424,7 +469,44 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JTextField tfProxyPort;
     // End of variables declaration//GEN-END:variables
     
-    
+    private void validatePortValue() {
+        clearError();
+
+        boolean oldValid = valid;
+        valid = isPortValid();
+        if (!valid) {
+            showError(loc("LBL_GeneralOptionsPanel_PortError")); // NOI18N
+        }
+
+        if (oldValid != valid) {
+            firePropertyChange(OptionsPanelController.PROP_VALID, oldValid, valid);
+        }
+    }
+
+    private boolean isPortValid() {
+        String port = tfProxyPort.getText();
+        boolean portStatus = true;
+        if (port != null && port.length() > 0) {
+            try {
+                Integer.parseInt(port);
+            } catch (NumberFormatException nfex) {
+                portStatus = false;
+            }
+        }
+
+        return portStatus;
+    }
+
+    private void showError(String message) {
+        errorLabel.setVisible(true);
+        errorLabel.setText(message);
+    }
+
+    private void clearError() {
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
+    }
+
     private static String loc (String key, String... params) {
         return NbBundle.getMessage (GeneralOptionsPanel.class, key, params);
     }
@@ -526,7 +608,9 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         // listening on JTextFields dont work!
         // if (!changed) return; 
         
-        if (model == null) return;
+        if (model == null) {
+            return;
+        }
         
         // proxy settings
         if (rbNoProxy.isSelected ()) {
@@ -560,16 +644,22 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
     
     boolean dataValid () {
-        return true;
+        return isPortValid();
     }
     
     boolean isChanged () {
-        if (model == null) return false;
-        if (!tfProxyHost.getText ().equals (model.getHttpProxyHost ())) return true;
-        if (!tfProxyPort.getText ().equals (model.getHttpProxyPort ())) return true;
+        if (model == null) {
+            return false;
+        }
+        if (!tfProxyHost.getText().equals(model.getHttpProxyHost())) {
+            return true;
+        }
+        if (!tfProxyPort.getText().equals(model.getHttpProxyPort())) {
+            return true;
+        }
         return changed;
     }
-    
+
     public void actionPerformed (ActionEvent e) {
         changed = true;
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());

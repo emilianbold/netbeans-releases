@@ -163,7 +163,9 @@ public abstract class ExportDiffSupport {
     private void validate() {
         assert panel != null;
         if (exportDiffProvider == null || panel.isFileOutputSelected()) {
-            dd.setValid(!panel.getOutputFileText().trim().equals(""));
+            String path = panel.getOutputFileText().trim();
+            File f = new File(panel.getOutputFileText().trim());
+            dd.setValid(!path.equals("") && !f.isDirectory());
         } else {
             dd.setValid(exportDiffProvider.isValid());
         }

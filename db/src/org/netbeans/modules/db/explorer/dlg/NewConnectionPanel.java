@@ -108,7 +108,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         urlFields.put(JdbcUrl.TOKEN_DSN, new UrlField(dsnField, dsnLabel));
         urlFields.put(JdbcUrl.TOKEN_SERVERNAME, new UrlField(serverNameField, serverNameLabel));
         urlFields.put(JdbcUrl.TOKEN_INSTANCE, new UrlField(instanceField, instanceLabel));
-        urlFields.put(JdbcUrl.TOKEN_DISPLAY_NAME, new UrlField(displayNameField, displayNameLabel));
         urlFields.put(JdbcUrl.TOKEN_ADDITIONAL, new UrlField(additionalPropsField, additionalPropsLabel));
     }
 

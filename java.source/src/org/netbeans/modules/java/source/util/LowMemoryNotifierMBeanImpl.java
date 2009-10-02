@@ -58,11 +58,11 @@ public class LowMemoryNotifierMBeanImpl extends StandardMBean implements LowMemo
         if (value <=0 || value>1) {
             return;
         }
-        LowMemoryNotifier.getDefault().setHeapLimit(value);
+        LMListener.setHeapLimit(value);
     }
 
     public float getMemoryTresholdLimit() {
-        return LowMemoryNotifier.getDefault().getHeapLimit();
+        return LMListener.getHeapLimit();
     }
     
     

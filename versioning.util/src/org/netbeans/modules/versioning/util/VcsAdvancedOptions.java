@@ -40,45 +40,31 @@
  */
 package org.netbeans.modules.versioning.util;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
+// XXX could be replaced by a @OptionsPanelController.ContainerRegistration
+// if OptionsDialog/Versioning could be used instead of VersioningOptionsDialog
+// and a specialized GUI were not required
 
 /**
  * Versioning options panel combined from panels for various settings.
  *
  * @author Pavel Buzek
  */
-public class VcsAdvancedOptions extends AdvancedOption {
-    public String getTooltip() {
-        return getDisplayName();
-    }
+@OptionsPanelController.SubRegistration(displayName="#LBL_OptionsPanelName")
+public class VcsAdvancedOptions extends OptionsPanelController {
     
-    public String getDisplayName() {
-        return NbBundle.getMessage(VcsAdvancedOptions.class, "LBL_OptionsPanelName");
-    }
-    
-    public OptionsPanelController create() {
-        return new Controller();
-    }
-    
-    private static final class Controller extends OptionsPanelController {
         private VcsAdvancedOptionsPanel panel;
         private boolean initialized = false;
         private Map<String,AdvancedOption> categoryToOption = new HashMap<String,AdvancedOption>();
@@ -177,5 +163,4 @@ public class VcsAdvancedOptions extends AdvancedOption {
         public HelpCtx getHelpCtx() {
             return new HelpCtx(VcsAdvancedOptions.class);
         }
-    }
 }

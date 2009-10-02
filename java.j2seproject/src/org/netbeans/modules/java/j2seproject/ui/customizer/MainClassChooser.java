@@ -74,7 +74,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+
 
 /** Browses and allows to choose a project's main class.
  *
@@ -149,40 +149,36 @@ public class MainClassChooser extends JPanel {
     }
     
     private void initClassesModel (final FileObject[] sourcesRoots) {
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),
-                                                                  ClassPathSupport.createClassPath(new URL[0]),
-                                                                  ClassPathSupport.createClassPath(new URL[0]));
-                final JavaSource dummyJs = JavaSource.create(cpInfo);
-                try {
-                    dummyJs.runWhenScanFinished(new Task<CompilationController>() {
-                        public void run(CompilationController parameter) throws Exception {
-                            possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
-                            if (possibleMainClasses.isEmpty()) {
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        jMainClassList.setListData(new String[]{NbBundle.getMessage(MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")}); // NOI18N
-                                    }
-                                });
-                            } else {
-                                final List<ElementHandle<TypeElement>> sortedMainClasses = new ArrayList<ElementHandle<TypeElement>>(possibleMainClasses);
-                                // #46861, sort name of classes
-                                Collections.sort(sortedMainClasses, new MainClassComparator());
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        jMainClassList.setListData(sortedMainClasses.toArray());
-                                        jMainClassList.setSelectedIndex(0);
-                                    }
-                                });
+        final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),
+                                                          ClassPathSupport.createClassPath(new URL[0]),
+                                                          ClassPathSupport.createClassPath(new URL[0]));
+        final JavaSource dummyJs = JavaSource.create(cpInfo);
+        try {
+            dummyJs.runWhenScanFinished(new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
+                    if (possibleMainClasses.isEmpty()) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                jMainClassList.setListData(new String[]{NbBundle.getMessage(MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")}); // NOI18N
                             }
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                        });
+                    } else {
+                        final List<ElementHandle<TypeElement>> sortedMainClasses = new ArrayList<ElementHandle<TypeElement>>(possibleMainClasses);
+                        // #46861, sort name of classes
+                        Collections.sort(sortedMainClasses, new MainClassComparator());
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                jMainClassList.setListData(sortedMainClasses.toArray());
+                                jMainClassList.setSelectedIndex(0);
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     private void initClassesModel (final Collection<ElementHandle<TypeElement>> mainClasses) {

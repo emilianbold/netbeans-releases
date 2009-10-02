@@ -836,7 +836,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             Target t = _retrieveTarget(target);
             thisSDI = thisSS.getDebugInfo(t);
             if (thisSDI == null) {
-                Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
+                LOGGER.log(Level.FINE, "DebuggerInfo cannot be found for: " + this.toString());
                 return null;
             }
         }
@@ -875,7 +875,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         Target target = _retrieveTarget(null);
         ServerDebugInfo sdi = getServerDebugInfo(target);
         if (sdi == null) {
-            LOGGER.log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
+            LOGGER.log(Level.FINE, "DebuggerInfo cannot be found for: " + this.toString());
             return false; // give user a chance to start server even if we don't know whether she will success
         }
 
@@ -1802,12 +1802,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 Target target = _retrieveTarget(null);
                 ServerDebugInfo sdi = getServerDebugInfo(target);
                 if (sdi == null) {
-                    LOGGER.log(Level.INFO, "DebuggerInfo cannot be found for: " + ServerInstance.this);
+                    LOGGER.log(Level.FINE, "DebuggerInfo cannot be found for: " + ServerInstance.this);
                     return; // give it up
                 }
                 AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
                 if (attCookie == null) {
-                    LOGGER.log(Level.INFO, "AttachingDICookie cannot be found for: " + ServerInstance.this);
+                    LOGGER.log(Level.FINE, "AttachingDICookie cannot be found for: " + ServerInstance.this);
                     return; // give it up
                 }
                 if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {

@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -67,7 +68,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
@@ -528,9 +528,13 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider2 {
                 String servInstID = project.evaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
-                    fireIconChange();
-                    fireOpenedIconChange();
-                    fireDisplayNameChange(null, null);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            fireIconChange();
+                            fireOpenedIconChange();
+                            fireDisplayNameChange(null, null);
+                        }
+                    });
                 }
             }
         }        

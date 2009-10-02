@@ -106,7 +106,7 @@ public class Server implements Node.Cookie {
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
         if (descriptor == null) {
-            String msg = NbBundle.getMessage(Server.class, "MSG_InvalidServerPlugin", name);
+            String msg = NbBundle.getMessage(Server.class, "MSG_InvalidServerPlugin", fo.toString());
             throw new IllegalStateException(msg);
         }
         needsFindServerUI = getBooleanValue(descriptor.getAttribute(ATTR_NEEDS_FIND_SERVER_UI), false);

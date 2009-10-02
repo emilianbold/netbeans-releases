@@ -59,27 +59,24 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=500)
 public class WebClasspathCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
-    /** Creates a new instance of EjbLocationsCategoryProvider */
-    public WebClasspathCategoryProvider() {
-    }
-    
     public Category createCategory(Lookup context) {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)context.lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("WebClasspath", //NOI18N
-                    NbBundle.getMessage(WebClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null, (Category[])null);
+                    NbBundle.getMessage(WebClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null);
             return cat;
         }
         return null;
     }
 
     public JComponent createComponent(Category category, Lookup context) {
-        Project project = (Project)context.lookup(Project.class);
-        ProjectAccessor acc = (ProjectAccessor)context.lookup(ProjectAccessor.class);
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)context.lookup(AuxiliaryConfiguration.class);
+        Project project = context.lookup(Project.class);
+        ProjectAccessor acc = context.lookup(ProjectAccessor.class);
+        AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         assert acc != null;
         assert project != null;

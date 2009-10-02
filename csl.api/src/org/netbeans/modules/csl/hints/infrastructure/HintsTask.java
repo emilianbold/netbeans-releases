@@ -118,8 +118,9 @@ public class HintsTask extends ParserResultTask<ParserResult> {
                         return;
                     }
 
-                    for (Hint hint : hints) {
-                        ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+                    for (int i = 0; i < hints.size(); i++) {
+                        Hint hint = hints.get(i);
+                        ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
                         descriptions.add(desc);
                     }
 

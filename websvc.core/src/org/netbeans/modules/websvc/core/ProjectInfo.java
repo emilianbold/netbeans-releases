@@ -79,9 +79,9 @@ public class ProjectInfo {
     
     public ProjectInfo(Project project) {
         this.project=project;
-        J2eeModuleProvider javaeeModule = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (javaeeModule != null) {
-            String serverInstanceId = javaeeModule.getServerInstanceID();
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
             if (serverInstanceId != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();               
@@ -100,11 +100,9 @@ public class ProjectInfo {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);
                 }
             }
-        }
-        
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider != null) {
-            J2eeModule.Type moduleType = j2eeModuleProvider.getJ2eeModule().getType();
+
+            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+            J2eeModule.Type moduleType = j2eeModule.getType();
             if (J2eeModule.Type.EJB.equals(moduleType)) {
                 projectType = EJB_PROJECT_TYPE;
             } else if (J2eeModule.Type.WAR.equals(moduleType)) {

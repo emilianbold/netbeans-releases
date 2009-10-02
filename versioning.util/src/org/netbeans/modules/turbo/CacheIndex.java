@@ -40,10 +40,12 @@
 package org.netbeans.modules.turbo;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -93,14 +95,18 @@ public abstract class CacheIndex {
 
     public File[] getAllValues() {
         LOG.fine("getAllValues()");
-
-        Collection<Set<File>> values = index.values();
-        Set<File> ret = new HashSet();
+        
+        List<Set<File>> values;
         synchronized(this) {
-            for (Set<File> valuesSet : values) {
-                for (File v : valuesSet) {
-                    ret.add(v);
-                }
+            Collection<Set<File>> c = index.values();
+            values = new ArrayList<Set<File>>(c.size());
+            values.addAll(c);
+        }
+
+        Set<File> ret = new HashSet();
+        for (Set<File> valuesSet : values) {
+            synchronized(this) {
+                ret.addAll(valuesSet);
             }
         }
 

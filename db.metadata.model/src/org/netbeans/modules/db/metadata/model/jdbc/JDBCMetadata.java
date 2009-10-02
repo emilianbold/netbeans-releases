@@ -140,23 +140,25 @@ public class JDBCMetadata extends MetadataImplementation {
         try {
             String defaultCatalogName = conn.getCatalog();
             LOGGER.log(Level.FINE, "Default catalog is ''{0}''", defaultCatalogName);
-            ResultSet rs = dmd.getCatalogs();
-            try {
-                while (rs.next()) {
-                    String catalogName = rs.getString("TABLE_CAT"); // NOI18N
-                    LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
-                    if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
-                        defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
-                        newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
-                        LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
-                    } else {
-                        Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
-                        newCatalogs.put(catalogName, catalog);
-                        LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
+            if (dmd.supportsCatalogsInTableDefinitions()) {
+                ResultSet rs = dmd.getCatalogs();
+                try {
+                    while (rs.next()) {
+                        String catalogName = rs.getString("TABLE_CAT"); // NOI18N
+                        LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
+                        if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
+                            defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
+                            newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+                            LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
+                        } else {
+                            Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
+                            newCatalogs.put(catalogName, catalog);
+                            LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
+                        }
                     }
+                } finally {
+                    rs.close();
                 }
-            } finally {
-                rs.close();
             }
         } catch (SQLException e) {
             throw new MetadataException(e);

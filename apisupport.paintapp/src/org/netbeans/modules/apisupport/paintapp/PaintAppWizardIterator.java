@@ -57,7 +57,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -191,16 +190,11 @@ public class PaintAppWizardIterator implements WizardDescriptor.InstantiatingIte
                     FileUtil.createFolder(projectRoot, entry.getName());
                 } else {
                     FileObject fo = FileUtil.createData(projectRoot, entry.getName());
-                    FileLock lock = fo.lock();
+                    OutputStream out = fo.getOutputStream();
                     try {
-                        OutputStream out = fo.getOutputStream(lock);
-                        try {
-                            FileUtil.copy(str, out);
-                        } finally {
-                            out.close();
-                        }
+                        FileUtil.copy(str, out);
                     } finally {
-                        lock.releaseLock();
+                        out.close();
                     }
                 }
             }

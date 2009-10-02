@@ -68,6 +68,8 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -657,7 +659,24 @@ public final class Utils {
      * Display Options dialog with PHP > General panel preselected.
      */
     public static void showGeneralOptionsPanel() {
-        OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH + "/General"); // NOI18N
+        OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH + "/" + PhpOptionsPanelController.ID); // NOI18N
     }
 
+    public static class PhpVersionComboBoxModel extends DefaultComboBoxModel {
+        private static final long serialVersionUID = -203741202171115527L;
+
+        public PhpVersionComboBoxModel() {
+            this(null);
+        }
+
+        public PhpVersionComboBoxModel(PhpVersion preselected) {
+            super(PhpVersion.values());
+
+            if (preselected != null) {
+                setSelectedItem(preselected);
+            } else {
+                setSelectedItem(ProjectPropertiesSupport.getDefaultPhpVersion());
+            }
+        }
+    }
 }

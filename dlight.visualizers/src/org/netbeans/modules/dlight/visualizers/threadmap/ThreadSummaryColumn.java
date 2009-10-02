@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.util.List;
+import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData.StateDuration;
+
 /**
  * Represents thread state summary column
  *
  * @author Alexander Simon
  */
 public interface ThreadSummaryColumn {
-
+    List<StateDuration> getSummary();
 }

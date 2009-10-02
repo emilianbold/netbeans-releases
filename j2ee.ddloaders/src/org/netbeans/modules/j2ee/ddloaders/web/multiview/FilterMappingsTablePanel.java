@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.math.BigDecimal;
+
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
@@ -94,6 +98,11 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
         this.webApp=webApp;
     }
     
+    private static boolean isWebApp25(WebApp webApp) {
+        BigDecimal ver = new BigDecimal(webApp.getVersion());
+        return ver.compareTo(new BigDecimal(WebApp.VERSION_2_5)) >= 0;
+    }
+    
     private class TableActionListener implements java.awt.event.ActionListener {
         private boolean add;
         TableActionListener(boolean add) {
@@ -112,16 +121,36 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
             } else {
                 mapping = webApp.getFilterMapping(row);
             }
-            final FilterMappingPanel dialogPanel = new FilterMappingPanel(mapping,allFilters,allServlets);
+            final FilterMappingPanel dialogPanel = new FilterMappingPanel(
+                    mapping,allFilters,allServlets , isWebApp25(webApp));
             final EditDialog dialog = new EditDialog(dialogPanel,
-                NbBundle.getMessage(FilterMappingsTablePanel.class,"TTL_filterMapping"),
+                NbBundle.getMessage(FilterMappingsTablePanel.class,
+                    "TTL_filterMapping"),                       //NOI18N
                 add) {
                 protected String validate() {
-                    if (!dialogPanel.hasFilterNames())
-                         return  NbBundle.getMessage(FilterMappingsTablePanel.class,"LBL_no_filters");
+                    if (!dialogPanel.hasFilterNames()){
+                         return  NbBundle.getMessage(
+                                 FilterMappingsTablePanel.class,
+                                 "LBL_no_filters");             // NOI18N
+                    }
                     String urlPattern = dialogPanel.getUrlPattern();
-                    if (dialogPanel.getUrlRB().isSelected() && urlPattern.length()==0)
-                        return  NbBundle.getMessage(FilterMappingsTablePanel.class,"TXT_missingURL");
+                    if ( urlPattern == null ){
+                        urlPattern = "";
+                    }
+                    urlPattern = urlPattern.replace(',', ' ').trim();
+                    if (dialogPanel.getUrlRB().isSelected() && 
+                            urlPattern.length()==0)
+                    {
+                        return  NbBundle.getMessage(FilterMappingsTablePanel.class,
+                                "TXT_missingURL");              //NOI18N
+                    }
+                    if ( dialogPanel.getServletNameRB().isSelected()){
+                        String[] names = dialogPanel.getServletNames();
+                        if ( names == null || names.length ==0 ){
+                            return  NbBundle.getMessage(FilterMappingsTablePanel.class,
+                                "TXT_missingServletName");      //NOI18N
+                        }
+                    }
                     return null;
                 }
             };
@@ -131,6 +160,13 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
                 dialog.setValid(false); // Disable OK
             javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(dialog);
             dialogPanel.getUrlTF().getDocument().addDocumentListener(docListener);
+            dialogPanel.getServletNamesList().getSelectionModel().addListSelectionListener(
+                    new ListSelectionListener() {
+
+                public void valueChanged(ListSelectionEvent arg0) {
+                    dialog.checkValues();
+                }
+            });
             dialogPanel.getUrlRB().addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     dialog.checkValues();
@@ -149,28 +185,34 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
                 dObj.setChangedFromUI(true);
                 String filterName = dialogPanel.getFilterName();
                 String urlPattern = dialogPanel.getUrlPattern();
-                String servletName = dialogPanel.getServletName();
+                String[] servletNames = dialogPanel.getServletNames();
                 String[] dispatcher = dialogPanel.getDispatcherTypes();
                 if (add) {
-                    model.addRow(new Object[]{filterName,urlPattern,servletName,dispatcher});
+                    model.addRow(new Object[]{filterName,urlPattern,servletNames,
+                        dispatcher});
                 } else {
                     String oldName = (String)model.getValueAt(row,0);
-                    model.editRow(row, new Object[]{filterName,urlPattern,servletName,dispatcher});
+                    model.editRow(row, new Object[]{filterName,urlPattern,
+                        servletNames,dispatcher});
                     // udating title for filter panel with old name
                     if (!filterName.equals(oldName)) {
-                        Filter filter = (Filter)webApp.findBeanByName("Filter","FilterName",oldName); //NOI18N
+                        Filter filter = (Filter)webApp.findBeanByName("Filter",
+                                "FilterName",oldName); //NOI18N
                         if (filter!=null) {
                             SectionPanel panel = view.findSectionPanel(filter);
-                            panel.setTitle(((FiltersMultiViewElement.FiltersView)view).getFilterTitle(filter));
+                            panel.setTitle(((FiltersMultiViewElement.FiltersView)view).
+                                    getFilterTitle(filter));
                         }
                     }
                 }
                 dObj.setChangedFromUI(false);
                 // updating filter's panel title
-                Filter filter = (Filter)webApp.findBeanByName("Filter","FilterName",filterName); //NOI18N
+                Filter filter = (Filter)webApp.findBeanByName("Filter","FilterName",
+                        filterName); //NOI18N
                 if (filter!=null) {
                     SectionPanel panel = view.findSectionPanel(filter);
-                    panel.setTitle(((FiltersMultiViewElement.FiltersView)view).getFilterTitle(filter));
+                    panel.setTitle(((FiltersMultiViewElement.FiltersView)view).
+                            getFilterTitle(filter));
                 }
             }
         }

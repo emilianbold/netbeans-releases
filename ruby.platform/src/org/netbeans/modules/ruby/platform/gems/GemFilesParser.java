@@ -55,7 +55,7 @@ import org.openide.util.Parameters;
  * 
  * @author Erno Mononen
  */
-class GemFilesParser {
+public final class GemFilesParser {
 
     /**
      * Extension of files containing gems specification residing in {@link
@@ -171,11 +171,17 @@ class GemFilesParser {
 
     }
 
-    // not private because used in tests
-    static String[] parseNameAndVersion(String fileName) {
+    /**
+     * Parses the gem name and version from the given file name.
+     * @param fileName the file name to parse, e.g. my-gem-1.2.3
+     * @return a string array of length 2 containing the name [0] and version [1]
+     * or <code>null</code> if parsing was unsuccessful.
+     */
+    public static String[] parseNameAndVersion(String fileName) {
         Matcher m = PATTERN.matcher(fileName);
         if (!m.find() || m.groupCount() < 2) {
             //XXX: can there be gems without a version number?
+            LOGGER.fine("Couldn't parse name and version for " + fileName);
             return null;
         }
         return new String[]{m.group(1), m.group(2)};

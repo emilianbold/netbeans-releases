@@ -64,12 +64,18 @@
         <antcall target="clean-platform">
             <param name="product.platforms" value="windows"/>
         </antcall>
+	
         <antcall target="clean-platform">
             <param name="product.platforms" value="linux"/>
         </antcall>
         <antcall target="clean-platform">
             <param name="product.platforms" value="solaris-x86"/>
         </antcall>
+        
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+        </antcall>
+
     </target>
     
     <!--
@@ -81,16 +87,23 @@
     <target name="build-all">
         <antcall target="build-platform">
             <param name="product.platforms" value="windows"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.windows}"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.windows}"/>-->
         </antcall>
+        
         <antcall target="build-platform">
             <param name="product.platforms" value="linux"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.linux}"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.linux}"/>-->
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="solaris-x86"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-x86}"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-x86}"/>-->
         </antcall>
+        
+        <antcall target="build-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.macosx}"/>-->
+        </antcall>
+
     </target>
     
     <!--
@@ -102,15 +115,21 @@
     <target name="release-all">
         <antcall target="release-platform">
             <param name="product.platforms" value="windows"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.windows}"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.windows}"/>-->
         </antcall>
+        
         <antcall target="release-platform">
             <param name="product.platforms" value="linux"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.linux}"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.linux}"/>-->
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="solaris-x86"/>
-            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-x86}"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.solaris-x86}"/>-->
+        </antcall>
+        
+        <antcall target="release-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+<!--            <param name="product.data.1.uri" value="${product.data.1.uri.macosx}"/>-->
         </antcall>
     </target>
     
@@ -151,6 +170,7 @@
 
 
     <target name="-pre-package">
+        <!--
 	<if property="i" value="2">
             <mkdir dir="${data.directory}/${sources.params.1.value}"/>            
             <move todir="${data.directory}/${sources.params.1.value}">
@@ -159,7 +179,8 @@
                 </fileset>
             </move>
         </if>
-
+        -->
+        <delete dir="${data.directory}/META-INF" includeemptydirs="true"/>
     </target>
     
     <!-- ============================================================================

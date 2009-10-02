@@ -59,9 +59,9 @@ NAMESPACE DEFINITOIN iz143977_1 [2:1/21-40:2/1332] SCOPE: iz143977_1.cc
         BASE CLASSES:
             CLASS=iz143977_1::Factory::FactoryErrorPolicy VISIBILITY==PUBLIC virtual==false text='public FactoryErrorPolicy<IdentifierType, AbstractProduct>'
         MEMBERS:
-            TYPEDEF Impl  [35:9/1092-35:87/1170] TYPE: iz143977_1::FactoryImpl<class,class,NullType> TEXT=FactoryImpl<AbstractProduct,IdentifierType,CreatorParmTList>  [35:17/1100-35:81/1164] SCOPE: Factory 
-            TYPEDEF Parm1  [37:9/1188-37:44/1223] TYPE: iz143977_1::FactoryImplBase::Parm1 TEXT=Impl::Parm1  [37:26/1205-37:37/1216] SCOPE: Factory 
-            TYPEDEF Parm2  [38:9/1260-38:44/1295] TYPE: iz143977_1::FactoryImplBase::Parm2 TEXT=Impl::Parm2  [38:26/1277-38:37/1288] SCOPE: Factory 
+            TYPEDEF Impl  [35:9/1092-35:87/1170] TYPE: iz143977_1::FactoryImpl TEXT=FactoryImpl<AbstractProduct,IdentifierType,CreatorParmTList>  [35:17/1100-35:81/1164] SCOPE: Factory 
+            TYPEDEF Parm1  [37:9/1188-37:44/1223] TYPE: $unresolved$::Impl::Parm1 TEXT=Impl::Parm1  [37:26/1205-37:37/1216] SCOPE: Factory 
+            TYPEDEF Parm2  [38:9/1260-38:44/1295] TYPE: $unresolved$::Impl::Parm2 TEXT=Impl::Parm2  [38:26/1277-38:37/1288] SCOPE: Factory 
 USING NAMESPACE. iz143977_1  [41:1/1333-41:27/1359]; REF NS: iz143977_1 SCOPE: null
 
 ========== Dumping model of PROJECT DummyProject
@@ -116,7 +116,7 @@ NAMESPACE iz143977_1 (iz143977_1)
         BASE CLASSES:
             CLASS=iz143977_1::Factory::FactoryErrorPolicy VISIBILITY==PUBLIC virtual==false text='public FactoryErrorPolicy<IdentifierType, AbstractProduct>'
         MEMBERS:
-            TYPEDEF Impl  [35:9/1092-35:87/1170] TYPE: iz143977_1::FactoryImpl<class,class,NullType> TEXT=FactoryImpl<AbstractProduct,IdentifierType,CreatorParmTList>  [35:17/1100-35:81/1164] SCOPE: Factory 
-            TYPEDEF Parm1  [37:9/1188-37:44/1223] TYPE: iz143977_1::FactoryImplBase::Parm1 TEXT=Impl::Parm1  [37:26/1205-37:37/1216] SCOPE: Factory 
-            TYPEDEF Parm2  [38:9/1260-38:44/1295] TYPE: iz143977_1::FactoryImplBase::Parm2 TEXT=Impl::Parm2  [38:26/1277-38:37/1288] SCOPE: Factory 
+            TYPEDEF Impl  [35:9/1092-35:87/1170] TYPE: iz143977_1::FactoryImpl TEXT=FactoryImpl<AbstractProduct,IdentifierType,CreatorParmTList>  [35:17/1100-35:81/1164] SCOPE: Factory 
+            TYPEDEF Parm1  [37:9/1188-37:44/1223] TYPE: $unresolved$::Impl::Parm1 TEXT=Impl::Parm1  [37:26/1205-37:37/1216] SCOPE: Factory 
+            TYPEDEF Parm2  [38:9/1260-38:44/1295] TYPE: $unresolved$::Impl::Parm2 TEXT=Impl::Parm2  [38:26/1277-38:37/1288] SCOPE: Factory 
 

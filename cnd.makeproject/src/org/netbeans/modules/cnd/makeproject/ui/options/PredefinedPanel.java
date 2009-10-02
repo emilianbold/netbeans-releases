@@ -45,6 +45,7 @@ import java.util.Comparator;
 import java.util.Vector;
 import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Panel used to manage predefined Include Paths and Macro Definitions of the compiler
@@ -70,7 +72,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         initComponents();
         this.compiler = compiler;
         this.parserSettingsPanel = parserSettingsPanel;
-        updatePanels();
+        updatePanels(false);
 
         resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
 
@@ -79,51 +81,53 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private static final int INSETS = 0;
     private static final double WEIGTH = 0.1;
 
-    private void updatePanels() {
-        List<String> includesList = compiler.getSystemIncludeDirectories();
-//        String[] includesAr = (String[])includesList.toArray(new String[includesList.size()]);
+    private void updatePanels(final boolean reset) {
+        RequestProcessor.getDefault().post(new Runnable(){
+            public void run() {
+                if (reset) {
+                    compiler.resetSystemIncludesAndDefines();
+                }
+                final List<String> includesList = compiler.getSystemIncludeDirectories();
+                final List<String> definesList = compiler.getSystemPreprocessorSymbols();
 
-        if (includesPanel != null) {
-            includes.remove(includesPanel);
-        }
-        includes.add(includesPanel = new IncludesPanel(includesList));
-        List<String> definesList = compiler.getSystemPreprocessorSymbols();
-        Collections.sort(definesList, new Comparator<String>() {
-            public int compare(String s1, String s2) {
-                //return trim(s1).compareToIgnoreCase(trim(s2));
-                return s1.compareToIgnoreCase(s2);
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run() {
+                        if (includesPanel != null) {
+                            includes.remove(includesPanel);
+                        }
+                        includes.add(includesPanel = new IncludesPanel(includesList));
+                        Collections.sort(definesList, new Comparator<String>() {
+                            public int compare(String s1, String s2) {
+                                return s1.compareToIgnoreCase(s2);
+                            }
+                        });
+
+                        if (definitionsPanel != null) {
+                            macros.remove(definitionsPanel);
+                        }
+                        macros.add(definitionsPanel = new DefinitionsPanel(definesList));
+                        if (reset) {
+                            //parserSettingsPanel.fireFilesPropertiesChanged();
+                            parserSettingsPanel.setModified(true);
+                            settingsReseted = true;
+                        }
+                        validate();
+                        repaint();
+                    }
+                });
             }
-// though useful in some situations (due to the absence of search),
-// such sort order is counter-intuitive 
-//            private String trim(String s) {
-//                if (s == null) {
-//                    return s;
-//                } else {
-//                    int start = 0;
-//                    for (int i = 0; i < s.length(); i++) {
-//                        if (s.charAt(i) == '_') {
-//                            start++;
-//                        }
-//                    }
-//                    return (start == 0) ? s : s.substring(start);
-//                }
-//            }
         });
-//        String[] definesAr = (String[])definesList.toArray(new String[definesList.size()]);
-
-        if (definitionsPanel != null) {
-            macros.remove(definitionsPanel);
-        }
-        macros.add(definitionsPanel = new DefinitionsPanel(definesList));
     }
 
     public boolean save() {
         boolean wasChanges = settingsReseted;
         settingsReseted = false;
-        Vector<String> tmpIncludes = includesPanel.getListData();
-        wasChanges |= compiler.setSystemIncludeDirectories(tmpIncludes);
-        Vector<String> definitions = definitionsPanel.getListData();
-        wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
+        if (includesPanel != null && definitionsPanel != null) {
+            Vector<String> tmpIncludes = includesPanel.getListData();
+            wasChanges |= compiler.setSystemIncludeDirectories(tmpIncludes);
+            Vector<String> definitions = definitionsPanel.getListData();
+            wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
+        }
         return wasChanges;
     }
 
@@ -131,7 +135,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         if (CodeAssistancePanelController.TRACE_CODEASSIST) {
             System.err.println("update for PredefinedPanel " + compiler.getName());
         }
-        updatePanels();
+        updatePanels(false);
     }
 
     public void updateCompiler(CCCCompiler compiler) {
@@ -202,13 +206,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         String txt = getString("RESET_QUESTION"); // NOI18N
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("RESET_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-            compiler.resetSystemIncludesAndDefines();
-            updatePanels();
-            validate();
-            repaint();
-            //parserSettingsPanel.fireFilesPropertiesChanged();
-            parserSettingsPanel.setModified(true);
-            settingsReseted = true;
+            updatePanels(true);
         }
     }//GEN-LAST:event_resetButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -43,7 +43,7 @@
     <property environment="env"/>
 
     <property name="netbeans.prox" value="false"/>
-    <property name="netbeans.type" value="all"/>
+    <property name="netbeans.type" value="java"/>
 
     <!-- NetBeans latest nightly -->
     <property name="netbeans.host" value="http://bits.netbeans.org"/>
@@ -112,5 +112,5 @@
     <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
     <property name="bpel.samples" value="${home}/bpel.samples/resources"/>
     <property name="xslt.samples" value="${home}/xslt.samples/resources"/>
-    <property name="build.number" value="${home}/nbbuild/netbeans/platform10/build_number"/>
+    <property name="build.number" value="${home}/nbbuild/netbeans/platform11/build_number"/>
 </project>

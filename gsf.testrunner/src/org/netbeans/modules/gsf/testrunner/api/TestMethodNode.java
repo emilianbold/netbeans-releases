@@ -183,6 +183,9 @@ public class TestMethodNode extends AbstractNode {
         if (Status.PENDING == testcase.getStatus()) {
             return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
         }
+        if (Status.SKIPPED == testcase.getStatus()) {
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning2_16.png"); //NOI18N
+        }
         if (failed()) {
             return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
         }
@@ -212,6 +215,7 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.ERROR, "MSG_TestMethodError_HTML"); //NOI18N
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML"); //NOI18N
+            result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML"); //NOI18N
             return result;
         }
 
@@ -221,6 +225,7 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.ERROR, "MSG_TestMethodError_HTML_time"); //NOI18N
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_time"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time"); //NOI18N
+            result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML_time"); //NOI18N
             return result;
         }
 
@@ -230,6 +235,7 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.ERROR, "MSG_TestMethodError_HTML_cause"); //NOI18N
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_cause"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_cause"); //NOI18N
+            result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML_cause"); //NOI18N
             return result;
         }
 

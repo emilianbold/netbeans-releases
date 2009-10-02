@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.wizards.dd;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -55,7 +57,8 @@ import org.openide.util.NbBundle;
  */
 public final class WebXmlVisualPanel1 extends JPanel {
     private static final long serialVersionUID = 1L;
-    private static final String WEB_XML = "web.xml";
+    private static final String WEB_XML = "web.xml";    //NOI18N
+    private FileObject targetFolder;
 
     public WebXmlVisualPanel1() {
         initComponents();
@@ -67,12 +70,26 @@ public final class WebXmlVisualPanel1 extends JPanel {
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         assert wm != null;
-        locationText.setText(FileUtil.getFileDisplayName(wm.getWebInf()));
+        FileObject webInf = wm.getWebInf();
+        try {
+            if (webInf !=null) {
+                targetFolder = webInf;
+                locationText.setText(FileUtil.getFileDisplayName(webInf));
+            } else {
+                FileObject docBase = wm.getDocumentBase();
+                targetFolder = docBase;
+                locationText.setText(FileUtil.getFileDisplayName(docBase)+File.separator+"WEB-INF");  //NOI18N
+            }
+        } catch (NullPointerException npe ) {
+            locationText.setText("");   //NOI18N
+            Logger.global.log(Level.WARNING, NbBundle.getMessage(WebXmlVisualPanel1.class, "NO_SOURCES_FOUND"), npe);
+        }
         refreshLocation();
     }
 
     FileObject getSelectedLocation() {
-        return FileUtil.toFileObject(new File(locationText.getText()));
+        return targetFolder;
+//        return FileUtil.toFileObject(new File(locationText.getText()));
     }
 
     File getCreatedFile() {
@@ -85,9 +102,9 @@ public final class WebXmlVisualPanel1 extends JPanel {
     }
 
     private void refreshLocation() {
-        FileObject fileObject = getSelectedLocation();
-        if (fileObject != null) {
-            createdFileText.setText(FileUtil.getFileDisplayName(fileObject) + File.separator + WEB_XML);
+        String location = locationText.getText();
+        if (location != null && !"".equals(location)) {
+            createdFileText.setText(location + File.separator + WEB_XML);
         }
         firePropertyChange("", null, null);
     }

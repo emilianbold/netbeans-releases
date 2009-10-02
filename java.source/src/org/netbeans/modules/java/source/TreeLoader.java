@@ -144,7 +144,8 @@ public class TreeLoader extends LazyTreeLoader {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
                 JavacTaskImpl jti = context.get(JavacTaskImpl.class);
                 if (fo != null && jti != null) {
-                    Log.instance(context).nerrors = 0;
+                    final Log log = Log.instance(context);
+                    log.nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                     try {
@@ -154,6 +155,7 @@ public class TreeLoader extends LazyTreeLoader {
                             dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                         return true;
                     } finally {
+                        log.nerrors = 0;
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
                             dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());
                         }
@@ -302,7 +304,10 @@ public class TreeLoader extends LazyTreeLoader {
                     writer.println(String.format("class file %s", cfURI)); //NOI18N
                     writer.println(String.format("source file %s", sfURI)); //NOI18N
                     writer.println("----- Source file content: ----------------------------------------"); // NOI18N
-                    writer.println(sourceFile.getCharContent(true));
+                    if (sourceFile != null)
+                        writer.println(sourceFile.getCharContent(true));
+                    else
+                        writer.println("<unknown>");
                     writer.print("----- Trees: -------------------------------------------------------"); // NOI18N
                     writer.println(treeInfo);
                     writer.println("----- Stack trace: ---------------------------------------------"); // NOI18N

@@ -48,4 +48,5 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 public interface EmptyVisualizerContainerProvider {
 
     VisualizerContainer getEmptyVisualizerContainer();
+    VisualizerContainer getEmptyVisualizerContainer(String vcID);
 }

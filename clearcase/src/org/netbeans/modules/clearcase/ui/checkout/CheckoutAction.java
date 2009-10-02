@@ -255,7 +255,7 @@ public class CheckoutAction extends AbstractAction {
                     return;
                 }
 
-        Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_CHECKOUT_MESSAGES, message, 20);
+        Utils.insert(ClearcaseModuleConfig.getPreferences(), RECENT_CHECKOUT_MESSAGES, message.trim(), 20);
         CheckoutCommand cmd = 
                 new CheckoutCommand(
                         targetFiles,

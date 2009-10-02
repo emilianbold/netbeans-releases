@@ -45,7 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodStrategy;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbDialog;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.CallEjbDialog;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 

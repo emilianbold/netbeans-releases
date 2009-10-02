@@ -43,6 +43,7 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.nodes.Node;
 
 /** Used to call "Build|Compile File" main menu item, "Compile File" popup menu or F9 shortcut.
  * @see Action
@@ -51,14 +52,31 @@ import org.netbeans.jellytools.Bundle;
 public class CompileJavaAction extends Action {
 
     // Build|Compile
-    private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject")+"|"
+    private static final String compileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/BuildProject");
+    private static final String compileMenu = compileItem+"|"
                                             +Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CompileSingleAction_Name");
     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
     // Compile File
-    private static final String compilePopup = Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_CompileFile_Action");
+    private static final String compilePopup = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CompileSingleAction_Name");
     
     /** creates new CompileAction instance */    
     public CompileJavaAction() {
         super(compileMenu, compilePopup, keystroke);
+    }
+
+    public @Override void performMenu(Node node) {
+        this.menuPath = compileItem + "|" +
+                Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle",
+                                        "LBL_CompileSingleAction_Name",
+                                        new Object[] {Integer.valueOf(1), node.getText()});
+        super.performMenu(node);
+    }
+
+    public @Override void performPopup(Node node) {
+        this.popupPath =
+                Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle",
+                                        "LBL_CompileSingleAction_Name",
+                                        new Object[] {Integer.valueOf(1), node.getText()});
+        super.performPopup(node);
     }
 }

@@ -64,6 +64,9 @@ made subject to such option by the copyright holder.
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.advanced.Advanced"/>
             <attr name="position" intvalue="800"/>
         </file>
+        <folder name="Advanced">
+            <attr name="position" intvalue="0"/>
+        </folder>
     </folder>
 
     <folder name="OptionsExport">

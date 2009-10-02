@@ -88,6 +88,8 @@ import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess;
+import org.netbeans.modules.autoupdate.updateprovider.NetworkAccess.Task;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
 import org.openide.LifecycleManager;
@@ -810,20 +812,75 @@ public class InstallSupportImpl {
             return STEP.CANCEL == currentStep;
         }
     }
+
+    private class OpenConnectionListener implements NetworkAccess.NetworkListener {
+        private InputStream stream = null;
+        int contentLength = -1;
+        private URL source = null;
+        private Exception ex = null;
+        public OpenConnectionListener (URL source) {
+            this.source = source;
+        }
+        public InputStream getInputStream() {
+            return stream;
+        }
+        public int getContentLength() {
+            return contentLength;
+        }
+        public void streamOpened(InputStream stream, int contentLength) {
+            err.log(Level.FINEST, "Opened connection for " + source);
+            this.stream = stream;
+            this.contentLength = contentLength;
+        }
+
+        public void accessCanceled() {
+            err.log(Level.INFO, "Opening connection for " + source + "was cancelled");
+        }
+
+        public void accessTimeOut() {
+            err.log(Level.INFO, "Opening connection for " + source + "was finised due to timeout");
+        }
+
+        public void notifyException(Exception x) {
+            ex = x;
+        }
+        public Exception getException() {
+            return ex;
+        }
+
+    }
     private int copy (URL source, File dest, 
             ProgressHandle progress, final int estimatedSize, final int aggregateDownload, final int totalSize,
             String label) throws MalformedURLException, IOException {
         
-        int increment = 0;
-        InputStream is = null;
-        URLConnection connection = null;
-        int contentLength = -1;
-        try {
-            connection = source.openConnection();
-            connection.setConnectTimeout(AutoupdateSettings.getOpenConnectionTimeout ());
+        OpenConnectionListener listener = new OpenConnectionListener(source);
+        final Task task = NetworkAccess.createNetworkAcessTask(source,
+                AutoupdateSettings.getOpenConnectionTimeout(),
+                listener);
+        new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    if (task.isFinished()) {
+                        break;
+                    } else if(cancelled()) {
+                        task.cancel();
+                        break;
+                    }
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        //ignore
+                    }                    
+                }
+            }
+        }).start();
+        
+        task.waitFinished ();
 
-            is = connection.getInputStream();
-            contentLength = connection.getContentLength();
+        try {
+            if(listener.getException()!=null) {
+                throw listener.getException();
+            }
         } catch (FileNotFoundException x) {
             err.log (Level.INFO, x.getMessage(), x);
             throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
@@ -832,13 +889,25 @@ public class InstallSupportImpl {
             err.log (Level.INFO, x.getMessage(), x);
             throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
                     "InstallSupportImpl_Download_Unavailable", source));            
+        } catch (Exception x) {
+            err.log (Level.INFO, x.getMessage(), x);
+            throw new IOException(NbBundle.getMessage(InstallSupportImpl.class,
+                    "InstallSupportImpl_Download_Unavailable", source));
         }
+        if (cancelled()) {
+            err.log(Level.FINE, "Download of " + source + " was cancelled");
+            throw new IOException("Download of " + source + " was cancelled");
+        }
+
+        InputStream is = listener.getInputStream();
+        int contentLength = listener.getContentLength();
 
         BufferedInputStream bsrc = new BufferedInputStream (is);
         BufferedOutputStream bdest = null;
         
         err.log (Level.FINEST, "Copy " + source + " to " + dest + "[" + estimatedSize + "]");
         boolean canceled = false;
+        int increment = 0;
         try {
             byte [] bytes = new byte [1024];
             int size;

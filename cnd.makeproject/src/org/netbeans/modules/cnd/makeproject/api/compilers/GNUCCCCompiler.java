@@ -154,7 +154,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                    int i = line.indexOf(' ', 8);
                    if (i > 0) {
                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                       pair.systemPreprocessorSymbolsList.add(token);
+                       pair.systemPreprocessorSymbolsList.addUnique(token);
                    }
                }
            }

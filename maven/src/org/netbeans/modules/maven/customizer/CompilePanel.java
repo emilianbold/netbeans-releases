@@ -70,6 +70,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.options.DontShowAgainSettings;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -169,7 +170,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                     }
                 }
                 if (val == null) {
-                    handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+                    val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
                 }
                 if (val != null) {
                     return valueToLabel(val);
@@ -510,7 +511,7 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
 
     private void btnSetupHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupHomeActionPerformed
         // TODO add your handling code here:
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
 }//GEN-LAST:event_btnSetupHomeActionPerformed
 
 
@@ -651,8 +652,13 @@ public class CompilePanel extends javax.swing.JPanel implements WindowFocusListe
                 boolean cellHasFocus) {
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
-
-            setText(((JavaPlatform)value).getDisplayName());
+            JavaPlatform jp = (JavaPlatform)value;
+            //#171354 weird null value coming on mac..
+            if (jp != null) {
+                setText(jp.getDisplayName());
+            } else {
+                setText("");
+            }
 
             if ( isSelected ) {
                 setBackground(list.getSelectionBackground());

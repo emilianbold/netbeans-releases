@@ -57,12 +57,15 @@ import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.ElementUtilities;
 import org.netbeans.modules.javascript.editing.IndexedElement;
+import org.netbeans.modules.javascript.editing.JsClassPathProvider;
+import org.netbeans.modules.javascript.editing.JsIndex;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.JsTypeAnalyzer;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsRuleContext;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -142,10 +145,8 @@ public class UnsupportedCalls extends JsAstRule {
         Boolean skipFqnCheck = MUST_CHECK_FQN.get(name);
         if (skipFqnCheck == null) {
             // Check index to see if 
-// XXX: parsingapi
-//            JsIndex index = /JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
-//            Set<IndexedElement> elements = index.getAllNames(name, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
-            Set<IndexedElement> elements = Collections.<IndexedElement>emptySet();
+            JsIndex index = JsIndex.get(QuerySupport.findRoots(info.getSnapshot().getSource().getFileObject(), null, Collections.singleton(JsClassPathProvider.BOOT_CP), Collections.<String>emptySet()));
+            Set<IndexedElement> elements = index.getAllNames(name, QuerySupport.Kind.EXACT, info);
             if (elements.size() <= 1) {
                 // Exactly one match, or no such known element - don't bother looking
                 // up the fqn of calls, just assume this is the one

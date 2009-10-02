@@ -287,7 +287,7 @@ public class Scene2Image {
         double _scale = scene.getZoomFactor();
 
         Rectangle sceneRec = scene.getPreferredBounds();
-        Rectangle viewRect = scene.getView().getVisibleRect();
+        Rectangle viewRect = scene.getView() != null ? scene.getView().getVisibleRect() : sceneRec;
 
         BufferedImage bufferedImage;
         Graphics2D g;

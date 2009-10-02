@@ -50,14 +50,14 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", category="Formatting", position=100)
 public class CheckstyleCustomizerPanel implements ProjectCustomizer.CompositeCategoryProvider {
 
     public ProjectCustomizer.Category createCategory(Lookup look) {
         return ProjectCustomizer.Category.create(
                 "checkstyle",
                 NbBundle.getMessage(CheckstyleCustomizerPanel.class, "TIT_CheckStyle"),
-                null,
-                (ProjectCustomizer.Category[])null);
+                null);
     }
 
     public JComponent createComponent(ProjectCustomizer.Category cat, Lookup look) {

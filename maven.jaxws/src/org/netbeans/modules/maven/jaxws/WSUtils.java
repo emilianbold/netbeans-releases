@@ -754,17 +754,17 @@ public class WSUtils {
             //if none, remove the listener
             boolean hasMoreWebServices = false;
             Servlet[] remainingServlets = webApp.getServlet();
-            for(int i = 0; i < remainingServlets.length; i++){
-                if(remainingServlets[i].getServletClass().equals(SERVLET_CLASS_NAME)){
+            for(int i = 0; i < remainingServlets.length; i++) {
+                if (SERVLET_CLASS_NAME.equals(remainingServlets[i].getServletClass())) {
                     hasMoreWebServices = true;
                     break;
                 }
             }
             if(!hasMoreWebServices){
                 Listener[] listeners = webApp.getListener();
-                for(int i = 0; i < listeners.length; i++){
+                for (int i = 0; i < listeners.length; i++) {
                     Listener listener = listeners[i];
-                    if(listener.getListenerClass().equals(SERVLET_LISTENER)){
+                    if (SERVLET_LISTENER.equals(listener.getListenerClass())) {
                         webApp.removeListener(listener);
                         changed = true;
                         break;
@@ -790,7 +790,7 @@ public class WSUtils {
             Listener[] listeners = webApp.getListener();
             for(int i = 0; i < listeners.length; i++){
                 Listener listener = listeners[i];
-                if(listener.getListenerClass().equals(SERVLET_LISTENER)){
+                if (SERVLET_LISTENER.equals(listener.getListenerClass())) {
                     webApp.removeListener(listener);
                     changed = true;
                     break;

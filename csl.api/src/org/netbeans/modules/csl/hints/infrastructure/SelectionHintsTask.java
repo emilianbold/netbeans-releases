@@ -125,12 +125,14 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
                     RuleContext ruleContext = manager.createRuleContext((ParserResult) r, language, -1, range[0], range[1]);
                     if (ruleContext != null && !isCancelled()) {
                         provider.computeSelectionHints(manager, ruleContext, hints, range[0], range[1]);
-                        for (Hint hint : hints) {
+                        for (int i = 0; i < hints.size(); i++) {
+                            Hint hint= hints.get(i);
+
                             if (isCancelled()) {
                                 return;
                             }
                             
-                            ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+                            ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
                             description.add(desc);
                         }
                     }

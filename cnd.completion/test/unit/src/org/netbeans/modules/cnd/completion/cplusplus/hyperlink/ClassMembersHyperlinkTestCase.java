@@ -870,6 +870,25 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz169305.cc", 24, 15, "iz169305.cc", 3, 5);
     }
 
+    public void testIZ151583() throws Exception {
+        // IZ#151583 : nested classes should resolve containing class context
+        performTest("iz151583.cc", 15, 6, "iz151583.cc", 5, 5);
+        performTest("iz151583.cc", 14, 5, "iz151583.cc", 8, 1);
+    }
+
+    public void testIZ166897() throws Exception {
+        // IZ#166897 : Unable to resolve member variable in typedef function definition
+        performTest("iz166897.cc", 12, 19, "iz166897.cc", 5, 5);
+    }
+
+    public void testIZ159422() throws Exception {
+        // IZ#159422 : Unresolved ids in function definition with field like declaration
+        performTest("iz159422.cc", 10, 5, "iz159422.cc", 5, 5);
+        performTest("iz159422.cc", 16, 28, "iz159422.cc", 5, 5);
+        performTest("iz159422.cc", 16, 22, "iz159422.cc", 4, 5);
+        performTest("iz159422.cc", 8, 27, "iz159422.cc", 4, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

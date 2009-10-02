@@ -63,6 +63,7 @@ public class UpdateBuilder
     public static final String STATES = "U P A R M C ? "; //NOI18N
     public static final String WARNING = ": warning: "; //NOI18N
     public static final String SERVER = "server: "; //NOI18N
+    public static final String UPDATE = "update: ";                     //NOI18N
     public static final String PERTINENT = "is not (any longer) pertinent"; //NOI18N
     public static final String REMOVAL = "for removal"; //NOI18N
     public static final String SERVER_SCHEDULING = "server: scheduling"; //NOI18N
@@ -164,9 +165,16 @@ public class UpdateBuilder
             fileMergedOrConflict = "G"; 
         }
         else if (line.indexOf(NOT_IN_REPOSITORY) > 0) {
-            String filename = line.substring(line.indexOf(SERVER) + SERVER.length(),
-                                             line.indexOf(NOT_IN_REPOSITORY)).trim();
-            processNotPertinent(filename);
+            int pos;
+            String filename = null;
+            if ((pos = line.indexOf(SERVER)) > -1) {
+                filename = line.substring(pos + SERVER.length(), line.indexOf(NOT_IN_REPOSITORY)).trim();
+            } else if ((pos = line.indexOf(UPDATE)) > -1) {
+                filename = line.substring(pos + UPDATE.length(), line.indexOf(NOT_IN_REPOSITORY)).trim();
+            }
+            if (filename != null) {
+                processNotPertinent(filename);
+            }
             return;
         }
         else {

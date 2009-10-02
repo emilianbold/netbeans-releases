@@ -60,7 +60,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.logging.Level;
-import javax.swing.plaf.TextUI;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
@@ -519,6 +518,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             try {
                 RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
                 File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
+
+                if (file == null) { // can be null if the file does not exist or is empty in the given revision
+                    file = File.createTempFile("tmp", "-" + drev.getFile().getName()); //NOI18N
+                    file.deleteOnExit();
+                }
 
                 final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 final String revision = drev.getLogInfoHeader().getLog().getRevision();

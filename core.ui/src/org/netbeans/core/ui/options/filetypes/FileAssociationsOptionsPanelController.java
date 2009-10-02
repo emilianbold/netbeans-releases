@@ -51,7 +51,11 @@ import org.openide.util.Lookup;
  * 
  * @author Jiri Skrivanek
  */
-final class FileAssociationsOptionsPanelController extends OptionsPanelController {
+@OptionsPanelController.SubRegistration(
+    displayName="#AdvancedOption.displayName"
+//    toolTip="#AdvancedOption.tooltip"
+)
+public final class FileAssociationsOptionsPanelController extends OptionsPanelController {
 
     private FileAssociationsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

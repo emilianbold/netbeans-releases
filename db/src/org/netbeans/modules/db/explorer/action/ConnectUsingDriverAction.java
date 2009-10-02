@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -195,8 +196,9 @@ public class ConnectUsingDriverAction extends BaseAction {
                         schemaPanel.resetProgress();
                         try {
                             Connection conn = cinfo.getConnection();
-                            if (DatabaseConnection.isVitalConnection(conn, cinfo))
+                            if (DatabaseConnection.isVitalConnection(conn, cinfo)) {
                                 conn.close();
+                            }
                         } catch (SQLException exc) {
                             LOGGER.log(Level.FINE, null, exc);
                         }
@@ -259,8 +261,9 @@ public class ConnectUsingDriverAction extends BaseAction {
                         dlg.setSelectedComponent(schemaPanel);
                         return;
                         
-                    } else
+                    } else {
                         okPressed = false;
+                    }
                 }
             };
 
@@ -301,9 +304,9 @@ public class ConnectUsingDriverAction extends BaseAction {
                         okPressed = true;
                         basePanel.setConnectionInfo();
                         try {
-                            if (! DatabaseConnection.isVitalConnection(cinfo.getConnection(), cinfo))
+                            if (! DatabaseConnection.isVitalConnection(cinfo.getConnection(), cinfo)) {
                                 activeTask = cinfo.connectAsync();
-                            else {
+                            } else {
                                 cinfo.setSchema(schemaPanel.getSchema());
                                 ConnectionList.getDefault().add(cinfo);
                                 if (dlg != null)
@@ -333,8 +336,9 @@ public class ConnectUsingDriverAction extends BaseAction {
                     if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
                         advancedPanel = true;
                         basePanel.setConnectionInfo();
-                    } else
+                    } else {
                         advancedPanel = false;
+                    }
                 }
             };
 
@@ -406,24 +410,19 @@ public class ConnectUsingDriverAction extends BaseAction {
             fireConnectionStep(NbBundle.getMessage (ConnectUsingDriverAction.class, "ConnectionProgress_Schemas")); // NOI18N
             Vector<String> schemas = new Vector<String>();
             try {
-                ResultSet rs = dbcon.getConnection().getMetaData().getSchemas();
-                if (rs != null)
-                    while (rs.next()) {
-                        schemas.add(rs.getString(1).trim());
+                DatabaseMetaData dbMetaData = dbcon.getConnection().getMetaData();
+                if (dbMetaData.supportsSchemasInTableDefinitions()) {
+                    ResultSet rs = dbMetaData.getSchemas();
+                    if (rs != null) {
+                        while (rs.next()) {
+                            schemas.add(rs.getString(1).trim());
+                        }
                     }
+                }
             } catch (SQLException exc) {
-//commented out for 3.6 release, need to solve for next Studio release
-                // hack for Pointbase Network Server
-//            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
-//                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                        String message = NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
-//                    message = MessageFormat.format(bundle().getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-//                    schema will be set to null
-//                    return true;
-//                }
+                String message = NbBundle.getMessage(ConnectUsingDriverAction.class, "ERR_UnableObtainSchemas", exc.getMessage()); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
-
             return schemaPanel.setSchemas(schemas, defaultSchema);
         }
     }

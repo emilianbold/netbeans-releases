@@ -69,6 +69,45 @@ public final class FolderBasedController extends OptionsPanelController implemen
     private Lookup masterLookup;
     private FolderBasedOptionPanel panel;
     private Map<String, OptionsPanelController> mimeType2delegates;
+
+    @OptionsPanelController.SubRegistration(
+        id="Hints",
+        displayName="#CTL_Hints_DisplayName",
+        location="Editor",
+        keywords="#KW_Hints",
+        keywordsCategory="Editor/Hints",
+        position=400
+//        toolTip="#CTL_Hints_ToolTip"
+    )
+    public static OptionsPanelController hints() {
+        return new FolderBasedController("Hints/", "netbeans.optionsDialog.editor.hints");
+    }
+
+    @OptionsPanelController.SubRegistration(
+        id="MarkOccurrences",
+        displayName="#CTL_MarkOccurences_DisplayName",
+        location="Editor",
+        keywords="#KW_Mark",
+        keywordsCategory="Editor/MarkOccurrences",
+        position=500
+//        toolTip="#CTL_MarkOccurences_ToolTip"
+    )
+    public static OptionsPanelController markOccurrences() {
+        return new FolderBasedController("MarkOccurrences/", "netbeans.optionsDialog.editor.markOccurences");
+    }
+
+    @OptionsPanelController.SubRegistration(
+        id="TaskList",
+        displayName="#CTL_Tasklist_DisplayName",
+        location="Editor",
+        keywords="#KW_TaskList",
+        keywordsCategory="Editor/TaskList",
+        position=600
+//        toolTip="#CTL_Tasklist_ToolTip"
+    )
+    public static OptionsPanelController taskList() {
+        return new FolderBasedController("TaskList/", "netbeans.optionsDialog.editor.tasklist");
+    }
     
     public static OptionsPanelController create (Map args) {
         FolderBasedController folderBasedController = new FolderBasedController(

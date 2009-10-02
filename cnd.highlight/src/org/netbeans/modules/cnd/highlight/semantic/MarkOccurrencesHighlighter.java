@@ -211,14 +211,14 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                         for (int i = 0; i < usages.length; i++) {
                             int startOffset = usages[i][0];
                             int endOffset = usages[i][1];
-                            if (startOffset < doc.getLength() && endOffset > 0) {
+                            if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
                                 obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
                             }
                         }
                     } else {
                         int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
                         int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
-                        if (startOffset < doc.getLength() && endOffset > 0) {
+                        if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
                             obag.addHighlight((startOffset > 0) ? startOffset : 0, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), defaultColors);
                         }
                     }

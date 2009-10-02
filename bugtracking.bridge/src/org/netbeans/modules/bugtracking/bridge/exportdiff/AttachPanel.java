@@ -74,7 +74,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
             RepositoryComboSupport.setup(this, repositoryComboBox, false);
         }
         repositoryComboBox.addItemListener(this);
-        enableFields();
     }
 
     Issue getIssue() {
@@ -108,8 +107,6 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
                 jButton2ActionPerformed(evt);
             }
         });
-
-        repositoryComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         org.openide.awt.Mnemonics.setLocalizedText(issueLabel, org.openide.util.NbBundle.getMessage(AttachPanel.class, "AttachPanel.issueLabel.text")); // NOI18N
 

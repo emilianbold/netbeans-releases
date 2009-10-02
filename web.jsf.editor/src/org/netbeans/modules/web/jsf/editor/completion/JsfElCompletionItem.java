@@ -54,7 +54,7 @@ public class JsfElCompletionItem {
 
     public static class JsfBean extends ElCompletionItem.ELBean {
 
-        private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/jsf_bean_16.png";  //NOI18N
+        private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/resources/jsf_bean_16.png";  //NOI18N
 
         public JsfBean(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
@@ -73,7 +73,7 @@ public class JsfElCompletionItem {
 
     public static class JsfMethod extends ElCompletionItem.ELBean {
 
-        private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/method_16.png";      //NOI18N
+        private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/resources/method_16.png";      //NOI18N
 
         public JsfMethod(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
@@ -87,7 +87,7 @@ public class JsfElCompletionItem {
 
     public static class JsfResourceBundle extends ElCompletionItem.ELBean {
 
-        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesLocale.gif";  //NOI18N
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/resources/propertiesLocale.gif";  //NOI18N
 
         public JsfResourceBundle(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
@@ -105,15 +105,32 @@ public class JsfElCompletionItem {
 
     public static class JsfResourceItem extends JspCompletionItem {
 
-        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesKey.gif";  //NOI18N
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/resources/propertiesKey.gif";  //NOI18N
 
         public JsfResourceItem(String text, int substitutionOffset, String type) {
+            this(text, text, substitutionOffset, type);
+        }
+        
+        public JsfResourceItem(String text, String insertText , 
+                int substitutionOffset, String type) 
+        {
             super(text, substitutionOffset, type);
+            myInsertText = insertText;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem#getSubstituteText()
+         */
+        @Override
+        protected String getSubstituteText() {
+            return myInsertText;
         }
 
         @Override
         protected ImageIcon getIcon() {
             return ImageUtilities.loadImageIcon(BUNDLE_ICON_PATH, false);
         }
+        
+        private String myInsertText;
     }
 }

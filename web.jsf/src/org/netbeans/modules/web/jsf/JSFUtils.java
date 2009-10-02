@@ -87,6 +87,8 @@ public class JSFUtils {
     protected static final String FACELETS_SKIPCOMMNETS = "javax.faces.FACELETS_SKIP_COMMENTS";
     protected static final String FACELETS_DEVELOPMENT = "facelets.DEVELOPMENT";
     protected static final String FACELETS_DEFAULT_SUFFIX = "javax.faces.DEFAULT_SUFFIX";
+    public static final String FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
+
     
     /** This method finds out, whether the input file is a folder that contains
      * a jsf implementation, which < = max version. It looks for lib folder and in this lib looks 
@@ -210,6 +212,19 @@ public class JSFUtils {
             }
         }
         return value;
+    }
+    /** Returns relative path from one file to another file
+     */
+    public static String getRelativePath (FileObject fromFO, FileObject toFO){
+        String path = "./";
+        FileObject parent = fromFO.getParent();
+        String tmpPath = null;
+        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null){
+            parent = parent.getParent();
+            path = path + "../";
+        }
+
+        return (tmpPath != null ? path + tmpPath : null);
     }
   
 }

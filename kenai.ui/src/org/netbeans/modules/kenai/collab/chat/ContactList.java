@@ -105,7 +105,8 @@ public class ContactList extends javax.swing.JPanel {
     public void updateContacts() {
         if (filterCombo.getSelectedIndex()!=0) {
             oldFilter = (FilterItem) filterCombo.getSelectedItem();
-            filterCombo.setSelectedIndex(0);
+            if (filterModel.getSize()>0)
+                filterCombo.setSelectedIndex(0);
         }
         listModel.clear();
         for (FakeRosterGroup group : roster.getGroups()) {
@@ -146,6 +147,7 @@ public class ContactList extends javax.swing.JPanel {
         searchField = new javax.swing.JTextField();
         searchLabel = new javax.swing.JLabel();
 
+        setBackground(java.awt.SystemColor.control);
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 3, 0, 3));
         setFocusCycleRoot(true);
 
@@ -180,6 +182,7 @@ public class ContactList extends javax.swing.JPanel {
         contactListScrollPane.setViewportView(contactJList);
 
         searchPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 3, 5, 3));
+        searchPanel.setOpaque(false);
 
         searchField.setNextFocusableComponent(filterCombo);
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -202,7 +205,7 @@ public class ContactList extends javax.swing.JPanel {
             .add(searchPanelLayout.createSequentialGroup()
                 .add(searchLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
+                .add(searchField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
         );
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

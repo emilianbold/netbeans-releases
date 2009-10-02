@@ -70,7 +70,6 @@ import javax.swing.tree.TreePath;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
@@ -114,7 +113,6 @@ ExplorerManager.Provider, PropertyChangeListener {
     private boolean             ignoreMove; // Whether to ignore column movement events
     //private List                expandedPaths = new ArrayList ();
     TreeModelRoot               currentTreeModelRoot; // Accessed from test
-    private Models.CompoundModel model;
     
     
     public OutlineTable () {
@@ -318,14 +316,19 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
         return -1;
     }
-    
+
+    /**
+     * Set list of models.
+     * Columns are taken from the first model. Children are listed
+     * @param models
+     */
     public void setModel (Models.CompoundModel model) {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
         saveWidths ();
         saveSortedState();
         
-        this.model = model;
+        //this.model = model;
         
         // 1) destroy old model
         if (currentTreeModelRoot != null) 
@@ -341,7 +344,8 @@ ExplorerManager.Provider, PropertyChangeListener {
         
         // 4) set columns for given model
         String[] nodesColumnName = new String[] { null };
-        Node.Property[] columnsToSet = createColumns (model, nodesColumnName);
+        ColumnModel[] cs = model.getColumns ();
+        Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
         treeTable.setNodesColumnName(nodesColumnName[0]);
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
         TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
@@ -390,6 +394,53 @@ ExplorerManager.Provider, PropertyChangeListener {
         //treeTable.expandNode(rootNode);
     }
     
+    /**
+     * Set list of models.
+     * Columns are taken from the first model. Children are listed
+     * @param models
+     */
+    public void setModel (HyperCompoundModel model) {
+        // 2) save current settings (like columns, expanded paths)
+        //List ep = treeTable.getExpandedPaths ();
+        saveWidths ();
+        saveSortedState();
+
+        //this.model = model;
+
+        // 1) destroy old model
+        if (currentTreeModelRoot != null)
+            currentTreeModelRoot.destroy ();
+
+        // 3) no model => set empty root node & return
+        if (model == null) {
+            getExplorerManager ().setRootContext (
+                new AbstractNode (Children.LEAF)
+            );
+            return;
+        }
+
+        // 4) set columns for given model
+        String[] nodesColumnName = new String[] { null };
+        ColumnModel[] cs = model.getColumns ();
+        Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
+        treeTable.setNodesColumnName(nodesColumnName[0]);
+        currentTreeModelRoot = new TreeModelRoot (model, treeTable);
+        TreeModelNode rootNode = currentTreeModelRoot.getRootNode ();
+        getExplorerManager ().setRootContext (rootNode);
+        // The root node must be ready when setting the columns
+        treeTable.setProperties (columnsToSet);
+        updateTableColumns(columnsToSet);
+
+        // 5) set root node for given model
+        // Moved to 4), because the new root node must be ready when setting columns
+
+        // 6) update column widths & expanded nodes
+        updateColumnWidthsAndSorting();
+        /* We must not call children here - it can take a long time...
+         * the expansion is performed in TreeModelNode.TreeModelChildren.applyChildren()
+         */
+    }
+
     public ExplorerManager getExplorerManager () {
         if (explorerManager == null) {
             explorerManager = new ExplorerManager ();
@@ -422,8 +473,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         return true;
     }
     
-    private Node.Property[] createColumns (Models.CompoundModel model, String[] nodesColumnName) {
-        ColumnModel[] cs = model.getColumns ();
+    private Node.Property[] createColumns (ColumnModel[] cs, String[] nodesColumnName) {
         int i, k = cs.length;
         columns = new Column[k];
         //icolumns = new IndexedColumn[k];
@@ -760,16 +810,6 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
 
-    private void expandDefault (Object[] nodes) {
-        int i, k = nodes.length;
-        for (i = 0; i < k; i++)
-            try {
-                if (model.isExpanded (nodes [i]))
-                    expandNode (nodes [i]);
-            } catch (UnknownTypeException ex) {
-            }
-    }
-    
     /** Requests focus for the tree component. Overrides superclass method. */
     @Override
     public boolean requestFocusInWindow () {
@@ -794,20 +834,23 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
     
     public boolean isExpanded (Object node) {
-        Node n = currentTreeModelRoot.findNode (node);
-        if (n == null) return false; // Something what does not exist is not expanded ;-)
-        return treeTable.isExpanded (n);
+        Node[] ns = currentTreeModelRoot.findNode (node);
+        if (ns.length == 0) return false; // Something what does not exist is not expanded ;-)
+        return treeTable.isExpanded (ns[0]);
     }
 
     public void expandNode (Object node) {
-        Node n = currentTreeModelRoot.findNode (node);
-        if (treeTable != null && n != null)
+        Node[] ns = currentTreeModelRoot.findNode (node);
+        for (Node n : ns) {
             treeTable.expandNode (n);
+        }
     }
 
     public void collapseNode (Object node) {
-        Node n = currentTreeModelRoot.findNode (node);
-        treeTable.collapseNode (n);
+        Node[] ns = currentTreeModelRoot.findNode (node);
+        for (Node n : ns) {
+            treeTable.collapseNode (n);
+        }
     }
     
     private static class MyTreeTable extends OutlineView {

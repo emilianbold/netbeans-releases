@@ -75,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -130,7 +131,9 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo(GizmoServiceInfoAccessor.getDefault().getGIZMO_RUN(), "gizmo.run"); // NOI18N
         targetConf.putInfo(GizmoServiceInfo.PLATFORM, pae.getConfiguration().getDevelopmentHost().getBuildPlatformDisplayName());
         targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_FOLDER, FileUtil.toFile(pae.getProject().getProjectDirectory()).getAbsolutePath());//NOI18N
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+        if (executable != null){
+            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+        }
 
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
@@ -143,7 +146,8 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-
+        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
+        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {

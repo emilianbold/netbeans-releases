@@ -52,7 +52,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SendEmailCodeGenerator;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendEmailCodeGenerator;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;

@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
@@ -75,6 +77,7 @@ import org.openide.util.NbBundle;
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
+    private static final Logger LOG = Logger.getLogger(JSFConfigurationPanelVisual.class.getName());
     private JSFConfigurationPanel panel;
     private boolean customizer;
     
@@ -654,7 +657,8 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     if (serverInstanceID != null)
                         platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
                 } catch (InstanceRemovedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    platform = null;
+                    LOG.log(Level.INFO, org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "SERVER_INSTANCE_REMOVED"), ex);
                 }
                 // j2eeplatform can be null, when the target server is not accessible.
                 if (platform != null) {

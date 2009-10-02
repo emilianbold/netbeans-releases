@@ -196,6 +196,8 @@ public final class POMQNames {
     public final POMQName UPDATEPOLICY;
     public final POMQName CHECKSUMPOLICY;
     public final POMQName COMMENTS;
+    public final POMQName ROLES;
+    public final POMQName ROLE;
 
 
 
@@ -350,6 +352,8 @@ public final class POMQNames {
         UPDATEPOLICY = new POMQName(POMQName.createQName("updatePolicy",ns), ns); //NOI18N
         CHECKSUMPOLICY = new POMQName(POMQName.createQName("checksumPolicy",ns), ns); //NOI18N
         COMMENTS = new POMQName(POMQName.createQName("comments",ns), ns); //NOI18N
+        ROLES = new POMQName(POMQName.createQName("roles",ns), ns); //NOI18N
+        ROLE = new POMQName(POMQName.createQName("role",ns), ns); //NOI18N
     }
 
     public boolean isNSAware() {
@@ -477,7 +481,9 @@ public final class POMQNames {
             ENABLED.getQName(),
             UPDATEPOLICY.getQName(),
             CHECKSUMPOLICY.getQName(),
-            COMMENTS.getQName()
+            COMMENTS.getQName(),
+            ROLES.getQName(),
+            ROLE.getQName()
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);

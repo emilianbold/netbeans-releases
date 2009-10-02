@@ -58,6 +58,8 @@ import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider.Registration;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider.Registrations;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -65,6 +67,12 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
+@Registrations({
+    @Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject", position=250),
+    @Registration(projectType="org-netbeans-modules-java-j2seproject", position=250),
+    @Registration(projectType="org-netbeans-modules-web-project", position=250),
+    @Registration(projectType="org-netbeans-modules-maven", position=278)
+})
 public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     public Category createCategory(Lookup context) {

@@ -108,7 +108,7 @@ public class CssEmbeddingProvider extends EmbeddingProvider {
         if (sourceMimeType.equals(snapshot.getMimeType())) {
             List<Embedding> embeddings = translator.getEmbeddings(snapshot);
             if(embeddings.isEmpty()) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             } else {
                 return Collections.singletonList(Embedding.create(embeddings));
             }

@@ -202,6 +202,7 @@ public class SyncFileNode extends AbstractNode {
     private class PathProperty extends SyncFileProperty {
 
         private String shortPath;
+        private boolean reading;
 
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004")); // NOI18N
@@ -209,9 +210,13 @@ public class SyncFileNode extends AbstractNode {
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            if (shortPath == null) {
+            if (shortPath == null && !reading) {
+                reading = true;
                 Runnable run = new Runnable() {
                     public void run() {
+                        if (shortPath != null) {
+                            return;
+                        }
                         try {
                             shortPath = SvnUtils.getRelativePath(node.getFile());
                         } catch (SVNClientException ex) { 
@@ -230,9 +235,8 @@ public class SyncFileNode extends AbstractNode {
                     }
                 };
                 repoload = Subversion.getInstance().getRequestProcessor().post(run);
-                return org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_RepositoryPath_LoadingProgress"); // NOI18N
             }
-            return shortPath;
+            return shortPath == null ? org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_RepositoryPath_LoadingProgress") : shortPath;
         }
     }
 

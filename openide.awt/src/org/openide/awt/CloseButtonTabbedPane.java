@@ -139,39 +139,24 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
     private boolean draggedOut = false;
 
     @Override
-    public Component add (Component c) {
-        Component result = super.add(c);
-        if (hideCloseButton(c)) {
-            return result;
-        }
-        // #75317 - don't try to set the title if LF (such as Substance LF)
-        // is adding some custom UI components into tabbed pane
-        if (!(c instanceof UIResource)) {
-            if (JDK6_OR_LATER && !hideCloseButton(c)) {
-                callSetTabComponentAt(getTabCount()-1, new ButtonTab());
-            }
-            String s = c.getName();
-            if (s != null) {
-                setTitleAt(getTabCount()-1, s);
-            }
-        }
-        return result;
-    }
-
-    @Override
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         super.insertTab(title, icon, component, tip, index);
         if (JDK6_OR_LATER && !hideCloseButton(component)) {
             callSetTabComponentAt(index, new ButtonTab());
         }
-        setTitleAt(index, title);
+        if (title != null) {
+            setTitleAt(index, title);
+        }
     }
 
     @Override
     public void setIconAt(int index, Icon icon) {
         super.setIconAt(index, icon);
         if (JDK6_OR_LATER) {
-            ((ButtonTab) callGetTabComponentAt(index)).setIcon(icon);
+            ButtonTab buttonTab = ((ButtonTab) callGetTabComponentAt(index));
+            if (buttonTab != null) {
+                buttonTab.setIcon(icon);
+            }
         }
     }
 
@@ -209,7 +194,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
 
         String nue = title.indexOf("</html>") != -1 ? //NOI18N
             title.replace("</html>", "&nbsp;&nbsp;</html>") //NOI18N
-            : title + "  ";
+            : title + "   ";
         if (!nue.equals(getTitleAt(idx))) {
             super.setTitleAt(idx, nue);
         }
@@ -529,7 +514,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
                             (selected.getGreen() + unselected.getGreen()) / 2,
                             (selected.getBlue() + unselected.getBlue()) / 2);
                 }
-                if (lastSel >= 0) {
+                if (lastSel >= 0 && lastSel < getTabCount()) {
                     setBackgroundAt(lastSel, unselected);
                 }
                 if (sel >= 0) {
@@ -661,7 +646,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
         }
     }
     
-    private Method setTabComponentAt;
+    private static Method setTabComponentAt;
     private void callSetTabComponentAt(int index, Component component) {
         if (setTabComponentAt == null) {
             try {
@@ -683,7 +668,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
         }
     }
 
-    private Method indexOfTabComponent;
+    private static Method indexOfTabComponent;
     private int callIndexOfTabComponent(Component tabComponent) {
         if (indexOfTabComponent == null) {
             try {
@@ -707,7 +692,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
         return index;
     }
     
-    private Method getTabComponentAt;
+    private static Method getTabComponentAt;
     private Component callGetTabComponentAt(int index) {
         if (getTabComponentAt == null) {
             try {
@@ -752,7 +737,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
                         }
                         return tabTitle;
                     }
-                    return null;
+                    return "";
                 }
             };
             add(label);

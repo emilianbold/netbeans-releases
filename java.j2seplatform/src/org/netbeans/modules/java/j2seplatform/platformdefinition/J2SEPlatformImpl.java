@@ -48,6 +48,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
 
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
@@ -208,6 +209,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (cp != null)
                 return cp;
             String pathSpec = getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
+            if (pathSpec == null) {
+                Logger.getLogger(J2SEPlatformImpl.class.getName()).warning(String.format("No %s property in platform %s, broken platform?", SYSPROP_BOOT_CLASSPATH, getDisplayName())); //NOI18N
+                pathSpec = "";  //NOI18N
+            }
             String extPathSpec = Util.getExtensions(getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
             if (extPathSpec != null) {
                 pathSpec = pathSpec + File.pathSeparator + extPathSpec;

@@ -352,8 +352,13 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     }
     
     private static boolean isValidPackage (FileObject root, final String path) {
-        assert root != null;
-        assert path != null;
+        //May be null when nothing selected in the GUI.
+        if (root == null) {
+            return false;
+        }
+        if (path == null) {
+            return false;
+        }
         final StringTokenizer tk = new StringTokenizer(path,".");   //NOI18N
         while (tk.hasMoreTokens()) {
             root = root.getFileObject(tk.nextToken());

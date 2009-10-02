@@ -609,6 +609,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ169750.cc", 5, 37, "IZ169750.cc", 5, 12);
     }
 
+    public void testIZ165961() throws Exception {
+        // IZ#165961 : Unresolved ids in construction with macros
+        performTest("IZ165961.cc", 9, 27, "IZ165961.cc", 9, 10);
+    }
+
+    public void testIZ165976() throws Exception {
+        // IZ#165976 : Unresolved array element in case of complicated index
+        performTest("IZ165976.cc", 15, 56, "IZ165976.cc", 4, 3);
+    }
+
+    public void testIZ173311() throws Exception {
+        // IZ#173311 : Unresolved ids in function typedef
+        performTest("IZ173311.cc", 2, 30, "IZ173311.cc", 2, 26);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

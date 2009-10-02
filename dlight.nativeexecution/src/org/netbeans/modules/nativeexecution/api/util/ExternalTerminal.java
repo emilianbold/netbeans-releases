@@ -65,7 +65,6 @@ public final class ExternalTerminal {
     private String title = null;
     private String prompt = loc("Terminal.DefaultPrompt.text"); // NOI18N
 
-
     static {
         ExternalTerminalAccessor.setDefault(new ExternalTerminalAccessorImpl());
     }
@@ -123,17 +122,6 @@ public final class ExternalTerminal {
         @Override
         public List<String> wrapCommand(ExecutionEnvironment execEnv,
                 ExternalTerminal terminal, List<String> args) {
-            String t = terminal.title;
-
-            if (t == null) {
-                StringBuilder sb = new StringBuilder();
-                for (String arg : args) {
-                    sb.append(arg).append(' ');
-                }
-
-                t = sb.toString().trim();
-            }
-
             String exec = terminal.getExecutable(execEnv);
 
             if (exec == null) {

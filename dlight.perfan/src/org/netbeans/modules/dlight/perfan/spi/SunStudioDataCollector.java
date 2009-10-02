@@ -116,7 +116,7 @@ public class SunStudioDataCollector
     private static final DataTableMetadata deadlocksSummaryInfoTable;
     private static final DataTableMetadata dataracesSummaryInfoTable;
     // ***
-    private final Object lock = new String(SunStudioDataCollector.class.getName());
+    private final Object lock = SunStudioDataCollector.class.getName() + "Lock"; // NOI18N
     // ***
     private final Collection<DataTableMetadata> dataTablesMetadata;
     private final Collection<ValidationListener> validationListeners;

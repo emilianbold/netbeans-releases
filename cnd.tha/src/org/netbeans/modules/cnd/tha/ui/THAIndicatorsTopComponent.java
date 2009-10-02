@@ -191,17 +191,19 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         return (showFirstPanel ? panel2 : panel1);
     }
 
-    void setProject(Project project){
+    DLightSession setProject(Project project){
         this.project = project;
         if (controlPanel != null){
             this.remove(controlPanel);
         }
         controlPanel = THAControlPanel.create(thaActionsProvider, project, thaConfiguration);
         add(controlPanel, BorderLayout.NORTH);
+        DLightSession oldSession = getSession();
         setSession(null);
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", ProjectUtils.getInformation(project).getDisplayName())); // NOI18N
         repaint();
+        return oldSession;
     }
 
     public void setSession(DLightSession session) {

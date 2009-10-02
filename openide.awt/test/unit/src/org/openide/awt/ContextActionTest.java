@@ -81,7 +81,7 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
     
     private ContextAwareAction a1, a2, any, each, all;
     private LookupWithOpenable n1, n2;
-    private Lookup n3;
+    private Lookup n3, n4;
     
     
     private int expectedEnabledmentCount = 2;
@@ -99,7 +99,7 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         n1 = new LookupWithOpenable();
         n2 = new LookupWithOpenable();
         n3 = new LookupWithOpenable(false);
-        
+        n4 = new LookupWithOpenable(n1.lookup(Openable.class)); // share the same cookie instance with n1
         
         SimpleCookieAction.runOn.clear();
     }
@@ -147,6 +147,10 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         assertTrue(l.changed());
         l.gotit = 0;
         assertFalse(getIsEnabled(a1));
+        activate(new Lookup[] {n1, n4});
+        assertTrue("Change generated as we are now enabled", l.changed());
+        l.gotit = 0;
+        assertTrue("Open in n1 and n4 is the same, still gets enabled", getIsEnabled(a1));
     }
     
     // XXX test advanced cookie modes, multiple cookies, etc.:
@@ -657,14 +661,16 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
             this(true);
         }
         public LookupWithOpenable(boolean add) {
-            this(new InstanceContent(), add);
+            this(new InstanceContent(), add ? new Open() : null);
         }
-        
-        private LookupWithOpenable(InstanceContent ic, boolean add) {
+        public LookupWithOpenable(Openable open) {
+            this(new InstanceContent(), open);
+        }
+        private LookupWithOpenable(InstanceContent ic, Openable open) {
             super(ic);
             this.ic = ic;
-            if (add) {
-                ic.add(new Open());
+            if (open != null) {
+                ic.add(open);
             }
             ic.add(this);
         }

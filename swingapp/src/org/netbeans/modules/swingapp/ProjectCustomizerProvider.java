@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="Application", position=100)
 public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CAT_NAME = "AppFramework"; // NOI18N
@@ -76,13 +77,6 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         { "application.desc", "Application.description" }, // NOI18N
         { "application.homepage", "Application.homepage" }, // NOI18N
     };
-
-    private ProjectCustomizerProvider() {
-    }
-
-    public static ProjectCustomizerProvider create() {
-        return new ProjectCustomizerProvider();
-    }
 
     public Category createCategory(Lookup context) {
         Category cat;

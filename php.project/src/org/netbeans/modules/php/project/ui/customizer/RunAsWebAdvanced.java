@@ -78,6 +78,7 @@ import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -97,7 +98,8 @@ public class RunAsWebAdvanced extends JPanel {
     static final int COLUMN_REMOTE_PATH = 0;
     static final int COLUMN_LOCAL_PATH = 1;
 
-    private final PhpProject project;
+    final PhpProject project;
+
     private final PathMappingTableModel pathMappingTableModel;
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport notificationLineSupport;
@@ -727,7 +729,7 @@ public class RunAsWebAdvanced extends JPanel {
                 JButton button = localPathCell.getButton();
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) {
                     //inside changeButton
-                    File newLocation = Utils.browseLocationAction(table, LastUsedFolders.getPathMapping(), NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"));
+                    File newLocation = Utils.browseLocationAction(table, getLastFolder(), NbBundle.getMessage(RunAsWebAdvanced.class, "LBL_SelectProjectFolder"));
                     if (newLocation != null) {
                         localPathCell.setPath(newLocation.getAbsolutePath());
                         LastUsedFolders.setPathMapping(newLocation);
@@ -735,6 +737,18 @@ public class RunAsWebAdvanced extends JPanel {
                     validateFields();
                 }
             }
+        }
+
+        private File getLastFolder() {
+            File lastFolder = LastUsedFolders.getPathMapping();
+            if (lastFolder == null) {
+                return null;
+            }
+            FileObject fo = FileUtil.toFileObject(lastFolder);
+            if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
+                return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
+            }
+            return lastFolder;
         }
     }
 

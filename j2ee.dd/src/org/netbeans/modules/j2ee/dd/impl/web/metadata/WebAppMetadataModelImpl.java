@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
@@ -53,6 +55,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Andrei Badea
@@ -62,7 +65,9 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
 
     private final MetadataUnit metadataUnit;
     private AnnotationModelHelper helper;
-    private final WebAppMetadata metadata;
+    private WebAppMetadata metadata;
+    private final Object myLock = new Object();
+    private AtomicBoolean isReady = new AtomicBoolean(false);
 
     public static WebAppMetadataModelImpl create(MetadataUnit metadataUnit) {
         WebAppMetadataModelImpl result = new WebAppMetadataModelImpl(metadataUnit);
@@ -72,7 +77,40 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
 
     private WebAppMetadataModelImpl(MetadataUnit metadataUnit) {
         this.metadataUnit = metadataUnit;
-        metadata = new WebAppMetadataImpl(metadataUnit, this);
+        createMetadata();
+    }
+    
+    private void createMetadata(){
+        Runnable runnable = new Runnable(){
+
+            public void run() {
+                synchronized (myLock) {
+                    metadata = new WebAppMetadataImpl(metadataUnit, 
+                            WebAppMetadataModelImpl.this);
+                    myLock.notifyAll();
+                    isReady.set( true);
+                }
+            }
+            
+        };
+        RequestProcessor.getDefault().post( runnable );
+    }
+    
+    private WebAppMetadata getMetadata(){
+        synchronized (myLock) {
+            while ( metadata == null ){
+                try {
+                    myLock.wait();
+                }
+                catch(InterruptedException e){
+                    /*
+                     *  Still need not null metadata.
+                     *  Ignore exception and go to next iteration. 
+                     */
+                }
+            }
+            return metadata;
+        }
     }
 
     private void initialize() {
@@ -90,19 +128,22 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
     public <R> R runReadAction(final MetadataModelAction<WebAppMetadata, R> action) throws IOException {
         return getHelper().runJavaSourceTask(new Callable<R>() {
             public R call() throws Exception {
-                return action.run(metadata);
+                return action.run( getMetadata());
             }
         });
     }
 
     public boolean isReady() {
-        return !getHelper().isJavaScanInProgress();
+        if ( getHelper().isJavaScanInProgress() ){
+            return false;
+        }
+        return isReady.get();
     }
 
     public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<WebAppMetadata, R> action) throws IOException {
         return getHelper().runJavaSourceTaskWhenScanFinished(new Callable<R>() {
             public R call() throws Exception {
-                return action.run(metadata);
+                return action.run( getMetadata());
             }
         });
     }

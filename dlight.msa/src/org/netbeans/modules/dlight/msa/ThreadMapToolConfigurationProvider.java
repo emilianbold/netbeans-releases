@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -54,12 +56,14 @@ import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import org.openide.util.NbBundle;
 
 public class ThreadMapToolConfigurationProvider implements DLightToolConfigurationProvider {
 
+    private final static Logger log = DLightLogger.getLogger(ThreadMapToolConfigurationProvider.class);
     public static final int INDICATOR_POSITION = 10;
     private static final String ID = "dlight.tool.threadmap"; // NOI18N
     private static final String TOOL_NAME = loc("ThreadMapTool.ToolName"); // NOI18N
@@ -129,43 +133,9 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
                 ThreadMapToolConfigurationProvider.class, key, params);
     }
 
-//    private DataTableMetadata createMSATableMetadata() {
-//        Column timestamp = new Column("ts", Long.class); // NOI18N
-//        Column threadID = new Column("thrID", Integer.class); // NOI18N
-//        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
-//        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
-//        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
-//        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
-//        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
-//        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
-//        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
-//        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
-//        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
-//        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
-//
-//        return new DataTableMetadata("MSAData", // NOI18N
-//                Arrays.asList(timestamp, threadID, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null);
-//    }
-//    private DataTableMetadata createVisualizerTableMetadata() {
-//        Column threads = new Column("threads", Integer.class); // NOI18N
-//        Column usrTime = new Column(MSAState.RunningUser.toString(), Integer.class);
-//        Column sysTime = new Column(MSAState.RunningSystemCall.toString(), Integer.class);
-//        Column othTime = new Column(MSAState.RunningOther.toString(), Integer.class);
-//        Column tpfTime = new Column(MSAState.SleepingUserTextPageFault.toString(), Integer.class);
-//        Column dpfTime = new Column(MSAState.SleepingUserDataPageFault.toString(), Integer.class);
-//        Column kpfTime = new Column(MSAState.SleepingKernelPageFault.toString(), Integer.class);
-//        Column lckTime = new Column(MSAState.SleepingUserLock.toString(), Integer.class);
-//        Column slpTime = new Column(MSAState.SleepingOther.toString(), Integer.class);
-//        Column latTime = new Column(MSAState.WaitingCPU.toString(), Integer.class);
-//        Column stpTime = new Column(MSAState.ThreadStopped.toString(), Integer.class);
-//
-//        return new DataTableMetadata("MSA", // NOI18N
-//                Arrays.asList(threads, usrTime, sysTime, othTime, tpfTime, dpfTime, kpfTime, lckTime, slpTime, latTime, stpTime), null);
-//    }
-
     private static class IndicatorDataHandler implements DataRowToTimeSeries {
 
-        private final static Object lock = new String(IndicatorDataHandler.class.getName());
+        private final static Object lock = IndicatorDataHandler.class.getName() + "Lock"; // NOI18N
         private final List<String> colNames;
         private final float[] data;
 
@@ -184,7 +154,16 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
             synchronized (lock) {
                 for (String cn : colNames) {
-                    data[idx++] = row.getFloatValue(cn);
+                    float f = 0;
+                    try {
+                        f = row.getFloatValue(cn);
+                    } catch (NumberFormatException ex) {
+                        if (log.isLoggable(Level.FINE)) {
+                            log.log(Level.FINE, "Will not add this entry", ex); // NOI18N
+                        }
+
+                    }
+                    data[idx++] = f;
                 }
             }
         }
@@ -195,63 +174,4 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
             }
         }
     }
-//    private static class DataRowToMSA implements DataRowToTimeSeries {
-//
-//        private final List<Column> columns;
-//        private float[] data;
-//
-//        public DataRowToMSA(List<Column> columns) {
-//            this.columns = new ArrayList<Column>(columns);
-//            this.data = new float[STATE_COUNT];
-//        }
-//
-//        public void addDataRow(DataRow row) {
-//            String threadsColumn = columns.get(0).getColumnName();
-//            int threads = DataUtil.toInt(row.getData(threadsColumn), 1);
-//            float[] newData = new float[STATE_COUNT];
-//            int sum = 0;
-//            for (int i = 1; i < columns.size(); ++i) {
-//                String columnName = columns.get(i).getColumnName();
-//                Object value = row.getData(columnName);
-//                if (value != null) {
-//                    int intValue = DataUtil.toInt(value);
-//                    int state = mapMicrostateToIndex(i - 1);
-//                    if (0 <= state && state < STATE_COUNT) {
-//                        newData[state] += intValue;
-//                        sum += intValue;
-//                    }
-//                }
-//            }
-//            if (0 < sum) {
-//                for (int i = 0; i < newData.length; ++i) {
-//                    newData[i] = threads * newData[i] / sum;
-//                }
-//                data = newData;
-//            }
-//        }
-//
-//        public void tick(float[] data, Map<String, String> details) {
-//            System.arraycopy(this.data, 0, data, 0, data.length);
-//        }
-//    }
-//
-//    /*
-//     * Maps microstate index (LMS_USER = 0, LMS_SYSTEM = 1, etc)
-//     * to index in array returned to indicator.
-//     */
-//    private static int mapMicrostateToIndex(int microstate) {
-//        MSAState state = ThreadStateMapper.toSimpleState(MSAState.values()[microstate + MSAState.START_LONG_LIST.ordinal() + 1]);
-//        switch (state) {
-//            case Running:
-//                return 3;
-//            case Blocked:
-//                return 2;
-//            case Waiting:
-//                return 1;
-//            case Sleeping:
-//                return 0;
-//            default:
-//                return -1; // out of range
-//        }
-//    }
 }

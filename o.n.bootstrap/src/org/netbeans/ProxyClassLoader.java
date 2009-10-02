@@ -239,10 +239,12 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                                     cls.getClassLoader() + " and " + pcl + " starting from " + this +
                                     "; see http://wiki.netbeans.org/DevFaqModuleCCE";
                             ClassNotFoundException cnfe = new ClassNotFoundException(message);
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.log(Level.FINE, null, cnfe);
-                            } else {
-                                LOGGER.warning(message);
+                            if (arbitraryLoadWarnings.add(message)) {
+                                if (LOGGER.isLoggable(Level.FINE)) {
+                                    LOGGER.log(Level.FINE, null, cnfe);
+                                } else {
+                                    LOGGER.warning(message);
+                                }
                             }
                             throw cnfe;
                         }
@@ -285,6 +287,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                 " with possible defining loaders " + del +
                 " and declared parents " + parentSetS;
     }
+    private static final Set<String> arbitraryLoadWarnings = Collections.synchronizedSet(new HashSet<String>());
 
     /** May return null */ 
     private synchronized Class selfLoadClass(String pkg, String name) { 

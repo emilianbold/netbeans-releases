@@ -45,9 +45,8 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Queue;
+import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +74,7 @@ class SlownessReporter {
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     static final long LATEST_ACTION_LIMIT = 1000;//ms
     private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 60000); // NOI18N
-
+    
     public SlownessReporter() {
         pending = new LinkedList<NotifySnapshot>();
     }
@@ -90,38 +89,52 @@ class SlownessReporter {
         return null;
     }
 
-    String getLatestAction(List<LogRecord> recs, long time) {
-        long now = System.currentTimeMillis();
-        ListIterator<LogRecord> it = recs.listIterator(recs.size());
-        String latestActionClassName = null;
-        while (it.hasPrevious()) {
-            LogRecord rec = it.previous();
-            if (Installer.IDE_STARTUP.equals(rec.getMessage())) {
-                latestActionClassName = NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP");
-            } else if (now - rec.getMillis() - time > LATEST_ACTION_LIMIT) {
-                break;
-            }
-            if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
-                    (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage())) ||
-                    (UI_ACTION_KEY_PRESS.equals(rec.getMessage()))) {
-                latestActionClassName = getParam(rec, 4);
-            }
-            if (latestActionClassName != null) {
-                latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N
-                Pattern p = Pattern.compile(DELEGATE_PATTERN);
-                Matcher m = p.matcher(latestActionClassName);
-                if (m.find()) {
-                    String delegate = m.group();
-                    latestActionClassName = delegate.substring(9, delegate.length() - 1);
+    String getLatestAction(final long time) {
+        final long now = System.currentTimeMillis();
+        final String[] latestActionHolder = new String[1];
+
+        Installer.readLogs(new Handler() {
+
+            @Override
+            public void publish(LogRecord rec) {
+                if (now - rec.getMillis() - time > LATEST_ACTION_LIMIT) {
+                    return;
                 }
-                break;
+                String latestActionClassName = null;
+                if (Installer.IDE_STARTUP.equals(rec.getMessage())) {
+                    latestActionClassName = NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP");
+                } else if (UI_ACTION_EDITOR.equals(rec.getMessage()) ||
+                        (UI_ACTION_BUTTON_PRESS.equals(rec.getMessage())) ||
+                        (UI_ACTION_KEY_PRESS.equals(rec.getMessage()))) {
+                    latestActionClassName = getParam(rec, 4);
+                }
+                if (latestActionClassName != null) {
+                    latestActionClassName = latestActionClassName.replaceAll("&", ""); // NOI18N
+                    Pattern p = Pattern.compile(DELEGATE_PATTERN);
+                    Matcher m = p.matcher(latestActionClassName);
+                    if (m.find()) {
+                        String delegate = m.group();
+                        latestActionClassName = delegate.substring(9, delegate.length() - 1);
+                    }
+                }
+                if (latestActionClassName != null){
+                    latestActionHolder[0] = latestActionClassName;
+                }
             }
-        }
-        return latestActionClassName;
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        return latestActionHolder[0];
     }
 
-    void notifySlowness(List<LogRecord> recs, byte[] nps, long time) {
-        String latestActionName = getLatestAction(recs, time);
+    void notifySlowness(byte[] nps, long time) {
+        String latestActionName = getLatestAction(time);
         pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionName)));
         if (pending.size() > 5) {
             pending.remove().clear();

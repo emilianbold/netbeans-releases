@@ -204,7 +204,7 @@ public class NewProject extends BasicAction {
                             }
                         }
                         
-                        Project lastProject = projectsToOpen.size() > 0 ? (Project) projectsToOpen.get(0) : null;
+                        Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
                         
                         Project mainProject = null;
                         if (setFirstMainFinal && lastProject != null) {

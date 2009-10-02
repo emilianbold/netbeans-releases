@@ -413,6 +413,7 @@ public class CompilerSetManager {
 
     /** CAUTION: this is a slow method. It should NOT be called from the EDT thread */
     public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader) {
+        CndUtils.assertNonUiThread();
         if (isUninitialized()) {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
@@ -748,8 +749,15 @@ public class CompilerSetManager {
                             String data = provider.getNextCompilerSetData();
                             CompilerSet cs = parseCompilerSetString(platform, data);
                             if (cs != null) {
-                                CompilerSetReporter.report("CSM_Found", true, cs.getDisplayName(), cs.getDirectory());//NOI18N
+                                CompilerSetReporter.report("CSM_Found", true, cs.getDisplayName(), cs.getDirectory()); //NOI18N
                                 add(cs);
+                                for (Tool tool : cs.getTools()) {
+                                    if (! tool.isReady()) {
+                                        CompilerSetReporter.report("CSM_Initializing_Tool", false, tool.getDisplayName()); //NOI18N
+                                        tool.waitReady();
+                                        CompilerSetReporter.report("CSM_Done"); //NOI18N
+                                    }
+                                }
                             } else if(CompilerSetReporter.canReport()) {
                                 CompilerSetReporter.report("CSM_Err", true, data);//NOI18N
                             }

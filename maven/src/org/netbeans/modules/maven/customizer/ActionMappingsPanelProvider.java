@@ -50,18 +50,14 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=400)
 public class ActionMappingsPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of ActionMappingsPanel */
-    public ActionMappingsPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle.PANEL_MAPPING, 
                 NbBundle.getMessage(ActionMappingsPanelProvider.class, "TIT_Action_Mappings"), 
-                null,
-                (ProjectCustomizer.Category[])null);
+                null);
     }
     
     public JComponent createComponent(Category category, Lookup context) {

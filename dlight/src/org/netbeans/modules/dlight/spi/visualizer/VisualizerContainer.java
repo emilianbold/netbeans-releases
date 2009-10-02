@@ -47,10 +47,11 @@ public interface VisualizerContainer {
 
     /**
      * Adds new visualizer to container for tool with the name <code>toolName</code>
+     * @param toolID the toolID
      * @param toolName toolname
      * @param v visualizer
      */
-    void addVisualizer(String toolName, Visualizer v);
+    public void addVisualizer(String toolID,String toolName, Visualizer<?> v);
 
     /**
      * Sets new content for wool with the name <code>toolName</code>
@@ -70,7 +71,7 @@ public interface VisualizerContainer {
      * Removed visualizer from the container
      * @param v visualizer to remove
      */
-    void removeVisualizer(Visualizer v);
+    void removeVisualizer(Visualizer<?> v);
 
     /**
      * Show container

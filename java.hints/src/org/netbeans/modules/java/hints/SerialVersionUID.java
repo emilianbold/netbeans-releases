@@ -131,6 +131,9 @@ public class SerialVersionUID extends AbstractHint {
             // add SuppressWarning only to non-anonymous class
             fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SERIAL));
             int[] span = info.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf());
+            if (span == null) { //span cannot be found, do not show anything
+                return null;
+            }
             ed = ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), desc, fixes, info.getFileObject(), span[0], span[1]);
         }

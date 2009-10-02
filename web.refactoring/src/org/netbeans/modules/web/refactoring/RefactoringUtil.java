@@ -265,13 +265,10 @@ public class RefactoringUtil {
 
                         // if the class is a generic then the <...> will also be
                         // returned.  We just want the class name.
-                        String type = element.asType().toString();
-                        if(type.contains("<") == true)
-                        {
-                            type = type.substring(0, type.indexOf("<"));
-                        }
+                        // Accurate fix for IZ#156699 - IllegalArgumentException: The given fqn [pencom.webclient.notification.WebControlAppearance<V>] does not represent a fully qualified class name
+                        String type = parameter.getTypes().erasure(
+                                element.asType()).toString();
                         result.add(type);
-//                        result.add(element.asType().toString());
                     }
                 }, true);
             } catch (IOException ioe) {

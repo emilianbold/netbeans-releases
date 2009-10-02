@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.web.webmodule;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -65,5 +66,11 @@ public class SimpleWebModuleImpl implements WebModuleImplementation2 {
 
     public MetadataModel<WebAppMetadata> getMetadataModel() {
         return null;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
     }
 }

@@ -111,17 +111,20 @@ public class BuildNumberGlassFish extends Task {
                 dateFormatIn = FORMAT_IN_V3;
             }
             if (matcher.find()) {
-                final String buildType = 
-                        matcher.group(1);                                   // NOMAGI
+                String buildType = "";
+                int counter = 1;
+                if(matcher.groupCount() > 3) { //V2
+		    buildType = matcher.group(counter++);                           // NOMAGI
+                }
                 final String milestoneNumberReal = 
-                        matcher.group(2);                                   // NOMAGI
+                        matcher.group(counter++);                                   // NOMAGI
                 final String milestoneNumber = 
-                        matcher.group(3);                                   // NOMAGI
+                        matcher.group(counter++);                                   // NOMAGI
 
                 String buildNumber = "0"; 
 
                 if(matcher.groupCount() > 3) { 
-                   buildNumber = FORMAT_OUT.format(dateFormatIn.parse(matcher.group(4))) ; // NOMAGI
+                   buildNumber = FORMAT_OUT.format(dateFormatIn.parse(matcher.group(counter++))) ; // NOMAGI
                 } else if(!milestoneNumberReal.equals(milestoneNumber)){
                    buildNumber = "" + (milestoneNumberReal.substring(milestoneNumber.length()).codePointAt(0) - 'a' + 1);
                 }
@@ -159,7 +162,7 @@ public class BuildNumberGlassFish extends Task {
             "sjsas-9_1_02-([a-z0-9]+)-bin-" + // NOI18N
             "b(([0-9]+)[a-z]?)-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
     private static final Pattern PATTERN_V3 = Pattern.compile(            
-            "glassfish-v3-web-([a-z0-9]+)-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
+            "glassfish-v3-web-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
     
     /**
      * Date format used in the input file.

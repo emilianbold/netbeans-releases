@@ -1303,26 +1303,26 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 return;
             }
             
-            ArrayList<Runnable> arrCopy = null;
             synchronized (this) {
                 if (arr.isEmpty()) {
                     return;
                 }
                 
-                arrCopy = arr;
-                arr = new ArrayList<Runnable>();
-            }
-
-            Logger perf = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
-            for (Runnable r : arrCopy) {
-                try {
-                    perf.log(Level.FINE, "start", "invokeWhenUIReady: " + r.getClass().getName()); // NOI18N
-                    r.run();
-                    perf.log(Level.FINE, "end", "invokeWhenUIReady: " + r.getClass().getName()); // NOI18N
-                } catch (RuntimeException ex) {
-                    Logger.getLogger(WindowManagerImpl.class.getName()).log(
-                            Level.WARNING, null, ex);
-                }
+                final Runnable toRun = arr.remove(0);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Logger perf = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
+                        try {
+                            perf.log(Level.FINE, "start", "invokeWhenUIReady: " + toRun.getClass().getName()); // NOI18N
+                            toRun.run();
+                            perf.log(Level.FINE, "end", "invokeWhenUIReady: " + toRun.getClass().getName()); // NOI18N
+                        } catch (RuntimeException ex) {
+                            Logger.getLogger(WindowManagerImpl.class.getName()).log(
+                                    Level.WARNING, null, ex);
+                        }
+                        SwingUtilities.invokeLater(Exclusive.this);
+                    }
+                });
             }
         }
 

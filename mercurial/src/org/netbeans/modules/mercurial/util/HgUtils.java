@@ -100,6 +100,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.versioning.util.FileSelector;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 /**
@@ -124,6 +126,9 @@ public class HgUtils {
     private static final String HG_IGNORE_CONFLICT_ANY_FILES = "\\.conflict\\~$"; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
+    private static final String IGNORE_SYNTAX_PREFIX = "syntax:";       //NOI18N
+    private static final String IGNORE_SYNTAX_GLOB = "glob";            //NOI18N
+    private static final String IGNORE_SYNTAX_REGEXP = "regexp";        //NOI18N
 
     private static HashMap<String, Set<Pattern>> ignorePatterns;
 
@@ -468,7 +473,11 @@ public class HgUtils {
         }
         
         Set<Pattern> patterns = getIgnorePatterns(topFile);
+        try {
         path = path.substring(topFile.getAbsolutePath().length() + 1);
+        } catch(StringIndexOutOfBoundsException e) {
+            throw e;
+        }
         if (File.separatorChar != '/') {
             path = path.replace(File.separatorChar, '/');
         }
@@ -713,6 +722,7 @@ public class HgUtils {
 
         String s;
         BufferedReader r = null;
+        boolean glob = false;
         try {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
@@ -720,13 +730,29 @@ public class HgUtils {
                 line = removeCommentsInIgnore(line);
                 if (line.length() == 0) continue;
                 String [] array = line.split(" ");
-                if (array[0].equals("syntax:")) continue;
-                entries.add(line);
+                if (array[0].equals(IGNORE_SYNTAX_PREFIX)) {
+                    String syntax = line.substring(IGNORE_SYNTAX_PREFIX.length()).trim();
+                    if (IGNORE_SYNTAX_GLOB.equals(syntax)) {
+                        glob = true;
+                    } else if (IGNORE_SYNTAX_REGEXP.equals(syntax)) {
+                        glob = false;
+                    }
+                    continue;
+                }
+                entries.add(glob ? transformFromGlobPattern(line) : line);
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
         }
         return entries;
+    }
+
+    private static String transformFromGlobPattern (String pattern) {
+        // returned pattern consists of two patterns - one for a file/folder directly under
+        pattern = pattern.replace("$", "\\$").replace("^", "\\^").replace(".", "\\.").replace("*", ".*") + '$'; //NOI18N
+        return  "^" + pattern // a folder/file directly under the repository, does not start with '/' //NOI18N
+                + "|"                                                   //NOI18N
+                + ".*/" + pattern; // a folder in 2nd+ depth            //NOI18N
     }
 
     private static String computePatternToIgnore(File directory, File file) {
@@ -895,6 +921,17 @@ itor tabs #66700).
     }
     
    /**
+     * Determines if the given context contains at least one root file from
+     * a mercurial repository
+     *
+     * @param VCSContext
+     * @return true if the given conetxt contains a root file from a hg repository
+     */
+    public static boolean isFromHgRepository(VCSContext context){
+        return getRootFile(context) != null;
+    }
+
+   /**
      * Returns path to repository root or null if not managed
      *
      * @param VCSContext
@@ -909,7 +946,100 @@ itor tabs #66700).
         File root = hg.getRepositoryRoot(files[0]);
         return root;
     }
-    
+
+   /**
+     * Returns repository roots for all root files from context
+     *
+     * @param VCSContext
+     * @return repository roots
+     */
+    public static Set<File> getRepositoryRoots(VCSContext context) {
+        Set<File> rootsSet = context.getRootFiles();
+        Set<File> ret = new HashSet<File>();
+
+        // filter managed roots
+        for (File file : rootsSet) {
+            if(Mercurial.getInstance().isManaged(file)) {
+                File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if(repoRoot != null) {
+                    ret.add(repoRoot);
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     *
+     * @param ctx
+     * @return
+     */
+    public static File[] getActionRoots(VCSContext ctx) {
+        Set<File> rootsSet = ctx.getRootFiles();
+        Map<File, List<File>> map = new HashMap<File, List<File>>();
+
+        // filter managed roots
+        for (File file : rootsSet) {
+            if(Mercurial.getInstance().isManaged(file)) {
+                File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if(repoRoot != null) {
+                    List<File> l = map.get(repoRoot);
+                    if(l == null) {
+                        l = new LinkedList<File>();
+                        map.put(repoRoot, l);
+                    }
+                    l.add(file);
+                }
+            }
+        }
+
+        Set<File> repoRoots = map.keySet();
+        if(map.size() > 1) {
+            // more than one managed root => need a dlg
+            FileSelector fs = new FileSelector(
+                    NbBundle.getMessage(HgUtils.class, "LBL_FileSelector_Title"),
+                    NbBundle.getMessage(HgUtils.class, "FileSelector.jLabel1.text"),
+                    new HelpCtx("org.netbeans.modules.mercurial.FileSelector"),
+                    HgModuleConfig.getDefault().getPreferences());
+            if(fs.show(repoRoots.toArray(new File[repoRoots.size()]))) {
+                File selection = fs.getSelectedFile();
+                List<File> l = map.get(selection);
+                return l.toArray(new File[l.size()]);
+            } else {
+                return null;
+            }
+        } else {
+            List<File> l = map.get(map.keySet().iterator().next());
+            return l.toArray(new File[l.size()]);
+        }
+    }
+
+    /**
+     * Returns only those root files from the given context which belong to repository
+     * @param ctx
+     * @param repository
+     * @param rootFiles
+     * @return
+     */
+    public static File[] filterForRepository(final VCSContext ctx, final File repository, boolean rootFiles) {
+        File[] files = null;
+        if(ctx != null) {
+            Set<File> s = rootFiles ? ctx.getRootFiles() : ctx.getFiles();
+            files = s.toArray(new File[s.size()]);
+        }
+        if (files != null) {
+            List<File> l = new LinkedList<File>();
+            for (File file : files) {
+                File r = Mercurial.getInstance().getRepositoryRoot(file);
+                if (r != null && r.equals(repository)) {
+                    l.add(file);
+                }
+            }
+            files = l.toArray(new File[l.size()]);
+        }
+        return files;
+    }
+
    /**
      * Returns File object for Project Directory
      *

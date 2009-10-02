@@ -108,7 +108,7 @@ public class Label implements ActionListener, DocumentListener {
             ClearcaseModuleConfig.setLabelFollow(getFollow());
             ClearcaseModuleConfig.setLabelRecurse(getRecurse());
             ClearcaseModuleConfig.setLabelReplace(getReplace());            
-            Utils.insert(ClearcaseModuleConfig.getPreferences(), LabelAction.RECENT_LABEL_MESSAGES, getComment(), 20);
+            Utils.insert(ClearcaseModuleConfig.getPreferences(), LabelAction.RECENT_LABEL_MESSAGES, getComment().trim(), 20);
             
             return true;
         }               

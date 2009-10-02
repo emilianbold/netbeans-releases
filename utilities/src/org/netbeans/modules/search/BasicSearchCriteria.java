@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.search;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.nio.CharBuffer;
@@ -63,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openidex.search.SearchPattern;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -271,7 +274,6 @@ final class BasicSearchCriteria {
             return false;
         }
     }
-
 
     private boolean validateReplacePattern(){
         if (regexp && textPatternValid){
@@ -696,83 +698,137 @@ final class BasicSearchCriteria {
     /**
      * Checks whether the file's content matches the text pattern.
      * 
-     * @param  fileObj  file whose content is to be checked
+     * @param  fo the file whose content is to be checked
      * @return  {@code true} if the file contains at least one substring
      *          matching the pattern, {@code false} otherwise
      */
-    private boolean checkFileContent(FileObject fileObj) {
-        lastCharset = FileEncodingQuery.getEncoding(fileObj);
-        DataObject dObj = null;
-        CharBuffer cb = null;
-        InputStream inputStream = null;
-        try{
-            inputStream = fileObj.getInputStream();
-            cb = Utils.getCharSequence((FileInputStream)inputStream, lastCharset);
-        }catch(Exception e){
-            return false;
+    private boolean checkFileContent(FileObject fo) {
+        lastCharset = FileEncodingQuery.getEncoding(fo);
+        SearchPattern sp = createSearchPattern();
+        BufferedCharSequence bcs = null;
+        try {
+            DataObject dObj = DataObject.find(fo);
+            FileInputStream fis = (FileInputStream)fo.getInputStream();
+            bcs = new BufferedCharSequence(fis, lastCharset);
+            ArrayList<TextDetail> txtDetails = getTextDetails(bcs, dObj, sp);
+            if (txtDetails.isEmpty()){
+                return false;
+            }
+            getDetailsMap().put(dObj, txtDetails);
+            return true;
         }
-        ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
-        SearchPattern searchPattern = createSearchPattern();
+        catch(DataObjectNotFoundException e){
+            LOG.severe("Unable to get data object for the " + fo); // NOI18N
+            LOG.throwing(BasicSearchCriteria.class.getName(),
+                    "checkFileContent", e); // NOI18N
+        }
+        catch (FileNotFoundException e) {
+            LOG.severe("Unable to get input stream for the " + fo); // NOI18N
+            LOG.throwing(BasicSearchCriteria.class.getName(),
+                    "checkFileContent", e); // NOI18N
+        }
+        catch(BufferedCharSequence.SourceIOException e){
+            LOG.severe("IOException during process for the " + fo); // NOI18N
+            LOG.throwing(BasicSearchCriteria.class.getName(),
+                    "checkFileContent", e); // NOI18N
+        }
+        catch(Exception e){
+            LOG.severe("Unexpected Exception during process for the " + fo); // NOI18N
+            LOG.throwing(BasicSearchCriteria.class.getName(),
+                    "checkFileContent", e); // NOI18N
+        }
+        finally {
+            if(bcs != null) {
+                try {
+                    bcs.close();
+                } catch (IOException ex) {
+                    // do nothing
+                }
+            }
+        }
+        return false;
+    }
 
+    private ArrayList<TextDetail> getTextDetails(BufferedCharSequence bcs,
+                                                 DataObject data,
+                                                 SearchPattern sp)
+                                throws BufferedCharSequence.SourceIOException  {
+
+        ArrayList<TextDetail> txtDetails = new ArrayList<TextDetail>();
         int lineNumber = 1;
         int lineStartOffset = 0;
         int prevCR = 0;
-        Matcher matcher = textPattern.matcher(cb.duplicate());
-        while(matcher.find()){
-            if (dObj == null){
-                try{
-                    dObj = DataObject.find(fileObj);
-                }catch(DataObjectNotFoundException e){
-                    return false;
-                }
-            }
-            TextDetail det = new TextDetail(dObj, searchPattern);
-            det.setMatchedText(matcher.group());
-            det.setStartOffset(matcher.start());
-            det.setEndOffset(matcher.end());
-            Matcher matcherCR = patternCR.matcher(matcher.group());
-            int countCR=0;
-            while(matcherCR.find()){
-                countCR++;
-                }
-            det.setMarkLength(matcher.end() - matcher.start() - countCR);
 
-            while((cb.position() < matcher.start()) && (cb.position() < cb.limit())){
-                char curChar = cb.get();
-                if (curChar == '\n'){
-                    lineNumber++;
-                    lineStartOffset = cb.position();
-                    prevCR = 0;
-                } else if (curChar == '\r'){
-                    prevCR++;
-                    if ((cb.position() < cb.limit()) && (cb.get(cb.position()) != '\n')){
-                        lineNumber++;
-                        lineStartOffset = cb.position();
-                        prevCR = 0;
+        Matcher matcher = textPattern.matcher(bcs);
+        while (matcher.find()) {
+            int matcherStart = matcher.start();
+            try {
+                while (bcs.position() < matcherStart) {
+                    char curChar = bcs.nextChar();
+                    switch (curChar) {
+                        case '\n':
+                            lineNumber++;
+                            lineStartOffset = bcs.position();
+                            prevCR = 0;
+                            break;
+                        case '\r':
+                            prevCR++;
+                            if (bcs.charAt(bcs.position()) != '\n') {
+                                lineNumber++;
+                                lineStartOffset = bcs.position();
+                                prevCR = 0;
+                            }
+                            break;
+                        default:
+                            prevCR = 0;
                     }
-                } else{
-                    prevCR = 0;
                 }
+            } catch (IndexOutOfBoundsException ioobe) {
+                // It is OK. It means that EOF is reached, i.e.
+                // cb.position() >= cb.length()
             }
-            det.setColumn(matcher.start() - lineStartOffset + 1 - prevCR);
+            int column = matcherStart - lineStartOffset + 1 - prevCR;
+            String lineText = bcs.getLineText(lineStartOffset);
+
+            TextDetail det = newTextDetail(data, sp, matcher);
+            det.setColumn(column);
             det.setLine(lineNumber);
-
+            det.setLineText(lineText);
+            
             txtDetails.add(det);
-        }
-
-        if (txtDetails.isEmpty()){
-            return false;
-        }
+        } // while (matcher.find())
         txtDetails.trimToSize();
+        return txtDetails;
+    }
 
-        cb.rewind();
-        String[] lines = patternLineSeparator.split(cb.duplicate(), cb.length());
-        for(int i=0; i < txtDetails.size(); i++){
-            txtDetails.get(i).setLineText(lines[txtDetails.get(i).getLine() - 1]);
+    private TextDetail newTextDetail(DataObject dObj,
+                                     SearchPattern searchPattern,
+                                     Matcher matcher) {
+        String group = matcher.group();
+        int start = matcher.start();
+        int end = matcher.end();
+        int countCR = countCR(group);
+        int markLength = end - start - countCR;
+        TextDetail det = new TextDetail(dObj, searchPattern);
+        det.setMatchedText(group);
+        det.setStartOffset(start);
+        det.setEndOffset(end);
+        det.setMarkLength(markLength);
+        return det;
+    }
+
+    /**
+     * Counts up a number of CRs in the specified string.
+     * @param s the string.
+     * @return a number of CRs.
+     */
+    private int countCR(String s) {
+        Matcher matcherCR = patternCR.matcher(s);
+        int countCR=0;
+        while(matcherCR.find()) {
+            countCR++;
         }
-        
-        getDetailsMap().put(dObj, txtDetails);
-        return true;
+        return countCR;
     }
 
     /**

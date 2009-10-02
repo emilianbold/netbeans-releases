@@ -50,6 +50,7 @@ import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.util.Utilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -81,6 +82,12 @@ public interface HudsonSCM {
          * @param configXml Hudson's {@code config.xml}
          */
         void configure(Document configXml);
+
+        /**
+         * Optional problem with the SCM configuration.
+         * @return a problem (warning or error), or null
+         */
+        ConfigurationStatus problems();
 
         // XXX should permit SCM to say that project is in a specific subdir
 

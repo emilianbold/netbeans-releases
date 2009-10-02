@@ -192,6 +192,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        elementAnnotationsSubstitute = "";                              //NOI18N
     }
 
 

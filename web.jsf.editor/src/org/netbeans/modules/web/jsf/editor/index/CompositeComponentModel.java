@@ -66,18 +66,14 @@ public class CompositeComponentModel extends JsfPageModel {
     static final String LIBRARY_NAME_KEY = "library"; //NOI18N
     static final String INTERFACE_ATTRIBUTES_KEY = "interface_attributes"; //NOI18N
     static final String HAS_IMPLEMENTATION_KEY = "has_implementation"; //NOI18N
-
     //other
     private static final String RESOURCES_FOLDER_NAME = "resources"; //NOI18N
     private static final char VALUES_SEPARATOR = ','; //NOI18N
     private static final char ATTRIBUTES_SEPARATOR = ';'; //NOI18N
     private static final char KEY_VALUE_SEPARATOR = '='; //NOI18N
-
-
     private static final Collection<String> COMPOSITE_ATTRIBUTE_TAG_ATTRIBUTES =
             Arrays.asList(new String[]{"name", "targets", "default", "displayName", "expert",
                 "method-signature", "preferred", "required", "shortDescription", "type"}); //NOI18N
-    
     protected Collection<Map<String, String>> attributes;
     protected boolean hasImplementation;
     protected FileObject sourceFile;
@@ -106,7 +102,7 @@ public class CompositeComponentModel extends JsfPageModel {
     public String getRelativePath() {
         return relativePath;
     }
-    
+
     public boolean isHasImplementation() {
         return hasImplementation;
     }
@@ -122,7 +118,7 @@ public class CompositeComponentModel extends JsfPageModel {
     @Override
     public void storeToIndex(IndexDocument document) {
         //store library name
-        String libraryName = getLibraryFolder(sourceFile).getName();
+        String libraryName = getLibraryPath();
         document.addPair(LIBRARY_NAME_KEY, libraryName, true, true);
 
         //store attributes
@@ -152,23 +148,52 @@ public class CompositeComponentModel extends JsfPageModel {
 
     }
 
-    private FileObject getLibraryFolder(FileObject member) {
-        assert isCompositeLibraryMember(member);
-        return member.getParent();
+    private String getLibraryPath() {
+        FileObject sourceFileFolder = sourceFile.getParent();
+        FileObject resources = getResourcesDirectory(sourceFile);
+
+        assert resources != null;
+        assert !sourceFileFolder.equals(resources);
+
+        return FileUtil.getRelativePath(resources, sourceFileFolder);
     }
 
     private static boolean isCompositeLibraryMember(FileObject file) {
-        WebModule wm = WebModule.getWebModule(file);
-        assert wm != null;
-        FileObject docRoot = wm.getDocumentBase();
-        assert docRoot != null;
-        FileObject resourcesFolder = getChild(docRoot, RESOURCES_FOLDER_NAME);
+        FileObject resourcesFolder = getResourcesDirectory(file);
         if (resourcesFolder != null) {
-            if (FileUtil.isParentOf(resourcesFolder, file)) {
-                return true;
+                if (FileUtil.isParentOf(resourcesFolder, file)) {
+                    return true;
+                }
             }
-        }
         return false;
+    }
+
+    private static FileObject getResourcesDirectory(FileObject file) {
+        WebModule wm = WebModule.getWebModule(file);
+        if (wm != null) {
+            //we are in webmodule
+            FileObject docRoot = wm.getDocumentBase();
+            if(docRoot != null) { //document root may be null if the folder is deleted
+                return getChild(docRoot, RESOURCES_FOLDER_NAME);
+            }
+        } else {
+            //out of a webmodule, means in a library archive
+            //just check if the parent's parent directory is resources and then META-INF
+            FileObject folder = file;
+            do {
+                if (folder.getName().equalsIgnoreCase("resources")) {
+                    //check if its parent is META-INF
+                    FileObject parent = folder.getParent();
+                    if (parent != null && parent.getNameExt().startsWith("META-INF")) {
+                        //the folder seems to be the right resources folder
+                        return folder;
+                    }
+                }
+                folder = folder.getParent();
+            } while (folder != null);
+
+        }
+        return null;
     }
 
     private static FileObject getChild(FileObject parent, String name) {
@@ -234,14 +259,14 @@ public class CompositeComponentModel extends JsfPageModel {
         public JsfPageModel loadFromIndex(IndexResult result) {
             String attrs = result.getValue(INTERFACE_ATTRIBUTES_KEY);
             boolean hasImplementation = Boolean.parseBoolean(result.getValue(HAS_IMPLEMENTATION_KEY));
-            Collection<Map<String,String>> parsedAttrs = new ArrayList<Map<String,String>>();
+            Collection<Map<String, String>> parsedAttrs = new ArrayList<Map<String, String>>();
             //parse attributes
             StringTokenizer st = new StringTokenizer(attrs, Character.valueOf(ATTRIBUTES_SEPARATOR).toString());
-            while(st.hasMoreTokens()) {
+            while (st.hasMoreTokens()) {
                 String attrText = st.nextToken();
-                Map<String, String> pairs = new HashMap<String,String>();
+                Map<String, String> pairs = new HashMap<String, String>();
                 StringTokenizer st2 = new StringTokenizer(attrText, Character.valueOf(VALUES_SEPARATOR).toString());
-                while(st2.hasMoreTokens()) {
+                while (st2.hasMoreTokens()) {
                     String pair = st2.nextToken();
                     String key = pair.substring(0, pair.indexOf(KEY_VALUE_SEPARATOR));
                     String value = pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1);
@@ -252,6 +277,5 @@ public class CompositeComponentModel extends JsfPageModel {
             return new CompositeComponentModel(result.getFile(), result.getRelativePath(), parsedAttrs, hasImplementation);
 
         }
-        
     }
 }

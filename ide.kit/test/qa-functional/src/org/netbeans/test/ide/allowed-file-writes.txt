@@ -75,3 +75,8 @@ config/Preferences/org/netbeans/modules/visualweb/dataconnectivity.properties
 config/Services
 config/Services/org-netbeans-modules-db-explorer-DatabaseOption.settings
 
+# JavaFX samples module needs to refer to external zip files
+# discovered at runtime inside the sdk, using the absolute path
+config/javafx
+config/javafx/samples
+config/javafx/samples/sdksamples.xml

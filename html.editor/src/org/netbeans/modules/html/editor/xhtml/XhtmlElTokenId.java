@@ -65,7 +65,7 @@ public enum XhtmlElTokenId implements TokenId {
     EL("expression-language");
 
     private final String primaryCategory;
-    private static Language EL_LANGUAGE;
+    private static Language<? extends TokenId> EL_LANGUAGE;
 
     XhtmlElTokenId() {
         this(null);
@@ -106,7 +106,7 @@ public enum XhtmlElTokenId implements TokenId {
                     //lexer infrastructure workaround - need to adjust skiplenghts in case of short token
                     int startSkipLength = token.length() > 2 ? 2 : token.length();
                     int endSkipLength = token.length() > 2 ? 1 : 0;
-                    Language elLang = getELLanguage();
+                    Language<? extends TokenId> elLang = getELLanguage();
                     if(elLang != null) {
                         return LanguageEmbedding.create(elLang, startSkipLength, endSkipLength);
                     }
@@ -126,7 +126,7 @@ public enum XhtmlElTokenId implements TokenId {
         return language;
     }
 
-    private static synchronized Language getELLanguage() {
+    private static synchronized Language<? extends TokenId> getELLanguage() {
         //keep trying to get the instance if not available - may happen during some lazy modules loading?!?!
         if (EL_LANGUAGE == null) {
             EL_LANGUAGE = Language.find("text/x-el"); //NOI18N

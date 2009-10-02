@@ -129,6 +129,31 @@ public class Tool {
         return flavor;
     }
 
+    /**
+     * Some tools may require long initialization
+     * (e.g. compiler tools call compilers to get include search path, etc).
+     *
+     * Such initialization is usually moved out of constructors.
+     * This methods allows to check whether the tool was initialized or not.
+     *
+     * @return true in the case this tool is ready, otherwise false
+     */
+    public boolean isReady() {
+        return true;
+    }
+
+    /**
+     * Some tools may require long initialization
+     * (e.g. compiler tools call compilers to get include search path, etc).
+     * This method should
+     * - check whether the tool is initialized
+     * - if it is not, start initialization
+     * - wait until it is done
+     * NB: Should never be called from AWT thread
+     */
+    public void waitReady() {
+    }
+
     public int getKind() {
         return kind;
     }

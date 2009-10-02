@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Milan Kubec
  */
+@CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=50)
 public class GeneralInformationCategoryProvider implements CompositeCategoryProvider {
 
     public Category createCategory(Lookup context) {

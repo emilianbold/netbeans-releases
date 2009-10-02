@@ -51,25 +51,26 @@ public class DLightConfigurationUIWrapper {
     private DLightConfiguration dlightConfiguration;
     private boolean custom;
     private String name;
-    private  String displayedName;
+    private String displayName;
     private List<DLightToolUIWrapper> tools;
-    private boolean isModified;
+    private boolean profileOnRun;
+    private boolean modified;
 
     public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
         this.dlightConfiguration = dlightConfiguration;
         this.name = dlightConfiguration.getConfigurationName();
-        this.displayedName = dlightConfiguration.getDisplayedName();
+        this.displayName = dlightConfiguration.getDisplayedName();
+        this.profileOnRun = true;
         this.custom = false;
         initWrapper(allDLightTools);
     }
 
-
-    public DLightConfigurationUIWrapper(String name, List<DLightTool> allDLightTools) {
+    public DLightConfigurationUIWrapper(String name, String displayName, List<DLightTool> allDLightTools) {
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         this.dlightConfiguration = accessor.getDefaultConfiguration(manager);
         this.name = name;
-        this.displayedName = displayedName;
+        this.displayName = displayName;
         this.custom = true;
         initWrapper(allDLightTools);
     }
@@ -80,7 +81,10 @@ public class DLightConfigurationUIWrapper {
         int i = 0;
         for (DLightTool dlightTool : allDLightTools) {
             DLightTool toolToAdd = findTool(confDlightTools, dlightTool.getID());
-            tools.add(new DLightToolUIWrapper(toolToAdd == null ? dlightTool : toolToAdd,  inList(dlightTool, confDlightTools)));
+            toolToAdd = toolToAdd == null ? dlightTool : toolToAdd;
+            if (toolToAdd != null && toolToAdd.isVisible()){
+                tools.add(new DLightToolUIWrapper(toolToAdd,  inList(dlightTool, confDlightTools)));
+            }
         }
     }
 
@@ -104,7 +108,7 @@ public class DLightConfigurationUIWrapper {
 
     @Override
     public String toString() {
-        return displayedName;
+        return getDisplayName();
     }
 
     /**
@@ -172,12 +176,63 @@ public class DLightConfigurationUIWrapper {
         this.tools = tools;
     }
 
-
-    public boolean isModified(){
-        return isModified;
-    }
-
     public void setToolEnabled(DLightToolUIWrapper toolWrapper, boolean isEnabled){
         toolWrapper.setEnabled(isEnabled);
+    }
+
+    /**
+     * @return the profileOnRun
+     */
+    public boolean isProfileOnRun() {
+        return profileOnRun;
+    }
+
+    /**
+     * @param profileOnRun the profileOnRun to set
+     */
+    public void setProfileOnRun(boolean profileOnRun) {
+        if (this.profileOnRun != profileOnRun){
+            modified = true;
+        }
+        this.profileOnRun = profileOnRun;
+    }
+
+    /**
+     * @return the modified
+     */
+    public boolean isModified() {
+        return modified;
+    }
+
+    /**
+     * @param modified the modified to set
+     */
+    public void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
+    public DLightConfigurationUIWrapper copy() {
+        List<DLightTool> toolsCopy = new ArrayList<DLightTool>(getTools().size());
+        for (DLightToolUIWrapper dltuWrapper : getTools()) {
+            toolsCopy.add(dltuWrapper.getDLightTool());
+        }
+        DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(getDLightConfiguration(), toolsCopy);
+        copy.setProfileOnRun(isProfileOnRun());
+        copy.setModified(false);
+        return copy;
+    }
+
+    /**
+     * @return the displayName
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * @param displayName the displayName to set
+     */
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

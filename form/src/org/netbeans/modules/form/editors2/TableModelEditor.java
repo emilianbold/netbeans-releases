@@ -89,10 +89,12 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         titlesSB.append ("{\n\t\t"); // NOI18N
         if (i > 0) {
             String s = m.getColumnName (0);
-            titlesSB.append ("\"").append (s != null ? s : "").append ('"'); // NOI18N
+            s = (s==null) ? "" : s.replace("\"", "\\\""); // NOI18N
+            titlesSB.append ("\"").append (s).append ('"'); // NOI18N
             for (int k = 1; k < i; k++) {
                 String s1 = m.getColumnName (k);
-                titlesSB.append (", \"").append (s1 != null ? s1 : "").append ('"'); // NOI18N
+                s1 = (s1==null) ? "" : s1.replace("\"", "\\\""); // NOI18N
+                titlesSB.append (", \"").append (s1).append ('"'); // NOI18N
             }
         }
         titlesSB.append ("\n\t}"); // NOI18N
@@ -463,7 +465,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         if (o == null) return "null"; // NOI18N
 
         if (o instanceof String)
-            return "\"" + o + "\""; // NOI18N
+            return "\"" + ((String)o).replace("\"", "\\\"") + "\""; // NOI18N
 
         String s = o.getClass ().getName ();
         int g = s.lastIndexOf ('.');

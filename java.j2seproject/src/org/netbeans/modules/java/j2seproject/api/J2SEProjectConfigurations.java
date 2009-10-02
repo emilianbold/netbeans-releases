@@ -154,7 +154,7 @@ public final class J2SEProjectConfigurations {
         if (props == null) {
             return null;
         }
-        EditableProperties edProps = new EditableProperties();
+        EditableProperties edProps = new EditableProperties(true);
         for (Iterator<Entry<Object,Object>> iter = props.entrySet().iterator(); iter.hasNext(); ) {
             Entry entry = iter.next();
             edProps.put((String) entry.getKey(), (String) entry.getValue());

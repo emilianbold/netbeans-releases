@@ -74,7 +74,10 @@ public class WebServlet extends PersistentObject implements Refreshable {
         }
 
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
+        parser.expectString("name", AnnotationParser.defaultValue(
+                typeElement.getSimpleName().toString())); // NOI18N
+        // Fix for IZ#172425 - Servlet 3.0 model is not updated properly
+        urlPatterns.clear();
         parser.expectStringArray("urlPatterns", new ArrayValueHandler() { // NOI18N
             public Object handleArray(List<AnnotationValue> arrayMembers) {
                 for (AnnotationValue arrayMember : arrayMembers) {

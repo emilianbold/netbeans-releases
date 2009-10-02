@@ -107,7 +107,7 @@ public class J2SEProjectConfigurationsTest extends NbTestCase {
         
         configName = "Test_Config2";
         
-        EditableProperties sharedProps2 = new EditableProperties();
+        EditableProperties sharedProps2 = new EditableProperties(true);
         sharedProps2.put("sharedPropName", "sharedPropValue");
         sharedProps2.put("$sharedPropNameSpecial", "sharedPropValueSpecial");
         sharedProps2.put("sharedPropName2", "${sharedPropName}");

@@ -56,6 +56,13 @@ import org.netbeans.api.lexer.TokenSequence;
  */
 public final class SyntaxParser {
 
+    public enum Behaviour {
+        /** set as SyntaxParserContext property if you do not want to check html structure */
+        DISABLE_STRUCTURE_CHECKS,
+        /** set as SyntaxParserContext property if you do not want to check html attributes */
+        DISABLE_ATTRIBUTES_CHECKS 
+    }
+
     private final LanguagePath languagePath;
     private final TokenHierarchy hi;
     
@@ -69,18 +76,15 @@ public final class SyntaxParser {
      * 
      * @param source A non null sequence of characters - parser input
      */
-    public static SyntaxParserResult parse(final CharSequence source) {
-        if(source == null) {
-            throw new NullPointerException("Parser source cannot be null"); //NOI18N
-        }
+    public static SyntaxParserResult parse(SyntaxParserContext context) {
+        assert context != null;
 
-        if(source.length() == 0) {
-            return new SyntaxParserResult(source, Collections.EMPTY_LIST);
-        }
+        context.setElements(
+                context.getSourceText().length() == 0 ? Collections.EMPTY_LIST : new SyntaxParser(context.getSourceText()).parseDocument());
 
-        return new SyntaxParserResult(source, new SyntaxParser(source).parseDocument());
+        return new SyntaxParserResult(context);
     }
-    
+
     private SyntaxParser(final CharSequence source) {
         this.parserSource = source;
         this.parsedElements = EMPTY_ELEMENTS_LIST;

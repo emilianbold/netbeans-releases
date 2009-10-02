@@ -49,12 +49,16 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import org.openide.WizardDescriptor;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 
 // PENDING - it would be better to have a FilterData which extends
 // ServletData, and keep the filter specific code in that class. 
@@ -95,6 +99,25 @@ class ServletData extends DeployData {
             }
             this.name = name;
         }
+    }
+    
+    boolean canCreate(TemplateWizard wizard){
+        if ( webApp == null  ){
+            // This case is considered as normal in other cases. So I keep it also as valid.
+            return true;
+        }
+        if ( webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ){
+            if ( webApp.getVersion() == null ){
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ServletData.class, "MSG_UnuspportedVersion"));
+            }
+            else {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ServletData.class, "MSG_InvalidWebXml"));
+            }
+            return false;
+        }
+        return true;
     }
 
     String[] getServletNames() {

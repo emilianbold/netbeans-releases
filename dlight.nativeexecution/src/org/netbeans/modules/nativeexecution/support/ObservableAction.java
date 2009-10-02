@@ -62,8 +62,7 @@ public abstract class ObservableAction<T>
     private final List<ObservableActionListener<T>> listeners =
             Collections.synchronizedList(new ArrayList<ObservableActionListener<T>>());
     private volatile Future<T> taskFutureResult = null;
-    private final Object lock = new String(ObservableAction.class.getName());
-
+    private final Object lock = ObservableAction.class.getName() + "Lock"; // NOI18N
 
     /**
      * Constructor
@@ -124,7 +123,6 @@ public abstract class ObservableAction<T>
         synchronized (lock) {
 
             if (e == null) {
-
             }
 
             if (taskFutureResult == null || taskFutureResult.isDone()) {
@@ -162,7 +160,7 @@ public abstract class ObservableAction<T>
             } catch (ExecutionException ex) {
             }
         }
-        
+
     }
 
     private void fireStarted() {

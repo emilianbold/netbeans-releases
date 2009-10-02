@@ -61,13 +61,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -226,7 +229,7 @@ public final class TopLogging {
             if (DEBUG != null) DEBUG.println("initializing stdout"); // NOI18N
         }
     }
-    
+
 
     private static void printSystemInfo(PrintStream ps) {
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.US);
@@ -247,7 +250,7 @@ public final class TopLogging {
                 }
             }
         }
-        
+
         String buildNumber = System.getProperty ("netbeans.buildnumber"); // NOI18N
         String currentVersion = NbBundle.getMessage(TopLogging.class, "currentVersion", buildNumber );
         ps.print("  Product Version         = " + currentVersion); // NOI18N
@@ -334,7 +337,7 @@ public final class TopLogging {
         // boot
         String boot = System.getProperty("sun.boot.class.path"); // NOI18N
         StringBuffer sb = (boot != null ? new StringBuffer(boot) : new StringBuffer());
-        
+
         // std extensions
         findBootJars(System.getProperty("java.ext.dirs"), sb);
         findBootJars(System.getProperty("java.endorsed.dirs"), sb);
@@ -371,9 +374,9 @@ public final class TopLogging {
         StreamHandler s = new StreamHandler (
             pw, NbFormatter.FORMATTER
         );
-        return s;
+        return new NonClose(s, 50);
     }
-    
+
     private static NonClose streamHandler;
     private static synchronized NonClose streamHandler() {
         if (streamHandler == null) {
@@ -383,7 +386,7 @@ public final class TopLogging {
         }
         return streamHandler;
     }
-    
+
     private static NonClose defaultHandler;
     private static synchronized NonClose defaultHandler() {
         if (defaultHandler != null) return defaultHandler;
@@ -406,7 +409,7 @@ public final class TopLogging {
                 if (f.exists()) {
                     f.renameTo(f1);
                 }
-                
+
                 FileOutputStream fout = new FileOutputStream(f, false);
                 Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
                 h.setLevel(Level.ALL);
@@ -416,7 +419,7 @@ public final class TopLogging {
                 ex.printStackTrace();
             }
         }
-        
+
         if (defaultHandler == null) {
             defaultHandler = streamHandler();
             disabledConsole = true;
@@ -427,8 +430,8 @@ public final class TopLogging {
     /** Allows tests to flush all standard handlers */
     static void flush(boolean clear) {
         System.err.flush();
-        
-        
+
+
         Handler s = streamHandler;
         if (s != null) {
             s.flush();
@@ -464,10 +467,11 @@ public final class TopLogging {
      */
     private static final class NonClose extends Handler
     implements Runnable {
-        private static RequestProcessor RP = new RequestProcessor("Logging Flush"); // NOI18N
+        private static RequestProcessor RP = new RequestProcessor("Logging Flush", 1, false, false); // NOI18N
         private static ThreadLocal<Boolean> FLUSHING = new ThreadLocal<Boolean>();
 
         private final Handler delegate;
+        private final Queue<LogRecord> queue = new LinkedBlockingQueue<LogRecord>(1000);
         private RequestProcessor.Task flush;
         private int delay;
 
@@ -479,7 +483,10 @@ public final class TopLogging {
         }
 
         public void publish(LogRecord record) {
-            delegate.publish(record);
+            if (RP.isRequestProcessorThread()) {
+                return;
+            }
+            queue.offer(record);
             if (!Boolean.TRUE.equals(FLUSHING.get())) {
                 try {
                     FLUSHING.set(true);
@@ -493,7 +500,7 @@ public final class TopLogging {
         public void flush() {
             flush.cancel();
             flush.waitFinished();
-            delegate.flush();
+            run();
         }
 
         public void close() throws SecurityException {
@@ -518,6 +525,13 @@ public final class TopLogging {
         }
 
         public void run() {
+            for (;;) {
+                LogRecord r = queue.poll();
+                if (r == null) {
+                    break;
+                }
+                delegate.publish(r);
+            }
             delegate.flush();
         }
     }
@@ -593,7 +607,7 @@ public final class TopLogging {
             pw.println(trace[i]);
         }
     }
-    
+
     /** Modified formater for use in NetBeans.
      */
     private static final class NbFormatter extends java.util.logging.Formatter {
@@ -653,7 +667,7 @@ public final class TopLogging {
                 specialProcessing(sb, record.getThrown(), beenThere);
             }
         }
-        
+
         private static void addLoggerName (StringBuilder sb, java.util.logging.LogRecord record) {
             String name = record.getLoggerName ();
             if (!"".equals (name)) {
@@ -775,6 +789,7 @@ public final class TopLogging {
         @Override
         public void flush() {
             try {
+                flush.schedule(0);
                 flush.waitFinished(500);
             } catch (InterruptedException ex) {
                 // ok, flush failed, do not even print
@@ -783,8 +798,8 @@ public final class TopLogging {
             super.flush();
         }
 
-        
-        
+
+
         private void checkFlush() {
             //if (DEBUG != null) DEBUG.println("checking flush; buffer: " + sb); // NOI18N
             try {
@@ -811,11 +826,11 @@ public final class TopLogging {
                             at org.netbeans.insane.impl.LiveEngine.trace(LiveEngine.java:180)
                             at org.netbeans.insane.live.LiveReferences.fromRoots(LiveReferences.java:110)
 
-                 * just ignore it, we cannot print it at this situation anyway...                
+                 * just ignore it, we cannot print it at this situation anyway...
                  */
             }
         }
-        
+
         public void run() {
             for (;;) {
                 String toLog;
@@ -838,19 +853,19 @@ public final class TopLogging {
         }
     } // end of LgStream
 
-    private static final class LookupDel extends Handler 
+    private static final class LookupDel extends Handler
     implements LookupListener {
         private Lookup.Result<Handler> handlers;
         private Collection<? extends Handler> instances;
-        
-        
+
+
         public LookupDel() {
             handlers = Lookup.getDefault().lookupResult(Handler.class);
             instances = handlers.allInstances();
             handlers.addLookupListener(this);
         }
-        
-        
+
+
         public void publish(LogRecord record) {
             for (Handler h : instances) {
                 h.publish(record);
@@ -876,7 +891,7 @@ public final class TopLogging {
 
     /** Instances are created in awt.EventDispatchThread */
     public static final class AWTHandler {
-        /** The name MUST be handle and MUST be public 
+        /** The name MUST be handle and MUST be public
          * @param t the throwable to print
          */
         public static void handle(Throwable t) {

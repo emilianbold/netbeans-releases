@@ -41,13 +41,19 @@
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
+import java.awt.Toolkit;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -55,18 +61,24 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * The shortcut wizard itself.
  * @author Jesse Glick
  */
 public final class ShortcutWizard extends WizardDescriptor {
+
+    private static final Logger LOG = Logger.getLogger(ShortcutWizard.class.getName());
     
     /**
      * Show the shortcut wizard for a given Ant target.
@@ -84,7 +96,89 @@ public final class ShortcutWizard extends WizardDescriptor {
             }
         }
     }
-    
+
+    public static void remove(AntProjectCookie project, Element element) { // #151632
+        FileObject build = FileUtil.getConfigFile("Actions/Build"); // NOI18N
+        if (build != null) {
+            File file = project.getFile();
+            if (file != null) {
+                for (FileObject kid : build.getChildren()) {
+                    if (isAntScript(kid)) {
+                        try {
+                            Document doc = XMLUtil.parse(new InputSource(kid.getURL().toString()), false, false, /*XXX*/ null, null);
+                            NodeList nl = doc.getElementsByTagName("ant"); // NOI18N
+                            if (nl.getLength() == 1) {
+                                Element ael = (Element) nl.item(0);
+                                if (ael.getAttribute("antfile").equals(file.getAbsolutePath()) && // NOI18N
+                                        ael.getAttribute("target").equals(element.getAttribute("name"))) { // NOI18N
+                                    doRemove(kid);
+                                    return;
+                                }
+                            }
+                        } catch (java.lang.Exception x) {
+                            LOG.log(Level.INFO, "Failed to parse or remove " + kid, x);
+                        }
+                    }
+                }
+                String message = NbBundle.getMessage(ShortcutWizard.class, "MSG_delete_all_shortcuts");
+                String title = NbBundle.getMessage(ShortcutWizard.class, "TITLE_delete_all_shortcuts");
+                if (DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Confirmation(message, title, OK_CANCEL_OPTION)).equals(NotifyDescriptor.OK_OPTION)) {
+                    for (FileObject kid : build.getChildren()) {
+                        if (isAntScript(kid)) {
+                            try {
+                                doRemove(kid);
+                            } catch (IOException x) {
+                                LOG.log(Level.INFO, "Failed to remove " + kid, x);
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+        }
+        Toolkit.getDefaultToolkit().beep(); // not a disk file, or no Build category
+    }
+    private static boolean isAntScript(FileObject f) {
+        try {
+            return DataObject.find(f).getLookup().lookup(AntProjectCookie.class) != null;
+        } catch (DataObjectNotFoundException x) {
+            return f.hasExt("xml"); // NOI18N
+        }
+    }
+    private static void doRemove(FileObject shortcut) throws IOException {
+        for (String place : new String[] {"Menu", "Toolbars", "Shortcuts", "Keymaps"}) { // NOI18N
+            FileObject top = FileUtil.getConfigFile(place);
+            if (top != null) {
+                for (FileObject f : NbCollections.iterable(top.getChildren(true))) {
+                    DataObject d;
+                    try {
+                        d = DataObject.find(f);
+                    } catch (DataObjectNotFoundException x) {
+                        LOG.log(Level.INFO, "Loading " + f, x);
+                        continue;
+                    }
+                    if (d instanceof DataShadow && ((DataShadow) d).getOriginal().getPrimaryFile() == shortcut) {
+                        delete(f);
+                    }
+                }
+            }
+        }
+        delete(shortcut);
+    }
+    private static void delete(FileObject file) throws IOException { // cf. #162526
+        Object delete = file.getAttribute("removeWritables"); // NOI18N
+        if (delete instanceof Callable) {
+            try {
+                ((Callable<?>) delete).call();
+            } catch (java.lang.Exception x) {
+                throw (IOException) new IOException("Could not delete " + file + ": " + x.toString()).initCause(x);
+            }
+        } else {
+            throw new IOException("Could not delete " + file);
+        }
+    }
+
     // Attributes stored on the template wizard:
     
     /** type String */
@@ -105,7 +199,7 @@ public final class ShortcutWizard extends WizardDescriptor {
     static final String PROP_FOLDER_TOOL = "wizdata.folder.tool"; // NOI18N
     /** type KeyStroke */
     static final String PROP_STROKE = "wizdata.stroke"; // NOI18N
-    
+
     private final AntProjectCookie project;
     private final Element target;
     private final ShortcutIterator it;

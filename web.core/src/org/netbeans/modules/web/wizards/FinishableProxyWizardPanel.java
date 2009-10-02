@@ -56,10 +56,19 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
 
     private final WizardDescriptor.Panel original;
     private final HelpCtx helpCtx;
+    private boolean isOriginallyValid = true;
 
     public FinishableProxyWizardPanel(Panel original, HelpCtx helpCtx) {
         this.original = original;
         this.helpCtx = helpCtx;
+    }
+    
+    public FinishableProxyWizardPanel(Panel original, HelpCtx helpCtx, 
+            boolean isValid ) 
+    {
+        this.original = original;
+        this.helpCtx = helpCtx;
+        isOriginallyValid = isValid;
     }
     
     public FinishableProxyWizardPanel(WizardDescriptor.Panel original) {
@@ -83,6 +92,9 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
     }
 
     public boolean isValid() {
+        if ( !isOriginallyValid ){
+            return false;
+        }
         return original.isValid();
     }
 

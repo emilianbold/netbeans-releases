@@ -124,7 +124,7 @@ public final class TestSessionVO {
             if (!testCases.isEmpty()) {
                 return;
             }
-            testCases.add(TestCaseVO.pendingTestCase());
+            testCases.add(TestCaseVO.skippedTestCase());
         }
 
         @Override
@@ -150,10 +150,10 @@ public final class TestSessionVO {
             this.time = time;
         }
 
-        static TestCaseVO pendingTestCase() {
+        static TestCaseVO skippedTestCase() {
             // suite with no testcases => create a fake with error message
             TestCaseVO testCase = new TestCaseVO(NbBundle.getMessage(TestSuiteVO.class, "LBL_NoTestCasesFound"), null, -1, -1);
-            testCase.status = Status.PENDING;
+            testCase.status = Status.SKIPPED;
             return testCase;
         }
 

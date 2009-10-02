@@ -310,6 +310,65 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "}\n").replaceAll("[ \t\n]+", " "));
     }
     
+    public void testTryWrapperComments171262a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.io.File;\n" +
+                       "import java.io.FileInputStream;\n" +
+                       "public abstract class Test {\n" +
+                       "    public Test() {\n" +
+                       "        //pribytek\n" +
+                       "        FileInputStream fis = |new FileInputStream(new File(\"\"));\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "import java.io.File;\n" +
+                       "import java.io.FileInputStream;\n" +
+                       "import java.io.FileNotFoundException;\n" +
+                       "public abstract class Test {\n" +
+                       "    public Test() {\n" +
+                       "        try {\n" +
+                       "            //pribytek\n" +
+                       "            FileInputStream fis = new FileInputStream(new File(\"\"));\n" +
+                       "        } catch (FileNotFoundException ex) {\n" +
+                       "            ex.printStackTrace();\n" +
+                       "        }" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testTryWrapperComments171262b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.io.File;\n" +
+                       "import java.io.FileInputStream;\n" +
+                       "public abstract class Test {\n" +
+                       "    public Test() {\n" +
+                       "        //nabytek\n" +
+                       "        FileInputStream fis = |new FileInputStream(new File(\"\"));\n" +
+                       "        fis.read();\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "import java.io.File;\n" +
+                       "import java.io.FileInputStream;\n" +
+                       "import java.io.FileNotFoundException;\n" +
+                       "public abstract class Test {\n" +
+                       "    public Test() {\n" +
+                       "        //nabytek\n" +
+                       "        FileInputStream fis;\n" +
+                       "        try {\n" +
+                       "            fis = new FileInputStream(new File(\"\"));\n" +
+                       "        } catch (FileNotFoundException ex) {\n" +
+                       "            ex.printStackTrace();\n" +
+                       "        }" +
+                       "        fis.read();\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);

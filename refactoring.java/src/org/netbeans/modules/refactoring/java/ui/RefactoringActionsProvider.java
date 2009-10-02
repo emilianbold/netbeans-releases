@@ -360,6 +360,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public boolean canDelete(Lookup lookup) {
+        if (SourceUtils.isScanInProgress()) {
+            return false;
+        }
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         //We live with a 2 pass validation of the selected nodes for now since
         //the code will become unreadable if we attempt to implement all checks

@@ -64,7 +64,7 @@ public class ScriptingMeasureActionsTest2 {
                 .addTest(PageUpPageDownScriptingEditorTest.class)
                 .addTest(OpenRubyProjectTest.class)
                 .addTest(CreatePHPProjectTest.class)
-                .addTest(CreatePHPSampleProjectTest.class)
+                .addTest(CreatePHPSampleProjectTest.class)     
 //      TB fixed          .addTest(CreateRubyProjectTest.class)
                 .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|enterprise[0-9]").reuseUserDir(true)));
 

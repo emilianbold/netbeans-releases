@@ -41,9 +41,6 @@ package org.netbeans.modules.dlight.tools.impl;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.tools.impl.LinuxProcfsSupport.CpuStat;
@@ -58,17 +55,19 @@ import static org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration.*;
 public class ProcDataProviderLinux implements ProcDataProvider.Engine {
 
     private static final BigInteger PERCENT = BigInteger.valueOf(100);
-
     private final DataRowConsumer consumer;
     private final ServiceInfoDataStorage serviceInfoStorage;
     private final boolean decreaseThreads;
+    private CpuStat prevCpuStat;
+    private CpuStat currCpuStat;
+    private ProcessStat prevProcessStat;
+    private ProcessStat currProcessStat;
 
     public ProcDataProviderLinux(DataRowConsumer consumer, ServiceInfoDataStorage serviceInfoStorage) {
         this.consumer = consumer;
         this.serviceInfoStorage = serviceInfoStorage;
-        String[] idps = this.serviceInfoStorage == null || 
-                serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES) == null? null :
-                    serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES).split(ServiceInfoDataStorage.DELIMITER);//NOI18N
+        String[] idps = this.serviceInfoStorage == null ||
+                serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES) == null ? null : serviceInfoStorage.getValue(ServiceInfoDataStorage.IDP_NAMES).split(ServiceInfoDataStorage.DELIMITER);//NOI18N
         List<String> idpsList = idps == null ? null : Arrays.asList(idps);
         decreaseThreads = idpsList == null ? false : idpsList.contains(LLDataCollectorConfigurationAccessor.getDefault().getName());
     }
@@ -77,58 +76,46 @@ public class ProcDataProviderLinux implements ProcDataProvider.Engine {
         return "while head -n1 /proc/stat && head -n1 /proc/" + pid + "/stat; do sleep 1; done"; // NOI18N
     }
 
-    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-        return InputProcessors.bridge(new LinuxProcLineProcessor());
+    @Override
+    public void processLine(String line) {
+        try {
+            if (line.startsWith("cpu")) { // NOI18N
+                prevCpuStat = currCpuStat;
+                currCpuStat = LinuxProcfsSupport.parseCpuStat(line);
+            } else {
+                prevProcessStat = currProcessStat;
+                currProcessStat = LinuxProcfsSupport.parseProcessStat(line);
+                if (prevProcessStat != null) {
+                    BigInteger cpuTicks = currCpuStat.all().subtract(prevCpuStat.all());
+                    BigInteger usrTicks = usrTicks(currProcessStat).subtract(usrTicks(prevProcessStat));
+                    BigInteger sysTicks = sysTicks(currProcessStat).subtract(sysTicks(prevProcessStat));
+                    long threads = currProcessStat.num_threads();
+                    if (decreaseThreads) {
+                        --threads;
+                    }
+                    float usrPercent = percent(usrTicks, cpuTicks);
+                    float sysPercent = percent(sysTicks, cpuTicks);
+                    DataRow row = new DataRow(
+                            Arrays.asList(USR_TIME.getColumnName(),
+                            SYS_TIME.getColumnName(),
+                            THREADS.getColumnName()),
+                            Arrays.asList(usrPercent,
+                            sysPercent,
+                            threads));
+                    consumer.consume(row);
+                }
+            }
+        } catch (IllegalArgumentException ex) {
+            // silently ignore malformed line
+            }
     }
 
-    private class LinuxProcLineProcessor implements LineProcessor {
+    public void reset() {
+        prevCpuStat = currCpuStat = null;
+        prevProcessStat = currProcessStat = null;
+    }
 
-        private CpuStat prevCpuStat;
-        private CpuStat currCpuStat;
-        private ProcessStat prevProcessStat;
-        private ProcessStat currProcessStat;
-
-        @Override
-        public void processLine(String line) {
-            try {
-                if (line.startsWith("cpu")) { // NOI18N
-                    prevCpuStat = currCpuStat;
-                    currCpuStat = LinuxProcfsSupport.parseCpuStat(line);
-                } else {
-                    prevProcessStat = currProcessStat;
-                    currProcessStat = LinuxProcfsSupport.parseProcessStat(line);
-                    if (prevProcessStat != null) {
-                        BigInteger cpuTicks = currCpuStat.all().subtract(prevCpuStat.all());
-                        BigInteger usrTicks = usrTicks(currProcessStat).subtract(usrTicks(prevProcessStat));
-                        BigInteger sysTicks = sysTicks(currProcessStat).subtract(sysTicks(prevProcessStat));
-                        long threads = currProcessStat.num_threads();
-                        if (decreaseThreads){
-                            --threads;
-                        }
-                        float usrPercent = percent(usrTicks, cpuTicks);
-                        float sysPercent = percent(sysTicks, cpuTicks);
-                        DataRow row = new DataRow(
-                                Arrays.asList(USR_TIME.getColumnName(),
-                                              SYS_TIME.getColumnName(),
-                                              THREADS.getColumnName()),
-                                Arrays.asList(usrPercent,
-                                              sysPercent,
-                                              threads));
-                        consumer.consume(row);
-                    }
-                }
-            } catch (IllegalArgumentException ex) {
-                // silently ignore malformed line
-            }
-        }
-
-        public void reset() {
-            prevCpuStat = currCpuStat = null;
-            prevProcessStat = currProcessStat = null;
-        }
-
-        public void close() {
-        }
+    public void close() {
     }
 
     private static float percent(BigInteger value, BigInteger total) {

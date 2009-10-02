@@ -59,8 +59,8 @@ made subject to such option by the copyright holder.
     
     <target name="s2bgen" depends="s2binit">
      <echo message="generating code generation input file information" />
-	<schema2beans schema="${s2b_res_root}/web-jsptaglibrary_2_0.xsd"
-	  mddFile="${s2b_res_root}/web-jsptaglibrary_2_0.mdd"
+	<schema2beans schema="${s2b_res_root}/web-jsptaglibrary_2_1.xsd"
+	  mddFile="${s2b_res_root}/web-jsptaglibrary_2_1.mdd"
 	  package="org.netbeans.modules.web.taglib.model"
 	  schemaType="xmlschema"
 	  validate="true"

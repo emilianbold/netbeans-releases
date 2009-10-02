@@ -219,6 +219,9 @@ public class ChatTopComponent extends TopComponent {
 
     private void addMoreChatsTab(int index) {
         chats.add(contactList);
+        //workaround for #171890
+        chats.setTitleAt(0, "");
+
         chats.setIconAt(index, ImageUtilities.loadImageIcon(PLUS, true));
         //chats.setEnabledAt(index, false);
         chats.setToolTipTextAt(index, NbBundle.getMessage(ChatTopComponent.class, "LBL_MoreChats"));
@@ -697,7 +700,10 @@ public class ChatTopComponent extends TopComponent {
             if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, e.getNewValue()==null?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat"));
+                        Kenai.Status s = Kenai.getDefault().getStatus();
+                        if (s != Kenai.Status.ONLINE) {
+                            loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, s==Kenai.Status.OFFLINE?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat")); // NOI18N
+                        }
                     }
                 });
             } else if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {

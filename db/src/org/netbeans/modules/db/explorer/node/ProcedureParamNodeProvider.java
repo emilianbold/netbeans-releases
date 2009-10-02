@@ -98,6 +98,9 @@ public class ProcedureParamNodeProvider extends NodeProvider {
                     new Action<Metadata>() {
                         public void run(Metadata metaData) {
                             Procedure procedure = handle.resolve(metaData);
+                            if (procedure == null) {
+                                return ;
+                            }
 
                             /* TBD uncomment after issue 156304 is resolved.
                             Value returnValue = procedure.getReturnValue();

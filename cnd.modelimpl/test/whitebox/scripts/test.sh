@@ -90,7 +90,7 @@ set_defaults() {
     #DWARF_TEST_PATH="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"}
     DWARF_TEST_INSTALL="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"
     DWARF_TEST_NB_INSTALL="/opt/netbeans"
-    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd2"
+    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd3"
 
     DWARF_TEST_PATH=${DWARF_TEST_PATH:-${BIN_DIR}}
     #DWARF_TEST_INSTALL="${DWARF_TEST_INSTALL:-${DWARF_TEST_PATH}/install}"

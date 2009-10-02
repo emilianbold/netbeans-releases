@@ -179,12 +179,14 @@ public final class EjbViewController {
             public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
                 EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass);
                 Map<String, String> result = new HashMap<String, String>();
-                result.put(Ejb.EJB_NAME, ejb.getEjbName());
-                result.put(EjbRef.EJB_REF_TYPE, ejb instanceof Entity ? EjbRef.EJB_REF_TYPE_ENTITY : EjbRef.EJB_REF_TYPE_SESSION);
-                result.put(EntityAndSession.LOCAL, ejb.getLocal());
-                result.put(EntityAndSession.LOCAL_HOME, ejb.getLocalHome());
-                result.put(EntityAndSession.REMOTE, ejb.getRemote());
-                result.put(EntityAndSession.HOME, ejb.getHome());
+                if (ejb != null){
+                    result.put(Ejb.EJB_NAME, ejb.getEjbName());
+                    result.put(EjbRef.EJB_REF_TYPE, ejb instanceof Entity ? EjbRef.EJB_REF_TYPE_ENTITY : EjbRef.EJB_REF_TYPE_SESSION);
+                    result.put(EntityAndSession.LOCAL, ejb.getLocal());
+                    result.put(EntityAndSession.LOCAL_HOME, ejb.getLocalHome());
+                    result.put(EntityAndSession.REMOTE, ejb.getRemote());
+                    result.put(EntityAndSession.HOME, ejb.getHome());
+                }
                 return result;
             }
         });

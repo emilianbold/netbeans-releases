@@ -79,6 +79,22 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 "CreateFieldFix:ii:test.Test:int:[private, final]",
                 "package test;public class Test { private final int ii; public Test() { ii = 1; }}");
     }
+
+    //Creating a field in Enum
+    public void test155581() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;public enum Test {A(0), B(1); private Test(int value) { i|i = value; }}",
+                "CreateFieldFix:ii:test.Test:int:[private]",
+                "package test;public enum Test {A(0), B(1); private int ii; private Test(int value) { ii = value; }}");
+    }
+
+    //Creating a field in Enum
+    public void test155581_2() throws Exception {
+        performFixTest("test/Test.java",
+                "package test;public enum Test {A(0), B(1); private Test(int value) { this.i|i = value; }}",
+                "CreateFieldFix:ii:test.Test:int:[private]",
+                "package test;public enum Test {A(0), B(1); private int ii; private Test(int value) { this.ii = value; }}");
+    }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);

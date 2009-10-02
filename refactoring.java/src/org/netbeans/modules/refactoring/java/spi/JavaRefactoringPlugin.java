@@ -192,11 +192,12 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         } else {
             Element el = e.resolveElement(info);
-            if (el == null || el.asType().getKind() == TypeKind.ERROR) {
+            String elName = el != null ? el.getSimpleName().toString() : null;
+            if (el == null || el.asType().getKind() == TypeKind.ERROR || "<error>".equals(elName)) { // NOI18N
                 return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElementNotResolved"));
             }
             
-            if ("this".equals(el.getSimpleName().toString()) || "super".equals(el.getSimpleName().toString())) { // NOI18N
+            if ("this".equals(elName) || "super".equals(elName)) { // NOI18N
                 return new Problem(true, NbBundle.getMessage(FindVisitor.class, "ERR_CannotRefactorThis", el.getSimpleName()));
             }
             

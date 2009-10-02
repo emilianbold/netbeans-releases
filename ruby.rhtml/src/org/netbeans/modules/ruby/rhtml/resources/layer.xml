@@ -103,6 +103,11 @@
     <folder name="Editors">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <folder name="BracesMatchers">
+                    <file name="org-netbeans-modules-ruby-rhtml-editor-RhtmlBracesMatcherFactory.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
                 <file name="org-netbeans-modules-ruby-rhtml-editor-RubyEmbeddingProvider$Factory.instance"/>
                 <file name="org-netbeans-modules-ruby-rhtml-editor-HtmlEmbeddingProvider$Factory.instance"/>
 

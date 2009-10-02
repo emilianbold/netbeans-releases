@@ -148,7 +148,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         f2.deleteOnExit();
         f3.deleteOnExit();
         
-        final Difference[] diffs = copyParts(true, file, f1, true);
+        Charset encoding = FileEncodingQuery.getEncoding(fo);
+        final Difference[] diffs = copyParts(true, file, f1, true, encoding);
         if (diffs.length == 0) {
             try {
                 ConflictResolvedAction.perform(file);  // remove conflict status
@@ -163,7 +164,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             return false;
         }
 
-        copyParts(false, file, f2, false);
+        copyParts(false, file, f2, false, encoding);
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
@@ -182,7 +183,6 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        Charset encoding = FileEncodingQuery.getEncoding(fo);
         Utils.associateEncoding(file, f1);
         Utils.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
@@ -207,9 +207,9 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
      * Copy the file and conflict parts into another file.
      */
     private Difference[] copyParts(boolean generateDiffs, File source,
-                                   File dest, boolean leftPart) throws IOException {
-        BufferedReader r = new BufferedReader(new FileReader(source));
-        BufferedWriter w = new BufferedWriter(new FileWriter(dest));
+                                   File dest, boolean leftPart, Charset charset) throws IOException {
+        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(source), charset));
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<Difference>();

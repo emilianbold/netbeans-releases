@@ -58,7 +58,7 @@ public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
     @Override
     BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
             PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new ZipSyncWorker(src, execEnv, out, err, privProjectStorageDir);
+        return new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, src);
     }
 
 

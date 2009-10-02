@@ -44,11 +44,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -90,7 +93,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         final MacroMap env = info.getEnvVariables();
 
-        UnbufferSupport.initUnbuffer(info, env);
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
 
         // Always prepend /bin and /usr/bin to PATH
 //        env.put("PATH", "/bin:/usr/bin:${PATH}"); // NOI18N
@@ -138,25 +143,65 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         final MacroMap env = info.getEnvVariables();
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
+        final Map<String, String> envVars = new HashMap<String, String>();
+
+        // To deal with different cases of env vars names (Path vs. PATH)
+        // Create a map to make binding between upper-case name and used in
+        // pb.environment() name...
+        for (String key : pb.environment().keySet()) {
+            envVars.put(key.toUpperCase(), key);
+        }
 
         if (isInterrupted()) {
             throw new InterruptedException();
         }
 
-        UnbufferSupport.initUnbuffer(info, env);
+        // In case we want to run application that was compiled with cygwin
+        // and require cygwin1.dll to run - we need the path to the dll in the
+        // PATH variable..
+
+        if (hostInfo.getShell() != null) {
+            String pathKey = envVars.get("PATH"); // NOI18N
+            if (pathKey == null) {
+                pathKey = "PATH"; // NOI18N
+            }
+            String path = env.get(pathKey); // NOI18N
+            String shellPath = new File(hostInfo.getShell()).getParent();
+
+            if (path != null) {
+                path = shellPath + ";" + path; // NOI18N
+            } else {
+                path = shellPath;
+            }
+
+            env.put("PATH", path); // NOI18N
+        }
+
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
 
         pb.command(info.getCommand());
-        LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
+
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
+        }
 
 
         String val = null;
 
         if (!env.isEmpty()) {
-            for (String var : env.keySet()) {
-                val = env.get(var);
+            for (Entry<String, String> entry : env.entrySet()) {
+                String upperCaseKey = entry.getKey().toUpperCase();
+
+                String envVarName = envVars.containsKey(upperCaseKey) ? envVars.get(upperCaseKey) : entry.getKey();
+                val = entry.getValue();
+
                 if (val != null) {
-                    pb.environment().put(var, val);
-                    LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{var, val});
+                    pb.environment().put(envVarName, val);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{envVarName, val}); // NOI18N
+                    }
                 }
             }
         }
@@ -166,7 +211,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             File wd = new File(wdir);
             if (wd.exists()) {
                 pb.directory(wd);
-                LOG.log(Level.FINEST, "Working directory: {0}", wdir);
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, "Working directory: {0}", wdir);
+                }
             }
         }
 
@@ -178,6 +225,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         // Fake PID...
         ByteArrayInputStream bis = new ByteArrayInputStream("12345".getBytes()); // NOI18N
+
         readPID(bis);
     }
 
@@ -207,7 +255,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
          * This is to avoid a problem with short-running tasks, when
          * this Thread (that waits for process' termination) doesn't see
          * that it has been interrupted....
-         * TODO: describe situation in details... 
+         * TODO: describe situation in details...
          */
 
         int result = -1;
@@ -224,8 +272,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             // This sleep is to avoid lost interrupted exception...
             try {
                 Thread.sleep(200);
-            // 200 - to make this check not so often...
-            // actually, to avoid the problem, 1 is OK.
+                // 200 - to make this check not so often...
+                // actually, to avoid the problem, 1 is OK.
             } catch (InterruptedException ex) {
                 throw ex;
             }

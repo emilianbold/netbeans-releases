@@ -501,49 +501,65 @@ public class GsfFoldManager implements FoldManager {
             if (ranges != null) {
                 boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_METHOD);
                 for (OffsetRange range : ranges) {
-                    addFold(range, result, doc, collapseByDefault,CODE_BLOCK_FOLD_TEMPLATE); //foldCodeBlocksPreset
+                    try {
+                        addFold(range, result, doc, collapseByDefault,CODE_BLOCK_FOLD_TEMPLATE); //foldCodeBlocksPreset
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
                 }
             }
             ranges = folds.get("comments"); //NOI18N
             if (ranges != null) {
                 boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_JAVADOC);
                 for (OffsetRange range : ranges) {
-                    addFold(range, result, doc, collapseByDefault,JAVADOC_FOLD_TEMPLATE);
+                    try {
+                        addFold(range, result, doc, collapseByDefault,JAVADOC_FOLD_TEMPLATE);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
                 }
             }
             ranges = folds.get("initial-comment"); //NOI18N
             if (ranges != null) {
                 for (OffsetRange range : ranges) {
-                    boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
-                    addFold(range, result, doc, collapseByDefault,INITIAL_COMMENT_FOLD_TEMPLATE); //foldInitialCommentsPreset
+                    try {
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
+                        addFold(range, result, doc, collapseByDefault,INITIAL_COMMENT_FOLD_TEMPLATE); //foldInitialCommentsPreset
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
                 }
             }
             ranges = folds.get("imports"); //NOI18N
             if (ranges != null) {
                 for (OffsetRange range : ranges) {
-                    boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_IMPORT);
-                    addFold(range, result, doc, collapseByDefault,IMPORTS_FOLD_TEMPLATE);
+                    try {
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_IMPORT);
+                        addFold(range, result, doc, collapseByDefault,IMPORTS_FOLD_TEMPLATE);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
                 }
             }
             ranges = folds.get("tags"); //NOI18N
             if (ranges != null) {
                 for (OffsetRange range : ranges) {
-                    boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_TAGS);
-                    addFold(range, result, doc, collapseByDefault, TAG_FOLD_TEMPLATE);
+                    try {
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_TAGS);
+                        addFold(range, result, doc, collapseByDefault, TAG_FOLD_TEMPLATE);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
                 }
             }
         }
         
-        private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, Document doc, boolean collapseByDefault, FoldTemplate template) {
+        private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, Document doc, boolean collapseByDefault, FoldTemplate template) throws BadLocationException {
             if (range != OffsetRange.NONE) {
                 int start = range.getStart();
                 int end = range.getEnd();
                 if (start != (-1) && end != (-1) && end <= doc.getLength()) {
-                    try {
-                        folds.add(new FoldInfo(doc, start, end, template, collapseByDefault));
-                    } catch (BadLocationException ble) {
-                        org.openide.ErrorManager.getDefault().notify(ble);
-                    }
+                    folds.add(new FoldInfo(doc, start, end, template, collapseByDefault));
                 }
             }
         }

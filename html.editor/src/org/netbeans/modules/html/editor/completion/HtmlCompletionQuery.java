@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -73,8 +74,8 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  */
 public class HtmlCompletionQuery extends UserTask {
 
-    private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
-    private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
+    private static final String SCRIPT_TAG_NAME = "script"; //NOI18N
+    private static final String STYLE_TAG_NAME = "style"; //NOI18N
     private static boolean lowerCase;
     private static boolean isXHtml = false;
     private Document document;
@@ -99,11 +100,63 @@ public class HtmlCompletionQuery extends UserTask {
         if (parserResult == null) {
             return;
         }
+        Snapshot snapshot = parserResult.getSnapshot();
+        int embeddedOffset = snapshot.getEmbeddedOffset(offset);
         String resultMimeType = parserResult.getSnapshot().getMimeType();
         if (resultMimeType.equals("text/html")) {
             //proceed only on html content
             this.completionResult = query((HtmlParserResult) parserResult);
+        } else if(resultMimeType.equals("text/javascript")) {
+            //complete the </script> end tag
+            this.completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, embeddedOffset, SCRIPT_TAG_NAME);
+        } else if(resultMimeType.equals("text/x-css")) {
+            //complete the </style> end tag
+            this.completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, embeddedOffset, STYLE_TAG_NAME);
         }
+    }
+
+    private CompletionResult queryHtmlEndTagInEmbeddedCode(Snapshot snapshot, int embeddedOffset, String endTagName) {
+        // </sty|
+        // </style
+        // 01234567
+        //PS = 7
+        //tli = 1
+        //index = embeddedOffset -
+
+        String expectedCode = "</" + endTagName;
+
+        //get searched area before caret size
+        int patternSize = Math.max(embeddedOffset, embeddedOffset - expectedCode.length());
+
+        CharSequence pattern = snapshot.getText().subSequence(embeddedOffset - patternSize, embeddedOffset);
+
+        //find < in the pattern
+        int ltIndex = CharSequenceUtilities.lastIndexOf(pattern, '<');
+        if(ltIndex == -1) {
+            //no acceptable prefix
+            return null;
+        }
+
+        boolean match = true;
+        //now compare the pattern with the expected text
+        for(int i = ltIndex; i < pattern.length(); i++) {
+            if(pattern.charAt(i) != expectedCode.charAt(i - ltIndex)) {
+                match = false;
+                break;
+            }
+        }
+
+        if(match) {
+            int itemOffset = embeddedOffset - patternSize + ltIndex;
+
+            //convert back to document offsets
+            int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
+
+            List<? extends CompletionItem> items = Collections.singletonList(HtmlCompletionItem.createEndTag(endTagName, documentItemOffset, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
+            return new CompletionResult(items, offset);
+        }
+
+        return null;
     }
 
     private CompletionResult query(HtmlParserResult result) {
@@ -119,8 +172,8 @@ public class HtmlCompletionQuery extends UserTask {
         lowerCase = usesLowerCase(parserResult, astOffset);
         isXHtml = parserResult.getHtmlVersion().isXhtml();
 
-        TokenHierarchy hi = snapshot.getTokenHierarchy();
-        TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
+        TokenHierarchy<?> hi = snapshot.getTokenHierarchy();
+        TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         assert ts != null; //should be ensured by the parsing.api that we always get html token sequence from the snapshot
 
         int diff = ts.move(astOffset);
@@ -144,7 +197,7 @@ public class HtmlCompletionQuery extends UserTask {
         int anchor = -1;
 
         //get text before cursor
-        Token item = ts.token();
+        Token<HTMLTokenId> item = ts.token();
         int itemOffset = item.offset(hi);
         int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
         String preText = item.text().toString();
@@ -255,12 +308,15 @@ public class HtmlCompletionQuery extends UserTask {
                 }
                 result = items;
             } else {
-                if (node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+                if (node.type() == AstNode.NodeType.UNKNOWN_TAG || node.type() == AstNode.NodeType.ROOT) {
                     //nothing to complete in an unknown tag
                     return null;
                 }
-                //should be open tag if not unknown
+                //should be open tag if not unknown or root in case of the text being broken
+                //that the parser cannot recognize the tag node
                 assert node.type() == AstNode.NodeType.OPEN_TAG : "Unexpecet node type " + node.type();
+
+                
 
                 DTD.Element tag = node.getDTDElement();
                 List possible = tag.getAttributeList(prefix); // All attribs of given tag
@@ -370,12 +426,8 @@ public class HtmlCompletionQuery extends UserTask {
 
                 }
             }
-        } else if (id == HTMLTokenId.SCRIPT) {
-            result = addEndTag(SCRIPT_TAG_NAME, preText, offset);
-        } else if (id == HTMLTokenId.STYLE) {
-            result = addEndTag(STYLE_TAG_NAME, preText, offset);
         }
-
+        
         return result == null ? null : new CompletionResult(result, anchor);
 
     }
@@ -430,7 +482,7 @@ public class HtmlCompletionQuery extends UserTask {
     }
 
     private List<CompletionItem> translateCharRefs(int offset, List refs) {
-        List result = new ArrayList(refs.size());
+        List<CompletionItem> result = new ArrayList<CompletionItem>(refs.size());
         String name;
         for (Iterator i = refs.iterator(); i.hasNext();) {
             DTD.CharRef chr = (DTD.CharRef) i.next();
@@ -541,9 +593,9 @@ public class HtmlCompletionQuery extends UserTask {
 
     List<HtmlCompletionItem> translateValues(int offset, List values, String quotationChar) {
         if (values == null) {
-            return new ArrayList(0);
+            return Collections.emptyList();
         }
-        List result = new ArrayList(values.size());
+        List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>(values.size());
         if (quotationChar != null) {
             offset++; //shift the offset after the quotation
         }
@@ -555,10 +607,10 @@ public class HtmlCompletionQuery extends UserTask {
 
     public static class CompletionResult {
 
-        private Collection<CompletionItem> items;
+        private Collection<? extends CompletionItem> items;
         int anchor;
 
-        CompletionResult(Collection<CompletionItem> items, int anchor) {
+        CompletionResult(Collection<? extends CompletionItem> items, int anchor) {
             this.items = items;
             this.anchor = anchor;
         }
@@ -567,7 +619,7 @@ public class HtmlCompletionQuery extends UserTask {
             return anchor;
         }
 
-        public Collection<CompletionItem> getItems() {
+        public Collection<? extends CompletionItem> getItems() {
             return items;
         }
     }

@@ -51,6 +51,7 @@ import java.awt.Toolkit;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -75,6 +76,7 @@ import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.plaf.synth.SynthStyle;
 import javax.swing.plaf.synth.SynthStyleFactory;
 import org.openide.awt.Actions;
+import org.openide.awt.MouseUtils;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.loaders.DataObject;
@@ -160,6 +162,17 @@ final class ToolbarContainer extends JPanel {
         if( null == dragger && isDraggable() ) {
             dragger = createDragger();
             dragger.setToolTipText(Actions.cutAmpersand(toolbar.getDisplayName()));
+            dragger.addMouseListener(new MouseUtils.PopupMouseAdapter() {
+
+                @Override
+                protected void showPopup(MouseEvent evt) {
+                    ToolbarConfiguration config = ToolbarConfiguration.findConfiguration( ToolbarPool.getDefault().getConfiguration() );
+                    if( null != config ) {
+                        config.getContextMenu().show(dragger, evt.getX(), evt.getY());
+                    }
+                }
+
+            });
             addToolbarDragger();
         }
         registerDnd();

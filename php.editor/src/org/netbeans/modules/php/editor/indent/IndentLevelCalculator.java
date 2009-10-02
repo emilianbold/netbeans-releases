@@ -108,7 +108,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         ts.movePrevious();
         ts.movePrevious();
         
-        int end = ts.offset();
+        int end = ts.offset() + ts.token().length();
         addIndentLevel(start, indentSize);
         addIndentLevel(end, -1 * indentSize);  
     }
@@ -279,18 +279,23 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         }
 
         // BEGIN AN UGLY HACK
-        // AST info does not allow to distinguish
-        // between "if" and "elseif"
         if (node instanceof IfStatement) {
-            String ELSE_IF = "elseif"; //NOI18N
-            try {
-                if (doc.getLength() > node.getStartOffset() + ELSE_IF.length()
-                        && ELSE_IF.equals(doc.getText(node.getStartOffset(),
-                        ELSE_IF.length()))) {
-                    return;
+            TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
+            ts.move(node.getStartOffset());
+            ts.moveNext();
+
+            if (ts.token().id() == PHPTokenId.PHP_ELSEIF){
+                return;
+            } else if (ts.token().id() == PHPTokenId.PHP_IF) {
+                if (ts.movePrevious()){
+                    if (ts.token().id() == PHPTokenId.WHITESPACE){
+                        if (ts.movePrevious()){
+                            if (ts.token().id() == PHPTokenId.PHP_ELSE){
+                                return;
+                            }
+                        }
+                    }
                 }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         // END AN UGLY HACK
@@ -305,9 +310,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         int r = offset;
         try {
             int v = Utilities.getFirstNonWhiteBwd(doc, offset);
+            int rs = Utilities.getRowStart(doc, offset);
             
             if (v >= 0){
                 r = v;
+            }
+
+            if (r < rs){
+                r = rs - 1;
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -320,9 +330,14 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         int r = offset;
         try {
             int v = Utilities.getFirstNonWhiteFwd(doc, offset);
+            int re = Utilities.getRowEnd(doc, offset);
 
             if (v >= 0){
                 r = v;
+            }
+
+            if (r > re){
+                r = re + 1;
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);

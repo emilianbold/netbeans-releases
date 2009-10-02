@@ -419,6 +419,7 @@ public abstract class URLMapper {
                 }
 
                 try {
+                    // XXX clumsy; see ArchiveURLMapper for possible cleaner style
                     String toReplace = "__EXCLAMATION_REPLACEMENT__";//NOI18N
                     retURL = new URL(
                             "jar:" + new File(f,toReplace + fo.getPath()).toURI().toString().replaceFirst("/"+toReplace,"!/") + // NOI18N
@@ -563,6 +564,7 @@ public abstract class URLMapper {
                     /* if ! is the last letter of the innerURL, entryName is null */
                     if (++separator != spec.length()) {
                         try {
+                            // XXX new URI("substring").getPath() might be better?
                             entryName = URLDecoder.decode(spec.substring(separator, spec.length()),"UTF-8");
                         } catch (UnsupportedEncodingException ex) {
                             return;

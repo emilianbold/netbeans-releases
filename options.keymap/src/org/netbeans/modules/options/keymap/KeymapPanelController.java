@@ -54,6 +54,16 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.TopLevelRegistration(
+    id="Keymaps",
+    categoryName="#CTL_Keymap_Options",
+    iconBase="org/netbeans/modules/options/resources/keymap.png",
+    keywords="#KW_KeymapOptions",
+    keywordsCategory="Keymaps",
+    position=600
+//    title="#CTL_Keymap_Options_Title",
+//    description="#CTL_Keymap_Options_Description"
+)
 public final class KeymapPanelController extends OptionsPanelController {
 
 

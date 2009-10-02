@@ -147,6 +147,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private ExplorerManager explorerManager;
     private FormProxyLookup lookup;
+    private boolean settingLookup;
 
     private AssistantView assistantView;
     private PreferenceChangeListener settingsListener;
@@ -190,9 +191,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             final FormDataObject formDataObject = formEditor.getFormDataObject();
             lookup = new FormProxyLookup(new Lookup[] {
                 ExplorerUtils.createLookup(explorerManager, map),
-                Lookups.fixed(new Object[] { formDataObject }),
                 PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile()),
-                formDataObject.getNodeDelegate().getLookup()
+                Lookup.EMPTY // placeholder for data node lookup used when no node selected in the form
             });
             associateLookup(lookup);
 
@@ -262,29 +262,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             // Lazy synchronization of already closed form - issue 129877
                             return;
                         }
-                        Lookup[] lookups = lookup.getSubLookups();
-                        Node[] oldNodes = (Node[])evt.getOldValue();
-                        Node[] nodes = (Node[])evt.getNewValue();
-                        Lookup lastLookup = lookups[lookups.length-1];
                         FormDataObject fdo = formEditor.getFormDataObject();
                         if (!fdo.isValid()) {
                             return; // Issue 130637
                         }
-                        Node delegate = fdo.getNodeDelegate();
-                        if (!(lastLookup instanceof NoNodeLookup)
-                            && (oldNodes.length >= 1)
-                            && (!oldNodes[0].equals(delegate))) {
-                            switchLookup();
-                        } else if ((lastLookup instanceof NoNodeLookup)
-                            && (nodes.length == 0)) {
-                            switchLookup();
-                        }
+                        Node dataNode = fdo.getNodeDelegate();
+                        Node[] nodes = (Node[])evt.getNewValue();
                         List<Node> list = new ArrayList<Node>(nodes.length);
-                        for (int i=0; i<nodes.length; i++) {
-                            if ((nodes[i] != null) && (nodes[i] != delegate)) {
-                                list.add(nodes[i]);
+                        for (Node n : nodes) {
+                            if (n != null && n != dataNode) {
+                                list.add(n);
                             }
                         }
+                        switchLookup(list.isEmpty()); // if no form node, select data node (of FormDataObject)
                         explorerManager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException ex) {
                         ex.printStackTrace();
@@ -384,18 +374,25 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         connectionTarget = null;        
         this.formEditor = formEditor;
     }
-    
-    private void switchLookup() {
-        Lookup[] lookups = lookup.getSubLookups();
-        Lookup nodeLookup = formEditor.getFormDataObject().getNodeDelegate().getLookup();
-        int index = lookups.length - 1;
-        if (lookups[index] instanceof NoNodeLookup) {
-            lookups[index] = nodeLookup;
-        } else {
-            // should not affect selected nodes, but should provide cookies etc.
-            lookups[index] = new NoNodeLookup(nodeLookup);
+
+    private void switchLookup(boolean includeDataNodeLookup) {
+        if (settingLookup) {
+            return;
         }
-        lookup.setSubLookups(lookups);
+        Lookup[] lookups = lookup.getSubLookups();
+        int index = lookups.length - 1;
+        boolean dataNodeLookup = (lookups[index] != Lookup.EMPTY);
+        if (includeDataNodeLookup != dataNodeLookup) {
+            lookups[index] = includeDataNodeLookup
+                    ? formEditor.getFormDataObject().getNodeDelegate().getLookup()
+                    : Lookup.EMPTY;
+            try {
+                settingLookup = true; // avoid re-entrant call
+                lookup.setSubLookups(lookups);
+            } finally {
+                settingLookup = false;
+            }
+        }
     }
 
     private void updateAssistant() {
@@ -2386,28 +2383,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                 
         }
     }
-    
-    /** Lookup that excludes nodes. */
-    private static class NoNodeLookup extends Lookup {
-        private final Lookup delegate;
-        
-        public NoNodeLookup(Lookup delegate) {
-            this.delegate = delegate;
-        }
-        
-        public <T> T lookup(Class<T> clazz) {
-            return (clazz == Node.class) ? null : delegate.lookup(clazz);
-        }
-        
-        public <T> Result<T> lookup(Template<T> template) {
-            if (template.getType() == Node.class) {
-                return Lookup.EMPTY.lookup(new Lookup.Template<T>(template.getType()));
-            } else {
-                return delegate.lookup(template);
-            }
-        }
-    }
-    
+
     /**
      * Action that aligns selected components in the specified direction.
      */
@@ -2529,7 +2505,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
     
     static class FormProxyLookup extends ProxyLookup {
-        
+
         FormProxyLookup(Lookup[] lookups) {
             super(lookups);
         }

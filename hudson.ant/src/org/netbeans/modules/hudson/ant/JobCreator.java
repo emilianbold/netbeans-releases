@@ -139,7 +139,12 @@ public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
             });
             return ConfigurationStatus.withWarning(msg).withExtraButton(button);
         }
-        return ConfigurationStatus.valid();
+        ConfigurationStatus scmStatus = scm.problems();
+        if (scmStatus != null) {
+            return scmStatus;
+        } else {
+            return ConfigurationStatus.valid();
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {}

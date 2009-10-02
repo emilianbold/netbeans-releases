@@ -57,9 +57,9 @@ class ZipSyncFactory extends RemoteSyncFactory {
     /*package*/ static final String ID = "scp"; //NOI18N
     
     @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new ZipSyncWorker(localDir, executionEnvironment, out, err, privProjectStorageDir);
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
 
     @Override

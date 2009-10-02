@@ -129,28 +129,28 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         resourceID = iconColumnID == null ? null : accessor.getIconPath(configuration);
         List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
-        List<Property> result = new ArrayList<Property>();
+        List<Property<?>> result = new ArrayList<Property<?>>();
         List<Column> columns = new ArrayList<Column>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
             if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
                 columns.add(c);
-                result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
+                @SuppressWarnings("unchecked")
+                Property<?> property = new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     c.getColumnUName(), c.getColumnUName(), true, false) {
-
                     @Override
                     public Object getValue() throws IllegalAccessException, InvocationTargetException {
                         return null;
                     }
-
                     @Override
                     public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                     }
-                });
+                };
+                result.add(property);
             }
         }
         outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
-        outlineView.setProperties(result.toArray(new Property[0]));
+        outlineView.setProperties(result.toArray(new Property<?>[0]));
         outlineView.setPopupAllowed(false);
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
@@ -418,23 +418,23 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
                 @Override
                 public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList<Property>();
+                    List<Property<?>> result = new ArrayList<Property<?>>();
                     for (String columnName : dataRow.getColumnNames()) {
                         if (!columnName.equals(nodeColumnName) && !columnName.equals(nodeRowColumnID)) {
                             final Column c = configuration.getMetadata().getColumnByName(columnName);
-                            result.add(new PropertySupport(columnName, c.getColumnClass(),
+                            @SuppressWarnings("unchecked")
+                            Property<?> propery = new PropertySupport(columnName, c.getColumnClass(),
                                 c.getColumnUName(), c.getColumnUName(), true, false) {
-
                                 @Override
                                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
                                     return dataRow.getData(c.getColumnName());
                                 }
-
                                 @Override
                                 public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                                     //throw new UnsupportedOperationException("Not supported yet.");
                                 }
-                            });
+                            };
+                            result.add(propery);
                         }
                     }
                     return result.toArray(new Property[0]);

@@ -28,6 +28,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
 import org.junit.Test;
 import org.netbeans.api.java.source.*;
@@ -40,7 +41,9 @@ import javax.lang.model.util.Elements;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.element.Modifier;
 
 /**
  * This test verifies issues from netbeans issueszila about rewriting trees.
@@ -208,7 +211,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
         return "";
     }
 
-    public void testExtractInterface117986() throws Exception {
+    public void XtestExtractInterface117986() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String source = "public class ExtractSuperInterface implements MyInterface1, MyInterface2, MyInterface3 {\n" +
                 "}\n";
@@ -336,7 +339,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
         assertEquals("Golden and result does not match", golden, res);
     }
 
-    public void testExtractInterfaceRegresion2() throws Exception {
+    public void XtestExtractInterfaceRegresion2() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String source = "public class ExtractSuperInterface implements MyInterface1, MyInterface2 {\n" +
                 "}\n";
@@ -482,5 +485,56 @@ public class RewriteOccasionalStatements extends GeneratorTest {
             return super.visitBlock(node, p);
         }
 
+    }
+
+    @Test
+    public void test159492() throws Exception {
+        File testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+                "public class Test {\n" +
+                "    private void test() {\n" +
+                "        String[] a = new String[a().length()];\n" +
+                "    }\n" +
+                "}\n");
+        String golden = 
+                "public class Test {\n" +
+                "    private void test() {\n" +
+                "        String v = null;\n" +
+                "        String[] a = new String[v.length()];\n" +
+                "    }\n" +
+                "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                        if (node.getMethodSelect().getKind() == Kind.IDENTIFIER && ((IdentifierTree) node.getMethodSelect()).getName().contentEquals("a")) {
+                            workingCopy.rewrite(node, make.Identifier("v"));
+                            return null;
+                        }
+                        return super.visitMethodInvocation(node, p);
+                    }
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("test")) {
+                            ExpressionTree type = make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.String"));
+                            VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "v", type, make.Literal(null));
+                            workingCopy.rewrite(node.getBody(), make.insertBlockStatement(node.getBody(), 0, vt));
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                }.scan(cut, null);
+            }
+        };
+
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
     }
 }

@@ -61,6 +61,13 @@ public class ListenerVisualPanel extends javax.swing.JPanel {
         this.wizardPanel=wizardPanel;
         initComponents();
         
+        if (!Profile.JAVA_EE_6_FULL.equals(j2eeVersion)&& 
+                !Profile.JAVA_EE_6_WEB.equals(j2eeVersion))
+        {
+            remove( jCheckBox1 );
+        }
+        
+        
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ListenerVisualPanel.class, "TITLE_listenerWizardPanel"));
         /*

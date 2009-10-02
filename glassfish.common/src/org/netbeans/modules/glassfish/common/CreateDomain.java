@@ -73,9 +73,10 @@ public class CreateDomain extends Thread {
     final private Map<String, String> map;
     final private Map<String, String> ip;
     private GlassfishInstanceProvider gip;
+    private boolean register;
 
     public CreateDomain(String uname, String pword, File platformLocation, 
-            Map<String, String> ip, GlassfishInstanceProvider gip) {
+            Map<String, String> ip, GlassfishInstanceProvider gip, boolean register) {
         this.uname = uname;
         this.pword = pword;
         this.platformLocation = platformLocation;
@@ -83,6 +84,7 @@ public class CreateDomain extends Thread {
         this.map = new HashMap<String,String>();
         this.gip = gip;
         map.putAll(ip);
+        this.register = register;
         computePorts(ip,map);
     }
 
@@ -124,19 +126,7 @@ public class CreateDomain extends Thread {
             String arrnd[];
             
             if ("".equals(pword)) { // NOI18N
-                arrnd = new String[] {startScript,
-                    "-client",  // NOI18N
-                    "-jar",  // NOI18N
-                    jarLocation,
-                    "create-domain", //NOI18N
-                    "--domaindir", //NOI18N
-                    domainDir,
-                    "--portbase", //NOI18N
-                    map.get(PORTBASE),
-                    "--user", //NOI18N
-                    uname,
-                    domain
-                };            
+                arrnd = gip.getNoPasswordCreatDomainCommand(startScript, jarLocation,domainDir,map.get(PORTBASE),uname,domain);
             } else {
                 arrnd = new String[] {startScript,
                     "-client",  // NOI18N
@@ -200,10 +190,20 @@ public class CreateDomain extends Thread {
             }
             if (0 == retVal) {
                 // The create was successful... create the instance and register it.
-                GlassfishInstance gi = GlassfishInstance.create(ip,gip);
+                if (register) {
+                    GlassfishInstance gi = GlassfishInstance.create(ip,gip);
+                }
                 NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
             }
         }
+    }
+
+    public int getHttpPort() {
+        return Integer.parseInt(ip.get(GlassfishModule.HTTPPORT_ATTR));
+    }
+
+    public int getAdminPort() {
+        return Integer.parseInt(ip.get(GlassfishModule.ADMINPORT_ATTR));
     }
 
     static class PDCancel implements Cancellable {

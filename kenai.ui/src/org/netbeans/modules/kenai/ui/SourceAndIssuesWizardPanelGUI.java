@@ -115,16 +115,16 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String DEFAULT_REPO_FOLDER = "{0}~{1}"; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String SVN_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai");
-    private static final String HG_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai");
-    private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External");
-    private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");;
+    private static final String SVN_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai"); // NOI18N
+    private static final String HG_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai"); // NOI18N
+    private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
+    private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");; // NOI18N
 
     // XXX maybe move to bundle
-    private static final String BGZ_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai");
-    private static final String JIRA_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai");
-    private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External");
-    private static final String NO_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");
+    private static final String BGZ_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai"); // NOI18N
+    private static final String JIRA_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai"); // NOI18N
+    private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
+    private static final String NO_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None"); // NOI18N
 
     static final String SVN_DEFAULT_NAME = "subversion"; // NOI18N
     private static final String HG_DEFAULT_NAME = "mercurial"; // NOI18N
@@ -192,7 +192,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         showIssuesOnKenaiGUI();
         itSeparator.setVisible(false);
         createChatRoom.setVisible(false);
-        if (!Kenai.getDefault().getName().equals(("testkenai.com"))) {
+        if (!Kenai.getDefault().getName().equals(("testkenai.com"))) { // NOI18N
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
@@ -345,10 +345,10 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     // XXX should check whether user did some edit in the field also
     private void setDefaultRepoName() {
         if (KenaiService.Names.SUBVERSION.equals(getRepoType()) &&
-                (HG_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
+                (HG_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) { // NOI18N
             setRepoName(SVN_DEFAULT_NAME);
         } else if (KenaiService.Names.MERCURIAL.equals(getRepoType()) &&
-                (SVN_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) {
+                (SVN_DEFAULT_NAME.equals(getRepoName()) || "".equals(getRepoName()))) { // NOI18N
             setRepoName(HG_DEFAULT_NAME);
         }
     }
@@ -927,18 +927,18 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String localRepoPath = getRepoLocal();
         if ((KenaiService.Names.SUBVERSION.equals(getRepoType()) ||
                 KenaiService.Names.MERCURIAL.equals(getRepoType())) &&
-                ("".equals(localRepoPath) || localRepoPath == null)) {
-            return "Local repository folder path is required";
+                ("".equals(localRepoPath) || localRepoPath == null)) { // NOI18N
+            return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.LocalRepoRequired"); // NOI18N
         }
         String extRepoUrl = getRepoUrl();
         if (KenaiService.Names.EXTERNAL_REPOSITORY.equals(getRepoType()) &&
-                ("".equals(extRepoUrl) || extRepoUrl == null)) {
-            return "External repository URL is required";
+                ("".equals(extRepoUrl) || extRepoUrl == null)) { // NOI18N
+            return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.ExternalRepoRequired"); // NOI18N
         }
         String extIssuesUrl = getIssuesUrl();
         if (KenaiService.Names.EXTERNAL_ISSUES.equals(getIssuesType()) &&
-                ("".equals(extIssuesUrl) || extIssuesUrl == null)) {
-            return "External issue tracking URL is required";
+                ("".equals(extIssuesUrl) || extIssuesUrl == null)) { // NOI18N
+            return NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.ExternalIssueRepoRequired"); // NOI18N
         }
         return null;
     }
@@ -953,20 +953,20 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String scmType = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_TYPE);
         // XXX
         String repoName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME);
-        if (repoName == null || "".equals(repoName.trim())) {
+        if (repoName == null || "".equals(repoName.trim())) { // NOI18N
             setDefaultRepoName();            
         } else {
             setRepoName(repoName);
         }
         String repoUrl = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_URL);
-        if (repoUrl == null || "".equals(repoUrl.trim())) {
+        if (repoUrl == null || "".equals(repoUrl.trim())) { // NOI18N
             // external repo url will be empty by default
-            setRepoUrl("");
+            setRepoUrl(""); // NOI18N
         } else {
             setRepoUrl(repoUrl);
         }
         String repoLocal = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL);
-        if (repoLocal == null || "".equals(repoLocal.trim())) {
+        if (repoLocal == null || "".equals(repoLocal.trim())) { // NOI18N
             File parent = NewKenaiProjectWizardIterator.getCommonParent(itemsToShare);
             if (parent != null) {
                 setRepoLocal(parent.getAbsolutePath());
@@ -981,9 +981,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String issuesType = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES);
         // XXX
         String issuesUrl = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL);
-        if (issuesUrl == null || "".equals(issuesUrl.trim())) {
+        if (issuesUrl == null || "".equals(issuesUrl.trim())) { // NOI18N
             // external issues tracking url will be empty by default
-            setRepoUrl("");
+            setRepoUrl(""); // NOI18N
         } else {
             setRepoUrl(issuesUrl);
         }

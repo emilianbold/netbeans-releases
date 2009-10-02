@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.util.Map;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.openide.util.lookup.ServiceProvider;
@@ -49,8 +50,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CppSymbolDemanglerFactory.class)
 public final class CppSymbolDemanglerFactoryImpl implements CppSymbolDemanglerFactory {
 
-    public CppSymbolDemangler getForCurrentSession() {
-        return new CppSymbolDemanglerImpl();
+    public CppSymbolDemangler getForCurrentSession(Map<String, String> serviceInfo) {
+        return new CppSymbolDemanglerImpl(serviceInfo);
     }
 
     public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler) {

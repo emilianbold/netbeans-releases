@@ -39,31 +39,27 @@
 
 package org.netbeans.modules.subversion.kenai;
 
-import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
-import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.notifications.NotificationsManager;
+import org.netbeans.modules.subversion.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -71,112 +67,91 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class KenaiNotificationListener implements PropertyChangeListener {
-
-    private RequestProcessor rp = new RequestProcessor("Kenai vcs notifications");
+public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
     
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(VCSKenaiSupport.PROP_KENAI_VCS_NOTIFICATION)) {
-            handleVCSNotification((VCSKenaiNotification) evt.getNewValue());
+    private static final String CMD_DIFF = "cmd_diff";                          // NOI18N
+
+    protected void handleVCSNotification(final VCSKenaiNotification notification) {
+        if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
+            LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
+            return;
+        }
+        File projectDir = notification.getProjectDirectory();
+        if(!SvnUtils.isManaged(projectDir)) {
+            assert false : " project " + projectDir + " not managed"; // NOI18N
+            LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by svn"); // NOI18N
+            return;
+        }
+        LOG.fine("accepting VCS notification " + notification + " for " + projectDir); // NOI18N
+        
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File[] files = cache.listFiles(new File[] {projectDir}, FileInformation.STATUS_LOCAL_CHANGE);
+        List<VCSKenaiModification> modifications = notification.getModifications();
+
+        List<File> notifyFiles = new LinkedList<File>();
+        String revision = null;
+        for (File file : files) {
+            String path;
+            try {
+                path = SvnUtils.getRepositoryPath(file);
+            } catch (SVNClientException ex) {
+                LOG.log(Level.WARNING, file.getAbsolutePath(), ex); 
+                continue;
+            }
+            path = trim(path);
+            for (VCSKenaiModification modification : modifications) {
+                String resource = modification.getResource();
+                LOG.finer(" changed file " + path + ", " + resource); // NOI18N
+
+                resource = trim(resource);
+                if(path.equals(resource)) {
+                    LOG.fine("  will notify " + file + ", " + notification); // NOI18N
+                    notifyFiles.add(file);
+                    if(revision == null) {
+                        revision = modification.getId();
+                    }
+                    break;
+                }
+            }
+        }
+        if(notifyFiles.size() > 0) {
+            notifyFileChange(notifyFiles.toArray(new File[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
+            try {
+                NotificationsManager.getInstance().notfied(files, Long.parseLong(revision));
+            } catch (NumberFormatException e) {
+                LOG.log(Level.WARNING, revision, e);
+            }
         }
     }
 
-    private void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
-            return;
-        }
-        rp.post(new Runnable() {
-            public void run() {
-                URI uri = notification.getUri();
-                SVNUrl notificationUrl;
-                try {
-                    notificationUrl = new SVNUrl(uri.toString());
-                } catch (MalformedURLException ex) {
-                    Subversion.LOG.log(Level.WARNING, null, ex);
-                    return;
-                }
-                Project projects[] = OpenProjects.getDefault().getOpenProjects();
-                for (Project project : projects) {
-                    File root = FileUtil.toFile(project.getProjectDirectory());
-                    if(!SvnUtils.isManaged(root)) {
-                        continue;
-                    }
-                    SVNUrl repositoryRoot;
-                    try {
-                        repositoryRoot = SvnUtils.getRepositoryRootUrl(root);
-                    } catch (SVNClientException ex) {
-                        Subversion.LOG.log(Level.WARNING, null, ex);
-                        continue;
-                    }
-                    if(repositoryRoot.equals(notificationUrl)) {
-                        File[] files = Subversion.getInstance().getStatusCache().listFiles(root);
-                        List<VCSKenaiModification> modifications = notification.getModifications();
+    @Override
+    protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {        
+        String msg =
+            NbBundle.getMessage(
+                KenaiNotificationListener.class,
+                "MSG_NotificationBubble_Description",                           // NOI18N
+                getFileNames(files),
+                url,
+                CMD_DIFF
+            );
+        pane.setText(msg);
 
-                        for (File file : files) {
-                            for (VCSKenaiModification modification : modifications) {
-                                String resource = modification.getResource();
-                                if(file.equals(new File(root, resource))) {
-                                    notifyChange(file, notification, modification);
-                                }
-                            }
+        pane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                    if(CMD_DIFF.equals(e.getDescription())) {
+                        Context ctx = new Context(files);
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(KenaiNotificationListener.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
+                    } else {
+                        try {
+                            SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
+                        } catch (MalformedURLException ex) {
+                            LOG.log(Level.WARNING, null, ex);
                         }
                     }
                 }
             }
-
         });
-
-    }
-    
-    private void notifyChange(File file, VCSKenaiNotification notification, VCSKenaiModification modification) {
-        try {
-            notifyFileChange(file, new SVNUrl(notification.getUri().toString()), Long.parseLong(modification.getId()));
-        } catch (MalformedURLException ex) {
-            Subversion.LOG.log(Level.WARNING, null, ex);
-        }
-    }
-
-    private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/subversion/resources/icons/info.png"; //NOI18N    
-    private static final String NOTIFICATION_REVISION_LINK = "<a href=\"{0}\">{1}</a>"; //NOI18N    
-    
-    private void notifyFileChange(File file, SVNUrl url, long revision) {
-        NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
-                ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
-                getSimplePane(file), getDetailsPane(file, url, revision), NotificationDisplayer.Priority.NORMAL);
-    }
-
-    private JTextPane getSimplePane (File file) {
-        JTextPane bubble = new JTextPane();
-        String text = NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Description", file.getName()); //NOI18N
-        bubble.setText(text);
-        bubble.setOpaque(false);
-        bubble.setEditable(false);
-
-        if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {  //NOI18N
-            //#134837
-            //http://forums.java.net/jive/thread.jspa?messageID=283882
-            bubble.setBackground(new Color(0, 0, 0, 0));
-        }
-        return bubble;
-    }
-
-    private JTextPane getDetailsPane (final File file, final SVNUrl svnUrl, final long revision) {
-        JTextPane bubble = getSimplePane(file);
-        bubble.setContentType("text/html");                        //NOI18N
-        String url = svnUrl.toString();
-        String text = java.text.MessageFormat.format(NOTIFICATION_REVISION_LINK, url,
-                    NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_DescriptionRevision"));
-        bubble.setText(text);
-
-        bubble.addHyperlinkListener(new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                    SearchHistoryAction.openSearch(svnUrl, file, revision);
-                }
-            }
-        });
-        return bubble;
     }
 
 }

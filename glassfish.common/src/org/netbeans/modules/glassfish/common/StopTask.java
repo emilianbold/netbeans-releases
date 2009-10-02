@@ -85,7 +85,7 @@ public class StopTask extends BasicTask<OperationState> {
         }
                
         try {
-            port = Integer.valueOf(ip.get(GlassfishModule.HTTPPORT_ATTR));
+            port = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
             if(port < 0 || port > 65535) {
                 return fireOperationStateChanged(OperationState.FAILED, 
                         "MSG_START_SERVER_FAILED_BADPORT", instanceName); // NOI18N

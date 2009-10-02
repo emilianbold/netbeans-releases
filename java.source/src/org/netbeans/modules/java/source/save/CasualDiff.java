@@ -101,7 +101,7 @@ public class CasualDiff {
         this.context = context;
         this.tree2Tag = tree2Tag;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
-        printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span);
+        printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText);
     }
 
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -1240,7 +1240,9 @@ public class CasualDiff {
             // solved just for the change, not insert and delete
             for (com.sun.tools.javac.util.List<JCExpression> l1 = oldT.dims, l2 = newT.dims;
                 l1.nonEmpty(); l1 = l1.tail, l2 = l2.tail) {
-                localPointer = diffTree(l1.head, l2.head, new int[] { localPointer, getBounds(l1.head)[1] });
+                int[] span = getBounds(l1.head);
+                copyTo(localPointer, span[0]);
+                localPointer = diffTree(l1.head, l2.head, span);
             }
         }
         if (oldT.elems != null) {
@@ -2419,7 +2421,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -2436,7 +2438,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                            this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);

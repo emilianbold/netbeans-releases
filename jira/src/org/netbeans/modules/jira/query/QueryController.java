@@ -837,7 +837,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected String getLastRefresh() throws MissingResourceException {
         long l = query.getLastRefresh();
-        return l > -1 ?
+        return l > 0 ?
             dateFormat.format(new Date(l)) :
             NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
     }

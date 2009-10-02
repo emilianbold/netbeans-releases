@@ -79,6 +79,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel.ColumnData;
@@ -206,6 +207,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 progressContributor, panel).run();
         addToPersistenceUnit(result);
         progressContributor.progress(progressMax);
+        PersistenceUtils.logUsage(JavaPersistenceGenerator.class, "USG_PERSISTENCE_ENTITY_DB_CREATED", new Integer[]{entityClasses.length});
     }
 
     
@@ -927,7 +929,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 // XXX getRelationshipFieldType() does not work well when entity classes
                 // are not all generated to the same package - fixed in issue 139804
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
-                TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
+                TypeElement typeEl = copy.getElements().getTypeElement(typeName);
+                assert typeEl != null : "null TypeElement for \"" +typeName+ "\"";
+                TypeMirror fieldType = typeEl.asType();
                 if (role.isToMany()) {
                     // Use the collection type the user wants
                     TypeElement collectionTypeElem = copy.getElements().getTypeElement(collectionType.className());

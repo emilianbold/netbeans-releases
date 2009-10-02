@@ -59,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.Document;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.manager.WagonManager;
@@ -78,8 +79,15 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.validation.api.Problems;
+import org.netbeans.validation.api.Validator;
+import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -109,18 +117,22 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     private BasicWizardPanel panel;
 
     private String lastProjectName = ""; //NOI18N
+    private final ValidationGroup vg;
 
     private boolean changedPackage = false;
     
-    private ArchetypeWizardUtils ngprovider;
-
-    private static final String ILLEGAL_CHARS = "*/\\|:(){}";
-
     /** Creates new form PanelProjectLocationVisual */
     public BasicPanelVisual(BasicWizardPanel panel) {
         this.panel = panel;
 
         initComponents();
+
+        projectLocationTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_projectLocationTextField"));
+        projectNameTextField.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_projectNameTextField"));
+        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_ArtifactId"));
+        txtVersion.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_Version"));
+        txtGroupId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_GroupId"));
+        txtPackage.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(BasicPanelVisual.class, "VAL_Package"));
 
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -144,6 +156,71 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 NbBundle.getMessage(BasicPanelVisual.class, "LBL_CreateProjectStep2"));
 
         txtGroupId.setText(MavenSettings.getDefault().getLastArchetypeGroupId());
+        vg = ValidationGroup.create();
+        vg.add(txtGroupId, MavenValidators.createGroupIdValidators());
+        vg.add(txtArtifactId, MavenValidators.createArtifactIdValidators());
+        vg.add(txtVersion, MavenValidators.createVersionValidators());
+        vg.add(txtPackage, Validators.merge(true,
+                Validators.REQUIRE_NON_EMPTY_STRING,
+                Validators.JAVA_PACKAGE_NAME));
+        vg.add(projectNameTextField, Validators.merge(true,
+                MavenValidators.createArtifactIdValidators(),
+                Validators.REQUIRE_VALID_FILENAME,
+                new Validator<String>() {
+                    public boolean validate(Problems problems, String compName, String model) {
+                        File destFolder = FileUtil.normalizeFile(new File(new File(projectLocationTextField.getText()), model).getAbsoluteFile());
+                        File[] kids = destFolder.listFiles();
+                        if (destFolder.exists() && kids != null && kids.length > 0) {
+                            // Folder exists and is not empty
+                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
+                            return false;
+                        }
+                        return true;
+                    }
+                }));
+
+        vg.add(projectLocationTextField, Validators.merge(true,
+//                        Validators.FILE_MUST_BE_DIRECTORY,
+                new Validator<String>() {
+                    public boolean validate(Problems problems, String compName, String model) {
+                        File fil = new File(model);
+                        File projLoc = fil;
+                        while (projLoc != null && !projLoc.exists()) {
+                            projLoc = projLoc.getParentFile();
+                        }
+                        if (projLoc == null || !projLoc.canWrite()) {
+                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_cannot_be_created"));
+                            return false;
+                        }
+                        if (FileUtil.toFileObject(projLoc) == null) {
+                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path"));
+                            return false;
+                        }
+                        File destFolder = FileUtil.normalizeFile(new File(new File(model), projectNameTextField.getText()).getAbsoluteFile());
+                        File[] kids = destFolder.listFiles();
+                        if (destFolder.exists() && kids != null && kids.length > 0) {
+                            // Folder exists and is not empty
+                            problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
+                            return false;
+                        }
+                        return true;
+                    }
+                }));
+
+        vg.add(new ValidationListener() {
+            @Override
+            protected boolean validate(Problems problems) {
+                boolean tooOld = isMavenTooOld();
+                btnSetupNewer.setVisible(tooOld);
+                if (tooOld) {
+                    problems.add(NbBundle.getMessage(BasicPanelVisual.class, "ERR_old_maven",
+                                 getCommandLineMavenVersion()));
+                    return false;
+                }
+                return true;
+            }
+        });
+
     }
     
     
@@ -201,11 +278,13 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_ProjectFolder")); // NOI18N
 
         createdFolderTextField.setEditable(false);
+        createdFolderTextField.setEnabled(false);
 
         lblArtifactId.setLabelFor(txtArtifactId);
         org.openide.awt.Mnemonics.setLocalizedText(lblArtifactId, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_ArtifactId")); // NOI18N
 
         txtArtifactId.setEditable(false);
+        txtArtifactId.setEnabled(false);
 
         lblGroupId.setLabelFor(txtGroupId);
         org.openide.awt.Mnemonics.setLocalizedText(lblGroupId, org.openide.util.NbBundle.getMessage(BasicPanelVisual.class, "LBL_GroupId")); // NOI18N
@@ -242,11 +321,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(lblAdditionalProps)
-                .addContainerGap(475, Short.MAX_VALUE))
+                .addContainerGap(493, Short.MAX_VALUE))
             .add(pnlAdditionalsLayout.createSequentialGroup()
                 .add(btnSetupNewer)
                 .addContainerGap())
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
         );
         pnlAdditionalsLayout.setVerticalGroup(
             pnlAdditionalsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -384,7 +463,8 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 }//GEN-LAST:event_comboEEVersionActionPerformed
 
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Maven"); //NOI18N - the id is the name of instance in layers.
+        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
+        panel.getValidationGroup().validateAll();
     }//GEN-LAST:event_btnSetupNewerActionPerformed
     
     
@@ -424,116 +504,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         jScrollPane1.setVisible(false);
         // for maven version checking
         SwingUtilities.getWindowAncestor(this).addWindowFocusListener(this);
-    }
-    
-    boolean valid(WizardDescriptor wizardDescriptor) {
-
-        String projName = projectNameTextField.getText();
-        if (projName.length() == 0) {
-            wizardDescriptor.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_is_not_valid"));
-            return false; // Display name not specified
-        }
-
-        if(projName.indexOf(File.separatorChar) != -1) {
-            wizardDescriptor.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_has_slash"));
-            return false;
-        }
-        
-        for (int i = 0; i < ILLEGAL_CHARS.length(); i++) {
-            if(projName.indexOf(ILLEGAL_CHARS.charAt(i)) != -1) {
-                wizardDescriptor.putProperty(ERROR_MSG,
-                        NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Name_illegal",
-                            ILLEGAL_CHARS.charAt(i)));
-                return false;
-            }
-        }
-
-        File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
-        if (!f.isDirectory()) {
-            String message = NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path");
-            wizardDescriptor.putProperty(ERROR_MSG, message); //NOI18N
-            return false;
-        }
-        final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
-        
-        File projLoc = destFolder;
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty(ERROR_MSG, //NOI18N
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_cannot_be_created"));
-            return false;
-        }
-        
-        if (FileUtil.toFileObject(projLoc) == null) {
-            String message = NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_is_not_valid_path");
-            wizardDescriptor.putProperty(ERROR_MSG, message); //NOI18N
-            return false;
-        }
-        
-        File[] kids = destFolder.listFiles();
-        if (destFolder.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            wizardDescriptor.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Project_Folder_exists"));
-            return false;
-        }
-        if (containsMultiByte(projName, wizardDescriptor)) {
-            return false;
-        }
-
-        String coord = txtArtifactId.getText().trim();
-        if (coord.length() == 0) {
-            wizardDescriptor.putProperty(ERROR_MSG, 
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_Require_artifactId"));
-            return false;
-        }
-        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
-            return false;
-        }
-        if (containsMultiByte(coord, wizardDescriptor)) {
-            return false;
-        }
-
-        coord = txtGroupId.getText().trim();
-        if (coord.length() == 0) {
-            wizardDescriptor.putProperty(ERROR_MSG, 
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_require_groupId"));
-            return false;
-        }
-        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
-            return false;
-        }
-        if (containsMultiByte(coord, wizardDescriptor)) {
-            return false;
-        }
-
-        coord = txtVersion.getText().trim();
-        if (coord.length() == 0) {
-            wizardDescriptor.putProperty(ERROR_MSG, 
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_require_version"));
-            return false;
-        }
-        if (!EAVisualPanel.validateCoordinate(coord, wizardDescriptor)) {
-            return false;
-        }
-        if (containsMultiByte(coord, wizardDescriptor)) {
-            return false;
-        }
-
-        btnSetupNewer.setVisible(isMavenTooOld());
-        if (isMavenTooOld()) {
-            wizardDescriptor.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(BasicPanelVisual.class, "ERR_old_maven",
-                    getCommandLineMavenVersion()));
-            return false;
-        }
-
-        wizardDescriptor.putProperty(ERROR_MSG, ""); //NOI18N
-        return true;
     }
 
     static boolean containsMultiByte (String text, WizardDescriptor wd) {
@@ -586,6 +556,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (panel.getArchetypes() != null) {
             d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().removeValidationGroup(vg);
+            }
+        });
     }
     
     void read(WizardDescriptor settings) {
@@ -609,7 +584,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
-        ngprovider = (ArchetypeWizardUtils)settings.getProperty(MavenWizardIterator.PROPERTY_CUSTOM_CREATOR);
         // skip additional properties if direct known archetypes without additional props used
         if (panel.areAdditional()) {
             final Archetype arch = getArchetype(settings);
@@ -623,6 +597,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 }
             });
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().addValidationGroup(vg, true);
+            }
+        });
     }
 
     private void prepareAdditionalProperties(Archetype arch) {
@@ -749,9 +728,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         return new DefaultTableModel();
     }
     
-    void validate(WizardDescriptor d) throws WizardValidationException {
-        // nothing to validate
-    }
     
     // Implementation of DocumentListener --------------------------------------
     
@@ -867,7 +843,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             SwingUtilities.invokeLater(this);
         } else {
             // phase two, inside EQ thread
-            panel.fireChangeEvent();
+            vg.validateAll();
         }
     }
 

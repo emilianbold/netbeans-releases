@@ -68,7 +68,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private final ExtenderController controller;
     private JSFConfigurationPanelVisual component;
 
-    private final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
+    private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
 
     private Preferences preferences;
 

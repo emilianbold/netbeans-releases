@@ -55,13 +55,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -131,20 +132,30 @@ public class GdbProxyEngine {
         getLogger().logMessage("workingDirectory: " + workingDirectory); // NOI18N
         getLogger().logMessage("NB version: " + System.getProperty("netbeans.buildnumber")); // NOI18N
         getLogger().logMessage("================================================"); // NOI18N
-        
-        startDebugger(debuggerCommand, workingDirectory, cspath);
+
+        startDebugger(debuggerCommand, workingDirectory, debuggerEnvironment, cspath);
     }
     
-    private void startDebugger(List<String> debuggerCommand, String workingDirectory, String cspath) throws IOException {
+    private void startDebugger(List<String> debuggerCommand,
+                               String workingDirectory,
+                               String[] debuggerEnvironment,
+                               String cspath) throws IOException {
         ExecutionEnvironment execEnv = debugger.getHostExecutionEnvironment();
         String[] args = debuggerCommand.subList(1, debuggerCommand.size()).toArray(new String[debuggerCommand.size()-1]);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable(debuggerCommand.get(0)).setArguments(args);
 
+        npb.setWorkingDirectory(workingDirectory);
+
+        if (debuggerEnvironment != null) {
+            for (String str : debuggerEnvironment) {
+                npb.putEnvironmentVariable(EnvUtils.getKey(str), EnvUtils.getValue(str));
+            }
+        }
+
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();
-            npb.addEnvironmentVariable(pathname, cspath);
-            npb.setWorkingDirectory(workingDirectory);
+            npb.appendPathVariable(pathname, cspath);
         }
 
         final NativeProcess proc = npb.call();
@@ -172,7 +183,7 @@ public class GdbProxyEngine {
         CommonTasksSupport.sendSignal(
                 debugger.getHostExecutionEnvironment(),
                 debuggerPid,
-                Signal.INT.toString(),
+                Signal.SIGINT,
                 null);
     }
 

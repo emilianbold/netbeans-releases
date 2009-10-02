@@ -78,7 +78,6 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
@@ -121,9 +120,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private Future<Boolean> task;
     private Future<Boolean> detailedTask;
-    private final Object queryLock = new String(FunctionsListViewVisualizer.class + " query lock"); // NOI18N
-    private final Object detailsQueryLock = new String(FunctionsListViewVisualizer.class + " details query lock"); // NOI18N
-    private final Object uiLock = new String(FunctionsListViewVisualizer.class + " UI lock"); // NOI18N
+    private final Object queryLock = FunctionsListViewVisualizer.class.getName() + " query lock"; // NOI18N
+    private final Object detailsQueryLock = FunctionsListViewVisualizer.class.getName() + " details query lock"; // NOI18N
+    private final Object uiLock = FunctionsListViewVisualizer.class.getName() + " UI lock"; // NOI18N
     private JToolBar buttonsToolbar;
     private JButton refresh;
     private boolean isEmptyContent;
@@ -200,22 +199,22 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 super.mouseClicked(e);
             }
         });
-        List<Property> result = new ArrayList<Property>();
+        List<Property<?>> result = new ArrayList<Property<?>>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
             String displayedTooltip = columnsUIMapping == null || columnsUIMapping.getTooltip(c.getColumnName()) == null ? c.getColumnLongUName() : columnsUIMapping.getTooltip(c.getColumnName());
-            result.add(new PropertySupport(c.getColumnName(), c.getColumnClass(),
+            @SuppressWarnings("unchecked")
+            Property<?> property = new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     displayedName, displayedTooltip, true, false) {
-
                 @Override
                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
                     return null;
                 }
-
                 @Override
                 public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                 }
-            });
+            };
+            result.add(property);
 
         }
         //add Alt+Column Number for sorting
@@ -636,10 +635,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                 @Override
                 public Property<?>[] getProperties() {
-                    List<Property> result = new ArrayList<Property>();
+                    List<Property<?>> result = new ArrayList<Property<?>>();
                     //create for metrics
                     for (final Column metric : metrics) {
-                        result.add(new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
+                        @SuppressWarnings("unchecked")
+                        Property<?> property = new PropertySupport(metric.getColumnName(), metric.getColumnClass(),
                                 metric.getColumnUName(), metric.getColumnLongUName(), true, false) {
 
                             @Override
@@ -650,7 +650,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
                             @Override
                             public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                             }
-                        });
+                        };
+                        result.add(property);
                     }
                     return result.toArray(new Property[0]);
 
@@ -763,7 +764,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         sourceInfo = result;
                     }
                 }
-                return sourceInfo;
+                return result;
             } else {
                 setEnabled(false);
                 functionCallNode.fire();
@@ -798,7 +799,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private class VisualizerImplSessionStateListener implements SessionStateListener {
+    private static class VisualizerImplSessionStateListener implements SessionStateListener {
 
         public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
             //throw new UnsupportedOperationException("Not supported yet.");

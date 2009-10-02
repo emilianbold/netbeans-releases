@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.modules.ModuleInstall;
 
 
@@ -59,6 +58,7 @@ public class RubyProjectModuleInstaller extends ModuleInstall {
      */
     public void restored() {
         // On install, ensure that the JRuby bits are executable
-        RubyInstallation.getInstance().ensureExecutable();
+        // done through nbm.executable.files in project.properties now
+        // RubyInstallation.getInstance().ensureExecutable();
     }
 }

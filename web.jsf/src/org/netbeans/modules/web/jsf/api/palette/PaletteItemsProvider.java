@@ -42,7 +42,10 @@ package org.netbeans.modules.web.jsf.api.palette;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.web.jsf.palette.items.JsfForm;
+import org.netbeans.modules.web.jsf.palette.items.JsfFormFromEntity;
 import org.netbeans.modules.web.jsf.palette.items.JsfTable;
+import org.netbeans.modules.web.jsf.palette.items.JsfTableFromEntity;
+import org.netbeans.modules.web.jsf.palette.items.MetaData;
 
 /**
  *
@@ -55,8 +58,11 @@ public final class PaletteItemsProvider {
     public static final synchronized Collection<PaletteItem> getPaletteItems() {
         if(ITEMS == null) {
             ITEMS = new ArrayList<PaletteItem>();
+            ITEMS.add(new MetaData());
             ITEMS.add(new JsfForm());
+            ITEMS.add(new JsfFormFromEntity());
             ITEMS.add(new JsfTable());
+            ITEMS.add(new JsfTableFromEntity());
         }
         return ITEMS;
     }

@@ -67,6 +67,7 @@ import org.openide.cookies.InstanceCookie;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -101,7 +102,7 @@ public class NbToolTip extends FileChangeAdapter {
     private Annotation[] tipAnnotations;
     
     private static final RequestProcessor toolTipRP = new RequestProcessor("ToolTip-Evaluator", 1); // NOI18N
-    private static volatile RequestProcessor.Task lastToolTipTask = null;
+    private static volatile Reference<RequestProcessor.Task> lastToolTipTask = new WeakReference<RequestProcessor.Task>(null);
     
     static synchronized void buildToolTip(JTextComponent target) {
         String mimeType = NbEditorUtilities.getMimeType(target.getDocument());
@@ -286,13 +287,14 @@ public class NbToolTip extends FileChangeAdapter {
 
                                 if ((lp != null && tooltipAnnotations != null) || tooltipAttributeValue != null) {
                                     int requestId = newRequestId();
-                                    if (lastToolTipTask != null) {
-                                        lastToolTipTask.cancel();
+                                    RequestProcessor.Task lttt = lastToolTipTask.get();
+                                    if (lttt != null) {
+                                        lttt.cancel();
                                     }
-                                    lastToolTipTask = toolTipRP.post(new Request(
+                                    lastToolTipTask = new WeakReference<RequestProcessor.Task>(toolTipRP.post(new Request(
                                         annoDesc, tooltipAnnotations, lp, // annotations stuff
                                         offset, tooltipAttributeValue, // highlighting layers stuff
-                                        tts, target, doc, (NbEditorKit) kit, requestId)); // request & tooltip support
+                                        tts, target, doc, (NbEditorKit) kit, requestId))); // request & tooltip support
                                 }
                             }
                         }

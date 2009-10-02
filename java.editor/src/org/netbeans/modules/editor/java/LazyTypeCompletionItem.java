@@ -104,10 +104,6 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     
     public boolean accept() {
         if (handle != null) {
-            if (isAnnonInner()) {
-                handle = null;
-                return false;
-            }
             try {
                 ParserManager.parse(Collections.singletonList(source), new UserTask() {
                     @Override
@@ -115,15 +111,12 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                         CompilationController controller = CompilationController.get(resultIterator.getParserResult(substitutionOffset));
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
-                        if (!isAnnonInner()) {
-                            TypeElement e = handle.resolve(controller);
-                            Elements elements = controller.getElements();
-                            if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
-                                if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
-                                    delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
-                            }
+                        TypeElement e = handle.resolve(controller);
+                        Elements elements = controller.getElements();
+                        if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
+                            if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
+                                delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
                         }
-                        handle = null;
                     }
                 });
             } catch(Throwable t) {
@@ -175,10 +168,6 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
 
     public CharSequence getInsertPrefix() {
         return simpleName;
-    }
-    
-    boolean isAnnonInner() {
-        return simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0));
     }
     
     private boolean isOfKind(Element e, EnumSet<ElementKind> kinds) {

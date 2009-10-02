@@ -99,6 +99,10 @@ public class HtmlLexerTest extends NbTestCase {
         checkTokens("<div/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", "/>|TAG_CLOSE_SYMBOL");
     }
 
+    public void testUnfinishedTag() {
+        checkTokens("<div/", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", "/|TEXT");
+    }
+
 
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy th = TokenHierarchy.create(text, HTMLTokenId.language());

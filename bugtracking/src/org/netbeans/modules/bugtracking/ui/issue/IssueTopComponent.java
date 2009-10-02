@@ -40,7 +40,6 @@
 package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,10 +51,7 @@ import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -115,6 +111,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly) {
+        BugtrackingUtil.logBugtrackingUsage(defaultRepository, "ISSUE_EDIT"); // NOI18N
+
         Font f = new JLabel().getFont();
         int s = f.getSize();
         findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -159,6 +157,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public void setIssue(Issue issue) {
         assert (this.issue == null);
+        BugtrackingUtil.logBugtrackingUsage(issue.getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);

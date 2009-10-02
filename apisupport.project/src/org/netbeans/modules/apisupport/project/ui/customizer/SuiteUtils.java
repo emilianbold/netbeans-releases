@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -293,65 +294,55 @@ public final class SuiteUtils {
         // NbModuleProvider.NbModuleType type = Util.getModuleType(subModule);
         // assert type == NbModuleProvider.SUITE_COMPONENT : "Not a suite component: " + subModule;
         try {
-            final FileSystem.AtomicAction r = new FileSystem.AtomicAction() {
+            subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    // remove both suite properties files
-                    FileObject subModuleDir = subModule.getProjectDirectory();
-                    FileObject fo = subModuleDir.getFileObject(
-                            "nbproject/suite.properties"); // NOI18N
-                    if (fo != null) {
-                        // XXX this is a bit dangerous. Surely would be better to delete just the relevant
-                        // property from it, then delete it iff it is empty. (Would require that
-                        // NbModuleProjectGenerator.createSuiteProperties accept an existing file.)
-                        fo.delete();
-                    }
-                    fo = subModuleDir.getFileObject(
-                            "nbproject/private/suite-private.properties"); // NOI18N
-                    if (fo != null) {
-                        fo.delete();
-                    }
-
-                    if (suiteProps != null) {
-                        // copy suite's platform.properties to the module (needed by standalone module)
-                        FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
-                                getFileObject("nbproject/platform.properties"); // NOI18N
-                        FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
-                        if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
-                            FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
-                        }
-                    }
-                    EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
-                    if (props.getProperty("user.properties.file") == null) { // NOI18N
-                        String nbuser = System.getProperty("netbeans.user"); // NOI18N
-                        if (nbuser != null) {
-                            props.setProperty("user.properties.file", new File(nbuser, "build.properties").getAbsolutePath()); // NOI18N
-                            subModule.getHelper().putProperties(PRIVATE_PLATFORM_PROPERTIES, props);
-                        } else {
-                            Util.err.log("netbeans.user system property is not defined. Skipping " + PRIVATE_PLATFORM_PROPERTIES + " creation."); // NOI18N
-                        }
-                    }
-
-                    SuiteUtils.setNbModuleType(subModule, NbModuleProvider.STANDALONE);
-                    // save subModule
-                    ProjectManager.getDefault().saveProject(subModule);
-                }
-            };
-
-            if (subModule.isRunInAtomicAction()) {
-                r.run();
-            } else {
-                subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    public void run() throws IOException {
+                    try {
                         subModule.setRunInAtomicAction(true);
-                        try {
-                            r.run();
-                        } finally {
-                            subModule.setRunInAtomicAction(false);
+                        // remove both suite properties files
+                        FileObject subModuleDir = subModule.getProjectDirectory();
+                        FileObject fo = subModuleDir.getFileObject(
+                                "nbproject/suite.properties"); // NOI18N
+                        if (fo != null) {
+                            // XXX this is a bit dangerous. Surely would be better to delete just the relevant
+                            // property from it, then delete it iff it is empty. (Would require that
+                            // NbModuleProjectGenerator.createSuiteProperties accept an existing file.)
+                            fo.delete();
                         }
+                        fo = subModuleDir.getFileObject(
+                                "nbproject/private/suite-private.properties"); // NOI18N
+                        if (fo != null) {
+                            fo.delete();
+                        }
+
+                        if (suiteProps != null) {
+                            // copy suite's platform.properties to the module (needed by standalone module)
+                            FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
+                                    getFileObject("nbproject/platform.properties"); // NOI18N
+                            FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
+                            if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                                FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+                            }
+                        }
+                        EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
+                        if (props.getProperty("user.properties.file") == null) { // NOI18N
+                            String nbuser = System.getProperty("netbeans.user"); // NOI18N
+                            if (nbuser != null) {
+                                props.setProperty("user.properties.file", new File(nbuser, "build.properties").getAbsolutePath()); // NOI18N
+                                subModule.getHelper().putProperties(PRIVATE_PLATFORM_PROPERTIES, props);
+                            } else {
+                                Util.err.log("netbeans.user system property is not defined. Skipping " + PRIVATE_PLATFORM_PROPERTIES + " creation."); // NOI18N
+                            }
+                        }
+
+                        SuiteUtils.setNbModuleType(subModule, NbModuleProvider.STANDALONE);
+                        // save subModule
+                        ProjectManager.getDefault().saveProject(subModule);
+                    } finally {
+                        subModule.setRunInAtomicAction(false);
                     }
-                });
-            }
-            
+                }
+            });
+
             // now clean up the suite
             if (suiteProps != null) {
                 removeFromProperties(subModule, suiteProps);
@@ -386,6 +377,7 @@ public final class SuiteUtils {
                 }
                 piecesIt.remove();
                 String[] newModulesProp = getAntProperty(pieces);
+                suiteProps.getModulesListModel().removeModules(Collections.singletonList(moduleToRemove));
                 suiteProps.setProperty(MODULES_PROPERTY, newModulesProp);
                 removed = true;
                 // if the value is pure reference also tries to remove that

@@ -43,6 +43,7 @@ import java.util.List;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 
 /**
@@ -51,7 +52,7 @@ import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAcces
  */
 public final class DLightConfigurationUIWrapperProvider {
 
-    private final List<DLightConfigurationUIWrapper> dLightConfigurations = new ArrayList<DLightConfigurationUIWrapper>();
+    private List<DLightConfigurationUIWrapper> dLightConfigurations = new ArrayList<DLightConfigurationUIWrapper>();
     private static final DLightConfigurationUIWrapperProvider instance = new DLightConfigurationUIWrapperProvider();
 
     private DLightConfigurationUIWrapperProvider() {
@@ -60,10 +61,10 @@ public final class DLightConfigurationUIWrapperProvider {
     public static DLightConfigurationUIWrapperProvider getInstance() {
         return instance;
     }
-    /*
-     * Return list of all configurations with all tools. For UI manipulation.
-     */
 
+    /*
+     * Return list of a copy of all configurations with all tools. For UI manipulation.
+     */
     public List<DLightConfigurationUIWrapper> getDLightConfigurationUIWrappers() {
         synchronized (this) {
             if (dLightConfigurations.isEmpty()) {
@@ -71,10 +72,21 @@ public final class DLightConfigurationUIWrapperProvider {
                 DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
                 List<DLightTool> allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
                 for (DLightConfiguration dLightConfiguration : accessor.getDLightConfigurations(manager)) {
-                    dLightConfigurations.add(new DLightConfigurationUIWrapper(dLightConfiguration, allDLightTools));
+                    if (!DLightConfigurationAccessor.getDefault().isHidden(dLightConfiguration)){
+                        dLightConfigurations.add(new DLightConfigurationUIWrapper(dLightConfiguration, allDLightTools));
+                    }
                 }
             }
         }
-        return dLightConfigurations;
+        // create and return copy
+        List<DLightConfigurationUIWrapper> dLightConfigurationsCopy = new ArrayList<DLightConfigurationUIWrapper>();
+        for (DLightConfigurationUIWrapper dlcuiWrapper : dLightConfigurations) {
+            dLightConfigurationsCopy.add(dlcuiWrapper.copy());
+        }
+        return dLightConfigurationsCopy;
+    }
+
+    public void setDLightConfigurationUIWrappers(List<DLightConfigurationUIWrapper> dLightConfigurations) {
+        this.dLightConfigurations = dLightConfigurations;
     }
 }

@@ -75,11 +75,11 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     public abstract void requestPrivileges(
             Collection<String> requestedPrivileges,
-            String root, char[] passwd) throws NotOwnerException;
+            String root, char[] passwd) throws NotOwnerException, CancellationException;
 
     public void requestPrivileges(
             final Collection<String> requestedPrivileges,
-            boolean askForPassword) throws NotOwnerException {
+            boolean askForPassword) throws NotOwnerException, CancellationException {
 
         if (SwingUtilities.isEventDispatchThread()) {
             throw new RuntimeException("requestExecutionPrivileges " + // NOI18N
@@ -101,8 +101,6 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
             } else {
                 throw new NotOwnerException();
             }
-        } catch (CancellationException ex) {
-            //cancelled = true;
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -116,7 +114,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     public boolean hasPrivileges(
             final Collection<String> privs) {
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)){
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             invalidate();
             return false;
         }

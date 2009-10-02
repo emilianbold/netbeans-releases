@@ -45,19 +45,16 @@ import java.io.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.netbeans.upgrade.systemoptions.Importer;
 
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
@@ -68,11 +65,11 @@ import org.xml.sax.SAXException;
 
 /** pending
  *
- * @author  Jiri Rechtacek
+ * @author  Jiri Rechtacek, Jiri Skrivanek
  */
 public final class AutoUpgrade {
 
-    private static File importFile;
+    private static final Logger LOGGER = Logger.getLogger(AutoUpgrade.class.getName());
 
     public static void main (String[] args) throws Exception {
         String[] version = new String[1];
@@ -81,19 +78,25 @@ public final class AutoUpgrade {
             if (!showUpgradeDialog (sourceFolder)) {
                 throw new org.openide.util.UserCancelException ();
             }
-            File netBeansDir = InstalledFileLocator.getDefault().locate("modules", null, false).getParentFile().getParentFile();  //NOI18N
-            importFile = new File(netBeansDir, "etc/netbeans.import");  //NOI18N
-            // less than 6.5 or import file dosn't exist
-            if (version[0].compareTo("6.5") < 0 || !importFile.exists()) {  //NOI18N
+            if (version[0].compareTo("6.5") < 0) {  //NOI18N
+                // less than 6.5
+
+                // TODO - this branch can be removed when only import from 6.5 and newer is supported
                 doUpgrade (sourceFolder, version[0]);
+                doNonStandardUpgrade(sourceFolder, version[0]);
+                //#75324 NBplatform settings are not imported
+                upgradeBuildProperties(sourceFolder, version);
+                //migrates SystemOptions, converts them as a Preferences
+                Importer.doImport();
+            } else {
+                //equal or greater than 6.5
+                
+                copyToUserdir(sourceFolder);
+                //#75324 NBplatform settings are not imported
+                upgradeBuildProperties(sourceFolder, version);
+                //migrates SystemOptions, converts them as a Preferences
+                Importer.doImport();
             }
-            // Till 6.1 support for non standard configuration files and since
-            // 6.5 it is standard way of import.
-            doNonStandardUpgrade(sourceFolder, version[0]);
-            //#75324 NBplatform settings are not imported
-            upgradeBuildProperties(sourceFolder, version);
-            //migrates SystemOptions, converts them as a Preferences
-            Importer.doImport();
         }
     }
 
@@ -205,14 +208,9 @@ public final class AutoUpgrade {
         File userdir = new File(System.getProperty("netbeans.user", "")); // NOI18N        
         java.util.Set includeExclude;
         try {
-            InputStream is;
-            if (oldVersion.compareTo("6.5") < 0 || !importFile.exists()) {  //NOI18N
-                // less than 6.5
-                is = AutoUpgrade.class.getResourceAsStream("nonstandard" + oldVersion); // NOI18N
-                if (is == null) return;
-            } else {
-                // 6.5 or greater
-                is = new FileInputStream(importFile);
+            InputStream is = AutoUpgrade.class.getResourceAsStream("nonstandard" + oldVersion); // NOI18N
+            if (is == null) {
+                return;
             }
             Reader r = new InputStreamReader(is, "utf-8"); // NOI18N
             includeExclude = IncludeExclude.create(r);
@@ -247,5 +245,27 @@ public final class AutoUpgrade {
         };
         return old;
     }
-    
+
+    /* Copy files from source folder to current userdir according to include/exclude
+     * patterns in etc/netbeans.import file. */
+    private static void copyToUserdir(File source) throws IOException, PropertyVetoException {
+        File userdir = new File(System.getProperty("netbeans.user", "")); // NOI18N
+        File netBeansDir = InstalledFileLocator.getDefault().locate("modules", null, false).getParentFile().getParentFile();  //NOI18N
+        File importFile = new File(netBeansDir, "etc/netbeans.import");  //NOI18N
+        LOGGER.fine("Import file: " + importFile);
+        IncludeExclude includeExclude;
+        try {
+            InputStream is = new FileInputStream(importFile);
+            Reader r = new InputStreamReader(is, "utf-8"); // NOI18N
+            includeExclude = IncludeExclude.create(r);
+            r.close();
+        } catch (IOException ex) {
+            // show error message and continue
+            JDialog dialog = Util.createJOptionDialog(new JOptionPane(ex, JOptionPane.ERROR_MESSAGE), ex.getMessage());
+            dialog.setVisible(true);
+            return;
+        }
+        LOGGER.info("Importing from " + source + " to " + userdir); // NOI18N
+        CopyFiles.copyDeep(source, userdir, includeExclude);
+    }
 }

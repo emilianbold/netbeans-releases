@@ -295,6 +295,10 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
             }
+        } else {
+            // prevent j2eeserver from stoping an authenticated server that
+            // it did not start.
+            commonSupport.disableStop();
         }
     }
 

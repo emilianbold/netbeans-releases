@@ -55,13 +55,10 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="BuildCategory", position=400)
 public final class GroovyCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String GROOVY = "Groovy"; // NOI18N
-
-    public static GroovyCustomizer create() {
-        return new GroovyCustomizer();
-    }
 
     public Category createCategory(Lookup context) {
         ProjectCustomizer.Category category = ProjectCustomizer.Category.create(

@@ -71,6 +71,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -97,6 +99,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final AuxiliaryConfiguration aux;
+    private MetadataModel<WebAppMetadata> webAppMetadataModel;
     
     public WebModules (Project project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         assert project != null;
@@ -303,12 +306,14 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         private final String j2eeSpec;
         private final String contextPath;
         private FileObject webInf;
+        private ClassPath compileClasspath;
         
         FFWebModule (FileObject docRootFO, String j2eeSpec, String contextPath, FileObject sourcesFOs[], ClassPath classPath, FileObject webInf) {
             this.docRootFO = docRootFO;
             this.j2eeSpec = j2eeSpec;
             this.contextPath = (contextPath == null ? "" : contextPath);
             this.sourcesFOs = sourcesFOs;
+            this.compileClasspath = classPath;
             this.webClassPath = (classPath ==  null ? 
                 ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList()) :
                 classPath);
@@ -432,7 +437,18 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         }
         
         public MetadataModel<WebAppMetadata> getMetadataModel() {
-            return null;
+            if (webAppMetadataModel == null) {
+                FileObject ddFO = getDeploymentDescriptor();
+                File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+                MetadataUnit metadataUnit = MetadataUnit.create(
+                    JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(),
+                    compileClasspath,
+                    javaSourcesClassPath,
+                    // XXX: add listening on deplymentDescriptor
+                    ddFile);
+                webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
+            }
+            return webAppMetadataModel;
         }
         
         /**

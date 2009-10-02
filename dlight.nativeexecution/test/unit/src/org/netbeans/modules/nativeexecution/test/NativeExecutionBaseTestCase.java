@@ -120,6 +120,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return testExecutionEnvironment;
     }
 
+
+    protected String getTestHostName() {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        return (env == null) ? null : env.getHost();
+    }
+
     @Override
     public String getName() {
         String name = super.getName();

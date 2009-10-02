@@ -39,14 +39,23 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.awt.Color;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,6 +67,8 @@ public abstract class VCSKenaiSupport {
      * Some kenai vcs repository was changed
      */
     public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
+
+    protected static Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport");
 
     /**
      * A Kenai service
@@ -150,6 +161,14 @@ public abstract class VCSKenaiSupport {
     public abstract String getRevisionUrl (String sourcesUrl, String revision);
 
     /**
+     * Logs usage of a versioning system for a specific repository - if the
+     * repository is from Kenai.
+     * @param vcs name of the versioning system
+     * @param repositoryUrl repository URL
+     */
+    public abstract void logVcsUsage(String vcs, String repositoryUrl);
+
+    /**
      * Repesents a Kenai user
      */
     public abstract class KenaiUser {
@@ -230,6 +249,11 @@ public abstract class VCSKenaiSupport {
          * @return
          */
         public abstract String getAuthor();
+
+        /**
+         * Returns the netbeans projects directoru
+         */
+        public abstract File getProjectDirectory();
     }
 
     /**
@@ -263,6 +287,116 @@ public abstract class VCSKenaiSupport {
          * @return
          */
         public abstract String getId();
+    }
+
+    /**
+     * Hadles VCS notifications from kenai
+     */
+    public abstract static class KenaiNotificationListener implements PropertyChangeListener {
+
+        protected static Logger LOG = VCSKenaiSupport.LOG;
+
+        private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/versioning/util/resources/info.png"; //NOI18N
+        private RequestProcessor rp = new RequestProcessor("Kenai VCS notifications");                                  //NOI18N
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(VCSKenaiSupport.PROP_KENAI_VCS_NOTIFICATION)) {
+                final VCSKenaiNotification notification = (VCSKenaiNotification) evt.getNewValue();
+                rp.post(new Runnable() {
+                    public void run() {
+                        handleVCSNotification(notification);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Do whatever you have to do with a nofitication
+         *
+         * @param notification
+         */
+        protected abstract void handleVCSNotification(VCSKenaiNotification notification);
+
+        /**
+         * Called to setup the textpane used for the notification buble
+         *
+         * @param files
+         * @param url
+         * @param revision
+         * @return
+         */
+        protected abstract void setupPane(JTextPane pane, File[] file, File projectDir, String url, String revision);
+
+        /**
+         * Removes a leading and trailing slash from the given string
+         * @param str
+         * @return
+         */
+        protected String trim(String str) {
+            if(str.startsWith("/")) {
+                str = str.substring(1, str.length());
+            }
+            if(str.endsWith("/")) {
+                str = str.substring(0, str.length() - 1);
+            }
+            return str;
+        }
+
+        /**
+         * 
+         * @param files
+         * @return
+         */
+        protected String getFileNames(final File[] files) {
+            StringBuffer filesSb = new StringBuffer();
+            for (int i = 0; i < files.length; i++) {
+                if (i == 4) {
+                    filesSb.append("...");                                      // NOI18N
+                    break;
+                }
+                File file = files[i];
+                filesSb.append("&nbsp;&nbsp;&nbsp;&nbsp;");                     // NOI18N
+                filesSb.append(file.getName());
+                filesSb.append("<br>");                                         // NOI18N
+            }
+            filesSb.append("<br>");                                             // NOI18N
+            return filesSb.toString();
+        }
+
+        /**
+         *
+         * Opens a notification buble in the IDEs status bar containing the text returned in
+         * {@link #getPaneText(java.io.File, java.lang.String, java.lang.String)}
+         *
+         * @param files
+         * @param url
+         * @param revision
+         */
+        protected void notifyFileChange(File[] files, File projectDir, String url, String revision) {
+            JTextPane ballonDetails = getPane(files, projectDir, url, revision); // using the same pane causes the balloon popup
+            JTextPane popupDetails = getPane(files, projectDir, url, revision);  // to trim the text to the first line
+            NotificationDisplayer.getDefault().notify(
+                    NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
+                    ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
+                    ballonDetails, popupDetails, NotificationDisplayer.Priority.NORMAL);
+        }
+
+        private JTextPane getPane (final File[] files, final File projectDir, final String url, final String revision) {
+            JTextPane bubble = new JTextPane();
+            bubble.setOpaque(false);
+            bubble.setEditable(false);
+
+            if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {                   //NOI18N
+                //#134837
+                //http://forums.java.net/jive/thread.jspa?messageID=283882
+                bubble.setBackground(new Color(0, 0, 0, 0));
+            }
+
+            bubble.setContentType("text/html");                                          //NOI18N
+            setupPane(bubble, files, projectDir, url, revision);
+            return bubble;
+        }
+
     }
     
 }

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.dataprovider.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -66,6 +67,8 @@ final class StackDataProviderImpl implements StackDataProvider {
             FunctionMetric.CpuTimeInclusiveMetric, FunctionMetric.CpuTimeExclusiveMetric);
     private StackDataStorage storage;
     private ServiceInfoDataStorage serviceInfoDataStorage;
+    private final Object lock = new String("StackDataProviderImpl.lock");//NOI18N
+    private final List<DataFilter> filters = new ArrayList<DataFilter>();
 
     public void attachTo(DataStorage storage) {
         this.storage = (StackDataStorage) storage;
@@ -87,7 +90,11 @@ final class StackDataProviderImpl implements StackDataProvider {
     }
 
     public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
-        return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, limit);
+        List<DataFilter> filtersCopy = null;
+        synchronized (lock) {
+            filtersCopy = new ArrayList<DataFilter>(filters);
+        }
+        return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, filtersCopy, limit);
     }
 
     public List<FunctionCall> getCallStack(int stackId) {
@@ -119,7 +126,7 @@ final class StackDataProviderImpl implements StackDataProvider {
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+            final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -128,6 +135,13 @@ final class StackDataProviderImpl implements StackDataProvider {
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+        if (isAdjusting) {
+            return;
+        }
+        synchronized (lock) {
+            filters.clear();
+            filters.addAll(newSet);
+        }
     }
 
     public ThreadDumpProvider getThreadDumpProvider() {

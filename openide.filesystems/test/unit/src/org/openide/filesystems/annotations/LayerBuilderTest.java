@@ -135,4 +135,14 @@ public class LayerBuilderTest extends NbTestCase {
                 "</file></filesystem>", dump());
     }
 
+    public void testFolders() throws Exception {
+        b.file("x/y").write();
+        b.folder("x/z").stringvalue("a", "v").write();
+        b.folder("x").write();
+        assertEquals("<filesystem><folder name='x'>" +
+                "<file name='y'/>" +
+                "<folder name='z'><attr name='a' stringvalue='v'/></folder>" +
+                "</folder></filesystem>", dump());
+    }
+
 }

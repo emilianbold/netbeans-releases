@@ -238,7 +238,7 @@ public final class WebModule {
         }
         return impl.getJavaSources();
     }
-    
+
     /**
      * Returns a model describing the metadata of this web module (servlets,
      * resources, etc.).

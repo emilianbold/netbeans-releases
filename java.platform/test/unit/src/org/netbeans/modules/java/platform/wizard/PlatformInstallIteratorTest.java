@@ -70,6 +70,10 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         super(testName);
     }
 
+    protected @Override boolean runInEQ() {
+        return true;
+    }
+
     public void testSinglePlatformInstall () throws IOException {
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
             new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(

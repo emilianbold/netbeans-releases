@@ -194,7 +194,7 @@ made subject to such option by the copyright holder.
     <debugger>
         <tool name="gdb"/>
         <alternative_path>
-            <path toolchain_name="*"/>
+            <path toolchain_family="GNU"/>
             <path directory="$PATH"/>
         </alternative_path>
         <version flags="--version" />

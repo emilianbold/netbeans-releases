@@ -158,6 +158,8 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     /** Process events dragEnter or dragOver. */
     private void doDragOver(DropTargetDragEvent dtde) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( true );
+
         int dropAction = dtde.getDropAction();
         int allowedDropActions = view.getAllowedDropActions();
         dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
@@ -175,12 +177,13 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
             // #64469: Can't drop into empty explorer area
             dropIndex = -1;
             dropNode = view.manager.getRootContext ();
-            if (canDrop(dropNode, dropAction)) {
+            if (canDrop(dropNode, dropAction, dtde.getTransferable())) {
                 // ok, root accept
                 dtde.acceptDrag(dropAction);
             } else {
                 dtde.rejectDrag();
             }
+            removeDropLine();
             return ;
         } else {
             dropNode = getNodeForDrop(p);
@@ -327,7 +330,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // 5. show to cursor belong to state
-        if (canDrop(dropNode, dropAction)) {
+        if (canDrop(dropNode, dropAction, dtde.getTransferable())) {
             // ok, can accept
             dtde.acceptDrag(dropAction);
         } else {
@@ -379,6 +382,8 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
     public void dropActionChanged(DropTargetDragEvent dtde) {
         // check if the nodes are willing to do selected action
         Node[] nodes = ExplorerDnDManager.getDefault().getDraggedNodes();
+        if( null == nodes )
+            return;
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
@@ -400,6 +405,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     /** User exits the dragging */
     public void dragExit(DropTargetEvent dte) {
+        ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
         dropIndex = -1;
         stopDragging();
     }
@@ -570,7 +576,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
     /** Can node recieve given drop action? */
 
     // XXX canditate for more general support
-    private boolean canDrop(Node n, int dropAction) {
+    private boolean canDrop(Node n, int dropAction, Transferable dndEventTransferable) {
         log("canDrop " + n); // NOI18N
         if (n == null) {
             return false;
@@ -586,13 +592,11 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         if ((DnDConstants.ACTION_MOVE & dropAction) != 0) {
             Node[] nodes = ExplorerDnDManager.getDefault().getDraggedNodes();
 
-            if (nodes == null) {
-                return false;
-            }
-
-            for (int i = 0; i < nodes.length; i++) {
-                if (n.equals(nodes[i].getParentNode())) {
-                    return false;
+            if (nodes != null) {
+                for (int i = 0; i < nodes.length; i++) {
+                    if (n.equals(nodes[i].getParentNode())) {
+                        return false;
+                    }
                 }
             }
         }
@@ -602,7 +606,10 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
             );
         log("transferable == " + trans); // NOI18N
         if (trans == null) {
-            return false;
+            trans = dndEventTransferable;
+            if( null == trans ) {
+                return false;
+            }
         }
 
         // get paste types for given transferred transferable
@@ -636,7 +643,7 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                     dtde.getDropAction(), view.getAllowedDropActions()
                 );
 
-            if (!canDrop(dropNode, dropAction)) {
+            if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
                 if (canReorder(dropNode, dragNodes)) {
                     performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
                     dtde.acceptDrop(dropAction);
@@ -719,12 +726,11 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                 }
             } else {
                 // get correct paste type
-                PasteType pt = DragDropUtilities.getDropType(
-                        dropNode,
-                        ExplorerDnDManager.getDefault().getDraggedTransferable(
-                            (DnDConstants.ACTION_MOVE & dropAction) != 0
-                        ), dropAction, dropIndex
-                    );
+                Transferable t = ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 );
+                if( null == t ) {
+                    t = dtde.getTransferable();
+                }
+                PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction, dropIndex );
 
                 final Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
                 ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);

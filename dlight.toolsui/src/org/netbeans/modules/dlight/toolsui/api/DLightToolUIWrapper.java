@@ -49,14 +49,12 @@ public class DLightToolUIWrapper {
     private DLightTool dlightTool;
     private boolean enabled;
     private boolean onByDefault;
-    private boolean visible;
-    private boolean isModified = false;
+    private boolean modified = false;
 
     public DLightToolUIWrapper(DLightTool dlightTool, boolean enabled) {
         this.dlightTool = dlightTool;
         this.enabled = enabled;
         this.onByDefault = dlightTool.isEnabled();
-        this.visible = dlightTool.isVisible();
     }
 
     /**
@@ -85,7 +83,7 @@ public class DLightToolUIWrapper {
      */
     void setEnabled(boolean enabled) {
         if (this.enabled != enabled){
-            isModified = true;
+            modified = true;
         }
         this.enabled = enabled;
     }
@@ -102,7 +100,7 @@ public class DLightToolUIWrapper {
      */
     public void setOnByDefault(boolean onByDefault) {
         if (this.onByDefault != onByDefault){
-            isModified = true;
+            modified = true;
         }
         this.onByDefault = onByDefault;
         if (this.onByDefault){
@@ -113,20 +111,23 @@ public class DLightToolUIWrapper {
     }
 
     /**
-     * @return the visible
+     * @return the modified
      */
-    public boolean isVisible() {
-        return visible;
+    public boolean isModified() {
+        return modified;
     }
 
     /**
-     * @param visible the visible to set
+     * @param modified the modified to set
      */
-    public void setVisible(boolean visible) {
-        this.visible = visible;
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 
-    public boolean isModified(){
-        return isModified;
+    public DLightToolUIWrapper copy() {
+        DLightToolUIWrapper copy = new DLightToolUIWrapper(getDLightTool(), isEnabled());
+        copy.setOnByDefault(isOnByDefault());
+        copy.setModified(false);
+        return copy;
     }
 }

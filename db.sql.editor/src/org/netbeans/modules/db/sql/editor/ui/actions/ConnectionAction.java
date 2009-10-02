@@ -148,7 +148,8 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         @Override
         public Dimension getMinimumSize() {
             Dimension dim = super.getMinimumSize();
-            return new Dimension(0, dim.height);
+            int minWidth = comboLabel.getWidth() * 2;
+            return new Dimension(minWidth, dim.height);
         }
 
         public void setSQLExecution(SQLExecution sqlExecution) {

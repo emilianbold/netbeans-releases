@@ -146,11 +146,6 @@
                 <file name="javascript" url="JsExample"/>
             </folder>
         </folder>
-        <folder name="Advanced">
-            <file name="JsOptions.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.javascript.editing.options.JsOptions"/>
-            </file>
-        </folder>        
     </folder>
 
     <folder name="CslPlugins">
@@ -248,8 +243,6 @@
                     </file>
                 </folder>            
             </folder>
-        </folder>
-        <folder name="text">
             <folder name="x-json">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/javascript.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/javascript/editing/javascript.png"/>

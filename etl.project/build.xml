@@ -24,7 +24,7 @@
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" >
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${netbeans.dest.dir}/java2/ant/lib/ant.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java3/ant/lib/ant.jar"/>
                 <pathelement location="${cluster}/${module.jar}"/>
                 <pathelement location="${cluster}/modules/org-netbeans-modules-etl-editor.jar"/>
             </classpath>

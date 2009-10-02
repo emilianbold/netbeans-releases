@@ -146,15 +146,4 @@ Contributor(s):
             </file>
         </folder>
    </folder>     
-
-    <folder name="OptionsDialog"> 
-        <folder name="CPlusPlus">
-            <file name="SemanticHighlightingOptionsPanelController.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="controller" newvalue="org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptionsPanelController"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.highlight.semantic.options.Bundle#TAB_SemanticHighlightingTab"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>     
-    </folder>
 </filesystem>

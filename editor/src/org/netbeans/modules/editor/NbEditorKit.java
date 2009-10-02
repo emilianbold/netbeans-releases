@@ -347,13 +347,13 @@ public class NbEditorKit extends ExtKit implements Callable {
         if (item.getAccelerator() == null){
             KeyStroke ks = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
             if (ks!=null) {
-                item.setAccelerator(ks);
+                item.setMnemonic(ks.getKeyCode());
             } else {
                 // Try to get the accelerator from keymap
                 if (km != null) {
                     KeyStroke[] keys = km.getKeyStrokesForAction(action);
                     if (keys != null && keys.length > 0) {
-                        item.setAccelerator(keys[0]);
+                        item.setMnemonic(keys[0].getKeyCode());
                     }
                 }
             }
@@ -646,12 +646,12 @@ public class NbEditorKit extends ExtKit implements Callable {
                     for (int i = 0; i<keys.length; i++){
                         if ((keys[i].getKeyCode() == KeyEvent.VK_MULTIPLY) ||
                             keys[i].getKeyCode() == KeyEvent.VK_ADD){
-                            item.setAccelerator(keys[i]);
+                            item.setMnemonic(keys[i].getKeyCode());
                             added = true;
                             break;
                         }
                     }
-                    if (added == false) item.setAccelerator(keys[0]);
+                    if (added == false) item.setMnemonic(keys[0].getKeyCode());
                 }
             }
         }
@@ -811,18 +811,18 @@ public class NbEditorKit extends ExtKit implements Callable {
                     for (int i = 0; i<keys.length; i++){
                         if ((keys[i].getKeyCode() == KeyEvent.VK_MULTIPLY) ||
                             keys[i].getKeyCode() == KeyEvent.VK_ADD){
-                            item.setAccelerator(keys[i]);
+                            item.setMnemonic(keys[i].getKeyCode());
                             added = true;
                             break;
                         }
                     }
                     if (added == false) {
-                        item.setAccelerator(keys[0]);
+                        item.setMnemonic(keys[0].getKeyCode());
                     }
                 }else if (a!=null){
                     KeyStroke ks = (KeyStroke)a.getValue(Action.ACCELERATOR_KEY);
                     if (ks!=null) {
-                        item.setAccelerator(ks);
+                        item.setMnemonic(ks.getKeyCode());
                     }
                 }
             }

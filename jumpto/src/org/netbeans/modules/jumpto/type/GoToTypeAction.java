@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.jumpto.type;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -79,6 +80,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.openide.DialogDescriptor;
@@ -244,6 +246,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
     
     public void closeDialog() {
+        // Closing event can be sent several times.
+        if (dialog == null ) { // #172568
+            return; // OK - the dialog has already been closed.
+        }
         dialog.setVisible( false );
         cleanup();
     }
@@ -650,7 +656,36 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
     private class TypeComparator implements Comparator<TypeDescriptor> {
         public int compare(TypeDescriptor t1, TypeDescriptor t2) {
-           int cmpr = compareStrings( t1.getTypeName(), t2.getTypeName() );
+            Project mainProject = OpenProjects.getDefault().getMainProject();
+            String mainProjectname = null;
+            if (mainProject != null) {
+                mainProjectname = ProjectUtils.getInformation(mainProject).getDisplayName();
+            }
+            String t1Name = t1.getTypeName();
+            String t2Name = t2.getTypeName();
+
+            // if names are equal, show these from main project first
+            if (t1Name.equals(t2Name)) {
+                String t1projectName = t1.getProjectName();
+                String t2projectName = t1.getProjectName();
+                if (t1projectName != null && t2projectName != null) {
+                    // prioritize types from main project
+                    if (mainProjectname != null && t1projectName.equals(mainProjectname)) {
+                        return -1;
+                    }
+
+                    //prioritize types from any project
+                    if (!t1projectName.equals("") && t2projectName.equals("")) { // NOI18N
+                        return -1;
+                    } else {
+                        return +1;
+                    }
+                }
+
+                
+            }
+
+           int cmpr = compareStrings( t1Name, t2Name);
            if ( cmpr != 0 ) {
                return cmpr;
            }

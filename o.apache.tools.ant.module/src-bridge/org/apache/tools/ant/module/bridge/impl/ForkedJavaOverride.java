@@ -197,6 +197,7 @@ public class ForkedJavaOverride extends Java {
                 }
                 outTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, outEncoding), 
                         "Out Thread for " + getProject().getName()); // NOI18N
+                outTask.setDaemon(true);
                 outTask.start();
             }
 
@@ -209,6 +210,7 @@ public class ForkedJavaOverride extends Java {
                 }
                 errTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, errEncoding), 
                         "Err Thread for " + getProject().getName()); // NOI18N
+                errTask.setDaemon(true);
                 errTask.start();
             }
 
@@ -217,8 +219,10 @@ public class ForkedJavaOverride extends Java {
                 if (is == null) {
                     is = AntBridge.delegateInputStream();
                 }
-                new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null), 
-                        "In Thread for " + getProject().getName()).start(); // NOI18N
+                Thread inTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null),
+                        "In Thread for " + getProject().getName()); // NOI18N
+                inTask.setDaemon(true);
+                inTask.start();
             }
 
         }

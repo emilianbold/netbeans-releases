@@ -81,12 +81,13 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private static final int OPTION_CANCEL = 1;
     private static final int OPTION_APPLY = 2;
     // Option command names
-    private static final String COMMAND_OK = "OK";          // NOI18N
-    private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
-    private static final String COMMAND_APPLY = "APPLY";  // NOI18N
+    public static final String COMMAND_OK = "OK";          // NOI18N
+    public static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
+    public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
     private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
     private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private String currentCommand;
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -210,8 +211,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
 
         customizerPerProject.put(project, dialog);
+        currentCommand = COMMAND_CANCEL;
         dialog.setVisible(true);
-    //clonedProjectdescriptor.closed();
+        fireActionEvent(new ActionEvent(project, 0, currentCommand));
     }
 
     /** Listens to the actions on the Customizer's option buttons */
@@ -234,9 +236,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String command = e.getActionCommand();
+            currentCommand = e.getActionCommand();
 
-            if (command.equals(COMMAND_OK) || command.equals(COMMAND_APPLY)) {
+            if (currentCommand.equals(COMMAND_OK) || currentCommand.equals(COMMAND_APPLY)) {
                 int previousVersion = projectDescriptor.getVersion();
                 int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
                 if (previousVersion < currentVersion) {
@@ -262,16 +264,10 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
-//                ((MakeSources) ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
-
-                fireActionEvent(e);
-
             }
-            if (command.equals(COMMAND_APPLY)) {
+            if (currentCommand.equals(COMMAND_APPLY)) {
                 makeCustomizer.refresh();
-            }
-            if (command.equals(COMMAND_OK) || command.equals(COMMAND_CANCEL)) {
-                actionListenerList.clear();
+                fireActionEvent(new ActionEvent(project, 0, currentCommand));
             }
         }
     }
@@ -288,7 +284,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
     }
 
-    public void fireActionEvent(ActionEvent e) {
+    private void fireActionEvent(ActionEvent e) {
         Iterator it;
 
         synchronized (actionListenerList) {

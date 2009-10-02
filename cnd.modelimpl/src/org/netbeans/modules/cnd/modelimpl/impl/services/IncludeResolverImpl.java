@@ -160,11 +160,11 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
             if (file.equals(currentFile) || file.isHeaderFile()) {
-                return getIncludeDerectiveByFile(currentFile, item);
+                return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
             } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
                 Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
                 if (!decls.isEmpty()) {
-                    return getIncludeDerectiveByFile(currentFile, decls.iterator().next());
+                    return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
                 }
             }
         } else if (!CsmKindUtilities.isNamespace(item)) {

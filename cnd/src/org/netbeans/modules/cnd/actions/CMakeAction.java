@@ -83,22 +83,23 @@ public class CMakeAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node) {
-        performAction(node, null, null, null);
+        performAction(node, null, null, null, null);
     }
 
-    public static void performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project) {
+    public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    _performAction(node, listener, outputListener, project);
+                    _performAction(node, listener, outputListener, project, inputOutput);
                 }
             });
         } else {
-            _performAction(node, listener, outputListener, project);
+            return _performAction(node, listener, outputListener, project, inputOutput);
         }
+        return null;
     }
 
-    private static void _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project) {
+    private static Future<Integer> _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
@@ -110,9 +111,6 @@ public class CMakeAction extends AbstractExecutorRunAction {
         // Arguments
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
-        // Tab Name
-        String tabName = getString("CMAKE_LABEL", node.getName()); // NOI18N
-
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         Map<String, String> envMap = getEnv(execEnv, node, null);
         StringBuilder argsFlat = new StringBuilder();
@@ -121,14 +119,19 @@ public class CMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(arguments[i]);
         }
         traceExecutable(executable, buildDir, argsFlat, envMap);
-        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
-        _tab.closeInputOutput(); // Close it...
-        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
-        try {
-            tab.getOut().reset();
-        } catch (IOException ioe) {
+        if (inputOutput == null) {
+            // Tab Name
+            String tabName = getString("CMAKE_LABEL", node.getName()); // NOI18N
+            InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+            _tab.closeInputOutput(); // Close it...
+            final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+            try {
+                tab.getOut().reset();
+            } catch (IOException ioe) {
+            }
+            inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "CMake"); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "CMake"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat.toString()) // NOI18N
@@ -140,12 +143,12 @@ public class CMakeAction extends AbstractExecutorRunAction {
         .controllable(true)
         .frontWindow(true)
         .inputVisible(true)
-        .inputOutput(tab)
+        .inputOutput(inputOutput)
         .showProgress(true)
         .postExecution(processChangeListener)
         .outConvertorFactory(new ProcessLineConvertorFactory(outputListener, null));
         // Execute the makefile
-        final ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
-        Future<Integer> result = es.run();
+        ExecutionService es = ExecutionService.newService(npb, descr, "cmake"); // NOI18N
+        return es.run();
     }
 }

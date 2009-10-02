@@ -341,8 +341,8 @@ public class GeneratedSourceRootTest extends NbTestCase {
                 String prop = propNames[i];
                 String displayName = roots.getRootDisplayName(rootNames[i], prop);
                 String loc = "${" + prop + "}";
-                sourcesHelper.addPrincipalSourceRoot(loc, displayName, null, null);
-                sourcesHelper.addTypedSourceRoot(loc, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null);
+                sourcesHelper.sourceRoot(loc).displayName(displayName).add();
+                sourcesHelper.sourceRoot(loc).type(JavaProjectConstants.SOURCES_TYPE_JAVA).displayName(displayName).add();
             }
         }
         public void addChangeListener(ChangeListener changeListener) {

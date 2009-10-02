@@ -50,8 +50,11 @@ import java.awt.Toolkit;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
 import java.awt.image.IndexColorModel;
+import java.awt.image.RGBImageFilter;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -276,8 +279,31 @@ public final class ImageUtilities {
         } else {
             return assignToolTipToImage(image, text);
         }
-    }    
-    
+    }
+
+    /**
+     * Creates disabled (color saturation lowered) icon.
+     * Icon image conversion is performed lazily.
+     * @param icon original icon used for conversion
+     * @return less saturated Icon
+     * @since 7.28
+     */
+    public static Icon createDisabledIcon(Icon icon)  {
+        Parameters.notNull("icon", icon);
+        return new LazyDisabledIcon(icon2Image(icon));
+    }
+
+    /**
+     * Creates disabled (color saturation lowered) image.
+     * @param image original image used for conversion
+     * @return less saturated Image
+     * @since 7.28
+     */
+    public static Image createDisabledImage(Image image)  {
+        Parameters.notNull("image", image);
+        return LazyDisabledIcon.createDisabledImage(image);
+    }
+
     /**
      * Get the class loader from lookup.
      * Since this is done very frequently, it is wasteful to query lookup each time.
@@ -761,6 +787,63 @@ public final class ImageUtilities {
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.drawImage(this, x, y, null);
+        }
+    }
+
+    private static class LazyDisabledIcon implements Icon {
+
+        /** Shared instance of filter for disabled icons */
+        private static final RGBImageFilter DISABLED_BUTTON_FILTER = new DisabledButtonFilter();
+        private Image img;
+        private Icon disabledIcon;
+
+        public LazyDisabledIcon(Image img) {
+            assert null != img;
+            this.img = img;
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            getDisabledIcon().paintIcon(c, g, x, y);
+        }
+
+        public int getIconWidth() {
+            return getDisabledIcon().getIconWidth();
+        }
+
+        public int getIconHeight() {
+            return getDisabledIcon().getIconHeight();
+        }
+
+        private synchronized Icon getDisabledIcon() {
+            if (null == disabledIcon) {
+                disabledIcon = new ImageIcon(createDisabledImage(img));
+            }
+            return disabledIcon;
+        }
+
+        static Image createDisabledImage(Image img) {
+            ImageProducer prod = new FilteredImageSource(img.getSource(), DISABLED_BUTTON_FILTER);
+            return Toolkit.getDefaultToolkit().createImage(prod);
+        }
+    }
+
+    private static class DisabledButtonFilter extends RGBImageFilter {
+
+        DisabledButtonFilter() {
+            canFilterIndexColorModel = true;
+        }
+
+        public int filterRGB(int x, int y, int rgb) {
+            // Reduce the color bandwidth in quarter (>> 2) and Shift 0x88.
+            return (rgb & 0xff000000) + 0x888888 + ((((rgb >> 16) & 0xff) >> 2) << 16) + ((((rgb >> 8) & 0xff) >> 2) << 8) + (((rgb) & 0xff) >> 2);
+        }
+
+        // override the superclass behaviour to not pollute
+        // the heap with useless properties strings. Saves tens of KBs
+        @Override
+        public void setProperties(Hashtable props) {
+            props = (Hashtable) props.clone();
+            consumer.setProperties(props);
         }
     }
 }

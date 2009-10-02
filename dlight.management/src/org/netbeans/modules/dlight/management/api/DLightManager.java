@@ -45,6 +45,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -280,19 +281,23 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return activeSession;
     }
 
-    private Visualizer openVisualizer(String toolName, final VisualizerConfiguration visualizerConfiguration, DLightSession dlightSession) {
+    private Visualizer openVisualizer(String toolID, final VisualizerConfiguration visualizerConfiguration, DLightSession dlightSession) {
         Visualizer visualizer = null;
 
         //Check if we have already instance in the session:
 
-        if (dlightSession.hasVisualizer(toolName, visualizerConfiguration.getID())) {
-            visualizer = dlightSession.getVisualizer(toolName, visualizerConfiguration.getID());
+        if (dlightSession.hasVisualizer(toolID, visualizerConfiguration.getID())) {
+            visualizer = dlightSession.getVisualizer(toolID, visualizerConfiguration.getID());
+            if (visualizer instanceof SessionStateListener) {
+                dlightSession.addSessionStateListener((SessionStateListener) visualizer);
+                ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
+            }
             VisualizerContainer container = visualizer.getDefaultContainer();
-            DLightTool tool = dlightSession.getToolByName(toolName);
+            DLightTool tool = dlightSession.getToolByID(toolID);
             if (tool != null) {
-                container.addVisualizer(tool.getDetailedName(), visualizer);
+                container.addVisualizer(toolID,tool.getDetailedName(), visualizer);
             } else {
-                container.addVisualizer(toolName, visualizer);
+                container.addVisualizer(toolID, toolID, visualizer);
             }
             container.showup();
             visualizer.refresh();
@@ -357,18 +362,18 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
 
         VisualizerContainer container = visualizer.getDefaultContainer();
-        DLightTool tool = dlightSession.getToolByName(toolName);
+        DLightTool tool = dlightSession.getToolByID(toolID);
         if (tool != null) {
-            container.addVisualizer(tool.getDetailedName(), visualizer);
+            container.addVisualizer(toolID,tool.getDetailedName(), visualizer);
         } else {
-            container.addVisualizer(toolName, visualizer);
+            container.addVisualizer(toolID, toolID, visualizer);
         }
         container.showup();
-        dlightSession.putVisualizer(toolName, visualizerConfiguration.getID(), visualizer);
+        dlightSession.putVisualizer(toolID, visualizerConfiguration.getID(), visualizer);
         return visualizer;
     }
 
-    private void openEmptyVisualizer(String toolName, DLightSession session) {
+    private void openEmptyVisualizer(String vcID, String toolID, DLightSession session) {
         DetailsViewEmptyContentProvider emptyContentProvider = Lookup.getDefault().lookup(DetailsViewEmptyContentProvider.class);
         if (emptyContentProvider == null) {
             emptyContentProvider = DefaultDetailsViewEmptyContentProvider.instance;
@@ -378,12 +383,33 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         if (Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class) == null) {
             return;
         }
-        DLightTool tool = session.getToolByName(toolName);
+        DLightTool tool = session.getToolByID(toolID);
         if (tool == null) {
             return;//nothing to show
         }
+        Collection<? extends EmptyVisualizerContainerProvider> providers = Lookup.getDefault().lookupAll(EmptyVisualizerContainerProvider.class);
         VisualizerContainer container = Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class).getEmptyVisualizerContainer();
-        String name = toolName;
+        if (vcID != null){
+            
+            for (EmptyVisualizerContainerProvider provider : providers){
+                VisualizerContainer vC = provider.getEmptyVisualizerContainer(vcID);
+                if (vC != null){
+                    container = vC;
+                    break;
+                }
+            }
+        }
+
+        if (container == null){
+            for (EmptyVisualizerContainerProvider provider : providers){
+                VisualizerContainer vC = provider.getEmptyVisualizerContainer();
+                if (vC != null){
+                    container = vC;
+                    break;
+                }
+            }
+        }
+        String name = toolID;
         if (tool != null) {
             name = tool.getDetailedName();
         }
@@ -467,9 +493,17 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DLightSession session = findIndicatorOwner(source);
         //set active session
         setActiveSession(session);
-        boolean found = openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc, session) != null;
+        boolean found = openVisualizer(IndicatorAccessor.getDefault().getToolID(source), vc, session) != null;
         if (!found) {
-            openEmptyVisualizer(IndicatorAccessor.getDefault().getToolName(source), session);
+            openEmptyVisualizer(vc.getID(), IndicatorAccessor.getDefault().getToolID(source), session);
+        }
+    }
+
+    public final void openVisualizer(DLightSession session, String toolID, VisualizerConfiguration vc){
+        setActiveSession(session);
+        boolean found = openVisualizer(toolID, vc, session) != null;
+        if (!found) {
+            openEmptyVisualizer(vc.getID(), toolID, session);
         }
     }
 
@@ -481,7 +515,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         boolean found = false;
         if (list != null) {
             for (VisualizerConfiguration vc : list) {
-                if (openVisualizer(IndicatorAccessor.getDefault().getToolName(source), vc, session) != null) {
+                if (openVisualizer(IndicatorAccessor.getDefault().getToolID(source), vc, session) != null) {
                     found = true;
                     break;
                 }
@@ -489,7 +523,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             }
         }
         if (!found) {
-            openEmptyVisualizer(IndicatorAccessor.getDefault().getToolName(source), session);
+            openEmptyVisualizer(null, IndicatorAccessor.getDefault().getToolID(source), session);
         }
     }
 

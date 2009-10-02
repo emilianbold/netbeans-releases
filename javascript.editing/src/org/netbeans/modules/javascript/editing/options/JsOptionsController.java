@@ -60,6 +60,10 @@ import org.openide.util.Lookup;
  *
  * @author Petr Hejl
  */
+@OptionsPanelController.SubRegistration(
+    displayName="#JsOptions.displayName"
+//    toolTip="#JsOptions.tooltip"
+)
 public class JsOptionsController extends OptionsPanelController {
 
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);

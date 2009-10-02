@@ -123,6 +123,30 @@ public class NbModuleProjectTest extends TestBase {
         ProjectManager.getDefault().findProject(prjFO);
     }
 
+    public void testRunInAtomicAction() throws Exception {
+        FileObject suite1 = resolveEEP("suite1");
+        FileObject action = suite1.getFileObject("action-project");
+        NbModuleProject project = (NbModuleProject) ProjectManager.getDefault().findProject(action);
+        assertFalse(project.isRunInAtomicAction());
+        project.setRunInAtomicAction(true);
+        assertTrue(project.isRunInAtomicAction());
+        // reentrancy check
+        project.setRunInAtomicAction(true);
+        assertTrue(project.isRunInAtomicAction());
+        project.setRunInAtomicAction(false);
+        assertTrue(project.isRunInAtomicAction());
+        project.setRunInAtomicAction(false);
+        assertFalse(project.isRunInAtomicAction());
+        // check mismatched leave from AA
+        boolean thrown = false;
+        try {
+            project.setRunInAtomicAction(false);
+        } catch (IllegalArgumentException ex) {
+            thrown = true;
+        }
+        assertTrue("Leaving atomic action when outside atomic action throws IAE", thrown);
+    }
+
 //    XXX: failing test, fix or delete
 //    public void testGenericSourceGroupForExternalUnitTests() throws Exception {
 //        FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module1");

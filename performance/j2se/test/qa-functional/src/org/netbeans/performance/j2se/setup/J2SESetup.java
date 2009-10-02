@@ -84,11 +84,11 @@ public class J2SESetup extends JellyTestCase {
         }
     }
 
-/* 162133
+
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
     }
-*/
+
 
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();

@@ -124,7 +124,6 @@
                     <folder name="suspend">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                     </folder>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.configextension.Bundle"/>
                 </folder>
                 <file name="maxAttempts">
                     <attr name="type" stringvalue="Integer"/>

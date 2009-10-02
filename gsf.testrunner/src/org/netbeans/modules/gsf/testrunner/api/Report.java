@@ -72,6 +72,7 @@ public final class Report {
     private FileLocator fileLocator;
     private Project project;
     private boolean aborted;
+    private boolean skipped;
 
     protected boolean completed;
 
@@ -84,6 +85,7 @@ public final class Report {
         this.tests = new ArrayList<Testcase>(10);
         this.completed = true;
         this.aborted = false;
+        this.skipped = false;
     }
 
     public FileLocator getFileLocator() {
@@ -119,12 +121,15 @@ public final class Report {
             this.detectedPassedTests = report.detectedPassedTests;
             this.tests = report.tests;
             this.completed = report.completed;
+            this.skipped = report.skipped;
         }
     }
     
     public Status getStatus() {
         if (aborted){
             return Status.ABORTED;
+        } else if (skipped) {
+            return Status.SKIPPED;
         } else if (errors > 0) {
             return Status.ERROR;
         } else if (failures > 0) {
@@ -291,5 +296,13 @@ public final class Report {
 
     public void setAborted(boolean aborted) {
         this.aborted = aborted;
+    }
+
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
     }
 }

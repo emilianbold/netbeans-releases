@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.nativeexecution.ExternalTerminalAccessor;
@@ -75,7 +76,6 @@ public final class ExternalTerminalProvider {
             new HashMap<String, List<TerminalProfile>>();
     private static final HashMap<ExecutionEnvironment, TerminalProfile> hash =
             new HashMap<ExecutionEnvironment, TerminalProfile>();
-
 
     static {
         init();
@@ -238,6 +238,8 @@ public final class ExternalTerminalProvider {
                                 // skip
                                 log.fine("Incorrect version information:" + xmlns); // NOI18N
                             }
+
+                            log.log(Level.FINE, "Terminal definition XML version: " + version); // NOI18N
                         }
                     } else {
                         log.fine("Incorrect version information:" + xmlns); // NOI18N

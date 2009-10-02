@@ -6,7 +6,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/project/Bundle.proper
 OpenIDE-Module-Install: org/netbeans/modules/web/project/WebProjectModule.class
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Needs: org.netbeans.modules.serverplugins.javaee
-
-Name: org/netbeans/modules/web/project/ui/SetExecutionUriAction.class
-OpenIDE-Module-Class: Action
-

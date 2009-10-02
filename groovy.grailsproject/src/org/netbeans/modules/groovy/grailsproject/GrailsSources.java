@@ -134,7 +134,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
         if (Sources.TYPE_GENERIC.equals(type)) {
             addGroup(projectDir, projectDir.getName(), result);
         } else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
-            addGroup(projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"), result);
+            addGroup(SourceCategory.SRC_JAVA, "LBL_SrcJava", result);
         } else if (GroovySources.SOURCES_TYPE_GROOVY.equals(type)) {
             addGroup(SourceCategory.GRAILSAPP_CONF, "LBL_grails-app_conf", result);
             addGroup(SourceCategory.GRAILSAPP_CONTROLLERS, "LBL_grails-app_controllers", result);
@@ -171,6 +171,7 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
                 }
             }
 
+            addGroup(SourceCategory.SRC_GWT, "LBL_SrcGwt", result);
             addUnknownGroups(KNOWN_FOLDERS_IN_GRAILS_APP, result, "grails-app", null);
             addUnknownGroups(KNOWN_OR_IGNORED_FOLDERS_IN_TEST, result, "test", "LBL_SomeTests");
         }

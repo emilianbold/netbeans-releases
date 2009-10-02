@@ -212,7 +212,27 @@ public final class EntityManagerGenerator {
             // TODO: fix ASAP! 1st PU is taken, needs to find the one which realy owns given file
             Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
             if(persistence != null){
-                return persistence.getPersistenceUnit(0);
+                PersistenceUnit[] pus=persistence.getPersistenceUnit();
+                PersistenceUnit ret=pus.length>0 ? pus[0] : null;//if there is only one pu, return in any case (even if do not contain fqn)
+                if(pus.length>1) {//searchh for best match
+                    PersistenceUnit forAll=null;
+                    PersistenceUnit forOne=null;
+                    for(int i=0;i<pus.length && forOne==null;i++) {
+                        PersistenceUnit tmp=pus[i];
+                        if(forAll ==null && !tmp.isExcludeUnlistedClasses()) forAll=tmp;//first match sutable for all entities in the project
+                        if(tmp.isExcludeUnlistedClasses()) {
+                            String []classes = tmp.getClass2();
+                            for(String clas:classes){
+                                if(fqn.equals(clas)) {
+                                    forOne = tmp;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    ret = forOne != null ? forOne : (forAll != null ? forAll : ret);
+                }
+                return ret;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

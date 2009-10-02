@@ -41,6 +41,7 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.AstNode;
@@ -79,22 +80,30 @@ public class ComponentUsagesChecker extends HintsProvider {
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
-        Map<String, FaceletsLibrary> libs = JsfSupport.findFor(context.doc).getFaceletsLibraries();
+        Map<String, FaceletsLibrary> declaredLibraries = new HashMap<String, FaceletsLibrary>();
+        JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
+        if (jsfSupport != null) {
+            Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
 
-        for (String namespace : declaredNamespaces) {
-            FaceletsLibrary lib = libs.get(namespace);
-            if (lib != null) {
-//            if(JsfUtils.isCompositeComponentLibrary(lib)) {
-                declaredLibraries.add(lib);
-//            }
+            for (String namespace : declaredNamespaces) {
+                FaceletsLibrary lib = libs.get(namespace);
+                if (lib != null) {
+    //            if(JsfUtils.isCompositeComponentLibrary(lib)) {
+                    declaredLibraries.put(namespace, lib);
+    //            }
+                }
             }
         }
 
         //now we have all  declared component libraries
         //lets get their parse trees and check the content
-        for (final FaceletsLibrary lib : declaredLibraries) {
-            AstNode root = result.root(lib.getNamespace());
+        for (final String declaredLibraryNamespace : declaredLibraries.keySet()) {
+            final FaceletsLibrary lib = declaredLibraries.get(declaredLibraryNamespace);
+            AstNode root = result.root(declaredLibraryNamespace);
+            if(root == null) {
+                //no parse tree for this namespace
+                continue;
+            }
 
             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
@@ -132,7 +141,8 @@ public class ComponentUsagesChecker extends HintsProvider {
 
                                 //2. check for unknown attributes
                                 for (AstNode.Attribute nodeAttr : node.getAttributes()) {
-                                    if (tag.getAttribute(nodeAttr.name()) == null) {
+                                    //do not check attributes with a namespace
+                                    if (nodeAttr.namespacePrefix() == null && tag.getAttribute(nodeAttr.name()) == null) {
                                         //unknown attribute
                                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),

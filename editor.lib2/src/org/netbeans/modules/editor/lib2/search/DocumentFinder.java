@@ -253,12 +253,10 @@ public class DocumentFinder
             blockSearchStart = blockSearchEnd;
             blockSearchEnd = tmp;
         }
-        CharSequence cs = null;
-        if (blockSearch) 
-            cs = DocumentUtilities.getText(doc, blockSearchStart, blockSearchEnd - blockSearchStart);
-        else
-            cs = DocumentUtilities.getText(doc);
-        if (cs==null) return null;
+        CharSequence docText = DocumentUtilities.getText(doc);;
+        CharSequence blockText = blockSearch
+                ? docText.subSequence(blockSearchStart, blockSearchEnd)
+                : docText;
         int initOffset;
         if (back && !blockSearch)
             initOffset = (endOffset<doc.getLength()) ? endOffset : startOffset;
@@ -268,7 +266,7 @@ public class DocumentFinder
             initOffset = startOffset - blockSearchStart;
          else
             initOffset = startOffset;
-        int findRet = finder.find(initOffset, cs);
+        int findRet = finder.find(initOffset, blockText);
         if (!finder.isFound()){
             ret[0]  = -1;
             return new FindReplaceResult(ret, replaceText);
@@ -286,7 +284,7 @@ public class DocumentFinder
         if (finder instanceof RegExpFinder){
             Matcher matcher = ((RegExpFinder)finder).getMatcher();
             if (matcher != null && replaceText != null){
-                CharSequence foundString = cs.subSequence(ret[0], ret[1]);
+                CharSequence foundString = docText.subSequence(ret[0], ret[1]);
                 matcher.reset(foundString);
                 if (matcher.find()){
                     try{

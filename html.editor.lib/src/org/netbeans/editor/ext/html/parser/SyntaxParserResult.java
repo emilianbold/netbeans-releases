@@ -55,11 +55,8 @@ public class SyntaxParserResult {
 
     private static final String FALLBACK_DOCTYPE =
             "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
-    private CharSequence source;
+    private SyntaxParserContext context;
 
-    //all elements regardless ns
-    private List<SyntaxElement> elements;
-    
     private String publicID;
 
     //ns URI to AstNode map
@@ -68,17 +65,16 @@ public class SyntaxParserResult {
     //ns URI to PREFIX map
     private Map<String, String> namespaces;
 
-    public SyntaxParserResult(CharSequence source, List<SyntaxElement> elements) {
-        this.source = source;
-        this.elements = elements;
+    public SyntaxParserResult(SyntaxParserContext context) {
+        this.context = context;
     }
 
     public CharSequence getSource() {
-        return source;
+        return context.getSourceText();
     }
 
     public List<SyntaxElement> getElements() {
-        return elements;
+        return context.getElements();
     }
 
     public synchronized AstNode getASTRoot() {
@@ -90,6 +86,11 @@ public class SyntaxParserResult {
     //doesn't take namespaces context into account
     //doesn't support multiple prefixes for one namespace
     public synchronized AstNode getASTRoot(String namespace) {
+        if(namespace != null && !getDeclaredNamespaces().containsKey(namespace)) {
+            //unknown namespace, not parse tree for it
+            return null;
+        }
+
         if(astRoots == null) {
              astRoots = new HashMap<String, AstNode>();
         }
@@ -121,7 +122,8 @@ public class SyntaxParserResult {
 
             //XXX this is also incorrect, html tags can have namespace and can use prefixes as well
             DTD dtd = namespace == null ? getDTD() : null; //do not use DTD for namespaced tags
-            AstNode root = SyntaxTree.makeTree(filtered, dtd);
+            
+            AstNode root = SyntaxTree.makeTree(context.clone().setElements(filtered).setDTD(dtd));
             root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace); //NOI18N
             astRoots.put(namespace, root);
             return root;
@@ -140,7 +142,7 @@ public class SyntaxParserResult {
 
     public synchronized String getPublicID() {
         if (this.publicID == null) {
-            for (SyntaxElement e : elements) {
+            for (SyntaxElement e : getElements()) {
                 if (e.type() == SyntaxElement.TYPE_DECLARATION) {
                     String _publicID = ((SyntaxElement.Declaration) e).getPublicIdentifier();
                     if (_publicID != null) {
@@ -213,7 +215,13 @@ public class SyntaxParserResult {
 
     public DTD getDTD() {
         if (getPublicID() == null) {
-            return getFallbackDTD();
+            //return context DTD in case that the context creator wants to explicitly
+            //define the fallback DTD
+            if(context.getDTD() != null) {
+                return context.getDTD();
+            } else {
+                return getFallbackDTD();
+            }
         } else {
             DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(getPublicID(), null);
             return dtd != null ? dtd : getFallbackDTD();

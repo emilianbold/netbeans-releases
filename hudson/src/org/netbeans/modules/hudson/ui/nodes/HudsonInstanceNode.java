@@ -72,7 +72,6 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
@@ -161,16 +160,9 @@ public class HudsonInstanceNode extends AbstractNode {
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[0]);
     }
-    
-    @Override
-    protected Sheet createSheet() {
-        // Create a property sheet
-        Sheet s = super.createSheet();
-        
-        // Put properties in
-        s.put(instance.getProperties().getSheetSet());
-        
-        return s;
+
+    public @Override PropertySet[] getPropertySets() {
+        return new PropertySet[] {instance.getProperties().getSheetSet()};
     }
     
     private synchronized void refreshState() {

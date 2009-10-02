@@ -212,10 +212,10 @@ public final class J2eePlatform {
 
     private static final Logger LOGGER = Logger.getLogger(J2eePlatform.class.getName());
 
-    private J2eePlatformImpl impl;
+    private final J2eePlatformImpl impl;
     private File[] classpathCache;
     private String currentClasspath;
-    private ServerInstance serverInstance;
+    private final ServerInstance serverInstance;
 
     // listens to libraries content changes
     private PropertyChangeListener librariesChangeListener = new PropertyChangeListener() {
@@ -237,6 +237,7 @@ public final class J2eePlatform {
      * @param aImpl instance of <code>J2eePlatformImpl</code>.
      */
     private J2eePlatform(ServerInstance aServerInstance, J2eePlatformImpl aImpl) {
+        assert aServerInstance != null;
         impl = aImpl;
         serverInstance = aServerInstance;
         // listens to libraries changes
@@ -659,6 +660,29 @@ public final class J2eePlatform {
      */
     public Lookup getLookup() {
         return impl.getLookup();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final J2eePlatform other = (J2eePlatform) obj;
+        if (this.serverInstance.getUrl() != other.serverInstance.getUrl()
+                && (this.serverInstance.getUrl() == null || !this.serverInstance.getUrl().equals(other.serverInstance.getUrl()))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 71 * hash + (this.serverInstance.getUrl() != null ? this.serverInstance.getUrl().hashCode() : 0);
+        return hash;
     }
 
     @NonNull

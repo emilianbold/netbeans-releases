@@ -46,32 +46,22 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -81,18 +71,14 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -431,48 +417,48 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         }
     }
     
-    private static EditableManifest readManifest(FileObject fo) {
-        InputStream str = null;
-        try {
-            str = fo.getInputStream();
-            return  new EditableManifest(str);
-        } catch (IOException exc) {
-            err.notify(exc);
-        } finally {
-            if (str != null) {
-                try {
-                    str.close();
-                } catch (IOException exc) {
-                    err.notify(exc);
-                }
-            }
-        }
-        return new EditableManifest();
-    }
-    
-    private static void writeManifest(FileObject fo, EditableManifest manifest) {
-        OutputStream str = null;
-        FileLock lock = null;
-        try {
-            lock = fo.lock();
-            str = fo.getOutputStream(lock);
-            manifest.write(str);
-            
-        } catch (IOException exc) {
-            err.notify(exc);
-        } finally {
-            if (str != null) {
-                try {
-                    str.close();
-                } catch (IOException exc) {
-                    err.notify(exc);
-                }
-            }
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
-    }
+//    private static EditableManifest readManifest(FileObject fo) {
+//        InputStream str = null;
+//        try {
+//            str = fo.getInputStream();
+//            return  new EditableManifest(str);
+//        } catch (IOException exc) {
+//            err.notify(exc);
+//        } finally {
+//            if (str != null) {
+//                try {
+//                    str.close();
+//                } catch (IOException exc) {
+//                    err.notify(exc);
+//                }
+//            }
+//        }
+//        return new EditableManifest();
+//    }
+//
+//    private static void writeManifest(FileObject fo, EditableManifest manifest) {
+//        OutputStream str = null;
+//        FileLock lock = null;
+//        try {
+//            lock = fo.lock();
+//            str = fo.getOutputStream(lock);
+//            manifest.write(str);
+//
+//        } catch (IOException exc) {
+//            err.notify(exc);
+//        } finally {
+//            if (str != null) {
+//                try {
+//                    str.close();
+//                } catch (IOException exc) {
+//                    err.notify(exc);
+//                }
+//            }
+//            if (lock != null) {
+//                lock.releaseLock();
+//            }
+//        }
+//    }
     
     
     

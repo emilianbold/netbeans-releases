@@ -194,16 +194,9 @@ public class AstUtilities {
                 // that even though we're running on an ClassNode, there is no "class " String
                 // in the sourcefile. So take doc.getLength() as maximum.
 
-                int start = getOffset(doc, lineNumber, columnNumber);
                 int docLength = doc.getLength();
-
-                int limit = (node.getLastLineNumber() > 0 && node.getLastColumnNumber() > 0)
-                        ? getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber())
-                        : docLength;
-
-                if (limit > docLength) {
-                    limit = docLength;
-                }
+                int start = getOffset(doc, lineNumber, columnNumber);
+                int limit = getLimit(node, doc, docLength);
 
                 try {
                     // we have to really search for class keyword other keyword
@@ -254,13 +247,26 @@ public class AstUtilities {
             VariableExpression variableExpression = (VariableExpression) node;
             return getNextIdentifierByName(doc, variableExpression.getName(), start);
         } else if (node instanceof Parameter) {
-            int end = getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
+
+            int docLength = doc.getLength();
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            int limit = getLimit(node, doc, docLength);
+
             Parameter parameter = (Parameter) node;
             String name = parameter.getName();
-            if (end - name.length() < 0) {
+
+            try {
+                // we have to really search for the name
+                start = doc.find(new FinderFactory.StringFwdFinder(name, true), start, limit);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            int end = start + name.length();
+            if (end > docLength) {
                 return OffsetRange.NONE;
             }
-            return new OffsetRange(end - name.length(), end);
+            return new OffsetRange(start, end);
         } else if (node instanceof MethodCallExpression) {
             MethodCallExpression methodCall = (MethodCallExpression) node;
             Expression method = methodCall.getMethod();
@@ -736,6 +742,17 @@ public class AstUtilities {
             }
         }
         return null;
+    }
+
+    private static int getLimit(ASTNode node, BaseDocument doc, int docLength) {
+        int limit = (node.getLastLineNumber() > 0 && node.getLastColumnNumber() > 0)
+                ? getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber())
+                : docLength;
+
+        if (limit > docLength) {
+            limit = docLength;
+        }
+        return limit;
     }
 
     /**

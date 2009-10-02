@@ -5,7 +5,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 public class Test {
-    @PersistenceContext
+    @PersistenceContext(unitName = "MyPersistenceUnit")
     private EntityManager em;
 
     public void create(Object object) {

@@ -75,6 +75,9 @@ made subject to such option by the copyright holder.
                     <classpath>
                         <path path="${classpath-translated}"/>
                     </classpath>
+                    <bootclasspath>
+                        <path path="${platform.bootcp}"/>
+                    </bootclasspath>
                 </nbjpdastart>
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>

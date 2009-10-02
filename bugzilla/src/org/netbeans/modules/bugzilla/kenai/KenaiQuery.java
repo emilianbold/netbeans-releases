@@ -58,6 +58,7 @@ public class KenaiQuery extends BugzillaQuery {
         super(name, repository, urlParameters, saved, false, false);
         this.product = product;
         this.predefinedQuery = predefined;
+        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         controller = createControler(repository, this, urlParameters);
         boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
         if(autoRefresh) {
@@ -82,7 +83,7 @@ public class KenaiQuery extends BugzillaQuery {
     }
 
     @Override
-    protected String getStoredQueryName() {
+    public String getStoredQueryName() {
         return super.getStoredQueryName() + "-" + product;
     }
 

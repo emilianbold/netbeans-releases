@@ -172,6 +172,49 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         checkNoIssueSpansFound("bug\n ** \n123456");
 
         checkIssueSpans("bug #123456\n", "bug #123456");
+
+        checkIssueSpans("bug bug #123456", "bug #123456");
+        checkIssueSpans("bug issue #123456", "issue #123456");
+        checkIssueSpans("issue bug #123456", "bug #123456");
+        checkIssueSpans("issue issue #123456", "issue #123456");
+
+
+        /* -------- tests for special phrase "duplicate of" -------- */
+
+        checkIssueSpans("duplicate of 123456", "123456");
+        checkIssueSpans("duplicate of #123456", "#123456");
+        checkIssueSpans("duplicate of # 123456", "# 123456");
+        checkIssueSpans("duplicate of bug 123456", "bug 123456");
+        checkIssueSpans("duplicate of issue 123456", "issue 123456");
+        checkIssueSpans("duplicate duplicate of 123456", "123456");
+
+        checkIssueSpans("DUPLICATE OF 123456", "123456");
+
+        checkNoIssueSpansFound("duplicate of");
+        checkNoIssueSpansFound("duplicate of ");
+        checkNoIssueSpansFound("duplicate of #");
+        checkNoIssueSpansFound("duplicate of bug");
+        checkNoIssueSpansFound("duplicate of \n");
+        checkNoIssueSpansFound("duplicate of \nbug");
+        checkNoIssueSpansFound("of duplicate 123456");
+
+        checkIssueSpans("duplicate of\n123456", "123456");
+        checkIssueSpans("duplicate\nof 123456", "123456");
+        checkIssueSpans("duplicate\nof\n123456", "123456");
+        checkIssueSpans("duplicate\n* of 123456", "123456");
+        checkIssueSpans("duplicate\n * of 123456", "123456");
+        checkIssueSpans("duplicate\n  * of 123456", "123456");
+        checkIssueSpans("duplicate \n* of 123456", "123456");
+        checkIssueSpans("duplicate \n * of 123456", "123456");
+        checkIssueSpans("duplicate \n  * of 123456", "123456");
+        checkIssueSpans("duplicate  \n* of 123456", "123456");
+        checkIssueSpans("duplicate  \n * of 123456", "123456");
+        checkIssueSpans("duplicate  \n  * of 123456", "123456");
+        checkIssueSpans("duplicate  \n  * of #123456", "#123456");
+        checkIssueSpans("duplicate  \n  * of # 123456", "# 123456");
+        checkIssueSpans("duplicate  \n  * of\n* \n # 123456", "# 123456");
+        checkIssueSpans("duplicate  \n  * of bug 123456", "bug 123456");
+        checkIssueSpans("duplicate  \n  * of issue 123456", "issue 123456");
     }
 
     @Test
@@ -209,6 +252,30 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         testGetIssueNumber("Issue #123456", "123456");
         testGetIssueNumber("ISSUE #123456", "123456");
 
+        testGetIssueNumber("duplicate of 123456", "123456");
+        testGetIssueNumber("duplicate of #123456", "123456");
+        testGetIssueNumber("duplicate of # 123456", "123456");
+        testGetIssueNumber("duplicate of bug 123456", "123456");
+        testGetIssueNumber("duplicate of issue 123456", "123456");
+
+        testGetIssueNumber("DUPLICATE OF 123456", "123456");
+
+        testGetIssueNumber("duplicate of\n123456", "123456");
+        testGetIssueNumber("duplicate\nof 123456", "123456");
+        testGetIssueNumber("duplicate\nof\n123456", "123456");
+        testGetIssueNumber("duplicate\n* of 123456", "123456");
+        testGetIssueNumber("duplicate\n * of 123456", "123456");
+        testGetIssueNumber("duplicate\n  * of 123456", "123456");
+        testGetIssueNumber("duplicate \n* of 123456", "123456");
+        testGetIssueNumber("duplicate \n * of 123456", "123456");
+        testGetIssueNumber("duplicate \n  * of 123456", "123456");
+        testGetIssueNumber("duplicate  \n* of 123456", "123456");
+        testGetIssueNumber("duplicate  \n * of 123456", "123456");
+        testGetIssueNumber("duplicate  \n  * of 123456", "123456");
+        testGetIssueNumber("duplicate  \n  * of #123456", "123456");
+        testGetIssueNumber("duplicate  \n  * of # 123456", "123456");
+        testGetIssueNumber("duplicate  \n  * of bug 123456", "123456");
+        testGetIssueNumber("duplicate  \n  * of issue 123456", "123456");
     }
 
     private void checkIssueSpans(String str, String... substr) {

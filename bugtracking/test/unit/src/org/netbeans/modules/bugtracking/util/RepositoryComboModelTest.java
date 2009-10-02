@@ -54,7 +54,8 @@ public class RepositoryComboModelTest {
 
     @Test
     public void testNewModel() {
-        ComboBoxModel model = new RepositoryComboModel();
+        RepositoryComboModel model = new RepositoryComboModel();
+        assertTrue(model.isEmpty());
         assertTrue(model.getSize() == 0);
         assertNull(model.getSelectedItem());
     }
@@ -66,6 +67,7 @@ public class RepositoryComboModelTest {
         Object[] data = new Object[] {"a", "b", "c"};
 
         model.setData(data);
+        assertFalse(model.isEmpty());
         assertTrue(model.getSize() == data.length);
         for (int i = 0; i < data.length; i++) {
             assertTrue(model.getElementAt(i) == data[i]);
@@ -138,8 +140,10 @@ public class RepositoryComboModelTest {
         Object[] emptyData = new Object[0];
 
         model.setData(data);
+        assertFalse(model.isEmpty());
 
         model.setData(emptyData);
+        assertTrue(model.isEmpty());
         assertTrue(model.getSize() == 0);
         assertTrue(model.getSelectedItem() == null);
         assertTrue(model.getElementAt(-1) == null);
@@ -147,6 +151,7 @@ public class RepositoryComboModelTest {
         assertTrue(model.getElementAt(1) == null);
 
         model.setData(data);
+        assertFalse(model.isEmpty());
         assertTrue(model.getSize() == data.length);
         assertTrue(model.getSelectedItem() == data[0]);
         assertTrue(model.getElementAt(-1) == null);
@@ -154,6 +159,11 @@ public class RepositoryComboModelTest {
         assertTrue(model.getElementAt(1) == data[1]);
         assertTrue(model.getElementAt(2) == data[2]);
         assertTrue(model.getElementAt(3) == null);
+
+        model.setData(null);
+        assertTrue(model.isEmpty());
+        assertTrue(model.getSize() == 0);
+        assertTrue(model.getSelectedItem() == null);
     }
 
     @Test
@@ -177,29 +187,6 @@ public class RepositoryComboModelTest {
     }
 
     @Test
-    public void testRemoveFirstItem() {
-        Object[] data = new Object[] {"a", "b", "c"};
-
-        RepositoryComboModel model = new RepositoryComboModel();
-        model.setData(data);
-
-        assertTrue(model.getSize() == data.length);
-        assertTrue(model.getSelectedItem() == data[0]);
-
-        model.setSelectedItem(data[0]);
-        assertTrue(model.getSelectedItem() == data[0]);
-
-        model.removeFirstItem();
-        assertTrue(model.getSize() == (data.length - 1));
-        assertTrue(model.getSelectedItem() == null);
-
-        model.setSelectedItem(data[2]);
-        model.removeFirstItem();
-        assertTrue(model.getSize() == (data.length - 2));
-        assertTrue(model.getSelectedItem() == data[2]);
-    }
-
-    @Test
     public void testGetElementOutOfScope() {
         RepositoryComboModel model;
         
@@ -219,6 +206,245 @@ public class RepositoryComboModelTest {
         int index = data.length;
         assertNull(model.getElementAt(index++));
         assertNull(model.getElementAt(index++));
+    }
+
+    @Test
+    public void testAddElement() {
+        RepositoryComboModel model = new RepositoryComboModel();
+        assertTrue(model.isEmpty());
+
+        model.addElement(null);
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 1);
+        assertTrue(model.getElementAt(0) == null);
+        assertNull(model.getSelectedItem());
+        model.addElement("1");
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 2);
+        assertTrue(model.getElementAt(0) == null);
+        assertTrue(model.getElementAt(1) == "1");
+        assertNull(model.getSelectedItem());
+
+        model.setData(null);
+        assertTrue(model.isEmpty());
+
+        model.addElement("a");
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 1);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getSelectedItem() == "a");
+
+        model.addElement("b");
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 2);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == "b");
+        assertTrue(model.getSelectedItem() == "a");
+
+        model.setSelectedItem(null);
+        model.setData(null);
+        assertTrue(model.isEmpty());
+        model.addElement("x");
+        assertFalse(model.isEmpty());
+        assertTrue(model.getElementAt(0) == "x");
+        assertTrue(model.getSelectedItem() == null);
+    }
+
+    @Test
+    public void testInsertElementAt() {
+        RepositoryComboModel model = new RepositoryComboModel();
+
+        assertTrue(model.isEmpty());
+        assertNull(model.getSelectedItem());
+
+        model.insertElementAt(null, 0);
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 1);
+        assertNull(model.getSelectedItem());
+        assertTrue(model.getElementAt(0) == null);
+
+        model.insertElementAt("a", 0);
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 2);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == null);
+        assertNull(model.getSelectedItem());
+
+        model.insertElementAt("b", 0);
+        assertFalse(model.isEmpty());
+        assertTrue(model.getSize() == 3);
+        assertTrue(model.getElementAt(0) == "b");
+        assertTrue(model.getElementAt(1) == "a");
+        assertTrue(model.getElementAt(2) == null);
+        assertNull(model.getSelectedItem());
+
+        model.setSelectedItem("a");
+        assertTrue(model.getSelectedItem() == "a");
+
+        model.insertElementAt("x", 1);
+        assertTrue(model.getSize() == 4);
+        assertTrue(model.getElementAt(0) == "b");
+        assertTrue(model.getElementAt(1) == "x");
+        assertTrue(model.getElementAt(2) == "a");
+        assertTrue(model.getElementAt(3) == null);
+        assertTrue(model.getSelectedItem() == "a");
+
+        model.insertElementAt("z", 4);
+        assertTrue(model.getSize() == 5);
+        assertTrue(model.getElementAt(0) == "b");
+        assertTrue(model.getElementAt(1) == "x");
+        assertTrue(model.getElementAt(2) == "a");
+        assertTrue(model.getElementAt(3) == null);
+        assertTrue(model.getElementAt(4) == "z");
+        assertTrue(model.getSelectedItem() == "a");
+    }
+
+    @Test
+    public void testRemoveElementAt() {
+        RepositoryComboModel model = new RepositoryComboModel();
+
+        model.addElement("b");
+        model.addElement("x");
+        model.addElement("a");
+        model.addElement(null);
+        model.addElement("z");
+
+        assertTrue(model.getSelectedItem() == "b");
+        assertTrue(model.getSize() == 5);
+
+        model.removeElementAt(0);   //"b"
+        assertTrue(model.getSize() == 4);
+        assertTrue(model.getElementAt(0) == "x");
+        assertTrue(model.getElementAt(1) == "a");
+        assertTrue(model.getElementAt(2) == null);
+        assertTrue(model.getElementAt(3) == "z");
+        assertNull(model.getSelectedItem());
+
+        model.removeElementAt(3);   //"z"
+        assertTrue(model.getSize() == 3);
+        assertTrue(model.getElementAt(0) == "x");
+        assertTrue(model.getElementAt(1) == "a");
+        assertTrue(model.getElementAt(2) == null);
+        assertNull(model.getSelectedItem());
+
+        model.addElement("*");
+        model.setSelectedItem("a");
+
+        assertTrue(model.getSize() == 4);
+        assertTrue(model.getElementAt(0) == "x");
+        assertTrue(model.getElementAt(1) == "a");
+        assertTrue(model.getElementAt(2) == null);
+        assertTrue(model.getElementAt(3) == "*");
+        assertTrue(model.getSelectedItem() == "a");
+
+        model.removeElementAt(2);   //null
+        assertTrue(model.getSize() == 3);
+        assertTrue(model.getElementAt(0) == "x");
+        assertTrue(model.getElementAt(1) == "a");
+        assertTrue(model.getElementAt(2) == "*");
+        assertTrue(model.getSelectedItem() == "a");
+
+        model.removeElementAt(0);
+        model.removeElementAt(0);
+        model.removeElementAt(0);
+        assertTrue(model.isEmpty());
+        assertTrue(model.getSize() == 0);
+        assertTrue(model.getSelectedItem() == null);
+
+        model.setData(null);
+        try {
+            model.removeElementAt(0);
+            fail("an exception should be thrown");
+        } catch (IllegalStateException ex) {
+        } catch (IndexOutOfBoundsException ex) {
+        }
+
+        model.setData(new Object[] {"1", "2", "3", "4"});
+        try {
+            model.removeElementAt(-1);
+            fail("an exception should be thrown");
+        } catch (IllegalStateException ex) {
+        } catch (IndexOutOfBoundsException ex) {
+        }
+        try {
+            model.removeElementAt(4);
+            fail("an exception should be thrown");
+        } catch (IllegalStateException ex) {
+        } catch (IndexOutOfBoundsException ex) {
+        }
+        try {
+            model.removeElementAt(5);
+            fail("an exception should be thrown");
+        } catch (IllegalStateException ex) {
+        } catch (IndexOutOfBoundsException ex) {
+        }
+    }
+
+    @Test
+    public void testRemoveElement() {
+        RepositoryComboModel model = new RepositoryComboModel();
+
+        model.setData(new Object[] {"a", "b", "c", null, "e", null});
+        assertTrue(model.getSize() == 6);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == "b");
+        assertTrue(model.getElementAt(2) == "c");
+        assertTrue(model.getElementAt(3) == null);
+        assertTrue(model.getElementAt(4) == "e");
+        assertTrue(model.getElementAt(5) == null);
+
+        model.removeElement(null);
+        assertTrue(model.getSize() == 5);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == "b");
+        assertTrue(model.getElementAt(2) == "c");
+        assertTrue(model.getElementAt(3) == "e");
+        assertTrue(model.getElementAt(4) == null);
+
+        model.setSelectedItem("c");
+
+        model.removeElement(null);
+        assertTrue(model.getSize() == 4);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == "b");
+        assertTrue(model.getElementAt(2) == "c");
+        assertTrue(model.getElementAt(3) == "e");
+
+        model.removeElement(null);
+        assertTrue(model.getSize() == 4);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == "b");
+        assertTrue(model.getElementAt(2) == "c");
+        assertTrue(model.getElementAt(3) == "e");
+
+        model.removeElement("x");
+        assertTrue(model.getSize() == 4);
+        assertTrue(model.getElementAt(0) == "a");
+        assertTrue(model.getElementAt(1) == "b");
+        assertTrue(model.getElementAt(2) == "c");
+        assertTrue(model.getElementAt(3) == "e");
+
+        assertTrue(model.getSelectedItem() == "c");
+
+        model.removeElement("e");
+        model.removeElement("a");
+        model.removeElement("c");
+        model.removeElement("b");
+        assertTrue(model.isEmpty());
+        assertTrue(model.getSelectedItem() == null);
+
+        model.setData(null);
+        try {
+            model.removeElement(null);
+        } catch (Exception ex) {
+            fail("no exception should be thrown");
+        }
+        try {
+            model.removeElement("x");
+        } catch (Exception ex) {
+            fail("no exception should be thrown");
+        }
+
     }
 
 }

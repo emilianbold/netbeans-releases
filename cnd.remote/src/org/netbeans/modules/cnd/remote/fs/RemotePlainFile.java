@@ -44,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -94,6 +95,9 @@ public class RemotePlainFile extends RemoteFileObjectBase {
             throwFileNotFoundException(ex);
         } catch (ExecutionException ex) {
             throwFileNotFoundException(ex);
+        } catch (CancellationException ex) {
+            // TODO: clear CndUtils cache
+            return null;
         }
         return new FileInputStream(cache);
     }

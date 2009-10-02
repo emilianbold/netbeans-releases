@@ -479,11 +479,11 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                ShellRunAction.performAction(node, listener, null, makeProject);
+                ShellRunAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                CMakeAction.performAction(node, listener, null, makeProject);
+                CMakeAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                QMakeAction.performAction(node, listener, null, makeProject);
+                QMakeAction.performAction(node, listener, null, makeProject, null);
             }
         } catch (DataObjectNotFoundException e) {
             isFinished = true;
@@ -554,7 +554,7 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#make "+arguments); // NOI18N
         }
-        MakeAction.execute(node, arguments, listener, null, makeProject, null); // NOI18N
+        MakeAction.execute(node, arguments, listener, null, makeProject, null, null); // NOI18N
     }
 
     private void postMake(Node node) {
@@ -598,7 +598,7 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
-        MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars); // NOI18N
+        MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null); // NOI18N
     }
 
     private String getArguments(String command){

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.awt.event.ItemEvent;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
@@ -51,6 +52,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
@@ -86,11 +88,11 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593389531357591271L;
-    private static final String NO_CONFIG = "no-config"; // NOI18N
-    private static final String MISSING_CONFIG = "missing-config"; // NOI18N
-    private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
+    public static final String NO_CONFIG = "no-config"; // NOI18N
+    public static final String MISSING_CONFIG = "missing-config"; // NOI18N
+    public static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty(NO_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
-    private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
+    public static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty(MISSING_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
@@ -166,9 +168,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 remoteUploadConvertor));
 
         // upload directory hint
-        remoteConnectionComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                updateRemoteConnectionHint();
+        remoteConnectionComboBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    updateRemoteConnectionHint();
+                }
             }
         });
         uploadDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -833,7 +837,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    private static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
+    public static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
         private static final long serialVersionUID = 93621381917558630L;
 
         public RemoteConnectionRenderer() {
@@ -841,17 +845,25 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof RemoteConfiguration;
             setName("ComboBox.listRenderer"); // NOI18N
-            RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
-            setText(remoteConfig.getDisplayName());
+            // #171722
+            String text = null;
+            Color foreground = null;
+            if (value instanceof RemoteConfiguration) {
+                RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
+                text = remoteConfig.getDisplayName();
+                foreground = getForeground(remoteConfig, list, isSelected);
+            }
+            setText(text);
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
             } else {
                 setBackground(list.getBackground());
             }
-            setForeground(getForeground(remoteConfig, list, isSelected));
+            if (foreground != null) {
+                setForeground(foreground);
+            }
             return this;
         }
 
@@ -870,7 +882,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    private static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
+    public static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
         private static final long serialVersionUID = 86192358777523629L;
 
         public RemoteUploadRenderer() {

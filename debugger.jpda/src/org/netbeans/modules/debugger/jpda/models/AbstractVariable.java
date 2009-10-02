@@ -59,6 +59,7 @@ import com.sun.jdi.FloatValue;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerType;
 import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.LongType;
@@ -302,29 +303,6 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             if (ct != null) {
                 PrimitiveValue pv = (PrimitiveValue) value;
                 try {
-                    String classType = TypeWrapper.name(type);
-                    VirtualMachine vm = MirrorWrapper.virtualMachine(pv);
-                    if (classType.equals("java.lang.Byte") && !(pv instanceof ByteValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.byteValue(pv));
-                    }
-                    if (classType.equals("java.lang.Character") && !(pv instanceof CharValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.charValue(pv));
-                    }
-                    if (classType.equals("java.lang.Short") && !(pv instanceof ShortValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.shortValue(pv));
-                    }
-                    if (classType.equals("java.lang.Integer") && !(pv instanceof IntegerValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.intValue(pv));
-                    }
-                    if (classType.equals("java.lang.Long") && !(pv instanceof LongValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.longValue(pv));
-                    }
-                    if (classType.equals("java.lang.Float") && !(pv instanceof FloatValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.floatValue(pv));
-                    }
-                    if (classType.equals("java.lang.Double") && !(pv instanceof DoubleValue)) {
-                        pv = VirtualMachineWrapper.mirrorOf(vm, PrimitiveValueWrapper.doubleValue(pv));
-                    }
                     value = EvaluatorVisitor.box(pv,
                                                  (ReferenceType) type,
                                                  ((JPDAThreadImpl) ct).getThreadReference(),
@@ -333,8 +311,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                 } catch (ClassNotLoadedException ex) {
                 } catch (IncompatibleThreadStateException ex) {
                 } catch (InvocationException ex) {
-                } catch (InternalExceptionWrapper ex) {
-                } catch (VMDisconnectedExceptionWrapper ex) {
+                } catch (InternalException ex) {
+                } catch (VMDisconnectedException ex) {
                 }
             }
         }

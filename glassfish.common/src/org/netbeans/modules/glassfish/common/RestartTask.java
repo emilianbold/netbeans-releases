@@ -150,6 +150,7 @@ public class RestartTask extends BasicTask<OperationState> {
             if(postStopDelay) {
                 // If we stopped the server (or it was already stopping), delay
                 // start for a few seconds to let system clean up ports.
+                support.setServerState(ServerState.STARTING);
                 try {
                     Thread.sleep(RESTART_DELAY);
                 } catch (InterruptedException ex) {

@@ -61,6 +61,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.tasklist.todo.settings.Settings;
+import org.netbeans.modules.tasklist.todo.settings.ToDoOptionsController;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
@@ -85,7 +86,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
      *
      */
     TodoTaskScanner( String displayName, String description ) {
-        super( displayName, description, "Advanced/ToDo" ); //NOI18N
+        super( displayName, description, "Advanced/" + ToDoOptionsController.OPTIONS_PATH); //NOI18N
     }
 
     public static TodoTaskScanner create() {

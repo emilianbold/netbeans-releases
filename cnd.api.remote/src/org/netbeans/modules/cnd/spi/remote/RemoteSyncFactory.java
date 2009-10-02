@@ -75,8 +75,8 @@ public abstract class RemoteSyncFactory {
      *
      * @return new instance of the RemoteSyncWorker
      */
-    public abstract RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir);
+    public abstract RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment, 
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs);
 
     /**
      * Determines whether this factory is applicable for the given execution environment

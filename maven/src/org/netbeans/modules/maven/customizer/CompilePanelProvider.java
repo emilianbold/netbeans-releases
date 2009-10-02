@@ -49,18 +49,14 @@ import org.openide.util.Lookup;
  *
  * @author Milos Kleint 
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", category="Build", position=100)
 public class CompilePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of CompilePanelProvider */
-    public CompilePanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle.PANEL_COMPILE,
                 org.openide.util.NbBundle.getMessage(CompilePanelProvider.class, "TIT_Compile"),
-                null,
-                (ProjectCustomizer.Category[])null);
+                null);
     }
     
     public JComponent createComponent(Category category, Lookup context) {

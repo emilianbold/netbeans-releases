@@ -82,7 +82,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         state = State.INITIAL;
         execEnv = info.getExecutionEnvironment();
         id = execEnv.toString() + ' ' + info.getCommandLineForShell();
-        stateLock = new String("StateLock: " + id); // NOI18N
+        stateLock = "StateLock: " + id; // NOI18N
 
         HostInfo hinfo = null;
         try {

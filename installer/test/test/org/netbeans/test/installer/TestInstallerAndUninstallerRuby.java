@@ -49,6 +49,7 @@ public class TestInstallerAndUninstallerRuby extends Installer {
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
+        data.SetTestPackage( "ruby2/org-netbeans-modules-ruby-kit" );
 
         Utils.phaseOne(data, "ruby");
 
@@ -58,9 +59,17 @@ public class TestInstallerAndUninstallerRuby extends Installer {
         // Agreement
         Utils.stepLicense();
         // Location
-        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        Utils.stepSetDir(
+            data,
+            "Install the NetBeans IDE",
+            data.GetNetBeansInstallPath( )
+          );
         // GF
-        Utils.stepSetDir(data, "Install GlassFish", Utils.GF2_DIR_NAME);
+        Utils.stepSetDir(
+            data,
+            "Install GlassFish",
+            data.GetApplicationServerInstallPath( )
+          );
         // Summary
         Utils.stepInstall(data);
         //Installation

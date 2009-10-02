@@ -886,7 +886,7 @@ public class AstRenderer {
                                 if (cfdi != null) {
                                     typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
                                 } else if (classifier != null) {
-                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, scope);
+                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
                                 } else if (results.getEnclosingClassifier() != null) {
                                     typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
                                 }

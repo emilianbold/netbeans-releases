@@ -52,11 +52,9 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -70,7 +68,6 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -259,7 +256,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             @Override
             public FileSystem.Status getStatus() {
                 return new FileSystem.HtmlStatus() {
-                    public String annotateNameHtml(String name, Set files) {
+                    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
                         String nonHtmlLabel = status.annotateName(name, files);
                         if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
                             nonHtmlLabel = rootLabel;
@@ -288,12 +285,12 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         }
                         return htmlLabel;
                     }
-                    public String annotateName(String name, Set files) {
+                    public String annotateName(String name, Set<? extends FileObject> files) {
                         // Complex to explain why this is even called, but it is.
                         // Weird b/c hacks in the way DataNode.getHtmlDisplayName works.
                         return name;
                     }
-                    public Image annotateIcon(Image icon, int iconType, Set files) {
+                    public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
                         return status.annotateIcon(icon, iconType, files);
                     }
                 };

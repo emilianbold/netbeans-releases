@@ -420,7 +420,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                     // this name should be excluded from next rounds of cycle 1
                     if (local == null) {
-                        local = new Properties(exclude);
+                        local = new Properties();
+                        local.putAll(exclude);
                     }
 
                     local.setProperty(basename, basename);
@@ -1442,8 +1443,13 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         ) {
             return;
         }
-
-        fileAttributeChanged0(new FileAttributeEvent(this, fe.getName(), fe.getOldValue(), fe.getNewValue()));
+        final FileAttributeEvent ev = new FileAttributeEvent(this, fe.getName(), fe.getOldValue(), fe.getNewValue());
+        try {
+            ev.inheritPostNotify(fe);
+            fileAttributeChanged0(ev);
+        } finally {
+            ev.setPostNotify(null);
+        }
     }
 
     /** Copies content of one folder into another.

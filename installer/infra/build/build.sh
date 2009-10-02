@@ -91,9 +91,9 @@ if [ -z "$BUILD_MYSQL" ] ; then
     BUILD_MYSQL=0
 fi
 
-if [ -z "$BUILD_JAVAFX" ] ; then
+if [ -z "$RUNJAVAFX" ] ; then
     #do not build NetBeans/JavaFX bundles by default
-    BUILD_JAVAFX=0
+    RUNJAVAFX=0
 fi
 
 if [ -z "$CACHE_DIR" ] ; then
@@ -198,7 +198,7 @@ run() {
             \"-Dbuild.jtb=${BUILD_JTB}\" \
             \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \
-            \"-Dbuild.javafx=${BUILD_JAVAFX}\" \
+            \"-Dbuild.javafx=${RUNJAVAFX}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
             \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \

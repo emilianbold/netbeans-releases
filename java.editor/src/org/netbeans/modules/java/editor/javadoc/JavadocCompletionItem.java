@@ -70,7 +70,6 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * Javadoc completion items.
@@ -247,25 +246,13 @@ final class JavadocCompletionItem implements CompletionItem {
     private static void completeAsUser(JTextComponent comp, String what, int where) {
         Document doc = comp.getDocument();
         try {
-            CharSequence cs = JavadocCompletionUtils.getCharSequence(doc);
-            int index = 0;
-            for (; index < what.length() && where + index < cs.length(); index++) {
-                if (cs.charAt(where + index) != what.charAt(index)) {
-                    break;
-                }
+            int end = comp.getSelectionEnd();
+            int len = end - where;
+            if (len > 0) {
+                doc.remove(where, len);
             }
-            
-            if (index == what.length()) {
-                // nothing to complete
-                comp.setCaretPosition(where + index);
-                return;
-            }
-            
-            if (index > 0) {
-                what = what.substring(index);
-            }
-            doc.insertString(where + index, what, null);
-            comp.setCaretPosition(where + index + what.length());
+            doc.insertString(where, what, null);
+            comp.setCaretPosition(where + what.length());
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -47,6 +47,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
  */
 public interface TestConstants {
     public static final String TEST_PROJECT = "unittest";
+    public static final String TEST_PROJECT2 = "unittest2";
 //    public static final String REPO_PASSWD  = "kenai";
     public static final String REPO_PASSWD  = "unittest";
     public static final String REPO_HOST     = "kenai-test.czech.sun.com";

@@ -204,6 +204,11 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
 
             bean.setManagedBeanName(beanName);
             bean.setManagedBeanClass(className);
+            
+            //#172446: Make sure that scope is not null
+            if (scope == null) {
+                scope = Scope.REQUEST;
+            }
             bean.setManagedBeanScope(scope);
 
             String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);

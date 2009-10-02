@@ -62,6 +62,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.AWTEventListener;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.view.ui.slides.SlideBar;
@@ -212,8 +213,13 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         if (index < 0) {
             return;
         }
-        
-        tabbed.setIconAt(index, new ImageIcon(tc.getIcon()));
+
+        Image icon = tc.getIcon();
+        if( null != icon ) {
+            tabbed.setIconAt(index, new ImageIcon(tc.getIcon()));
+        } else {
+            Logger.getLogger(TabbedHandler.class.getName()).log(Level.INFO, "TopComponent has no icon: " + tc);
+        }
     }
     
     /** Called when the name of some component has changed  */

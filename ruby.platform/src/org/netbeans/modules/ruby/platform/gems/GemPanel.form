@@ -27,7 +27,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="gemsTab" alignment="0" pref="791" max="32767" attributes="1"/>
+                  <Component id="gemsTab" alignment="0" pref="819" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="gemHome" linkSize="3" max="32767" attributes="1"/>
@@ -44,7 +44,7 @@
                           <Component id="browseGemHome" linkSize="1" alignment="1" min="-2" pref="80" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="oldRubyGemsText" alignment="0" pref="791" max="32767" attributes="0"/>
+                  <Component id="oldRubyGemsText" alignment="0" pref="819" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -106,7 +106,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadUpdatedButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="436" max="32767" attributes="0"/>
+                              <EmptySpace pref="442" max="32767" attributes="0"/>
                               <Component id="searchUpdatedLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchUpdatedText" min="-2" pref="156" max="-2" attributes="0"/>
@@ -115,13 +115,13 @@
                               <Component id="updateButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="updateAllButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="362" max="32767" attributes="0"/>
+                              <EmptySpace pref="366" max="32767" attributes="0"/>
                               <Component id="updatedProgressLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="updatedProgress" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="updatedSP" pref="461" max="32767" attributes="0"/>
+                              <Component id="updatedSP" pref="489" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jScrollPane6" min="-2" pref="283" max="-2" attributes="0"/>
                           </Group>
@@ -329,20 +329,20 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadInstalledButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="436" max="32767" attributes="0"/>
+                              <EmptySpace pref="442" max="32767" attributes="0"/>
                               <Component id="searchInstLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchInstText" min="-2" pref="156" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="uninstallButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="455" max="32767" attributes="0"/>
+                              <EmptySpace pref="468" max="32767" attributes="0"/>
                               <Component id="installedProgressLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="installedProgress" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="installedSP" pref="461" max="32767" attributes="0"/>
+                              <Component id="installedSP" pref="489" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jScrollPane5" min="-2" pref="283" max="-2" attributes="0"/>
                           </Group>
@@ -532,7 +532,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadNewButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="436" max="32767" attributes="0"/>
+                              <EmptySpace pref="442" max="32767" attributes="0"/>
                               <Component id="searchNewLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchNewText" min="-2" pref="156" max="-2" attributes="0"/>
@@ -541,13 +541,13 @@
                               <Component id="installButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="installLocalButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="348" max="32767" attributes="0"/>
+                              <EmptySpace pref="347" max="32767" attributes="0"/>
                               <Component id="newProgressLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="newProgress" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="newSP" pref="461" max="32767" attributes="0"/>
+                              <Component id="newSP" pref="489" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jScrollPane4" min="-2" pref="283" max="-2" attributes="0"/>
                           </Group>
@@ -748,11 +748,12 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="verboseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="descriptionCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="proxyButton" min="-2" max="-2" attributes="0"/>
                           <Component id="allVersionsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="459" max="32767" attributes="0"/>
+                      <EmptySpace pref="458" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -765,7 +766,9 @@
                       <Component id="allVersionsCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="descriptionCheckbox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="243" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="verboseCheckBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="216" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -804,6 +807,16 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="descriptionCheckboxActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="verboseCheckBox">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.verboseCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <Events>
+                <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="verboseCheckBoxItemStateChanged"/>
               </Events>
             </Component>
           </SubComponents>

@@ -81,10 +81,6 @@ public class MonitoredData {
         return states.get(0).getTimeStamp();
     }
     
-    public int getTimeStampInterval(){
-        return (int) mapData.getSamplingPeriod().getValueIn(TimeUnit.NANOSECONDS);
-    }
-
     public ThreadData getStackProvider(int index){
         return mapData.getThreadsData().get(index);
     }

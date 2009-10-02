@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
@@ -54,9 +55,7 @@ import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
@@ -88,7 +87,11 @@ public class PHPHintsProvider implements HintsProvider {
                 if (mgr.isEnabled(astRule)) {
                     if (astRule instanceof AbstractRule) {
                         AbstractRule icm = (AbstractRule) astRule;
-                        icm.computeHintsImpl(ruleContext, hints, PHPHintsProvider.Kind.HINT);
+                        try {
+                            icm.computeHintsImpl(ruleContext, hints, PHPHintsProvider.Kind.HINT);
+                        } catch (BadLocationException ex) {
+                           return;// #172881
+                        }
                     }
                 }
             }
@@ -118,7 +121,11 @@ public class PHPHintsProvider implements HintsProvider {
                 if (mgr.isEnabled(astRule)) {
                     if (astRule instanceof AbstractRule) {
                         AbstractRule icm = (AbstractRule) astRule;
-                        icm.computeHintsImpl(ruleContext, suggestions, PHPHintsProvider.Kind.SUGGESTION);
+                        try {
+                            icm.computeHintsImpl(ruleContext, suggestions, PHPHintsProvider.Kind.SUGGESTION);
+                        } catch (BadLocationException ex) {
+                            return;// #172881
+                        }
                     }
                 }
             }

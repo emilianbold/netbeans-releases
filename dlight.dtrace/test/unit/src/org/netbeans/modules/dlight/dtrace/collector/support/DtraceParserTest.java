@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -127,7 +128,11 @@ public class DtraceParserTest extends NbTestCase {
             knownStacks = new ArrayList<String>();
         }
 
-        public long putStack(List<CharSequence> stack, long sampleDuration) {
+        public long putStack(List<CharSequence> stack) {
+            return putSample(stack, -1, -1);
+        }
+
+        public long putSample(List<CharSequence> stack, long timestamp, long duraction) {
             String stackAsString = stack.toString();
             long id = 0;
             while (id < knownStacks.size()) {
@@ -140,7 +145,7 @@ public class DtraceParserTest extends NbTestCase {
                 knownStacks.add((int)id, stackAsString);
             }
             ++id;
-            ref("putStack(" + stack + ", " + sampleDuration + ") = " + id);
+            ref("putStack(" + stack + ", " + duraction + ") = " + id);
             return id;
         }
 
@@ -164,12 +169,12 @@ public class DtraceParserTest extends NbTestCase {
             return null;
         }
 
-        public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, int limit) {
+        public List<FunctionCallWithMetric> getHotSpotFunctions(FunctionMetric metric, List<DataFilter> filters, int limit) {
             fail("Parser is not expected to call this method");
             return null;
         }
 
-        public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
+        public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription, List<DataFilter> filters) {
             fail("Parser is not expected to call this method");
             return null;
         }

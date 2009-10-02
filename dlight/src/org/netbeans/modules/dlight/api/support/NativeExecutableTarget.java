@@ -65,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.windows.InputOutput;
 
 /**
@@ -271,7 +272,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             pb.setExecutable(cmd).setArguments(args);
             pb.addNativeProcessListener(NativeExecutableTarget.this);
             pb.setWorkingDirectory(workingDirectory);
-            pb.addEnvironmentVariables(envs);
+            pb.putAllEnvironmentVariables(envs);
             pb.setX11Forwarding(x11forwarding);
             //pb.setInitialSuspend(true);
 
@@ -307,7 +308,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 try {
                     Map<String, String> env = executionEnvProvider.getExecutionEnv(this);
                     if (env != null && !env.isEmpty()) {
-                        pb = pb.addEnvironmentVariables(env);
+                        pb = pb.putAllEnvironmentVariables(env);
                     }
                 } catch (ConnectException ex) {
                     // TODO: can it happen here?
@@ -332,7 +333,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     }
 
     private void resume() {
-        CommonTasksSupport.sendSignal(execEnv, pid, "CONT", null); // NOI18N
+        CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGCONT, null);
     }
 
     private void terminate() {

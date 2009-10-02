@@ -78,19 +78,19 @@ abstract class CompileWorker {
             path = path.substring(0, i);
         path = FileObjects.convertFolder2Package(path);
         List<String> fqns = new LinkedList<String>();
+        boolean hasClassesLivingElsewhere = false;
         for (Tree t : cut.getTypeDecls()) {
             if (t.getKind() == Tree.Kind.CLASS) {
                 String fqn = pack + ((ClassTree) t).getSimpleName().toString();
                 fqns.add(fqn);
                 if (!path.equals(fqn)) {
-                    List<String> l = file2FQNs.get(tuple.jfo);
-                    if (l == null) {
-                        file2FQNs.put(tuple.jfo, fqns);
-                    } else {
-                        l.addAll(fqns);
-                    }
+                    hasClassesLivingElsewhere = true;
                 }
             }
+        }
+        
+        if (hasClassesLivingElsewhere) {
+            file2FQNs.put(tuple.jfo, fqns);
         }
     }
 

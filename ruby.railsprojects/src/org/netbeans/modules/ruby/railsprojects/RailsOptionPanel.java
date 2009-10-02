@@ -59,6 +59,14 @@ public class RailsOptionPanel extends javax.swing.JPanel {
     public void setLogicalChosen(boolean selected) {
         logicalCB.setSelected(selected);
     }
+
+    public boolean getIndexVendorGemsOnly() {
+        return vendorGemsCheckBox.isSelected();
+    }
+
+    public void setIndexVendorGemsOnly(boolean selected) {
+        vendorGemsCheckBox.setSelected(selected);
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -71,11 +79,19 @@ public class RailsOptionPanel extends javax.swing.JPanel {
         logicalCB = new javax.swing.JCheckBox();
         railsLabel = new javax.swing.JLabel();
         upperSep = new javax.swing.JSeparator();
+        vendorGemsCheckBox = new javax.swing.JCheckBox();
 
         logicalCB.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(logicalCB, org.openide.util.NbBundle.getMessage(RailsOptionPanel.class, "LogicalView")); // NOI18N
 
         railsLabel.setText(org.openide.util.NbBundle.getMessage(RailsOptionPanel.class, "RailsProjectLabel")); // NOI18N
+
+        vendorGemsCheckBox.setText(org.openide.util.NbBundle.getMessage(RailsOptionPanel.class, "RailsOptionPanel.vendorGemsCheckBox.text")); // NOI18N
+        vendorGemsCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                vendorGemsCheckBoxItemStateChanged(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -84,10 +100,11 @@ public class RailsOptionPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(vendorGemsCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(railsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
+                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE))
                     .add(logicalCB))
                 .addContainerGap())
         );
@@ -98,19 +115,26 @@ public class RailsOptionPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(railsLabel)
                     .add(upperSep, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(vendorGemsCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(logicalCB)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         logicalCB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsOptionPanel.class, "RailsOptionPanel.logicalCB.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void vendorGemsCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_vendorGemsCheckBoxItemStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_vendorGemsCheckBoxItemStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox logicalCB;
     private javax.swing.JLabel railsLabel;
     private javax.swing.JSeparator upperSep;
+    private javax.swing.JCheckBox vendorGemsCheckBox;
     // End of variables declaration//GEN-END:variables
     
 }

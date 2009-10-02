@@ -76,26 +76,21 @@ public class VersionsCache {
         if(revision.equals("-1")) return null; // NOI18N
         
         File repository = Mercurial.getInstance().getRepositoryRoot(base);
-        if (Setup.REVISION_BASE.equals(revision)) {
-            try {
-                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
-                tempFile.deleteOnExit();
-                HgCommand.doCat(repository, base, tempFile, null);
-                if (tempFile.length() == 0) return null;
-                return tempFile;
-            } catch (HgException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
-            }
-        } else if (Setup.REVISION_CURRENT.equals(revision)) {
+        if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;
         } else {
             try {
                 File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
                 tempFile.deleteOnExit();
-                HgCommand.doCat(repository, base, tempFile, revision, null);
-                if (tempFile.length() == 0) return null;
+                if (Setup.REVISION_BASE.equals(revision)) {
+                    HgCommand.doCat(repository, base, tempFile, null);
+                } else {
+                    HgCommand.doCat(repository, base, tempFile, revision, null);
+                }
+                if (tempFile.length() == 0) {
+                    tempFile.delete();
+                    return null;
+                }
                 return tempFile;
             } catch (HgException e) {
                 IOException ioe = new IOException();

@@ -48,7 +48,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class WinSysOptionsPanelController extends OptionsPanelController {
+@OptionsPanelController.SubRegistration(
+    displayName="#AdvancedOption_DisplayName_WinSys"
+//    toolTip="#AdvancedOption_Tooltip_WinSys"
+)
+public final class WinSysOptionsPanelController extends OptionsPanelController {
 
     private WinSysPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

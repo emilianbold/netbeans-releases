@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -58,6 +59,9 @@ import org.openide.modules.InstalledFileLocator;
 public class Util {
 
     private static final Logger log = DLightLogger.getLogger(Util.class);
+
+    private Util() {
+    }
 
     /**
      * Gets an absolute path of the module-installed file.
@@ -75,54 +79,57 @@ public class Util {
 
     /**
      * Copies a file from resources to a temporary directory
+     *
      * @param clazz Determines the jar from which the file should be copied
-     * @param resourceFileName The resource file name
-     * @return the canonical path of the newly-created file or null if the operation failed
+     * @param resourceName The resource file name
+     * @return the newly-created file
+     * @throws IOException
      */
-    public static String copyResource(Class clazz, String resourceFileName) {
-        return copyResource(clazz.getClassLoader().getResource(resourceFileName));
+    public static File copyToTempDir(Class<?> clazz, String resourceName) throws IOException {
+        return copyToTempDir(clazz.getClassLoader().getResource(resourceName));
     }
 
-    public static String copyResource(URL resourceUrl) {
-        if (resourceUrl == null) {
+    /**
+     * Downloads URL content to a file in temporary directory.
+     *
+     * @param url
+     * @return the newly-created file
+     * @throws IOException
+     */
+    public static File copyToTempDir(URL url) throws IOException {
+        if (url == null) {
             return null;
         }
 
+        InputStream is = url.openStream();
         try {
-            InputStream is = resourceUrl.openStream();
-
-            if (is == null) {
-                return null;
-            }
-
             HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
 
             if (hostInfo == null) {
-                return null;
+                throw new IOException("Failed to get local ExecutionEnvironment"); // NOI18N
             }
 
-            String prefix = "_dlight_" + getBriefName(resourceUrl); // NOI18N
+            String prefix = "_dlight_" + getBriefName(url); // NOI18N
             String tmpDirBase = hostInfo.getTempDir();
 
             if (hostInfo.getOSFamily() == hostInfo.getOSFamily().WINDOWS) {
                 tmpDirBase = WindowsSupport.getInstance().convertToWindowsPath(tmpDirBase);
             }
 
-            File result_file = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
-            result_file.deleteOnExit();
+            File result = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
+            result.deleteOnExit();
 
-            OutputStream os = new FileOutputStream(result_file);
-            FileUtil.copy(is, os);
+            OutputStream os = new FileOutputStream(result);
+            try {
+                FileUtil.copy(is, os);
+                os.flush();
+                return result;
+            } finally {
+                os.close();
+            }
+        } finally {
             is.close();
-            os.flush();
-            os.close();
-            return result_file.getCanonicalPath();
-        } catch (IOException ex) {
-            log.info("copyResource failed: " + ex.getMessage()); // NOI18N
-        }catch(NullPointerException ex1){
-            return null;
         }
-        return null;
     }
 
     public static String getBriefName(URL resourceUrl) {
@@ -174,7 +181,7 @@ public class Util {
      * @param cls a class to return base path for
      * @return the base path for the given class
      */
-    public static String getBasePath(Class cls) {
+    public static String getBasePath(Class<?> cls) {
         String path = cls.getName().replace('.', '/');//NOI18N
         int pos = path.lastIndexOf('/');//NOI18N
         return (pos > 0) ? path.substring(0, pos) : path;
@@ -207,7 +214,10 @@ public class Util {
                     if (files[i].isDirectory()) {
                         deleteLocalDirectory(files[i]);
                     } else {
-                        files[i].delete();
+                        boolean result = files[i].delete();
+                        if (!result && log.isLoggable(Level.FINE)) {
+                            log.fine("Unable to delete file " + files[i].getAbsolutePath()); // NOI18N
+                        }
                     }
                 }
             }

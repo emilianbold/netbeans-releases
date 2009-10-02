@@ -66,8 +66,7 @@
                 <h:graphicImage library="images" name="#{catalog.item.imageurl}" title="Imageurl" />
                 <h:outputText value="#{msgs.Price}:"/>
                 <h:outputText value="#{catalog.item.price}" title="Price" />
-                <h:outputText value="#{msgs.Seller}:"/>
-                <h:outputText value="#{catalog.item.address.city},  #{catalog.item.address.state}" title="Seller" />
+                
             </h:panelGrid>
             <h:commandButton id="back" value="Back" action="list"/>
         </h:form>

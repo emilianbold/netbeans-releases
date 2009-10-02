@@ -146,8 +146,8 @@ public class DiffSidebarManager implements PreferenceChangeListener {
             }
             if (sideBar == null) {
                 Document doc = target.getDocument();
-                File file = fileForDocument(doc);
-                if (file == null) return null;
+                FileObject file = fileForDocument(doc);
+                if (file == null || !file.isValid()) return null;
     
                 sideBar = new DiffSidebar(target, file);
                 sideBars.put(sideBar, null);
@@ -157,31 +157,30 @@ public class DiffSidebarManager implements PreferenceChangeListener {
         }
     }
 
-    private File fileForDocument(Document doc) {
+    private FileObject fileForDocument(Document doc) {
         DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         if (dobj == null) return null;
         if (dobj instanceof MultiDataObject) {
             return fileForDataobject(doc, (MultiDataObject) dobj);
         } else if (dobj != null) {
-            FileObject fo = dobj.getPrimaryFile();
-            return FileUtil.toFile(fo);
+            return dobj.getPrimaryFile();
         } else {
             return null;
         }
     }
 
-    private File fileForDataobject(Document doc, MultiDataObject dobj) {
+    private FileObject fileForDataobject(Document doc, MultiDataObject dobj) {
         for (MultiDataObject.Entry entry : dobj.secondaryEntries()) {
             if (entry instanceof CookieSet.Factory) {
                 CookieSet.Factory factory = (CookieSet.Factory) entry;
                 EditorCookie ec = factory.createCookie(EditorCookie.class);
                 Document entryDocument = ec.getDocument();
                 if (entryDocument == doc) {
-                    return FileUtil.toFile(entry.getFile());
+                    return entry.getFile();
                 }
             }
         }
-        return FileUtil.toFile(dobj.getPrimaryFile());
+        return dobj.getPrimaryFile();
     }
 
     private void setSidebarEnabled(boolean enable) {

@@ -85,6 +85,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
@@ -563,6 +564,7 @@ public class KenaiSearchPanel extends JPanel {
     private static final int projectURLGroup = 1;
 
     private void invokeSearch() {
+        UIUtils.logKenaiUsage("PROJECT_SEARCH"); // NOI18N
 
         kenaiProjectsTabPane.setSelectedComponent(searchResultsPanel);
         kenaiProjectsTabPane.validate();
@@ -720,7 +722,7 @@ public class KenaiSearchPanel extends JPanel {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
-                    project.cacheProjectImage();
+                    project.fetchProjectImage(false); // a project image will be needed, prepare it in advance
                     if (PanelType.OPEN.equals(panelType)) {
                         addElementLater(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {

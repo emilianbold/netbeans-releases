@@ -90,7 +90,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
 
-    private SvnProgressSupport          svnProgressSupport;   
+    private VersioningPanelProgressSupport          svnProgressSupport;
     private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1, true);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
@@ -112,7 +112,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         initComponents();
         setComponentsState();
         setVersioningComponent(syncTable.getComponent());
-        reScheduleRefresh(0);
+//        reScheduleRefresh(0);
 
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
@@ -168,7 +168,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
             if (tc == null) return;
             tc.setActivatedNodes((Node[]) evt.getNewValue());
-        } 
+        } else if (FileStatusCache.PROP_CACHE_READY.equals(evt.getPropertyName()) && Boolean.TRUE.equals(evt.getNewValue())) {
+            reScheduleRefresh(0);
+        }
     }
 
     /**
@@ -189,7 +191,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         super.addNotify();
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         subversion.getStatusCache().addVersioningListener(this);
-//        subversion.addVersioningListener(this);
+        subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
@@ -197,7 +199,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     public void removeNotify() {
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
-//        subversion.removeVersioningListener(this);
+        subversion.getStatusCache().removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
@@ -403,10 +405,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        svnProgressSupport = new SvnProgressSupport() {
+        svnProgressSupport = new VersioningPanelProgressSupport() {
             public void perform() {
-                StatusAction.executeStatus(context, this);
-                setupModels();
+                try {
+                    StatusAction.executeStatus(context, this);
+                } finally {
+                    setFinished(true); // stops skipping versioning events
+                }
+                reScheduleRefresh(0);
             }            
         };
         parentTopComponent.contentRefreshed();
@@ -466,6 +472,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         if(context == null) {
             return false;
         }
+        VersioningPanelProgressSupport supp = svnProgressSupport;
+        if (supp != null && !supp.isFinished()) {
+            // refresh is running, skipping this event; setupModels will be called at the end of the refresh
+            // that's because the FileStatusCache fires the event from inside the refresh
+            // and we would be listening for our own events
+            return false;
+        }
         File file = (File) event.getParams()[0];
         FileInformation oldInfo = (FileInformation) event.getParams()[1];
         FileInformation newInfo = (FileInformation) event.getParams()[2];
@@ -479,6 +492,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
     /** Reloads data from cache */
     private void reScheduleRefresh(int delayMillis) {
+        cancelRefresh();
         refreshViewTask.schedule(delayMillis);
     }
 
@@ -692,6 +706,19 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
             adjusted.add(button);
         }
+    }
+
+    private abstract class VersioningPanelProgressSupport extends SvnProgressSupport {
+        private boolean finished;
+
+        public boolean isFinished() {
+            return finished;
+        }
+
+        protected void setFinished (boolean flag) {
+            finished = flag;
+        }
+
     }
 
     /** This method is called from within the constructor to

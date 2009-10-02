@@ -231,6 +231,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // IZ#155054 : False positive error highlighting errors on template specializations
         performStaticTest("iz155054.cpp");
     }
+    
+    public void testIZ172227() throws Exception {
+        // IZ#172227 : Unable to resolve identifier path although code compiles allright
+        performStaticTest("iz172227.cpp");
+    }
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

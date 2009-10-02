@@ -67,6 +67,15 @@ import org.openide.util.WeakListeners;
 /**
  * @author Dusan Balek
  */
+@OptionsPanelController.SubRegistration(
+    location="Editor",
+    id="CodeCompletion",
+    displayName="#CTL_CodeCompletion_DisplayName",
+    keywords="#KW_CodeCompletion",
+    keywordsCategory="Editor/CodeCompletion",
+//    toolTip="#CTL_CodeCompletion_ToolTip",
+    position=250
+)
 public final class CodeCompletionOptionsPanelController extends OptionsPanelController {
 
     private static final Logger LOG = Logger.getLogger(CodeCompletionOptionsPanelController.class.getName());

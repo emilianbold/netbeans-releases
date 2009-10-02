@@ -81,7 +81,7 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
                 "}",
                 null
                 );
-        
+     
         if(!em.isExisting()){
             modifiedClazz = createEntityManager(Initialization.INJECT);
         }

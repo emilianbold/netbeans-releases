@@ -290,7 +290,7 @@ public class CommonUtilities {
             } catch (IOException ioe) {
             }
         }
-/*
+
         try {
             BufferedOutputStream dest = null;
             FileInputStream fis = new FileInputStream(new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip"));
@@ -315,7 +315,7 @@ public class CommonUtilities {
         } catch (Exception e) {
             e.printStackTrace();
         }
-*/
+
         return System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + "jEdit41.zip";
     }
 

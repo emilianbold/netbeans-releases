@@ -44,17 +44,12 @@ package org.netbeans.modules.apisupport.refactoring;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 
@@ -106,24 +101,18 @@ public class Utility {
         if (content == null) {
             return;
         }
-        FileLock lock = null;
-        PrintWriter writer = null;
         try {
-            lock = fileObject.lock();
-            writer = new PrintWriter(new OutputStreamWriter(fileObject.getOutputStream(lock), "UTF-8")); // NOI18N
-            writer.print(content);
-            
+            OutputStream os = fileObject.getOutputStream();
+            try {
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                writer.print(content);
+                writer.flush();
+            } finally {
+                os.close();
+            }
         } catch (IOException exc) {
             //TODO
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-            if (lock != null) {
-                lock.releaseLock();
-            }
         }
-        
     }
     
     static String readFileIntoString(FileObject fileObject) {

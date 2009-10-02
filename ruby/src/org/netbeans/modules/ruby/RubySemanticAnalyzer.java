@@ -89,12 +89,25 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private static final Set<String> JAVA_PREFIXES = new HashSet<String>();
+
+    /**
+     * Method names for which we should skip highlightning. See #124701 - this
+     * would probably need a more general solution (Operators as method names
+     * are already handled somewhere, but I really can't find where..)
+     */
+    private static final Set<String> SKIP_HIGHLIGHTNING = new HashSet<String>();
+
     static {
         JAVA_PREFIXES.add("java"); // NOI18N
         JAVA_PREFIXES.add("javax"); // NOI18N
         JAVA_PREFIXES.add("org"); // NOI18N
         JAVA_PREFIXES.add("com"); // NOI18N
+
+        // what else than "[]"?
+        SKIP_HIGHLIGHTNING.add("[]");
     }
+
+
 
     public RubySemanticAnalyzer() {
     }
@@ -248,7 +261,9 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
                 }
             }
 
-            highlightMethodName(node, highlights);
+            if (!SKIP_HIGHLIGHTNING.contains(AstUtilities.getName(node))) {
+                highlightMethodName(node, highlights);
+            }
             break;
         }
         
@@ -272,7 +287,10 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         case FCALLNODE: {
             // CallNode seems overly aggressive - it will show all operators for example
             OffsetRange range = AstUtilities.getCallRange(node);
-            highlights.put(range, ColoringAttributes.METHOD_SET);
+            // see #124701
+            if (!SKIP_HIGHLIGHTNING.contains(AstUtilities.getName(node))) {
+                highlights.put(range, ColoringAttributes.METHOD_SET);
+            }
             break;
         }
         }

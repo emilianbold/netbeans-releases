@@ -66,7 +66,6 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -344,12 +343,7 @@ final class NewProjectIterator extends BasicWizardIterator {
                 folder = FileUtil.createFolder(layer.getRoot(), category); // NOI18N
             }
             FileObject file = folder.createData(name + "Project", "zip"); // NOI18N
-            FileLock lock = file.lock();
-            try {
-                createProjectZip(file.getOutputStream(lock), templateProject);
-            } finally {
-                lock.releaseLock();
-            }
+            createProjectZip(file.getOutputStream(), templateProject);
             String bundlePath = manifestManager.getLocalizingBundle();
             String suffix = ".properties"; // NOI18N
             if (bundlePath != null && bundlePath.endsWith(suffix)) {

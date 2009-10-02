@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${netbeans.dest.dir}/java2/ant/lib/ant.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java3/ant/lib/ant.jar"/>
                 <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>
@@ -68,8 +68,8 @@ made subject to such option by the copyright holder.
         <javac srcdir="catdsrc" destdir="build/catdclasses" source="1.5" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
-                <pathelement location="${netbeans.dest.dir}/java2/modules/ext/junit-3.8.2.jar"/>
-                <pathelement location="${netbeans.dest.dir}/java2/modules/ext/jaxws21/api/saaj-api.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java3/modules/ext/junit-3.8.2.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java3/modules/ext/jaxws21/api/saaj-api.jar"/>
                 <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>

@@ -110,7 +110,6 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     // By path; attrs as folder/file path plus "//" plus attr name.
     private Set<String> oneLayerFiles; // Set<String>
     // Related:
-    private boolean checkingForDuplicates;
     private String currPath;
     private boolean atLeastOneFileOrFolderInLayer;
 
@@ -154,14 +153,11 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             // #23609: reverse these...
             urls = new ArrayList<URL>(urls);
             Collections.reverse(urls);
-            checkingForDuplicates = LayerCacheManager.err.isLoggable(Level.FINE);
             Iterator<URL> it = urls.iterator();
             while (it.hasNext()) {
                 base = it.next(); // store base for resolving in parser
-                if (checkingForDuplicates) {
-                    oneLayerFiles = new HashSet<String>(100);
-                    currPath = null;
-                }
+                oneLayerFiles = new HashSet<String>(100);
+                currPath = null;
                 LayerCacheManager.err.log(Level.FINE, "Parsing: {0}", base);
                 atLeastOneFileOrFolderInLayer = false;
                 try {
@@ -267,15 +263,15 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             if (attr.type == null) throw new SAXParseException("unknown <attr> value type for " + attr.name, locator);
             MemFileOrFolder parent = (MemFileOrFolder)curr.peek();
             if (parent.attrs == null) parent.attrs = new LinkedList<MemAttr>();
-            Iterator it = parent.attrs.iterator();
+            Iterator<MemAttr> it = parent.attrs.iterator();
             while (it.hasNext()) {
-                if (((MemAttr)it.next()).name.equals(attr.name)) {
+                if (it.next().name.equals(attr.name)) {
                     attrCount--;
                     it.remove();
                 }
             }
             parent.attrs.add(attr);
-            if (checkingForDuplicates && !oneLayerFiles.add(currPath + "//" + attr.name)) { // NOI18N
+            if (!oneLayerFiles.add(currPath + "//" + attr.name)) { // NOI18N
                 LayerCacheManager.err.warning("layer " + base + " contains duplicate attributes " + attr.name + " for " + currPath);
             }
         } else {
@@ -294,9 +290,7 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             parent.children = new LinkedList<MemFileOrFolder>();
         }
         else {
-            Iterator it = parent.children.iterator();
-            while (it.hasNext()) {
-                MemFileOrFolder f2 = (MemFileOrFolder)it.next();
+            for (MemFileOrFolder f2 : parent.children) {
                 if (f2.name.equals(name)) {
                     f = f2;
                     f.registerURL(base);
@@ -316,15 +310,13 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             parent.children.add(f);
         }
         curr.push(f);
-        if (checkingForDuplicates) {
-            if (currPath == null) {
-                currPath = name;
-            } else {
-                currPath += "/" + name;
-            }
-            if (!oneLayerFiles.add(currPath)) {
-                LayerCacheManager.err.warning("layer " + base + " contains duplicate " + qname + "s named " + currPath);
-            }
+        if (currPath == null) {
+            currPath = name;
+        } else {
+            currPath += "/" + name;
+        }
+        if (!oneLayerFiles.add(currPath)) {
+            LayerCacheManager.err.warning("layer " + base + " contains duplicate " + qname + "s named " + currPath);
         }
         return f;
     }
@@ -371,13 +363,11 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         }
         if (qname.equals("file") || qname.equals("folder")) { // NOI18N
             curr.pop();
-            if (checkingForDuplicates) {
-                int i = currPath.lastIndexOf('/'); // NOI18N
-                if (i == -1) {
-                    currPath = null;
-                } else {
-                    currPath = currPath.substring(0, i);
-                }
+            int i = currPath.lastIndexOf('/'); // NOI18N
+            if (i == -1) {
+                currPath = null;
+            } else {
+                currPath = currPath.substring(0, i);
             }
         }
     }

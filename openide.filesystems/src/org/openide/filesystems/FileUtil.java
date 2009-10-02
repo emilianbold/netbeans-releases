@@ -79,6 +79,7 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -87,6 +88,8 @@ import org.openide.util.WeakListeners;
  */
 public final class FileUtil extends Object {
 
+    private static final RequestProcessor REFRESH_RP = new RequestProcessor("FileUtil-Refresh-All");//NOI18N
+    private static RequestProcessor.Task refreshTask = null;
     /** Contains mapping of FileChangeListener to File. */
     private static final Map<FileChangeListener,Map<File,Holder>> holders = new WeakHashMap<FileChangeListener,Map<File,Holder>>();
 
@@ -161,14 +164,37 @@ public final class FileUtil extends Object {
      * @since 7.7
      */
     public static void refreshAll() {
-        refreshFor(File.listRoots());
-        try {
-            getConfigRoot().getFileSystem().refresh(true);
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+        // run just one refreshTask in time and always wait for finish
+        final RequestProcessor.Task taskToWaitFor;  // prevent possible NPE with only refreshTask.waitFinished
+        synchronized (REFRESH_RP) {
+            if (refreshTask != null) {
+                refreshTask.cancel();
+            } else {
+                refreshTask = REFRESH_RP.create(new Runnable() {
+
+                    public void run() {
+                        LOG.fine("refreshAll - started");  //NOI18N
+                        refreshFor(File.listRoots());
+                        try {
+                            getConfigRoot().getFileSystem().refresh(true);
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            LOG.fine("refreshAll - finished");  //NOI18N
+                            synchronized (REFRESH_RP) {
+                                refreshTask = null;
+                            }
+                        }
+                    }
+                });
+            }
+            taskToWaitFor = refreshTask;
+            refreshTask.schedule(0);
+            LOG.fine("refreshAll - scheduled");  //NOI18N
         }
-    }         
-    
+        taskToWaitFor.waitFinished();
+    }
+
     /**
      * Registers <code>listener</code> so that it will receive
      * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances
@@ -257,6 +283,10 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void removeFileChangeListener(FileChangeListener listener, File path) {
+        removeFileChangeListenerImpl(listener, path);
+    }
+
+    private static FileChangeListener removeFileChangeListenerImpl(FileChangeListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
@@ -267,8 +297,57 @@ public final class FileUtil extends Object {
                 throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet()); // NOI18N
             }
             // remove Holder instance from map and call run to unregister its current listener
-            f2H.remove(path).run();
+            Holder h = f2H.remove(path);
+            h.run();
+            return h.get();
         }
+    }
+    /**
+     * Adds a listener to changes under given path. It permits you to listen to a file
+     * which does not yet exist, or continue listening to it after it is deleted and recreated, etc.
+     * <br/>
+     * When given path represents a file ({@code path.isDirectory() == false}), this
+     * code behaves exectly like {@link #addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)}.
+     * Usually the path shall represent a folder ({@code path.isDirectory() == true})
+     * <ul>
+     * <li>fileFolderCreated event is fired when the folder is created or a child folder created</li>
+     * <li>fileDataCreated event is fired when a child file is created</li>
+     * <li>fileDeleted event is fired when the folder is deleted or a child file/folder removed</li>
+     * <li>fileChanged event is fired when a child file is modified</li>
+     * <li>fileRenamed event is fired when the folder is renamed or a child file/folder is renamed</li>
+     * <li>fileAttributeChanged is fired when FileObject's attribute is changed</li>
+     *</ul>
+     * The above events are delivered for changes in all subdirectories (recursively).
+     * It is guaranteed that with each change at least one event is generated.
+     * For example adding a folder does not notify about content of the folder,
+     * hence one event is delivered.
+     *
+     * Can only add a given [listener, path] pair once. However a listener can
+     * listen to any number of paths. Note that listeners are always held weakly
+     * - if the listener is collected, it is quietly removed.
+     *
+     * @param listener FileChangeListener to listen to changes in path
+     * @param path File path to listen to (even not existing)
+     *
+     * @see FileObject#addRecursiveListener
+     * @since org.openide.filesystems 7.28
+     */
+    public static void addRecursiveListener(FileChangeListener listener, File path) {
+        addFileChangeListener(new DeepListener(listener, path), path);
+    }
+
+    /**
+     * Removes a listener to changes under given path.
+     * @param listener FileChangeListener to be removed
+     * @param path File path in which listener was listening
+     * @throws IllegalArgumentException if listener was not listening to given path
+     *
+     * @see FileObject#removeRecursiveListener
+     * @since org.openide.filesystems 7.28
+     */
+    public static void removeRecursiveListener(FileChangeListener listener, File path) {
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path), path);
+        dl.run();
     }
 
     /** Holds FileChangeListener and File pair and handle movement of auxiliary
@@ -346,7 +425,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileChanged(fe, true);
+                    } else if (listener != null) {
                         listener.fileChanged(fe);
                     }
                 } else {
@@ -359,7 +440,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileDeleted(fe, true);
+                    } else if (listener != null) {
                         listener.fileDeleted(fe);
                     }
                 }
@@ -371,7 +454,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileDataCreated(fe, true);
+                    } else if (listener != null) {
                         listener.fileDataCreated(fe);
                     }
                 } else {
@@ -384,7 +469,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileFolderCreated(fe, true);
+                    } else if (listener != null) {
                         listener.fileFolderCreated(fe);
                     }
                 } else {
@@ -397,7 +484,9 @@ public final class FileUtil extends Object {
             if (fe.getSource() == current) {
                 if (isOnTarget) {
                     FileChangeListener listener = get();
-                    if (listener != null) {
+                    if (listener instanceof DeepListener) {
+                        ((DeepListener)listener).fileRenamed(fe, true);
+                    } else if (listener != null) {
                         listener.fileRenamed(fe);
                     }
                 }

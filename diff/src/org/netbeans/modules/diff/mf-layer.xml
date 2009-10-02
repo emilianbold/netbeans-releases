@@ -72,14 +72,6 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="Diff.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.options.DiffOptions"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="OptionsExport">
         <folder name="Advanced">
             <file name="Diff">

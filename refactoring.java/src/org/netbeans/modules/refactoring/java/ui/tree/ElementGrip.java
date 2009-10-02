@@ -79,15 +79,16 @@ public final class ElementGrip {
 //            this.toString = ElementHeaders.getHeader(treePath, info, ElementHeaders.NAME);
         }
         this.fileObject = info.getFileObject();
-        Element el = info.getTrees().getElement(treePath);
-        if (el != null) {
-            this.icon = ElementIcons.getElementIcon(el.getKind(), el.getModifiers());
+        if (elm != null) {
+            this.icon = ElementIcons.getElementIcon(elm.getKind(), elm.getModifiers());
         }
     }
     
     public Icon getIcon() {
         return icon;
     }
+    
+    @Override
     public String toString() {
         return toString;
     }

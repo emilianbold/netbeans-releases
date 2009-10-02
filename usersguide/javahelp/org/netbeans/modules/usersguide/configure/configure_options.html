@@ -37,21 +37,37 @@
             <li>Select the Options categories that you want to export. Click OK.</li>
         </ol>
 
-        <p>If you have a zip archive of your IDE settings, you can use the Options window to
-        import and apply the archived settings.</p>
+        <p>If you have a zip archive of your IDE settings or a userdir from a previous installation of the IDE,
+        you can use the Options window to import and apply the settings.</p>
+
+
         <p><strong>To import IDE settings.</strong></p>
         <ol>
             <li>Open the Options window by choosing Tools &gt; Options from the main menu.
             (If you are running on Mac OS X, choose NetBeans &gt; Preferences.)</li>
             <li>Click Import at the bottom of the Options window.</li>
-            <li>Click Browse and locate the zip archive that contains your settings.</li>
+            <li>Click Browse and locate either of the following:
+                <ul>
+                    <li>the zip archive that contains your settings</li>
+                    <li>the userdir of the IDE installation that has the settings that you want to import</li>
+                </ul>
+            </li>
             <li>Select the Options categories that you want to import. Click OK.</li>
         </ol>
 
+        <p><strong>Notes.</strong></p>
         <ul class="notes">
+            <li>You will need to restart the IDE to apply the imported settings.</li>
             <li>Importing settings may overwrite your existing settings.
             To prevent possible loss of your settings, use the Export settings function to create a backup of your IDE settings.</li>
         </ul>
+
+
+        <p>Alternatively, you can recreate the conditions of the first launch at any time by deleting your current userdir.
+        When you restart the IDE you will be prompted with the option of importing settings from a previous version of
+        the IDE. However, this method will cause you to lose your current saved IDE settings. For more details, see
+        <a href="configure_importing.html">Importing Settings from a Previous Version of the IDE</a>.</p>
+
 
         <dl>
             <dt>

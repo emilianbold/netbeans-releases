@@ -57,7 +57,7 @@ public class DebugCustomizerPanelProvider implements ProjectCustomizer.Composite
     private final String debugServerMsg;
     private final String debugClientMsg;
     
-    public DebugCustomizerPanelProvider(String debugServerMsg, String debugClientMsg) {
+    private DebugCustomizerPanelProvider(String debugServerMsg, String debugClientMsg) {
         this.debugServerMsg = debugServerMsg;
         this.debugClientMsg = debugClientMsg;
     }
@@ -66,8 +66,7 @@ public class DebugCustomizerPanelProvider implements ProjectCustomizer.Composite
         return ProjectCustomizer.Category.create(
                 DEBUG,
                 NbBundle.getMessage(DebugCustomizerPanelProvider.class, "LBL_Config_Debug"), //NOI18N
-                null,
-                (Category[]) null);
+                null);
     }
 
     public JComponent createComponent(Category category, Lookup context) {
@@ -77,6 +76,7 @@ public class DebugCustomizerPanelProvider implements ProjectCustomizer.Composite
         return new CustomizerDebug(category, project, debugServerMsg, debugClientMsg);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=550)
     public static final DebugCustomizerPanelProvider createWebProjectDebug() {
         ResourceBundle bundle = NbBundle.getBundle(DebugCustomizerPanelProvider.class);
         String debugServer = bundle.getString("LBL_Web_CustomizeDebug_ServerDebug_JCheckBox");
@@ -85,6 +85,7 @@ public class DebugCustomizerPanelProvider implements ProjectCustomizer.Composite
         return new DebugCustomizerPanelProvider(debugServer, debugClient);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ruby-railsprojects", position=300)
     public static final DebugCustomizerPanelProvider createRailsProjectDebug() {
         ResourceBundle bundle = NbBundle.getBundle(DebugCustomizerPanelProvider.class);
         String debugServer = bundle.getString("LBL_Rails_CustomizeDebug_ServerDebug_JCheckBox");
@@ -93,6 +94,7 @@ public class DebugCustomizerPanelProvider implements ProjectCustomizer.Composite
         return new DebugCustomizerPanelProvider(debugServer, debugClient);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-php-project", position=400)
     public static final DebugCustomizerPanelProvider createPhpProjectDebug() {
         ResourceBundle bundle = NbBundle.getBundle(DebugCustomizerPanelProvider.class);
         String debugServer = bundle.getString("LBL_PHP_CustomizeDebug_ServerDebug_JCheckBox");

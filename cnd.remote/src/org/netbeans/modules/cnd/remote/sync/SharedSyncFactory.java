@@ -57,9 +57,9 @@ public class SharedSyncFactory extends RemoteSyncFactory {
     /*package*/ static final String ID = "shared"; //NOI18N
 
     @Override
-    public RemoteSyncWorker createNew(File localDir, ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new SharedSyncWorker(localDir, executionEnvironment, out, err);
+    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
+            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+        return new SharedSyncWorker(executionEnvironment, out, err, localDirs);
     }
 
     @Override

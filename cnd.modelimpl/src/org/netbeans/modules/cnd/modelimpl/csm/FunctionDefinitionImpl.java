@@ -48,6 +48,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -154,6 +155,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         CsmDeclaration def = null;
         if (defs.isEmpty()) {
             CsmObject owner = findOwner(parent);
+            if(owner == null) {
+                owner = CsmBaseUtilities.getFunctionClassByQualifiedName(this);
+            }
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
                         CsmSelect.getFilterBuilder().createNameFilter(getName(), true, true, false));

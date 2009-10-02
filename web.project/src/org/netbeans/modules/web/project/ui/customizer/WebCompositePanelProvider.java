@@ -50,7 +50,6 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -76,8 +75,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
 
     private String name;
     
-    /** Creates a new instance of WebCompositePanelProvider */
-    public WebCompositePanelProvider(String name) {
+    private WebCompositePanelProvider(String name) {
         this.name = name;
     }
 
@@ -89,46 +87,39 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
             toReturn = ProjectCustomizer.Category.create(
                     SOURCES,
                     bundle.getString("LBL_Config_Sources"), //NOI18N
-                    null,
-                    (Category[])null);
+                    null);
         } else if (FRAMEWORKS.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     FRAMEWORKS,
                     bundle.getString( "LBL_Config_Frameworks" ), // NOI18N
-                    null,
-                    (Category[])null );
+                    null);
         } else if (LIBRARIES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LIBRARIES,
                     bundle.getString( "LBL_Config_Libraries" ), // NOI18N
-                    null,
-                    (Category[])null );
+                    null);
         } else if (BUILD.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     BUILD,
                     bundle.getString( "LBL_Config_Build" ), // NOI18N
-                    null,
-                    (Category[])null);
+                    null);
         } else if (WAR.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     WAR,
                     bundle.getString( "LBL_Config_War" ), // NOI18N
-                    null,
-                    (Category[])null );
+                    null);
         } else if (JAVADOC.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     JAVADOC,
                     bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
-                    null,
-                    (Category[])null );
+                    null);
         } else if (RUN.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     RUN,
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
-                    null,
-                    (Category[])null );
+                    null);
         } else if (WEBSERVICESCATEGORY.equals(name) && showWebServicesCategory(
-                (WebProjectProperties)context.lookup(WebProjectProperties.class))) {
+                context.lookup(WebProjectProperties.class))) {
             ProjectCustomizer.Category services = ProjectCustomizer.Category.create(WEBSERVICES,
                     bundle.getString("LBL_Config_WebServices"), // NOI18N
                     null);
@@ -146,13 +137,13 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
-        WebProjectProperties uiProps = (WebProjectProperties)context.lookup(WebProjectProperties.class);
+        WebProjectProperties uiProps = context.lookup(WebProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
             return new CustomizerFrameworks(category, uiProps);
         } else if (LIBRARIES.equals(nm)) {
-            CustomizerProviderImpl.SubCategoryProvider prov = (CustomizerProviderImpl.SubCategoryProvider)context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
+            CustomizerProviderImpl.SubCategoryProvider prov = context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
             assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";
             return new CustomizerLibraries(uiProps, prov);
         } else if (BUILD.equals(nm)) {
@@ -164,7 +155,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(category, uiProps);
         } else if (WEBSERVICES.equals(nm) || WEBSERVICECLIENTS.equals(nm)) {
-            ProjectWebModule wm = (ProjectWebModule) uiProps.getProject().getLookup().lookup(ProjectWebModule.class);
+            ProjectWebModule wm = uiProps.getProject().getLookup().lookup(ProjectWebModule.class);
             FileObject docBase = wm.getDocumentBase();
             if (WEBSERVICES.equals(nm)) {
                 List servicesSettings = null;
@@ -198,34 +189,42 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         return new JPanel();
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=100)
     public static WebCompositePanelProvider createSources() {
         return new WebCompositePanelProvider(SOURCES);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=200)
     public static WebCompositePanelProvider createFrameworks() {
         return new WebCompositePanelProvider(FRAMEWORKS);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=300)
     public static WebCompositePanelProvider createLibraries() {
         return new WebCompositePanelProvider(LIBRARIES);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=100, category="BuildCategory")
     public static WebCompositePanelProvider createBuild() {
         return new WebCompositePanelProvider(BUILD);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=200, category="BuildCategory")
     public static WebCompositePanelProvider createWar() {
         return new WebCompositePanelProvider(WAR);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=300, category="BuildCategory")
     public static WebCompositePanelProvider createJavadoc() {
         return new WebCompositePanelProvider(JAVADOC);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=500)
     public static WebCompositePanelProvider createRun() {
         return new WebCompositePanelProvider(RUN);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=600)
     public static WebCompositePanelProvider createWebServicesCategory() {
         return new WebCompositePanelProvider(WEBSERVICESCATEGORY);
     }

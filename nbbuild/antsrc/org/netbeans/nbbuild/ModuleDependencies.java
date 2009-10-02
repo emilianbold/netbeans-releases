@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +57,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -159,6 +163,10 @@ public class ModuleDependencies extends Task {
                     generateKitDependencies(o.file);
                     continue;
                 }
+                if ("plugins".equals(o.type.getValue())) {
+                    generatePlugins(o.file);
+                    continue;
+                }
             }
         
         } catch (IOException ex) {
@@ -220,6 +228,18 @@ public class ModuleDependencies extends Task {
                     m.showInAutoupdate = true;
                 } else {
                     m.showInAutoupdate = Boolean.parseBoolean(showInAutoUpdate);
+                }
+                String lb = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Localizing-Bundle");
+                if (lb != null) {
+                    Properties props = new Properties();
+                    InputStream is = file.getInputStream(file.getEntry(lb));
+                    try {
+                        props.load(is);
+                    } finally {
+                        is.close();
+                    }
+                    m.displayName = props.getProperty("OpenIDE-Module-Name");
+                    m.displayCategory = props.getProperty("OpenIDE-Module-Display-Category");
                 }
 
                 m.publicPackages = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Public-Packages");
@@ -692,6 +712,42 @@ public class ModuleDependencies extends Task {
         w.close();
     }
 
+    private void generatePlugins(File output) throws BuildException, IOException {
+        Set<String> standardClusters = new HashSet<String>();
+        String standardClustersS = getProject().getProperty("clusters.config.full.list");
+        if (standardClustersS != null) {
+            for (String clusterProp : standardClustersS.split(",")) {
+                String dir = getProject().getProperty(clusterProp + ".dir");
+                if (dir != null) {
+                    standardClusters.add(dir.replaceFirst("[0-9.]+$", ""));
+                }
+            }
+        }
+        FileWriter fw = new FileWriter(output);
+        try {
+            PrintWriter w = new PrintWriter(fw);
+            SortedMap<String,String> lines = new TreeMap<String,String>(Collator.getInstance());
+            lines.put("A", "||Code Name Base||Display Name||Display Category||Standard Cluster");
+            lines.put("C", "");
+            lines.put("D", "||Code Name Base||Display Name||Display Category||Extra Cluster");
+            for (ModuleInfo m : modules) {
+                if (regexp != null && !regexp.matcher(m.group).matches()) {
+                    continue;
+                }
+                if (m.showInAutoupdate) {
+                    lines.put((standardClusters.contains(m.group) ? "B" : "E") + m.displayCategory + " " + m.displayName,
+                            "|" + m.codebasename + "|" + m.displayName + "|" + m.displayCategory + "|" + m.group);
+                }
+            }
+            for (String line : lines.values()) {
+                w.println(line);
+            }
+            w.flush();
+        } finally {
+            fw.close();
+        }
+    }
+
     private void generateSharedPackages (File output) throws BuildException, IOException {
         TreeMap<String,List<ModuleInfo>> packages = new TreeMap<String,List<ModuleInfo>>();
         
@@ -986,6 +1042,7 @@ public class ModuleDependencies extends Task {
                 "external-libraries",
                 "kits",
                 "kit-dependencies",
+                "plugins",
             };
         }
     }
@@ -1005,6 +1062,8 @@ public class ModuleDependencies extends Task {
         public boolean isEssential;
         public boolean isAutoload;
         public boolean isEager;
+        public String displayName;
+        public String displayCategory;
         
         public ModuleInfo (String g, File f, String a) {
             this.group = g;

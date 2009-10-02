@@ -53,11 +53,16 @@ import org.openide.util.Lookup;
 /**
  * @author Jan Jancura
  */
+@OptionsPanelController.SubRegistration(
+    location="Editor",
+    id="Macros",
+    displayName="#CTL_Macros_DisplayName",
+    keywords="#KW_Macros",
+    keywordsCategory="Editor/Macros",
+    position=700
+//    toolTip="#CTL_Macros_ToolTip"
+)
 public final class MacrosPanelController extends OptionsPanelController {
-
-    public MacrosPanelController() {
-        // no-op
-    }
 
     public void update() {
         MacrosModel model = lastPanel.getModel();

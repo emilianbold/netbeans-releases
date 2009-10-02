@@ -54,7 +54,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.FileSystemsProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -284,7 +283,7 @@ public final class CndFileUtils {
 //    }
 //    private static int calls = 0;
 //    private static int hits = 0;
-    
+
     private static ConcurrentMap<String, Flags> getFilesMap() {
         ConcurrentMap<String, Flags> map = mapRef.get();
         if (map == null) {

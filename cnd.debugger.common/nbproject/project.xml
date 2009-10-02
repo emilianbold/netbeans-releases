@@ -60,6 +60,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.model.services</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.utils</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -195,8 +204,8 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
-                <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>
                 <package>org.netbeans.modules.cnd.debugger.common.actions</package>
                 <package>org.netbeans.modules.cnd.debugger.common.breakpoints</package>

@@ -66,7 +66,6 @@ public final class SPSLocalImpl extends SPSCommonImpl {
     private final String privp;
     private String pid = null;
 
-
     static {
         csums.put("SunOS-x86", 2839716019L); // NOI18N
         csums.put("SunOS-sparc", 2764559413L); // NOI18N
@@ -117,6 +116,8 @@ public final class SPSLocalImpl extends SPSCommonImpl {
     }
 
     public void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
+        PrintWriter w = null;
+
         try {
             // Construct privileges list
             StringBuffer sb = new StringBuffer();
@@ -127,7 +128,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
 
             Process process = new ProcessBuilder(privp, user, sb.toString(), getPID()).start();
 
-            PrintWriter w = new PrintWriter(process.getOutputStream());
+            w = new PrintWriter(process.getOutputStream());
             w.println(passwd);
             w.flush();
 
@@ -141,6 +142,10 @@ public final class SPSLocalImpl extends SPSCommonImpl {
             Thread.currentThread().interrupt();
         } catch (IOException ex) {
             Logger.getInstance().fine("IOException in requestPrivileges : " + ex); // NOI18N
+        } finally {
+            if (w != null) {
+                w.close();
+            }
         }
     }
 

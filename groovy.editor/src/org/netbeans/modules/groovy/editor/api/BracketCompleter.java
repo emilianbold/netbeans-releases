@@ -935,27 +935,28 @@ public class BracketCompleter implements KeystrokeHandler {
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         BaseDocument doc = (BaseDocument)document;
-        
-        switch (ch) {
-        case ' ': {
-            // Backspacing over "// " ? Delete the "//" too!
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
-            if (ts != null) {
-                Token<? extends GroovyTokenId> token = ts.token();
-                if (token.id() == GroovyTokenId.NLS && ts.movePrevious() && ts.isValid()) {
-                    token = ts.token();
-                }
-                if (token.id() == GroovyTokenId.LINE_COMMENT) {
-                    if (ts.offset() == dotPos-2) {
-                        doc.remove(dotPos-2, 2);
-                        target.getCaret().setDot(dotPos-2);
 
-                        return true;
-                    }
-                }
-            }
-            break;
-        }
+        switch (ch) {
+// Perhaps we don't want to do this as Java doesn't do such thing #157115
+//        case ' ': {
+//            // Backspacing over "// " ? Delete the "//" too!
+//            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+//            if (ts != null) {
+//                Token<? extends GroovyTokenId> token = ts.token();
+//                if (token.id() == GroovyTokenId.NLS && ts.movePrevious() && ts.isValid()) {
+//                    token = ts.token();
+//                }
+//                if (token.id() == GroovyTokenId.LINE_COMMENT) {
+//                    if (ts.offset() == dotPos-2) {
+//                        doc.remove(dotPos-2, 2);
+//                        target.getCaret().setDot(dotPos-2);
+//
+//                        return true;
+//                    }
+//                }
+//            }
+//            break;
+//        }
 
         case '{':
         case '(':
@@ -972,20 +973,21 @@ public class BracketCompleter implements KeystrokeHandler {
             }
             break;
         }
-        
-        case '/': {
-            // Backspacing over "//" ? Delete the whole "//"
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
-            if (ts != null && ts.token().id() == GroovyTokenId.REGEXP_BEGIN) {
-                if (ts.offset() == dotPos-1) {
-                    doc.remove(dotPos-1, 1);
-                    target.getCaret().setDot(dotPos-1);
-                
-                    return true;
-                }
-            }
-            // Fallthrough for match-deletion
-        }
+
+// Perhaps we don't want to do this as Java doesn't do such thing #157115
+//        case '/': {
+//            // Backspacing over "//" ? Delete the whole "//"
+//            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+//            if (ts != null && ts.token().id() == GroovyTokenId.REGEXP_BEGIN) {
+//                if (ts.offset() == dotPos-1) {
+//                    doc.remove(dotPos-1, 1);
+//                    target.getCaret().setDot(dotPos-1);
+//
+//                    return true;
+//                }
+//            }
+//            // Fallthrough for match-deletion
+//        }
         case '|':
         case '\"':
         case '\'': {

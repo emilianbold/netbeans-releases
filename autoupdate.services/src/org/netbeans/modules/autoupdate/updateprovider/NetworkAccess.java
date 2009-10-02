@@ -28,19 +28,25 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -84,7 +90,7 @@ public class NetworkAccess {
                     connect = es.submit (connectTask);
                     InputStream is = null;
                     try {
-                        is = connect.get ();
+                        is = connect.get (timeout, TimeUnit.MILLISECONDS);
                         if (connect.isDone ()) {
                             listener.streamOpened (is, connectTask.getContentLength() );
                         } else if (connect.isCancelled ()) {
@@ -95,7 +101,18 @@ public class NetworkAccess {
                     } catch(InterruptedException ix) {
                         listener.notifyException (ix);
                     } catch (ExecutionException ex) {
-                        listener.notifyException (ex);
+                        Throwable t = ex.getCause();
+                        if(t!=null && t instanceof Exception) {
+                            listener.notifyException ((Exception) t);
+                        } else {
+                            listener.notifyException (ex);
+                        }
+                    } catch (CancellationException ex) {
+                        listener.accessCanceled ();
+                    } catch(TimeoutException tx) {
+                        IOException io = new IOException(NbBundle.getMessage(NetworkAccess.class, "NetworkAccess_Timeout", url));
+                        io.initCause(tx);
+                        listener.notifyException (io);
                     }
                 }
             });
@@ -105,6 +122,11 @@ public class NetworkAccess {
             assert rpTask != null : "RequestProcessor.Task must be initialized.";
             rpTask.waitFinished ();
         }
+        public boolean isFinished () {
+            assert rpTask != null : "RequestProcessor.Task must be initialized.";
+            return rpTask.isFinished ();
+        }
+
         
         private SizedConnection createCallableNetwork (final URL url, final int timeout) {
             return new SizedConnection () {

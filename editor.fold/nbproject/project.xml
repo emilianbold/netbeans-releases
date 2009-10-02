@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                         <specification-version>7.19</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
+                <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -95,7 +95,20 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.editor.fold</package>
                 <package>org.netbeans.spi.editor.fold</package>

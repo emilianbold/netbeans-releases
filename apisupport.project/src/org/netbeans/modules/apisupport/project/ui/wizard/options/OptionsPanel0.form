@@ -13,6 +13,9 @@
       <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.AccessibleContext.accessibleDescription" replaceFormat="getMessage(&quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
+  <SyntheticProperties>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,90,0,0,2,31"/>
+  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -37,37 +40,15 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="tooltipLbl1" min="-2" max="-2" attributes="0"/>
                           <Component id="displayNameLbl1" min="-2" max="-2" attributes="0"/>
                           <Component id="primaryPanelComboLbl" min="-2" max="-2" attributes="0"/>
                           <Component id="keywordsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="secondaryKwField" pref="403" max="32767" attributes="0"/>
-                          <Component id="primaryPanelCombo" alignment="0" pref="403" max="32767" attributes="2"/>
-                          <Component id="secondaryPanelTitle" alignment="0" pref="403" max="32767" attributes="2"/>
-                          <Component id="tooltipField1" alignment="0" pref="403" max="32767" attributes="2"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="categoryNameLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="iconLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="primKeywordsLabel" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="primaryKwField" pref="402" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="1">
-                              <Component id="iconField" pref="290" max="32767" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="iconButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="categoryNameField" alignment="1" pref="402" max="32767" attributes="2"/>
-                          <Component id="primaryPanelTitle" alignment="1" pref="402" max="32767" attributes="2"/>
+                          <Component id="secondaryKwField" pref="406" max="32767" attributes="0"/>
+                          <Component id="primaryPanelCombo" alignment="0" pref="406" max="32767" attributes="2"/>
+                          <Component id="secondaryPanelTitle" alignment="0" pref="406" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
@@ -75,16 +56,38 @@
                       <EmptySpace min="-2" pref="235" max="-2" attributes="0"/>
                       <Component id="dummyPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="13" pref="13" max="13" attributes="0"/>
-                      <Component id="titleLbl" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="373" pref="373" max="373" attributes="0"/>
-                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="optionsCategoryButton" min="-2" pref="400" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="categoryNameLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="iconLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="iconField" pref="304" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="iconButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="categoryNameField" pref="405" max="32767" attributes="2"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="primKeywordsLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="49" max="-2" attributes="0"/>
+              <Component id="primaryKwField" pref="405" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -108,44 +111,33 @@
                   <Component id="displayNameLbl1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="secondaryPanelTitle" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="tooltipLbl1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="tooltipField1" alignment="3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="keywordsLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="secondaryKwField" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="keywordsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="secondaryKwField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="optionsCategoryButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="titleLbl" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="primaryPanelTitle" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="categoryNameLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="categoryNameField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="iconLbl" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="iconButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="iconField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="iconButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="primKeywordsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="primaryKwField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="allowSecondaryPanelsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="68" max="-2" attributes="0"/>
               <Component id="dummyPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="56" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -257,60 +249,6 @@
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.displayNameField1.AccessibleContext.accessibleDescription" replaceFormat="getMessage(&quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="tooltipLbl1">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="tooltipField1"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="LBL_Tooltip" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.tooltipLbl1.AccessibleContext.accessibleDescription" replaceFormat="getMessage(&quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="tooltipField1">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.tooltipField1.AccessibleContext.accessibleName" replaceFormat="getMessage(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.tooltipField1.AccessibleContext.accessibleDescription" replaceFormat="getMessage(&quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="titleLbl">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="primaryPanelTitle"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="LBL_Title" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.titleLbl.AccessibleContext.accessibleDescription" replaceFormat="getMessage(&quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="primaryPanelTitle">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.titleField.AccessibleContext.accessibleName" replaceFormat="getMessage(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle.properties" key="OptionsPanel0.titleField.AccessibleContext.accessibleDescription" replaceFormat="getMessage(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>

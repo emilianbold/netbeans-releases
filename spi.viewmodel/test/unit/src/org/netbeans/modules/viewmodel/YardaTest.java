@@ -154,7 +154,7 @@ public class YardaTest  extends NbTestCase {
         }
 
         @Override
-        protected synchronized void addCall(String methodName, Object node) {
+        protected void addCall(String methodName, Object node) {
             // Unimplemented, we're not interested about twice calls when we do refreshes in this test.
         }
 

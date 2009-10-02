@@ -62,6 +62,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -124,7 +125,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
                     handle.start();
                     int progressStepCount = getProgressStepCount(entities.size());
                     progressContributor.start(progressStepCount); 
-                    generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, null, true);
+                    generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPackage, jpaControllerPackageFileObject, null, false, true);
                     progressContributor.progress(progressStepCount);
                 } catch (IOException ioe) {
                     Logger.getLogger(JpaControllerIterator.class.getName()).log(Level.INFO, null, ioe);
@@ -175,7 +176,7 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         return EXCEPTION_CLASS_NAMES.length + entityCount + 2;
     }
     
-    public static FileObject[] generateJpaControllers(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean evenIfExists) throws IOException {
+    public static FileObject[] generateJpaControllers(ProgressContributor progressContributor, ProgressPanel progressPanel, List<String> entities, Project project, String jpaControllerPackage, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, boolean managed, boolean evenIfExists) throws IOException {
         int progressIndex = 0;
         String progressMsg = NbBundle.getMessage(JpaControllerIterator.class, "MSG_Progress_Jpa_Exception_Pre"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
@@ -246,9 +247,9 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
 
-            JpaControllerGenerator.generateJpaController(project, entityClass, controller, exceptionPackage, jpaControllerPackageFileObject, controllerFileObjects[i], embeddedPkSupport);
+            JpaControllerGenerator.generateJpaController(project, entityClass, controller, exceptionPackage, jpaControllerPackageFileObject, controllerFileObjects[i], embeddedPkSupport, managed);
         }
-
+        PersistenceUtils.logUsage(JpaControllerIterator.class, "USG_PERSISTENCE_CONTROLLER_CREATED", new Integer[]{controllerFileObjects.length});
         return controllerFileObjects;
     }
 

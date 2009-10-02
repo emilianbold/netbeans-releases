@@ -43,6 +43,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.util.Date;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
@@ -63,6 +65,7 @@ public abstract class ProgressSupport implements Runnable, Cancellable {
     private boolean canceled = false;
     private RequestProcessor rp;
     private Cancellable cancellableDelegate;
+    private AbstractAction focusLogAction;
 
     public ProgressSupport(RequestProcessor rp, String displayName) {
         this(rp, displayName, null);
@@ -124,7 +127,7 @@ public abstract class ProgressSupport implements Runnable, Cancellable {
             
     private ProgressHandle getProgressHandle() {
         if(progressHandle == null) {
-            progressHandle = ProgressHandleFactory.createHandle(displayName, this);
+            progressHandle = ProgressHandleFactory.createHandle(displayName, this, getFocusLogAction());
         }
         return progressHandle;
     }
@@ -166,5 +169,16 @@ public abstract class ProgressSupport implements Runnable, Cancellable {
     private void logOutput(String output) {
         Clearcase.getInstance().printlnOut(output);
         Clearcase.getInstance().flushLog();    
-    }    
+    }
+
+    private Action getFocusLogAction() {
+        if(focusLogAction == null) {
+            focusLogAction = new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    Clearcase.getInstance().focusLog();
+                }
+            };
+        }
+        return focusLogAction;
+    }
 }

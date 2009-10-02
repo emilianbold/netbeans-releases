@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+
 
 /**
  * An implementation of SetupProvider that nandles RFS related binaries
@@ -54,23 +56,24 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {
 
-    private static final String CONTROLLER_LINUX_X86 = "rfs_controller-Linux-x86"; // NOI18N
-    private static final String CONTROLLER_SUNOS_X86 = "rfs_controller-SunOS-x86"; // NOI18N
-    private static final String CONTROLLER_SUNOS_SPARC = "rfs_controller-SunOS-sparc"; // NOI18N
-    private static final String PRELOAD_LINUX_X86 = "rfs_preload-Linux-x86.so"; // NOI18N
-    private static final String PRELOAD_SUNOS_X86 = "rfs_preload-SunOS-x86.so"; // NOI18N
-    private static final String PRELOAD_SUNOS_SPARC = "rfs_preload-SunOS-sparc.so"; // NOI18N
-
     private Map<String, String> binarySetupMap;
+    private static final String CONTROLLER = "rfs_controller"; // NOI18N
+    private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 
     public RfsSetupProvider() {
+        String[] dirs = new String[] {
+             "SunOS-x86" // NOI18N
+            ,"SunOS-x86_64" // NOI18N
+            ,"Linux-x86" // NOI18N
+            ,"Linux-x86_64" // NOI18N
+            ,"SunOS-sparc" // NOI18N
+            ,"SunOS-sparc_64" // NOI18N
+        };
         binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put(PRELOAD_LINUX_X86, "bin/Linux-x86/rfs_preload.so"); // NOI18N
-        binarySetupMap.put(PRELOAD_SUNOS_X86, "bin/SunOS-x86/rfs_preload.so"); // NOI18N
-        binarySetupMap.put(PRELOAD_SUNOS_SPARC, "bin/SunOS-sparc/rfs_preload.so"); // NOI18N
-        binarySetupMap.put(CONTROLLER_LINUX_X86, "bin/Linux-x86/rfs_controller"); // NOI18N
-        binarySetupMap.put(CONTROLLER_SUNOS_X86, "bin/SunOS-x86/rfs_controller"); // NOI18N
-        binarySetupMap.put(CONTROLLER_SUNOS_SPARC, "bin/SunOS-sparc/rfs_controller"); // NOI18N
+        for (String dir : dirs) {
+            binarySetupMap.put(dir + "/" + PRELOAD, "bin/" +  dir + "/" + PRELOAD); // NOI18N
+            binarySetupMap.put(dir + "/" + CONTROLLER, "bin/" +  dir + "/" + CONTROLLER); // NOI18N
+        }
     }
 
     public Map<String, String> getBinaryFiles() {
@@ -81,30 +84,24 @@ public class RfsSetupProvider implements SetupProvider {
         return null;
     }
 
-    public static String getPreload(ExecutionEnvironment execEnv) {
-        String libDir = HostInfoProvider.getLibDir(execEnv); //NB: should contain trailing '/'
-        int platform = HostInfoProvider.getPlatform(execEnv);
-        switch (platform) {
-            case PlatformTypes.PLATFORM_LINUX : return libDir + PRELOAD_LINUX_X86;
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return libDir + PRELOAD_SUNOS_SPARC;
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return libDir + PRELOAD_SUNOS_X86;
-            default:
-                RemoteUtil.LOGGER.warning("RFS binary search: unexpected platform number " + platform);
-                return null;
-        }
+    public static String getPreloadName(ExecutionEnvironment execEnv) {
+        return PRELOAD;
     }
 
-    public static String getController(ExecutionEnvironment execEnv) {
-        String libDir = HostInfoProvider.getLibDir(execEnv); //NB: should contain trailing '/'
-        int platform = HostInfoProvider.getPlatform(execEnv);
-        switch (platform) {
-            case PlatformTypes.PLATFORM_LINUX : return libDir + CONTROLLER_LINUX_X86;
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return libDir + CONTROLLER_SUNOS_SPARC;
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return libDir + CONTROLLER_SUNOS_X86;
-            default:
-                RemoteUtil.LOGGER.warning("RFS binary search: unexpected platform number " + platform);
-                return null;
-        }
+    /** Never returns null, throws instead */
+    public static String getControllerPath(ExecutionEnvironment execEnv) throws ParseException {
+        return getLibDir(execEnv) + '/' + CONTROLLER; // NOI18N
     }
 
+    public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {
+        String libDir = getLibDir(execEnv);
+        return libDir + ':' + libDir + "_64"; // NOI18N
+    }
+
+    private static String getLibDir(ExecutionEnvironment execEnv) throws ParseException {
+        String libDir = HostInfoProvider.getLibDir(execEnv); //NB: should contain trailing '/'
+        MacroExpander mef = MacroExpanderFactory.getExpander(execEnv);
+        String osname = mef.expandPredefinedMacros("${osname}-${platform}"); // NOI18N
+        return libDir + '/' + osname;
+    }
 }

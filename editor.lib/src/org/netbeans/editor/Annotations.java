@@ -472,9 +472,14 @@ public class Annotations implements DocumentListener {
         return -1;
     }
 
-    /** Get next line number with some annotation*/
+    /**
+     * Searches line annotations for given type
+     * @param line source line
+     * @param type annotation type name
+     * @return {@link AnnotationDesc} of given type on provided line
+     */
     public AnnotationDesc getAnnotation(int line, String type) {
-        return null;
+        return getLineAnnotations(line).getType(type);
     }
     
     /** Return list of pasive annotations which should be drawn on the backgorund */
@@ -933,6 +938,20 @@ public class Annotations implements DocumentListener {
         /** Return the active line annotation. */
         public AnnotationDesc getActive() {
             return active;
+        }
+
+        /**
+         * @param type searched annotation type name
+         * @return {@link AnnotationDesc} of given type from currently visible
+         * annotations or null if there is none for given type
+         */
+        AnnotationDesc getType(String type) {
+            for (AnnotationDesc ad : annosVisible) {
+                if (ad.getAnnotationType().equals(type)) {
+                    return ad;
+                }
+            }
+            return null;
         }
 
         /** Getter for the line number property */

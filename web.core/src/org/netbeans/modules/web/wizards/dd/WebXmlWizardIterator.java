@@ -51,10 +51,10 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -107,6 +107,9 @@ public final class WebXmlWizardIterator implements WizardDescriptor.Instantiatin
         WebModule wm = panel.getWebModule();
         if (dir != null && wm != null) {
             try {
+                if (wm.getWebInf() == null) {
+                    dir = FileUtil.createFolder(dir, "WEB-INF");    //NOI18N
+                }
                 FileObject dd = DDHelper.createWebXml(wm.getJ2eeProfile(), dir);
                 if (dd != null) {
                     DataObject dObj = DataObject.find(dd);

@@ -192,6 +192,7 @@ public class SvnHookImpl extends SvnHook {
 
         issue.open();
         LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
+        VCSHooksConfig.logHookUsage("SVN", getSelectedRepository()); // NOI18N
     }
 
     @Override

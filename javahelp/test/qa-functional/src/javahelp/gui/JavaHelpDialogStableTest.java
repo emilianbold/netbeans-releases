@@ -64,19 +64,21 @@ public class JavaHelpDialogStableTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(JavaHelpDialogTest.class)
-                //.addTest("testHelpF1")
+                .addTest("testHelpF1")
                 .addTest("testHelpFromMenu")
                 .addTest("testHelpByButtonNonModal")
-                //.addTest("testHelpByButtonModal")
+                .addTest("testHelpByButtonModal")
                 .addTest("testContextualSearch")
-                //.addTest("testHelpByButtonNestedModal")
+                .addTest("testHelpByButtonNestedModal")
                 .enableModules(".*")
                 .clusters(".*") );
     }
 
+    @Override
     public void setUp() {
     }
 
+    @Override
     public void tearDown() {
         closeAllModal();
 
@@ -91,7 +93,7 @@ public class JavaHelpDialogStableTest extends JellyTestCase {
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
      */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+//    public static void main(String[] args) {
+//        junit.textui.TestRunner.run(suite());
+//    }
 }

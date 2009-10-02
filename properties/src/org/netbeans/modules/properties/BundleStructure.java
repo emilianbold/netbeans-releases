@@ -333,8 +333,12 @@ public class BundleStructure {
      * given file name. If not found in given file directly then "parent" files
      * are scanned - the same way as ResourceBundle would work when asked for
      * locale specific key.
+     *
      * @param localizationFile name of file entry without extension
      *        corresponding to the desired specific localization
+     * @param key Java string (unescaped). See clarifications
+     * {@link PropertiesStructure#getItem(java.lang.String) here}.
+     * @return a property item if is it possible, otherwise {@code null}.
      */
     public Element.ItemElem getItem(String localizationFile, String key) {
         int score = 0; // number of same characters in the file name

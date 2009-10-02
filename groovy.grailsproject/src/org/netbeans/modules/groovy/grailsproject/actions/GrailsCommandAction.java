@@ -100,23 +100,28 @@ public class GrailsCommandAction extends CallableSystemAction {
         if (GrailsPlatform.IDE_RUN_COMMAND.equals(commandDescriptor.getGrailsCommand().getCommand())) {
             final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
             final boolean debug = false;
+            Process process = null;
             if (serverState != null && serverState.isRunning()) {
-                if (!debug || debug == serverState.isDebug()) {
+                if (!debug /*|| debug == serverState.isDebug()*/) {
                     URL url = serverState.getRunningUrl();
                     if (url != null) {
                         GrailsCommandSupport.showURL(url, debug, project);
                     }
                     return;
                 } else {
-                    Process process = serverState.getProcess();
+                    process = serverState.getProcess();
                     if (process != null) {
                         process.destroy();
                     }
                 }
             }
 
+            final Process oldProcess = process;
             callable = new Callable<Process>() {
                 public Process call() throws Exception {
+                    if (oldProcess != null) {
+                        oldProcess.waitFor();
+                    }
                     Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(
                             GrailsProjectConfig.forProject(project), debug, params);
                     Process process = inner.call();

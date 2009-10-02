@@ -143,7 +143,7 @@ class ElBeanContextChecker implements ElContextChecker{
                     String suffix = removeQuotes(property);
 
                     for (ExecutableElement method : ElementFilter.methodsIn(
-                            lastType.getEnclosedElements())) 
+                            controller.getElements().getAllMembers(lastType))) 
                     {
                         String propertyName = getExpressionSuffix(method, controller );
 

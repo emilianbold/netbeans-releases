@@ -72,6 +72,7 @@ import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
+import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -152,8 +153,9 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
             demangle_utility = GNU_FAMILIY;
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-
+        targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);        
+        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactory.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactory.CPPCompiler.SS.toString());
+        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {

@@ -188,7 +188,7 @@ public final class FrameworkCommandChooser extends JPanel {
             DialogDescriptor.CANCEL_OPTION
         };
 
-        final DialogDescriptor descriptor = new DialogDescriptor(chooserPanel, title, true,
+        final DialogDescriptor descriptor = new DialogDescriptor(chooserPanel, title, false,
                 options, runButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
         descriptor.setClosingOptions(new Object[] {DialogDescriptor.CANCEL_OPTION});
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -211,6 +211,7 @@ public final class FrameworkCommandChooser extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (!chooserPanel.keepOpenedCheckBox.isSelected()) {
                     dialog.setVisible(false);
+                    dialog.dispose();
                 }
                 FrameworkCommand task = chooserPanel.getSelectedTask();
                 FrameworkCommandChooser.debug = chooserPanel.debugCheckbox.isSelected();
@@ -221,11 +222,7 @@ public final class FrameworkCommandChooser extends JPanel {
             }
         });
 
-        try {
-            dialog.setVisible(true);
-        } finally {
-            dialog.dispose();
-        }
+        dialog.setVisible(true);
     }
 
     void initTaskParameters() {

@@ -659,6 +659,12 @@ public class ASPanel extends DestinationPanel {
                         f.getAbsolutePath());
 
             }
+            //#172006 Portlet container driver does not work when appserver is installed into folder with space in path
+            if(SystemUtils.isUnix() && f.getAbsolutePath().contains(StringUtils.SPACE)) {
+                return StringUtils.format(
+                        component.getProperty(ERROR_SPACE_IN_UNIX_PATH_PROPERTY),
+                        f.getAbsolutePath());
+            }
             return null;
         }
         
@@ -1250,6 +1256,8 @@ public class ASPanel extends DestinationPanel {
             "error.unc.path.unsupported"; // NOI18N
     public static final String ERROR_BRACKETS_IN_NOT_SPACED_PATH_PROPERTY =
             "error.brackets.in.not.spaced.path";
+    public static final String ERROR_SPACE_IN_UNIX_PATH_PROPERTY =
+            "error.space.in.unix.path";
 
     
     public static final String WARNING_PORT_IN_USE_PROPERTY =

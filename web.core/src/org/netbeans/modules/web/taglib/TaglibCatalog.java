@@ -57,10 +57,11 @@ public class TaglibCatalog implements CatalogReader, CatalogDescriptor, org.xml.
     private static final String TAGLIB_1_2="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"; // NOI18N
     
     public static final String J2EE_NS = "http://java.sun.com/xml/ns/j2ee"; // NOI18N
+    public static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee"; // NOI18N
     private static final String TAGLIB_2_0_XSD="web-jsptaglibrary_2_0.xsd"; // NOI18N
     private static final String TAGLIB_2_1_XSD="web-jsptaglibrary_2_1.xsd"; // NOI18N
     private static final String TAGLIB_2_0=J2EE_NS+"/"+TAGLIB_2_0_XSD; // NOI18N
-    private static final String TAGLIB_2_1=J2EE_NS+"/"+TAGLIB_2_1_XSD; // NOI18N
+    private static final String TAGLIB_2_1=JAVAEE_NS+"/"+TAGLIB_2_1_XSD; // NOI18N
     public static final String TAGLIB_2_0_ID="SCHEMA:"+TAGLIB_2_0; // NOI18N
     public static final String TAGLIB_2_1_ID="SCHEMA:"+TAGLIB_2_1; // NOI18N
     private static final String WEB_SERVICES_CLIENT_XSD = "http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd"; // NOI18N

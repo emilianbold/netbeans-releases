@@ -163,7 +163,7 @@ public class ReserveAction extends AbstractAction {
                     return;
                 }
 
-        Utils.insert(ClearcaseModuleConfig.getPreferences(), CheckoutAction.RECENT_CHECKOUT_MESSAGES, message, 20);
+        Utils.insert(ClearcaseModuleConfig.getPreferences(), CheckoutAction.RECENT_CHECKOUT_MESSAGES, message.trim(), 20);
         UnreserveCommand cmd = 
                 new UnreserveCommand(
                         targetFiles,

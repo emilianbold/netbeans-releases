@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
@@ -116,6 +117,7 @@ import org.openide.util.Union2;
  */
 class OccurenceBuilder {
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
+    private Map<ConstantDeclarationInfo, ConstantElement> constDeclarations53;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
     private Map<ASTNodeInfo<FunctionDeclaration>, FunctionScope> fncDeclarations;
     private Map<ASTNodeInfo<MethodDeclaration>, MethodScope> methodDeclarations;
@@ -150,6 +152,7 @@ class OccurenceBuilder {
         this.offset = offset;
         this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
         this.constDeclarations = new HashMap<ASTNodeInfo<Scalar>, ConstantElement>();
+        this.constDeclarations53 = new HashMap<ConstantDeclarationInfo, ConstantElement>();
         this.includes = new HashMap<IncludeInfo, IncludeElement>();
         this.fncInvocations = new HashMap<ASTNodeInfo<FunctionInvocation>, Scope>();
         this.fncDeclarations = new HashMap<ASTNodeInfo<FunctionDeclaration>, FunctionScope>();
@@ -297,6 +300,14 @@ class OccurenceBuilder {
             setOccurenceAsCurrent(new ElementInfo(nodeInfo, constantElement));
         }
     }
+
+    void prepare(ConstantDeclarationInfo constantNodeInfo, ConstantElement scope) {
+        if (constantNodeInfo != null && canBePrepared(constantNodeInfo.getOriginalNode(), scope)) {
+            constDeclarations53.put(constantNodeInfo, scope);
+            setOccurenceAsCurrent(new ElementInfo(constantNodeInfo, scope));
+        }
+    }
+
 
     void prepare(PHPDocTypeTag pHPDocTag, Scope scope) {
         if (canBePrepared(pHPDocTag, scope)) {
@@ -503,7 +514,12 @@ class OccurenceBuilder {
             if (idName.equalsIgnoreCase(nodeInfo.getName())) {
                 fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
             }
-
+        }
+        for (Entry<ConstantDeclarationInfo, ConstantElement> entry : constDeclarations53.entrySet()) {
+            ClassConstantDeclarationInfo nodeInfo = entry.getKey();
+            if (idName.equalsIgnoreCase(nodeInfo.getName())) {
+                fileScope.addOccurence(new OccurenceImpl(entry.getValue(), nodeInfo.getRange(), fileScope));
+            }
         }
     }
 

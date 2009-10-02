@@ -234,10 +234,12 @@ public class LockForFile extends FileLock {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }

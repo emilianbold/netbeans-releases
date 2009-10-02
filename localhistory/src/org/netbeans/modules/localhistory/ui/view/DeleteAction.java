@@ -75,7 +75,7 @@ public class DeleteAction extends NodeAction {
             StoreEntry se =  node.getLookup().lookup(StoreEntry.class);
             if(se == null) {
                 return false;
-            }            
+            }
         }
         return true;
     }

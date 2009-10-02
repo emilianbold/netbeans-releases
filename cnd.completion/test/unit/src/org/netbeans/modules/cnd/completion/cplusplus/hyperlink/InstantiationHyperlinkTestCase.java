@@ -167,4 +167,14 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz161875.cpp", 7, 7, "iz161875.cpp", 3, 5);
     }
 
+    public void test171848() throws Exception {
+        // IZ#171848 : Parser does not properly process iterators
+        performTest("iz171848.cpp", 13, 9, "iz171848.cpp", 2, 5);
+        performTest("iz171848.cpp", 30, 13, "iz171848.cpp", 19, 9);
+    }
+
+    public void test172419() throws Exception {
+        // IZ#172419 : Model doesn't recognize class declared through the preprocessor
+        performTest("iz172419.cpp", 16, 7, "iz172419.cpp", 2, 5);
+    }
 }

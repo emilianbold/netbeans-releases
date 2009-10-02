@@ -46,7 +46,6 @@ import java.util.List;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 /**
  *
  * @author Milos Kleint
@@ -62,11 +61,17 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
     private static final String ID_PROFILES_1_0_0 = "SCHEMA:" + PROFILES_1_0_0; // NOI18N
     private static final String ASSEMBLY_1_0_0 = "http://maven.apache.org/xsd/assembly-1.0.0.xsd"; // NOI18N
     private static final String ID_ASSEMBLY_1_0_0 = "SCHEMA:" + ASSEMBLY_1_0_0; // NOI18N
+    private static final String ASSEMBLY_1_1_0 = "http://maven.apache.org/xsd/assembly-1.1.0.xsd"; // NOI18N
+    private static final String ID_ASSEMBLY_1_1_0 = "SCHEMA:" + ASSEMBLY_1_1_0; // NOI18N
+    private static final String ASSEMBLY_1_1_1 = "http://maven.apache.org/xsd/assembly-1.1.1.xsd"; // NOI18N
+    private static final String ID_ASSEMBLY_1_1_1 = "SCHEMA:" + ASSEMBLY_1_1_1; // NOI18N
             
     private static final String URL_POM_4_0_0 ="nbres:/org/netbeans/modules/maven/grammar/maven-4.0.0.xsd"; // NOI18N
     private static final String URL_SETTINGS_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/settings-1.0.0.xsd"; // NOI18N
     private static final String URL_PROFILES_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/profiles-1.0.0.xsd"; // NOI18N
     private static final String URL_ASSEMBLY_1_0_0 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.0.0.xsd"; // NOI18N
+    private static final String URL_ASSEMBLY_1_1_0 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.1.0.xsd"; // NOI18N
+    private static final String URL_ASSEMBLY_1_1_1 ="nbres:/org/netbeans/modules/maven/grammar/assembly-1.1.1.xsd"; // NOI18N
     
     /** Creates a new instance of MavenCatalog */
     public MavenCatalog() {
@@ -82,6 +87,8 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
         list.add(ID_SETTINGS_1_0_0);
         list.add(ID_PROFILES_1_0_0);
         list.add(ID_ASSEMBLY_1_0_0);
+        list.add(ID_ASSEMBLY_1_1_0);
+        list.add(ID_ASSEMBLY_1_1_1);
         return list.iterator();
     }
     
@@ -98,6 +105,10 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
             return URL_PROFILES_1_0_0;
         else if (ID_ASSEMBLY_1_0_0.equals(publicId))
             return URL_ASSEMBLY_1_0_0;
+        else if (ID_ASSEMBLY_1_1_0.equals(publicId))
+            return URL_ASSEMBLY_1_1_0;
+        else if (ID_ASSEMBLY_1_1_1.equals(publicId))
+            return URL_ASSEMBLY_1_1_1;
         else return null;
     }
     
@@ -164,6 +175,10 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
             return new org.xml.sax.InputSource(URL_PROFILES_1_0_0);
         } else if (ASSEMBLY_1_0_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_ASSEMBLY_1_0_0);
+        } else if (ASSEMBLY_1_1_0.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_ASSEMBLY_1_1_0);
+        } else if (ASSEMBLY_1_1_1.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_ASSEMBLY_1_1_1);
         } else {
             return null;
         }

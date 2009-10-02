@@ -53,10 +53,8 @@ import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
-//import org.netbeans.modules.mercurial.options.AnnotationExpression;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
@@ -87,6 +85,7 @@ public class HgModuleConfig {
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo";        // NOI18N
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";        // NOI18N
     private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
+    private static final String KEY_INTERNAL_MERGE_TOOL_ENABLED = "hgmerge.internalTool.enabled"; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -424,6 +423,14 @@ public class HgModuleConfig {
 
     public void setAnnotationFormat(String annotationFormat) {
         getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
+    }
+
+    public boolean isInternalMergeToolEnabled() {
+        return getPreferences().getBoolean(KEY_INTERNAL_MERGE_TOOL_ENABLED, true);
+    }
+
+    public void setInternalMergeToolEnabled (boolean enabled) {
+        getPreferences().putBoolean(KEY_INTERNAL_MERGE_TOOL_ENABLED, enabled);
     }
 
     public boolean getSavePassword() {

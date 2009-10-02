@@ -105,7 +105,7 @@ public class MonitorsUpdateService {
     private final boolean isMemoryMonitor;
     private final boolean isDataRaceMonitor;
     private final boolean isDeadlockMonitor;
-    private final Object updaterLock = new String(MonitorsUpdateService.class.getName() + " UpdaterLock"); // NOI18N
+    private final Object updaterLock = MonitorsUpdateService.class.getName() + "Lock"; // NOI18N
     private Updater updater = null;
     private BlockingQueue<Object> requestsQueue = new LinkedBlockingQueue<Object>(1);
 
@@ -174,6 +174,7 @@ public class MonitorsUpdateService {
 
         public void stop() {
             isStopped = true;
+            requestsQueue.offer(new Object());
         }
 
         public void run() {
@@ -183,16 +184,10 @@ public class MonitorsUpdateService {
 
             erprintSession = ErprintSession.createNew(execEnv, sproHome, experimentDir, ssdc);
 
-            final Future notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
-
+            final Future<?> notifyer = DLightExecutorService.scheduleAtFixedRate(new Runnable() {
                 public void run() {
-                    if (requestsQueue.remainingCapacity() == 0) {
-                        return;
-                    }
-
-                    try {
-                        requestsQueue.put(new Object());
-                    } catch (InterruptedException ex) {
+                    if (!isStopped) {
+                        requestsQueue.offer(new Object());
                     }
                 }
             }, 1, TimeUnit.SECONDS, "SunStudio monitors update task"); // NOI18N
@@ -201,9 +196,11 @@ public class MonitorsUpdateService {
                 double prevTime = 0;
                 double prevLocks = 0;
 
-                while (!isStopped) {
+                while (true) {
                     try {
-                        requestsQueue.take();
+                        if (requestsQueue.poll(2, TimeUnit.SECONDS) == null) {
+                            break;
+                        }
                     } catch (InterruptedException ex) {
                         break;
                     }

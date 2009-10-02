@@ -161,14 +161,19 @@ public abstract class XMLDecoder {
         tagMap.put(tag, decoder);
     }
 
-    protected void checkVersion(Attributes atts, String what, int maxVersion)
-            throws VersionException {
-
+    protected int getVersion(Attributes atts) {
         int version = 0;
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
             version = new Integer(versionString).intValue();
         }
+        return version;
+    }
+
+    protected void checkVersion(Attributes atts, String what, int maxVersion)
+            throws VersionException {
+
+        int version = getVersion(atts);
         if (version > maxVersion) {
             throw new VersionException(what, maxVersion, version);
         }

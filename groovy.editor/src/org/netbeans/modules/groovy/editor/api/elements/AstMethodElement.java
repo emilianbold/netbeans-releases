@@ -20,6 +20,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
     private Class clz;
     private MetaMethod method;
     boolean GDK;
+    private String methodSignature;
 
     public AstMethodElement(GroovyParserResult info, ASTNode node) {
         super(info, node);
@@ -56,12 +57,28 @@ public class AstMethodElement extends AstElement implements MethodElement {
             for (Parameter parameter : ((MethodNode)node).getParameters()) {
                 parameters.add(parameter.getName());
             }
-            if (parameters == null) {
-                parameters = Collections.emptyList();
-            }
         }
 
         return parameters;
+    }
+
+    @Override
+    public String getSignature() {
+        if (methodSignature == null) {
+            StringBuilder builder = new StringBuilder(super.getSignature());
+            Parameter[] params = ((MethodNode) node).getParameters();
+            if (params.length > 0) {
+                builder.append("("); // NOI18N
+                for (Parameter parameter : params) {
+                    builder.append(parameter.getType().getName());
+                    builder.append(","); // NOI18N
+                }
+                builder.setLength(builder.length() - 1);
+                builder.append(")"); // NOI18N
+            }
+            methodSignature = builder.toString();
+        }
+        return methodSignature;
     }
 
     public boolean isDeprecated() {

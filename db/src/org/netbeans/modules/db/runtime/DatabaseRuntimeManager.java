@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.db.runtime;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -79,7 +78,7 @@ public final class DatabaseRuntimeManager {
     /**
      * The Lookup.Result instance containing all the DatabaseRuntime instances.
      */
-    private Lookup.Result result = getLookupResult();
+    private Lookup.Result<DatabaseRuntime> result = getLookupResult();
     
     /**
      * Returns the singleton database runtime manager instance.
@@ -92,8 +91,8 @@ public final class DatabaseRuntimeManager {
     }
     
     public DatabaseRuntime[] getRuntimes() {
-        Collection runtimes = result.allInstances();
-        return (DatabaseRuntime[])runtimes.toArray(new DatabaseRuntime[runtimes.size()]);
+        Collection<? extends DatabaseRuntime> runtimes = result.allInstances();
+        return runtimes.toArray(new DatabaseRuntime[runtimes.size()]);
     }
     
     /**
@@ -110,9 +109,8 @@ public final class DatabaseRuntimeManager {
         if (jdbcDriverClassName == null) {
             throw new NullPointerException();
         }
-        List/*<DatabaseRuntime>*/ runtimeList = new LinkedList();
-        for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
-            DatabaseRuntime runtime = (DatabaseRuntime)i.next();
+        List<DatabaseRuntime> runtimeList = new LinkedList<DatabaseRuntime>();
+        for (DatabaseRuntime runtime : result.allInstances()) {
             if (LOG) {
                 LOGGER.log(Level.FINE, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
             }
@@ -120,10 +118,10 @@ public final class DatabaseRuntimeManager {
                 runtimeList.add(runtime);
             }
         }
-        return (DatabaseRuntime[])runtimeList.toArray(new DatabaseRuntime[runtimeList.size()]);
+        return runtimeList.toArray(new DatabaseRuntime[runtimeList.size()]);
     }
     
-    private synchronized Lookup.Result getLookupResult() {
+    private synchronized Lookup.Result<DatabaseRuntime> getLookupResult() {
         return Lookups.forPath(RUNTIMES_PATH).lookupResult(DatabaseRuntime.class);
     }
 }

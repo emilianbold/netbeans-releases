@@ -87,7 +87,7 @@ final class ShowJavadocAction extends NodeAction {
         if (activatedNodes.length!=1) {
             return;
         }
-        JavadocProvider jd = (JavadocProvider) activatedNodes[0].getLookup().lookup(JavadocProvider.class);
+        JavadocProvider jd = activatedNodes[0].getLookup().lookup(JavadocProvider.class);
         if (jd == null) {
             return;
         }
@@ -98,7 +98,7 @@ final class ShowJavadocAction extends NodeAction {
         if (activatedNodes.length!=1) {
             return false;
         }
-        JavadocProvider jd = (JavadocProvider) activatedNodes[0].getLookup().lookup(JavadocProvider.class);
+        JavadocProvider jd = activatedNodes[0].getLookup().lookup(JavadocProvider.class);
         if (jd == null) {
             return false;
         }
@@ -113,7 +113,7 @@ final class ShowJavadocAction extends NodeAction {
         return new HelpCtx(ShowJavadocAction.class);
     }
     
-    public final boolean asynchronous() {
+    public @Override final boolean asynchronous() {
         return false;
     }
     

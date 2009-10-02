@@ -120,7 +120,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      */
     public static Boolean isHidden() {
         return Boolean.valueOf(
-                (!Utilities.isWindows() && !defaultBrowserUnixReady())
+                (!Utilities.isWindows() && !defaultBrowserUnixReady() && !Utilities.isMac())
                 && JDK_6_DESKTOP_BROWSE == null);
     }
 
@@ -142,7 +142,9 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             return new Jdk6BrowserImpl();
         } else if (Utilities.isWindows()) {
             return new NbDdeBrowserImpl(this);
-        } else if (Utilities.isUnix()) {
+        } else if (Utilities.isMac()) {
+            return new MacBrowserImpl(this);
+        } else if (Utilities.isUnix() && !Utilities.isMac()) {
             return new NbDefaultUnixBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException(NbBundle.getMessage(SystemDefaultBrowser.class, "MSG_CannotUseBrowser"));
@@ -171,6 +173,11 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @return process descriptor that allows to start browser.
      */
     protected NbProcessDescriptor defaultBrowserExecutable() {
+        if (Utilities.isMac()) {
+            return new NbProcessDescriptor ("/usr/bin/open", // NOI18N
+                "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", // NOI18N
+                ExtWebBrowser.UnixBrowserFormat.getHint());
+        }
         if (!Utilities.isWindows() || JDK_6_DESKTOP_BROWSE != null) {
             return new NbProcessDescriptor("", ""); // NOI18N
         }
@@ -195,7 +202,8 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             b = "iexplore"; // NOI18N
         }
 
-        NbProcessDescriptor p = new NbProcessDescriptor(b, params);
+        NbProcessDescriptor p = new NbProcessDescriptor(b, params,
+                ExtWebBrowser.UnixBrowserFormat.getHint());
         return p;
     }
 

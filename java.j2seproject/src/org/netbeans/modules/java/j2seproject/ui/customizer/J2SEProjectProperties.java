@@ -48,6 +48,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,7 +93,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -400,27 +400,7 @@ public class J2SEProjectProperties {
     }
     
     public void save() {
-        try {
-            if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
-                & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                //Back up build-impl.xml
-                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                if (buildImpl  != null) {
-                    final String name = buildImpl.getName();
-                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
-                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
-                    if (oldBackup != null) {
-                        oldBackup.delete();
-                    }
-                    FileLock lock = buildImpl.lock();
-                    try {
-                        buildImpl.rename(lock, name, backupext);
-                    } finally {
-                        lock.releaseLock();
-                    }
-                }
-            }            
+        try {                        
             saveLibrariesLocation();
             // Store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -455,7 +435,12 @@ public class J2SEProjectProperties {
                 }
             });
             // and save the project
-            ProjectManager.getDefault().saveProject(project);
+            project.setProjectPropertiesSave(true);
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } finally {
+                project.setProjectPropertiesSave(false);
+            }
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
@@ -625,12 +610,19 @@ public class J2SEProjectProperties {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
+        Set<URL> oldRootURLs = new HashSet<URL> (Arrays.asList (roots.getRootURLs ()));
+        boolean rootsAreSame = true;
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
-            rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);            
+            rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);
+            rootsAreSame &= oldRootURLs.remove (rootURLs[i]);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
-        roots.putRoots(rootURLs,rootLabels);
+        if (
+            !rootsAreSame ||
+            !oldRootURLs.isEmpty ()
+        )
+            roots.putRoots(rootURLs,rootLabels);
     }
     
     /* This is used by CustomizerWSServiceHost */

@@ -146,8 +146,21 @@ public class JDBCTable extends TableImplementation {
     }
 
     protected JDBCColumn createJDBCColumn(ResultSet rs) throws SQLException {
-        int position = rs.getInt("ORDINAL_POSITION");
-        return new JDBCColumn(this.getTable(), position, JDBCValue.createTableColumnValue(rs));
+        int position = 0;
+        JDBCValue jdbcValue;
+        if (isOdbc()) {
+            jdbcValue = JDBCValue.createTableColumnValueODBC(rs);
+        } else {
+            position = rs.getInt("ORDINAL_POSITION");
+            jdbcValue = JDBCValue.createTableColumnValue(rs);
+        }
+        return new JDBCColumn(this.getTable(), position, jdbcValue);
+    }
+
+    /** Returns true if this table is under ODBC connection. In such a case
+     * some meta data like ORDINAL_POSITION or ASC_OR_DESC are not supported. */
+    private boolean isOdbc() throws SQLException {
+        return jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getURL().startsWith("jdbc:odbc");  //NOI18N
     }
 
     protected JDBCPrimaryKey createJDBCPrimaryKey(String pkName, Collection<Column> pkcols) {
@@ -231,8 +244,10 @@ public class JDBCTable extends TableImplementation {
         Ordering ordering = Ordering.NOT_SUPPORTED;
         try {
             column = getColumn(rs.getString("COLUMN_NAME"));
-            position = rs.getInt("ORDINAL_POSITION");
-            ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
+            if (!isOdbc()) {
+                position = rs.getInt("ORDINAL_POSITION");
+                ordering = JDBCUtils.getOrdering(rs.getString("ASC_OR_DESC"));
+            }
         } catch (SQLException e) {
             filterSQLException(e);
         }

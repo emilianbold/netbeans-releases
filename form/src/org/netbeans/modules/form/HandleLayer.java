@@ -1835,7 +1835,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                          && !e.isAltDown()
                          && !e.isControlDown())
                 {   // plain click or shift click
-                    selectComponent(e, false);
+                    if (mouseOnVisual(e.getPoint())) {
+                        selectComponent(e, false);
+                    } // otherwise Other Components node selected in mousePressed
                 }
             }
 

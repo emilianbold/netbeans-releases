@@ -67,7 +67,6 @@ public class JdbcUrl extends HashMap<String, String> {
     private HashSet<String> requiredTokens = new HashSet<String>();
     private boolean parseUrl;
 
-    public static final String TOKEN_DISPLAY_NAME = "<DISPLAY_NAME>";
     public static final String TOKEN_DB = "<DB>";
     public static final String TOKEN_HOST = "<HOST>";
     public static final String TOKEN_PORT = "<PORT>";

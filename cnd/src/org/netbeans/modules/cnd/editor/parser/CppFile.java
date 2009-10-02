@@ -145,7 +145,7 @@ public class CppFile {
         return state == PARSING_FAILED;
     }
 
-    private boolean startParsing(int flags, Document doc) {
+    private boolean startParsing(int flags, final Document doc) {
         FoldingParser p = Lookup.getDefault().lookup(FoldingParser.class);
         if (p != null) {
 //            classFoldRecords.clear();
@@ -153,15 +153,30 @@ public class CppFile {
             initialCommentFoldRecord = null;
             includesFoldRecords.clear();
             List<CppFoldRecord> folds = null;
-            try {
-                String name = (String) doc.getProperty(Document.TitleProperty);
-                folds = p.parse(name, new StringReader(doc.getText(0, doc.getLength())));
-                if (folds == null) {
-                    return false;
+
+            final String text[] = new String[]{null};
+            final BadLocationException exc[] = new BadLocationException[]{null};
+            doc.render(new Runnable() {
+
+                public void run() {
+                    try {
+                        text[0] = doc.getText(0, doc.getLength());
+                    } catch (BadLocationException e) {
+                        exc[0] = e;
+                    }
                 }
-            } catch (BadLocationException ex) {
-                assert true;
-                ex.printStackTrace();
+            });
+            if (exc[0] != null) {
+                exc[0].printStackTrace();
+                return false;
+            }
+            if (text[0] == null) {
+                return false;
+            }
+
+            String name = (String) doc.getProperty(Document.TitleProperty);
+            folds = p.parse(name, new StringReader(text[0]));
+            if (folds == null) {
                 return false;
             }
 

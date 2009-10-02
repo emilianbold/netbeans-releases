@@ -58,7 +58,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -2033,6 +2032,14 @@ public final class WebProject implements Project, AntProjectListener {
             return webModule.getWebInf();
         }
 
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            webModule.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            webModule.removePropertyChangeListener(listener);
+        }
+
     }
 
     private class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
@@ -2065,7 +2072,7 @@ public final class WebProject implements Project, AntProjectListener {
 
     private class EnterpriseBeansListener implements PropertyChangeListener{
         public void propertyChange(final PropertyChangeEvent evt) {
-            SwingUtilities.invokeLater(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     WebProjectUtilities.upgradeJ2EEProfile(WebProject.this);
                 }

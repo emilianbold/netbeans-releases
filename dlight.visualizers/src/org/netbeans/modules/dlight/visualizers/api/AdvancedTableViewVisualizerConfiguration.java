@@ -206,6 +206,7 @@ public final class AdvancedTableViewVisualizerConfiguration implements TableBase
 
     private void goToSource(DataRow dataRow) {
         String functionName = dataRow.getStringValue(nodeColumnName);
+        // TODO: verify that functionName is Function.getQualifiedName().
         OpenFunctionInEditorActionProvider.getInstance().openFunction(functionName);
     }
 

@@ -52,17 +52,20 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 /*package-local*/ class SharedSyncWorker implements RemoteSyncWorker {
 
-    private final File localDir;
+    private final File[] localDirs;
     private final ExecutionEnvironment executionEnvironment;
 
-    public SharedSyncWorker(File localDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err) {
-        this.localDir = localDir;
+    public SharedSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File... localDirs) {
+        this.localDirs = localDirs;
         this.executionEnvironment = executionEnvironment;
     }
     
     public boolean synchronize() {
         PathMap mapper = HostInfoProvider.getMapper(executionEnvironment);
-        return mapper.checkRemotePath(localDir.getAbsolutePath(), true);
+        if (localDirs != null && localDirs.length > 0) {
+            return mapper.checkRemotePath(localDirs[0].getAbsolutePath(), true);
+        }
+        return true;
     }
 
     @Override

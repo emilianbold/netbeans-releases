@@ -84,8 +84,10 @@ public class ElChecker extends HintsProvider {
         if ( webModule == null ){
             return Collections.emptyList();
         }
-        final List<Hint> result = new LinkedList<Hint>();
-        ((BaseDocument)doc).runAtomic(new Runnable(){
+        List<Hint> result = new LinkedList<Hint>();
+        final List<Map<Class<? extends ELExpression>, ELExpression>> elExpressions = 
+            new LinkedList<Map<Class<? extends ELExpression>, ELExpression>>();
+        ((BaseDocument)doc).render(new Runnable(){
             public void run() {
                 TokenHierarchy<?> th = TokenHierarchy.get(doc); 
                 TokenSequence<?> topLevel = th.tokenSequence();
@@ -98,58 +100,78 @@ public class ElChecker extends HintsProvider {
                         if ( elTokenSequence.moveNext() || elTokenSequence.movePrevious()){
                             Token<ELTokenId> token = elTokenSequence.token();
                             int offset = elTokenSequence.offset() + token.length();
-                            checkEl( webModule , doc , offset , elTokenSequence ,
-                                    fileObject, result );
+                            collectExpressions( webModule , doc , offset , elTokenSequence ,
+                                    fileObject, elExpressions );
                         }
                     }
                 }
             }
         });
+        
+        for (Map<Class<? extends ELExpression>, ELExpression> map : elExpressions)
+        {
+            checkElContext(map, result, doc, webModule, fileObject);
+        }
 
         return result;
     }
 
-    protected void checkEl( WebModule webModule, Document doc , int offset , 
+    protected void collectExpressions( WebModule webModule, Document doc , int offset , 
             TokenSequence<ELTokenId> tokenSequence, FileObject fileObject,
-            List<Hint> hints ) 
+            List<Map<Class<? extends ELExpression>, ELExpression>> expressions ) 
     {
         JsfElExpression elExpr = new JsfElExpression( webModule , doc );
-        int parseType = elExpr.parse(offset);
+        elExpr.parse(offset);
+        
         int startOffset = elExpr.getStartOffset();
         if ( startOffset == -1){
             tokenSequence.move(offset);
             if ( !tokenSequence.movePrevious() ){
                 return;
             }
-            checkEl(webModule, doc, tokenSequence.offset(), tokenSequence, 
-                    fileObject, hints);
+            collectExpressions(webModule, doc, tokenSequence.offset(), tokenSequence, 
+                    fileObject, expressions);
         }
         else {
-            checkElContext( parseType, elExpr , hints , doc , webModule, fileObject );
-            checkEl(webModule, doc, startOffset, tokenSequence, fileObject, hints);
+            ELExpression expr = myJspChecker.parseExpression( doc, elExpr.getContextOffset());
+            
+            Map<Class<? extends ELExpression>, ELExpression> map = new HashMap<
+                Class<? extends ELExpression>, ELExpression>();
+            map.put(elExpr.getClass(), elExpr);
+            map.put( expr.getClass(), expr);
+            expressions.add( map );
+            
+            collectExpressions(webModule, doc, startOffset, tokenSequence, 
+                    fileObject, expressions );
         }
     }
     
-    private void checkElContext( int parseType,  JsfElExpression expression, 
-            List<Hint> hints, Document document, WebModule webModule,
+    private void checkElContext( Map<Class<? extends ELExpression>, ELExpression> 
+        expressions, List<Hint> hints, Document document, WebModule webModule,
             FileObject fileObject) 
     {
-        JsfElContextChecker checker = JSF_CHECKERS.get( parseType);
+        JsfElExpression expression = (JsfElExpression)expressions.get(
+                JsfElExpression.class);
+        
+        JsfElContextChecker checker = JSF_CHECKERS.get( expression.getParseType());
         if ( checker != null ){
              if ( checker.check(expression, document, fileObject, hints) ){
                  return;
              }
         }
-        if ( parseType == ELExpression.EL_UNKNOWN || parseType == ELExpression.EL_START){
+        if ( expression.getParseType() == ELExpression.EL_UNKNOWN || 
+                expression.getParseType() == ELExpression.EL_START)
+        {
             checkJspElContext( hints, document, fileObject, 
-                    expression.getContextOffset());
+                    expressions );
         }
     }
     
     private void checkJspElContext( List<Hint> hints, Document document,
-            FileObject fileObject, int contextOffset )
+            FileObject fileObject, 
+            Map<Class<? extends ELExpression>, ELExpression> expressions )
     {
-        myJspChecker.check( hints , document, fileObject, contextOffset);
+        myJspChecker.check( hints , document, fileObject, expressions);
     }
 
     private static final Map<Integer, JsfElContextChecker> JSF_CHECKERS = new HashMap<Integer, 

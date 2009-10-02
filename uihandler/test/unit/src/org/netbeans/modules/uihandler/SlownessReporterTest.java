@@ -38,10 +38,9 @@
  */
 package org.netbeans.modules.uihandler;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -53,7 +52,6 @@ import static org.junit.Assert.*;
  */
 public class SlownessReporterTest extends NbTestCase {
 
-    private List<LogRecord> logs;
     public SlownessReporterTest(String name) {
         super(name);
     }
@@ -62,47 +60,54 @@ public class SlownessReporterTest extends NbTestCase {
     @Before
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", getWorkDirPath());
+        UIHandler.flushImmediatelly();
+        clearWorkDir();
+
+        Installer.clearLogs();
+
+        Installer installer = Installer.findObject(Installer.class, true);
+        assertNotNull(installer);
+        installer.restored();
+
         long now = System.currentTimeMillis();
-        logs = new ArrayList<LogRecord>();
         LogRecord rec = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         Object[] params = new Object[]{null, null, null, null, "undo"};
         rec.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/2);
         rec.setParameters(params);
-        logs.add(rec);
+        Logger.getLogger("org.netbeans.ui.test").log(rec);
         LogRecord rec2 = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         params = new Object[]{null, null, null, null, "redo"};
         rec2.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/5);
         rec2.setParameters(params);
-        logs.add(rec2);
+        Logger.getLogger("org.netbeans.ui.test").log(rec2);
         LogRecord rec3 = new LogRecord(Level.FINE, "SOME OTHER LOG");
         params = new Object[]{null, null, null, null, "redo"};
         rec3.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/10);
         rec3.setParameters(params);
-        logs.add(rec3);
+        Logger.getLogger("org.netbeans.ui.test").log(rec3);
     }
 
     @Test
     public void testGetLatestAction() {
         SlownessReporter reporter = new SlownessReporter();
-        String latestAction = reporter.getLatestAction(logs, 10L);
+        String latestAction = reporter.getLatestAction(10L);
         assertEquals("redo", latestAction);
     }
 
     @Test
-    public void testIgnoreOldActions() {
+    public void testIgnoreOldActions() throws InterruptedException {
         SlownessReporter reporter = new SlownessReporter();
-        for (LogRecord logRecord : logs) {
-            logRecord.setMillis(logRecord.getMillis() - SlownessReporter.LATEST_ACTION_LIMIT * 2);
-        }
-        String latestAction = reporter.getLatestAction(logs, 10L);
+        Thread.sleep(SlownessReporter.LATEST_ACTION_LIMIT * 2);
+        String latestAction = reporter.getLatestAction(10L);
         assertNull(latestAction);
     }
 
     @Test
     public void testGetIdeStartup() {
         SlownessReporter reporter = new SlownessReporter();
-        logs.add(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
-        String latestAction = reporter.getLatestAction(logs, 100L);
+        Logger.getLogger("org.netbeans.ui.test").log(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
+        String latestAction = reporter.getLatestAction(100L);
         assertNotNull(latestAction);
         assertEquals(NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP"), latestAction);
     }

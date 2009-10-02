@@ -521,7 +521,7 @@ Searchable Keys:
   method : initialize(config_info)|PRIVATE|
   method : lazy_initialize;;DNS;
   method : new(config_info)|PRIVATE|STATIC|
-  method : open(*args)|STATIC|
+  method : open(*args)|STATIC|;;DNS;
   require : resolv
 
 Not Searchable Keys:

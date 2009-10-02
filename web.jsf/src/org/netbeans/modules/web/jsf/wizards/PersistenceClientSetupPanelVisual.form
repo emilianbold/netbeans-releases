@@ -319,7 +319,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="overrideExistingCheckBox">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Override existing files"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.overrideExistingFiles" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="overrideExistingCheckBoxActionPerformed"/>
@@ -327,7 +329,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="customizeTemplatesLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;u&gt;Customize Template&lt;/u&gt;"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="PersistenceClientSetupPanelVisual.customizeTemplate" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="customizeTemplatesLabelMouseClicked"/>

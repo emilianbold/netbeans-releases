@@ -89,7 +89,7 @@ public class TaglibGrammarQueryManager extends org.netbeans.modules.xml.api.mode
             EntityResolver resolver = catalog.getEntityResolver();
             if (resolver != null) {
                 try {
-                    InputSource inputSource = resolver.resolveEntity(TaglibCatalog.TAGLIB_2_0_ID, null);
+                    InputSource inputSource = resolver.resolveEntity(TaglibCatalog.TAGLIB_2_1_ID, null);
                     if (inputSource!=null) {
                         return DTDUtil.parseDTD(true, inputSource);
                     }

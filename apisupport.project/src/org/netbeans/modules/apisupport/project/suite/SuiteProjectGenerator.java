@@ -61,7 +61,6 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -171,16 +170,11 @@ public class SuiteProjectGenerator {
     
     /** Just utility method. */
     private static void storeProperties(FileObject bundleFO, EditableProperties props) throws IOException {
-        FileLock lock = bundleFO.lock();
+        OutputStream os = bundleFO.getOutputStream();
         try {
-            OutputStream os = bundleFO.getOutputStream(lock);
-            try {
-                props.store(os);
-            } finally {
-                os.close();
-            }
+            props.store(os);
         } finally {
-            lock.releaseLock();
+            os.close();
         }
     }
     

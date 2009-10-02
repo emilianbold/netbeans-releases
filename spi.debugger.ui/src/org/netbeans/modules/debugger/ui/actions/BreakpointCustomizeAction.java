@@ -127,7 +127,7 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
         }
 
         public boolean isEnabled() {
-            return getCustomizer(ann.getBreakpoint()) != null;
+            return getCustomizerClass(ann.getBreakpoint()) != null;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -167,8 +167,8 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
                 }
             }
         }
-        
-        private Customizer getCustomizer(Breakpoint b) {
+
+        private Class getCustomizerClass(Breakpoint b) {
             BeanInfo bi = findBeanInfo(b.getClass());
             if (bi == null) {
                 try {
@@ -181,6 +181,11 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
             BeanDescriptor bd = bi.getBeanDescriptor();
             if (bd == null) return null;
             Class cc = bd.getCustomizerClass();
+            return cc;
+        }
+        
+        private Customizer getCustomizer(Breakpoint b) {
+            Class cc = getCustomizerClass(b);
             if (cc == null) return null;
             try {
                 Customizer c = (Customizer) cc.newInstance();

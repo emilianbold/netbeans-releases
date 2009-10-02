@@ -57,7 +57,7 @@ public class TasklistSettings {
     
     private static final boolean DEFAULT_ENABLED = true;
     private static final boolean DEFAULT_ERROR_BADGES = true;
-    private static final String DEFAULT_DEPENDENCY_TRACKING = DependencyTracking.ENABLED_WITHIN_ROOT.name();
+    private static final String DEFAULT_DEPENDENCY_TRACKING = DependencyTracking.ENABLED.name();
     
     private TasklistSettings() {
     }

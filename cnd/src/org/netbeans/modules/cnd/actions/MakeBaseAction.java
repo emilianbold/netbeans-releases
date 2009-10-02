@@ -86,22 +86,25 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
     }
 
     protected void performAction(Node node, String target) {
-        performAction(node, target, null, null, null, null);
+        performAction(node, target, null, null, null, null, null);
     }
 
-    protected void performAction(final Node node, final String target, final ExecutionListener listener, final Writer outputListener, final Project project, final List<String> additionalEnvironment) {
+    protected Future<Integer> performAction(final Node node, final String target, final ExecutionListener listener, final Writer outputListener, final Project project,
+                                 final List<String> additionalEnvironment, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    _performAction(node, target, listener, outputListener, project, additionalEnvironment);
+                    _performAction(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
                 }
             });
         } else {
-            _performAction(node, target, listener, outputListener, project, additionalEnvironment);
+            return _performAction(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
         }
+        return null;
     }
 
-    private void _performAction(Node node, String target, final ExecutionListener listener, final Writer outputListener, Project project, List<String> additionalEnvironment) {
+    private Future<Integer> _performAction(Node node, String target, final ExecutionListener listener, final Writer outputListener,
+                                Project project, List<String> additionalEnvironment, InputOutput inputOutput) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
@@ -119,12 +122,6 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         } else {
             args = new String[]{"-f", makefile.getName(), target}; // NOI18N
         }
-        // Tab Name
-        String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
-        if (target != null && target.length() > 0) {
-            tabName += " " + target; // NOI18N
-        }
-
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         if (execEnv.isRemote()) {
             String s = HostInfoProvider.getMapper(execEnv).getRemotePath(buildDir.getAbsolutePath());
@@ -138,17 +135,25 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
         traceExecutable(executable, buildDir, args, envMap);
 
-        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
-        _tab.closeInputOutput(); // Close it...
-        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
-        try {
-            tab.getOut().reset();
-        } catch (IOException ioe) {
+        if (inputOutput == null) {
+            // Tab Name
+            String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
+            if (target != null && target.length() > 0) {
+                tabName += " " + target; // NOI18N
+            }
+            InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+            _tab.closeInputOutput(); // Close it...
+            InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+            try {
+                tab.getOut().reset();
+            } catch (IOException ioe) {
+            }
+            inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, tab, "Make"); // NOI18N
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Make"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
-        .addEnvironmentVariables(envMap)
+        .putAllEnvironmentVariables(envMap)
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
@@ -161,12 +166,12 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .frontWindow(true)
         .inputVisible(true)
         .showProgress(true)
-        .inputOutput(tab)
+        .inputOutput(inputOutput)
         .outLineBased(true)
         .postExecution(processChangeListener)
         .errConvertorFactory(factory)
         .outConvertorFactory(factory);
-        final ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N
-        Future<Integer> result = es.run();
+        ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N
+        return es.run();
     }
 }

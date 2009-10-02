@@ -64,14 +64,14 @@ public class NbDialogOperatorTest extends JellyTestCase {
     public static final String[] tests = new String[] {
         "testBtCancel",
         "testBtClose",
-        //TODO: find out why this test sometimes kills JVM
+        //TODO: find out why this test and testHelp sometimes kill JVM
         //"testBtHelp",
         "testBtNo",
         "testBtOK",
         "testBtYes",
         "testCancel",
         "testClose",
-        "testHelp",
+        //"testHelp",
         "testNo",
         "testOK",
         "testYes"

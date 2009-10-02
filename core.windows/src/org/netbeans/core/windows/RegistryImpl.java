@@ -41,6 +41,8 @@
 
 package org.netbeans.core.windows;
 
+import java.util.Collection;
+import java.util.Iterator;
 import org.openide.nodes.Node;
 import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
@@ -90,7 +92,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      * @return immutable set of {@link TopComponent}s
      */
     public synchronized Set<TopComponent> getOpened() {
-        return java.util.Collections.unmodifiableSet(openSet);
+        return new SyncSet();
     }
     
     /** Get the currently selected element.
@@ -333,5 +335,72 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     private static void debugLog(String message) {
         Debug.log(RegistryImpl.class, message);
     }
-    
+
+    private final class SyncSet implements Set<TopComponent> {
+        public int size() {
+            synchronized (RegistryImpl.this) {
+                return openSet.size();
+            }
+        }
+
+        public boolean isEmpty() {
+            synchronized (RegistryImpl.this) {
+                return openSet.isEmpty();
+            }
+        }
+
+        public boolean contains(Object o) {
+            synchronized (RegistryImpl.this) {
+                return openSet.contains(o);
+            }
+        }
+
+        public Iterator<TopComponent> iterator() {
+            synchronized (RegistryImpl.this) {
+                return new HashSet<TopComponent>(openSet).iterator();
+            }
+        }
+
+        public Object[] toArray() {
+            synchronized (RegistryImpl.this) {
+                return openSet.toArray();
+            }
+        }
+
+        public <T> T[] toArray(T[] a) {
+            synchronized (RegistryImpl.this) {
+                return openSet.toArray(a);
+            }
+        }
+
+        public boolean containsAll(Collection<?> c) {
+            synchronized (RegistryImpl.this) {
+                return openSet.containsAll(c);
+            }
+        }
+
+        public boolean add(TopComponent e) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean addAll(Collection<? extends TopComponent> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

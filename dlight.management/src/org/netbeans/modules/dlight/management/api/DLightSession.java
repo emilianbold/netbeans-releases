@@ -67,7 +67,7 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
-import org.netbeans.modules.dlight.management.timeline.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
@@ -90,6 +90,7 @@ import org.openide.windows.InputOutput;
  * 
  */
 public final class DLightSession implements DLightTargetListener, DataFilterManager, DLightSessionIOProvider, DLightSessionInternalReference {
+
     private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
@@ -98,8 +99,8 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private final List<IndicatorNotificationsListener> indicatorNotificationListeners = Collections.synchronizedList(new ArrayList<IndicatorNotificationsListener>());
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
-    private List<DataCollector> collectors = null;
-    private Map<String, Map<String, Visualizer>> visualizers = null;
+    private List<DataCollector<?>> collectors = null;
+    private Map<String, Map<String, Visualizer>> visualizers = null;//toolID, visualizer
     private SessionState state;
     private final int sessionID;
     private String description = null;
@@ -127,7 +128,8 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
-                startTimestamp = System.nanoTime();
+                startTimestamp = 0;
+                serviceInfoDataStorage.put(ServiceInfoDataStorage.START_TIME_NANOSECONDS, startTimestamp + "");
                 targetStarted(event.target);
                 break;
             case FAILED:
@@ -234,11 +236,11 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return state == SessionState.RUNNING;
     }
 
-    boolean hasVisualizer(String toolName, String visualizerID) {
-        if (visualizers == null || !visualizers.containsKey(toolName)) {
+    boolean hasVisualizer(String toolID, String visualizerID) {
+        if (visualizers == null || !visualizers.containsKey(toolID)) {
             return false;
         }
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolID);
         return toolVisualizers.containsKey(visualizerID);
     }
 
@@ -257,11 +259,11 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     }
 
-    Visualizer getVisualizer(String toolName, String visualizerID) {
-        if (visualizers == null || !visualizers.containsKey(toolName)) {
+    Visualizer getVisualizer(String toolID, String visualizerID) {
+        if (visualizers == null || !visualizers.containsKey(toolID)) {
             return null;
         }
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        Map<String, Visualizer> toolVisualizers = visualizers.get(toolID);
         return toolVisualizers.get(visualizerID);
     }
 
@@ -361,42 +363,48 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         dataFiltersSupport.addDataFilterListener(listener);
     }
 
-   public void removeDataFilterListener(DataFilterListener listener) {
+    public void removeDataFilterListener(DataFilterListener listener) {
         dataFiltersSupport.removeDataFilterListener(listener);
     }
 
-    public DLightSessionIOProvider getDLigthSessionIOProvider(){
+    public DLightSessionIOProvider getDLigthSessionIOProvider() {
         return this;
     }
-    
-    public InputOutput getInputOutput(){
-        if (this.state == SessionState.CONFIGURATION){
+
+    public InputOutput getInputOutput() {
+        if (this.state == SessionState.CONFIGURATION) {
             return null;//nothing to return, we are in configuration state
         }
         return io;
     }
-    
+
     public void addDataFilter(DataFilter filter, boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
-        if (filter instanceof TimeIntervalDataFilter){
+        if (filter instanceof TimeIntervalDataFilter) {
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
         dataFiltersSupport.addFilter(filter, isAdjusting);
         //if filter is added - refresh all visualizers
-        if (!isAdjusting){
-            for (Visualizer v : getVisualizers()){
+        if (!isAdjusting) {
+            for (Visualizer v : getVisualizers()) {
                 v.refresh();
             }
         }
-        
+
     }
-    
+
     public void cleanAllDataFilter() {
         dataFiltersSupport.cleanAll();
+        for (Visualizer v : getVisualizers()) {
+            v.refresh();
+        }
     }
 
     public void cleanAllDataFilter(Class clazz) {
         dataFiltersSupport.cleanAll(clazz);
+        for (Visualizer v : getVisualizers()) {
+            v.refresh();
+        }
     }
 
     public <T extends DataFilter> Collection<T> getDataFilter(Class<T> clazz) {
@@ -406,7 +414,6 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     public boolean removeDataFilter(DataFilter filter) {
         return dataFiltersSupport.removeFilter(filter);
     }
-
 
     public final void addIndicatorNotificationListener(IndicatorNotificationsListener l) {
         if (l == null) {
@@ -452,7 +459,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         DataCollector notAttachableDataCollector = null;
 
         if (collectors == null) {
-            collectors = new ArrayList<DataCollector>();
+            collectors = new ArrayList<DataCollector<?>>();
         }
 
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
@@ -521,7 +528,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                                 }
                             }
                             if (i instanceof DataFilterListener) {
-                                addDataFilterListener((DataFilterListener)i);
+                                addDataFilterListener((DataFilterListener) i);
                             }
                         }
                     }
@@ -547,7 +554,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         serviceInfoDataStorage.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
 
         if (collectors != null && collectors.size() > 0) {
-            for (DataCollector toolCollector : collectors) {
+            for (DataCollector<?> toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
                 Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 
@@ -556,7 +563,16 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 }
 
                 if (currentStorages != null && !currentStorages.isEmpty()) {
+                    if (storages == null) {
+                        storages = new ArrayList<DataStorage>();
+                    }
 
+                    for (DataStorage storage : currentStorages.values()) {
+                        if (!storages.contains(storage)) {
+                            storage.attachTo(serviceInfoDataStorage);
+                            storages.add(storage);
+                        }
+                    }
                     toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
 
@@ -565,15 +581,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         idp.init(serviceInfoDataStorage);
                     }
 
-                    if (storages == null) {
-                        storages = new ArrayList<DataStorage>();
-                    }
 
-                    for (DataStorage storage : currentStorages.values()) {
-                        if (!storages.contains(storage)) {
-                            storages.add(storage);
-                        }
-                    }
 
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
@@ -689,6 +697,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 DataProvider provider = DataProvidersManager.getInstance().createProvider(providerFactory);
                 provider.attachTo(storage);
                 provider.attachTo(serviceInfoDataStorage);
+                provider.dataFiltersChanged(this.dataFiltersSupport.getFilters(), false);
                 addDataFilterListener(provider);
                 return provider;
             }
@@ -824,6 +833,20 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
         for (ExecutionContext c : contexts) {
             DLightTool tool = c.getToolByName(toolName);
+            if (tool != null) {
+                return tool;
+            }
+        }
+        return null;
+    }
+
+    DLightTool getToolByID(String toolID) {
+        if (toolID == null) {
+            throw new IllegalArgumentException("Cannot use NULL as a tool name ");//NOI18N
+        }
+
+        for (ExecutionContext c : contexts) {
+            DLightTool tool = c.getToolByID(toolID);
             if (tool != null) {
                 return tool;
             }

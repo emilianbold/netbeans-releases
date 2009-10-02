@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.SunStudioFiltersProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -69,10 +70,15 @@ public final class PerfanDataStorage implements DataStorage {
     private String experimentDirectory = null;
     private ExecutionEnvironment env;
     private final List<DataTableMetadata> tableMetadatas;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
 
     public PerfanDataStorage() {
         super();
         tableMetadatas = new ArrayList<DataTableMetadata>();
+    }
+
+    public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoDataStorage = serviceInfoStorage;
     }
 
     @Override

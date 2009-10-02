@@ -57,6 +57,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -78,6 +80,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String SOURCES_FOLDER = "sourcesFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
+    static final String PHP_VERSION = "phpVersion"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
     static final String ROOTS = "roots"; // NOI18N
 
@@ -158,6 +161,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
         configureProjectPanelVisual.setProjectFolder(getProjectFolder().getAbsolutePath());
 
+        // php version
+        configureProjectPanelVisual.setPhpVersion(getPhpVersion());
+
         // encoding
         configureProjectPanelVisual.setEncoding(getEncoding());
     }
@@ -184,6 +190,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // sources
         settings.putProperty(SOURCES_FOLDER, configureProjectPanelVisual.getSourcesLocation());
         settings.putProperty(LOCAL_SERVERS, configureProjectPanelVisual.getLocalServerModel());
+
+        // php version
+        settings.putProperty(PHP_VERSION, configureProjectPanelVisual.getPhpVersion());
 
         // encoding
         settings.putProperty(ENCODING, configureProjectPanelVisual.getEncoding());
@@ -328,6 +337,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             projectName = validFreeProjectName(projectFolder, i++);
         } while (projectName == null);
         return projectName;
+    }
+
+    private PhpVersion getPhpVersion() {
+        PhpVersion phpVersion = (PhpVersion) descriptor.getProperty(PHP_VERSION);
+        if (phpVersion == null) {
+            phpVersion = ProjectPropertiesSupport.getDefaultPhpVersion();
+        }
+        return phpVersion;
     }
 
     private Charset getEncoding() {

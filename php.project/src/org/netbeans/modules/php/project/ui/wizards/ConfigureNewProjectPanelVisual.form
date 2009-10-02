@@ -14,6 +14,9 @@
       <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
+  <SyntheticProperties>
+    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-65,0,0,1,-81"/>
+  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -29,28 +32,36 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="separator" alignment="0" pref="431" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="sourcesLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="encodingLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="phpVersionLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectNameTextField" alignment="0" pref="297" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="localServerComboBox" pref="202" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="localServerButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="localServerInfoLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="phpVersionInfoLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="encodingComboBox" alignment="0" pref="297" max="32767" attributes="2"/>
+                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
+                      <Component id="phpVersionComboBox" pref="297" max="32767" attributes="0"/>
+                      <Component id="projectNameTextField" alignment="0" pref="297" max="32767" attributes="2"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="localServerComboBox" pref="202" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="localServerButton" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="localServerInfoLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="encodingComboBox" alignment="0" pref="297" max="32767" attributes="2"/>
+                  </Group>
               </Group>
           </Group>
-          <Component id="separator" alignment="0" pref="431" max="32767" attributes="0"/>
           <Component id="projectFolderPanel" alignment="0" pref="431" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
@@ -70,6 +81,13 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="localServerInfoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="phpVersionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="phpVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="phpVersionInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="encodingComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -77,9 +95,9 @@
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" pref="2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="projectFolderPanel" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="projectFolderPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -181,6 +199,23 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.localServerInfoLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="phpVersionLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="phpVersionComboBox">
+    </Component>
+    <Component class="javax.swing.JLabel" name="phpVersionInfoLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="encodingLabel">
       <Properties>

@@ -149,8 +149,9 @@ public abstract class QueryAction extends BaseAction {
         boolean tableIsQualified = false;
 
         tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getConnection().getCatalog(), tableIsQualified);
-        tableIsQualified = appendQualifiedName(fullTableName, quoter, schemaName, connection.getSchema(), tableIsQualified);
-        fullTableName.append(simpleTableName);
+        // add schema always if possible
+        tableIsQualified = appendQualifiedName(fullTableName, quoter, schemaName, null, tableIsQualified);
+        fullTableName.append(quoter.quoteIfNeeded(simpleTableName));
 
         return fullTableName.toString();
     }

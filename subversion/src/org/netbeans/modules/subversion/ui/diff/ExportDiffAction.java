@@ -64,7 +64,6 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
@@ -138,7 +137,7 @@ public class ExportDiffAction extends ContextAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            noop = Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true);
+            noop = !Subversion.getInstance().getStatusCache().containsFiles(context, FileInformation.STATUS_LOCAL_CHANGE, true);
         }
         if (noop) {
             NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportDiffAction.class, "BK3001"), NotifyDescriptor.INFORMATION_MESSAGE);

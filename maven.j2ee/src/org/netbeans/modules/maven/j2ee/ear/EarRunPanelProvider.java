@@ -54,11 +54,8 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=303)
 public class EarRunPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of EjbRunPanelProvider */
-    public EarRunPanelProvider() {
-    }
     
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -67,8 +64,7 @@ public class EarRunPanelProvider implements ProjectCustomizer.CompositeCategoryP
             return ProjectCustomizer.Category.create(
                     ModelHandle.PANEL_RUN,
                     NbBundle.getMessage(EarRunPanelProvider.class, "PNL_Run"),
-                    null,
-                    (ProjectCustomizer.Category[])null);
+                    null);
         }
         return null;
     }

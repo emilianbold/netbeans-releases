@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
@@ -408,9 +407,9 @@ public class PageFlowController {
      * @return if it is of type jsp, jspf, or html it will return true.
      */
     public final boolean isKnownFile(FileObject file) {
-        if (file.getMIMEType().equals("text/x-jsp") && !file.getExt().equals("jspf")) {
+        if (file.getMIMEType().equals("text/x-jsp") && !file.getExt().equals("jspf")) { //NOI18N
             return true;
-        } else if (file.getMIMEType().equals("text/html")) {
+        } else if (file.getMIMEType().equals("text/html")||file.getMIMEType().equals("text/xhtml")) { //NOI18N
             return true;
         }
         return false;

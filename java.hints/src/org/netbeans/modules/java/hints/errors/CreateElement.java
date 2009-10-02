@@ -376,7 +376,11 @@ public final class CreateElement implements ErrorRule<Void> {
                 FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
                     if (target.getKind() == ElementKind.ENUM) {
-                        result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
+                        if (source.equals(target)) {
+                            result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                        } else {
+                            result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
+                        }
                     } else {
                         if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
                             modifiers.add(Modifier.FINAL);

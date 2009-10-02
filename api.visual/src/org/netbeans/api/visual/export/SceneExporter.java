@@ -38,6 +38,7 @@
  */
 package org.netbeans.api.visual.export;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -186,7 +187,15 @@ public final class SceneExporter {
         if (scene == null) {
             return null;
         }
-
+        if (!scene.isValidated()) {
+            if (scene.getView() != null) {
+                scene.validate();
+            } else {
+                BufferedImage emptyImage = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
+                Graphics2D emptyGraphics = emptyImage.createGraphics();
+                scene.validate(emptyGraphics);
+            }
+        }
         Scene2Image s2i = new Scene2Image(scene, file);
         BufferedImage image = s2i.createImage(imageType, zoomType, visibleAreaOnly, selectedOnly, quality, width, height, false);
 

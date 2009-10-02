@@ -118,6 +118,7 @@ public class SourceRoots {
         addRoot(projectRoot, SourceCategory.SCRIPTS, result);
         addRoot(projectRoot, SourceCategory.SRC_GROOVY, result);
         addRoot(projectRoot, SourceCategory.SRC_JAVA, result);
+        addRoot(projectRoot, SourceCategory.SRC_GWT, result);
         addRoot(projectRoot, SourceCategory.TEST_INTEGRATION, result);
         addRoot(projectRoot, SourceCategory.TEST_UNIT, result);
 

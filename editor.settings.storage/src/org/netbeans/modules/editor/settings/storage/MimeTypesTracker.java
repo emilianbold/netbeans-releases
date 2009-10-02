@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -219,6 +221,10 @@ public final class MimeTypesTracker {
             rebuild();
         }
     });
+
+    // #172043 - this is here to keep all folder FileObjects that we have traversed in the memory
+    // so that FileSystems would know about them and fired events correctly
+    private final Set<FileObject> trackedFolders = new HashSet<FileObject>();
     
     private void rebuild() {
         PropertyChangeEvent event = null;
@@ -243,13 +249,16 @@ public final class MimeTypesTracker {
             if (isBaseFolder) {
                 // Clear the cache
                 newMimeTypes = new HashMap<String, String>();
-                
+
                 // Go through mime type types
                 FileObject [] types = folder.getChildren();
                 for(int i = 0; i < types.length; i++) {
                     if (!isValidType(types[i])) {
                         continue;
                     }
+
+                    // keep track of the type folder
+                    trackedFolders.add(types[i]);
 
                     // Go through mime type subtypes
                     FileObject [] subTypes = types[i].getChildren();
@@ -265,6 +274,9 @@ public final class MimeTypesTracker {
                             Map<String, List<Object []>> scan = new HashMap<String, List<Object []>>();
                             locator.scan(folder, mimeType, null, false, true, true, false, scan);
                             add = !scan.isEmpty();
+
+                            // we are interested in the subtype folder's content, so keep track of the subtype folder too
+                            trackedFolders.add(subTypes[j]);
                         } else {
                             add = true;
                         }
@@ -290,6 +302,12 @@ public final class MimeTypesTracker {
             if (!mimeTypes.equals(newMimeTypes)) {
                 event = new PropertyChangeEvent(this, PROP_MIME_TYPES, mimeTypes, newMimeTypes);
                 mimeTypes = newMimeTypes;
+            }
+
+            for(Iterator<FileObject> i = trackedFolders.iterator(); i.hasNext(); ) {
+                if (!i.next().isValid()) {
+                    i.remove();
+                }
             }
         }
         

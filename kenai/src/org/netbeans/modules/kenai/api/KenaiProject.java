@@ -49,7 +49,8 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -82,7 +83,7 @@ public final class KenaiProject {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private ProjectData     data;
-    private static HashMap<String, Icon> imageCache = new HashMap<String, Icon>(); //imageUrl -> image
+    private Icon projectIcon;
     
     private KenaiFeature[] features;
     private KenaiProjectMember[] members;
@@ -180,23 +181,18 @@ public final class KenaiProject {
     }
 
     /**
-     * Synchronously (!) loads the image of the project and stores it in the image cache
+     * Synchronously (!) loads the image of the project from the server.
+     * You should call this method before you need the image of the project, so that you avoid
+     * remote image loading on AWT thread. Do not call this method from AWT thread...
+     * @param forceReload Forces reloading image from the server (in case that image for a Kenai project was already cached)
      */
-    public synchronized void cacheProjectImage() {
-        String key = "dummy"; //NOI18N
-        try {
-            key = getImageUrl();
-        } catch (KenaiException ex) {
-        }
-        Icon icon = imageCache.get(key);
-        if (icon == null) {
-            BufferedImage img = null;
+    public void fetchProjectImage(boolean forceReload) {
+        if (projectIcon == null || forceReload) {
             try {
-                img = ImageIO.read(new URL(getImageUrl()));
-                icon = new ImageIcon(img);
-                imageCache.put(key, icon);
+                BufferedImage img = ImageIO.read(new URL(getImageUrl()));
+                projectIcon = new ImageIcon(img);
             } catch (IOException ex) {
-                // load failed
+                Logger.getLogger(KenaiProject.class.getName()).log(Level.FINE, "Kenai project icon loading failed.", ex); //NOI18N
             }
         }
     }
@@ -233,22 +229,16 @@ public final class KenaiProject {
     }
 
     /**
-     * Returns the image of the project, loads it if needed (synchronous load)
-     * @param loadIfNeeded indicates if image should be loaded and cached if it wasn't already cached
+     * Returns the image of the project, method can load it if needed (synchronous load). If you call this method in AWT thread,
+     * make sure that you have image already cached locally. Use {@link #fetchProjectImage(boolean)}. for caching the image outside the AWT thread.
+     * @param loadIfNeeded indicates if image should be loaded and cached if it wasn't already cached. If false, this method may return null.
      * @return the image of the project or null, if loading image fails or if image is not cached and loadIfNeeded is false
      */
-    public synchronized Icon getProjectIcon(boolean loadIfNeeded) {
-        String key = "dummy"; //NOI18N
-        try {
-            key = getImageUrl();
-        } catch (KenaiException ex) {
+    public Icon getProjectIcon(boolean loadIfNeeded) {
+        if (projectIcon == null && loadIfNeeded) {
+            fetchProjectImage(false);
         }
-        Icon retIcon = imageCache.get(key);
-        if (retIcon == null && loadIfNeeded) {
-            cacheProjectImage();
-            retIcon = imageCache.get(key);
-        }
-        return retIcon;
+        return projectIcon;
     }
 
     /**

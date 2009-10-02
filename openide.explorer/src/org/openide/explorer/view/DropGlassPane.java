@@ -141,9 +141,12 @@ final class DropGlassPane extends JPanel {
     /** Set drop line. Given line is used by paint method.
      * @param line drop line */
     public void setDropLine(Line2D line) {
+        Line2D oldLine = this.line;
         this.line = line;
 
-        //repaint ();
+        if( (null == oldLine && null != line)
+                || (null != oldLine && null == line ) )
+            repaint ();
     }
 
     /** Check the bounds of given line with the bounds of this pane. Optionally

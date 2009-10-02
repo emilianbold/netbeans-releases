@@ -109,6 +109,7 @@ public final class KenaiUserUI {
             public void run() {
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
+                tc.requestActive();
                 tc.setActivePrivate(user.getUserName());
             }
         };

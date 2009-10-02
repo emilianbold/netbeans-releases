@@ -49,6 +49,7 @@ public class TestInstallerAndUninstallerJavaSE extends Installer {
 
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
+        data.SetTestPackage( "java3/org-netbeans-modules-java-kit" );
 
         Utils.phaseOne(data, "javase");
 
@@ -58,7 +59,11 @@ public class TestInstallerAndUninstallerJavaSE extends Installer {
         // Agreement
         Utils.stepLicense();
         // Location
-        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        Utils.stepSetDir(
+            data,
+            "Install the NetBeans IDE",
+            data.GetNetBeansInstallPath( )
+          );
         // Summary
         Utils.stepInstall(data);
         //Installation
@@ -69,6 +74,8 @@ public class TestInstallerAndUninstallerJavaSE extends Installer {
         //Utils.phaseTwo(data);
 
         Utils.phaseFour(data);
+
+        //Utils.RunCommitTests( data );
 
         Utils.phaseFive( data );
 

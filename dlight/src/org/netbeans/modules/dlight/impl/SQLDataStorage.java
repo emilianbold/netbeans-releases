@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import java.io.InterruptedIOException;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,6 +49,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -57,11 +59,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Exceptions;
 
 /**
@@ -71,6 +77,30 @@ public abstract class SQLDataStorage implements DataStorage {
 
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
     private final static DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);
+    private LinkedBlockingQueue<Request> requestQueue;
+    private final Object insertPreparedStatmentsLock = new Object();
+    private final Map<String, PreparedStatement> insertPreparedStatments;
+    private static final int WAIT_INTERVALS = 100;
+    private static final int MAX_BULK_SIZE = 10000;
+    private static final int BUFFER_COUNT = 6;
+    private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
+    protected Connection connection;
+    protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
+    protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
+    private boolean enabled = false;
+    private AsyncThread asyncThread = null;
+    private ServiceInfoDataStorage serviceInfoDataStorage;
+
+    static {
+        classToType.put(Byte.class, "tinyint"); // NOI18N
+        classToType.put(Short.class, "smallint"); // NOI18N
+        classToType.put(Integer.class, "int"); //NOI18N
+        classToType.put(Long.class, "bigint"); //NOI18N
+        classToType.put(Double.class, "double"); //NOI18N
+        classToType.put(Float.class, "real"); //NOI18N
+        classToType.put(String.class, "varchar"); //NOI18N
+        classToType.put(Time.class, "bigint"); //NOI18N
+    }
 
     private interface Request {
 
@@ -146,28 +176,6 @@ public abstract class SQLDataStorage implements DataStorage {
             return "insert into " + tableName + ": " + dataRow.toString(); // NOI18N
         }
     }
-    private LinkedBlockingQueue<Request> requestQueue;
-    private final Object insertPreparedStatmentsLock = new Object();
-    private final Map<String, PreparedStatement> insertPreparedStatments;
-    private static final int WAIT_INTERVALS = 100;
-    private static final int MAX_BULK_SIZE = 10000;
-    private static final int BUFFER_COUNT = 6;
-    private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
-    protected Connection connection;
-    protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
-    protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
-    private boolean enabled = false;
-    private AsyncThread asyncThread = null;
-
-    static {
-        classToType.put(Byte.class, "tinyint"); // NOI18N
-        classToType.put(Short.class, "smallint"); // NOI18N
-        classToType.put(Integer.class, "int"); //NOI18N
-        classToType.put(Long.class, "bigint"); //NOI18N
-        classToType.put(Double.class, "double"); //NOI18N
-        classToType.put(Float.class, "real"); //NOI18N
-        classToType.put(String.class, "varchar"); //NOI18N
-    }
 
     protected SQLDataStorage() {
         insertPreparedStatments = new HashMap<String, PreparedStatement>();
@@ -180,6 +188,15 @@ public abstract class SQLDataStorage implements DataStorage {
             enable();
         }
     }
+
+    public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
+        this.serviceInfoDataStorage = serviceInfoStorage;
+    }
+
+    protected final ServiceInfoDataStorage getServiceInfoDataStorage(){
+        return serviceInfoDataStorage;
+    }
+
 
     public boolean shutdown() {
         disable();
@@ -216,6 +233,79 @@ public abstract class SQLDataStorage implements DataStorage {
 
     protected String classToType(Class clazz) {
         return classToType.get(clazz);
+    }
+
+    /**
+     *
+     * @param filters
+     * @param tableName
+     * @param columns
+     * @return <code>null</code> if the view was not created
+     */
+    protected final String createView(Collection<DataTableMetadataFilter> filters, String tableName, List<Column> columns) {
+        if (filters == null || filters.isEmpty()) {
+            return tableName;
+        }
+        String viewName = tableName + "_DLIGHT_VIEW"; // NOI18N
+        String dropViewQuery = "DROP VIEW IF EXISTS " + viewName; // NOI18N
+        Statement stmt = null;
+
+        try {
+            stmt = connection.createStatement();
+            stmt.execute(dropViewQuery);
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+        }
+        StringBuilder createViewQuery = new StringBuilder("CREATE  VIEW " + viewName + " AS "); //NOI18N
+        createViewQuery.append("SELECT "); // NOI18N
+        createViewQuery.append(new EnumStringConstructor<Column>().constructEnumString(columns,
+                new Convertor<Column>() {
+
+                    public String toString(Column item) {
+                        return (item.getExpression() == null) ? item.getColumnName() : item.getExpression();
+                    }
+                }));
+        createViewQuery.append(" FROM " + tableName); // NOI18N
+        //check if we can create WHERE expression
+        boolean hasWhereExpression = false;
+        StringBuilder whereBuilder = new StringBuilder(" WHERE "); // NOI18N
+        for (DataTableMetadataFilter filter : filters) {
+            Column filterColumn = filter.getFilteredColumn();
+            if (columns.contains(filterColumn)) {
+                Range range = filter.getNumericDataFilter().getInterval();
+                hasWhereExpression = true;
+                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn.getColumnName() + "<=" + range.getEnd()); // NOI18N
+            }
+        }
+        if (hasWhereExpression) {
+            createViewQuery.append(whereBuilder);
+        } else {
+            return tableName;
+        }
+
+        stmt = null;
+
+        try {
+            stmt = connection.createStatement();
+            stmt.execute(createViewQuery.toString());
+        } catch (SQLException ex) {
+            return tableName;
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                }
+            }
+        }
+        return viewName;
     }
 
     protected final boolean createTable(final DataTableMetadata metadata) {
@@ -316,7 +406,41 @@ public abstract class SQLDataStorage implements DataStorage {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE));
     }
 
-    public ResultSet select(String tableName, List<Column> columns, String sqlQuery) {
+    public final ResultSet select(DataTableMetadata metadata, Collection<DataTableMetadataFilter> filters) {
+        //if we have filters for the column we should create view First
+        String tableName = metadata.getName();
+        String sqlQuery = metadata.getViewStatement();
+        List<Column> columns = metadata.getColumns();
+        //apply to source tables if any
+        List<DataTableMetadata> sourceTables = metadata.getSourceTables();
+        Hashtable<String, String> renamedTableNames = new Hashtable<String, String>();
+        if (sourceTables != null) {
+            for (DataTableMetadata sourceTable : sourceTables) {
+                String viewName = createView(filters, sourceTable.getName(), sourceTable.getColumns());
+                if (viewName != null && !viewName.equals(sourceTable.getName())) {
+                    renamedTableNames.put(sourceTable.getName(), viewName);
+                }
+            }
+        } else {
+            String viewName = createView(filters, tableName, columns);
+            if (viewName != null && viewName.equals(tableName)) {
+                return select(tableName, columns, sqlQuery);
+            }
+            if (sqlQuery == null) {
+                return select(viewName, columns, sqlQuery);
+            }
+        }
+        Iterator<String> tableNames = renamedTableNames.keySet().iterator();
+        String sqlQueryNew = sqlQuery;
+        while (tableNames.hasNext()) {
+            String key = tableNames.next();
+            sqlQueryNew = sqlQuery.replaceAll(key, renamedTableNames.get(key));
+        }
+        return select(tableName, columns, sqlQueryNew);
+
+    }
+
+    public final ResultSet select(String tableName, List<Column> columns, String sqlQuery) {
 
         if (sqlQuery == null) {
             StringBuilder query = new StringBuilder("select "); //NOI18N
@@ -337,7 +461,14 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             rs = connection.createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
+	    Throwable cause = ex.getCause();
+	    if (cause != null &&
+		(cause instanceof InterruptedIOException ||
+		 cause instanceof InterruptedException)) {
+		// skip exception
+	    } else {
+		logger.log(Level.SEVERE, null, ex);
+	    }
         }
 
         return rs;
@@ -426,8 +557,11 @@ public abstract class SQLDataStorage implements DataStorage {
             logger.fine("SQL: prepare statement " + sql); //NOI18N
         }
         PreparedStatement stmt;
-        if (sql.toUpperCase().startsWith("INSERT INTO ")) { //NOI18N
+        String sqlUpper = sql.toUpperCase();
+        if (sqlUpper.startsWith("INSERT INTO ")) { //NOI18N
             stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        } else if (sqlUpper.endsWith(" FOR UPDATE")) { // NOI18N
+            stmt = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
         } else {
             stmt = connection.prepareStatement(sql);
         }

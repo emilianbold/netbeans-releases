@@ -190,7 +190,17 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 } else {
                     readServerConfiguration(domainDir, wizardIterator);
                     String uri = wizardIterator.formatUri(glassfishDir.getAbsolutePath(),
-                            GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getHttpPort());
+                            GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
+                    if (-1 == wizardIterator.getHttpPort()) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
+                        return false;
+                    }
+                    if (-1 == wizardIterator.getAdminPort()) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainDir.getName())); // NOI18N
+                        return false;
+                    }
                     if(wizardIterator.hasServer(uri)) {
                         wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "MSG_DefaultDomainExists",
@@ -221,7 +231,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 isValidating.set(false);
             }
         }
-        return true;
+        return false;
     }
 
     private static String getSanitizedPath(File dir) {

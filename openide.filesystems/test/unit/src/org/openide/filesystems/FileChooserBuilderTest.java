@@ -44,6 +44,9 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -176,6 +179,66 @@ public class FileChooserBuilderTest extends NbTestCase {
     public void testCreateFileChooser() {
         FileChooserBuilder instance = new FileChooserBuilder("h");
         assertNotNull(instance.createFileChooser());
+    }
+
+    public void testSetSelectionApprover() throws Exception {
+        FileChooserBuilder instance = new FileChooserBuilder("i");
+        File tmp = new File(System.getProperty("java.io.tmpdir"));
+        assertTrue ("Environment is insane", tmp.exists() && tmp.isDirectory());
+        File sel = new File("tmp" + System.currentTimeMillis());
+        if (!sel.exists()) {
+            assertTrue (sel.createNewFile());
+        }
+        instance.setDefaultWorkingDirectory(tmp);
+        SA sa = new SA();
+        instance.setSelectionApprover(sa);
+        JFileChooser ch = instance.createFileChooser();
+        ch.approveSelection();
+        sa.assertApproveInvoked();
+    }
+
+    public void testAddFileFilter() {
+        FileChooserBuilder instance = new FileChooserBuilder("j");
+        FF one = new FF ("a");
+        FF two = new FF ("b");
+        instance.addFileFilter(one);
+        instance.addFileFilter(two);
+        JFileChooser ch = instance.createFileChooser();
+        Set<FileFilter> ff = new HashSet<FileFilter>(Arrays.asList(one, two));
+        Set<FileFilter> actual = new HashSet<FileFilter>(Arrays.asList(ch.getChoosableFileFilters()));
+        assertTrue (actual.containsAll(ff));
+        //actual should also contain JFileChooser.getAcceptAllFileFilter()
+        assertEquals (ff.size() + 1, actual.size());
+    }
+
+    private static final class FF extends FileFilter {
+        private String x;
+        FF(String x) {
+            this.x = x;
+        }
+
+        @Override
+        public boolean accept(File f) {
+            return f.getName().endsWith(x);
+        }
+
+        @Override
+        public String getDescription() {
+            return x;
+        }
+
+    }
+
+    private static final class SA implements FileChooserBuilder.SelectionApprover {
+        private boolean approveInvoked;
+        public boolean approve(File[] selection) {
+            approveInvoked = true;
+            return true;
+        }
+
+        void assertApproveInvoked() {
+            assertTrue (approveInvoked);
+        }
     }
 
     private static AbstractButton findDefaultButton(Container c) {

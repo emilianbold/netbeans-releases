@@ -518,14 +518,14 @@ public final class IOWindow implements IOContainer.Provider {
                 buttons[i].setOpaque(false);
                 buttons[i].setText(null);
                 buttons[i].putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-                if (actions[i].getValue (Action.SMALL_ICON) == null) {
+                Object icon = actions[i].getValue(Action.SMALL_ICON);
+                if (!(icon instanceof Icon)) {
                     throw new IllegalStateException ("No icon provided for " + actions[i]); //NOI18N
                 }
+                buttons[i].setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
             }
             return buttons;
         }
-
-        
 
         @Override
         protected void componentActivated() {

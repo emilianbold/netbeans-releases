@@ -58,7 +58,11 @@ public class TestInstallerAndUninstallerCPP extends Installer {
         // Agreement
         Utils.stepLicense();
         // Location
-        Utils.stepSetDir(data, "Install the NetBeans IDE", Utils.NB_DIR_NAME );
+        Utils.stepSetDir(
+            data,
+            "Install the NetBeans IDE",
+            data.GetNetBeansInstallPath( )
+          );
         // Summary
         Utils.stepInstall(data);
         //Installation

@@ -130,24 +130,29 @@ public class GrailsActionProvider implements ActionProvider {
 
     private void executeRunAction(final boolean debug) {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+        Process process = null;
         if (serverState != null && serverState.isRunning()) {
-            if (!debug || debug == serverState.isDebug()) {
+            if (!debug /*|| debug == serverState.isDebug()*/) {
                 URL url = serverState.getRunningUrl();
                 if (url != null) {
                     GrailsCommandSupport.showURL(url, debug, project);
                 }
                 return;
             } else {
-                Process process = serverState.getProcess();
+                process = serverState.getProcess();
                 if (process != null) {
                     process.destroy();
                 }
             }
         }
 
+        final Process oldProcess = process;
         Callable<Process> callable = new Callable<Process>() {
 
             public Process call() throws Exception {
+                if (oldProcess != null) {
+                    oldProcess.waitFor();
+                }
                 Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(
                         GrailsProjectConfig.forProject(project), debug);
                 Process process = inner.call();

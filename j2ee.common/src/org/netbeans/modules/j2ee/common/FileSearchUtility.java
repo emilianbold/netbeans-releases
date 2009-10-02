@@ -153,17 +153,17 @@ public final class FileSearchUtility {
                 if (f.getExt().equals("java") && !f.isFolder()) { //NOI18N
                     String pckg = guessPackageName(f);
                     String pkgPath = f.getParent().getPath(); 
-                    if (pckg != null && pkgPath.endsWith(pckg.replace('.', '/'))) {
+                    if (pckg != null && pkgPath.endsWith(pckg.replace('.', '/'))) { // NOI18N
                         String rootName = pkgPath.substring(0, pkgPath.length() - pckg.length());
                         FileObject fr = f.getFileSystem().findResource(rootName);
-                        if (!foundRoots.contains(fr)) {
+                        if (!fr.getNameExt().equals("test") && !foundRoots.contains(fr)) { // NOI18N
                             foundRoots.add(fr);
                         }
                     }
                 }
             }
         } catch (FileStateInvalidException fsie) {
-            Logger.getLogger("global").log(Level.INFO, null, fsie);
+            Logger.getLogger("global").log(Level.INFO, null, fsie); // NOI18N
         }
         if (foundRoots.size() == 0) {
             FileObject webInf = guessWebInf(dir);
@@ -174,7 +174,13 @@ public final class FileSearchUtility {
                 }
             }
         }
-        
+
+        if (foundRoots.size() == 0) {
+            if (dir.getFileObject("src/java") != null) { // NOI18N
+                foundRoots.add(dir.getFileObject("src/java")); // NOI18N
+            }
+        }
+
         if (foundRoots.size() == 0) {
             return null;
         } else {

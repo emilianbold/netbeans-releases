@@ -83,7 +83,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.ServiceLocatorStrategy;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
@@ -235,7 +235,7 @@ public class CallEjbGenerator {
         ElementHandle<? extends Element> result = null;
         
         try {
-            if (!generateGlobalJNDI && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
+            if (InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
                 if (isTargetEjb2x) {
                     result = generateInjectionEjb21FromEE5(
                             fileObject,
@@ -399,9 +399,9 @@ public class CallEjbGenerator {
         return elementToOpen;
     }
     
-    private ElementHandle<ExecutableElement> generateJNDI(FileObject fileObject, final String className, 
+    private ElementHandle<ExecutableElement> generateJNDI(final FileObject fileObject, final String className,
             boolean throwCheckedExceptions, EjbRefIType refIType, boolean global, Project ejbProject) throws IOException {
-        String name = "lookup" + ejbName + refIType;
+        final String name = "lookup" + ejbName + refIType;
         String body = null;
         String componentName = ejbReference.getComponentName(refIType);
         String homeName = ejbReference.getHomeName(refIType);
@@ -476,11 +476,25 @@ public class CallEjbGenerator {
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
                 MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree newClassTree = treeMaker.addClassMember(classTree, methodTree);
+
+                // field itself
+                VariableTree variableTree = treeMaker.Variable(
+                        treeMaker.Modifiers(Collections.EMPTY_SET),
+                        _RetoucheUtil.uniqueMemberName(fileObject, className, ejbName, "ejb"),
+                        methodTree.getReturnType(),
+                        treeMaker.MethodInvocation(Collections.EMPTY_LIST,
+                                                   treeMaker.Identifier(methodTree.getName()),
+                                                   Collections.EMPTY_LIST)
+                        );
+                // adding field to class
+                newClassTree = treeMaker.insertClassMember(newClassTree, 0, variableTree);
+
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();
-        
+
         return _RetoucheUtil.getMethodHandle(javaSource, methodModel, className);
         
     }

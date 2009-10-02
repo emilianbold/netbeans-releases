@@ -61,6 +61,7 @@ import java.awt.event.ComponentListener;
 // TODO - fix calculateClientArea method - use convertViewToScene instead
 public class ComponentWidget extends Widget {
 
+    private ComponentWrapper componentWrapper;
     private Component component;
     private boolean componentAdded;
     private boolean widgetAdded;
@@ -69,13 +70,26 @@ public class ComponentWidget extends Widget {
     private ComponentComponentListener componentListener;
     private boolean componentVisible = false;
 
+    private static class ComponentWrapper extends JComponent {
+        @Override
+        public void paint(Graphics g) {
+        }
+
+        void doPaint(Graphics g) {
+            super.paint(g);
+        }
+    };
+
     /**
      * Creates a component widget.
      * @param scene the scene
      * @param component the AWT/Swing component
      */
     public ComponentWidget (Scene scene, Component component) {
-        super (scene);
+        super(scene);
+        componentWrapper = new ComponentWrapper();
+        componentWrapper.setLayout(new BorderLayout(0, 0));
+        componentWrapper.add(component);
         this.component = component;
         validateListener = null;
         componentListener = new ComponentComponentListener ();
@@ -151,22 +165,22 @@ public class ComponentWidget extends Widget {
     private void addComponent () {
         Scene scene = getScene ();
         if (! componentAdded) {
-            scene.getView ().add (component);
+            scene.getView().add(componentWrapper);
             scene.getView ().revalidate ();
             component.addComponentListener (componentListener);
             componentAdded = true;
         }
         component.removeComponentListener (componentListener);
-        component.setBounds (scene.convertSceneToView (convertLocalToScene (getClientArea ())));
+        componentWrapper.setBounds(scene.convertSceneToView(convertLocalToScene(getClientArea())));
         component.addComponentListener (componentListener);
-        component.repaint ();
+        component.repaint();
     }
 
     private void removeComponent () {
         Scene scene = getScene ();
         if (componentAdded) {
             component.removeComponentListener (componentListener);
-            scene.getView ().remove (component);
+            scene.getView().remove(componentWrapper);
             scene.getView ().revalidate ();
             componentAdded = false;
         }
@@ -176,24 +190,26 @@ public class ComponentWidget extends Widget {
      * Paints the component widget.
      */
     @Override
-    protected final void paintWidget () {
-        if (getScene ().isPaintEverything ()  ||  ! componentVisible) {
-            RepaintManager rm = RepaintManager.currentManager(null);
-            boolean isDoubleBuffered = component instanceof JComponent  &&  rm.isDoubleBufferingEnabled();
-            if (isDoubleBuffered) {
-                rm.setDoubleBufferingEnabled(false);
-            }
-            Graphics2D graphics = getGraphics ();
-            Rectangle bounds = getClientArea ();
-            AffineTransform previousTransform = graphics.getTransform ();
-            graphics.translate (bounds.x, bounds.y);
-            double zoomFactor = getScene ().getZoomFactor ();
-            graphics.scale (1 / zoomFactor, 1 / zoomFactor);
-            component.paint (graphics);
-            graphics.setTransform (previousTransform);
-            if (isDoubleBuffered) {
-                rm.setDoubleBufferingEnabled(true);
-            }
+    protected final void paintWidget() {
+        RepaintManager rm = RepaintManager.currentManager(null);
+        boolean isDoubleBuffered = component instanceof JComponent && rm.isDoubleBufferingEnabled();
+        if (isDoubleBuffered) {
+            rm.setDoubleBufferingEnabled(false);
+        }
+        Graphics2D graphics = getGraphics();
+        Rectangle bounds = getClientArea();
+        AffineTransform previousTransform = graphics.getTransform();
+        graphics.translate(bounds.x, bounds.y);
+        double zoomFactor = getScene().getZoomFactor();
+        graphics.scale(1 / zoomFactor, 1 / zoomFactor);
+        if (componentVisible) {
+            componentWrapper.doPaint(graphics);
+        } else {
+            component.paint(graphics);
+        }
+        graphics.setTransform(previousTransform);
+        if (isDoubleBuffered) {
+            rm.setDoubleBufferingEnabled(true);
         }
     }
 

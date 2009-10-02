@@ -205,6 +205,10 @@ public final class ProjectPropertiesSupport {
         return getPhpVersion(project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION));
     }
 
+    public static PhpLanguageOptions.PhpVersion getDefaultPhpVersion() {
+        return getPhpVersion((String) null);
+    }
+
     public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
         PhpLanguageOptions.PhpVersion phpVersion = null;
         if (value != null) {

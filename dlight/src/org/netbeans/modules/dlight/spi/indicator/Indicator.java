@@ -91,7 +91,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private final Object lock = new Object();
     private final IndicatorMetadata metadata;
     private final int position;
-    private String toolName;
+    private String toolID;
     private String actionDisplayName;
     private final List<IndicatorActionListener> listeners;
     private final TickerListener tickerListener;
@@ -235,21 +235,21 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (component == null) {
-                    return;
-                }
-                component.setBorder(BorderFactory.createEtchedBorder());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (component == null) {
-                    return;
-                }
-                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
-            }
+//            @Override
+//            public void mouseEntered(MouseEvent e) {
+//                if (component == null) {
+//                    return;
+//                }
+//                component.setBorder(BorderFactory.createEtchedBorder());
+//            }
+//
+//            @Override
+//            public void mouseExited(MouseEvent e) {
+//                if (component == null) {
+//                    return;
+//                }
+//                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+//            }
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -296,8 +296,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         //and add input map
     }
 
-    void setToolName(String toolName) {
-        this.toolName = toolName;
+    void setToolID(String toolID) {
+        this.toolID = toolID;
     }
 
     final List<VisualizerConfiguration> getVisualizerConfigurations() {
@@ -355,8 +355,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private static class IndicatorAccessorImpl extends IndicatorAccessor {
 
         @Override
-        public void setToolName(Indicator<?> ind, String toolName) {
-            ind.setToolName(toolName);
+        public void setToolID(Indicator<?> ind, String toolName) {
+            ind.setToolID(toolName);
         }
 
         @Override
@@ -385,8 +385,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         }
 
         @Override
-        public String getToolName(Indicator<?> ind) {
-            return ind.toolName;
+        public String getToolID(Indicator<?> ind) {
+            return ind.toolID;
         }
 
         @Override

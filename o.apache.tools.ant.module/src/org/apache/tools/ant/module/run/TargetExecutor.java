@@ -60,6 +60,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.apache.tools.ant.module.AntModule;
+import org.apache.tools.ant.module.AntPanelController;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.bridge.AntBridge;
@@ -288,7 +289,7 @@ public final class TargetExecutor implements Runnable {
         }
 
         public void actionPerformed(ActionEvent e) {
-            OptionsDisplayer.getDefault().open("Advanced/Ant"); // NOI18N
+            OptionsDisplayer.getDefault().open("Advanced/" + AntPanelController.OPTIONS_SUBPATH); // NOI18N
         }
 
     }

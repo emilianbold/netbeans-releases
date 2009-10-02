@@ -86,6 +86,7 @@ import org.xml.sax.SAXException;
  *
  * @author Milan Kubec
  */
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="Application", position=200)
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
     private static final String CAT_WEBSTART = "WebStart"; // NOI18N

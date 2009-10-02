@@ -71,7 +71,6 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -112,6 +111,9 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private static WeakReference<CodeEvaluator> instanceRef;
 
     private JEditorPane codePane;
+    // Text of the code pane, which is updated in AWT and can be read in any thread.
+    // Solves the problem with calling getText() in non-AWT thread.
+    private volatile String codeText = "";
     private History history;
     private Reference<JPDADebugger> debuggerRef = new WeakReference(null);
     private DbgManagerListener dbgManagerListener;
@@ -124,9 +126,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private HistoryRecord lastEvaluationRecord = null;
     private Variable result;
-    private RequestProcessor.Task evalTask =
-            new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
-            create(new EvaluateTask());
+    private RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
+    private RequestProcessor.Task evalTask = rp.create(new EvaluateTask());
 
 
     /** Creates new form CodeEvaluator */
@@ -158,6 +159,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     public void pasteExpression(String expr) {
         codePane.setText(expr);
+        codeText = expr;
         if (!isOpened()) {
             open();
         }
@@ -209,19 +211,18 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return button;
     }
 
-    private Timer setupContextTimer;
+    private RequestProcessor.Task setupContextTask;
 
     private void setupContext() {
-        if (setupContextTimer == null) {
-            setupContextTimer = new Timer(500, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+        if (setupContextTask == null) {
+            setupContextTask = rp.create(new Runnable() {
+                public void run() {
                     setupContextLazily();
                 }
             });
-            setupContextTimer.setRepeats(false);
         }
         // Setting up a context takes time.
-        setupContextTimer.restart();
+        setupContextTask.schedule(500);
     }
 
     private void setupContextLazily() {
@@ -241,6 +242,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         codePane.getDocument().addDocumentListener(this);
         if (text != null) {
             codePane.setText(text);
+            codeText = text;
         }
         documentPtr[0] = codePane.getDocument();
     }
@@ -493,6 +495,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         evaluator.open ();
         if (selectedText != null) {
             evaluator.codePane.setText(selectedText);
+            evaluator.codeText = selectedText;
         }
         evaluator.codePane.selectAll();
         evaluator.requestActive ();
@@ -532,7 +535,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     // ..........................................................................
 
     public String getExpression() {
-        return codePane.getText();
+        return codeText;
     }
 
     public void evaluate() {
@@ -629,16 +632,19 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     public void insertUpdate(DocumentEvent e) {
         updateWatch();
+        codeText = codePane.getText();
     }
 
     // DocumentListener
     public void removeUpdate(DocumentEvent e) {
         updateWatch();
+        codeText = codePane.getText();
     }
 
     // DocumentListener
     public void changedUpdate(DocumentEvent e) {
         updateWatch();
+        codeText = codePane.getText();
     }
 
     private void updateWatch() {
@@ -883,6 +889,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
         public void activate() {
             codePane.setText(text);
+            codeText = text;
         }
 
     }

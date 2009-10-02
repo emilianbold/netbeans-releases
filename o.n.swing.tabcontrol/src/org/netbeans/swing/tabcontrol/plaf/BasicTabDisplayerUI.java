@@ -260,7 +260,10 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         if (!scratch.contains(p)) {
             return -1;
         }
-        return layoutModel.indexOfPoint(p.x, p.y);
+        int tabIndex = layoutModel.indexOfPoint(p.x, p.y);
+        if( tabIndex >= displayer.getModel().size() )
+            tabIndex = -1;
+        return tabIndex;
     }
 
     public Rectangle getTabRect(int idx, Rectangle rect) {

@@ -40,21 +40,29 @@
  */
 package org.openide.filesystems;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
-
-import java.io.*;
-
-import java.lang.reflect.*;
-
-import java.net.URL;
-
-import java.util.*;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
 
 /**
  *Holds in Map attributes: Map(String attrName,XMLMapAttr.Attr attribute). This map holds all atributes for one FileObject.
@@ -585,7 +593,7 @@ final class XMLMapAttr implements Map {
                     }
                 }
             } catch (NumberFormatException e) {
-                Exceptions.printStackTrace(e);
+                ExternalUtil.exception(e);
 
                 return inStr;
             }
@@ -773,7 +781,7 @@ final class XMLMapAttr implements Map {
                         return String.class;
                 }
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                ExternalUtil.exception(ex);
             }
             return null;
         }

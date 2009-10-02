@@ -306,6 +306,7 @@ public abstract class IndexedElement extends PHPElement {
         int hash = 7;
         hash = 29 * hash + this.kind.hashCode();
         hash = 29 * hash + (this.in != null ? this.in.hashCode() : 0);
+        hash = 29 * hash + (this.fileUrl != null ? this.fileUrl.hashCode() : 0);
         hash = 29 * hash + (this.textSignature != null ? this.textSignature.hashCode() : 0);
         hash = 29 * hash + this.offset;
         return hash;

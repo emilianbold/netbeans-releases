@@ -856,7 +856,7 @@ public final class Resolver3 implements Resolver {
             new Exception("Too many loops in resolver!!!").printStackTrace(System.err); // NOI18N
             return null;
         }
-        if( cls != null && cls.isValid()) {
+        if(isNotNullNotUnresolved(cls)) {
             List<CsmClass> toAnalyze = getClassesContainers(cls);
             for (CsmClass csmClass : toAnalyze) {
                 for (CsmInheritance inh : csmClass.getBaseClasses()) {
@@ -906,8 +906,12 @@ public final class Resolver3 implements Resolver {
         return null;
     }
 
+    private boolean isNotNullNotUnresolved(Object obj) {
+        return obj != null && !Unresolved.isUnresolved(obj);
+    }
+
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
-        if( cls != null && cls.isValid()) {
+        if(isNotNullNotUnresolved(cls)){
             List<CsmClass> classesContainers = getClassesContainers(cls);
             for (CsmClass csmClass : classesContainers) {
                 CsmClassifier classifier = null;

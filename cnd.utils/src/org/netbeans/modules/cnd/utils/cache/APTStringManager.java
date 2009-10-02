@@ -154,7 +154,10 @@ public abstract class APTStringManager  {
 
         public final void dispose() {
             if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS){
-                Object[] arr = storage.toArray();
+                Object[] arr;
+                synchronized (lock) {
+                    arr = storage.toArray();
+                }
                 System.out.println("Dispose cache "+name+" "+arr.length + " " + getClass().getName()); // NOI18N
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();
                 for(Object o : arr){

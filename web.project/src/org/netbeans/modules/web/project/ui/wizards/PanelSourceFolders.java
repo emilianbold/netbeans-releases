@@ -142,8 +142,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldLibraries.getText().trim().equals(""))
             jTextFieldLibraries.setText(libraries);
         
-        if (((FolderList) this.sourcePanel).getFiles().length == 0 && javaRoots.length > 0)
+        if (((FolderList) this.sourcePanel).getFiles().length == 0 && javaRoots.length > 0) {
             ((FolderList) this.sourcePanel).setFiles(javaRoots);
+        }
+        if (((FolderList) this.testsPanel).getFiles().length == 0 && fo.getFileObject("test") != null) {
+            ((FolderList) this.testsPanel).setFiles(new File[] {FileUtil.toFile(fo.getFileObject("test"))});
+        }
     }
         
     public void propertyChange(PropertyChangeEvent evt) {

@@ -61,8 +61,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = SourceFileInfoProvider.class)
 public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProvider {
+    private static final boolean TRACE = false;
 
-    public SourceFileInfo fileName(String functionName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    public SourceFileInfo fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         try {
             //get project current name
             String projectFolderName = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
@@ -77,35 +78,17 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             if (csmProject == null) {
                 return null;
             }
-            String name = functionName.indexOf("(") != -1 ? functionName.substring(0, functionName.indexOf("(")) : functionName; // NOI18N
-            CsmFunction function = getFunction(csmProject, name);
-            if (function == null){
-                return null;
+            if (TRACE) {
+                System.err.println("Model search for: "+functionQName); // NOI18N
             }
-            String sourceFile =    function.getContainingFile().getAbsolutePath().toString();
-            int startOffset = function.getStartOffset();
-            if (lineNumber > 0){
-                return new SourceFileInfo(sourceFile,  lineNumber, 0);
+
+            SourceFileInfo res = findFunction(csmProject, functionQName, lineNumber);
+            if (TRACE) {
+                if (res != null) {
+                    System.err.println("\tFound: "+res); // NOI18N
+                }
             }
-            return new SourceFileInfo(sourceFile, startOffset);//) + offset);
-//            CsmDeclaration csmDeclaration = csmProject.findDeclaration(functionName);
-//            if (csmDeclaration == null) {
-//                Collection<CsmProject> libraries = csmProject.getLibraries();
-//                for (CsmProject library : libraries) {
-//                    csmDeclaration = library.findDeclaration(functionName);
-//                    if (csmDeclaration != null) {
-//                        break;
-//                    }
-//                }
-//            }
-//            if (csmDeclaration == null) {
-//                throw new SourceFileInfoCannotBeProvided();
-////            }
-//            if (!CsmKindUtilities.isOffsetableDeclaration(csmDeclaration)) {
-//                //do not know how to deal with this
-//                throw new SourceFileInfoCannotBeProvided();
-//            }
-//            return new SourceFileInfoProvider.SourceFileInfo(((CsmOffsetable) csmDeclaration).getContainingFile().getAbsolutePath().toString(), ((CsmOffsetable) csmDeclaration).getStartOffset());
+            return res;
         } catch (IOException ex) {
             return null;
         } catch (IllegalArgumentException ex) {
@@ -113,24 +96,36 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
         }
     }
 
+    private SourceFileInfo findFunction(CsmProject csmProject, String name, int lineNumber) {
+        CsmFunction function = getFunction(csmProject, name);
+        if (function == null) {
+            return null;
+        }
+        String sourceFile = function.getContainingFile().getAbsolutePath().toString();
+        int startOffset = function.getStartOffset();
+        if (lineNumber > 0) {
+            return new SourceFileInfo(sourceFile, lineNumber, 0);
+        }
+        return new SourceFileInfo(sourceFile, startOffset); //) + offset);
+    }
 
     private static CsmFunction getFunction(CsmProject project, CharSequence qualifiedName) {
-       Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
-       CsmFunction declaration = null;
-       while (iter.hasNext()) {
-           CsmFunction function = iter.next();
-           if (CsmKindUtilities.isFunctionDefinition(function)) {
-               return function;
-           } else { // declaration
-               CsmFunctionDefinition definition = function.getDefinition();
-               if (definition != null) {
-                   return definition;
-               } else {
-                   declaration = function;
-               }
-           }
-       }
-       return declaration;
-   }
-
+        Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qualifiedName);
+        CsmFunction declaration = null;
+        while (iter.hasNext()) {
+            CsmFunction function = iter.next();
+            if (CsmKindUtilities.isFunctionDefinition(function)) {
+                return function;
+            } else { // declaration
+                CsmFunctionDefinition definition = function.getDefinition();
+                if (definition != null) {
+                    return definition;
+                } else {
+                    declaration = function;
+                }
+            }
+        }
+        return declaration;
+    }
+    
 }

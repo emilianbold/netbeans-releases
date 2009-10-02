@@ -43,11 +43,9 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -80,9 +78,11 @@ public class MyProjectNode extends LeafNode {
     private final MessagingAccessor maccessor;
     private MessagingHandle mh;
 
+    private Action openAction;
+
     private JPanel component = null;
     private JLabel lbl = null;
-    private LinkButton btnBookmark = null;
+//    private LinkButton btnBookmark = null;
     private LinkButton btnOpen = null;
     private LinkButton btnMessages = null;
     private LinkButton btnBugs = null;
@@ -188,12 +188,13 @@ public class MyProjectNode extends LeafNode {
 
 
                 component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true), accessor.getBookmarkAction(project)); //NOI18N
-                btnBookmark.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_LeaveProject"));
-                btnBookmark.setRolloverEnabled(true);
-                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark_over.png", true));
-                component.add( btnBookmark, new GridBagConstraints(6,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+//                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true), accessor.getBookmarkAction(project)); //NOI18N
+//                btnBookmark.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_LeaveProject"));
+//                btnBookmark.setRolloverEnabled(true);
+//                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark_over.png", true));
+//                component.add( btnBookmark, new GridBagConstraints(6,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
+                btnOpen.setText(null);
                 btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
                 btnOpen.setRolloverEnabled(true);
                 btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true));
@@ -206,7 +207,7 @@ public class MyProjectNode extends LeafNode {
 
     @Override
     public Action getDefaultAction() {
-        return accessor.getDefaultAction(project);
+        return accessor.getDefaultAction(project, false);
     }
 
     private void setOnline(final boolean b) {
@@ -230,17 +231,15 @@ public class MyProjectNode extends LeafNode {
     }
 
     private Action getOpenAction() {
-        return new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                DashboardImpl.getInstance().addProject(project, isMemberProject);
-            }
-        };
+        if (openAction == null) {
+            openAction = getDefaultAction();
+        }
+        return openAction;
     }
 
     @Override
     public Action[] getPopupActions() {
-        return accessor.getPopupActions(project);
+        return accessor.getPopupActions(project, false);
     }
 
     void setMemberProject(boolean isMemberProject) {
