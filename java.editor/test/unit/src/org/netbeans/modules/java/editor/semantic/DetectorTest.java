@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter.ErrorDescriptionSetter;
 import org.netbeans.modules.java.editor.semantic.TestBase.Performer;
@@ -287,7 +288,8 @@ public class DetectorTest extends TestBase {
     public void testGenericBoundIsClassUse() throws Exception {
         performTest("GenericBoundIsClassUse");
     }
-    
+
+    @RandomlyFails
     public void testBLE91246() throws Exception {
         final boolean wasThrown[] = new boolean[1];
         Logger.getLogger(Utilities.class.getName()).addHandler(new Handler() {
