@@ -54,6 +54,16 @@ enum pkg_kind {
     pkg_reply = 'r'
 };
 
+static const char* pkg_kind_to_string(enum pkg_kind kind) {
+    switch (kind) {
+        case pkg_null:          return "pkg_null";
+        case pkg_handshake:     return "pkg_handshake";
+        case pkg_request:       return "pkg_request";
+        case pkg_reply:         return "pkg_reply";
+        default:                return "pkg_unknown";
+    }
+}
+
 /**
  * The below is the representation of a package in program.
  * This does not mean its fields has exactly such size when passing via sockets.

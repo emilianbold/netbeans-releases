@@ -96,7 +96,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBa
         addPropertyFromRcFile(rcFile, "cnd.rfs.controller.log");
         addPropertyFromRcFile(rcFile, "cnd.rfs.controller.port");
         addPropertyFromRcFile(rcFile, "cnd.rfs.controller.host");
-        buildProject(makeProject, buildCommand, 60*6, TimeUnit.SECONDS);
+        buildProject(makeProject, buildCommand, 60*60*24*7, TimeUnit.SECONDS);
         time = System.currentTimeMillis() - time;
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
     }
