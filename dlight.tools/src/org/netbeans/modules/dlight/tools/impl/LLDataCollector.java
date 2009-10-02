@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
@@ -66,10 +65,12 @@ import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
@@ -77,7 +78,6 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -98,7 +98,7 @@ public class LLDataCollector
     private final String name;
     private DLightTarget target;
     private ValidationStatus validationStatus;
-    private Future<Integer> monitorTask = null;
+    private CollectorRunner profRunner;
 
     public LLDataCollector(LLDataCollectorConfiguration configuration) {
         collectedData = EnumSet.of(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
@@ -280,34 +280,47 @@ public class LLDataCollector
 
         npb = npb.setArguments(flags.toString(), String.valueOf(at.getPID()));
 
-        Future<Integer> newMonitorTask = NativeProcessExecutionService.newService(npb, new MonitorOutputProcessor(), null, "monitor").start(); // NOI18N
+        CollectorRunner newProfRunner = new CollectorRunner(new FakeIndicatorNotificationListener(), npb, new MonitorOutputProcessor(), "__EOF__", "prof_monitor"); // NOI18N
 
         synchronized (lock) {
-            if (monitorTask != null) {
-                stopMonitor();
+            if (profRunner != null) {
+                profRunner.shutdown();
             }
 
-            monitorTask = newMonitorTask;
+            profRunner = newProfRunner;
         }
     }
 
     private void stopMonitor() {
-        final Future<Integer> monitorTaskToStop;
+        final CollectorRunner collectorToStop;
 
         synchronized (lock) {
-            monitorTaskToStop = monitorTask;
-            monitorTask = null;
+            collectorToStop = profRunner;
+            profRunner = null;
         }
 
-        try {
-            if (monitorTaskToStop != null && !monitorTaskToStop.isDone()) {
-                monitorTaskToStop.cancel(true);
-            }
-        } catch (Throwable th) {
-        }
+        collectorToStop.shutdown();
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
+    }
+
+    private class FakeIndicatorNotificationListener implements IndicatorNotificationsListener {
+        @Override
+        public void reset() {
+            resetIndicators();
+        }
+
+        @Override
+        public void suggestRepaint() {
+            suggestIndicatorsRepaint();
+        }
+
+        @Override
+        public void updated(List<DataRow> data) {
+            notifyIndicators(data);
+        }
     }
 
     private class MonitorOutputProcessor implements LineProcessor {
@@ -333,12 +346,15 @@ public class LLDataCollector
             }
             if (row != null) {
                 notifyIndicators(Collections.singletonList(row));
+                suggestIndicatorsRepaint();
             }
         }
 
+        @Override
         public void reset() {
         }
 
+        @Override
         public void close() {
         }
     }

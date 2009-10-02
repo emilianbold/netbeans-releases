@@ -61,7 +61,7 @@ public interface IndicatorNotificationsListener {
     /**
      * Invoked by indicator data provider when there is a good reason
      * to repaint the indicator as soon as possible.
-     * (Normally indicators are repainted once a second during when target is
+     * (Normally indicators are repainted once a second when target is
      * running and not repainted when target has finished.)
      */
     void suggestRepaint();

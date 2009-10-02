@@ -20,6 +20,22 @@ void terminate(int i) {
     user_term = 1;
 }
 
+int getmsg(int msqid, void* buf, int size, int type) {
+    int got = 0;
+    while (msgrcv(msqid, buf, size, type, IPC_NOWAIT) >= 0) {
+        ++got;
+    }
+    if (user_term || errno != ENOMSG) {
+        if (user_term) {
+            struct ctrlmsg ctrl = {CTRLMSG, 0xf, 0xf};
+            ctrl.action = 0;
+            msgsnd(msqid, &ctrl, sizeof(ctrl) - sizeof(ctrl.type), IPC_NOWAIT);
+        }
+        exit(0);
+    }
+    return got;
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s flags pid\n", argv[0]);
@@ -94,7 +110,9 @@ int main(int argc, char** argv) {
     struct syncmsg syncbuf = {SYNCMSG, 0, 0};
     struct cpumsg cpubuf = {CPUMSG, 0, 0};
     struct ctrlmsg ctrl = {CTRLMSG, 0xf, 0xf};
-    if (msgsnd(msqid, &ctrl, sizeof (ctrl) - sizeof(ctrl.type), IPC_NOWAIT) < 0) {
+    struct ackrequestmsg ackrequest = {ACKREQUEST};
+    struct ackreplymsg ackreply = {ACKREPLY};
+    if (msgsnd(msqid, &ctrl, sizeof(ctrl) - sizeof(ctrl.type), IPC_NOWAIT) < 0) {
         fprintf(stderr, "Handshake with process %ld failed\n", pid);
         return -4;
     }
@@ -103,12 +121,9 @@ int main(int argc, char** argv) {
     int silence = 0;
     while (msgwant = monitor_cpu + monitor_mem + monitor_sync) {
         int msggot = 0;
+        int ack = getmsg(msqid, &ackrequest, sizeof(ackrequest) - sizeof(ackrequest.type), ACKREQUEST);
         if (monitor_sync) {
-            if (msgrcv(msqid, &syncbuf, sizeof (syncbuf) - sizeof (syncbuf.type), SYNCMSG, IPC_NOWAIT) < 0) {
-                if (user_term || errno != ENOMSG) {
-                    break;
-                }
-            } else {
+            if (getmsg(msqid, &syncbuf, sizeof(syncbuf) - sizeof(syncbuf.type), SYNCMSG)) {
                 ++msggot;
                 printf("sync: %lf\t%d\n",
                         ((double) syncbuf.lock_ticks) / per_sec,
@@ -117,28 +132,23 @@ int main(int argc, char** argv) {
             }
         }
         if (monitor_mem) {
-            if (msgrcv(msqid, &membuf, sizeof (membuf) - sizeof (membuf.type), MEMMSG, IPC_NOWAIT) < 0) {
-                if (user_term || errno != ENOMSG) {
-                    break;
-                }
-            } else {
+            if (getmsg(msqid, &membuf, sizeof(membuf) - sizeof(membuf.type), MEMMSG)) {
                 ++msggot;
                 printf("mem: %d\n", membuf.heapused);
                 fflush(stdout);
             }
         }
         if (monitor_cpu) {
-            if (msgrcv(msqid, &cpubuf, sizeof (cpubuf) - sizeof (cpubuf.type), CPUMSG, IPC_NOWAIT) < 0) {
-                if (user_term || errno != ENOMSG) {
-                    break;
-                }
-            } else {
+            if (getmsg(msqid, &cpubuf, sizeof(cpubuf) - sizeof(cpubuf.type), CPUMSG)) {
                 ++msggot;
                 printf("cpu: %d\t%d\n", cpubuf.user, cpubuf.sys);
                 fflush(stdout);
             }
         }
-
+        if (ack) {
+            msgsnd(msqid, &ackreply, sizeof(ackreply) - sizeof(ackreply.type), IPC_NOWAIT);
+            break;
+        }
         if (msggot) {
             silence = 0;
         } else {
@@ -172,10 +182,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-    if (user_term) {
-        ctrl.action = 0;
-        msgsnd(msqid, &ctrl, sizeof (ctrl) - sizeof(ctrl.type), IPC_NOWAIT);
-    }
+
 
     return 0;
 }

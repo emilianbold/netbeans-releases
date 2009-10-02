@@ -36,54 +36,46 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.dtrace.collector.support;
+package org.netbeans.modules.dlight.extras.api.support;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 
 /**
- * Helper class for running DTrace.
- * Keeps DTrace alive while it has something to say.
+ * Helper class for running collector tasks.
+ * Keeps process alive while it has something to say.
  *
  * @author Alexey Vladykin
  */
-public final class DTraceRunner implements Runnable {
+public final class CollectorRunner implements Runnable {
 
-    private static final String EOF_MARKER = "__DTRACE_EOF_MARKER__"; // NOI18N
     private static final int SMALL_TIMEOUT = 5;
     private static final int BIG_TIMEOUT = 30;
 
-    private final DtraceDataCollector dtraceCollector;
-    private final Future<Integer> dtraceTask;
+    private final IndicatorNotificationsListener listener;
+    private final Future<Integer> collectorTask;
     private final AtomicBoolean dataFlag;
     private final AtomicBoolean eofFlag;
     private final AtomicBoolean shutdownFlag;
+    private final String eofMarker;
 
-    public DTraceRunner(DtraceDataCollector dtraceCollector, ExecutionEnvironment execEnv, String command, LineProcessor outProcessor) {
-        this.dtraceCollector = dtraceCollector;
+    public CollectorRunner(IndicatorNotificationsListener listener, NativeProcessBuilder npb, LineProcessor outProcessor, String eofMarker, String taskName) {
+        this.listener = listener;
         this.dataFlag = new AtomicBoolean();
         this.eofFlag = new AtomicBoolean();
         this.shutdownFlag = new AtomicBoolean();
-
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setCommandLine(command);
+        this.eofMarker = eofMarker;
 
         LineProcessorWrapper wrappedOutProcessor = new LineProcessorWrapper(outProcessor);
-        this.dtraceTask = NativeProcessExecutionService.newService(
-                npb, wrappedOutProcessor, null, "DTrace task").start(); // NOI18N
+        this.collectorTask = NativeProcessExecutionService.newService(
+                npb, wrappedOutProcessor, null, taskName).start(); // NOI18N
 
-        DLightExecutorService.submit(this, "Monitoring DTrace task"); // NOI18N
-    }
-
-    public static void preprocessDTraceScript(File script) throws IOException {
-        DTraceScriptUtils.appendToScript(script, "END { printf(\"" + EOF_MARKER + "\"); }\n"); // NOI18N
+        DLightExecutorService.submit(this, "Monitoring task " + taskName); // NOI18N
     }
 
     public void shutdown() {
@@ -93,8 +85,7 @@ public final class DTraceRunner implements Runnable {
     @Override
     public void run() {
         while (true) {
-            //System.out.println("In monitoring loop");
-            if (dtraceTask.isDone()) {
+            if (collectorTask.isDone()) {
                 break;
             }
 
@@ -116,11 +107,9 @@ public final class DTraceRunner implements Runnable {
     }
 
     private void shutdownGracefully() {
-        //System.out.println("Shutting down gracefully");
-
         int ticksWithoutData = 0;
         for (int i = 0; i < BIG_TIMEOUT; ++i) {
-            if (dtraceTask.isDone()) {
+            if (collectorTask.isDone()) {
                 return;
             }
 
@@ -128,14 +117,13 @@ public final class DTraceRunner implements Runnable {
                 break;
             }
 
-            dtraceCollector.packageVisibleSuggestIndicatorsRepaint();
+            listener.suggestRepaint();
 
             if (dataFlag.getAndSet(false)) {
                 //System.out.println("Got data");
                 ticksWithoutData = 0;
             } else {
                 ++ticksWithoutData;
-                //System.out.println(ticksWithoutData + "s without data");
                 if (SMALL_TIMEOUT <= ticksWithoutData) {
                     break;
                 }
@@ -146,13 +134,12 @@ public final class DTraceRunner implements Runnable {
     }
 
     private void shutdownImmediately() {
-        //System.out.println("Shutting down immediately");
-        dtraceTask.cancel(true);
+        collectorTask.cancel(true);
     }
 
     @Override
     public String toString() {
-        return dtraceTask.toString();
+        return collectorTask.toString();
     }
 
     private static boolean sleepOneSecond() {
@@ -182,8 +169,7 @@ public final class DTraceRunner implements Runnable {
 
         @Override
         public void processLine(String line) {
-            if (EOF_MARKER.equals(line)) {
-                //System.out.println("EOF flag");
+            if (eofMarker.equals(line)) {
                 eofFlag.set(true);
             } else {
                 dataFlag.set(true);
