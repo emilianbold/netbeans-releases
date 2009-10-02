@@ -72,7 +72,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         LINUX,
         WINDOWS
     }
-    private static final String GIZMO_CATEGORY = "Gizmo";
+    private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
@@ -205,7 +205,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             // Figure out default;
             int defConf = 0;
             if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
-                if (hasSunStudio || platform.indexOf("Linux") >= 0) {
+                if (hasSunStudio || platform.indexOf("Linux") >= 0) { // NOI18N
                     defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
                 } else {
                     defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
