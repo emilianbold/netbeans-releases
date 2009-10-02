@@ -708,6 +708,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         int i, k = columns.length;
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
+        ecm.clearSortedColumns();
         for (i = 0; i < k; i++) {
             if (isHiddenColumn(i)) {
                 continue;

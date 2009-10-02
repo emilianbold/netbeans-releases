@@ -1829,7 +1829,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 try {
                     LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(varName);
                     if (lv == null) {
-                        ObjectReference thiz = evaluationContext.getFrame().thisObject();
+                        ObjectReference thiz;
+                        try {
+                            thiz = evaluationContext.getFrame().thisObject();
+                        } catch (com.sun.jdi.InternalException iex) {
+                            if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=173327
+                                thiz = null;
+                            } else {
+                                throw iex; // re-throw the original
+                            }
+                        }
                         if (thiz != null) {
                             Field outer = thiz.referenceType().fieldByName("val$"+varName);
                             if (outer != null) {
@@ -1852,7 +1861,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 try {
                     LocalVariable lv = frame.visibleVariableByName(paramName);
                     if (lv == null) {
-                        ObjectReference thiz = frame.thisObject();
+                        ObjectReference thiz;
+                        try {
+                            thiz = frame.thisObject();
+                        } catch (com.sun.jdi.InternalException iex) {
+                            if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=173327
+                                thiz = null;
+                            } else {
+                                throw iex; // re-throw the original
+                            }
+                        }
                         if (thiz != null) {
                             Field outer = thiz.referenceType().fieldByName("val$"+paramName);
                             if (outer != null) {
@@ -2247,7 +2265,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         List<Type> argTypes = null;
         if (cType != null) {
             paramTypes = ((ExecutableType) cType).getParameterTypes();
-            ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+            ObjectReference thisObject;
+            try {
+                thisObject = evaluationContext.getFrame().thisObject();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=173327
+                    thisObject = null;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
             if (thisObject != null) {
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {
@@ -2268,7 +2295,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     argTypes.add(value.type());
                 }
             }
-            ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+            ObjectReference thisObject;
+            try {
+                thisObject = evaluationContext.getFrame().thisObject();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=173327
+                    thisObject = null;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
             if (thisObject != null) {
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {

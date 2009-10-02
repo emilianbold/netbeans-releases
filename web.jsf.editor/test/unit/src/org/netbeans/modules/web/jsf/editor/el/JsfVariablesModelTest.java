@@ -36,10 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -75,9 +75,9 @@ public class JsfVariablesModelTest extends TestBase {
         SortedSet<JsfVariableContext> contextsList = model.getContexts();
         assertNotNull(contextsList);
 
-        for(JsfVariableContext context : contextsList) {
-            System.out.println(context);
-        }
+//        for(JsfVariableContext context : contextsList) {
+//            System.out.println(context);
+//        }
 
         assertEquals(3, contextsList.size());
 
@@ -98,26 +98,72 @@ public class JsfVariablesModelTest extends TestBase {
         //test get element by offset
 
         //out of the contexts regions
-        assertNull(model.getContext(0));
-        assertNull(model.getContext(1600));
-        assertNull(model.getContext(1165));
+        assertNull(model.getContainingContext(0));
+        assertNull(model.getContainingContext(1600));
+        assertNull(model.getContainingContext(1165));
 
         //inside
-        assertEquals(first, model.getContext(390));
-        assertEquals(first, model.getContext(673));
-        assertEquals(first, model.getContext(1150));
+        assertEquals(first, model.getContainingContext(390));
+        assertEquals(first, model.getContainingContext(673));
+        assertEquals(first, model.getContainingContext(1150));
 
-        assertEquals(second, model.getContext(700));
-        assertEquals(second, model.getContext(1100));
+        assertEquals(second, model.getContainingContext(700));
+        assertEquals(second, model.getContainingContext(1100));
 
-        assertEquals(third, model.getContext(1200));
+        assertEquals(third, model.getContainingContext(1200));
 
         //boundaries - start is inclusive, end exclusive
-        assertEquals(first, model.getContext(385));
-        assertEquals(first, model.getContext(1114));
-        assertNull(model.getContext(1161));
-        
+        assertEquals(first, model.getContainingContext(385));
+        assertEquals(first, model.getContainingContext(1114));
+        assertNull(model.getContainingContext(1161));
+
 
     }
 
+    public void testGetAncestors() throws ParseException {
+        HtmlParserResult result = getHtmlParserResult("testfiles/test.xhtml");
+        JsfVariablesModel model = JsfVariablesModel.getModel(result);
+        assertNotNull(model);
+
+        SortedSet<JsfVariableContext> contextsList = model.getContexts();
+        assertNotNull(contextsList);
+        assertEquals(3, contextsList.size());
+
+        Iterator<JsfVariableContext> contexts = contextsList.iterator();
+        JsfVariableContext first = contexts.next();
+        JsfVariableContext second = contexts.next();
+        JsfVariableContext third = contexts.next();
+
+        //test ancestors
+        //second is embedded in first
+        List<JsfVariableContext> ancestors = model.getAncestors(second, false);
+        assertNotNull(ancestors);
+        assertEquals(1, ancestors.size());
+        JsfVariableContext parent = ancestors.get(0);
+        assertSame(first, parent);
+
+        //third is standalone
+        ancestors = model.getAncestors(third, false);
+        assertNotNull(ancestors);
+        assertEquals(0, ancestors.size());
+    }
+
+    public void testResolveProperties() throws ParseException {
+        HtmlParserResult result = getHtmlParserResult("testfiles/test.xhtml");
+        JsfVariablesModel model = JsfVariablesModel.getModel(result);
+        assertNotNull(model);
+
+        SortedSet<JsfVariableContext> contextsList = model.getContexts();
+        assertNotNull(contextsList);
+        assertEquals(3, contextsList.size());
+
+        Iterator<JsfVariableContext> contexts = contextsList.iterator();
+        JsfVariableContext first = contexts.next();
+        JsfVariableContext second = contexts.next();
+        JsfVariableContext third = contexts.next();
+
+        //test resolving of expressions
+        assertEquals("ProductMB.all.name", model.resolveVariable(second, false));
+
+    }
 }

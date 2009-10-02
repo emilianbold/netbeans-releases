@@ -244,6 +244,9 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                     continue;
                 }
             }
+            if (assignment.isIsArray()) {
+                return Collections.singleton("array");//NOI18N
+            }
             return typeNames;
         }
 

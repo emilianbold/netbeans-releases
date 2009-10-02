@@ -79,6 +79,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
+    /**
+     * ClassPaths cache
+     * Index -> CP mapping
+     * 0  -  source path
+     * 1  -  test source path
+     * 2  -  class path
+     * 3  -  test class path
+     * 4  -  execute class path
+     * 5  -  test execute class path
+     * 6  -  execute class path for dist.jar
+     * 7  -  boot class path
+     */
     private final ClassPath[] cache = new ClassPath[8];
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
@@ -240,25 +252,25 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             // run.classpath since that does not actually contain the file!
             // (It contains file:$projdir/build/classes/ instead.)
             return null;
-        } else if (type > 1) {
-            type-=2;            //Compiled source transform into source
         }
         return getRunTimeClasspath(type);
     }
     
     private synchronized ClassPath getRunTimeClasspath(final int type) {
         int cacheIndex;
-        if (type == 0 || type == 2 || type == 4) {
+        if (type == 0 || type == 2) {
             cacheIndex = 4;
         } else if (type == 1 || type == 3) {
             cacheIndex = 5;
+        } else if (type == 4) {
+            cacheIndex = 6;
         } else {
             return null;
         }
         
         ClassPath cp = cache[cacheIndex];
         if ( cp == null) {
-            if (type == 0 || type == 2 || type == 4) {
+            if (type == 0 || type == 2) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, runClasspath)); // NOI18N
@@ -267,6 +279,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, runTestClasspath)); // NOI18N
+            }
+            else if (type == 4) {
+                final String[] props = new String[runClasspath.length+1];
+                System.arraycopy(runClasspath, 0, props, 1, runClasspath.length);
+                props[0] = distJar;
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, props));
             }
             cache[cacheIndex] = cp;
         }

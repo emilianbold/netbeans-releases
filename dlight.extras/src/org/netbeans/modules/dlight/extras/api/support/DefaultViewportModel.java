@@ -8,7 +8,7 @@ import org.openide.util.ChangeSupport;
 
 /**
  * Basic {@link ViewportModel} implementation.
- * Assumes that limits never shrink and makes viewport follow the upper limit.
+ * Assumes that limits never shrink.
  *
  * Class is thread-safe.
  *
@@ -21,9 +21,33 @@ public final class DefaultViewportModel implements ViewportModel {
     private long upperLimit;
     private long viewportStart;
     private long viewportEnd;
+    private long minViewportSize;
+    private boolean autoscroll;
 
-    public DefaultViewportModel() {
+    public DefaultViewportModel(Range<Long> limits, Range<Long> viewport) {
         this.changeSupport = new ChangeSupport(this);
+        this.lowerLimit = limits.getStart();
+        this.upperLimit = limits.getEnd();
+        this.viewportStart = viewport.getStart();
+        this.viewportEnd = viewport.getEnd();
+        this.minViewportSize = 0;
+        this.autoscroll = true;
+    }
+
+    public synchronized boolean getAutoscroll() {
+        return autoscroll;
+    }
+
+    public synchronized void setAutoscroll(boolean autoscroll) {
+        this.autoscroll = autoscroll;
+    }
+
+    public synchronized long getMinViewportSize() {
+        return minViewportSize;
+    }
+
+    public synchronized void setMinViewportSize(long minViewportSize) {
+        this.minViewportSize = minViewportSize;
     }
 
     public synchronized Range<Long> getLimits() {
@@ -31,25 +55,28 @@ public final class DefaultViewportModel implements ViewportModel {
     }
 
     public synchronized void setLimits(Range<Long> limits) {
-        boolean changed = false;
-        boolean autoscroll = viewportStart <= upperLimit && upperLimit <= viewportEnd;
-        long extent = viewportEnd - viewportStart;
+        long newLowerLimit;
+        long newUpperLimit;
         if (limits.getStart() != null) {
-            long newLowerLimit = limits.getStart();
-            if (newLowerLimit < lowerLimit) {
-                lowerLimit = newLowerLimit;
-                changed = true;
-            }
+            newLowerLimit = Math.min(limits.getStart(), lowerLimit);
+        } else {
+            newLowerLimit = lowerLimit;
         }
         if (limits.getEnd() != null) {
-            long newUpperLimit = limits.getEnd();
-            if (upperLimit < newUpperLimit) {
-                upperLimit = newUpperLimit;
-                changed = true;
-            }
+            newUpperLimit = Math.max(limits.getEnd(), upperLimit);
+        } else {
+            newUpperLimit = upperLimit;
         }
-        if (changed) {
-            if (autoscroll) {
+        if (newLowerLimit < lowerLimit || upperLimit < newUpperLimit) {
+            if (newUpperLimit - newLowerLimit < 0) {
+                // attempt to set negative-length limits
+                return;
+            }
+            boolean scroll = autoscroll && viewportStart <= upperLimit && upperLimit <= viewportEnd;
+            long extent = viewportEnd - viewportStart;
+            lowerLimit = newLowerLimit;
+            upperLimit = newUpperLimit;
+            if (scroll) {
                 viewportStart = Math.max(0, upperLimit - extent);
                 viewportEnd = viewportStart + extent;
             }
@@ -62,22 +89,25 @@ public final class DefaultViewportModel implements ViewportModel {
     }
 
     public synchronized void setViewport(Range<Long> viewport) {
-        boolean changed = false;
+        long newViewportStart;
+        long newViewportEnd;
         if (viewport.getStart() != null) {
-            long newViewportStart = viewport.getStart();
-            if (viewportStart != newViewportStart) {
-                viewportStart = newViewportStart;
-                changed = true;
-            }
+            newViewportStart = viewport.getStart();
+        } else {
+            newViewportStart = viewportStart;
         }
         if (viewport.getEnd() != null) {
-            long newViewportEnd = viewport.getEnd();
-            if (viewportEnd != newViewportEnd) {
-                viewportEnd = newViewportEnd;
-                changed = true;
-            }
+            newViewportEnd = viewport.getEnd();
+        } else {
+            newViewportEnd = viewportEnd;
         }
-        if (changed) {
+        if (newViewportStart != viewportStart || newViewportEnd != viewportEnd) {
+            if (newViewportEnd - newViewportStart < minViewportSize) {
+                // attempt to set too small viewport
+                return;
+            }
+            viewportStart = newViewportStart;
+            viewportEnd = newViewportEnd;
             changeSupport.fireChange();
         }
     }

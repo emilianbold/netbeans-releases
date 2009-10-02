@@ -53,5 +53,5 @@ public interface AxisMarksProvider {
      * @param axisFontMetrics  font used to draw axis marks
      * @return
      */
-    List<AxisMark> getAxisMarks(int viewportStart, int viewportEnd, int axisSize, FontMetrics axisFontMetrics);
+    List<AxisMark> getAxisMarks(long viewportStart, long viewportEnd, int axisSize, FontMetrics axisFontMetrics);
 }

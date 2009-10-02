@@ -255,7 +255,7 @@ public class ClearcaseClient {
             if (exception != null) {
                 if (exception instanceof ClearcaseUnavailableException) {
                     if (!notifiedUnavailable) {
-                        Logger.getLogger(ClearcaseClient.class.getName()).log(Level.INFO, "Clearcase module cannot be initialized: 'cleartool' executable not found.", exception);
+                        Logger.getLogger(ClearcaseClient.class.getName()).log(Level.FINE, "Clearcase module cannot be initialized: 'cleartool' executable not found.", exception);
                         notifiedUnavailable = true;
                     }
                     return;

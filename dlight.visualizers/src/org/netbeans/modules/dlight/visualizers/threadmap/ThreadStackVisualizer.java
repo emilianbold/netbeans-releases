@@ -85,8 +85,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private final CardLayout cardLayout = new CardLayout();
     private DLightSession session;
     private List<DataFilter> filters;
-    private final Object lock = new String("ThreadStackVisualizer.filters.lock");//NOI18N
-    private final Object uiLock = new String("ThreadStackVisualizer.filters.ui.lock");//NOI18N
+    private static final class Lock{}
+    private final Object lock = new Lock();
     private boolean needUpdate = false;
 
     ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
@@ -198,10 +198,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     public String getDisplayName() {
-        if (descriptor != null && !descriptor.getThreadStates().isEmpty()) {
-            return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
-        }
-        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
+        return NbBundle.getMessage(getClass(), "CallStackDetails"); //NOI18N
     }
 
     public ThreadStackVisualizerConfiguration getVisualizerConfiguration() {

@@ -48,14 +48,15 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
-import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutionEngine;
@@ -197,11 +198,11 @@ public class NativeExecutor implements Runnable {
     }
 
     private final String[] prepareEnvironment() {
-        List<String> envpList = new ArrayList<String>();
+        MacroMap macroMap = MacroMap.forExecEnv(execEnv);
         if (envp != null) {
-            envpList.addAll(Arrays.asList(envp));
+            macroMap.putAll(envp);
         }
-        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        macroMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
         if (unbuffer) {
             try {
@@ -211,14 +212,18 @@ public class NativeExecutor implements Runnable {
                     //try to resolve from the root
                     exeFile = new File(executable);
                 }
-                for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, exeFile.getAbsolutePath())) {
-                    envpList.add(envEntry);
-                }
+                UnbufferSupport.initUnbuffer(execEnv, macroMap);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return envpList.toArray(new String[envpList.size()]);
+        Set<Map.Entry<String, String>> entries = macroMap.entrySet();
+        String[] res = new String[entries.size()];
+        int idx = 0;
+        for (Map.Entry<String, String> entry : entries) {
+            res[idx++] = entry.getKey() + '=' + entry.getValue();
+        }
+        return res;
     }
     
     /**

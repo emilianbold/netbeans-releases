@@ -71,8 +71,8 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
 
         int tag = parser.next();
         List<KenaiNotification.Modification> modifications = new ArrayList();
-        while (!(tag == XmlPullParser.END_TAG && "modification".equals(parser.getName()))) {
-            if ("modification".equals(parser.getName())) {
+        while (!(tag == XmlPullParser.END_TAG && "notification".equals(parser.getName()))) {
+            if (tag == XmlPullParser.START_TAG && "modification".equals(parser.getName())) {
                 String mid = parser.getAttributeValue("", "id");
                 String mresource = parser.getAttributeValue("", "resource");
                 KenaiNotification.Modification.Type mtype = KenaiNotification.Modification.Type.valueOf(parser.getAttributeValue("", "type").toUpperCase());

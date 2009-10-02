@@ -47,12 +47,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -129,17 +131,22 @@ public class JsfElExpression extends ELExpression {
 
     private static final Logger logger = Logger.getLogger(JsfElExpression.class.getName());
     
+    /** defines if the properties are limited to their context (true),
+     * or are available everywhere after the property context end offset (false)
+     */
+    private static final boolean NESTING_AWARE = false;
+
     private WebModule webModule;
     
     protected String bundleName;
-    
+
     public JsfElExpression(WebModule wm, Document doc){
         super(doc);
         this.webModule = wm;
     }
     
     @Override
-    protected int findContext(String expr) {
+    protected int findContext(final String expr) {
         int dotIndex = expr.indexOf('.');
         int bracketIndex = expr.indexOf('[');
         
@@ -167,56 +174,81 @@ public class JsfElExpression extends ELExpression {
                     return EL_JSF_RESOURCE_BUNDLE;
                 }
             }
-            
-            //This part look for variables defined in JSP/JSF code
-            
-            //marek: this is hacky solution, both the original JSP and xhtml as well
-            //the proper way to fix should be to introduce a ContextAwareObject/Factory
-            //which providers are in mime lookup and the generic impl. use
-            //them to get similar way how the ImplicitObjects
-            FileObject fileObject = getFileObject();
-            if (fileObject.getMIMEType().equals("text/xhtml")) { //NOI18N
-                //we are in an xhtml file
-                Source source = Source.create(getDocument());
-                final int offset = getContextOffset();
-                final int[] _value = new int[1];
-                final String searchedVarAttributeValue = first;
-                try {
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            Result _result = resultIterator.getParserResult(offset);
-                            if(_result instanceof HtmlParserResult) {
-                                HtmlParserResult result = (HtmlParserResult)_result;
-                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
-                                AstNode leaf = result.findLeaf(astOffset);
 
-                                List<AstNode> match = AstNodeUtils.getAncestors(leaf, new AstNode.NodeFilter() {
-                                    public boolean accepts(AstNode node) {
-                                        return node.getAttribute(VALUE_NAME) != null &&
-                                                node.getAttribute(VARIABLE_NAME) != null &&
-                                                node.getAttribute(VARIABLE_NAME).unquotedValue().equals(searchedVarAttributeValue);
-                                    }
-                                });
-
-                                if(!match.isEmpty()) {
-                                    AstNode closestMatch = match.get(0);
-                                    bundleName = closestMatch.getAttribute(VALUE_NAME).unquotedValue();
-                                    _value[0] = EL_JSF_BEAN_REFERENCE;
-                                }
-                            }
+            // look through declared jsf variables
+            Source source = Source.create(getDocument());
+            final int offset = getContextOffset();
+            final String[] _value = new String[1];
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result result = resultIterator.getParserResult(offset);
+                        if (result instanceof HtmlParserResult) {
+                            JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
+                            _value[0] = model.resolveExpression(expr, result.getSnapshot().getEmbeddedOffset(offset), NESTING_AWARE);
                         }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                    }
+                });
+            } catch (ParseException e) {
+                Exceptions.printStackTrace(e);
+            }
 
-                if(_value[0] != 0) {
-                    return _value[0];
-                }
-
-            } else {
+            if(_value[0] != null) {
+                expression = _value[0]; //store the resolved variable expression
+                return EL_JSF_BEAN;
+            }
+//
+//            //This part look for variables defined in JSP/JSF code
+//
+//            //marek: this is hacky solution, both the original JSP and xhtml as well
+//            //the proper way to fix should be to introduce a ContextAwareObject/Factory
+//            //which providers are in mime lookup and the generic impl. use
+//            //them to get similar way how the ImplicitObjects
+//            FileObject fileObject = getFileObject();
+//            if (fileObject.getMIMEType().equals("text/xhtml")) { //NOI18N
+//                //we are in an xhtml file
+//                Source source = Source.create(getDocument());
+//                final int offset = getContextOffset();
+//                final int[] _value = new int[1];
+//                final String searchedVarAttributeValue = first;
+//                try {
+//                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+//                        @Override
+//                        public void run(ResultIterator resultIterator) throws Exception {
+//                            Result _result = resultIterator.getParserResult(offset);
+//                            if(_result instanceof HtmlParserResult) {
+//                                HtmlParserResult result = (HtmlParserResult)_result;
+//                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
+//                                AstNode leaf = result.findLeaf(astOffset);
+//
+//                                List<AstNode> match = AstNodeUtils.getAncestors(leaf, new AstNode.NodeFilter() {
+//                                    public boolean accepts(AstNode node) {
+//                                        return node.getAttribute(VALUE_NAME) != null &&
+//                                                node.getAttribute(VARIABLE_NAME) != null &&
+//                                                node.getAttribute(VARIABLE_NAME).unquotedValue().equals(searchedVarAttributeValue);
+//                                    }
+//                                });
+//
+//                                if(!match.isEmpty()) {
+//                                    AstNode closestMatch = match.get(0);
+//                                    bundleName = closestMatch.getAttribute(VALUE_NAME).unquotedValue();
+//                                    _value[0] = EL_JSF_BEAN_REFERENCE;
+//                                }
+//                            }
+//                        }
+//                    });
+//                } catch (ParseException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//
+//                if(_value[0] != 0) {
+//                    return _value[0];
+//                }
+//
+//            } else {
                 //try if in a JSP...
+                FileObject fileObject = getFileObject();
                 JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
                 if (contextInfo != null) {
                     JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
@@ -230,7 +262,7 @@ public class JsfElExpression extends ELExpression {
                         }
                     }
                 }
-            }
+//            }
 
 
             //try to resolve composite component attributes
@@ -703,6 +735,8 @@ public class JsfElExpression extends ELExpression {
             
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
+                // Fix for IZ#173117 - multiplied EL completion items
+                Set<String> addedItems = new HashSet<String>(); 
                 
                 for (ExecutableElement method : ElementFilter.methodsIn(
                         controller.getElements().getAllMembers(bean)))
@@ -716,6 +750,11 @@ public class JsfElExpression extends ELExpression {
                     {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
+                                // Fix for IZ#173117 - multiplied EL completion items
+                                if ( addedItems.contains( methodName)){
+                                    continue;
+                                }
+                                addedItems.add(methodName);
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
                                     methodName, anchor, method.getReturnType().toString());
 
@@ -757,6 +796,10 @@ public class JsfElExpression extends ELExpression {
         protected boolean checkMethod( ExecutableElement method , 
                 CompilationController compilationController)
         {
+            // Fix for IZ#173117 -  multiplied EL completion items
+            if ( super.checkMethod(method, compilationController)){
+                return false;
+            }
             return JsfElExpression.this.checkMethod(method, compilationController);
         }
     }

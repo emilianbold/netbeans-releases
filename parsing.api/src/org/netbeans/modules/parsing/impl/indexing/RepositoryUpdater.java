@@ -938,6 +938,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             if (fileOrDoc instanceof Document) {
                 doc = (Document) fileOrDoc;
                 file = Util.getFileObject(doc);
+                if (file == null) {
+                    return null;
+                }
                 URL cachedSourceRootUrl = (URL) doc.getProperty(PROP_OWNING_SOURCE_ROOT_URL);
                 FileObject cachedSourceRoot = (FileObject) doc.getProperty(PROP_OWNING_SOURCE_ROOT);
                 if (cachedSourceRootUrl != null && cachedSourceRoot != null && cachedSourceRoot.isValid() && FileUtil.isParentOf(cachedSourceRoot, file)) {
@@ -948,9 +951,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             } else {
                 return null;
             }
-
-            assert file != null || doc != null : "Expecting file or document: " + fileOrDoc + ", file=" + file + ", doc=" + doc; //NOI18N
-
+            
             URL owningSourceRootUrl = null;
             FileObject owningSourceRoot = null;
             FileObject rootFo = lastOwningSourceRootRef == null ? null : lastOwningSourceRootRef.get();

@@ -82,7 +82,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ;
+        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@');
     }
 
     @Override

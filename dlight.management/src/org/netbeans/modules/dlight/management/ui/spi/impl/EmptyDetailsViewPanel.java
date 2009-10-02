@@ -98,7 +98,7 @@ class EmptyDetailsViewPanel extends JPanel implements ValidationListener {
             p.setBorder(new EmptyBorder(10, 10, 10, 10));
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
             ValidationStatus status = tool.validateDataCollectors(targetToValidateWith);
-            if (!status.isKnown()){
+            if (!status.isKnown() || status.isValid()){
                 status = ValidationStatus.invalidStatus(NbBundle.getMessage(EmptyDetailsViewPanel.class, "DataCollectorDisabled"));//NOI18N
             }
             JEditorPane editorPane = UIUtilities.createJEditorPane(status.getReason(), true);//

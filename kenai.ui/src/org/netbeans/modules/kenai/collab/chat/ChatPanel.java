@@ -919,7 +919,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private String rgb = null;
 
     private String getMessageBody(Message m) {
-        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", "jabber:client");
+        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
         if (ne==null) {
             return m.getBody();
         }

@@ -63,6 +63,13 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsRemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
+        removeRemoteHome();
+    }
+
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         RemoteUtil.LOGGER.setLevel(Level.ALL);

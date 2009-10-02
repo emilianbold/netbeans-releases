@@ -71,7 +71,6 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -127,9 +126,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private HistoryRecord lastEvaluationRecord = null;
     private Variable result;
-    private RequestProcessor.Task evalTask =
-            new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
-            create(new EvaluateTask());
+    private RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
+    private RequestProcessor.Task evalTask = rp.create(new EvaluateTask());
 
 
     /** Creates new form CodeEvaluator */
@@ -213,19 +211,18 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         return button;
     }
 
-    private Timer setupContextTimer;
+    private RequestProcessor.Task setupContextTask;
 
     private void setupContext() {
-        if (setupContextTimer == null) {
-            setupContextTimer = new Timer(500, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+        if (setupContextTask == null) {
+            setupContextTask = rp.create(new Runnable() {
+                public void run() {
                     setupContextLazily();
                 }
             });
-            setupContextTimer.setRepeats(false);
         }
         // Setting up a context takes time.
-        setupContextTimer.restart();
+        setupContextTask.schedule(500);
     }
 
     private void setupContextLazily() {

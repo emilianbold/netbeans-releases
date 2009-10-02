@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import javax.swing.text.Document;
@@ -84,6 +85,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * @author Marek Fukala
@@ -148,6 +150,17 @@ public class TestBase extends CslTestBase {
         }
     }
 
+    public Document getDefaultDocument(FileObject fo) throws DataObjectNotFoundException, IOException {
+        DataObject dobj = DataObject.find(fo);
+        assertNotNull(dobj);
+
+        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+        assertNotNull(cookie);
+
+        Document document = (Document) cookie.openDocument();
+        return document;
+    }
+
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new HtmlLanguage();
@@ -202,7 +215,35 @@ public class TestBase extends CslTestBase {
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
         ClassPath cp = createServletAPIClassPath();
         cps.put(ClassPath.COMPILE, cp);
+        cps.put(ClassPath.SOURCE, cp);
+        cps.put(ClassPath.BOOT, createBootClassPath());
         return cps;
+    }
+
+     /**
+     * Creates boot {@link ClassPath} for platform the test is running on,
+     * it uses the sun.boot.class.path property to find out the boot path roots.
+     * @return ClassPath
+     * @throws java.io.IOException when boot path property contains non valid path
+     */
+    public static ClassPath createBootClassPath () throws IOException {
+        String bootPath = System.getProperty ("sun.boot.class.path");
+        String[] paths = bootPath.split(File.pathSeparator);
+        List<URL>roots = new ArrayList<URL> (paths.length);
+        for (String path : paths) {
+            File f = new File (path);
+            if (!f.exists()) {
+                continue;
+            }
+            URL url = f.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot(url);
+            }
+            roots.add (url);
+//            System.out.println(url);
+        }
+//        System.out.println("-----------");
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
 
     public final ClassPath createServletAPIClassPath() throws MalformedURLException, IOException {
@@ -267,7 +308,7 @@ public class TestBase extends CslTestBase {
         }
 
         public MetadataModel<WebAppMetadata> getMetadataModel() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return null;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {

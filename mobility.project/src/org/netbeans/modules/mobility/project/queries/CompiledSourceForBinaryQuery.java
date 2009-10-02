@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectUtils;
@@ -83,7 +84,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         
         class R implements SourceForBinaryQuery.Result, AntProjectListener {
             
-            ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
+            List<ChangeListener> listeners = Collections.synchronizedList(new ArrayList<ChangeListener>());
             private FileObject[] cache = null;
             final private AntProjectListener antProjectListener;
             final private transient Object lock = new Object();
@@ -147,15 +148,11 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
             
             public void addChangeListener(ChangeListener l) {
-                synchronized (listeners) {
-                    listeners.add(l);
-                }
+                listeners.add(l);
             }
             
             public void removeChangeListener(ChangeListener l) {
-                synchronized (listeners) {
-                    listeners.remove(l);
-                }
+                listeners.remove(l);
             }
             
             private void fireChanged() {
