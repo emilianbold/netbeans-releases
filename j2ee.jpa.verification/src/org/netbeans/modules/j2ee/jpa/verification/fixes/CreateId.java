@@ -70,9 +70,9 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -131,7 +131,8 @@ public class CreateId implements Fix {
                         org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity = org.netbeans.modules.j2ee.jpa.model.ModelUtils.getEntity(metadata, classHandle.getQualifiedName());
                         if (entity != null) {
                             for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic basic : entity.getAttributes().getBasic()) {
-                                fieldNames.add(basic.getName());
+                                String name = basic.getName();
+                                if(Utilities.isJavaIdentifier(name)) fieldNames.add(name);
                             }
                         }
                         return fieldNames.toArray(new java.lang.String[0]);

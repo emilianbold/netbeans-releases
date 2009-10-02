@@ -295,6 +295,10 @@ public class JsKeystrokeHandlerTest extends JsTestBase {
         insertChar("x = [[]^]", ']', "x = [[]]^");
     }
 
+    public void testBrace1() throws Exception {
+        insertChar("function test(){^}", '}', "function test(){}^");
+    }
+
     public void testParens1() throws Exception {
         insertChar("x = ^", '(', "x = (^)");
     }
