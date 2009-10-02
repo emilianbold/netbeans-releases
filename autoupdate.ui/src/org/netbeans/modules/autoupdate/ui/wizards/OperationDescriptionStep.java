@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +61,6 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -444,8 +444,16 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                                 }
                             }
                         }
+                        
+                        Set<UpdateElement> sorted = new TreeSet<UpdateElement>(new Comparator<UpdateElement>() {
+                            public int compare(UpdateElement o1, UpdateElement o2) {
+                                return o1.getDisplayName().compareTo(o2.getDisplayName());
+                            }
+                        });
+                        sorted.addAll(list);
 
-                        for (UpdateElement upd : list) {
+
+                        for (UpdateElement upd : sorted) {
                             UpdateUnit unit = upd.getUpdateUnit();
                             if(unit.getType().equals(UpdateManager.TYPE.KIT_MODULE) || invisibleIncluded.contains(unit)) {
                                 continue;
