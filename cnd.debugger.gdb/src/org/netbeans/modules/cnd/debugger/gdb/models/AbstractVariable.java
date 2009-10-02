@@ -481,16 +481,15 @@ public abstract class AbstractVariable implements LocalVariable {
 
     // We can NOT use names for equals
     // otherwise trees mixes instances when updating
-//    @Override
-//    public boolean equals(Object o) {
-//        return o instanceof AbstractVariable &&
-//                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return getFullName(true).hashCode();
-//    }
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 
     protected final GdbDebugger getDebugger() {
         return debugger;
