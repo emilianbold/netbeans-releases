@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,29 +31,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.test.codegen;
+
+package org.netbeans.modules.parsing.impl.indexing.lucene.util;
+
+import java.util.HashSet;
+import java.util.Set;
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * The class is used as a source for field test generating.
  *
- * @author  Pavel Flaska
+ * @author Tomas Zezula
  */
-public class FieldTest1 {
+public class LRUCacheTest extends NbTestCase {
 
-    int modifiersField;
+    public LRUCacheTest(final String name) {
+        super(name);
+    }
 
-    public short typeField = 10;
+    private Set<Integer> used = new HashSet<Integer>();
 
-    public String thisIsTheNewName;
+    @Test
+    public void testLRU() {
+        final LRUCache<Integer,Evictable> ev = new LRUCache<Integer, Evictable>(new TestEvictionPolicy());
+        final Set<Integer> golden = new HashSet<Integer>();
+        for (int i=0; i<10; i++) {
+            used.add(i);
+            ev.put(i, new EvictableInt(i));
+        }
+        for (int i=0; i<5; i++) {
+            used.add(i);
+            golden.add(i);
+            ev.put(i, new EvictableInt(i));
+        }
+        for (int i=10; i<15; i++) {
+            used.add(i);
+            golden.add(i);
+            ev.put(i, new EvictableInt(i));
+        }
+        assertEquals(golden, used);
+    }
 
-    String initialValueTextTester = "This text will be replaced by another one.";
+    private static class TestEvictionPolicy implements EvictionPolicy<Integer,Evictable> {
+        public boolean shouldEvict(int size, Integer key, Evictable value) {
+            return size > 10;
+        }
+    }
 
-    long initialValueChanger = 5 * 12 - 22;
+    private class EvictableInt implements Evictable {
 
-    /** This field contains JavaDoc */
-    protected String initialValueReplacer = new String("NetBeers");
+        private Integer value;
+        
+        public EvictableInt(final int i) {
+            this.value = i;
+        }
 
-    Object removeInitialValueField = new Object();
+        public void evicted() {            
+            used.remove(value);
+        }
+    }
 
 }

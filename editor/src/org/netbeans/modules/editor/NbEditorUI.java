@@ -233,6 +233,9 @@ public class NbEditorUI extends EditorUI {
         ec.add(scroller);
 
         // Initialize sidebars
+        // Need to clear the cache - it's null at this point when opening file but the sidebars
+        // would be reused during L&F change (see BaseTextUI.UIWatcher) which would not work properly.
+        CustomizableSideBar.resetSideBars(component);
         Map<SideBarPosition, JComponent> sideBars = CustomizableSideBar.getSideBars(component);
         processSideBars(sideBars, ec);
         
