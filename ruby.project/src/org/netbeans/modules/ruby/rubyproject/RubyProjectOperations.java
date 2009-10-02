@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -73,7 +73,6 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         addFile(projectDirectory, "nbproject", files); // NOI18N
-        addFile(projectDirectory, "Rakefile", files); // NOI18N
         addFile(projectDirectory, "README", files); // NOI18N
         addFile(projectDirectory, "LICENSE", files); // NOI18N
         return files;
@@ -83,6 +82,7 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         List<FileObject> files = new ArrayList<FileObject>();
         files.addAll(Arrays.asList(project.getSourceRoots().getRoots()));
         files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
+        addFile(project.getProjectDirectory(), "Rakefile", files); // NOI18N
         return files;
     }
     

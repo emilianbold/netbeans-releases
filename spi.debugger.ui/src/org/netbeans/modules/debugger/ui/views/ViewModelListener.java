@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -68,6 +68,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -82,6 +83,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models.CompoundModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -110,6 +112,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List treeModels;
     private List treeModelFilters;
     private List treeExpansionModels;
+    private List treeExpansionModelFilters;
     private List nodeModels;
     private List nodeModelFilters;
     private List tableModels;
@@ -118,7 +121,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private List nodeActionsProviderFilters;
     private List columnModels;
     private List mm;
-    private RequestProcessor rp;
+    private List asynchModelFilters;
+    //private RequestProcessor rp;
 
     private List<AbstractButton> buttons;
     private javax.swing.JTabbedPane tabbedPane;
@@ -176,6 +180,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeModels = null;
         treeModelFilters = null;
         treeExpansionModels = null;
+        treeExpansionModelFilters = null;
         nodeModels = null;
         nodeModelFilters = null;
         tableModels = null;
@@ -184,7 +189,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = null;
         columnModels = null;
         mm = null;
-        rp = null;
+        asynchModelFilters = null;
+        //rp = null;
         sessionProviders = null;
         currentSession = null;
         providerToDisplay = null;
@@ -238,6 +244,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeModels =            cp.lookup (viewPath, TreeModel.class);
         treeModelFilters =      cp.lookup (viewPath, TreeModelFilter.class);
         treeExpansionModels =   cp.lookup (viewPath, TreeExpansionModel.class);
+        treeExpansionModelFilters = cp.lookup (viewType, TreeExpansionModelFilter.class);
         nodeModels =            cp.lookup (viewPath, NodeModel.class);
         nodeModelFilters =      cp.lookup (viewPath, NodeModelFilter.class);
         tableModels =           cp.lookup (viewPath, TableModel.class);
@@ -246,7 +253,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = cp.lookup (viewPath, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
         mm =                    cp.lookup (viewPath, Model.class);
-        rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
+        asynchModelFilters =    cp.lookup (viewPath, AsynchronousModelFilter.class);
+        String searchPath = viewPath; // Try to find the AsynchronousModelFilter in upper folders...
+        while (asynchModelFilters.isEmpty() && searchPath != null) {
+            int i = searchPath.lastIndexOf('/');
+            if (i > 0) {
+                searchPath = searchPath.substring(0, i);
+            } else {
+                searchPath = null;
+            }
+            asynchModelFilters = cp.lookup (searchPath, AsynchronousModelFilter.class);
+        }
+        //rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
 
         if (View.LOCALS_VIEW_NAME.equals(viewType) && (VariablesViewButtons.isResultsViewNested() ||
                 VariablesViewButtons.isWatchesViewNested())) {
@@ -319,6 +337,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             (Customizer) treeModels,
             (Customizer) treeModelFilters,
             (Customizer) treeExpansionModels,
+            (Customizer) treeExpansionModelFilters,
             (Customizer) nodeModels,
             (Customizer) nodeModelFilters,
             (Customizer) tableModels,
@@ -326,7 +345,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             (Customizer) nodeActionsProviders,
             (Customizer) nodeActionsProviderFilters,
             (Customizer) columnModels,
-            (Customizer) mm
+            (Customizer) mm,
+            (Customizer) asynchModelFilters,
         };
         for (int i = 0; i < modelListCustomizers.length; i++) {
             Customizer c = modelListCustomizers[i];
@@ -379,9 +399,15 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         synchronized (mm) {
             models.add(new ArrayList(mm));
         }
-        if (rp != null) {
-            models.add(rp);
+        synchronized (treeExpansionModelFilters) {
+            models.add(new ArrayList(treeExpansionModelFilters));
         }
+        synchronized (asynchModelFilters) {
+            models.add(new ArrayList(asynchModelFilters));
+        }
+        /*if (rp != null) {
+            models.add(rp);
+        }*/
 
         final JComponent buttonsSubPane;
         synchronized (buttons) {
@@ -574,6 +600,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List treeModels;
         List treeModelFilters;
         List treeExpansionModels;
+        List treeExpansionModelFilters;
         List nodeModels;
         List nodeModelFilters;
         List tableModels;
@@ -582,10 +609,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         List nodeActionsProviderFilters;
         List columnModels;
         List mm;
+        List asynchModelFilters;
 
         treeModels =            cp.lookup (viewPath, TreeModel.class);
         treeModelFilters =      cp.lookup (viewPath, TreeModelFilter.class);
         treeExpansionModels =   cp.lookup (viewPath, TreeExpansionModel.class);
+        treeExpansionModelFilters = cp.lookup(viewPath, TreeExpansionModelFilter.class);
         nodeModels =            cp.lookup (viewPath, NodeModel.class);
         nodeModelFilters =      cp.lookup (viewPath, NodeModelFilter.class);
         tableModels =           cp.lookup (viewPath, TableModel.class);
@@ -594,8 +623,19 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         nodeActionsProviderFilters = cp.lookup (viewPath, NodeActionsProviderFilter.class);
         columnModels =          cp.lookup (viewPath, ColumnModel.class);
         mm =                    cp.lookup (viewPath, Model.class);
+        asynchModelFilters =    cp.lookup (viewPath, AsynchronousModelFilter.class);
+        String searchPath = viewPath; // Try to find the AsynchronousModelFilter in upper folders...
+        while (asynchModelFilters.isEmpty() && searchPath != null) {
+            int i = searchPath.lastIndexOf('/');
+            if (i > 0) {
+                searchPath = searchPath.substring(0, i);
+            } else {
+                searchPath = null;
+            }
+            asynchModelFilters = cp.lookup (searchPath, AsynchronousModelFilter.class);
+        }
 
-        List treeNodeModelsCompound = new ArrayList(12);
+        List treeNodeModelsCompound = new ArrayList(13);
         treeNodeModelsCompound.add(treeModels);
         treeNodeModelsCompound.add(treeModelFilters);
         treeNodeModelsCompound.add(treeExpansionModels); // TreeExpansionModel
@@ -607,9 +647,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         treeNodeModelsCompound.add(nodeActionsProviderFilters);
         treeNodeModelsCompound.add(columnModels); // ColumnModel
         treeNodeModelsCompound.add(mm); // Model
-        if (rp != null) {
+        treeNodeModelsCompound.add(treeExpansionModelFilters); // TreeExpansionModelFilter
+        treeNodeModelsCompound.add(asynchModelFilters); // AsynchronousModelFilter
+        /*if (rp != null) {
             treeNodeModelsCompound.add(rp);
-        }
+        }*/
 
         CompoundModel treeNodeModel = Models.createCompoundModel(treeNodeModelsCompound);
 

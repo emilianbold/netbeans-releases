@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.core.wseditor.support;
 import org.netbeans.modules.websvc.api.support.EditWSAttributesCookie;
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider;
 import org.netbeans.modules.websvc.api.wseditor.WSEditorProviderRegistry;
 import org.openide.nodes.Node;
@@ -59,6 +60,12 @@ public final class WSEditAttributesAction extends NodeAction {
             final EditWSAttributesCookie cookie = activatedNodes[0].getLookup().lookup(EditWSAttributesCookie.class);
             if (cookie!=null) {
                 cookie.openWSAttributesEditor();
+
+                // logging usage of action
+                Object[] params = new Object[2];
+                params[0] = LogUtils.WS_STACK_JAXWS;
+                params[1] = "EDIT WS ATTRIBUTES"; // NOI18N
+                LogUtils.logWsAction(params);
             }
         }
     }

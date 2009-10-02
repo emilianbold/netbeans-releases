@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -54,7 +54,7 @@ public class JsfElCompletionItem {
 
     public static class JsfBean extends ElCompletionItem.ELBean {
 
-        private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/jsf_bean_16.png";  //NOI18N
+        private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/resources/jsf_bean_16.png";  //NOI18N
 
         public JsfBean(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
@@ -73,7 +73,7 @@ public class JsfElCompletionItem {
 
     public static class JsfMethod extends ElCompletionItem.ELBean {
 
-        private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/method_16.png";      //NOI18N
+        private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/resources/method_16.png";      //NOI18N
 
         public JsfMethod(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
@@ -87,7 +87,7 @@ public class JsfElCompletionItem {
 
     public static class JsfResourceBundle extends ElCompletionItem.ELBean {
 
-        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesLocale.gif";  //NOI18N
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/resources/propertiesLocale.gif";  //NOI18N
 
         public JsfResourceBundle(String text, int substitutionOffset, String type) {
             super(text, substitutionOffset, type);
@@ -105,7 +105,7 @@ public class JsfElCompletionItem {
 
     public static class JsfResourceItem extends JspCompletionItem {
 
-        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesKey.gif";  //NOI18N
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/resources/propertiesKey.gif";  //NOI18N
 
         public JsfResourceItem(String text, int substitutionOffset, String type) {
             this(text, text, substitutionOffset, type);

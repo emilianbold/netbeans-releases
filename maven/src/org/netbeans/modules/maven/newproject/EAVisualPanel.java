@@ -39,38 +39,43 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.awt.Color;
-import java.io.CharConversionException;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
 
-public final class EAVisualPanel extends JPanel implements DocumentListener {
-
-    private static final String ERROR_MSG = WizardDescriptor.PROP_ERROR_MESSAGE;
+public final class EAVisualPanel extends JPanel  {
 
     private EAWizardPanel panel;
+    private final ValidationGroup vg;
 
-    private Color origEarC, origWebC, origEjbC;
 
     /** Creates new form EAVisualPanel */
     public EAVisualPanel(EAWizardPanel panel) {
         this.panel = panel;
         initComponents();
-
-        origEarC = tfEar.getForeground();
-        origEjbC = tfEjb.getForeground();
-        origWebC = tfWeb.getForeground();
-
-        tfEar.getDocument().addDocumentListener(this);
-        tfEjb.getDocument().addDocumentListener(this);
-        tfWeb.getDocument().addDocumentListener(this);
+        vg = ValidationGroup.create();
+        vg.add(tfWeb, Validators.merge(true,
+                MavenValidators.createArtifactIdValidators(),
+                Validators.REQUIRE_VALID_FILENAME
+                ));
+        vg.add(tfEar, Validators.merge(true,
+                MavenValidators.createArtifactIdValidators(),
+                Validators.REQUIRE_VALID_FILENAME
+                ));
+        vg.add(tfEjb, Validators.merge(true,
+                MavenValidators.createArtifactIdValidators(),
+                Validators.REQUIRE_VALID_FILENAME
+                ));
+        tfWeb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Web ArtifactId");
+        tfEar.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ear ArtifactId");
+        tfEjb.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Ejb ArtifactId");
 
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EAVisualPanel.class, "LBL_EESettings"));
     }
@@ -82,6 +87,11 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
 
     void readSettings(WizardDescriptor wizardDescriptor) {
         fillTextFields(wizardDescriptor);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().addValidationGroup(vg, true);
+            }
+        });
     }
 
     void storeSettings(WizardDescriptor d) {
@@ -127,97 +137,11 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
             d.putProperty("web_versionInfo", null);
             d.putProperty("web_archetype", null);
         }
-    }
-
-    boolean valid(WizardDescriptor wizDesc) {
-        tfEar.setForeground(origEarC);
-        tfEjb.setForeground(origEjbC);
-        tfWeb.setForeground(origWebC);
-        final String earTxt = tfEar.getText();
-        if (!validateProjDir(earTxt,wizDesc)
-                || !validateCoordinate(earTxt,wizDesc) ||
-                BasicPanelVisual.containsMultiByte(earTxt, wizDesc)) {
-            tfEar.setForeground(Color.RED);
-            return false;
-        }
-        if (chkEjb.isSelected()) {
-            final String ejbText = tfEjb.getText();
-            if (!validateProjDir(ejbText,wizDesc) ||
-                !validateCoordinate(ejbText,wizDesc) ||
-                BasicPanelVisual.containsMultiByte(ejbText, wizDesc)) {
-                tfEjb.setForeground(Color.RED);
-                return false;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.getValidationGroup().removeValidationGroup(vg);
             }
-        }
-        if (chkWeb.isSelected()) {
-            final String webText = tfWeb.getText();
-            if (!validateProjDir(webText,wizDesc) ||
-                !validateCoordinate(webText,wizDesc) ||
-                BasicPanelVisual.containsMultiByte(webText, wizDesc)) {
-                tfWeb.setForeground(Color.RED);
-                return false;
-            }
-        }
-        wizDesc.putProperty(ERROR_MSG, ""); //NOI18N
-        return true;
-    }
-
-    private static boolean validateProjDir (String dirName, WizardDescriptor wizDesc) {
-        if (dirName.length() == 0) {
-            wizDesc.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Name_is_not_valid"));
-            return false;
-        }
-
-        if(dirName.indexOf(File.separatorChar) != -1) {
-            wizDesc.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Name_has_slash"));
-            return false;
-        }
-
-        File parent = (File) wizDesc.getProperty("projdir");
-        File projLoc = FileUtil.normalizeFile(new File(parent, dirName));
-        File f = projLoc;
-        while (f != null && !f.exists()) {
-            f = f.getParentFile();
-        }
-        if (f == null || !f.canWrite()) {
-            wizDesc.putProperty(ERROR_MSG, //NOI18N
-                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Folder_cannot_be_created"));
-            return false;
-        }
-
-        if (FileUtil.toFileObject(f) == null) {
-            String message = NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Folder_is_not_valid_path");
-            wizDesc.putProperty(ERROR_MSG, message); //NOI18N
-            return false;
-        }
-
-        File[] kids = projLoc.listFiles();
-        if (projLoc.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            wizDesc.putProperty(ERROR_MSG,
-                    NbBundle.getMessage(EAVisualPanel.class, "ERR_Project_Folder_exists"));
-            return false;
-        }
-
-        wizDesc.putProperty(ERROR_MSG, null);
-        return true;
-    }
-
-    static boolean validateCoordinate (String coord, WizardDescriptor wizDesc) {
-        boolean result = false;
-        try {
-            String escaped = XMLUtil.toAttributeValue(coord);
-            result = escaped.length() == coord.length() && coord.indexOf(">") == -1
-                    && coord.indexOf(" ") == -1;
-        } catch (CharConversionException ex) {
-            // ignore this one
-        }
-        wizDesc.putProperty(ERROR_MSG, result ? null :
-            NbBundle.getMessage(EAVisualPanel.class, "ERR_Coord_breaks_pom"));
-
-        return result;
+        });
     }
 
     private void fillTextFields(WizardDescriptor wiz) {
@@ -330,13 +254,13 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
     private void chkEjbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkEjbActionPerformed
         // TODO add your handling code here:
         tfEjb.setEnabled(chkEjb.isSelected());
-        panel.fireChangeEvent();
+        vg.validateAll();
     }//GEN-LAST:event_chkEjbActionPerformed
 
     private void chkWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkWebActionPerformed
         // TODO add your handling code here:
         tfWeb.setEnabled(chkWeb.isSelected());
-        panel.fireChangeEvent();
+        vg.validateAll();
     }//GEN-LAST:event_chkWebActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -350,18 +274,5 @@ public final class EAVisualPanel extends JPanel implements DocumentListener {
     private javax.swing.JTextField tfWeb;
     // End of variables declaration//GEN-END:variables
 
-    /******** Document listener implementation, reacting on text field changes ***/
-
-    public void insertUpdate(DocumentEvent e) {
-        panel.fireChangeEvent();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        panel.fireChangeEvent();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        panel.fireChangeEvent();
-    }
 }
 

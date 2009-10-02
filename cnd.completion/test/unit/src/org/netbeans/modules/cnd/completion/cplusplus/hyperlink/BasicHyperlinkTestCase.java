@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -617,6 +617,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ165976() throws Exception {
         // IZ#165976 : Unresolved array element in case of complicated index
         performTest("IZ165976.cc", 15, 56, "IZ165976.cc", 4, 3);
+    }
+
+    public void testIZ173311() throws Exception {
+        // IZ#173311 : Unresolved ids in function typedef
+        performTest("IZ173311.cc", 2, 30, "IZ173311.cc", 2, 26);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

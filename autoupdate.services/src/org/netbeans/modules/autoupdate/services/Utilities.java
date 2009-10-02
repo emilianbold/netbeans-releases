@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -556,19 +556,20 @@ public class Utilities {
 
             for (Dependency d : dependencies) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                if (deco != null) {
-                    for (ModuleInfo depMI : deco.getDependening ()) {
-                        Module depM = Utilities.toModule (depMI);
+                int type = d.getType();
+                String name = d.getName();
+                for (ModuleInfo depMI : deco.getDependening ()) {
+                        Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
-                        if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
+                        if (! depM.getProblems ().isEmpty ()) {
                             // skip this module because it has own problems already
                             continue;
                         }
                         for (Dependency toTry : depM.getDependencies ()) {
                             // check only relevant deps
-                            if (deco.equals (DependencyAggregator.getAggregator (toTry)) &&
+                            if (type == toTry.getType() && name.equals(toTry.getName()) &&
                                     ! DependencyChecker.checkDependencyModule (toTry, mi)) {
                                 UpdateUnit tryUU = UpdateManagerImpl.getInstance ().getUpdateUnit (depM.getCodeNameBase ());
                                 if (! tryUU.getAvailableUpdates ().isEmpty ()) {
@@ -586,7 +587,6 @@ public class Utilities {
                             }
                         }
                     }
-                }
             }
         }
         return moreRequested;
@@ -635,7 +635,7 @@ public class Utilities {
                 boolean matched = false;
                 if (u != null) {
                     boolean aggressive = beAggressive;
-                    if (isFirstClassModule(el.getUpdateUnit())) {
+                    if (aggressive && isFirstClassModule(el.getUpdateUnit())) {
                         aggressive = false;
                     }
                     // follow aggressive updates strategy
@@ -741,13 +741,13 @@ public class Utilities {
             // Dependency.TYPE_MODULE
             for (Dependency d : Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ())) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                if (deco != null) {
-                    for (ModuleInfo depMI : deco.getDependening ()) {
-                        Module depM = Utilities.toModule (depMI);
+                for (ModuleInfo depMI : deco.getDependening ()) {
+                        //Module depM = Utilities.toModule (depMI);
+                        Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                         if (depM == null) {
                             continue;
                         }
-                        if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
+                        if (! depM.getProblems ().isEmpty ()) {
                             // skip this module because it has own problems already
                             continue;
                         }
@@ -758,7 +758,6 @@ public class Utilities {
                                 brokenDependencies.add (toTry);
                             }
                         }
-                    }
                 }
             }
             // Dependency.TYPE_REQUIRES
@@ -772,13 +771,13 @@ public class Utilities {
                 deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
                 for (Dependency d : deps) {
                     DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                    if (deco != null) {
-                        for (ModuleInfo depMI : deco.getDependening ()) {
-                            Module depM = Utilities.toModule (depMI);
+                    for (ModuleInfo depMI : deco.getDependening ()) {
+                            //Module depM = Utilities.toModule (depMI);
+                            Module depM = getModuleInstance(depMI.getCodeName(), depMI.getSpecificationVersion());
                             if (depM == null) {
                                 continue;
                             }
-                            if (depM.getProblems () != null && ! depM.getProblems ().isEmpty ()) {
+                            if (! depM.getProblems ().isEmpty ()) {
                                 // skip this module because it has own problems already
                                 continue;
                             }
@@ -789,7 +788,6 @@ public class Utilities {
                                 }
                             }
                         }
-                    }
                 }
             }
         }
@@ -831,20 +829,20 @@ public class Utilities {
     private static Module getModuleInstance(String codeNameBase, SpecificationVersion specificationVersion) {
         if (mgr == null) {
             mgr = Main.getModuleSystem().getManager();
-        }
-        assert mgr != null;
-        if (mgr == null || specificationVersion == null) {
-            return mgr != null ? mgr.get(codeNameBase) : null;
-        } else {
-            Module m = mgr.get(codeNameBase);
-            if (m == null) {
+            assert mgr != null;
+            if (mgr == null) {
                 return null;
-            } else {
-                if (m.getSpecificationVersion () == null) {
-                    return null;
-                }
-                return m.getSpecificationVersion ().compareTo (specificationVersion) >= 0 ? m : null;
             }
+        }
+        Module m = mgr.get(codeNameBase);
+        if (specificationVersion == null || m == null) {
+            return m;
+        } else {
+            SpecificationVersion version = m.getSpecificationVersion();
+            if (version == null) {
+                return null;
+            }
+            return version.compareTo(specificationVersion) >= 0 ? m : null;
         }
     }
     

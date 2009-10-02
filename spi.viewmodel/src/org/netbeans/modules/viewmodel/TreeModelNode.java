@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -62,6 +63,8 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
@@ -106,6 +109,7 @@ public class TreeModelNode extends AbstractNode {
     private String              shortDescription;
     private final Object        shortDescriptionLock = new Object();
     private final Map<String, Object> properties = new HashMap<String, Object>();
+    private static final String EVALUATING_STR = NbBundle.getMessage(TreeModelNode.class, "EvaluatingProp");
 
     
     // init ....................................................................
@@ -177,6 +181,22 @@ public class TreeModelNode extends AbstractNode {
         initProperties (columns);
     }
 
+    private static Executor asynchronous(Models.CompoundModel model, CALL asynchCall, Object object) {
+        Executor exec;
+        try {
+            exec = model.asynchronous(asynchCall, object);
+            //System.err.println("Asynchronous("+asynchCall+", "+object+") = "+exec);
+            if (exec == null) {
+                Exceptions.printStackTrace(Exceptions.attachMessage(new NullPointerException("Provided executor is null."), "model = "+model+", object = "+object));
+                exec = AsynchronousModelFilter.CURRENT_THREAD;
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(Exceptions.attachMessage(ex, "model = "+model+", object = "+object));
+            exec = AsynchronousModelFilter.CURRENT_THREAD;
+        }
+        return exec;
+    }
+
 
     // Node implementation .....................................................
     
@@ -218,6 +238,21 @@ public class TreeModelNode extends AbstractNode {
                 return shortDescription;
             }
         }
+        Executor exec = asynchronous(model, CALL.SHORT_DESCRIPTION, object);
+        if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
+            return updateShortDescription();
+        } else {
+            exec.execute(new Runnable() {
+                public void run() {
+                    updateShortDescription();
+                    fireShortDescriptionChange(null, null);
+                }
+            });
+            return EVALUATING_STR;
+        }
+    }
+
+    private String updateShortDescription() {
         try {
             String sd = model.getShortDescription (object);
             if (sd != null) {
@@ -404,17 +439,7 @@ public class TreeModelNode extends AbstractNode {
         boolean refreshed = false;
         if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
             try {
-                String name = model.getDisplayName (object);
-                if (name == null) {
-                    Throwable t = 
-                        new NullPointerException (
-                            "Model: " + model + ".getDisplayName (" + object + 
-                            ") = null!"
-                        );
-                    Exceptions.printStackTrace(t);
-                } else {
-                    setName (name, false);
-                }
+                setModelDisplayName();
             } catch (UnknownTypeException e) {
                 Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, e);
             }
@@ -459,10 +484,10 @@ public class TreeModelNode extends AbstractNode {
     private static RequestProcessor requestProcessor;
     // Accessed from test
     RequestProcessor getRequestProcessor () {
-        RequestProcessor rp = treeModelRoot.getRequestProcessor();
+        /*RequestProcessor rp = treeModelRoot.getRequestProcessor();
         if (rp != null) {
             return rp;
-        }
+        }*/
         synchronized (TreeModelNode.class) {
             if (requestProcessor == null)
                 requestProcessor = new RequestProcessor ("TreeModel", 1);
@@ -498,19 +523,53 @@ public class TreeModelNode extends AbstractNode {
             }
         }
     }
-    
-    private void refreshNode () {
-        try {
+
+    private void setModelDisplayName() throws UnknownTypeException {
+        Executor exec = asynchronous(model, CALL.DISPLAY_NAME, object);
+        if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
             String name = model.getDisplayName (object);
             if (name == null) {
-                Throwable t = 
+                Throwable t =
                     new NullPointerException (
-                        "Model: " + model + ".getDisplayName (" + object + 
+                        "Model: " + model + ".getDisplayName (" + object +
                         ") = null!"
                     );
                 Exceptions.printStackTrace(t);
+            } else {
+                setName (name, false);
             }
-            setName (name, false);
+        } else {
+            final String originalDisplayName = getDisplayName();
+            setName(EVALUATING_STR, false);
+            exec.execute(new Runnable() {
+                public void run() {
+                    String name;
+                    try {
+                        name = model.getDisplayName(object);
+                    } catch (UnknownTypeException ex) {
+                        Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                        setName(originalDisplayName, false);
+                        return ;
+                    }
+                    if (name == null) {
+                        Throwable t =
+                            new NullPointerException (
+                                "Model: " + model + ".getDisplayName (" + object +
+                                ") = null!"
+                            );
+                        Exceptions.printStackTrace(t);
+                        setName(originalDisplayName, false);
+                    } else {
+                        setName (name, false);
+                    }
+                }
+            });
+        }
+    }
+    
+    private void refreshNode () {
+        try {
+            setModelDisplayName();
             String iconBase = null;
             if (model.getRoot() != object) {
                 iconBase = model.getIconBaseWithExtension (object);
@@ -834,7 +893,7 @@ public class TreeModelNode extends AbstractNode {
     
     /** Special locals subnodes (children) */
     static class TreeModelChildren extends Children.Keys<Object>
-                                   implements LazyEvaluator.Evaluable {
+                                   implements Runnable {// LazyEvaluator.Evaluable {
             
         private boolean             initialezed = false;
         private final Models.CompoundModel model;
@@ -847,6 +906,9 @@ public class TreeModelNode extends AbstractNode {
         private Object[]            children_evaluated;
         private RefreshingInfo      refreshInfo = null;
         private boolean             refreshingStarted = true;
+
+        private RequestProcessor.Task   task;
+        private RequestProcessor        lastRp;
         
         protected static final Object WAIT_KEY = new Object();
         
@@ -881,7 +943,7 @@ public class TreeModelNode extends AbstractNode {
             refreshLazyChildren(refreshSubNodes);
         }
         
-        public void evaluateLazily(Runnable evaluatedNotify) {
+        public void run() {
             RefreshingInfo rinfo;
             synchronized (evaluated) {
                 refreshingStarted = false;
@@ -911,7 +973,7 @@ public class TreeModelNode extends AbstractNode {
                 Exceptions.printStackTrace(t);
                 ch = new Object[0];
             }
-            evaluatedNotify.run();
+            //evaluatedNotify.run();
             boolean fire;
             synchronized (evaluated) {
                 int eval = evaluated[0];
@@ -942,8 +1004,26 @@ public class TreeModelNode extends AbstractNode {
                 count
             );
         }
+
+        protected Executor getModelAsynchronous() {
+            return asynchronous(model, CALL.CHILDREN, object);
+        }
         
         private void refreshLazyChildren (RefreshingInfo refreshInfo) {
+            Executor exec = getModelAsynchronous();
+            if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
+                Object[] ch;
+                try {
+                    ch = getModelChildren(refreshInfo);
+                } catch (UnknownTypeException ex) {
+                    ch = new Object [0];
+                    if (!(object instanceof String)) {
+                        Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                    }
+                }
+                applyChildren(ch, refreshInfo);
+                return ;
+            }
             synchronized (evaluated) {
                 evaluated[0] = 0;
                 refreshingStarted = true;
@@ -954,8 +1034,19 @@ public class TreeModelNode extends AbstractNode {
                 }
                 //System.err.println(this.hashCode()+" refreshLazyChildren() started = true, evaluated = 0");
             }
+            /*if (exec instanceof RequestProcessor) {
+                // Have a single task for RP
+                RequestProcessor rp = (RequestProcessor) exec;
+                if (rp != lastRp) {
+                    task = rp.create(this);
+                    lastRp = rp;
+                }
+                task.schedule(0);
+            } else {*/
+                exec.execute(this);
+            //}
             // It's refresh => do not check for this children already being evaluated
-            treeModelRoot.getChildrenEvaluator().evaluate(this, false);
+            //treeModelRoot.getChildrenEvaluator().evaluate(this, false);
             Object[] ch;
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
@@ -1110,14 +1201,16 @@ public class TreeModelNode extends AbstractNode {
         }
     } // ItemChildren
     
-    private class MyProperty extends PropertySupport implements LazyEvaluator.Evaluable {
+    private class MyProperty extends PropertySupport implements Runnable { //LazyEvaluator.Evaluable {
         
-        private final String EVALUATING_STR = NbBundle.getMessage(TreeModelNode.class, "EvaluatingProp");
         private String      id;
         private ColumnModel columnModel;
         private boolean nodeColumn;
         private TreeModelRoot treeModelRoot;
         private final int[] evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
+        
+        private RequestProcessor.Task   task;
+        private RequestProcessor        lastRp;
         
         
         MyProperty (
@@ -1155,12 +1248,13 @@ public class TreeModelNode extends AbstractNode {
             }
         }
         
-        public void evaluateLazily(Runnable evaluatedNotify) {
+        public void run() {
             Object value = "";
             String htmlValue = null;
             String nonHtmlValue = null;
             try {
                 value = model.getValueAt (object, id);
+                //System.err.println("  Value of ("+object+") executed in "+Thread.currentThread()+" is "+value);
                 //System.out.println("  evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): have value = "+value);
                 //System.out.println("      object = "+object+" class = "+((object != null) ? object.getClass().toString() : "null"));
                 if (value instanceof String) {
@@ -1175,9 +1269,9 @@ public class TreeModelNode extends AbstractNode {
                     System.out.println ();
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                Exceptions.printStackTrace(t);
             } finally {
-                evaluatedNotify.run();
+                //evaluatedNotify.run();
                 boolean fire;
                 synchronized (properties) {
                     if (value instanceof String) {
@@ -1211,10 +1305,27 @@ public class TreeModelNode extends AbstractNode {
                     return properties.get (id);
             }
             
+            Executor exec = asynchronous(model, CALL.VALUE, object);
+
+            if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
+                return getTheValue();
+            }
+
             synchronized (evaluated) {
                 evaluated[0] = 0;
             }
-            treeModelRoot.getValuesEvaluator().evaluate(this);
+            /*if (exec instanceof RequestProcessor) {
+                RequestProcessor rp = (RequestProcessor) exec;
+                if (rp != lastRp) {
+                    task = rp.create(this);
+                    lastRp = rp;
+                }
+                task.schedule(0);
+            } else {*/
+            //System.err.println("getTheValue of ("+object+") executed in "+exec);
+                exec.execute(this);
+            //}
+            //treeModelRoot.getValuesEvaluator().evaluate(this);
             
             Object ret = null;
             
@@ -1241,6 +1352,36 @@ public class TreeModelNode extends AbstractNode {
                             // htmlDisplayValue attr will assure that the Evaluating str is there.
             }
             return ret;
+        }
+
+        private Object getTheValue() {
+            Object value = "";
+            String htmlValue = null;
+            String nonHtmlValue = null;
+            try {
+                value = model.getValueAt (object, id);
+                //System.err.println("  Value of ("+object+") executed in "+Thread.currentThread()+" is "+value);
+                //System.out.println("  evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): have value = "+value);
+                //System.out.println("      object = "+object+" class = "+((object != null) ? object.getClass().toString() : "null"));
+                if (value instanceof String) {
+                    htmlValue = htmlValue ((String) value);
+                    nonHtmlValue = removeHTML ((String) value);
+                }
+            } catch (UnknownTypeException e) {
+                if (!(object instanceof String)) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model+"\n,Column id:" + columnModel.getID (), e);
+                }
+            } finally {
+                synchronized (properties) {
+                    if (value instanceof String) {
+                        properties.put (id, nonHtmlValue);
+                        properties.put (id + "#html", htmlValue);
+                    } else {
+                        properties.put (id, value);
+                    }
+                }
+            }
+            return value;
         }
         
         @Override
@@ -1270,20 +1411,43 @@ public class TreeModelNode extends AbstractNode {
                 if (!properties.containsKey(id)) {
                     return null; // The same as value => EVALUATING_STR
                 }
+                String shortDescription = (String) properties.get (id + "#shortDescription");
+                if (shortDescription != null) {
+                    return shortDescription;
+                }
             }
+            Executor exec = asynchronous(model, CALL.SHORT_DESCRIPTION, object);
+            
+            if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
+                return updateShortDescription();
+            } else {
+                exec.execute(new Runnable() {
+                    public void run() {
+                        updateShortDescription();
+                        firePropertyChange(id, null, null);
+                    }
+                });
+                return null;
+            }
+        }
+
+        private String updateShortDescription() {
             try {
                 javax.swing.JToolTip tooltip = new javax.swing.JToolTip();
+                String sd = null;
                 try {
                     tooltip.putClientProperty("getShortDescription", object); // NOI18N
                     Object tooltipObj = model.getValueAt(tooltip, id);
-                    if (tooltipObj == null) {
-                        return null;
-                    } else {
-                        return adjustHTML(tooltipObj.toString());
+                    if (tooltipObj != null) {
+                        sd = adjustHTML(tooltipObj.toString());
                     }
+                    return sd;
                 } finally {
                     // We MUST clear the client property, Swing holds this in a static reference!
                     tooltip.putClientProperty("getShortDescription", null); // NOI18N
+                    synchronized (properties) {
+                        properties.put (id + "#shortDescription", sd);
+                    }
                 }
             } catch (UnknownTypeException e) {
                 // Ignore models that do not define tooltips for values.
@@ -1293,30 +1457,35 @@ public class TreeModelNode extends AbstractNode {
         
         public void setValue (final Object value) throws IllegalAccessException,
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-            RequestProcessor prefferedRequestProcessor = treeModelRoot.getRequestProcessor();
-            if (prefferedRequestProcessor == null) {
-                prefferedRequestProcessor = new RequestProcessor("Debugger Values Setter", 1); // NOI18N
+            Executor exec = asynchronous(model, CALL.VALUE, object);
+            if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
+                setTheValue(value);
+            } else {
+                exec.execute(new Runnable() {
+                    public void run() {
+                        setTheValue(value);
+                    }
+                });
             }
-            prefferedRequestProcessor.post(new Runnable() {
-                public void run() {
-                    try {
-                        Object v = value;
-                        model.setValueAt (object, id, v);
-                        v = model.getValueAt(object, id); // Store the new value
-                        synchronized (properties) {
-                            if (v instanceof String) {
-                                properties.put (id, removeHTML ((String) v));
-                                properties.put (id + "#html", htmlValue ((String) v));
-                            } else {
-                                properties.put (id, v);
-                            }
-                        }
-                        firePropertyChange (id, null, null);
-                    } catch (UnknownTypeException e) {
-                        Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
+        }
+
+        private void setTheValue(final Object value) {
+            try {
+                Object v = value;
+                model.setValueAt (object, id, v);
+                v = model.getValueAt(object, id); // Store the new value
+                synchronized (properties) {
+                    if (v instanceof String) {
+                        properties.put (id, removeHTML ((String) v));
+                        properties.put (id + "#html", htmlValue ((String) v));
+                    } else {
+                        properties.put (id, v);
                     }
                 }
-            });
+                firePropertyChange (id, null, null);
+            } catch (UnknownTypeException e) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
+            }
         }
         
         @Override
@@ -1325,10 +1494,10 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /** The single-threaded evaluator of lazy models. */
+    /** The single-threaded evaluator of lazy models. *//*
     static class LazyEvaluator implements Runnable {
         
-        /** Release the evaluator task after this time. */
+        /** Release the evaluator task after this time. *//*
         private static final long EXPIRE_TIME = 1000L;
 
         private final List<Object> objectsToEvaluate = new LinkedList<Object>();
@@ -1394,7 +1563,7 @@ public class TreeModelNode extends AbstractNode {
 
         }
 
-    }
+    }*/
 
 }
 

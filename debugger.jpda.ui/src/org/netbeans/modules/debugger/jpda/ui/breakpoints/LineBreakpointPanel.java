@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -323,15 +323,12 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
          * @return whether customizer can be closed
          */
         public boolean ok () {
-            String msg = valiadateMsg();
-            if (msg == null) {
-                msg = conditionsPanel.valiadateMsg();
-            }
-            if (msg != null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                return false;
-            }
             actionsPanel.ok ();
+            String path = tfFileName.getText().trim();
+            if (new File(path).exists()) {
+                path = "file:"+path;
+            }
+            breakpoint.setURL(path);
             breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
             breakpoint.setCondition (conditionsPanel.getCondition());
             breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
@@ -399,7 +396,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
                 setValid(false);
                 return ;
             }
-            int maxLine = findNumLines(breakpoint.getURL());
+            int maxLine = findNumLines(path);
             if (maxLine == 0) { // Not found
                 maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
             }
@@ -411,27 +408,6 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
             }
             setErrorMessage(null);
             setValid(true);
-        }
-
-        private String valiadateMsg () {
-            int line;
-            try {
-                line = Integer.parseInt(tfLineNumber.getText().trim());
-            } catch (NumberFormatException e) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec");
-            }
-            if (line <= 0) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
-            }
-            int maxLine = findNumLines(breakpoint.getURL());
-            if (maxLine == 0) { // Not found
-                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
-            }
-            if (line > maxLine + 1) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
-                        Integer.toString(line), Integer.toString(maxLine + 1));
-            }
-            return null;
         }
 
         private void setValid(boolean valid) {

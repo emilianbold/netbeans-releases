@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -198,14 +198,10 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         if (debugger.getCurrentCallStackFrame () != frame) {
             frame.makeCurrent ();
         } else {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    String language = DebuggerManager.getDebuggerManager ().
-                        getCurrentSession ().getCurrentLanguage ();
-                    SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-                    sp.showSource (frame, language);
-                }
-            });
+            String language = DebuggerManager.getDebuggerManager ().
+                getCurrentSession ().getCurrentLanguage ();
+            SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+            sp.showSource (frame, language);
         }
     }
 }

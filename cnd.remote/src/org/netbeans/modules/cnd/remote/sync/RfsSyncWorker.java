@@ -45,7 +45,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
 /**
  *
@@ -77,28 +79,6 @@ class RfsSyncWorker extends ZipSyncWorker {
         super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
 
-    @Override
-    protected Zipper createZipper(File zipFile) throws FileNotFoundException {
-        return new Zipper(zipFile) {
-            @Override
-            protected InputStream getFileInputStream(File file) throws FileNotFoundException {
-                if (allAtOnce) {
-                    return super.getFileInputStream(file);
-                } else {
-                    // Fooling SunStudio dmake, which (in some circumstances) does not open file with zero length
-                    long size;
-                    if (Boolean.getBoolean("cnd.rfs.ss.hack")) {
-                        size = file.length();
-                    } else {
-                        size = 0;
-                    }
-                    return new DummyInputStream(' ', size); // NOI18N
-                }
-            }
-
-        };
-    }
-
     /** FIXUP: this should be done via ActionHandler.*/
     /*package*/ static Parameters getLastParameters() {
         return lastParameters;
@@ -111,52 +91,11 @@ class RfsSyncWorker extends ZipSyncWorker {
 
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
+        Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
+        if (mkDir.get() != 0) {
+            throw new IOException("Can not create directory " + remoteDir); //NOI18N
+        }
         lastParameters = new Parameters(topLocalDir, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
-        super.synchronizeImpl(remoteDir);
-    }
-
-    @Override
-    protected TimestampAndSharabilityFilter createFilter() {
-        return new Filter(privProjectStorageDir, executionEnvironment) {
-        };
-    }
-
-    private class Filter extends TimestampAndSharabilityFilter {
-
-        public Filter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-            super(privProjectStorageDir, executionEnvironment);
-        }
-
-        @Override
-        public boolean acceptImpl(File file) {
-            return super.acceptImpl(file);
-        }
-
-        @Override
-        public void flush() {
-            // do nothing, since fake (empty) fies were sent!
-        }
-
-    }
-
-    private static class DummyInputStream extends InputStream {
-        private final char filler;
-        private final long size;
-        private long curr;
-
-        public DummyInputStream(char filler, long size) {
-            this.filler = filler;
-            this.size = size;
-            this.curr = 0;
-        }
-
-        public int read() throws IOException {
-            if (curr < size) {
-                curr++;
-                return filler;
-            } else {
-                return -1;
-            }
-        }
+        // no actual sinc here - only store parameters
     }
 }

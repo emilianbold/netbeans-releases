@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -879,6 +879,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ166897() throws Exception {
         // IZ#166897 : Unable to resolve member variable in typedef function definition
         performTest("iz166897.cc", 12, 19, "iz166897.cc", 5, 5);
+    }
+
+    public void testIZ159422() throws Exception {
+        // IZ#159422 : Unresolved ids in function definition with field like declaration
+        performTest("iz159422.cc", 10, 5, "iz159422.cc", 5, 5);
+        performTest("iz159422.cc", 16, 28, "iz159422.cc", 5, 5);
+        performTest("iz159422.cc", 16, 22, "iz159422.cc", 4, 5);
+        performTest("iz159422.cc", 8, 27, "iz159422.cc", 4, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

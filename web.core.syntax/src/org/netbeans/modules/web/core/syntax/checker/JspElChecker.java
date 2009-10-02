@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,12 +69,20 @@ public class JspElChecker {
     
     protected static ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);
     protected static final int DEFAULT_ERROR_HINT_PRIORITY = 50;
+    
+    public ELExpression parseExpression( Document doc, int offset ) {
+        JspELExpression expression = new JspELExpression( JspSyntaxSupport.get(doc));
+        expression.parse( offset );
+        return expression;
+    }
 
     public void check( List<Hint> hints, Document document,
-            FileObject fileObject, int offset )
+            FileObject fileObject, 
+            Map<Class<? extends ELExpression>, ELExpression> expressions )
     {
-        JspELExpression expression = new JspELExpression( JspSyntaxSupport.get(document));
-        int parseType = expression.parse( offset );
+        JspELExpression expression = (JspELExpression)( expressions.get(
+                JspELExpression.class));
+        int parseType = expression.getParseType();
         if ( parseType == ELExpression.EL_UNKNOWN){
             String beanName = expression.getBeanName();
             Hint hint = new Hint(DEFAULT_ERROR_RULE,

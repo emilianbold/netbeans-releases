@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -270,6 +270,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         synchronized (currentPCLock) {
             currentPCSet = true; // The annotation is goint to be set
         }
+        if (csf != null && sourcePath != null && currentThread != null) {
+            sourcePath.showSource (csf, language);
+        }
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 // show current line
@@ -277,8 +280,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     if (currentPC != null)
                         EditorContextBridge.getContext().removeAnnotation (currentPC);
                     if (csf != null && sourcePath != null && currentThread != null) {
-
-                        sourcePath.showSource (csf, language);
                         // annotate current line
                         currentPC = sourcePath.annotate (currentThread, language);
                     }
@@ -304,11 +305,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 Exceptions.printStackTrace(e);
                 return ;
             }
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    sp.showSource(frame, s.getCurrentLanguage());
-                }
-            });
+            sp.showSource(frame, s.getCurrentLanguage());
         }
     }
 

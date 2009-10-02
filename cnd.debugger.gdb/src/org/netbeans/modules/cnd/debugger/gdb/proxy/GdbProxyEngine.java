@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,14 +55,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.debugger.gdb.EnvUtils;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -145,16 +145,17 @@ public class GdbProxyEngine {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable(debuggerCommand.get(0)).setArguments(args);
 
+        npb.setWorkingDirectory(workingDirectory);
+
+        final MacroMap environment = npb.getEnvironment();
+
         if (debuggerEnvironment != null) {
-            for (String str : debuggerEnvironment) {
-                npb.putEnvironmentVariable(EnvUtils.getKey(str), EnvUtils.getValue(str));
-            }
+            environment.putAll(debuggerEnvironment);
         }
 
         if (execEnv.isLocal()) {
             String pathname = Path.getPathName();
-            npb.appendPathVariable(pathname, cspath);
-            npb.setWorkingDirectory(workingDirectory);
+            environment.appendPathVariable(pathname, cspath);
         }
 
         final NativeProcess proc = npb.call();
@@ -182,7 +183,7 @@ public class GdbProxyEngine {
         CommonTasksSupport.sendSignal(
                 debugger.getHostExecutionEnvironment(),
                 debuggerPid,
-                Signal.INT.toString(),
+                Signal.SIGINT,
                 null);
     }
 

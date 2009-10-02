@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -88,6 +88,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
 
     //TODO how to add [,] to the regular expression?
     private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
+    private static final Pattern INVALID_FOLDERNAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+|{};:'\",<>?]"); // NOI18N
 
     TargetChooserPanel(Project project, SourceGroup[] folders, FileType fileType) {
         this.folders = folders;
@@ -157,6 +158,12 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
         String filename = gui.getTargetName();
         if (INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
                 templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_filename")); // NOI18N
+            return false;
+        }
+
+        String folderName = gui.getTargetFolder();
+        if (INVALID_FOLDERNAME_CHARACTERS.matcher(folderName).find()) {
+                templateWizard.putProperty (WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_foldername")); // NOI18N
             return false;
         }
 

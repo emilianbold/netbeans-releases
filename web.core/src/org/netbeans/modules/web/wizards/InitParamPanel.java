@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -95,7 +95,7 @@ class InitParamPanel extends JPanel implements ActionListener,
         fullRowC.gridwidth = 2;
         fullRowC.anchor = GridBagConstraints.WEST;
         fullRowC.fill = GridBagConstraints.HORIZONTAL;
-        fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.insets = new Insets(4, 0, 4, 0);
 
         // Button
         GridBagConstraints bC = new GridBagConstraints();
@@ -103,7 +103,7 @@ class InitParamPanel extends JPanel implements ActionListener,
         bC.gridy = 1;
         bC.weightx = 0.1;
         bC.fill = GridBagConstraints.HORIZONTAL;
-        bC.insets = new Insets(4, 20, 4, 60);
+        bC.insets = new Insets(4, 20, 4, 0);
 
         // Table panel
         GridBagConstraints tableC = new GridBagConstraints();

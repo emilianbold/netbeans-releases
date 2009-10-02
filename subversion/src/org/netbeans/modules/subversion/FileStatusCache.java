@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.subversion;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.regex.*;
 import org.netbeans.modules.versioning.util.ListenersSupport;
@@ -77,6 +79,11 @@ public class FileStatusCache {
      * Third parameter: new FileInformation object
      */
     public static final Object EVENT_FILE_STATUS_CHANGED = new Object();
+
+    /**
+     * Property indicating status of cache readiness
+     */
+    public static final String PROP_CACHE_READY = "subversion.cache.ready"; //NOI18N
 
     /**
      * A special map saying that no file inside the folder is managed.
@@ -651,6 +658,9 @@ public class FileStatusCache {
         if ( r1 != r2 ) {
             return false;
         }
+        if (e1.isCopied() != e2.isCopied()) {
+            return false;
+        }
         return e1.getUrl() == e2.getUrl() || 
                 e1.getUrl() != null && e1.getUrl().equals(e2.getUrl());
     }
@@ -664,6 +674,15 @@ public class FileStatusCache {
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
                 current != null && current.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) return true;        
         return false;
+    }
+
+    PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
     }
     
     // --- Package private contract ------------------------------------------
@@ -681,6 +700,7 @@ public class FileStatusCache {
             Subversion.getInstance().refreshAllAnnotations();
         } finally {
             ready = true;
+            propertySupport.firePropertyChange(PROP_CACHE_READY, false, true);
     }
     }
 
@@ -912,7 +932,7 @@ public class FileStatusCache {
             return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.REPLACED.equals(kind)) {                      
             // this status or better to use this simplyfication?
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | remoteStatus, status);
+            return new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | remoteStatus, status);
         } else if (SVNStatusKind.MERGED.equals(kind)) {            
             return new FileInformation(FileInformation.STATUS_VERSIONED_MERGE | remoteStatus, status);
         } else if (SVNStatusKind.CONFLICTED.equals(kind)) {            

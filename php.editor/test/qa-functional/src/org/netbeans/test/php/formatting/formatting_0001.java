@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -72,8 +72,7 @@ public class formatting_0001 extends formatting
           "Undo_Formatting_of_PHP_web_page",
           "Create_a_PHP_file",
           "Format_default_code_of_PHP_file",
-          "Undo_Formatting_of_PHP_file",
-          "Formatting_of_folded_code"
+          "Undo_Formatting_of_PHP_file"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -187,16 +186,10 @@ public class formatting_0001 extends formatting
     eoPHP.clickForPopup( );
     JPopupMenuOperator menu = new JPopupMenuOperator( );
     menu.pushMenu( "Format" );
-    String sTextFormatted = eoPHP.getText( );
-
-    if( !sTextOriginal.equals( sTextFormatted ) )
-    {
-      fail( "Default formatting is not valid." );
-    }
-
+    new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
     new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Edit|Undo");
     String sTextUndo = eoPHP.getText( );
-    if( !sTextChanged.equals( sTextUndo ) )
+    if( !sTextOriginal.equals( sTextUndo ) )
     {
       fail( "Undo formatting is not valid." );
     }
@@ -204,13 +197,4 @@ public class formatting_0001 extends formatting
     endTest( );
   }
 
-  public void Formatting_of_folded_code( )
-  {
-    startTest( );
-
-    // Human oriented test.
-    // No reasons to automate.
-
-    endTest( );
-  }
 }

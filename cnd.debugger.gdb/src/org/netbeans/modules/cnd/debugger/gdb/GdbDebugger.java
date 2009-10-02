@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
-import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -105,6 +104,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -181,8 +182,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
     private final List<GdbVariable> localVariables = new ArrayList<GdbVariable>();
-    private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
-    private final Map<Integer, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl>());
+    private final Map<Integer, BreakpointImpl<?>> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl<?>>();
+    private final Map<Integer, BreakpointImpl<?>> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl<?>>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
     private final Set<Integer> runAfterTokens = Collections.synchronizedSet(new HashSet<Integer>());
     private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
@@ -283,6 +284,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }, 30000);
             }
             String gdbCommand = profile.getGdbPath(pae.getConfiguration(), false);
+            if (gdbCommand == null) {
+                throw new GdbErrorException("Gdb command is empty, exiting"); //NOI18N;
+            }
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
@@ -294,7 +298,9 @@ public class GdbDebugger implements PropertyChangeListener {
             String[] debuggerEnv = new String[0];
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                 String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
-                debuggerEnv = new String[]{path}; //NOI18N
+                if (path != null) {
+                    debuggerEnv = new String[]{path}; //NOI18N
+                }
             }
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
@@ -400,14 +406,12 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.file_exec_and_symbols(pathMap.getRemotePath(pae.getExecutable().replace("\\", "/"), true)); // NOI18N
                 //gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 
-                String[] env = pae.getProfile().getEnvironment().getenv();
-                Map<String, String> mapEnv = new HashMap<String, String>(env.length);
-                EnvUtils.appendEnv(mapEnv, env);
+                MacroMap macroMap = MacroMap.forExecEnv(execEnv);
+                macroMap.putAll(pae.getProfile().getEnvironment().getenvAsMap());
                 
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, pae.getExecutable())) {
-                        EnvUtils.appendPath(mapEnv, EnvUtils.getKey(envEntry), EnvUtils.getValue(envEntry));
-                    }
+                    UnbufferSupport.initUnbuffer(execEnv, macroMap);
+                    
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS && !isUnitTest()) {
                         ioProxy = IOProxy.create(execEnv, iotab);
@@ -415,7 +419,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
 
                 // set project environment
-                for (Map.Entry<String, String> entry : mapEnv.entrySet()) {
+                for (Map.Entry<String, String> entry : macroMap.entrySet()) {
                     gdb.gdb_set("environment", entry.getKey() + '=' + entry.getValue()); // NOI18N
                 }
 
@@ -1117,7 +1121,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 int end = msg.indexOf('.', start); // NOI18N
                 if (end != -1) {
                     String breakpoinIdx = msg.substring(start, end).trim();
-                    BreakpointImpl breakpoint = findBreakpoint(breakpoinIdx);
+                    BreakpointImpl<?> breakpoint = findBreakpoint(breakpoinIdx);
                     if (breakpoint != null) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
@@ -1125,7 +1129,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
-                BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
+                BreakpointImpl<?> breakpoint = pendingBreakpointMap.remove(token);
                 if (breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
@@ -1646,7 +1650,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
-                BreakpointImpl impl = findBreakpoint(map.get("bkptno")); // NOI18N
+                BreakpointImpl<?> impl = findBreakpoint(map.get("bkptno")); // NOI18N
                 if (impl == null) {
                     int idx = temporaryBreakpoints.indexOf(map.get("bkptno")); // NOI18N
                     if (idx >= 0) {
@@ -1766,6 +1770,11 @@ public class GdbDebugger implements PropertyChangeListener {
                 resume();
                 return;
             } else if ("SIGINT".equals(signal)) { // NOI18N
+                gdb.stack_list_frames();
+                setStopped();
+                return;
+            } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
+                // see IZ 172855 (On windows we need to skip SIGTRAP)
                 gdb.stack_list_frames();
                 setStopped();
                 return;
@@ -1984,7 +1993,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param reason a reason why program is stopped
      */
     private boolean breakpointValidation(int token, Object o) {
-        BreakpointImpl impl = pendingBreakpointMap.get(token);
+        BreakpointImpl<?> impl = pendingBreakpointMap.get(token);
 
         if (impl != null) { // impl is null for the temporary bp set at main during startup
             if (o instanceof String) {
@@ -2409,7 +2418,7 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.set_unwindonsignal("off"); // NOI18N
         ArrayList<Integer> ids = new ArrayList<Integer>();
         synchronized (breakpointList) {
-            for (Map.Entry<Integer, BreakpointImpl> entry : breakpointList.entrySet()) {
+            for (Map.Entry<Integer, BreakpointImpl<?>> entry : breakpointList.entrySet()) {
                 if (entry.getValue().getBreakpoint().isEnabled()) {
                     ids.add(entry.getKey());
                 }
@@ -2490,11 +2499,11 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    public Map<Integer, BreakpointImpl> getBreakpointList() {
+    public Map<Integer, BreakpointImpl<?>> getBreakpointList() {
         return breakpointList;
     }
 
-    private BreakpointImpl findBreakpoint(String id) {
+    private BreakpointImpl<?> findBreakpoint(String id) {
         try {
             return breakpointList.get(Integer.valueOf(id));
         } catch (NumberFormatException nfe) {

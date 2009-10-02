@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -405,8 +405,8 @@ public class MercurialAnnotator extends VCSAnnotator {
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        File[] roots = HgUtils.getRepositoryRoots(ctx);
-        boolean noneVersioned = (roots == null || roots.length == 0);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        boolean noneVersioned = (roots == null || roots.size() == 0);
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
@@ -425,8 +425,8 @@ public class MercurialAnnotator extends VCSAnnotator {
 
             actions.add(null);
             if (!noneVersioned) {
-                String name = roots.length == 1 ?
-                                NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal", roots[0].getName()) :
+                String name = roots.size() == 1 ?
+                                NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal", roots.iterator().next().getName()) :
                                 NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneRepository");
                 actions.add(new CloneAction(name, ctx));
             }

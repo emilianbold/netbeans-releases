@@ -93,6 +93,7 @@ public final class DLightConfiguration {
     private final DLightConfigurationOptions configurationOptions;
     private final String displayedName;
     private final boolean isHidden;
+    private final boolean isSystem;
     private final DLightConfigurationOptionsListener listener = new DLightConfigurationOptionsListenerImpl();
 
     static DLightConfiguration create(FileObject configurationRoot) {
@@ -115,6 +116,7 @@ public final class DLightConfiguration {
         this.configurationOptions = getConfigurationOptions();
         this.displayedName = configurationRoot.getAttribute("displayedName") == null ? configurationRoot.getName() : (String)configurationRoot.getAttribute("displayedName");//NOI18N
         this.isHidden = configurationRoot.getAttribute("hidden") != null && (Boolean)configurationRoot.getAttribute("hidden"); // NOI18N
+        this.isSystem = configurationRoot.getAttribute("system") != null && (Boolean)configurationRoot.getAttribute("system"); // NOI18N
 
     }
 
@@ -122,6 +124,9 @@ public final class DLightConfiguration {
         return displayedName;
     }
 
+    boolean isSystem(){
+        return isSystem;
+    }
 
 
     final ToolsConfiguration getToolsConfiguration(){
@@ -269,7 +274,7 @@ public final class DLightConfiguration {
 
     private class DefaultConfigurationOption implements DLightConfigurationOptions {
 
-        private boolean turnState = false;
+        private boolean turnState = true;
 
         public void turnCollectorsState(boolean turnState) {
             this.turnState = turnState;
@@ -294,7 +299,7 @@ public final class DLightConfiguration {
         }
 
         public boolean validateToolsRequiredUserInteraction() {
-            return false;
+            return true;
         }
 
         public boolean profileOnRun() {
@@ -302,7 +307,13 @@ public final class DLightConfiguration {
         }
 
         public Collection<String> getActiveToolNames() {
-            return null;
+            Collection<String> toolIDs = new ArrayList<String>();
+            for(DLightTool tool : getToolsSet()){
+                if (tool.isEnabled()){
+                    toolIDs.add(tool.getID());
+                }
+            }
+            return toolIDs;
         }
 
         public void addListener(DLightConfigurationOptionsListener listener) {

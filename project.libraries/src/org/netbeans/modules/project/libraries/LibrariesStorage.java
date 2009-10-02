@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -64,13 +63,13 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -144,10 +143,10 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     // scans over storage and fetchs it ((fileset persistence files) into memory
     // ... note that providers can read their data during getVolume call
-    private void loadFromStorage() {
-        // configure parser       
-        libraries = new HashMap<String,LibraryImplementation>();
-        librariesByFileNames = new HashMap<String,LibraryImplementation>();
+    private void loadFromStorage(
+            final Map<? super String, ? super LibraryImplementation> libraries,
+            final Map<? super String, ? super LibraryImplementation> librariesByFileNames) {
+        // configure parser
         //We are in unit test with no storage
         if (storage == null) {
             return;
@@ -165,10 +164,10 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     if (impl != null) {
                         LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
                         if (provider == null) {
-                            ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
+                            LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                         }
                         else if (libraries.keySet().contains(impl.getName())) {
-                                ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Library \""
+                                LOG.warning("LibrariesStorage: Library \""
                                     +impl.getName()+"\" is already defined, skeeping the definition from: " 
                                     + FileUtil.getFileDisplayName(descriptorFile));
                         }
@@ -182,38 +181,50 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                         }
                     }
                 } catch (SAXException e) {
-                    ErrorManager.getDefault().notify (e);
+                    //The library is broken, probably edited by user
+                    //just log as warning
+                    LOG.warning(String.format("File %s contains broken library descriptor.", FileUtil.getFileDisplayName(descriptorFile)));
                 } catch (ParserConfigurationException e) {
-                    ErrorManager.getDefault().notify (e);
+                    Exceptions.printStackTrace(e);
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify (e);
+                    Exceptions.printStackTrace(e);
                 } catch (RuntimeException e) {
                     // Other problem.
-                    ErrorManager.getDefault().notify (e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
         try {
             saveTimeStamps();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }       
     }
     
-    private synchronized void initStorage () {
-        if (!initialized) {
-            if (this.storage == null) {
-                this.storage = createStorage();                
-            }                                    
-            if (storage != null) {
-                this.storage.addFileChangeListener (this);
+    private void initStorage () {
+        boolean reload;
+        synchronized (this) {
+            if (!initialized) {
+                if (this.storage == null) {
+                    this.storage = createStorage();
+                }
+                if (storage != null) {
+                    this.storage.addFileChangeListener (this);
+                }
+                LibraryTypeRegistry.getDefault().addChangeListener(this);
+                initialized = true;
             }
-            LibraryTypeRegistry.getDefault().addChangeListener(this);
-            initialized = true;
+            //For the first time or a new LibraryTypeProvider has been enabled
+            reload = libraries == null || LibraryTypeRegistry.getDefault().hasChanged();
         }
-        //For the first time or a new LibraryTypeProvider has been enabled
-        if (libraries == null || LibraryTypeRegistry.getDefault().hasChanged()) {
-            this.loadFromStorage();
+        if (reload) {
+            final Map<String,LibraryImplementation> libraries = new HashMap<String, LibraryImplementation>();
+            final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<String, LibraryImplementation>();
+            this.loadFromStorage(libraries, librariesByFileNames);
+            synchronized (this) {
+                this.libraries = libraries;
+                this.librariesByFileNames = librariesByFileNames;
+            }
         }
     }
 
@@ -237,8 +248,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         try {
             parser.parse(input);
         } catch (SAXException e) {
-            ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "From " + baseURL, null, null, null);
-            throw e;
+            throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
         }
     }
 
@@ -249,7 +259,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                         String libraryType = library.getType ();
                         LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
                         if (libraryTypeProvider == null) {
-                            ErrorManager.getDefault().log (ErrorManager.WARNING, "LibrariesStorage: Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
+                            LOG.warning("LibrariesStorage: Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
                             return;
                         }
                         FileObject fo = storage.createData (library.getName(),"xml");   //NOI18N
@@ -312,10 +322,14 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     /**
      * Return all libraries in memory.
      */
-    public final synchronized LibraryImplementation[] getLibraries() {
+    public final LibraryImplementation[] getLibraries() {
         this.initStorage();
-        assert this.storage != null : "Storage is not initialized";        
-        return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
+        synchronized (this) {
+            assert this.storage != null : "Storage is not initialized";
+            assert this.libraries != null;
+            //return a snapshot of libraries, maybe even newer
+            return libraries.values().toArray(new LibraryImplementation[libraries.size()]);
+        }
     } // end getLibraries
 
 
@@ -351,7 +365,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     String libraryType = newLibrary.getType ();
                     final LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
                     if (libraryTypeProvider == null) {
-                        ErrorManager.getDefault().log (ErrorManager.WARNING, "LibrariesStorageL Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
+                        LOG.warning("LibrariesStorageL Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
                         return;
                     }
                     this.storage.getFileSystem().runAtomicAction(
@@ -374,7 +388,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
             if (impl != null) {
                 LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
                 if (provider == null) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
+                    LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
                 else {
                     synchronized (this) {                        
@@ -389,17 +403,18 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                         saveTimeStamps();
                     } catch (RuntimeException e) {
                         String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
-                        ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                        Exceptions.printStackTrace(Exceptions.attachMessage(e,message));
                     }
                     this.fireLibrariesChanged();
                 }
             }            
         } catch (SAXException e) {
-            ErrorManager.getDefault().notify (e);
+            //Newly created library is broken, rather exception
+            Exceptions.printStackTrace(e);
         } catch (ParserConfigurationException e) {
-            ErrorManager.getDefault().notify (e);
+            Exceptions.printStackTrace(e);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify (e);
+            Exceptions.printStackTrace(e);
         }
     }
 
@@ -415,7 +430,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         if (impl != null) {
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
             if (provider == null) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Cannot invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
+                LOG.warning("LibrariesStorage: Cannot invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
             }
             else {
                 //Has to be called outside the synchronized block,
@@ -424,7 +439,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     provider.libraryDeleted (impl);
                 } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryDeletedError");
-                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                    Exceptions.printStackTrace(Exceptions.attachMessage(e,message));
                 }
             }
             this.fireLibrariesChanged();
@@ -443,7 +458,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 readLibrary (definitionFile, impl);
                 LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
                 if (provider == null) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
+                    LOG.warning("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
                 }
                 try {
                     //TODO: LibraryTypeProvider should be extended by libraryUpdated method 
@@ -452,14 +467,15 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     saveTimeStamps();
                 } catch (RuntimeException e) {
                     String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
-                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                    Exceptions.printStackTrace(Exceptions.attachMessage(e,message));
                 }                
             } catch (SAXException se) {
-                ErrorManager.getDefault().notify(se);
+                //Changed library is broken, rather exception
+                Exceptions.printStackTrace(se);
             } catch (ParserConfigurationException pce) {
-                ErrorManager.getDefault().notify(pce);
+                Exceptions.printStackTrace(pce);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -510,7 +526,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
     }        
     
-    private Properties getTimeStamps () {
+    private synchronized Properties getTimeStamps () {
         if (this.timeStamps == null) {
             this.timeStamps = new Properties();
             if (this.storage != null) {
@@ -529,7 +545,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             this.timeStamps.clear();
                         }
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }

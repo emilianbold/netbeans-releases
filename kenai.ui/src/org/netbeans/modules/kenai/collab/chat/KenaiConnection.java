@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -114,7 +114,7 @@ public class KenaiConnection implements PropertyChangeListener {
             instance = new KenaiConnection();
             ProviderManager providerManager = ProviderManager.getInstance();
             providerManager.addExtensionProvider("delay", "urn:xmpp:delay", new DelayExtensionProvider());//NOI18N
-            providerManager.addExtensionProvider("notification", "jabber:client", new NotificationExtensionProvider());
+            providerManager.addExtensionProvider("notification", NotificationExtensionProvider.NAMESPACE, new NotificationExtensionProvider());
             Kenai.getDefault().addPropertyChangeListener(instance);
         }
         return instance;
@@ -290,7 +290,7 @@ public class KenaiConnection implements PropertyChangeListener {
                     n = StringUtils.parseName(n);
                 }
                 final String name = n;
-                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", "jabber:client");
+                final NotificationExtension ne = (NotificationExtension) msg.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
                 if (ne != null && msg.getExtension("x", "jabber:x:delay") == null) {
                     post(new Runnable() {
                         public void run() {

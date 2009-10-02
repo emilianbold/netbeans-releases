@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project;
 
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -68,5 +69,29 @@ public class PhpModuleImpl extends PhpModule {
 
     public FileObject getTestDirectory() {
         return ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+    }
+
+    @Override
+    public PhpModuleProperties getProperties() {
+        PhpModuleProperties properties = new PhpModuleProperties()
+                .setWebRoot(ProjectPropertiesSupport.getWebRootDirectory(phpProject));
+        FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+        if (tests != null) {
+            properties = properties.setTests(tests);
+        }
+        String url = ProjectPropertiesSupport.getUrl(phpProject);
+        if (url != null) {
+            properties = properties.setUrl(url);
+        }
+        String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
+        if (indexFile != null) {
+            FileObject index = getSourceDirectory().getFileObject(indexFile);
+            if (index != null
+                    && index.isData()
+                    && index.isValid()) {
+                properties = properties.setIndexFile(index);
+            }
+        }
+        return properties;
     }
 }

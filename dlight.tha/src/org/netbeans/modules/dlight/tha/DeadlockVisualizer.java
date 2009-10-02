@@ -86,7 +86,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     }
 
     public VisualizerContainer getDefaultContainer() {
-        return DefaultVisualizerContainer.getInstance();
+        return THAVisulaizerContainerTopComponent.findInstance();
     }
 
     public synchronized void refresh() {

@@ -953,9 +953,9 @@ itor tabs #66700).
      * @param VCSContext
      * @return repository roots
      */
-    public static File[] getRepositoryRoots(VCSContext context) {
+    public static Set<File> getRepositoryRoots(VCSContext context) {
         Set<File> rootsSet = context.getRootFiles();
-        List<File> ret = new LinkedList<File>();
+        Set<File> ret = new HashSet<File>();
 
         // filter managed roots
         for (File file : rootsSet) {
@@ -966,7 +966,7 @@ itor tabs #66700).
                 }
             }
         }
-        return ret.toArray(new File[ret.size()]);
+        return ret;
     }
 
     /**
@@ -1361,7 +1361,7 @@ itor tabs #66700).
             Mercurial.LOG.log(Level.FINE, "No defalt pull available for managed file : [" + file + "]");
             remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
 
-            Mercurial.LOG.log(Level.WARNING, "No defalt pull or push available for managed file : [" + file + "]");
+            Mercurial.LOG.log(Level.INFO, "No defalt pull or push available for managed file : [" + file + "]");
         }
         if(remotePath != null) {
             remotePath = remotePath.trim();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -54,6 +54,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -68,8 +69,12 @@ public class VariablesActionsProvider implements NodeActionsProvider {
             public boolean isEnabled (Object node) {
                 return true;
             }
-            public void perform (Object[] nodes) {
-                goToSource ((Field) nodes [0]);
+            public void perform (final Object[] nodes) {
+                lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                    public void run() {
+                        goToSource ((Field) nodes [0]);
+                    }
+                });
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -102,11 +107,15 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         throw new UnknownTypeException (node);
     }
     
-    public void performDefaultAction (Object node) throws UnknownTypeException {
+    public void performDefaultAction (final Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof Field) {
-            goToSource ((Field) node);
+            lookupProvider.lookupFirst(null, RequestProcessor.class).post(new Runnable() {
+                public void run() {
+                    goToSource ((Field) node);
+                }
+            });
             return;
         }
         if (node.toString().startsWith ("SubArray")) // NOI18N
@@ -130,7 +139,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     public void removeModelListener (ModelListener l) {
     }
     
-    public void goToSource (Field variable) {
+    private void goToSource (Field variable) {
         SourcePath ectx = lookupProvider.lookupFirst(null, SourcePath.class);
         ectx.showSource (variable);
     }

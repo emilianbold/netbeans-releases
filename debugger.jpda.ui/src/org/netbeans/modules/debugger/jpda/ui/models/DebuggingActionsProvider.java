@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -545,31 +545,23 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     }
     
     private static void goToSource(final CallStackFrame frame) {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
-                if (session == null) return ;
-                String language = session.getCurrentLanguage ();
-                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-                if (engine == null) return ;
-                SourcePath sp = engine.lookupFirst(null, SourcePath.class);
-                sp.showSource (frame, language);
-            }
-        });
+        Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (session == null) return ;
+        String language = session.getCurrentLanguage ();
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (engine == null) return ;
+        SourcePath sp = engine.lookupFirst(null, SourcePath.class);
+        sp.showSource (frame, language);
     }
     
     private static void goToSource(final JPDAThread thread) {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
-                if (session == null) return ;
-                String language = session.getCurrentLanguage ();
-                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-                if (engine == null) return ;
-                SourcePath sp = engine.lookupFirst(null, SourcePath.class);
-                sp.showSource (thread, language);
-            }
-        });
+        Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (session == null) return ;
+        String language = session.getCurrentLanguage ();
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (engine == null) return ;
+        SourcePath sp = engine.lookupFirst(null, SourcePath.class);
+        sp.showSource (thread, language);
     }
 
 }

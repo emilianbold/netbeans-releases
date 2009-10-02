@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -285,7 +285,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
             JComboBox combo = (JComboBox) editorComponent;
             if (fileStatus == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || fileStatus == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 combo.setModel(new DefaultComboBoxModel(removeOptions));
-            } else if ((fileStatus & FileInformation.STATUS_IN_REPOSITORY) == 0) {
+            } else if ((fileStatus & (FileInformation.STATUS_IN_REPOSITORY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) == 0) {
                 if (info.isDirectory()) {
                     combo.setModel(new DefaultComboBoxModel(dirAddOptions));
                 } else {

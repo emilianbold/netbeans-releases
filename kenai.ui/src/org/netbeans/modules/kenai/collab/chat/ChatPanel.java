@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -629,6 +629,7 @@ public class ChatPanel extends javax.swing.JPanel {
         buttons.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
         sendLinkButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/insertlink.png"))); // NOI18N
+        sendLinkButton.setToolTipText(org.openide.util.NbBundle.getBundle(ChatPanel.class).getString("ChatPanel.sendLinkButton.toolTipText")); // NOI18N
         sendLinkButton.setFocusable(false);
         sendLinkButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         sendLinkButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -651,7 +652,7 @@ public class ChatPanel extends javax.swing.JPanel {
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
                 .add(sendLinkButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 154, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
@@ -683,7 +684,6 @@ public class ChatPanel extends javax.swing.JPanel {
         inboxPanel.setLayout(new java.awt.BorderLayout());
 
         inboxScrollPane.setBorder(null);
-        inboxScrollPane.setViewportBorder(null);
 
         inbox.setBorder(null);
         inbox.setContentType("text/html"); // NOI18N
@@ -919,7 +919,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private String rgb = null;
 
     private String getMessageBody(Message m) {
-        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", "jabber:client");
+        final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
         if (ne==null) {
             return m.getBody();
         }

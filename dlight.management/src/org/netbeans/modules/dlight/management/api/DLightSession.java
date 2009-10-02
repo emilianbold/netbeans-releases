@@ -99,7 +99,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private final List<IndicatorNotificationsListener> indicatorNotificationListeners = Collections.synchronizedList(new ArrayList<IndicatorNotificationsListener>());
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
-    private List<DataCollector> collectors = null;
+    private List<DataCollector<?>> collectors = null;
     private Map<String, Map<String, Visualizer>> visualizers = null;//toolID, visualizer
     private SessionState state;
     private final int sessionID;
@@ -378,8 +378,23 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return io;
     }
 
-    public void addDataFilter(DataFilter filter, boolean isAdjusting) {
+    public void addDataFilter(final DataFilter filter, final boolean isAdjusting) {
         //if the filter is TimeIntervalFilter: remove first
+        if (EventQueue.isDispatchThread()) {
+            DLightExecutorService.submit(new Runnable() {
+
+                public void run() {
+                    addDataFilterImpl(filter, isAdjusting);
+                }
+            }, "DLigthSession.addDataFIlter should be invoked in Non-AWT thread");//NOI18N
+
+        } else {
+            addDataFilterImpl(filter, isAdjusting);
+        }
+
+    }
+
+    private final void addDataFilterImpl(final DataFilter filter, final boolean isAdjusting) {
         if (filter instanceof TimeIntervalDataFilter) {
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
@@ -459,7 +474,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         DataCollector notAttachableDataCollector = null;
 
         if (collectors == null) {
-            collectors = new ArrayList<DataCollector>();
+            collectors = new ArrayList<DataCollector<?>>();
         }
 
         if (context.getDLightConfiguration().getConfigurationOptions(false).areCollectorsTurnedOn()) {
@@ -554,7 +569,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         serviceInfoDataStorage.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
 
         if (collectors != null && collectors.size() > 0) {
-            for (DataCollector toolCollector : collectors) {
+            for (DataCollector<?> toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
                 Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 

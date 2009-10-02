@@ -51,13 +51,13 @@ CFLAGS-Linux := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 CFLAGS-SunOS := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 CFLAGS-Mac_OS_X := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
 
-LDFLAGS-LIB-Linux := -ldl -shared
-LDFLAGS-LIB-SunOS := -G -ldl -lsocket
+LDFLAGS-LIB-Linux := -shared -ldl
+LDFLAGS-LIB-SunOS := -shared -ldl -lsocket
 LDFLAGS-LIB-Mac_OS_X := -G -ldl
 
-LDFLAGS-APP-Linux := -lrt -s -lnsl -lresolv
-LDFLAGS-APP-SunOS := -lrt -s -lnsl -lsocket -lresolv
-LDFLAGS-APP-Mac_OS_X := -lrt -s -lnsl -lsocket -lresolv
+LDFLAGS-APP-Linux := -lrt -lnsl -lresolv
+LDFLAGS-APP-SunOS := -lrt -lnsl -lsocket -lresolv
+LDFLAGS-APP-Mac_OS_X := -lrt -lnsl -lsocket -lresolv
 
 ifdef 64BITS
     FLAG64 := -m64
@@ -81,8 +81,12 @@ endif
 DEBUG := 
 TRACE := 0
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64} -DTRACE=${TRACE} ${DEBUG} ${EXTRA_CFLAGS}
-LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}}
-LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${DEBUG}
+LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG64}
+LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG64} ${DEBUG}
+
+ifneq (${TRACE}, 0)
+	LDFLAGS_LIB_TRACE = -lrt
+endif
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -120,7 +124,7 @@ all: check init ${PRELOAD_PATH} ${CONTROLLER_PATH}
 
 #library:
 ${PRELOAD_PATH}: ${PRELOAD_OBJ}
-	gcc ${LDFLAGS_LIB} -o ${PRELOAD_PATH} ${PRELOAD_OBJ}
+	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${PRELOAD_PATH} ${PRELOAD_OBJ}
 
 ${PRELOAD_OBJ}: ${PRELOAD_NAME}.c
 	gcc ${CFLAGS} -o ${PRELOAD_OBJ} ${PRELOAD_NAME}.c

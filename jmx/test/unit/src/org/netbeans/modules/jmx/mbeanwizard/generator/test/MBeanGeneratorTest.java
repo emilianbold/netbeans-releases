@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,6 +51,9 @@ import java.io.File;
 import org.netbeans.modules.jmx.MBeanDO;
 //import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGenInfo;
 import org.netbeans.modules.jmx.mbeanwizard.generator.Translator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
         
 /**
  * MBeanGeneratorTest.java 
@@ -67,7 +70,10 @@ public class MBeanGeneratorTest extends TestCase {
     }
 
     protected void setUp() throws java.lang.Exception {
+        File tmp = new File(System.getProperty("java.io.tmpdir"));
+        DataFolder target = DataFolder.findFolder(FileUtil.toFileObject(tmp));
         wizard = new TemplateWizard();
+        wizard.setTargetFolder(target);
     }
 
     protected void tearDown() throws java.lang.Exception {

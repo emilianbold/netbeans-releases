@@ -2,7 +2,7 @@
  * This code is copied from the OpenJDK version 7 java.util.prefs.Base64 
  * implementation, and retains its original license, as shown in full below:
  *
- * Copyright 2000-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it

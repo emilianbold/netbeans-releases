@@ -42,6 +42,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.visualizers.*;
@@ -59,6 +60,7 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.types.TimeDuration;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.spi.support.TimerBasedVisualizerSupport;
@@ -72,6 +74,9 @@ import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDa
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.StackNameProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -124,12 +129,27 @@ public class ThreadMapVisualizer extends JPanel implements
                         UIThread.invoke(new Runnable() {
 
                             public void run() {
-                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump));
+                                StackNameProvider stackNameProvider = new StackNameProvider() {
+
+                                    public String getStackName(ThreadSnapshot snapshot) {
+                                        String name = "";
+                                        MSAState msa = snapshot.getState();
+                                        ThreadStateResources res = ThreadStateResources.forState(msa);
+                                        if (res != null) {
+                                            name = res.name;
+                                        }
+                                        long time = ThreadStateColumnImpl.timeInervalToMilliSeconds(snapshot.getTimestamp());
+                                        String at = TimeLineUtils.getMillisValue(time);
+                                        return NbBundle.getMessage(ThreadMapVisualizer.class, "ThreadStackVisualizerStackAt1", //NOI18N
+                                                name, dataManager.findThreadName(snapshot.getThreadInfo().getThreadId()), at);
+                                    }
+                                };
+                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider));
                             }
                         });
                         session.cleanAllDataFilter(ThreadDumpFilter.class);
                         session.addDataFilter(new ThreadDumpFilter(query.getStartTime(), threadDump), false);
-                        
+
                     }
                 }, "Thread Dump  request from Thread Map Visualizer");//NOI18N
 
@@ -157,7 +177,7 @@ public class ThreadMapVisualizer extends JPanel implements
         threadsTimelinePanelContainer.setLayout(new BorderLayout());
         threadsTimelinePanelContainer.add(threadsPanel, BorderLayout.CENTER);
         threadsTimelinePanelContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        threadsPanel.addThreadsMonitoringActionListener(this);
+        //threadsPanel.addThreadsMonitoringActionListener(this);
 
         setLayout(new BorderLayout());
         add(threadsTimelinePanelContainer, BorderLayout.CENTER);
@@ -170,18 +190,32 @@ public class ThreadMapVisualizer extends JPanel implements
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //filter out with the time
         if (session != null) {
-            Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
-            lastTimeFilters = timeFilters;
-            setTimeIntervalSelection(timeFilters);
-            final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(lastTimeFilters, true));
-            UIThread.invoke(new Runnable() {
+            if (EventQueue.isDispatchThread()) {
+                DLightExecutorService.submit(new Runnable() {
 
-                public void run() {
-                    updateList(null, summaryData);
-                }
-            });
+                    public void run() {
+                        update();
+                    }
+                }, "ThreadMapVisualizer. Request Data when filters are changed");//NOI18N
+
+            }else{
+                update();
+            }
         }
 
+    }
+
+    private final void update() {
+        final Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
+        lastTimeFilters = timeFilters;
+        setTimeIntervalSelection(timeFilters);
+        final ThreadMapSummaryData summaryData = ThreadMapVisualizer.this.provider.queryData(new ThreadMapSummaryDataQuery(timeFilters, true));
+        UIThread.invoke(new Runnable() {
+
+            public void run() {
+                updateList(null, summaryData);
+            }
+        });
     }
 
     private final void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
@@ -190,6 +224,8 @@ public class ThreadMapVisualizer extends JPanel implements
 
     public void init() {
         timerSupport = new TimerBasedVisualizerSupport(this, new TimeDuration(TimeUnit.SECONDS, 1));
+        startTimeStamp = 0;
+        dataManager.reset();
         startup();
     }
 
@@ -198,16 +234,21 @@ public class ThreadMapVisualizer extends JPanel implements
             switch (session.getState()) {
                 case RUNNING:
                 case STARTING:
+                    startTimeStamp = 0;
+                    dataManager.reset();
+                    dataManager.startup();
                     timerSupport.start();
                     break;
                 default:
                     timerSupport.stop();
+                    dataManager.shutdown();
             }
         }
     }
 
     public void shutdown() {
         timerSupport.stop();
+        dataManager.shutdown();
         dataManager.reset();
         startTimeStamp = 0;
     }
@@ -333,7 +374,8 @@ public class ThreadMapVisualizer extends JPanel implements
             case ANALYZE:
                 startTimeStamp = 0;
                 timerSupport.stop();
-                syncFillModel();
+                dataManager.shutdown();
+                refresh();
                 break;
             case RUNNING:
             case STARTING:

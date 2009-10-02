@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -132,17 +132,20 @@ public class cc_0002 extends cc
   };
 
 
-  private boolean CheckCodeCompletion( EditorOperator eoPHP, CCompletionCase cc )
+  private boolean CheckCodeCompletion(  CCompletionCase cc )
   {
+    EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
     // Locate position
     eoPHP.setCaretPosition( cc.sInitialLocation, false );
-    // Type code
-    TypeCode( eoPHP, "\n" + cc.sCode );
+    // Type cod
+    TypeCode( eoPHP, "\n" );
+    int l = (cc.sCode.length());
+    TypeCode(eoPHP, cc.sCode);
     // Locate completion position
     eoPHP.setCaretPosition( cc.sCompletionLocation, false );
     // Invoke completion
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
+    Sleep( 5000 );
     // Check result
     String[] asResult = cc.sResult.split( "[|]" );
     if( CCompletionCase.COMPLETION_LIST == cc.iCompletionType )
@@ -151,6 +154,7 @@ public class cc_0002 extends cc
       CompletionInfo completionInfo = GetCompletion( );
       if( null == completionInfo )
         fail( "NPE instead of competion info." );
+
 
       CheckCompletionItems( completionInfo.listItself, asResult );
       completionInfo.listItself.hideAll( );
@@ -187,7 +191,7 @@ public class cc_0002 extends cc
     {
       new CCompletionCase( "*/", "$test=1;\n$test1=$tes;", "$test1=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 2 ),
       new CCompletionCase( "*/", "$test=1;\n$test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -2, 3 ),
-      new CCompletionCase( "*/", "$test=1;\n$newvar=$tes;\n$test1=\"a\";", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 3 ),
+//      new CCompletionCase( "*/", "$test=1;\n$newvar=$tes;\n$test1=\"a\";", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 3 ),
       new CCompletionCase( "*/", "$test=1;\n$test1=\"$tes\";", "$test1=\"$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -1, 2 ),
       new CCompletionCase( "*/", "$test=1;\nif ($test==1){\n$test1=\"a\";\n}\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -4, 6 ),
       new CCompletionCase( "*/", "$test=1;\nif ($test==1){\n$test1=\"a\";\n}\nif ($test==1){\n$newvar=$tes;\n}", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "$test|$test1", -5, 8 ),
@@ -196,7 +200,7 @@ public class cc_0002 extends cc
       new CCompletionCase( "*/", "$test=1;\n/*  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[*] [$]newvar=[$]test;", -2, 4 ),
       new CCompletionCase( "*/", "$test=1;\n/**  $test1=\"a\";\n$newvar=$tes;", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 4 ),
       new CCompletionCase( "*/", "/**  @v\n", "@v", CCompletionCase.COMPLETION_LIST, 0, "@var|@version", -1, 3 ),
-      new CCompletionCase( "?>", "<html>\n<?php\n$test=1;\n?>\n$newvar=$tes\n</html>", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -4, 6 ),
+//      new CCompletionCase( "?>", "<html>\n<?php\n$test=1;\n?>\n$newvar=$tes\n</html>", "$newvar=$tes", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -4, 6 ),
       new CCompletionCase( "?>", "<?php\n$test=1;\n?>\nText\n<?php\n$newvar=$tes\n?>", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]test", -5, 7 ),
       new CCompletionCase( "?>", "<?php\n$test=1;\n?>\nText\n<%\n$newvar=$tes\n%>", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]test", -5, 7 ),
       new CCompletionCase( "?>", "<?php\n$test=1;\n?>\nText\n<?=\n$newvar=$tes\n=>", "$newvar=$tes", CCompletionCase.COMPLETION_STRING, 0, "[$]newvar=[$]test", -5, 7 ),
@@ -215,20 +219,20 @@ public class cc_0002 extends cc
       new CCompletionCase( "*/", "class MyClass {\npublic function func", "function func", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -1, 3 ),
       new CCompletionCase( "*/", "class MyClass {\npublic function func(){\n$th\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_STRING, 0, "[$]this->", -2, 8 ),
       new CCompletionCase( "*/", "class MyClass {\npublic function func(){\necho \"$th\";\n}\n}\n{{", "$th", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -2, 8 ),
-      new CCompletionCase( "*/", "class MyClass {\npublic $test;\npublic function func(){\necho \"Hello\";\n}\n}\n$test=MyClass->\n{{", "MyClass->", CCompletionCase.COMPLETION_LIST, 0, "test|func", -6, 10 ),
-      new CCompletionCase( "*/", "class MyClass {\nprotected $test;\nprotected function func(){\necho \"Hello\";\n}\n}\n$test=MyClass->\n{{", "MyClass->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10 ),
-      new CCompletionCase( "*/", "class MyClass {\nprivate $test;\nprivate function func(){\necho \"Hello\";\n}\n}\n$test=MyClass->\n{{", "MyClass->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10 ),
+      new CCompletionCase( "*/", "class MyClass {\npublic $test;\npublic function func(){\necho \"Hello\";\n}\n}\n$test= new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "test|func", -6, 10 ),
+      new CCompletionCase( "*/", "class MyClass {\nprotected $test;\nprotected function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10 ),
+      new CCompletionCase( "*/", "class MyClass {\nprivate $test;\nprivate function func(){\necho \"Hello\";\n}\n}\n$test=new MyClass();\n$test->\n{{", "$test->", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10 ),
       new CCompletionCase( "*/", "class MyClass {\npublic static $test;\npublic static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "$test|func", -6, 10 ),
       new CCompletionCase( "*/", "class MyClass {\nprotected static $test;\nprotected static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10 ),
       new CCompletionCase( "*/", "class MyClass {\nprivate static $test;\nprivate static function func(){\necho \"Hello\";\n}\n}\n$test=MyClass::\n{{", "MyClass::", CCompletionCase.COMPLETION_LIST, 0, "No suggestions", -6, 10 )
     };
 
-    EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
+//    EditorOperator eoPHP = new EditorOperator( "EmptyPHP.php" );
     String sFailed = "";
     int iFailed = 0;
     for( CCompletionCase cc : accTests )
     {
-      if( !CheckCodeCompletion( eoPHP, cc ) )
+      if( !CheckCodeCompletion( cc ) )
       {
         iFailed++;
         sFailed = sFailed + "|" + cc.sResult;

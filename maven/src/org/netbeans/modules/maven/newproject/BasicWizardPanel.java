@@ -46,6 +46,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -65,21 +66,27 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     private final Archetype[] archs;
     private final boolean isFinish;
     private boolean additional;
+    private final ValidationGroup validationGroup;
     
     /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel(String[] eeLevels, Archetype[] archs, boolean isFinish, boolean additional) {
+    public BasicWizardPanel(ValidationGroup vg, String[] eeLevels, Archetype[] archs, boolean isFinish, boolean additional) {
         this.archs = archs;
         this.eeLevels = eeLevels;
         this.isFinish = isFinish;
         this.additional = additional;
+        this.validationGroup = vg;
     }
 
-    public BasicWizardPanel() {
-        this(new String[0], null, true, true);
+    public BasicWizardPanel(ValidationGroup vg) {
+        this(vg, new String[0], null, true, true);
     }
 
-    public BasicWizardPanel(boolean isFinish) {
-        this(new String[0], null, isFinish, false);
+    public BasicWizardPanel(ValidationGroup vg, boolean isFinish) {
+        this(vg, new String[0], null, isFinish, false);
+    }
+
+    ValidationGroup getValidationGroup() {
+        return validationGroup;
     }
     
     public Component getComponent() {
@@ -106,10 +113,6 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
         return new HelpCtx(BasicWizardPanel.class);
     }
     
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
@@ -148,8 +151,12 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     }
     
     public void validate() throws WizardValidationException {
+        validationGroup.validateAll();
+    }
+
+    public boolean isValid() {
         getComponent();
-        component.validate(wizardDescriptor);
+        return wizardDescriptor.isValid();
     }
     
 }

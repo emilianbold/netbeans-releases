@@ -122,7 +122,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                     pb.setArguments(args);
                 }
 
-                pb.putAllEnvironmentVariables(env);
+                pb.getEnvironment().putAll(env);
 
                 Process process = pb.call();
                 InputStream is = process.getInputStream();
