@@ -974,7 +974,7 @@ public abstract class FileSystem implements Serializable {
                     }
                 } catch (MissingResourceException ex) {
                     Exceptions.attachMessage(ex, warningMessage(bundleName, fo));
-                    LOG.log(Level.WARNING, null, ex);
+                    LOG.log(Level.INFO, null, ex);
                     // ignore
                 }
             }
