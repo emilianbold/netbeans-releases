@@ -116,7 +116,6 @@
                 <package>org.netbeans.modules.dlight.api.storage.types</package>
                 <package>org.netbeans.modules.dlight.api.support</package>
                 <package>org.netbeans.modules.dlight.api.tool</package>
-                <package>org.netbeans.modules.dlight.api.tool.impl</package>
                 <package>org.netbeans.modules.dlight.api.visualizer</package>
                 <package>org.netbeans.modules.dlight.spi.collector</package>
                 <package>org.netbeans.modules.dlight.spi.datafilter</package>

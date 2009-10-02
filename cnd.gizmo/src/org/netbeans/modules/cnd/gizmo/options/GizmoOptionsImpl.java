@@ -61,8 +61,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
-import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
-import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -74,6 +72,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         LINUX,
         WINDOWS
     }
+    private static final String GIZMO_CATEGORY = "Gizmo";
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
@@ -102,7 +101,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private IntConfiguration dataProvider;
     private DataProvidersCollection currentDPCollection = DataProvidersCollection.DEFAULT;
     public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
-
     public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
     private String[] configurationNames;
     private DLightConfiguration[] configurations;
@@ -118,9 +116,16 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         currentDPCollection = DataProvidersCollection.DEFAULT;
     }
 
+    public DLightConfiguration getDLightConfiguration() {
+        return configurations[gizmoConfigurations.getValue()];
+    }
+
+    
+
     public void init(Configuration conf) {
         MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
         ExecutionEnvironment execEnv = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        //the following code is not valid anymore, we do not use per tool info
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         List<DLightTool> tools = gizmoConfiguration.getToolsSet();
         for (DLightTool tool : tools) {
@@ -177,48 +182,35 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             setDataProviderValue(DataProvider.SIMPLE);
 
         }
-        
+
         // Gizmo configurations
         if (gizmoConfigurations == null) {
             List<String> names = new ArrayList<String>();
             List<DLightConfiguration> confs = new ArrayList<DLightConfiguration>();
-            DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
-            DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
-            for (DLightConfiguration dLightConfiguration : accessor.getDLightConfigurations(manager)) {
-                if (!DLightConfigurationAccessor.getDefault().isHidden(dLightConfiguration)){
-                    if (dLightConfiguration.getConfigurationName().startsWith("Gizmo")) { // NOI18N
-                        if (platform.indexOf("Solaris") >= 0) { // NOI18N
-                            // All
-                        }
-                        else if (platform.indexOf("Linux") >= 1) { // NOI18N
-                            // No DTrace
-                            if (dLightConfiguration.getConfigurationName().indexOf("DTrace") >= 0) { // NOI18N
-                                continue;
+            for (DLightConfiguration dlightConfiguration : DLightConfigurationManager.getInstance().getConfigurationsByCategoryName(GIZMO_CATEGORY)) {
+                    if (dlightConfiguration.getPlatforms() != null){
+                        List<String> platforms = dlightConfiguration.getPlatforms();
+                        for (String supportedPlatform : platforms){
+                            if (platform.indexOf(supportedPlatform) != -1){
+                                names.add(dlightConfiguration.getDisplayedName());
+                                confs.add(dlightConfiguration);
+                                break;
                             }
                         }
-                        else if (dLightConfiguration.getConfigurationName().indexOf("Simple") < 0) { // NOI18N
-                            // Only Simple
-                            continue;
-                        }
-                        // FIXUP: filter platform and set default based on SS and platform
-                        names.add(dLightConfiguration.getDisplayedName());
-                        confs.add(dLightConfiguration);
                     }
-                }
+
             }
             configurationNames = names.toArray(new String[names.size()]);
             configurations = confs.toArray(new DLightConfiguration[confs.size()]);
             // Figure out default;
             int defConf = 0;
             if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
-                if (hasSunStudio) {
+                if (hasSunStudio || platform.indexOf("Linux") >= 0) {
                     defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
-                }
-                else {
+                } else {
                     defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
                 }
-            }
-            else {
+            } else {
                 defConf = getConfigurationIndexByName("GizmoSimple"); // NOI18N
             }
             gizmoConfigurations = new IntConfiguration(null, defConf, configurationNames, null);
@@ -237,7 +229,12 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public Collection<String> getNames() {
-        return toolConfigurations.keySet();
+        List<DLightTool> tools = new ArrayList<DLightTool>(getDLightConfiguration().getToolsSet());
+        Collection<String> result = new ArrayList<String>();
+        for (DLightTool tool : tools){
+            result.add(tool.getID());
+        }
+        return result;
     }
 
     public void initialize() {
@@ -299,7 +296,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
         //in case different from the default
         DLightTool tool = gizmoConfiguration.getToolByID(toolName);
-        if (toolConfigurations.get(toolName) != null &&  tool != null && (tool.isEnabled() != toolConfigurations.get(toolName).getValue())){
+        if (toolConfigurations.get(toolName) != null && tool != null && (tool.isEnabled() != toolConfigurations.get(toolName).getValue())) {
             return true;
         }
         return false;
@@ -385,7 +382,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         getDataProvider().setValue(value);
         checkPropertyChange(DATA_PROVIDER_PROP, oldValue, getDataProviderValue());
     }
-    
+
     /**
      * @return the gizmoConfigurations
      */
