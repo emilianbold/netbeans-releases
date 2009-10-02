@@ -214,7 +214,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             }
             if (defConf == -1) {
                 if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
-                    if (hasSunStudio || platform.indexOf("Linux") >= 0) {
+                    if (hasSunStudio || platform.indexOf("Linux") >= 0) { // NOI18N
                         defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
                     } else {
                         defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
