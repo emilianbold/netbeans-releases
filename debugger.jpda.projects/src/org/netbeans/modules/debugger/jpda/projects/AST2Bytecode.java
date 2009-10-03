@@ -76,6 +76,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -167,6 +168,10 @@ class AST2Bytecode {
                             }
                         }
                         int pos = (int) sp.getStartPosition(cu, node);
+                        if (pos == Diagnostic.NOPOS) {
+                            // Bad positions => give it up.
+                            return null;
+                        }
                         EditorContext.Position startPosition =
                                 opCreationDelegate.createPosition(
                                         pos,
@@ -174,6 +179,10 @@ class AST2Bytecode {
                                         (int) lineMap.getColumnNumber(pos)
                                 );
                         pos = (int) sp.getEndPosition(cu, node);
+                        if (pos == Diagnostic.NOPOS) {
+                            // Bad positions => give it up.
+                            return null;
+                        }
                         EditorContext.Position endPosition =
                                 opCreationDelegate.createPosition(
                                         pos,
@@ -292,6 +301,10 @@ class AST2Bytecode {
                         }
                         //System.err.println("AST2Bytecode: methodNameInBytecode = '"+methodNameInBytecode+"', methodNameInSource = '"+methodName+"'");
                         pos = (int) sp.getEndPosition(cu, identifier);
+                        if (pos == Diagnostic.NOPOS) {
+                            // Bad positions => give it up.
+                            return null;
+                        }
                         EditorContext.Position methodEndPosition =
                                 opCreationDelegate.createPosition(
                                         pos,
@@ -302,6 +315,10 @@ class AST2Bytecode {
                             pos = pos - methodName.length();
                         } else {
                             pos = (int) sp.getStartPosition(cu, identifier);
+                            if (pos == Diagnostic.NOPOS) {
+                                // Bad positions => give it up.
+                                return null;
+                            }
                         }
                         EditorContext.Position methodStartPosition =
                                 opCreationDelegate.createPosition(
