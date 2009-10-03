@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.ProxyClassLoader;
+import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.osgi.framework.Bundle;
 
@@ -37,12 +38,13 @@ final class NetigsoLoader extends ProxyClassLoader {
     @Override
     @SuppressWarnings(value = "unchecked")
     public Enumeration<URL> findResources(String name) {
+        Enumeration<URL> ret = null;
         try {
-            return bundle.getResources(name);
+            ret = bundle.getResources(name);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
         }
+        return ret == null ? Enumerations.<URL>empty() : ret;
     }
 
     @Override
