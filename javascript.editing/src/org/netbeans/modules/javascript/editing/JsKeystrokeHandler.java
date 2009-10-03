@@ -1161,7 +1161,8 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
                 token = ts.token();
             }
 
-            if (bracketBalance != 0) { // not found matching bracket
+            if (bracketBalance != 0
+                    || (bracketId ==  JsTokenId.RBRACE && braceBalance < 0)) { // not found matching bracket
                                        // Remove the typed bracket as it's unmatched
                 skipClosingBracket = true;
             } else { // the bracket is matched

@@ -151,6 +151,10 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    public Collection<? extends TypeScope> getArrayAccessTypes(int offset) {
+        return getTypes(offset);
+    }
+
     public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
         Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();

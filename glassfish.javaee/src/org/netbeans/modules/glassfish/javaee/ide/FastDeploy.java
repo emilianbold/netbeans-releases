@@ -241,7 +241,12 @@ public class FastDeploy extends IncrementalDeployment {
             if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
                throw new IllegalStateException();
             }
-            dest = new File(dest, "gfdeploy");  // NOI18N
+            String moduleName = Utils.computeModuleID(app, null, null);
+            String dirName = "gfdeploy"; // NOI18N
+            if (null != moduleName) {
+                dirName += "/"+moduleName; // NOI18N
+            }
+            dest = new File(dest, dirName);
             boolean retval = true;
             if (!dest.exists()) {
                 retval = dest.mkdirs();
