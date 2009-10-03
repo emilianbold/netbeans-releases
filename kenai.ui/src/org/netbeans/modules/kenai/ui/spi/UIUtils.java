@@ -87,8 +87,10 @@ public final class UIUtils {
         KENAI_PASSWORD_PREF= name + ".password"; //NOI18N
         ONLINE_STATUS_PREF = name + ".online"; // NOI18N
         LOGIN_STATUS_PREF = name + ".login";// NOI18N
+        ONLINE_ON_CHAT_PREF = name + ".online_chat";// NOI18N
     }
     
+    public final static String ONLINE_ON_CHAT_PREF;
     private final static String KENAI_PASSWORD_PREF;
     private final static String KENAI_USERNAME_PREF;
     public final static String ONLINE_STATUS_PREF;

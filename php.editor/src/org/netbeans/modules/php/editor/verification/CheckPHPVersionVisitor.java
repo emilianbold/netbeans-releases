@@ -40,26 +40,19 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
@@ -107,9 +100,9 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(ConstantDeclaration statement) {
         for (ASTNode node : getPath()) {
-            if (node instanceof ClassDeclaration) {
+            if (node instanceof TypeDeclaration) {
                 return;
-            }
+            } 
         }
         createError(statement);
     }

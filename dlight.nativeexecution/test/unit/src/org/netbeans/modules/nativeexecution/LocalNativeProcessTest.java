@@ -38,11 +38,13 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -51,9 +53,13 @@ import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.TaskFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Exceptions;
 import static org.junit.Assert.*;
 
@@ -186,29 +192,44 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
                             assertTrue(pid > 0);
 
                             // Make sure process exists...
+                            // Do not perform this test on Windows...
+                            boolean isWindows = false;
+
                             try {
-                                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable("/bin/kill").setArguments("-0", "" + pid); // NOI18N
-                                int result = pb.call().waitFor();
-                                assertTrue(result == 0);
-                            } catch (InterruptedException ex) {
-                                System.out.println("kill interrupted..."); // NOI18N
+                                isWindows = HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.WINDOWS;
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
-                                fail();
+                            } catch (CancellationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+
+                            if (!isWindows) {
+                                try {
+                                    int result = CommonTasksSupport.sendSignal(execEnv, pid, Signal.NULL, null).get();
+                                    assertTrue(result == 0);
+                                } catch (InterruptedException ex) {
+                                    System.out.println("kill interrupted..."); // NOI18N
+                                } catch (ExecutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    fail();
+                                }
                             }
 
                             System.out.println("Kill process " + pid); // NOI18N
                             p.destroy();
 
                             // Make sure process doesn't exist...
+                            // Again, skip Windows
 
-                            try {
-                                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setCommandLine("/bin/kill -0 " + pid); // NOI18N
-                                int result = pb.call().waitFor();
-                                assertTrue(result != 0);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                                fail();
+                            if (!isWindows) {
+                                try {
+                                    NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv).setCommandLine("/bin/kill -0 " + pid); // NOI18N
+                                    int result = pb.call().waitFor();
+                                    assertTrue(result != 0);
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    fail();
+                                }
                             }
 
                             counters.getCounter("Killed").incrementAndGet(); // NOI18N
@@ -240,18 +261,19 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
     private class ShortTask implements Runnable {
 
-        final private Counters counters;
-        private ExecutionEnvironment execEnv;
-        private BlockingQueue<NativeProcess> pqueue;
+        private final String expectedOutput = "test passed"; // NOI18N
+        private final Counters counters;
+        private final BlockingQueue<NativeProcess> pqueue;
+        private final NativeProcessBuilder npb;
 
         public ShortTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
-            this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
+            npb = NativeProcessBuilder.newLocalProcessBuilder();
+            npb.setExecutable("echo").setArguments(expectedOutput); // NOI18N
         }
 
         public void run() {
-            NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder().setCommandLine("/bin/ls -d /tmp"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
@@ -259,7 +281,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
                 counters.getCounter("Started").incrementAndGet(); // NOI18N
                 System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
                 counters.getCounter("Done").incrementAndGet(); // NOI18N
-                if ("/tmp".equals(ProcessUtils.readProcessOutputLine(p))) { // NOI18N
+                if (expectedOutput.equals(ProcessUtils.readProcessOutputLine(p))) { // NOI18N
                     counters.getCounter("CorrectOutput").incrementAndGet(); // NOI18N
                 }
             } catch (InterruptedException ex) {
@@ -275,18 +297,20 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
     private class LongTask implements Runnable {
 
-        final private Counters counters;
-        private ExecutionEnvironment execEnv;
-        private BlockingQueue<NativeProcess> pqueue;
+        private final Counters counters;
+        private final ExecutionEnvironment execEnv;
+        private final BlockingQueue<NativeProcess> pqueue;
+        private final NativeProcessBuilder npb;
 
         public LongTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
             this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
+            npb = NativeProcessBuilder.newLocalProcessBuilder();
+            npb.setExecutable("sleep").setArguments("3"); // NOI18N
         }
 
         public void run() {
-            NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder().setCommandLine("sleep 3"); // NOI18N
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
@@ -312,24 +336,38 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
         private final Counters counters;
         private final BlockingQueue<NativeProcess> pqueue;
         private final ExecutionEnvironment execEnv;
+        private final NativeProcessBuilder npb;
 
         public InfiniteTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
             this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
+            HostInfo info = null;
+
+            try {
+                info = HostInfoUtils.getHostInfo(execEnv);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+
+            if (info == null || info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
+                npb.setExecutable("read"); // NOI18N
+            } else {
+                npb.setExecutable("cmd").setArguments("/C", "pause"); // NOI18N
+            }
         }
 
         public void run() {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("read"); // NOI18N
-
             try {
                 NativeProcess p = npb.call();
                 pqueue.put(p);
                 System.out.println("Process started: " + p.getPID()); // NOI18N
                 counters.getCounter("Started").incrementAndGet(); // NOI18N
                 System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
-                counters.getCounter("Done").incrementAndGet(); // NOI18N
             } catch (InterruptedException ex) {
                 counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (InterruptedIOException ex) {
@@ -337,6 +375,8 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 counters.getCounter("IOException").incrementAndGet(); // NOI18N
+            } finally {
+                counters.getCounter("Done").incrementAndGet(); // NOI18N
             }
         }
     }

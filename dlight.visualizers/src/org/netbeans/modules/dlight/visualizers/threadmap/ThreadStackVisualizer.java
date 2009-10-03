@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.StackNameProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -77,19 +78,21 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
     private final ThreadStackVisualizerConfiguration configuration;
     private ThreadDump descriptor;
+    private StackNameProvider stackNameProvider;
     private long dumpTime;
     private final MultipleCallStackPanel stackPanel;
     private JPanel emptyPanel;
     private final CardLayout cardLayout = new CardLayout();
     private DLightSession session;
     private List<DataFilter> filters;
-    private final Object lock = new String("ThreadStackVisualizer.filters.lock");//NOI18N
-    private final Object uiLock = new String("ThreadStackVisualizer.filters.ui.lock");//NOI18N
+    private static final class Lock{}
+    private final Object lock = new Lock();
     private boolean needUpdate = false;
 
     ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
         this.descriptor = configuraiton.getThreadDump();
         this.dumpTime = configuraiton.getDumpTime();
+        this.stackNameProvider = configuraiton.getStackNameProvider();
         this.configuration = configuraiton;
         stackPanel = MultipleCallStackPanel.createInstance(sourceFileInfo);
         setLayout(cardLayout);
@@ -159,7 +162,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                                 if (res != null) {
                                     final List<FunctionCall> functionCalls = stacks.get(i);
                                     if (functionCalls != null){
-                                        stackPanel.add(res.name + " " + snapshot.getThreadInfo().getThreadName(), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                        stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
                                     }
                                 }
                             }
@@ -195,10 +198,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     public String getDisplayName() {
-        if (descriptor != null && !descriptor.getThreadStates().isEmpty()) {
-            return descriptor.getThreadStates().get(0).getThreadInfo().getThreadName();
-        }
-        return NbBundle.getMessage(getDefaultContainer().getClass(), "CallStackDetails"); //NOI18N
+        return NbBundle.getMessage(getClass(), "CallStackDetails"); //NOI18N
     }
 
     public ThreadStackVisualizerConfiguration getVisualizerConfiguration() {

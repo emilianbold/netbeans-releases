@@ -62,7 +62,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
             KenaiProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
                 for (KenaiProject prj : selProjects) {
-                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj), false);
+                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj), false, true);
                 }
                 KenaiTopComponent.findInstance().open();
                 KenaiTopComponent.findInstance().requestActive();

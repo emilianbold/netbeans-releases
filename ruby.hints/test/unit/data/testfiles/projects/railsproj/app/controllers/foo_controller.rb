@@ -24,6 +24,10 @@ class FooController < ApplicationController
     redirect_to :whatever => "whatever"
   end
 
+  def neednoview2
+    render :json => {:name => "whatever"}.to_json
+  end
+
   private
   def i_am_private
   end

@@ -89,6 +89,7 @@ public class RemoteServerListUI extends ServerListUIEx {
         dlg.setDialogDescriptor(dd);
         dd.addPropertyChangeListener(dlg);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setMinimumSize(dialog.getPreferredSize());
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             cacheManager.setHosts(dlg.getHosts());

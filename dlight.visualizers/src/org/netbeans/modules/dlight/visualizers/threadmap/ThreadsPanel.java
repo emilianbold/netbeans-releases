@@ -94,6 +94,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -102,8 +103,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -140,15 +139,16 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String ZOOM_OUT_TOOLTIP = messages.getString("ThreadsPanel_ZoomOutToolTip"); // NOI18N
     private static final String FIXED_SCALE_TOOLTIP = messages.getString("ThreadsPanel_FixedScaleToolTip"); // NOI18N
     private static final String SCALE_TO_FIT_TOOLTIP = messages.getString("ThreadsPanel_ScaleToFitToolTip"); // NOI18N
-    private static final String THREADS_MONITORING_DISABLED_1_MSG = messages.getString("ThreadsPanel_ThreadsMonitoringDisabled1Msg"); // NOI18N
-    private static final String THREADS_MONITORING_DISABLED_2_MSG = messages.getString("ThreadsPanel_ThreadsMonitoringDisabled2Msg"); // NOI18N
-    private static final String NO_PROFILING_MSG = messages.getString("ThreadsPanel_NoProfilingMsg"); // NOI18N
     private static final String THREADS_COLUMN_NAME = messages.getString("ThreadsPanel_ThreadsColumnName"); // NOI18N
     private static final String TIMELINE_COLUMN_NAME = messages.getString("ThreadsPanel_TimelineColumnName"); // NOI18N
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
     private static final String SHOW_LEGEND = messages.getString("ThreadsPanel_ShowLegend"); // NOI18N
     private static final String SHOW_ALL_STACKS = messages.getString("ThreadsPanel_ShowAllStacks"); // NOI18N
+    private static final String SELECT_THREAD_NAME = messages.getString("ThreadsPanel_SelectThreadName"); // NOI18N
+    private static final String THREAD_NAME_ID = messages.getString("ThreadsPanel_ThreadNameId"); // NOI18N
+    private static final String THREAD_NAME_CALLEE = messages.getString("ThreadsPanel_ThreadNameCallee"); // NOI18N
+    private static final String THREAD_NAME_CALLEE_CALLEE = messages.getString("ThreadsPanel_ThreadNameCalleeCallee"); // NOI18N
     private static final String CLOSE_LEGEND_TOOLTIP = messages.getString("ThreadsPanel_CloseLegendToolTip"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
     private static final String TABLE_ACCESS_DESCR = messages.getString("ThreadsPanel_TableAccessDescr"); // NOI18N
@@ -159,7 +159,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String VIEW_MODE_MSA_FULL = messages.getString("ThreadsPanel_FulleMSAViewMode");//NOI18N
     private static final String VIEW_MODE_COMBO_ACCESS_NAME = messages.getString("ThreadsPanel_ViewModeComboAccessName"); // NOI18N
     private static final String VIEW_MODE_COMBO_ACCESS_DESCR = messages.getString("ThreadsPanel_ViewModeComboAccessDescr"); // NOI18N
-    private static final String ENABLE_THREADS_MONITORING_BUTTON_ACCESS_NAME = messages.getString("ThreadsPanel_EnableThreadsMonitoringAccessName"); // NOI18N
     private static final String SHOW_LABEL_TEXT = messages.getString("ThreadsPanel_ShowLabelText"); // NOI18N
     private static final String VIEW_MODE_LABEL_TEXT = messages.getString("ThreadsPanel_ViewModeLabelText"); // NOI18N
     // -----
@@ -179,19 +178,19 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private DefaultComboBoxModel comboModel;
     private DefaultComboBoxModel viewModeComboModel;
     private DefaultComboBoxModel comboModelWithSelection;
-    private JButton enableThreadsMonitoringButton;
     private JButton scaleToFitButton;
     private JButton zoomInButton;
     private JButton zoomOutButton;
     private JComboBox threadsSelectionCombo;
     private JComboBox viewModeSelectionCombo;
-    private JLabel enableThreadsMonitoringLabel1;
-    private JLabel enableThreadsMonitoringLabel2;
-    private JLabel enableThreadsMonitoringLabel3;
     private JPanel legendPanel;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showLegend;
     private JMenu showAllStacks;
+    private JMenu selectThreadName;
+    private JRadioButtonMenuItem idThreadName;
+    private JRadioButtonMenuItem calleeThreadName;
+    private JRadioButtonMenuItem calleeCalleeThreadName;
     private JPanel contentPanel; // panel with CardLayout containing threadsTable & enable threads profiling notification and button
     private JPanel notificationPanel;
     private JPopupMenu popupMenu;
@@ -440,36 +439,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         notificationPanel.setBorder(dataPanel.getBorder());
         notificationPanel.setBackground(table.getBackground());
 
-        Border myRolloverBorder = new CompoundBorder(new FlatToolBar.FlatRolloverButtonBorder(Color.GRAY, Color.LIGHT_GRAY),
-                new FlatToolBar.FlatMarginBorder());
-
-        enableThreadsMonitoringLabel1 = new JLabel(THREADS_MONITORING_DISABLED_1_MSG);
-        enableThreadsMonitoringLabel1.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 3));
-        enableThreadsMonitoringLabel1.setForeground(Color.DARK_GRAY);
-
-        enableThreadsMonitoringButton = new JButton(new ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/visualizers/threadmap/resources/threadsView.png"))); // NOI18N
-        enableThreadsMonitoringButton.setContentAreaFilled(false);
-        enableThreadsMonitoringButton.setMargin(new Insets(3, 3, 0, 0));
-        enableThreadsMonitoringButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        enableThreadsMonitoringButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        enableThreadsMonitoringButton.setRolloverEnabled(true);
-        enableThreadsMonitoringButton.setBorder(myRolloverBorder);
-        enableThreadsMonitoringButton.getAccessibleContext().setAccessibleName(ENABLE_THREADS_MONITORING_BUTTON_ACCESS_NAME);
-
-        enableThreadsMonitoringLabel2 = new JLabel(THREADS_MONITORING_DISABLED_2_MSG);
-        enableThreadsMonitoringLabel2.setBorder(BorderFactory.createEmptyBorder(20, 3, 20, 0));
-        enableThreadsMonitoringLabel2.setForeground(Color.DARK_GRAY);
-
-        enableThreadsMonitoringLabel3 = new JLabel(NO_PROFILING_MSG);
-        enableThreadsMonitoringLabel3.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 0));
-        enableThreadsMonitoringLabel3.setForeground(Color.DARK_GRAY);
-        enableThreadsMonitoringLabel3.setVisible(false);
-
-        notificationPanel.add(enableThreadsMonitoringLabel1);
-        notificationPanel.add(enableThreadsMonitoringButton);
-        notificationPanel.add(enableThreadsMonitoringLabel2);
-        notificationPanel.add(enableThreadsMonitoringLabel3);
-
         setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
         setLayout(new BorderLayout());
 
@@ -504,6 +473,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         threadsSelectionCombo.addActionListener(this);
         showOnlySelectedThreads.addActionListener(this);
         showLegend.addActionListener(this);
+        idThreadName.addActionListener(this);
+        calleeThreadName.addActionListener(this);
+        calleeCalleeThreadName.addActionListener(this);
         viewModeSelectionCombo.addActionListener(this);
         viewModeSelectionCombo.setSelectedIndex(Math.min(NbPreferences.forModule(getClass()).getInt("ViewMode", 0), viewModeComboModel.getSize()-1)); // NOI18N
 
@@ -833,6 +805,24 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             initLegend(isFullMode());
             refreshUI();
             viewPort.repaint();
+        }else if (e.getSource() == idThreadName){
+            NbPreferences.forModule(getClass()).putInt("ThreadName", 0); // NOI18N
+            manager.setThreadNameFormat(0, false);
+            idThreadName.setSelected(true);
+            calleeThreadName.setSelected(false);
+            calleeCalleeThreadName.setSelected(false);
+        }else if (e.getSource() == calleeThreadName){
+            NbPreferences.forModule(getClass()).putInt("ThreadName", 1); // NOI18N
+            manager.setThreadNameFormat(1, false);
+            idThreadName.setSelected(false);
+            calleeThreadName.setSelected(true);
+            calleeCalleeThreadName.setSelected(false);
+        }else if (e.getSource() == calleeCalleeThreadName){
+            NbPreferences.forModule(getClass()).putInt("ThreadName", 2); // NOI18N
+            manager.setThreadNameFormat(2, false);
+            idThreadName.setSelected(false);
+            calleeThreadName.setSelected(false);
+            calleeCalleeThreadName.setSelected(true);
         } else if (e.getSource() instanceof JMenuItem) {
             JMenuItem item = (JMenuItem) e.getSource();
             Object o = item.getClientProperty("query"); // NOI18N
@@ -867,12 +857,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         buttonsToolBar.add(actionButton, 0);
         buttonsToolBar.add(new JToolBar.Separator(), 1);
-    }
-
-    // ---------------------------------------------------------------------------------------
-    // Handling profiling started & finished and threads monitoring enabled & disabled
-    public void addThreadsMonitoringActionListener(ActionListener listener) {
-        enableThreadsMonitoringButton.addActionListener(listener);
     }
 
     // ---------------------------------------------------------------------------------------
@@ -950,26 +934,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return !notificationPanel.isShowing();
     }
 
-    public void profilingSessionFinished() {
-        enableThreadsMonitoringButton.setEnabled(false);
-        enableThreadsMonitoringLabel1.setVisible(false);
-        enableThreadsMonitoringLabel2.setVisible(false);
-        enableThreadsMonitoringButton.setVisible(false);
-        enableThreadsMonitoringLabel3.setVisible(true);
-    }
-
-    public void profilingSessionStarted() {
-        enableThreadsMonitoringButton.setEnabled(true);
-        enableThreadsMonitoringLabel1.setVisible(true);
-        enableThreadsMonitoringLabel2.setVisible(true);
-        enableThreadsMonitoringButton.setVisible(true);
-        enableThreadsMonitoringLabel3.setVisible(false);
-    }
-
-    public void removeThreadsMonitoringActionListener(ActionListener listener) {
-        enableThreadsMonitoringButton.removeActionListener(listener);
-    }
-
     @Override
     public void requestFocus() {
         SwingUtilities.invokeLater(new Runnable() { // must be invoked lazily to override default focus of first component
@@ -1007,9 +971,33 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         showLegend = new JMenuItem(SHOW_LEGEND);
         showAllStacks = new JMenu(SHOW_ALL_STACKS);
 
+        selectThreadName = new JMenu(SELECT_THREAD_NAME);
+        idThreadName = new JRadioButtonMenuItem(THREAD_NAME_ID);
+        calleeThreadName = new JRadioButtonMenuItem(THREAD_NAME_CALLEE);
+        calleeCalleeThreadName = new JRadioButtonMenuItem(THREAD_NAME_CALLEE_CALLEE);
+        selectThreadName.add(idThreadName);
+        selectThreadName.add(calleeThreadName);
+        selectThreadName.add(calleeCalleeThreadName);
+        switch(NbPreferences.forModule(getClass()).getInt("ThreadName", 0)) { // NOI18N
+            case 1:
+                calleeThreadName.setSelected(true);
+                manager.setThreadNameFormat(1, true);
+                break;
+            case 2:
+                calleeCalleeThreadName.setSelected(true);
+                manager.setThreadNameFormat(2, true);
+                break;
+            case 0:
+            default:
+                idThreadName.setSelected(true);
+                manager.setThreadNameFormat(0, true);
+                break;
+        }
+
         popup.add(showOnlySelectedThreads);
         popup.add(showLegend);
         popup.add(showAllStacks);
+        popup.add(selectThreadName);
 
         return popup;
     }
