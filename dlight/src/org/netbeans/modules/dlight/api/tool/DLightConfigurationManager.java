@@ -103,12 +103,27 @@ public final class DLightConfigurationManager {
 
     }
 
-    DLightConfiguration registerConfiguration(String configurationName, String displayedName) {
+    private String commaSeparatedList(List<String> list) {
+        StringBuffer res = new StringBuffer();
+        for (String s : list) {
+            if (res.length() > 0) {
+                res.append(","); // NOI18N
+            }
+            res.append(s);
+        }
+        return res.toString();
+    }
+
+    DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
         FileObject configurationsFolder = getToolsFSRoot();
         FileObject configurationFolder;
         try {
             configurationFolder = configurationsFolder.createFolder(configurationName);
             configurationFolder.setAttribute("displayedName", displayedName);//NOI18N
+            configurationFolder.setAttribute("category", category);//NOI18N
+            configurationFolder.setAttribute("platforms", commaSeparatedList(platforms));//NOI18N
+            configurationFolder.setAttribute("collector.providers", collector);//NOI18N
+            configurationFolder.setAttribute("indicator.providers", commaSeparatedList(indicators));//NOI18N
             configurationFolder.createFolder(ToolsConfiguration.KNOWN_TOOLS_SET);
         } catch (IOException ex) {
             return null;
@@ -241,8 +256,8 @@ public final class DLightConfigurationManager {
         }
 
         @Override
-        public DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName) {
-            return manager.registerConfiguration(configurationName, displayedName);
+        public DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
+            return manager.registerConfiguration(configurationName, displayedName, category, platforms, collector, indicators);
         }
 
         @Override
