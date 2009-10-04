@@ -83,6 +83,7 @@ implements Stamps.Updater {
     private static NetigsoActivator activator;
     private static Framework framework;
     private static Set<String> registered;
+    private static NetigsoServices services;
 
     static void clear() {
         activator = null;
@@ -149,18 +150,8 @@ implements Stamps.Updater {
     }
 
     synchronized static Framework getContainer() throws BundleException {
-        if (activator == null) {
+        if (framework == null) {
             Map<String,Object> configMap = new HashMap<String,Object>();
-            // Configure the OSGi instance to be embedded.
-            // Add core OSGi packages to be exported from the class path
-            // via the system bundle.
-/*            configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
-                "org.osgi.framework; version=1.4.0," +
-                "org.osgi.service.packageadmin; version=1.2.0," +
-                "org.osgi.service.startlevel; version=1.1.0," +
-                "org.osgi.util.tracker; version=1.3.3,"+
-                "org.osgi.service.url; version=1.0.0");
- */
             // Explicitly specify the directory to use for caching bundles.
             String ud = System.getProperty("netbeans.user");
             if (ud == null) {
@@ -177,6 +168,7 @@ implements Stamps.Updater {
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
+            services = new NetigsoServices(framework);
             NetigsoModule.LOG.finer("OSGi Container initialized"); // NOI18N
         }
         return framework;
