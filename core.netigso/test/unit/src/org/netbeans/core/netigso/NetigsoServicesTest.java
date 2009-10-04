@@ -143,7 +143,7 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
             mgr.mutexPrivileged().exitWriteAccess();
         }
 
-        Bundle b = NetigsoModuleFactory.findBundle("org.bar");
+        Bundle b = findBundle("org.bar");
         assertNotNull("Bundle really found", b);
         final IOException s = new IOException();
         ServiceRegistration sr = b.getBundleContext().registerService(IOException.class.getName(), s, null);
@@ -158,6 +158,17 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         assertEquals("No instance found", 0, res.allInstances().size());
         assertEquals("One change", 1, cnt);
     }
+
+
+    static Bundle findBundle(String cnb) throws Exception {
+        for (Bundle b : NetigsoModuleFactory.getContainer().getBundleContext().getBundles()) {
+            if (cnb.equals(b.getSymbolicName())) {
+                return b;
+            }
+        }
+        return null;
+    }
+
     private File changeManifest(File orig, String manifest) throws IOException {
         File f = new File(getWorkDir(), orig.getName());
         Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));
