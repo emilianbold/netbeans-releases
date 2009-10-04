@@ -97,7 +97,7 @@ implements Stamps.Updater {
     private static void readBundles() {
         registered = new HashSet<String>();
         try {
-            InputStream is = Stamps.getModulesJARs().asStream("felix-bundles");
+            InputStream is = Stamps.getModulesJARs().asStream("netigso-bundles");
             if (is == null) {
                 return;
             }
@@ -151,8 +151,7 @@ implements Stamps.Updater {
     synchronized static Framework getContainer() throws BundleException {
         if (activator == null) {
             Map<String,Object> configMap = new HashMap<String,Object>();
-            // Configure the Felix instance to be embedded.
-            //configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
+            // Configure the OSGi instance to be embedded.
             // Add core OSGi packages to be exported from the class path
             // via the system bundle.
 /*            configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
@@ -167,7 +166,7 @@ implements Stamps.Updater {
             if (ud == null) {
                 throw new IllegalStateException();
             }
-            String cache = ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix";
+            String cache = ud + File.separator + "var" + File.separator + "cache" + File.separator + "netigso";
             configMap.put("felix.cache.profiledir", cache);
             configMap.put("felix.cache.dir", cache);
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
@@ -178,16 +177,16 @@ implements Stamps.Updater {
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
-            NetigsoModule.LOG.finer("Felix initialized"); // NOI18N
+            NetigsoModule.LOG.finer("OSGi Container initialized"); // NOI18N
         }
         return framework;
     }
 
     static void startContainer() throws BundleException {
         if (getContainer().getState() == Bundle.STARTING) {
-            NetigsoModule.LOG.finer("Felix start:"); // NOI18N
+            NetigsoModule.LOG.finer("OSGi start:"); // NOI18N
             getContainer().start();
-            NetigsoModule.LOG.finer("Felix started"); // NOI18N
+            NetigsoModule.LOG.finer("OSGi started"); // NOI18N
         }
     }
 
@@ -245,7 +244,7 @@ implements Stamps.Updater {
             } catch (BundleException ex) {
                 throw new IOException(ex.getMessage());
             }
-            Stamps.getModulesJARs().scheduleSave(this, "felix-bundles", false); // NOI18N
+            Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
         }
     }
 
