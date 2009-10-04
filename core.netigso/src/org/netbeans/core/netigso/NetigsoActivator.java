@@ -72,8 +72,6 @@ import org.osgi.framework.SynchronousBundleListener;
 final class NetigsoActivator
 implements BundleActivator, SynchronousBundleListener, ServiceListener,
 InstanceContent.Convertor<ServiceReference, Object> {
-    static final Logger LOG = Logger.getLogger(NetigsoActivator.class.getName());
-
     private Set<Module> all = new CopyOnWriteArraySet<Module>();
 
     public NetigsoActivator() {
@@ -101,7 +99,7 @@ InstanceContent.Convertor<ServiceReference, Object> {
 
     public void bundleChanged(BundleEvent ev) {
         String loc = ev.getBundle().getLocation();
-        LOG.log(Level.FINER, "bundleChanged {0}", ev);
+        NetigsoModule.LOG.log(Level.FINER, "bundleChanged {0}", ev);
         final String pref = "netigso://"; // NOI18N
         if (ev.getType() == BundleEvent.RESOLVED && loc != null && loc.startsWith(pref)) {
             String cnb = loc.substring(pref.length());
@@ -111,12 +109,12 @@ InstanceContent.Convertor<ServiceReference, Object> {
                     return;
             }
         }
-            LOG.warning("No join for " + cnb);
+            NetigsoModule.LOG.warning("No join for " + cnb);
     }
     }
 
     void register(Module m) {
-        LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
+        NetigsoModule.LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
         all.add(m);
     }
 
@@ -175,7 +173,7 @@ InstanceContent.Convertor<ServiceReference, Object> {
             try {
                 return (Class<?>)obj.getBundle().loadClass(arr[0]);
             } catch (ClassNotFoundException ex) {
-                LOG.log(Level.INFO, "Cannot load service class", arr[0]); // NOI18N
+                NetigsoModule.LOG.log(Level.INFO, "Cannot load service class", arr[0]); // NOI18N
             }
         }
         return Object.class;

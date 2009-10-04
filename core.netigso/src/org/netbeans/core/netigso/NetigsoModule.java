@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -20,6 +21,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
 final class NetigsoModule extends Module {
+    static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
+
 
     final Bundle bundle;
     private NetigsoLoader loader;
@@ -78,7 +81,7 @@ final class NetigsoModule extends Module {
     public SpecificationVersion getSpecificationVersion() {
         String version = (String) bundle.getHeaders().get("Bundle-Version"); // NOI18N
         if (version == null) {
-            NetigsoActivator.LOG.warning("No Bundle-Version for " + bundle.getSymbolicName());
+            NetigsoModule.LOG.warning("No Bundle-Version for " + bundle.getSymbolicName());
             return new SpecificationVersion("0.0");
         }
         int pos = -1;
@@ -118,7 +121,7 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        NetigsoActivator.LOG.log(Level.FINE, "classLoaderUp {0}, state: {1}", new Object[] { getCodeNameBase(), bundle.getState() }); // NOI18N
+        NetigsoModule.LOG.log(Level.FINE, "classLoaderUp {0}, state: {1}", new Object[] { getCodeNameBase(), bundle.getState() }); // NOI18N
         switch (bundle.getState()) {
             case Bundle.INSTALLED: break;
             case Bundle.ACTIVE: break;
@@ -137,7 +140,7 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderDown() {
-        NetigsoActivator.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
+        NetigsoModule.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
         assert bundle.getState() == Bundle.ACTIVE;
         try {
             bundle.stop();

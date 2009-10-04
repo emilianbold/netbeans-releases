@@ -52,8 +52,8 @@ final class NetigsoLoader extends ProxyClassLoader {
         try {
             return bundle.loadClass(name);
         } catch (ClassNotFoundException ex) {
-            if (NetigsoActivator.LOG.isLoggable(Level.FINEST)) {
-                NetigsoActivator.LOG.log(Level.FINEST, "No class found in " + this, ex);
+            if (NetigsoModule.LOG.isLoggable(Level.FINEST)) {
+                NetigsoModule.LOG.log(Level.FINEST, "No class found in " + this, ex);
             }
             return null;
         }

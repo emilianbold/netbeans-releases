@@ -110,7 +110,7 @@ implements Stamps.Updater {
                 registered.add(line);
             }
         } catch (IOException ex) {
-            NetigsoActivator.LOG.log(Level.WARNING, "Cannot read cache", ex);
+            NetigsoModule.LOG.log(Level.WARNING, "Cannot read cache", ex);
         }
     }
 
@@ -178,16 +178,16 @@ implements Stamps.Updater {
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
-            NetigsoActivator.LOG.finer("Felix initialized"); // NOI18N
+            NetigsoModule.LOG.finer("Felix initialized"); // NOI18N
         }
         return framework;
     }
 
     static void startContainer() throws BundleException {
         if (getContainer().getState() == Bundle.STARTING) {
-            NetigsoActivator.LOG.finer("Felix start:"); // NOI18N
+            NetigsoModule.LOG.finer("Felix start:"); // NOI18N
             getContainer().start();
-            NetigsoActivator.LOG.finer("Felix started"); // NOI18N
+            NetigsoModule.LOG.finer("Felix started"); // NOI18N
         }
     }
 
