@@ -493,7 +493,7 @@ public class GdbUtils {
                     }
                 } else if (ch == '\'') {
                     inSingleQuote = true;
-                } else if (ch == 'n' && !isSlashBefore(info, idx)) {
+                } else if (ch == 'n' && isSlashBefore(info, idx)) {
                     s.deleteCharAt(s.length() - 1);
                     ch = 0;
                 } else if (info.substring(idx).startsWith("members of ")) { // NOI18N
