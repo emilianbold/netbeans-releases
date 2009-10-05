@@ -30,7 +30,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <settings version="1.0">
-    <module name="org.myorg.feedreader" spec="1.0"/>
+    <module name="org.netbeans.feedreader" spec="1.0"/>
     <instanceof class="org.openide.windows.TopComponent"/>
-    <instance class="org.myorg.feedreader.FeedTopComponent" method="getDefault"/>
+    <instance class="org.netbeans.feedreader.FeedTopComponent" method="getDefault"/>
 </settings>

@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.myorg.feedreader;
+package org.netbeans.feedreader;
 
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
@@ -44,7 +44,7 @@ public class FeedAction extends AbstractAction {
 
     public FeedAction() {
         super(NbBundle.getMessage(FeedAction.class, "CTL_FeedAction"),
-                ImageUtilities.image2Icon(ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif", true)));
+                ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/feedreader/rss16.gif", true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

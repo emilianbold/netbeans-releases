@@ -28,7 +28,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.myorg.feedreader;
+package org.netbeans.feedreader;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
@@ -141,7 +141,7 @@ public class RssNode extends FilterNode {
         
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif");
+            return ImageUtilities.loadImage("org/netbeans/feedreader/rss16.gif");
         }
         
         @Override

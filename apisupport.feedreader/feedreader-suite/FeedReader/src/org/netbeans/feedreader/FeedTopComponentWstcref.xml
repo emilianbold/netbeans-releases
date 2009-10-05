@@ -34,7 +34,7 @@
 		-->
 
 <tc-ref version="2.0" >
-    <module name="org.myorg.feedreader" spec="1.0" />
+    <module name="org.netbeans.feedreader" spec="1.0" />
     <tc-id id="FeedTopComponent" />
     <state opened="true" />
 </tc-ref>

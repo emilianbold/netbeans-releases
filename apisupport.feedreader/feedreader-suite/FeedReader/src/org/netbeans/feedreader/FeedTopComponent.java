@@ -27,7 +27,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.myorg.feedreader;
+package org.netbeans.feedreader;
 
 import java.awt.BorderLayout;
 import java.io.Serializable;
@@ -51,7 +51,7 @@ final class FeedTopComponent extends TopComponent implements ExplorerManager.Pro
     private FeedTopComponent() {
         setName(NbBundle.getMessage(FeedTopComponent.class, "CTL_FeedTopComponent"));
         setToolTipText(NbBundle.getMessage(FeedTopComponent.class, "HINT_FeedTopComponent"));
-        setIcon(ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif", true));
+        setIcon(ImageUtilities.loadImage("org/netbeans/feedreader/rss16.gif", true));
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
         view.setRootVisible(true);
