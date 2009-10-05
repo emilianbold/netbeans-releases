@@ -333,6 +333,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             String signature = breakpoint.getMethodSignature();
             while (methods.hasNext ()) {
                 Method method = (Method) methods.next ();
+                if (MethodWrapper.isBridge0(method)) {
+                    continue; // see issue #172027
+                }
                 try {
                     if (methodName.equals("") || match (TypeComponentWrapper.name (method), methodName) &&
                                                  (signature == null ||

@@ -75,7 +75,7 @@ import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
-
+@Deprecated
 public class OutputWindowWriter extends Writer {
 
     private final ExecutionEnvironment execEnv;

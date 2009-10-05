@@ -72,6 +72,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
+import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.treelist.TreeList;
 import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
@@ -79,6 +80,7 @@ import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -165,10 +167,11 @@ public final class DashboardImpl extends Dashboard {
         userNode = new UserNode(this);
         userNode.set(login, false);
         model.addRoot(-1, userNode);
-        openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"));
+        openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
 
-        myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"));
+        myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"), // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
             model.addRoot(-1, myProjectsNode);
         }
@@ -307,10 +310,15 @@ public final class DashboardImpl extends Dashboard {
      * @param project
      * @param isMemberProject
      */
-    public void addProject( ProjectHandle project, boolean isMemberProject ) {
+    @Override
+    public void addProject( final ProjectHandle project, boolean isMemberProject, boolean select ) {
         synchronized( LOCK ) {
-            if( openProjects.contains(project) )
+            if( openProjects.contains(project) ) {
+                if (select) {
+                    selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
+                }
                 return;
+            }
 
             if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
                 memberProjects.add(project);
@@ -322,6 +330,13 @@ public final class DashboardImpl extends Dashboard {
             switchMemberProjects();
             if( isOpened() ) {
                 switchContent();
+                if (select) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
+                        }
+                    });
+                }
             }
         }
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);

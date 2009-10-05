@@ -429,7 +429,7 @@ public class GrailsPluginSupport {
          * ---------------------------------------
          * name version -- description
         */
-        private static final Pattern PLUGIN_PATTERN = Pattern.compile("(.+)[\\s]+<([\\w\\s.-]+)>[\\s]+--(.+)"); // NOI18N
+        private static final Pattern PLUGIN_PATTERN = Pattern.compile("(.+)[\\s]+<(.+)>[\\s]+--(.+)"); // NOI18N
 
         public void processLine(String line) {
             GrailsPlugin plugin = null;

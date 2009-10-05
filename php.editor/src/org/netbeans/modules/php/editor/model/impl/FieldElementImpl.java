@@ -133,6 +133,23 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return className+super.getNormalizedName();
     }
 
+    public Collection<? extends String> getTypeNames(int offset) {
+        AssignmentImpl assignment = findAssignment(offset);
+        Collection<? extends String> retval = (assignment != null) ? assignment.getTypeNames() : Collections.emptyList();
+        if  (retval.isEmpty()) {
+            retval = getDefaultTypeNames();
+            if (retval.isEmpty()) {
+                ClassScope classScope = (ClassScope) getInScope();
+                for (VariableName variableName : classScope.getDeclaredVariables()) {
+                    if (variableName.representsThis()) {
+                        return variableName.getTypeNames(offset);
+                    }
+                }
+            }
+        }
+        return retval;
+    }
+
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
     public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);

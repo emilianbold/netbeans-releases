@@ -58,6 +58,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.python.antlr.BaseParser;
 import org.python.antlr.GrammarActions;
@@ -180,6 +181,17 @@ public class PythonParser implements Parser {
 
                 @Override
                 public Object recoverFromMismatchedToken(BaseRecognizer br, IntStream input, int ttype, BitSet follow) {
+                    MismatchedTokenException mt = new MismatchedTokenException(ttype, input);
+                    String message = br.getErrorMessage(mt, br.getTokenNames());
+                    if (mt.line >= 1) {
+                        int lineOffset = findLineOffset(context.source, mt.line-1);
+                        if (mt.charPositionInLine > 0) {
+                            lineOffset += mt.charPositionInLine;
+                        }
+                        int start = lineOffset;//t.getCharStartIndex();
+                        int stop = lineOffset;//t.getCharStopIndex();
+                        errors.add(new DefaultError(null, message, null, file.getFileObject(), start, stop, Severity.ERROR));
+                    }
                     return super.recoverFromMismatchedToken(br, input, ttype, follow);
                 }
 
@@ -597,6 +609,18 @@ public class PythonParser implements Parser {
         }
 
         return false;
+    }
+
+    private static int findLineOffset(String source, int line) {
+        int offset = -1;
+        for (int i = 0; i < line; i++) {
+            offset = source.indexOf("\n", offset+1);
+            if (offset == -1) {
+                return source.length();
+            }
+        }
+
+        return Math.min(source.length(), offset+1);
     }
 
     /** Attempts to sanitize the input buffer */

@@ -38,7 +38,7 @@
  */
 
 @OptionsPanelController.ContainerRegistration(
-    id="CPlusPlus", // NOI18N
+    id=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
     categoryName="#CndOptionsCategory_Name", // NOI18N
 //    title="#CndOptions_Title"
     iconBase="org/netbeans/modules/cnd/ui/options/cnd_32.png", // NOI18N
@@ -46,4 +46,5 @@
 )
 package org.netbeans.modules.cnd.ui.options;
 
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.spi.options.OptionsPanelController;

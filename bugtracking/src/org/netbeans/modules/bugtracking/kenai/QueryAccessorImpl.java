@@ -131,9 +131,9 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             return Collections.emptyList();
         }
 
-        Map<String, QueryHandle> m;
+        List<QueryHandle> ret = new ArrayList<QueryHandle>();
         synchronized(queryHandles) {
-            m = queryHandles.get(project.getId());
+            Map<String, QueryHandle> m = queryHandles.get(project.getId());
             if(m == null) {
                 m = new HashMap<String, QueryHandle>();
                 queryHandles.put(project.getId(), m);
@@ -147,18 +147,16 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 }
                 m.keySet().retainAll(l);
             }
-        }
-
-        List<QueryHandle> ret = new ArrayList<QueryHandle>();
-        for (Query q : queries) {
-
-            QueryHandle qh = m.get(q.getDisplayName());
-            if(qh == null) {
-                qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
-                m.put(q.getDisplayName(), qh);
+            for (Query q : queries) {
+                QueryHandle qh = m.get(q.getDisplayName());
+                if(qh == null) {
+                    qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
+                    m.put(q.getDisplayName(), qh);
+                }
+                ret.add(qh);
             }
-            ret.add(qh);
         }
+
         if(!KenaiUtil.isLoggedIn()) {
             QueryHandle myIssuesFake = new QueryHandle() {
                 @Override

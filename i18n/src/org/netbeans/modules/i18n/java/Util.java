@@ -63,8 +63,13 @@ final class Util {
      * {@link org.netbeans.modules.properties.PropertiesStructure#getItem(java.lang.String)
      * here}.
      * @param key a key string.
+     * @return An unescaped Java string, or {@code null} if the {@code key} is
+     * {@code null}.
      */
     static String getUnescapedKey(String key) {
+        if(key == null) { // #173245
+            return null;
+        }
         String unescapedKey =
         // #168798
                 key.replace(" ", "\\ "); // NOI18N
