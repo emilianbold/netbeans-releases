@@ -64,11 +64,11 @@ static int do_send(int sd, const char* buffer, int size) {
 }
 
 enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf) {
-    int size = strlen(buf) + 1;
-    char header[3];
+    unsigned int size = strlen(buf) + 1;
+    unsigned char header[3];
     header[0] = (char) kind;
-    header[1] = size & 0xff00; // high byte
-    header[2] = size & 0x00ff; // low byte
+    header[1] = (unsigned char) (size >> 8); // high byte
+    header[2] = (unsigned char) (size); // low byte
     if (do_send(sd, header, sizeof header)) {
         if (do_send(sd, buf, size)) {
             return sr_success;
@@ -82,14 +82,14 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     p->kind = pkg_null;
     memset(p->data, 0, max_data_size);
     // get kind and size
-    char buffer[3];
+    unsigned char header[3];
     int received;
-    received = recv(sd, buffer, 3, 0); // 3-rd is for kind
+    received = recv(sd, header, 3, 0); // 3-rd is for kind
     if (received != 3) {
         return sr_failure;
     }
-    p->kind = (enum pkg_kind) buffer[0];
-    int size =  ((0x0FF & buffer[1])) * 256 + ((0x0FF & buffer[2]));
+    p->kind = (enum pkg_kind) header[0];
+    int size =  ((0x0FF & header[1])) * 256 + ((0x0FF & header[2]));
     if (size > max_data_size) {
         errno = EMSGSIZE;
         return sr_failure;
