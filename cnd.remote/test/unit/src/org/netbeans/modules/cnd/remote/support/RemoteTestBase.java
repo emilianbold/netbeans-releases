@@ -85,6 +85,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     static {
         System.setProperty("cnd.remote.force.setup", "true");
+        System.setProperty("socket.connection.timeout", "10000");
     }
 
     static {
