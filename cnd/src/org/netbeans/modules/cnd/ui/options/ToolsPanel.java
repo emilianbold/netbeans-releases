@@ -49,6 +49,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -74,6 +77,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -90,6 +101,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -161,7 +173,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         this();
         this.model = model;
     }
-
 
     private void initializeLong() {
         csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
@@ -587,6 +598,35 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return true; //serverList == null ? true : serverList.get((String)cbDevHost.getSelectedItem()).isOnline();
     }
 
+    private void downloadCompilerSet(CompilerSet cs) {
+        try {
+            URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD);
+            provider.refresh(null, true);
+            List<UpdateUnit> list = provider.getUpdateUnits(TYPE.MODULE);
+            OperationContainer<InstallSupport> installContainer = OperationContainer.createForInstall();
+            for (UpdateUnit unit : list) {
+                if (cs.getCompilerFlavor().getToolchainDescriptor().getModuleID().equals(unit.getCodeName())) {
+                    installContainer.add(unit.getAvailableUpdates());
+                    InstallSupport support = installContainer.getSupport();
+                    try {
+                        ProgressHandle progress = null;
+                        InstallSupport.Validator v = support.doDownload(progress, false);
+                        InstallSupport.Installer i = support.doValidate(v, progress);
+                        Restarter r = support.doInstall(i, progress);
+                    } catch (OperationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    break;
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             if (cs.isUrlPointer()) {
@@ -594,6 +634,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                                         cs.getCompilerFlavor().getToolchainDescriptor().getModuleID());
                 btBaseDirectory.setEnabled(false);
                 isUrl = true;
+                //downloadCompilerSet(cs);
             } else {
                 tfBaseDirectory.setText(cs.getDirectory());
                 btBaseDirectory.setEnabled(!isRemoteHostSelected());
