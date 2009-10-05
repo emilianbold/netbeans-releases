@@ -43,7 +43,7 @@ Supported Platforms:
         GtkFreeway builds with either Sun Studio or GNU tool chains.
 
     OpenSolaris:
-	Required additional packages:
+	 Additional required packages:
           SUNWgnome-common-devel
           SUNWxinc
           SUNWxorg-headers
