@@ -167,7 +167,12 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            fprintf(stderr, "Can not resolve path %s\n", path);
+            fprintf(stderr, "Can not resolve path %s : %s\n", path, strerror(errno));
+            //if (errno == ENOENT) {
+            //    char pwd[PATH_MAX];
+            //    getcwd(pwd, sizeof pwd);
+            //    fprintf(stderr, "\t(current directory: %s)\n", pwd);
+            //}
             inside = 0;
             return false;
         }
@@ -254,7 +259,7 @@ pid_t fork() {
 void
 __attribute__((constructor))
 on_startup(void) {
-    trace_startup("RFS_P", "RFS_PRELOAD_LOG");
+    trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
 //#if TRACE
 //    print_dlsym();
 //#endif

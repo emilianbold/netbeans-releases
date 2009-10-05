@@ -45,17 +45,17 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Vladimir Kvashin
  */
-public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
+public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
 
     static {
         System.setProperty("cnd.remote.fs", "true");
     }
 
-    public RfsRemoteBuildTestBase(String testName) {
+    public RfsBaseRemoteBuildTestCase(String testName) {
         super(testName);
     }
 
-    public RfsRemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
+    public RfsBaseRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
 }

@@ -37,8 +37,10 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "rfs_util.h"
 
@@ -63,9 +65,10 @@ void trace(const char *format, ...) {
     fflush(trace_file);
 }
 
-void trace_startup(const char* _prefix, const char* env_var) {
+void trace_startup(const char* _prefix, const char* env_var, const char* binary) {
     prefix = _prefix;
     char *file_name = env_var ? getenv(env_var) : NULL;
+    binary = binary ? binary : "";
     if (file_name) {
         trace_file = fopen(file_name, "a");
         if (trace_file) {
@@ -81,7 +84,7 @@ void trace_startup(const char* _prefix, const char* env_var) {
     }
     char dir[PATH_MAX];
     getcwd(dir, sizeof dir);
-    trace("started in %s\n", dir);
+    trace("%s started in %s\n", binary, dir);
 }
 
 void trace_shutdown() {

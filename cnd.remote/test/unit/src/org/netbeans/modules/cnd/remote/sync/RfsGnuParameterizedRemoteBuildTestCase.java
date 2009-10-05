@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Kvashin
  */
-public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBase {
+public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
 
     public static final String SECTION = "remote.rfs.build.parameterized";
 
@@ -108,7 +108,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBa
         }
     }
 
-    @Conditional(section=SECTION, key = "measure.build")
+    @Conditional(section=SECTION, key = "test.build")
     @ForAllEnvironments(section = SECTION)
     public void testBuildRfsParameterized() throws Exception {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
