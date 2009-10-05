@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -87,9 +88,15 @@ public class RemoteServerListUI extends ServerListUIEx {
         }
     }
 
+    @Override    
+    protected JComponent getServerListComponentImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
+        EditServerListDialog dlg = new EditServerListDialog(cacheManager, selectedEnv);
+        return dlg;
+    }
+
     @Override
     protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
-        EditServerListDialog dlg = new EditServerListDialog(cacheManager);
+        EditServerListDialog dlg = new EditServerListDialog(cacheManager, selectedEnv);
         DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(getClass(), "TITLE_EditServerList"), true,
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
         dlg.setDialogDescriptor(dd);
@@ -100,9 +107,6 @@ public class RemoteServerListUI extends ServerListUIEx {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             cacheManager.setHosts(dlg.getHosts());
             cacheManager.setDefaultRecord(dlg.getDefaultRecord());
-            if (selectedEnv != null) {
-                selectedEnv.set(dlg.getSelExecutionEnvironment());
-            }
             return true;
         } else {
             return false;

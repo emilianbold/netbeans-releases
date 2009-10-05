@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -86,6 +87,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
     private final ToolsCacheManager cacheManager;
+    private final AtomicReference<ExecutionEnvironment> selectedEnv;
 
     private static final String CMD_ADD = "Add"; // NOI18N
     private static final String CMD_REMOVE = "Remove"; // NOI18N
@@ -94,7 +96,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static final String CMD_PROPERTIES = "Properties"; // NOI18N
     private static final String CMD_RETRY = "Retry"; // NOI18N
 
-    public EditServerListDialog(ToolsCacheManager cacheManager) {
+    public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
         this.cacheManager = cacheManager;
         initComponents();
         initServerList(cacheManager.getServerUpdateCache());
@@ -102,6 +104,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         //lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
         tfReason.setEnabled(false); // setVisible(false);
         pbarStatusPanel.setVisible(false);
+        this.selectedEnv = selectedEnv;
         initListeners();
     }
 
@@ -289,8 +292,14 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 hideReason();
                 btRetry.setEnabled(false);
             }
+            if (selectedEnv != null) {
+                selectedEnv.set(record.getExecutionEnvironment());
+            }
         } else {
             RemoteUtil.LOGGER.warning("ESLD.valueChanged: No selection in Dev Hosts list");
+            if (selectedEnv != null) {
+                selectedEnv.set(null);
+            }
         }
     }
 
@@ -347,11 +356,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 this.revalidateRecord(getSelectedRecord(), null, false);
             }
         }
-    }
-
-    public ExecutionEnvironment getSelExecutionEnvironment() {
-        RemoteServerRecord record = getSelectedRecord();
-        return (record == null) ? null : record.getExecutionEnvironment();
     }
 
     private RemoteServerRecord getSelectedRecord() {

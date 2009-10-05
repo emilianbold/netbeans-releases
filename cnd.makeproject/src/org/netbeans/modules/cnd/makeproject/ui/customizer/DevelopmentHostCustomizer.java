@@ -39,15 +39,21 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import javax.swing.JOptionPane;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.ui.options.ServerListUIEx;
+import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -59,10 +65,14 @@ import org.openide.windows.WindowManager;
  *
  * @author gordonp
  */
-public class DevelopmentHostCustomizer extends JOptionPane implements VetoableChangeListener {
+public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeListener {
 
     private DevelopmentHostConfiguration dhconf;
-    private PropertyEnv propertyEnv;
+    private final PropertyEnv propertyEnv;
+    private final PropertyEditorSupport editor;
+    private final ExecutionEnvironment oldExecEnv;
+    private final AtomicReference<ExecutionEnvironment> selectedEnv;
+    private final ToolsCacheManager cacheManager;
 
     /**
      * Show the customizer dialog. If we're already online, show a meaningless message (I don't think
@@ -73,17 +83,18 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      * @param dhconf The remote host configuration
      * @param propertyEnv A PropertyEnv where we can control the custom property editor
      */
-    public DevelopmentHostCustomizer(DevelopmentHostConfiguration dhconf, PropertyEnv propertyEnv) {
-        super(NbBundle.getMessage(DevelopmentHostCustomizer.class, 
-                dhconf.isConfigured() ? "ERR_NothingToDo" : "ERR_NeedToInitializeRemoteHost", dhconf.getDisplayName(false)), // NOI18N
-                dhconf.isConfigured() ? INFORMATION_MESSAGE : QUESTION_MESSAGE,
-                DEFAULT_OPTION, null, new Object[] { });
+    public DevelopmentHostCustomizer(DevelopmentHostConfiguration dhconf, PropertyEditorSupport editor, PropertyEnv propertyEnv) {
         this.dhconf = dhconf;
+        this.editor = editor;
         this.propertyEnv = propertyEnv;
-        if (!dhconf.isConfigured()) {
-            propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propertyEnv.addVetoableChangeListener(this);
-        }
+        this.oldExecEnv = (dhconf == null) ? null : dhconf.getExecutionEnvironment();
+        this.selectedEnv = new AtomicReference<ExecutionEnvironment>(this.oldExecEnv);
+        this.cacheManager = new ToolsCacheManager();
+        this.setLayout(new BorderLayout());
+        JComponent component = ServerListUIEx.getServerListComponent(cacheManager, selectedEnv);
+        add(component, BorderLayout.CENTER);
+        propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        propertyEnv.addVetoableChangeListener(this);
     }
 
     /**
@@ -95,34 +106,43 @@ public class DevelopmentHostCustomizer extends JOptionPane implements VetoableCh
      * @throws java.beans.PropertyVetoException
      */
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-        if (!dhconf.isConfigured()) {
-            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
-            final ServerRecord record = ServerList.get(execEnv);
-            assert record != null;
-
-            // start validation phase
-            final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            Runnable csmWorker = new Runnable() {
-                public void run() {
-                    try {
-                        record.validate(true);
-                        // initialize compiler sets for remote host if needed
-                        CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
-                        csm.initialize(true, true);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            // Note: Messages come from different class bundle...
-            String msg = NbBundle.getMessage(getClass(), "MSG_Configure_Host_Progress", record.getDisplayName());
-            final String title = NbBundle.getMessage(getClass(), "DLG_TITLE_Configure_Host", record.getExecutionEnvironment().getHost());
-            ModalMessageDlg.runLongTask(mainWindow, csmWorker, null, null, title, msg);
-            propertyEnv.removeVetoableChangeListener(this);
-            propertyEnv.setState(PropertyEnv.STATE_VALID);
-            if (!record.isOnline()) {
-                System.err.println("");
-            }
+        boolean changed = false;
+        ExecutionEnvironment env = selectedEnv.get();
+        if (env == null) {
+            throw new PropertyVetoException(NbBundle.getMessage(getClass(), "MSG_Null_Host"), evt);
         }
+        if (env.equals(oldExecEnv)) {
+            return;
+        }
+        dhconf.setHost(env);
+//        if (!dhconf.isConfigured()) {
+//            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
+//            final ServerRecord record = ServerList.get(execEnv);
+//            assert record != null;
+//
+//            // start validation phase
+//            final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+//            Runnable csmWorker = new Runnable() {
+//                public void run() {
+//                    try {
+//                        record.validate(true);
+//                        // initialize compiler sets for remote host if needed
+//                        CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
+//                        csm.initialize(true, true);
+//                    } catch(Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            };
+//            // Note: Messages come from different class bundle...
+//            String msg = NbBundle.getMessage(getClass(), "MSG_Configure_Host_Progress", record.getDisplayName());
+//            final String title = NbBundle.getMessage(getClass(), "DLG_TITLE_Configure_Host", record.getExecutionEnvironment().getHost());
+//            ModalMessageDlg.runLongTask(mainWindow, csmWorker, null, null, title, msg);
+//            propertyEnv.removeVetoableChangeListener(this);
+//            propertyEnv.setState(PropertyEnv.STATE_VALID);
+//            if (!record.isOnline()) {
+//                System.err.println("");
+//            }
+//        }
     }
 }
