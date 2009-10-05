@@ -117,11 +117,11 @@ final class UnitTestLibrariesNode extends AbstractNode {
         };
     }
     
-    public Image getIcon(int type) {
+    public @Override Image getIcon(int type) {
         return getIcon(false);
     }
     
-    public Image getOpenedIcon(int type) {
+    public @Override Image getOpenedIcon(int type) {
         return getIcon(true);
     }
     
@@ -130,7 +130,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         return ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
     }
     
-    public Action[] getActions(boolean context) {
+    public @Override Action[] getActions(boolean context) {
         return actions;
     }
     
@@ -171,13 +171,13 @@ final class UnitTestLibrariesNode extends AbstractNode {
             this.project = project;
         }
         
-        protected void addNotify() {
+        protected @Override void addNotify() {
             super.addNotify();
             project.getHelper().addAntProjectListener(this);
             refreshKeys();
         }
         
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             setKeys(Collections.<TestModuleDependency>emptySet());
             project.getHelper().removeAntProjectListener(this);
             super.removeNotify();
@@ -293,7 +293,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
         }
         
-        public Action[] getActions(boolean context) {
+        public @Override Action[] getActions(boolean context) {
             
             if (actions == null) {
                 Set<Action> result = new LinkedHashSet<Action>();
@@ -308,7 +308,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return actions;
         }
         
-        public Action getPreferredAction() {
+        public @Override Action getPreferredAction() {
             return getActions(false)[0]; // open
         }
         
@@ -334,7 +334,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
         }
         
-        public Action[] getActions(boolean context) {
+        public @Override Action[] getActions(boolean context) {
             if (actions == null) {
                 Set<Action> result = new LinkedHashSet<Action>();
                 result.add(new EditTestDependencyAction(dep, testType, project));
@@ -350,7 +350,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return actions;
         }
         
-        public Action getPreferredAction() {
+        public @Override Action getPreferredAction() {
             return getActions(false)[0];
         }
         
@@ -464,7 +464,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return HelpCtx.DEFAULT_HELP;
         }
         
-        protected boolean asynchronous() {
+        protected @Override boolean asynchronous() {
             return false;
         }
         
