@@ -88,40 +88,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     protected FunctionScopeImpl(Scope inScope, final IndexedFunction element, PhpKind kind) {
         super(inScope, element, kind);
-        List<Parameter> parameters = new ArrayList<Parameter>();
-
-        final List<String> pams = element.getParameters();
-        final int  mandatoryArgSize = pams.size() - element.getOptionalArgs().length;
-
-        for (int i = 0; i < pams.size(); i++) {
-            final String paramName = pams.get(i);
-            final int idx = i;
-            parameters.add(new Parameter() {
-                public String getName() {
-                    return paramName;
-                }
-
-                public String getDefaultValue() {
-                    //TODO: evaluate def.values not in index
-                    return "";//NOI18N
-                }
-
-                public boolean isMandatory() {
-                    return idx < mandatoryArgSize;
-                }
-
-                //TODO: not implemented yet
-                public List<QualifiedName> getTypes() {
-                    return Collections.emptyList();
-                }
-
-                public OffsetRange getOffsetRange() {
-                    return new OffsetRange(element.getOffset(), element.getOffset()+paramName.length());
-                }
-            });
-
-        }
-        this.paremeters = parameters;
+        this.paremeters = element.getParameters();
         this.returnType =  element.getReturnType();
     }
 
@@ -235,20 +202,17 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         StringBuilder sb = new StringBuilder();
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
-        StringBuilder defaultArgs = new StringBuilder();
+        sb.append(getOffset()).append(";");//NOI18N
         List<? extends Parameter> parameters = getParameters();
-        for (int paramIdx = 0; paramIdx < parameters.size(); paramIdx++) {
-            Parameter parameter = parameters.get(paramIdx);
-            if (paramIdx > 0) { sb.append(","); }//NOI18N
-            sb.append(parameter.getName());
-            if (parameter.getDefaultValue() != null) {
-                if (defaultArgs.length() > 0) { defaultArgs.append(","); }//NOI18N
-                defaultArgs.append(paramIdx);
+        for (int idx = 0; idx < parameters.size(); idx++) {
+            Parameter parameter = parameters.get(idx);
+            if (idx > 0) {
+                sb.append(',');//NOI18N
             }
+            sb.append(parameter.getIndexSignature());
+            
         }
         sb.append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        sb.append(defaultArgs).append(";");//NOI18N
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
             sb.append(returnType);
         }
