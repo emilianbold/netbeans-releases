@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -58,6 +59,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public final class IndexingBridge {
 
+    private int delayBeforeRefresh = -1;
+    private static final int DEFAULT_DELAY = 100;
+    
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -77,7 +81,9 @@ public final class IndexingBridge {
     /**
      * Runs the <code>operation</code> without interfering with indexing. The indexing
      * is blocked while the operation is runing and all events that would normally trigger
-     * reindexing will be processed after the operation is finished.
+     * reindexing will be processed after the operation is finished. <br>
+     * The filesytem will be asynchronously refreshed for all parent folders from the given files
+     * after the operation has finished
      *
      * @param operation The operation to run.
      * @param files Files or folders affected by the operation.
@@ -85,10 +91,40 @@ public final class IndexingBridge {
      *
      * @throws Exception Any exception thrown by the <code>operation</code> is going to be rethrown from
      *   this method.
+     * @see FileUtil#refreshFor(java.io.File[]) 
      */
     public <T> T runWithoutIndexing(Callable<T> operation, File... files) throws Exception {
+        return runWithoutIndexing(operation, true, files);
+    }
+
+    /**
+     * Runs the <code>operation</code> without interfering with indexing. The indexing
+     * is blocked while the operation is runing and all events that would normally trigger
+     * reindexing will be processed after the operation is finished. <br>
+     * Depenpending on the <code>refreshFS</code> paramter the filesytem will be asynchronously  refreshed
+     * for all parent folders from the given files after the operation has finished.
+     *
+     * @param operation The operation to run.
+     * @param refreshFS determines if the filesystem will be refreshed after the operation.
+     * @param files Files or folders affected by the operation.
+     * @return Whatever value is returned from the <code>operation</code>.
+     *
+     * @throws Exception Any exception thrown by the <code>operation</code> is going to be rethrown from
+     *   this method.
+     */
+    public <T> T runWithoutIndexing(Callable<T> operation, boolean refreshFS, File... files) throws Exception {
         IndexingBridgeProvider ibp = Lookup.getDefault().lookup(IndexingBridgeProvider.class);
         if (ibp != null) {
+            if(LOG.isLoggable(Level.FINE)) {
+                StringBuffer sb = new StringBuffer();
+                if(files != null) {
+                    for (File file : files) {
+                        sb.append("\n");                                        // NOI18N
+                        sb.append(file.getAbsolutePath());
+                    }
+                }
+                LOG.fine("running vcs operaton without scheduling for files:" + sb.toString()); // NOI18N
+            }
             return ibp.runWithoutIndexing(operation, files);
         } else {
             try {
@@ -103,13 +139,13 @@ public final class IndexingBridge {
                     }
                 }
 
-                if (parents.size() > 0) {
+                if (refreshFS && parents.size() > 0) {
                     // let's give the filesystem some time to wake up and to realize that the file has really changed
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
                         }
-                    }, 100); // XXX: getDelay()
+                    }, getDelay()); 
                 }
             }
         }
@@ -157,18 +193,18 @@ public final class IndexingBridge {
         // no-op
     }
 
-// XXX: is this neccessary?
-//    private int getDelay() {
-//        if (delayBeforeRefresh == -1) {
-//            String delayProp = System.getProperty("subversion.SvnClientRefreshHandler.delay", Integer.toString(DEFAULT_DELAY)); //NOI18N
-//            int delay = DEFAULT_DELAY;
-//            try {
-//                delay = Integer.parseInt(delayProp);
-//            } catch (NumberFormatException e) {
-//                LOG.log(Level.FINE, null, e);
-//            }
-//            delayBeforeRefresh = delay;
-//        }
-//        return delayBeforeRefresh;
-//    }
+    private int getDelay() {
+        if (delayBeforeRefresh == -1) {
+            String delayProp = System.getProperty("vcs.fsrefresh.delay", Integer.toString(DEFAULT_DELAY)); //NOI18N
+            int delay = DEFAULT_DELAY;
+            try {
+                delay = Integer.parseInt(delayProp);
+            } catch (NumberFormatException e) {
+                LOG.log(Level.FINE, null, e);
+            }
+            delayBeforeRefresh = delay;
+        }
+        return delayBeforeRefresh;
+    }
+
 }
