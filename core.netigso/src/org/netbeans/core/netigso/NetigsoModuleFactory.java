@@ -85,9 +85,14 @@ implements Stamps.Updater {
     private static Set<String> registered;
     private static NetigsoServices services;
 
-    static void clear() {
+    /** used from tests.
+     */
+    static void clear() throws Exception {
         activator = null;
-        framework = null;
+        if (framework != null) {
+            framework.stop();
+            framework = null;
+        }        framework = null;
         readBundles();
     }
 
