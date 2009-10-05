@@ -101,6 +101,7 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
     public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
     public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
+    public static final String BUNDLE_REQUIRE_BUNDLE = "Require-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
@@ -273,31 +274,38 @@ public final class ManifestManager {
         publicPackages = EMPTY_EXPORTED_PACKAGES;
         {
             String pp = attr.getValue(BUNDLE_EXPORT_PACKAGE);
+            StringBuffer sb = new StringBuffer();
+            sb.append(codenamebase);
             if (pp != null) {
                 List<PackageExport> arr = new ArrayList<PackageExport>();
-                StringBuffer sb = new StringBuffer();
-                String sep = "";
                 for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
                     final PackageExport pe = new PackageExport(p.replaceAll(";.*$", "").trim(), false);
                     arr.add(pe);
-                    sb.append(sep).append(pe.getPackage());
-                    sep = ",";
+                    sb.append(',').append(pe.getPackage());
                 }
                 publicPackages = arr.toArray(new PackageExport[0]);
-                provides = sb.toString();
             }
+            provides = sb.toString();
         }
         {
+            StringBuffer sb = new StringBuffer();
+            String sep = "";
             String pp = attr.getValue(BUNDLE_IMPORT_PACKAGE);
             if (pp != null) {
-                StringBuffer sb = new StringBuffer();
-                String sep = "";
                 for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
                     sb.append(sep).append(p.replaceAll(";.*$", "").trim());
                     sep = ",";
                 }
-                requires = sb.toString();
             }
+            pp = attr.getValue(BUNDLE_REQUIRE_BUNDLE);
+            if (pp != null) {
+                for (String p : pp.replaceAll("\"[^\"]*\"", "").split(",")) {
+                    sb.append(sep).append(p.replaceAll(";.*$", "").trim());
+                    sep = ",";
+                }
+            }
+
+            requires = sb.length() == 0 ? null : sb.toString();
         }
 
         if (!loadPublicPackages) {

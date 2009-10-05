@@ -95,6 +95,7 @@ public class NetigsoManifestManagerTest extends TestBase {
                 "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
                 "Bundle-Version: 1.9\n" +
                 "Export-Package: a, b, c\n" +
+                "Require-Bundle: test.core,test.tasks;bundle-version=\"[3.0.0,4.0.0)\"\n" +
                 "Bundle-RequireExecutionEnvironment: J2SE-1.3\n" +
                 "OpenIDE-Module-Layer: org/netbeans/modules/sendopts/layer.xml\n";
         dump(manifest, mfContent);
@@ -109,6 +110,15 @@ public class NetigsoManifestManagerTest extends TestBase {
         assertFalse("not recursivea", mm.getPublicPackages()[0].isRecursive());
         assertFalse("not recursiveb", mm.getPublicPackages()[1].isRecursive());
         assertFalse("not recursivec", mm.getPublicPackages()[2].isRecursive());
+
+        assertEquals("Provides four: " + Arrays.toString(mm.getProvidedTokens()), 4, mm.getProvidedTokens().length);
+        assertEquals("Bundle name first", "org.netbeans.modules.sendopts", mm.getProvidedTokens()[0]);
+        assertEquals("Packages then", "a", mm.getProvidedTokens()[1]);
+        assertEquals("Packages then", "b", mm.getProvidedTokens()[2]);
+        assertEquals("Packages then", "c", mm.getProvidedTokens()[3]);
+        assertEquals("Requires two: " + Arrays.toString(mm.getRequiredTokens()), 2, mm.getRequiredTokens().length);
+        assertEquals("Needs core", "test.core", mm.getRequiredTokens()[0]);
+        assertEquals("Needs tasks", "test.tasks", mm.getRequiredTokens()[1]);
     }
 
 
@@ -139,12 +149,13 @@ public class NetigsoManifestManagerTest extends TestBase {
         assertEquals("javax.mail.util", mm.getPublicPackages()[2].getPackage());
         assertEquals("javax.mail.internet", mm.getPublicPackages()[3].getPackage());
         assertEquals("javax.mail", mm.getPublicPackages()[4].getPackage());
-        assertEquals("Five tokens: " + Arrays.asList(mm.getProvidedTokens()), 5, mm.getProvidedTokens().length);
-        assertEquals("javax.mail.search", mm.getProvidedTokens()[0]);
-        assertEquals("javax.mail.event", mm.getProvidedTokens()[1]);
-        assertEquals("javax.mail.util", mm.getProvidedTokens()[2]);
-        assertEquals("javax.mail.internet", mm.getProvidedTokens()[3]);
-        assertEquals("javax.mail", mm.getProvidedTokens()[4]);
+        assertEquals("Five tokens: " + Arrays.asList(mm.getProvidedTokens()), 6, mm.getProvidedTokens().length);
+        assertEquals("org.netbeans.modules.sendopts", mm.getProvidedTokens()[0]);
+        assertEquals("javax.mail.search", mm.getProvidedTokens()[1]);
+        assertEquals("javax.mail.event", mm.getProvidedTokens()[2]);
+        assertEquals("javax.mail.util", mm.getProvidedTokens()[3]);
+        assertEquals("javax.mail.internet", mm.getProvidedTokens()[4]);
+        assertEquals("javax.mail", mm.getProvidedTokens()[5]);
         assertEquals("Two required tokens: " + Arrays.asList(mm.getRequiredTokens()), 2, mm.getRequiredTokens().length);
         assertEquals("client.prefs", mm.getRequiredTokens()[0]);
         assertEquals("admin.cli", mm.getRequiredTokens()[1]);
