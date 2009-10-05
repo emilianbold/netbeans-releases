@@ -1673,7 +1673,12 @@ public class CasualDiff {
         // called.
     }
 
-    protected void diffErroneous(JCErroneous oldT, JCErroneous newT) {
+    protected void diffErroneous(JCErroneous oldT, JCErroneous newT, int[] bounds) {
+        JCTree oldTident = oldT.getErrorTrees().get(0);
+        JCTree newTident = newT.getErrorTrees().get(0);
+        if (oldTident.getKind() == Kind.IDENTIFIER && newTident.getKind() == Kind.IDENTIFIER) {
+            diffIdent((JCIdent) oldTident, (JCIdent) newTident, bounds);
+        }
     }
 
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
@@ -2878,7 +2883,7 @@ public class CasualDiff {
               retVal = diffAssignop((JCAssignOp)oldT, (JCAssignOp)newT, elementBounds);
               break;
           case JCTree.ERRONEOUS:
-              diffErroneous((JCErroneous)oldT, (JCErroneous)newT);
+              diffErroneous((JCErroneous)oldT, (JCErroneous)newT, elementBounds);
               break;
           case JCTree.MODIFIERS:
               retVal = diffModifiers((JCModifiers) oldT, (JCModifiers) newT, parent, elementBounds[0]);
