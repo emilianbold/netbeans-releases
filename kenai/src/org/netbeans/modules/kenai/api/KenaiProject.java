@@ -82,8 +82,6 @@ public final class KenaiProject {
 
     private ProjectData     data;
     private Icon projectIcon;
-    private int projectIconErrCount = 0; // variable indicating too many unsuccessful attempts to load an image
-    private static final int MAX_IMAGE_LOAD_ERRORS = 3; // max number of attempts to load an image
     
     private KenaiFeature[] features;
     private KenaiProjectMember[] members;
