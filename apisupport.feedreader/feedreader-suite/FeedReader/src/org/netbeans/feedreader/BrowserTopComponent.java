@@ -66,6 +66,7 @@ final class BrowserTopComponent extends TopComponent {
         setLayout(new java.awt.BorderLayout());
         scrollPane.setViewportView(editorPane);
         add(scrollPane, java.awt.BorderLayout.CENTER);
+        putClientProperty(/*PrintManager.PRINT_PRINTABLE*/"print.printable", true);
     }
     
     
