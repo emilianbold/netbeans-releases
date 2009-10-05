@@ -263,6 +263,10 @@ public final class ManifestManager {
     private static ManifestManager getOSGiInstance(Manifest manifest, boolean loadPublicPackages, boolean withGeneratedLayer) {
         Attributes attr = manifest.getMainAttributes();
         String codenamebase = attr.getValue(BUNDLE_SYMBOLIC_NAME);
+        int semicolon = codenamebase.indexOf(';');
+        if (semicolon >= 0) {
+            codenamebase = codenamebase.substring(0, semicolon);
+        }
         PackageExport[] publicPackages = null;
         String requires = null;
         String provides = null;
