@@ -52,7 +52,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Vladimir Kvashin
  */
-public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
+public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
 
     public RfsGnuRemoteBuildTestCase(String testName) {
         super(testName);
