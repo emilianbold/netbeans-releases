@@ -40,13 +40,14 @@
 package org.netbeans.modules.php.editor.index;
 
 import java.util.List;
+import org.netbeans.modules.php.editor.model.Parameter;
 
 /**
  *
  * @author Tor Norbye
  */
 public interface FunctionElement extends Element {
-    List<String> getParameters();
+    List<Parameter> getParameters();
 //    boolean isTopLevel();
     String getIn();
 //    boolean isInherited();
