@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.CardLayout;
+import java.io.CharConversionException;
 import javax.swing.Action;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
@@ -112,6 +113,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -891,7 +893,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private static final SystemAction[] NO_ACTIONS = new SystemAction[0];
 
-    abstract class Enabled extends AbstractNode {
+    private abstract class Enabled extends AbstractNode {
 
         private EnabledState state;
 
@@ -906,6 +908,15 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             setSheet(s);
             setIconBaseWithExtension(
                     isLeaf() ? NbModuleProject.NB_PROJECT_ICON_PATH : SuiteProject.SUITE_ICON_PATH);
+        }
+
+        public @Override String getHtmlDisplayName() {
+            if (isDeprecated()) {
+                try {
+                    return "<html><strike>" + XMLUtil.toElementContent(getDisplayName()) + "</strike>"; // NOI18N
+                } catch (CharConversionException ex) {}
+            }
+            return null;
         }
 
         @Override
@@ -999,6 +1010,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
          * @return the project if any is associated
          */
         public abstract Project getProject();
+
+        protected abstract boolean isDeprecated();
     }
 
     final class SuiteComponentNode extends Enabled {
@@ -1023,6 +1036,10 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             setDisplayName(ProjectUtils.getInformation(prj).getDisplayName());
             String desc = prj.getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo().getShortDescription();
             setShortDescription(formatEntryDesc(cnb, desc));
+        }
+
+        public boolean isDeprecated() {
+            return ManifestManager.getInstance(Util.getManifest(project.getLookup().lookup(NbModuleProvider.class).getManifestFile()), false).isDeprecated();
         }
 
         @Override
@@ -1117,9 +1134,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             return ci.getProject();
         }
 
+        public boolean isDeprecated() {
+            return false;
+        }
+
     }
 
     final class BinaryModuleNode extends Enabled {
+
+        private final boolean deprecated;
+
         /**
          * Ctor for binary modules
          * @param entry ModuleEntry
@@ -1128,11 +1152,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
          */
         public BinaryModuleNode(ModuleEntry entry, boolean enabled) {
             super(Children.LEAF, enabled);
+            deprecated = entry.isDeprecated();
             String cnb = entry.getCodeNameBase();
             setName(cnb);
             setDisplayName(entry.getLocalizedName());
             String desc = entry.getShortDescription();
             setShortDescription(formatEntryDesc(cnb, desc));
+        }
+
+        public boolean isDeprecated() {
+            return deprecated;
         }
 
         @Override
