@@ -133,7 +133,6 @@ public final class FolderObj extends BaseFileObj {
         }
 
         final FileObjectFactory lfs = getFactory();        
-        //for (Iterator iterator = fileNames.iterator(); iterator.hasNext();) {
         for (FileNaming fileName : fileNames) {
             FileInfo fInfo = new FileInfo (fileName.getFile(), 1);
             fInfo.setFileNaming(fileName);
