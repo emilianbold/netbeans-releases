@@ -190,10 +190,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         //mm.prependPathVariable("LD_PRELOAD", preload); // NOI18N
 
         env2add.put("LD_PRELOAD", preload); // NOI18N
-        String ldLibPathVar = "LD_LIBRARY_PATH";
+        String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
         String oldLdLibPath = RemoteUtil.getEnv(execEnv, ldLibPathVar);
         if (oldLdLibPath != null) {
-            ldLibraryPath += ":" + oldLdLibPath;
+            ldLibraryPath += ":" + oldLdLibPath; // NOI18N
         }
         env2add.put(ldLibPathVar, ldLibraryPath); // NOI18N
         env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
