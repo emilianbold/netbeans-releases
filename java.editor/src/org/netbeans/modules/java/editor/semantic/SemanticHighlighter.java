@@ -77,6 +77,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -1022,9 +1024,33 @@ public class SemanticHighlighter extends JavaParserResultTask {
             
             return ((MemberSelectTree) qualIdent).getIdentifier().contentEquals("*");
         }
+
+        private boolean parseErrorInImport(ImportTree imp) {
+            if (isStar(imp)) return false;
+            final StringBuilder fqn = new StringBuilder();
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                    super.visitMemberSelect(node, p);
+                    fqn.append('.');
+                    fqn.append(node.getIdentifier());
+                    return null;
+                }
+                @Override
+                public Void visitIdentifier(IdentifierTree node, Void p) {
+                    fqn.append(node.getName());
+                    return null;
+                }
+            }.scan(imp.getQualifiedIdentifier(), null);
+
+            return !SourceVersion.isName(fqn);
+        }
         
         @Override
         public Void visitImport(ImportTree tree, EnumSet<UseTypes> d) {
+            if (parseErrorInImport(tree)) {
+                return super.visitImport(tree, null);
+            }
             if (!tree.isStatic()) {
                 if (isStar(tree)) {
                     MemberSelectTree qualIdent = (MemberSelectTree) tree.getQualifiedIdentifier();
