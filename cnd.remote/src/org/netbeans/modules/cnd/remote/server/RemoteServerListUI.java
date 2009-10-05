@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -72,8 +73,13 @@ public class RemoteServerListUI extends ServerListUIEx {
 
     @Override
     protected boolean showServerListDialogImpl() {
+        return showServerListDialogImpl((AtomicReference<ExecutionEnvironment>) null);
+    }
+
+    @Override
+    protected boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv) {
         ToolsCacheManager cacheManager = new ToolsCacheManager();
-        if (showServerListDialog(cacheManager)) {
+        if (showServerListDialog(cacheManager, selectedEnv)) {
             cacheManager.applyChanges();
             return true;
         } else {
@@ -82,7 +88,7 @@ public class RemoteServerListUI extends ServerListUIEx {
     }
 
     @Override
-    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager) {
+    protected boolean showServerListDialogImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
         EditServerListDialog dlg = new EditServerListDialog(cacheManager);
         DialogDescriptor dd = new DialogDescriptor(dlg, NbBundle.getMessage(getClass(), "TITLE_EditServerList"), true,
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
@@ -94,6 +100,9 @@ public class RemoteServerListUI extends ServerListUIEx {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             cacheManager.setHosts(dlg.getHosts());
             cacheManager.setDefaultRecord(dlg.getDefaultRecord());
+            if (selectedEnv != null) {
+                selectedEnv.set(dlg.getSelExecutionEnvironment());
+            }
             return true;
         } else {
             return false;

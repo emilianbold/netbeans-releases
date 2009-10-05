@@ -349,6 +349,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
     }
 
+    public ExecutionEnvironment getSelExecutionEnvironment() {
+        RemoteServerRecord record = getSelectedRecord();
+        return (record == null) ? null : record.getExecutionEnvironment();
+    }
+
     private RemoteServerRecord getSelectedRecord() {
         // we know for sure it's a RemoteServerRecord, not just a ServerRecord
         return (RemoteServerRecord) lstDevHosts.getSelectedValue();

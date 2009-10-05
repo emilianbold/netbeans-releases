@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -58,13 +60,13 @@ public abstract class ServerListUIEx extends ServerListUI {
      * Allows to add, remove or modify servers in the list
      * @return true in the case user pressed OK, otherwise
      */
-    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager);
+    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv);
 
-    public static boolean showServerListDialog(ToolsCacheManager cacheManager) {
+    public static boolean showServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
         ServerListUI displayer = Lookup.getDefault().lookup(ServerListUI.class);
         if (displayer != null) {
             if (displayer instanceof ServerListUIEx) {
-                return ((ServerListUIEx) displayer).showServerListDialogImpl(cacheManager);
+                return ((ServerListUIEx) displayer).showServerListDialogImpl(cacheManager, selectedEnv);
             } else {
                 Logger.getLogger("cnd.remote.logger").warning( //NOI18N
                         displayer.getClass().getName() + "should extend " + //NOI18N
