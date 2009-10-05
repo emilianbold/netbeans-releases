@@ -47,6 +47,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -143,12 +145,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-        // XXX: list here all operations that can potentially modify files on the disk
-        final boolean fsReadOnlyAction = 
-                !method.getName().equals("update") && //NOI18N
-                !method.getName().equals("revert") && //NOI18N
-                !method.getName().equals("merge"); //NOI18N
-        
+                
+        boolean fsReadOnlyAction = isFSWrittingCommand(method);
+
         try {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("~~~ SVN: invoking '" + method.getName() + "' with " + print(args)); //NOI18N
@@ -169,11 +168,14 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if (fsReadOnlyAction) {
                 return c.call();
             } else {
-                File file = null;
-                if (args != null && args.length > 0 && args[0] instanceof File) {
-                    file = (File) args[0];
+                List<File> files = getFileParameters(args);
+                if(files.size() > 0) {
+                    return IndexingBridge.getInstance().runWithoutIndexing(c, files.toArray(new File[files.size()]));
+                } else {
+                    // no file arguments - seems there is no need to stop indexing
+                    //                     or refresh the FS
+                    return c.call();
                 }
-                return IndexingBridge.getInstance().runWithoutIndexing(c, file);
             }
         } catch (Exception e) {
             try {
@@ -234,6 +236,38 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 Subversion.getInstance().getRefreshHandler().refresh();
             }
         }
+    }
+
+    private List<File> getFileParameters(final Object[] args) {
+        List<File> files = new LinkedList<File>();
+        if (args != null && args.length > 0) {
+            for (Object arg : args) {
+                if (arg instanceof File) {
+                    files.add((File) arg);
+                } else if (arg instanceof File[]) {
+                    File[] fs = (File[]) arg;
+                    for (File file : fs) {
+                        files.add(file);
+                    }
+                }
+            }
+        }
+        return files;
+    }
+
+    private boolean isFSWrittingCommand(final Method method) {
+        // list here all operations that can potentially modify files on the disk
+        return !method.getName().equals("update") &&           // NOI18N
+               !method.getName().equals("revert") &&           // NOI18N
+               !method.getName().equals("switchToUrl") &&      // NOI18N
+               !method.getName().equals("commit") &&           // NOI18N
+               !method.getName().equals("commitAcrossWC") &&   // NOI18N
+               !method.getName().equals("remove") &&           // NOI18N
+               !method.getName().equals("mkdir") &&            // NOI18N
+               !method.getName().equals("checkout") &&         // NOI18N
+               !method.getName().equals("copy") &&             // NOI18N
+               !method.getName().equals("move") &&             // NOI18N
+               !method.getName().equals("merge");              // NOI18N
     }
 
     private void logClientInvoked() {

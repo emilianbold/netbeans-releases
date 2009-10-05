@@ -110,11 +110,7 @@ public class CheckoutExecutor extends ExecutorSupport {
             cache.refreshCached(file, repositoryStatus);
             refreshedFiles.add(file);
         }
-
-        // refresh FS
-        if (workingFolder != null) {
-            FileUtil.refreshFor(workingFolder);
-        }
+        
         // refresh all command roots
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {

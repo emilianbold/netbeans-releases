@@ -194,47 +194,37 @@ public class SwitchToAction extends ContextAction {
     }        
 
     static void performSwitch(final RepositoryFile toRepositoryFile, final File root, final SvnProgressSupport support) {
+        File[][] split = Utils.splitFlatOthers(new File[] {root} );
+        boolean recursive;
+        // there can be only 1 root file
+        if(split[0].length > 0) {
+            recursive = false;
+        } else {
+            recursive = true;
+        }
+
         try {
-            IndexingBridge.getInstance().runWithoutIndexing(new Callable<Void>() {
-                public Void call() {
-                    File[][] split = Utils.splitFlatOthers(new File[] {root} );
-                    boolean recursive;
-                    // there can be only 1 root file
-                    if(split[0].length > 0) {
-                        recursive = false;
-                    } else {
-                        recursive = true;
-                    }
-
-                    try {
-                        SvnClient client;
-                        try {
-                            client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
-                        } catch (SVNClientException ex) {
-                            SvnClientExceptionHandler.notifyException(ex, true, true);
-                            return null;
-                        }
-                        // ... and switch
-                        client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
-                        // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
-                        List<File> switchedFiles = SvnUtils.listRecursively(root);
-                        File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
-                        // the cache fires status change events to trigger the annotation refresh
-                        // unfortunatelly - we have to call the refresh explicitly for each file also
-                        // from this place as the branch label was changed evern if the files status didn't
-                        Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
-                        Subversion.getInstance().refreshAnnotations(fileArray);
-                        // refresh the inline diff
-                        Subversion.getInstance().versionedFilesChanged();
-                    } catch (SVNClientException ex) {
-                        support.annotate(ex);
-                    }
-
-                    return null;
-                }
-            }, root);
-        } catch (Exception e) {
-            e.printStackTrace();
+            SvnClient client;
+            try {
+                client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, true, true);
+                return;
+            }
+            // ... and switch
+            client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
+            // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
+            List<File> switchedFiles = SvnUtils.listRecursively(root);
+            File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
+            // the cache fires status change events to trigger the annotation refresh
+            // unfortunatelly - we have to call the refresh explicitly for each file also
+            // from this place as the branch label was changed evern if the files status didn't
+            Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels(fileArray);
+            Subversion.getInstance().refreshAnnotations(fileArray);
+            // refresh the inline diff
+            Subversion.getInstance().versionedFilesChanged();
+        } catch (SVNClientException ex) {
+            support.annotate(ex);
         }
     }
 }
