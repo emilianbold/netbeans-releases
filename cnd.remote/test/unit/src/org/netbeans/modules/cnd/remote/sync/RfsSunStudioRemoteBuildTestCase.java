@@ -67,7 +67,6 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
     public void setUp() throws Exception {
         super.setUp();
         setupHost("rfs");
-        removeRemoteHome();
     }
 
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
@@ -75,6 +74,7 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
         RemoteUtil.LOGGER.setLevel(Level.ALL);
         setDefaultCompilerSet("SunStudio");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
+        removeRemoteHomeSubdir("remote/" + projectDirFO.getNameExt());
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
