@@ -103,7 +103,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -115,7 +114,6 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -460,8 +458,6 @@ public class SemanticHighlighter extends JavaParserResultTask {
         private final Set<ImportTree> unresolvablePackageImports = new HashSet<ImportTree>();
         private final Map<ImportTree, TreePath/*ImportTree*/> import2Highlight = new HashMap<ImportTree, TreePath>();
         
-        private Set<Element> additionalUsedTypes; //types used *before* the imports has been processed (ie. annotations in package-info.java)
-        
         private Map<Tree, Token> tree2Token;
         private TokenList tl;
         private long memberSelectBypass = -1;
@@ -475,7 +471,6 @@ public class SemanticHighlighter extends JavaParserResultTask {
             this.info = info;
             this.doc  = doc;
             type2Uses = new HashMap<Element, List<Use>>();
-            this.additionalUsedTypes = new HashSet<Element>();
             
             tree2Token = new IdentityHashMap<Tree, Token>();
             
@@ -798,10 +793,18 @@ public class SemanticHighlighter extends JavaParserResultTask {
         public Void visitCompilationUnit(CompilationUnitTree tree, EnumSet<UseTypes> d) {
 	    //ignore package X.Y.Z;:
 	    //scan(tree.getPackageDecl(), p);
-	    scan(tree.getPackageAnnotations(), d);
+            tl.moveBefore(tree.getImports());
 	    scan(tree.getImports(), d);
+            tl.moveBefore(tree.getPackageAnnotations());
+	    scan(tree.getPackageAnnotations(), d);
+            tl.moveToEnd(tree.getImports());
 	    scan(tree.getTypeDecls(), d);
 	    return null;
+        }
+
+        private long startOf(List<? extends Tree> trees) {
+            if (trees.isEmpty()) return -1;
+            return sourcePositions.getStartPosition(info.getCompilationUnit(), trees.get(0));
         }
 
         private void handleMethodTypeArguments(TreePath method, List<? extends Tree> tArgs) {
@@ -1057,17 +1060,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                     Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
                     
                     if (decl != null && decl.getKind() == ElementKind.PACKAGE) {
-                        boolean assign = false;
-                        
-                        for (TypeElement te : ElementFilter.typesIn(decl.getEnclosedElements())) {
-                            if (additionalUsedTypes.contains(te)) {
-                                break;
-                            } else {
-                                assign = true;
-                            }
-                        }
-                        
-                        if (assign) {
+                        if (!ElementFilter.typesIn(decl.getEnclosedElements()).isEmpty()) {
                             for (TypeElement te : ElementFilter.typesIn(decl.getEnclosedElements())) {
                                 element2Import.put(te, tree);
                             }
@@ -1080,7 +1073,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 } else {
                     Element decl = info.getTrees().getElement(new TreePath(getCurrentPath(), tree.getQualifiedIdentifier()));
 
-                    if (decl != null && !additionalUsedTypes.contains(decl)) {
+                    if (decl != null) {
                         if (decl.asType().getKind() != TypeKind.ERROR) {
                             element2Import.put(decl, tree);
                             import2Highlight.put(tree, getCurrentPath());
@@ -1499,11 +1492,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                             //TODO: explain
                             handleUnresolvableImports(decl, type, false);
                         }
-                        if (import2Highlight.remove(imp) == null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
-                            additionalUsedTypes.add(decl);
-                        }
-                    } else {
-                        additionalUsedTypes.add(decl);
+                        import2Highlight.remove(imp);
                     }
                 } else {
                     handleUnresolvableImports(decl, type, true);
