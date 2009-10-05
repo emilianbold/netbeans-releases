@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
 
@@ -148,7 +149,17 @@ implements PropertyChangeListener {
         );
         d.addBreakpoint (lb);
     }
-    
+
+    @Override
+    public void postAction(final Object action, final Runnable actionPerformedNotifier) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                doAction(action);
+                actionPerformedNotifier.run();
+            }
+        });
+    }
+
     static LineBreakpoint findBreakpoint (String url, int lineNumber) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (int i = 0; i < breakpoints.length; i++) {
