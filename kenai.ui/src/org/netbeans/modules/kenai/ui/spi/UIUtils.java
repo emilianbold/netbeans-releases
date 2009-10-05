@@ -70,6 +70,7 @@ import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
+import org.netbeans.modules.kenai.ui.dashboard.UserNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -170,15 +171,17 @@ public final class UIUtils {
      * @return true if logged in, false otherwise
      */
     @Deprecated
-    public static synchronized boolean tryLogin() {
+    public static synchronized boolean tryLogin(boolean force) {
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
-        String online = preferences.get(LOGIN_STATUS_PREF, "false"); // NOI18N
-        if (!Boolean.parseBoolean(online)) {
-            return false;
+        if (!force) {
+            String online = preferences.get(LOGIN_STATUS_PREF, "false"); // NOI18N
+            if (!Boolean.parseBoolean(online)) {
+                return false;
+            }
         }
 
         String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
@@ -188,7 +191,7 @@ public final class UIUtils {
         String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), Boolean.parseBoolean(preferences.get(ONLINE_STATUS_PREF, "true")));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(ONLINE_STATUS_PREF, "true")));
         } catch (KenaiException ex) {
             return false;
         }
@@ -283,11 +286,14 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
                     result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                    result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
                     result.repaint();
                 }
             }

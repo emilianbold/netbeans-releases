@@ -39,23 +39,27 @@
 
 package org.netbeans.modules.cnd.execution.impl;
 
+import java.awt.Color;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.windows.IOColors;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 public final class OutputListenerImpl implements OutputListener {
 
-    private FileObject file;
-    private int line;
+    private final FileObject file;
+    private final int line;
+    private final boolean isError;
 
-    public OutputListenerImpl(FileObject file, int line) {
+    public OutputListenerImpl(FileObject file, int line, boolean isError) {
         super();
         this.file = file;
         this.line = line;
+	this.isError = isError;
     }
 
     public void outputLineSelected(OutputEvent ev) {
@@ -68,6 +72,10 @@ public final class OutputListenerImpl implements OutputListener {
 
     public void outputLineCleared(OutputEvent ev) {
         ErrorAnnotation.getInstance().detach(null);
+    }
+
+    public boolean isError(){
+	return isError;
     }
 
     private void showLine(boolean openTab) {

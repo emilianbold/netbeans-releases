@@ -138,9 +138,9 @@ public class QMakeAction extends AbstractExecutorRunAction {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir.getPath())
-        .putAllEnvironmentVariables(envMap)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
+        npb.getEnvironment().putAll(envMap);
         npb.redirectError();
 
         ExecutionDescriptor descr = new ExecutionDescriptor()

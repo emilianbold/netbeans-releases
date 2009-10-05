@@ -76,7 +76,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
             pb.setExecutable(cmd);
-            pb.putAllEnvironmentVariables(env);
+            pb.getEnvironment().putAll(env);
 
             if (args != null) {
                 pb.setArguments(Utilities.parseParameters(args));

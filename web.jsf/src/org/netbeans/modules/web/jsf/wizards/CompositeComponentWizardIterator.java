@@ -38,33 +38,24 @@
  */
 package org.netbeans.modules.web.jsf.wizards;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -78,7 +69,6 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
     private String selectedText;
     private static final String RESOURCES_FOLDER = "resources";  //NOI18N
     private static final String COMPONENT_FOLDER = "ezcomp";  //NOI18N
-    private static final String TYPE_RESOURCES = "resources"; //NOI18N
 
 
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
@@ -113,37 +103,22 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
         if (sourceGroups == null || sourceGroups.length == 0) {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
-        //Add resources and component folder
+
+        FileObject targetFolder = null;
         FileObject resourceFolder = sourceGroups[0].getRootFolder().getFileObject(RESOURCES_FOLDER);
-        if (resourceFolder==null) {
-            try {
-                resourceFolder = sourceGroups[0].getRootFolder().createFolder(RESOURCES_FOLDER);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        if (resourceFolder != null) {
+            FileObject componentFolder = resourceFolder.getFileObject(COMPONENT_FOLDER);
+            if (componentFolder !=null) {
+                targetFolder = componentFolder;
+            } else {
+                targetFolder = resourceFolder;
             }
         }
-        assert resourceFolder != null;
-        FileObject componentFolder = resourceFolder.getFileObject(COMPONENT_FOLDER);
-        if (componentFolder == null) {
-            try {
-                componentFolder = resourceFolder.createFolder(COMPONENT_FOLDER);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+
+        if (targetFolder !=null) {
+            Templates.setTargetFolder(wizard, targetFolder);
         }
-        assert componentFolder !=null;
-
-        SourceGroup resourcesSG[] = new SourceGroup[1];
-
-        resourcesSG[0] = new ResourcesSourceGroup(resourceFolder);
-
-        Templates.setTargetFolder(wizard, componentFolder);
-
-        if (selectedText != null) {
-            folderPanel = Templates.createSimpleTargetChooser(project, resourcesSG, new CompositeComponentWizardPanel(wizard, selectedText));
-        } else {
-            folderPanel = Templates.createSimpleTargetChooser(project, resourcesSG);
-        }
+        folderPanel = new CompositeComponentWizardPanel(wizard, sourceGroups, selectedText);
 
         panels = new WizardDescriptor.Panel[] { folderPanel };
 
@@ -205,32 +180,6 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
     public void removeChangeListener(ChangeListener l) {
     }
 
-    // If something changes dynamically (besides moving between panels), e.g.
-    // the number of panels changes in response to user input, then uncomment
-    // the following and call when needed: fireChangeEvent();
-    /*
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
-    }
-    }
-    protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
-    }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
     // You could safely ignore this method. Is is here to keep steps which were
     // there before this wizard was instantiated. It should be better handled
     // by NetBeans Wizard API itself rather than needed to be implemented by a
@@ -255,67 +204,6 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
             }
         }
         return res;
-    }
-
-    private class ResourcesSourceGroup implements SourceGroup {
-
-        private final FileObject loc;
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-        public ResourcesSourceGroup(FileObject root) {
-            loc = root;
-        }
-
-
-        public FileObject getRootFolder() {
-            return loc;
-        }
-
-        public String getName() {
-            return TYPE_RESOURCES;
-        }
-
-        public String getDisplayName() {
-            return "Composite Components Resources";
-        }
-
-        public Icon getIcon(boolean opened) {
-            return null;
-        }
-
-        public boolean contains(FileObject file) throws IllegalArgumentException {
-            if (file == loc) {
-                return true;
-            }
-            String path = FileUtil.getRelativePath(loc, file);
-            if (path == null) {
-                throw new IllegalArgumentException(file + " is not inside " + loc);
-            }
-            if (file.isFolder()) {
-                path += "/"; // NOI18N
-            }
-            Project p = Templates.getProject(wizard);
-            if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
-                // #67450: avoid actually loading the nested project.
-                return false;
-            }
-                // XXX disabled for typed source roots; difficult to make fast (#97215)
-            Project owner = FileOwnerQuery.getOwner(file);
-            if (owner != null && owner != p) {
-                return false;
-            }
-            File f = FileUtil.toFile(file);
-            if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {
-                return false;
-            } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
-            return true;
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-        }
     }
 
 }
