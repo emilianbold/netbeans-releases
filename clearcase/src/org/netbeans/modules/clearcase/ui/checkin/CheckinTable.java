@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,6 +59,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.Component;
 import java.lang.String;
 import java.util.*;
+import org.netbeans.modules.versioning.util.SortedTable;
 
 /**
  * {@link #getComponent Table} that displays nodes in the checkin dialog.
@@ -100,12 +101,11 @@ class CheckinTable implements AncestorListener, TableModelListener {
             sorter = new TableSorter(tableModel);
         } 
         this.sorter = sorter;   
-        table = new JTable(this.sorter);
+        table = new SortedTable(this.sorter);
         table.getTableHeader().setReorderingAllowed(false);
         table.setDefaultRenderer(String.class, new CommitStringsCellRenderer());
         table.setDefaultEditor(CheckinOptions.class, new CommitOptionsCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
-        this.sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
