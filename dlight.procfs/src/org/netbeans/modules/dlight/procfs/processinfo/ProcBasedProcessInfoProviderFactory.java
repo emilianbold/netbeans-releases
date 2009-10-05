@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.dlight.procfs.processinfo;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -62,11 +59,10 @@ public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderF
         try {
             HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
 
-            if (hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
+            if (hinfo != null && hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
                 return new ProcBasedProcessInfoProvider(execEnv, pid);
             }
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
         }
 
         return null;
