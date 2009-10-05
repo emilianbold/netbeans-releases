@@ -893,7 +893,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private static final SystemAction[] NO_ACTIONS = new SystemAction[0];
 
-    private abstract class Enabled extends AbstractNode {
+    abstract class Enabled extends AbstractNode {
 
         private EnabledState state;
 
