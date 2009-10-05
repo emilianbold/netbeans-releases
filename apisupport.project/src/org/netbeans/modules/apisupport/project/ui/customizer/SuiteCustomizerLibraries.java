@@ -1363,6 +1363,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         public Set<String> getRequiredTokens() {
             Set<String> s = new HashSet<String>(Arrays.asList(mm.getRequiredTokens()));
+            s.addAll(Arrays.asList(mm.getNeededTokens()));
             Iterator<String> it = s.iterator();
             while (it.hasNext()) {
                 String tok = it.next();
