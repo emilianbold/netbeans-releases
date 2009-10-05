@@ -139,7 +139,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                     if (!toolUI.isEnabled()){
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
                     }else{
-                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), toolUI.isOnByDefault());
+                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), true);
                     }
                 }
             }
@@ -363,8 +363,8 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             int i = 0;
             for (DLightToolUIWrapper tool : tools) {
                 DLightToolUIWrapper copyTool = copyTools.get(i++);
-                copy.setToolEnabled(copyTool, tool.isEnabled());
-                copyTool.setOnByDefault(tool.isOnByDefault());
+                copyTool.setEnabled(tool.isEnabled());
+                copyTool.setCanEnable(tool.canEnable());
             }
             copy.setCopyOf(o.getDLightConfiguration());
             return copy;
