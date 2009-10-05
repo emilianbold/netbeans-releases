@@ -624,6 +624,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ173311.cc", 2, 30, "IZ173311.cc", 2, 26);
     }
 
+    public void testIZ145071_2() throws Exception {
+        // IZ#145071 : forward declarations in function body marked as error
+        performTest("IZ145071_2.cc", 2, 12, "IZ145071_2.cc", 2, 5);
+        performTest("IZ145071_2.cc", 6, 20, "IZ145071_2.cc", 6, 5);
+        performTest("IZ145071_2.cc", 10, 12, "IZ145071_2.cc", 10, 5);
+        performTest("IZ145071_2.cc", 11, 20, "IZ145071_2.cc", 10, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
