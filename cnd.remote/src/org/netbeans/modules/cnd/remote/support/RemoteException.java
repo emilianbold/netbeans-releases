@@ -37,23 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#ifndef _RFS_PRELOAD_SOCKS_H
-#define	_RFS_PRELOAD_SOCKS_H
+package org.netbeans.modules.cnd.remote.support;
 
 /**
- * as well as open syscall, returns
- * -1 if an error occurred, or
- * non-negative integer in the case of success
+ * General-purpose exception for handling errors related with remote commands execution.
+ * For example, if some function gets a value from remote host via executing a command on this host,
+ * and that command returned nonzero result code,
+ * then such function can throw a RemoteException.
+ *
+ * TODO: should it be moved to remote API?
+ * 
+ * @author Vladimir Kvashin
  */
-int get_socket(int create);
-
-void release_socket();
-
-#if TRACE
-void trace_sd(const char* text);
-#else
-#define trace_sd(...)
-#endif
-
-#endif	/* _RFS_PRELOAD_SOCKS_H */
-
+public class RemoteException extends Exception {
+    public RemoteException(String message) {
+        super(message);
+    }
+}
