@@ -238,7 +238,7 @@ public class RssNode extends FilterNode {
     
     /** Looking up a feed */
     private static Feed getFeed(Node node) {
-        InstanceCookie ck = node.getCookie(InstanceCookie.class);
+        InstanceCookie ck = node.getLookup().lookup(InstanceCookie.class);
         if (ck == null) {
             throw new IllegalStateException("Bogus file in feeds folder: " + node.getLookup().lookup(FileObject.class));
         }
