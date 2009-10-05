@@ -100,7 +100,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private List<DataStorage> storages = null;
     private ServiceInfoDataStorage serviceInfoDataStorage = null;
     private List<DataCollector<?>> collectors = null;
-    private Map<String, Map<String, Visualizer>> visualizers = null;//toolID, visualizer
+    private Map<String, Map<String, Visualizer<?>>> visualizers = null;//toolID, visualizer
     private SessionState state;
     private final int sessionID;
     private String description = null;
@@ -240,17 +240,17 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         if (visualizers == null || !visualizers.containsKey(toolID)) {
             return false;
         }
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolID);
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(toolID);
         return toolVisualizers.containsKey(visualizerID);
     }
 
-    List<Visualizer> getVisualizers() {
+    List<Visualizer<?>> getVisualizers() {
         if (visualizers == null) {
             return Collections.emptyList();
         }
-        List<Visualizer> result = new ArrayList<Visualizer>();
+        List<Visualizer<?>> result = new ArrayList<Visualizer<?>>();
         for (String toolName : visualizers.keySet()) {
-            Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+            Map<String, Visualizer<?>> toolVisualizers = visualizers.get(toolName);
             for (String visID : toolVisualizers.keySet()) {
                 result.add(toolVisualizers.get(visID));
             }
@@ -259,25 +259,25 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     }
 
-    Visualizer getVisualizer(String toolID, String visualizerID) {
+    Visualizer<?> getVisualizer(String toolID, String visualizerID) {
         if (visualizers == null || !visualizers.containsKey(toolID)) {
             return null;
         }
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolID);
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(toolID);
         return toolVisualizers.get(visualizerID);
     }
 
-    Visualizer putVisualizer(String toolName, String id, Visualizer visualizer) {
+    Visualizer<?> putVisualizer(String toolName, String id, Visualizer<?> visualizer) {
         if (visualizers == null) {
-            visualizers = new HashMap<String, Map<String, Visualizer>>();
+            visualizers = new HashMap<String, Map<String, Visualizer<?>>>();
         }
 
-        Map<String, Visualizer> toolVisualizers = visualizers.get(toolName);
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(toolName);
         if (toolVisualizers == null) {
-            toolVisualizers = new HashMap<String, Visualizer>();
+            toolVisualizers = new HashMap<String, Visualizer<?>>();
             visualizers.put(toolName, toolVisualizers);
         }
-        Visualizer oldVis = toolVisualizers.put(id, visualizer);
+        Visualizer<?> oldVis = toolVisualizers.put(id, visualizer);
         return oldVis;
 
     }
@@ -401,7 +401,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         dataFiltersSupport.addFilter(filter, isAdjusting);
         //if filter is added - refresh all visualizers
         if (!isAdjusting) {
-            for (Visualizer v : getVisualizers()) {
+            for (Visualizer<?> v : getVisualizers()) {
                 v.refresh();
             }
         }
@@ -410,14 +410,14 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     public void cleanAllDataFilter() {
         dataFiltersSupport.cleanAll();
-        for (Visualizer v : getVisualizers()) {
+        for (Visualizer<?> v : getVisualizers()) {
             v.refresh();
         }
     }
 
-    public void cleanAllDataFilter(Class clazz) {
+    public void cleanAllDataFilter(Class<?> clazz) {
         dataFiltersSupport.cleanAll(clazz);
-        for (Visualizer v : getVisualizers()) {
+        for (Visualizer<?> v : getVisualizers()) {
             v.refresh();
         }
     }
@@ -471,7 +471,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             return false;
         }
 
-        DataCollector notAttachableDataCollector = null;
+        DataCollector<?> notAttachableDataCollector = null;
 
         if (collectors == null) {
             collectors = new ArrayList<DataCollector<?>>();
@@ -481,7 +481,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             for (DLightTool tool : validTools) {
                 List<DataCollector<?>> toolCollectors = context.getDLightConfiguration().getConfigurationOptions(false).getCollectors(tool);
                 //TODO: no algorithm here:) should be better
-                for (DataCollector c : toolCollectors) {
+                for (DataCollector<?> c : toolCollectors) {
                     if (!collectors.contains(c)) {
                         if (c.getValidationStatus().isValid()) {//for valid collectors only
                             collectors.add(c);
@@ -493,7 +493,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             collectors.clear();
         }
 
-        Collection<IndicatorDataProvider> idproviders = new ArrayList<IndicatorDataProvider>();
+        Collection<IndicatorDataProvider<?>> idproviders = new ArrayList<IndicatorDataProvider<?>>();
         StringBuilder idpsNames = new StringBuilder();
         StringBuilder collectorNames = new StringBuilder();
 
@@ -502,23 +502,24 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
-            List<Indicator> subscribedIndicators = new ArrayList<Indicator>();
+            List<Indicator<?>> subscribedIndicators = new ArrayList<Indicator<?>>();
             List<IndicatorDataProvider<?>> idps = context.getDLightConfiguration().
                     getConfigurationOptions(false).getIndicatorDataProviders(tool);
 
             if (idps != null) {
-                for (IndicatorDataProvider idp : idps) {
+                for (IndicatorDataProvider<?> idp : idps) {
                     if (idp.getValidationStatus().isValid()) {
                         if (idp instanceof DLightTarget.ExecutionEnvVariablesProvider) {
                             context.addDLightTargetExecutionEnviromentProvider((DLightTarget.ExecutionEnvVariablesProvider) idp);
                         }
 
                         if (idp instanceof DataCollector) {
-                            if (!collectors.contains((DataCollector) idp)) {
-                                collectors.add((DataCollector) idp);
+			    DataCollector<?> dataCollector = (DataCollector<?>) idp;
+                            if (!collectors.contains(dataCollector)) {
+                                collectors.add(dataCollector);
                             }
-                            if (notAttachableDataCollector == null && !((DataCollector) idp).isAttachable()) {
-                                notAttachableDataCollector = ((DataCollector) idp);
+                            if (notAttachableDataCollector == null && !dataCollector.isAttachable()) {
+                                notAttachableDataCollector = dataCollector;
                             }
                         } else {
                             idproviders.add(idp);
@@ -530,7 +531,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         idpsNames.append(idp.getName() + ServiceInfoDataStorage.DELIMITER);
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
-                        for (Indicator i : indicators) {
+                        for (Indicator<?> i : indicators) {
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
@@ -551,7 +552,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             }
 
             List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
-            for (Indicator i : indicators) {
+            for (Indicator<?> i : indicators) {
                 if (!subscribedIndicators.contains(i)) {
                     IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
                 }
@@ -592,7 +593,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                     addDataFilterListener(toolCollector);
 
                     if (toolCollector instanceof IndicatorDataProvider) {
-                        IndicatorDataProvider idp = (IndicatorDataProvider) toolCollector;
+                        IndicatorDataProvider<?> idp = (IndicatorDataProvider<?>) toolCollector;
                         idp.init(serviceInfoDataStorage);
                     }
 
@@ -610,7 +611,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             }
         }
 
-        for (IndicatorDataProvider idp : idproviders) {
+        for (IndicatorDataProvider<?> idp : idproviders) {
             idp.init(serviceInfoDataStorage);
             addDataFilterListener(idp);
         }
@@ -879,7 +880,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return result;
     }
 
-    boolean containsIndicator(Indicator indicator) {
+    boolean containsIndicator(Indicator<?> indicator) {
         return getIndicators().contains(indicator);
     }
 

@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -136,7 +135,10 @@ public final class NativeProcessInfo {
         }
 
         this.arguments.clear();
-        this.arguments.addAll(Arrays.asList(arguments));
+
+        for (String arg : arguments) {
+            this.arguments.add(arg.trim());
+        }
     }
 
     public List<String> getCommand() {

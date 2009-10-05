@@ -186,6 +186,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     public void reset() {
     }
 
+    public void suggestRepaint() {
+    }
+
     public void updated(List<DataRow> data) {
         if (getProcessorsNumber() <= 1) {
             // no need to parallelize application on machine with single core processor.

@@ -36,39 +36,39 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
+package org.netbeans.modules.dlight.procfs.processinfo;
 
-import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
+/**
+ *
+ * @author ak119685
+ */
+@ServiceProviders({
+    @ServiceProvider(service = ProcessInfoProviderFactory.class)
+})
+public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderFactory {
 
-public abstract class ProcFSDCConfigurationAccessor {
-
-    private static volatile ProcFSDCConfigurationAccessor DEFAULT;
-
-    public ProcFSDCConfigurationAccessor() {
-    }
-
-    public static ProcFSDCConfigurationAccessor getDefault() {
-        ProcFSDCConfigurationAccessor a = DEFAULT;
-        if (a != null) {
-            return a;
-        }
-
+    public ProcessInfoProvider getProvider(ExecutionEnvironment execEnv, int pid) {
         try {
-            Class.forName(ProcFSDCConfiguration.class.getName(), true, ProcFSDCConfiguration.class.getClassLoader());
-        } catch (Exception e) {
+            HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
+
+            if (hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
+                return new ProcBasedProcessInfoProvider(execEnv, pid);
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return DEFAULT;
+
+        return null;
     }
-
-    public static void setDefault(ProcFSDCConfigurationAccessor accessor) {
-        if (DEFAULT != null) {
-            throw new IllegalStateException();
-        }
-        DEFAULT = accessor;
-    }
-
-    public abstract int procInfoSampling(ProcFSDCConfiguration configuration);
-
-    public abstract int msaSampling(ProcFSDCConfiguration configuration);
 }

@@ -36,38 +36,70 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.impl;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.ValidationStatus;
-import org.netbeans.modules.dlight.util.Computable;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include <sys/socket.h>
 
-final class ProcFSDataCollectorValidator implements Computable<DLightTarget, ValidationStatus> {
+#include "rfs_util.h"
+#include "rfs_protocol.h"
 
-    public ProcFSDataCollectorValidator() {
-    }
+// Actual package layout:
+//  char kind;
+//  char[2] 2-bytes size representation (high byte first)
+//  char[] data 0-32K bytes null-terminated string
 
-    public ValidationStatus compute(final DLightTarget target) throws InterruptedException {
-        ValidationStatus result = ValidationStatus.initialStatus();
-
-        try {
-            if (HostInfoUtils.getHostInfo(target.getExecEnv()).getOSFamily() == OSFamily.SUNOS) {
-                result = ValidationStatus.validStatus();
-            } else {
-                result = ValidationStatus.invalidStatus(NbBundle.getMessage(ProcFSDataCollectorValidator.class, "SunOSIsSupportedPlatform")); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+static int do_send(int sd, const char* buffer, int size) {
+    int sent = 0;
+    while (sent < size) {
+        int sent_now = send(sd, buffer + sent, size - sent, 0);
+        if (sent_now == -1) {
+            return false;
+        } else {
+            sent += sent_now;
         }
-
-        return result;
     }
+    return true;
+}
+
+enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf) {
+    int size = strlen(buf) + 1;
+    char header[3];
+    header[0] = (char) kind;
+    header[1] = size & 0xff00; // high byte
+    header[2] = size & 0x00ff; // low byte
+    if (do_send(sd, header, sizeof header)) {
+        if (do_send(sd, buf, size)) {
+            return sr_success;
+        }
+    }
+    return sr_failure;
+}
+
+enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
+    // clear pkg
+    p->kind = pkg_null;
+    memset(p->data, 0, max_data_size);
+    // get kind and size
+    char buffer[3];
+    int received;
+    received = recv(sd, buffer, 3, 0); // 3-rd is for kind
+    if (received != 3) {
+        return sr_failure;
+    }
+    p->kind = (enum pkg_kind) buffer[0];
+    int size =  ((0x0FF & buffer[1])) * 256 + ((0x0FF & buffer[2]));
+    if (size > max_data_size) {
+        errno = EMSGSIZE;
+        return sr_failure;
+    }
+    received = recv(sd, p->data, size, 0);
+    if (received == 0) {
+        return sr_reset;
+    }
+    if (received != size) {
+        return sr_failure;
+    }
+    return sr_success;
 }

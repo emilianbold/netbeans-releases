@@ -79,7 +79,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     private final static String successLine = "BUILD SUCCESSFUL";
     private final static String failureLine = "BUILD FAILED";
     private final static String[] errorLines = new String[] {
-            "Error copying project files"
+            "Error copying project files",
+            "CLEAN FAILED"
         };
 
     static {

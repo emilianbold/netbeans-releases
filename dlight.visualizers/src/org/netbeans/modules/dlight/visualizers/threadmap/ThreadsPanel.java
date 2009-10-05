@@ -1055,13 +1055,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 ThreadState found = null;
                 for (int j = 0; j < row.size(); j++) {
                     ThreadState state = row.getThreadStateAt(j);
+		    long timeStamp = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
                     if (j < row.size()-1) {
-                        if (state.getTimeStamp() <= t && t <= row.getThreadStateAt(j+1).getTimeStamp()) {
+                        if (timeStamp <= t && t <= ThreadStateColumnImpl.timeStampToMilliSeconds(row.getThreadStateAt(j+1).getTimeStamp())) {
                             found = state;
                             break;
                         }
                     } else {
-                        if (state.getTimeStamp() <= t && t <= state.getTimeStamp()+ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod())) {
+                        if (timeStamp <= t && t <= timeStamp+ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod())) {
                             found = state;
                             break;
                         }

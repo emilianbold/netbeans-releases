@@ -16,7 +16,7 @@ void *start_routine(void *data) {
 }
 
 static void test_trivial() {
-    file_data *fd = find_file_data("/tmp/asd");
+    file_data *fd = find_file_data("/tmp/asd", 0);
     pthread_t thread1, thread2;
     pthread_create(&thread1, NULL, &start_routine, fd);
     pthread_create(&thread2, NULL, &start_routine, fd);

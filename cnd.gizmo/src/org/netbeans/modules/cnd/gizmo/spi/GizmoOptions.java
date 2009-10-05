@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.gizmo.spi;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 
 public interface GizmoOptions {
 
@@ -57,26 +58,28 @@ public interface GizmoOptions {
      */
     boolean getProfileOnRunValue();
 
+    DLightConfiguration getDLightConfiguration();
+
     /**
      * @param profileOnRunOption the profileOnRunOption value to set
      */
     void setProfileOnRunValue(boolean profileOnRunValue);
 
-    boolean getValueByName(String name);
-
-    void setValueByName(String name, boolean value);
+//    boolean getValueByName(String name);
+//
+//    void setValueByName(String name, boolean value);
 
     Collection<String> getNames();
 
-    /**
-     * @return the dataProvider
-     */
-    DataProvider getDataProviderValue();
-
-    /**
-     * @param dataProvider the dataProvider to set
-     */
-    void setDataProviderValue(DataProvider dataProvider);
+//    /**
+//     * @return the dataProvider
+//     */
+//    DataProvider getDataProviderValue();
+//
+//    /**
+//     * @param dataProvider the dataProvider to set
+//     */
+//    void setDataProviderValue(DataProvider dataProvider);
 
     void init(Configuration conf);
 }

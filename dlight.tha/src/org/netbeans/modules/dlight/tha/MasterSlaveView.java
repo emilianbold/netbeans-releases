@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.tha;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
@@ -49,11 +48,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.Renderer;
-import org.netbeans.module.dlight.threads.api.Datarace;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
-import org.netbeans.modules.dlight.core.stack.ui.CallStackUISupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -112,12 +106,17 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
 
     public void setSlaveRenderer(Renderer renderer) {
         slaveRenderer = renderer;
-        showDetails(manager.getSelectedNodes().length > 0 ? ((THANode<T>) manager.getSelectedNodes()[0]).getObject() : null, true);
+	valueChanged();
     }
 
     private void valueChanged() {
-        showDetails(manager.getSelectedNodes().length > 0  && manager.getSelectedNodes()[0] instanceof THANode ? ((THANode<T>) manager.getSelectedNodes()[0]).getObject() : null, true);
-
+	if (manager.getSelectedNodes().length > 0) {
+	    @SuppressWarnings("unchecked")
+	    THANode<T> selectedNode = (THANode<T>) manager.getSelectedNodes()[0];
+            showDetails(selectedNode.getObject(), true);
+	} else {
+            showDetails(null, true);
+	}
     }
 
     private void showDetails(T masterItem, boolean keepDividerPos) {

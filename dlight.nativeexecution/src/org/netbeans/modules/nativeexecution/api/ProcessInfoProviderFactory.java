@@ -36,51 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs;
+package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
-import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
-import org.netbeans.modules.dlight.procfs.impl.ProcFSDCConfigurationAccessor;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
 
-public class ProcFSDCConfiguration implements
-        DataCollectorConfiguration,
-        IndicatorDataProviderConfiguration {
+/**
+ *
+ * @author ak119685
+ */
+public interface ProcessInfoProviderFactory {
 
-    public final static String ID = "dlight.MSADataCollectorConfiguration"; // NOI18N
-    private int procInfoSampling; // sampling period for procinfo count... 0 - do not collect.
-    private int msaSampling; // sampling period for msa... 0 - do not collect.
-
-    static {
-        ProcFSDCConfigurationAccessor.setDefault(new ProcFSDCConfigurationAccessorImpl());
-    }
-
-    public String getID() {
-        return ID;
-    }
-
-    /**
-     * Indicates that Threads count should be collected.
-     * @param msPeriod - sampling period in milliseconds. 0 means turn off LWPs
-     * count collection
-     */
-    public void collectProcInfo(int samplingPeriod) {
-        procInfoSampling = samplingPeriod;
-    }
-
-    public void collectMSA(int samplingPeriod) {
-        msaSampling = samplingPeriod;
-    }
-
-    private static final class ProcFSDCConfigurationAccessorImpl extends ProcFSDCConfigurationAccessor {
-
-        @Override
-        public int procInfoSampling(ProcFSDCConfiguration configuration) {
-            return configuration.procInfoSampling;
-        }
-
-        @Override
-        public int msaSampling(ProcFSDCConfiguration configuration) {
-            return configuration.msaSampling;
-        }
-    }
+    public ProcessInfoProvider getProvider(ExecutionEnvironment env, int pid);
 }

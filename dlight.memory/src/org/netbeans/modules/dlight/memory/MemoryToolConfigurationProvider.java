@@ -42,6 +42,7 @@ import java.awt.Color;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
@@ -269,8 +270,6 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
 
         private final List<Column> columns;
         private final ValueFormatter formatter;
-        private int mem;
-        private long memTimestamp;
         private int max;
 
         public DataRowToMemory(List<Column> columns, ValueFormatter formatter) {
@@ -278,29 +277,29 @@ public final class MemoryToolConfigurationProvider implements DLightToolConfigur
             this.formatter = formatter;
         }
 
-        public void addDataRow(DataRow row) {
-            long timestamp = DataUtil.getTimestamp(row);
+        @Override
+        public float[] getData(DataRow row) {
+            float[] result = null;
             for (String columnName : row.getColumnNames()) {
                 for (Column column : columns) {
                     if (column.getColumnName().equals(columnName)) {
-                        int newMem = DataUtil.toInt(row.getData(columnName));
-                        if (memTimestamp < timestamp || timestamp == -1) {
-                            mem = newMem;
-                            if (max < mem) {
-                                max = mem;
-                            }
-                            if (timestamp != -1) {
-                                memTimestamp = timestamp;
-                            }
+                        if (result == null) {
+                            result = new float[1];
+                        }
+                        int mem = DataUtil.toInt(row.getData(columnName));
+                        result[0] = mem;
+                        if (max < mem) {
+                            max = mem;
                         }
                     }
                 }
             }
+            return result;
         }
 
-        public void tick(float[] data, Map<String, String> details) {
-            data[0] = mem;
-            details.put(MAX_HEAP_DETAIL_ID, formatter.format(max));
+        @Override
+        public Map<String, String> getDetails() {
+            return Collections.singletonMap(MAX_HEAP_DETAIL_ID, formatter.format(max));
         }
     }
 }
