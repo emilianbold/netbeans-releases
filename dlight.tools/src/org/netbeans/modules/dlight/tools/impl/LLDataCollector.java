@@ -301,7 +301,9 @@ public class LLDataCollector
             profRunner = null;
         }
 
-        collectorToStop.shutdown();
+        if (collectorToStop != null) {
+            collectorToStop.shutdown();
+        }
     }
 
     @Override
