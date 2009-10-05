@@ -85,6 +85,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
+import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -990,7 +991,7 @@ public final class ModuleList {
                 String res;
                 Document doc;
                 try {
-                    doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, null);
+                    doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, EntityCatalog.getDefault());
                     if (xpe == null) {
                         xpe = XPathFactory.newInstance().newXPath().compile("module/param[@name='jar']/text()");
                     }
