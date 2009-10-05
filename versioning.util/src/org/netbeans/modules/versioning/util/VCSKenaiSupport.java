@@ -310,6 +310,8 @@ public abstract class VCSKenaiSupport {
          */
         protected abstract void handleVCSNotification(VCSKenaiNotification notification);
 
+                if (i == 5) {
+                    filesSb.append("&nbsp;&nbsp;&nbsp;&nbsp;...");              // NOI18N                        // NOI18N
     }
     
 }
