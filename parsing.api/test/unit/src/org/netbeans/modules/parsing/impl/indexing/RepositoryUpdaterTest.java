@@ -938,20 +938,20 @@ public class RepositoryUpdaterTest extends NbTestCase {
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
-        assertFalse("FileListWork cancelled by RefreshWork", flw.isCancelledBy(rw));
-        assertFalse("RefreshWork absorbed FileListWork", rw.absorb(flw));
+        assertTrue("FileListWork cancelled by RefreshWork", flw.isCancelledBy(rw));
+        assertTrue("RefreshWork absorbed FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), true, false, null, new RepositoryUpdater.FSRefreshInterceptor());
-        assertFalse("FileListWork cancelled by RefreshWork", flw.isCancelledBy(rw));
-        assertFalse("RefreshWork absorbed FileListWork", rw.absorb(flw));
+        assertTrue("FileListWork cancelled by RefreshWork", flw.isCancelledBy(rw));
+        assertTrue("RefreshWork absorbed FileListWork", rw.absorb(flw));
         }
         {
         RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(Collections.<URL, List<URL>>emptyMap(), Collections.<URL>emptySet(), Collections.<URL>emptySet(), false, false, null, new RepositoryUpdater.FSRefreshInterceptor());
-        assertFalse("FileListWork cancelled by RefreshWork", flw.isCancelledBy(rw));
-        assertFalse("RefreshWork absorbed FileListWork", rw.absorb(flw));
+        assertTrue("FileListWork cancelled by RefreshWork", flw.isCancelledBy(rw));
+        assertTrue("RefreshWork absorbed FileListWork", rw.absorb(flw));
         }
     }
 
