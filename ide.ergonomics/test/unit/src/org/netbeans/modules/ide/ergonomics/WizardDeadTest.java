@@ -70,6 +70,7 @@ public class WizardDeadTest extends NbTestCase {
     }
 
     public void testDescriptionStep() throws InterruptedException, InvocationTargetException, IOException {
+        @SuppressWarnings("unchecked")
         final WizardDescriptor wd = new WizardDescriptor(new Panel[0]);
         FileObject fob = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
         wd.putProperty(FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE, fob);

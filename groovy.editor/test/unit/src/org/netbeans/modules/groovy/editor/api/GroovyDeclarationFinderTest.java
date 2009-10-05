@@ -81,4 +81,12 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
     public void testClass1() throws Exception {
         checkDeclaration(TEST_BASE + "Consumer.groovy", "        Fin^der finder = new Finder()", "class ^Finder {");
     }
+
+    public void testMethod1() throws Exception {
+        checkDeclaration(TEST_BASE + "Methods1.groovy", "println get^Name(x)", "^def getName(a) {");
+    }
+
+    public void testMethod2() throws Exception {
+        checkDeclaration(TEST_BASE + "Methods2.groovy", "println get^Name()", "^def getName() {");
+    }
 }

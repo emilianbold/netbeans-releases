@@ -23,8 +23,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javacard.kit</friend>
+                <friend>org.netbeans.modules.javacard.project</friend>
+                <friend>org.netbeans.modules.maven</friend>
                 <package>org.netbeans.api.validation.adapters</package>
                 <package>org.netbeans.validation.api</package>
                 <package>org.netbeans.validation.api.builtin</package>

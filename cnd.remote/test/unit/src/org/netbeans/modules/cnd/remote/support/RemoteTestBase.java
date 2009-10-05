@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.windows.IOProvider;
 
 /**
@@ -80,6 +81,10 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     private final static String[] errorLines = new String[] {
             "Error copying project files"
         };
+
+    static {
+        System.setProperty("cnd.remote.force.setup", "true");
+    }
 
     static {
         //log.setLevel(Level.ALL);
@@ -140,11 +145,15 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         tcm.applyChanges();
     }
 
-    protected void buildProject(MakeProject makeProject) throws InterruptedException, IllegalArgumentException {
-        buildProject(makeProject, 0, null);
+    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
+        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
     }
 
     protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
+    }
+
+    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
 
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
@@ -190,7 +199,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
             }
         });
         MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
-        makeActionProvider.invokeAction("build", null);
+        makeActionProvider.invokeAction(command, null);
         if (timeout <= 0) {
             done.await();
         } else {
@@ -199,6 +208,12 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
             }
         }
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
+    }
+
+    protected void removeRemoteHome() {
+        String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
+        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
+        assertEquals("Failed to run " + cmd, 0, rc);
     }
 
     public static class FakeCompilerSet extends CompilerSet {

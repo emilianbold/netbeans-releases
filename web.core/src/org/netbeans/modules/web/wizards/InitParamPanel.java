@@ -95,7 +95,7 @@ class InitParamPanel extends JPanel implements ActionListener,
         fullRowC.gridwidth = 2;
         fullRowC.anchor = GridBagConstraints.WEST;
         fullRowC.fill = GridBagConstraints.HORIZONTAL;
-        fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.insets = new Insets(4, 0, 4, 0);
 
         // Button
         GridBagConstraints bC = new GridBagConstraints();
@@ -103,7 +103,7 @@ class InitParamPanel extends JPanel implements ActionListener,
         bC.gridy = 1;
         bC.weightx = 0.1;
         bC.fill = GridBagConstraints.HORIZONTAL;
-        bC.insets = new Insets(4, 20, 4, 60);
+        bC.insets = new Insets(4, 20, 4, 0);
 
         // Table panel
         GridBagConstraints tableC = new GridBagConstraints();

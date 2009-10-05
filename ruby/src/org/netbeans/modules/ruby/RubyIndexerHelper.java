@@ -45,7 +45,6 @@ import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.MethodElement;
 import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * This class contains a lot of logic used to build the code indices
@@ -343,7 +342,7 @@ public final class RubyIndexerHelper {
             }
 
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return signature;
@@ -386,7 +385,7 @@ public final class RubyIndexerHelper {
                 }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return DEFAULT_DOC;

@@ -83,7 +83,7 @@ static volatile int done;
 static pthread_barrier_t start;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void* threadfunc(void *p) {
+static void* mutex_threadfunc(void *p) {
     pthread_barrier_wait(&start);
     work_t* work = (work_t*) p;
     while (!done) {
@@ -120,7 +120,7 @@ void mutex_demo(int work_count, work_t* works, int seconds) {
 
     EXPLAIN("Creating threads with pthread_create()\n");
     for (i = 0; i < work_count; ++i) {
-        pthread_create(&t[i], NULL, &threadfunc, &works[i]);
+        pthread_create(&t[i], NULL, &mutex_threadfunc, &works[i]);
     }
 
     pthread_barrier_wait(&start);

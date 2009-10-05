@@ -57,6 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
  * Graph legend.
@@ -68,18 +69,21 @@ public class Legend extends JPanel {
     public Legend(List<TimeSeriesDescriptor> graphs, List<DetailDescriptor> details) {
         super(new GridBagLayout());
 
-        setBackground(GraphConfig.LEGEND_COLOR);
-        setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
-        setSize(new Dimension(80, 60));
-        setMinimumSize(new Dimension(80, 60));
-        setPreferredSize(new Dimension(80, 60));
+        setBackground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_BGCOLOR));
+        setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
+        Dimension size = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH));
+        setSize(size);
+        setMinimumSize(size);
+        setPreferredSize(size);
         setOpaque(true);
         GridBagConstraints c;
 
         for (TimeSeriesDescriptor graph : graphs) {
             JLabel label = new JLabel(graph.getDisplayName(), new ColorIcon(graph.getColor()), SwingConstants.LEADING);
-            label.setForeground(GraphConfig.TEXT_COLOR);
-            label.setFont(label.getFont().deriveFont(10f));
+            label.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_LEGEND_FONT));
+            label.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
             c.fill = GridBagConstraints.HORIZONTAL;
@@ -99,8 +103,8 @@ public class Legend extends JPanel {
         if (details != null) {
             for (DetailDescriptor detail : details) {
                 JLabel name = new JLabel(detail.getDisplayName());
-                name.setForeground(GraphConfig.TEXT_COLOR);
-                name.setFont(name.getFont().deriveFont(10f));
+                name.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_LEGEND_FONT));
+                name.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
                 c = new GridBagConstraints();
                 c.anchor = GridBagConstraints.WEST;
                 c.fill = GridBagConstraints.HORIZONTAL;
@@ -108,7 +112,7 @@ public class Legend extends JPanel {
                 add(name, c);
                 JLabel value = new JLabel(detail.getDefaultValue());
                 value.setName(detail.getName());
-                value.setForeground(GraphConfig.TEXT_COLOR);
+                value.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
                 value.setFont(value.getFont().deriveFont(Font.BOLD, 10f));
                 c = new GridBagConstraints();
                 c.anchor = GridBagConstraints.WEST;
@@ -149,7 +153,7 @@ public class Legend extends JPanel {
         if (isEnabled()) {
             super.paintComponent(g);
         } else {
-            g.setColor(GraphConfig.LEGEND_COLOR);
+            g.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_BGCOLOR));
             g.fillRect(0, 0, getWidth(), getHeight());
         }
     }
@@ -183,7 +187,7 @@ public class Legend extends JPanel {
             Graphics2D g2 = (Graphics2D) g;
             g2.setPaint(color);
             g2.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
-            g2.setPaint(GraphConfig.BORDER_COLOR);
+            g2.setPaint(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR));
             g2.drawRect(x, y, WIDTH - 1, HEIGHT - 1);
         }
     }

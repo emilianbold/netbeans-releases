@@ -42,9 +42,11 @@ package org.netbeans.modules.kenai.ui.dashboard;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
@@ -59,12 +61,14 @@ public class CategoryNode extends LeafNode {
     private JPanel panel;
     private JLabel lblUser;
     private String categoryName;
+    private Icon icon;
 
     private final Object LOCK = new Object();
 
-    public CategoryNode( DashboardImpl dashboard, String name ) {
+    public CategoryNode( DashboardImpl dashboard, String name, Icon icon ) {
         super( null );
         this.categoryName = name;
+        this.icon = icon;
     }
 
     @Override
@@ -76,6 +80,9 @@ public class CategoryNode extends LeafNode {
                 panel.setOpaque(false);
 
                 lblUser = new TreeLabel(categoryName);
+                if (icon != null) {
+                    panel.add(new JLabel(icon), BorderLayout.EAST);
+                }
                 panel.add(lblUser, BorderLayout.WEST);
                 lblUser.setFont(lblUser.getFont().deriveFont(Font.BOLD));
             }
