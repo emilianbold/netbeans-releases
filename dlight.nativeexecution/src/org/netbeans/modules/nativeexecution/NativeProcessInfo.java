@@ -253,18 +253,14 @@ public final class NativeProcessInfo {
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
-        String result;
-
+        String result = workingDirectory;
         if (expandMacros && macroExpander != null) {
             try {
                 result = macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
-                result = workingDirectory;
+                // nothing
             }
         }
-
-        result = workingDirectory;
-
         return result;
     }
 
