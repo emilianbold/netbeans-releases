@@ -56,13 +56,24 @@
 #include "rfs_protocol.h"
 #include "rfs_util.h"
 
+/** SOCKET_ERROR means that we failed to open a socket */
+#define SOCKET_ERROR -1
+
+/** SOCKET_UNINITIALIZED means unitialized */
+#define SOCKET_UNINITIALIZED -2
+
 /** Socked descriptor. */
-static __thread int _sd = 0;
+static __thread int _sd = SOCKET_UNINITIALIZED;
 
 void trace_sd(const char* text) {
     trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
 }
 
+/**
+ * as well as open syscall, returns
+ * -1 if an error occurred, or
+ * non-negative integer in the case of success
+ */
 static int open_socket() {
     int port = default_controller_port;
     char *env_port = getenv("RFS_CONTROLLER_PORT");
@@ -97,22 +108,27 @@ static int open_socket() {
     return sd;
 }
 
+/**
+ * as well as open syscall, returns
+ * -1 if an error occurred, or
+ * non-negative integer in the case of success
+ */
 int get_socket(int create) {
-    // 0 means unitialized
-    // -1 means that we failed to open a socket
-    if (!create || _sd > 0) {
+    // SOCKET_UNINITIALIZED means unitialized
+    // SOCKET_ERROR means that we failed to open a socket
+    if (!create || (_sd != SOCKET_ERROR && _sd != SOCKET_UNINITIALIZED)) {
         return _sd;
     }
-    if (_sd == -1) {
+    if (_sd == SOCKET_ERROR) {
         return -1;
     }
-    if (_sd == 0) {
-        _sd = -1; // in the case of success, it will become > 0
-        trace_sd("opening socket 1");
+    if (_sd == SOCKET_UNINITIALIZED) {
+        _sd = SOCKET_ERROR; // in the case of success, it will change
+        trace_sd("opening socket (a)");
     }
     _sd = open_socket();
-    trace_sd("opening socket 2");
-    if (_sd > 0) {
+    trace_sd("opening socket (b)");
+    if (_sd != -1) {
         char buf[32];
         sprintf(buf, "%d", getpid());
         trace("Sending handshake package (%s) to sd=%d\n", buf, _sd);
@@ -127,10 +143,10 @@ int get_socket(int create) {
 }
 
 void release_socket() {
-    if (_sd > 0) {
+    if (_sd != SOCKET_ERROR && _sd != SOCKET_UNINITIALIZED) {
         trace("closing socket _sd=%d &_sd=%X\n", _sd, &_sd);
         close(_sd);
-        _sd = 0;
+        _sd = SOCKET_UNINITIALIZED;
         trace_sd("releasing socket");
     }
 }
