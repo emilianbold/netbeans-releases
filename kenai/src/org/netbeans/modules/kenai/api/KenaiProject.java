@@ -49,13 +49,12 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
@@ -68,7 +67,6 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
  * @author Jan Becicka
  */
 public final class KenaiProject {
-
     /**
      * getSource() returns project being refreshed
      * values are undefined
@@ -84,6 +82,8 @@ public final class KenaiProject {
 
     private ProjectData     data;
     private Icon projectIcon;
+    private int projectIconErrCount = 0; // variable indicating too many unsuccessful attempts to load an image
+    private static final int MAX_IMAGE_LOAD_ERRORS = 3; // max number of attempts to load an image
     
     private KenaiFeature[] features;
     private KenaiProjectMember[] members;
@@ -213,17 +213,23 @@ public final class KenaiProject {
 
     /**
      * Returns the image of the project, method can load it if needed
-     * (synchronous load).
+     * (synchronous load). If the method is called from AWT thread and icon
+     * is not cached outside it before, this method throws an exception - it
+     * is to prevent blocking AWT thread due to loading an image.
      * @return the image of the project or null, if loading image fails
      * @throws KenaiException
      */
     public Icon getProjectIcon() throws KenaiException {
         if (projectIcon==null) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                throw new KenaiException("KenaiProject.getProjectIcon() must not be called from AWT thread unless an icon is cached!");
+            }
             try {
-                BufferedImage img = ImageIO.read(new URL(getImageUrl()));
+                URL url = new URL(getImageUrl());
+                BufferedImage img = ImageIO.read(url);
                 projectIcon = new ImageIcon(img);
             } catch (IOException ex) {
-                Logger.getLogger(KenaiProject.class.getName()).log(Level.SEVERE, null, ex);
+                throw new KenaiException(ex.getMessage());
             }
         }
         return projectIcon;
