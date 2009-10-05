@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
   Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
 
@@ -39,6 +39,7 @@
         <folder name="Window">
             <file name="FeedAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-myorg-feedreader-FeedAction.instance"/>
+                <attr name="position" intvalue="777"/>
             </file>
         </folder>
     </folder>
