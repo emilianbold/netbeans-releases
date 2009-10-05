@@ -601,7 +601,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void downloadCompilerSet(CompilerSet cs) {
         try {
             URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
-            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD);
+            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD); // NOI18N
             provider.refresh(null, true);
             List<UpdateUnit> list = provider.getUpdateUnits(TYPE.MODULE);
             OperationContainer<InstallSupport> installContainer = OperationContainer.createForInstall();
