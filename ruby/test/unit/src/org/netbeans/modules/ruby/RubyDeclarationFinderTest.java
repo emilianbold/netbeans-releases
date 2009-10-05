@@ -97,7 +97,13 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/symbol_to_method.rb", ":b^ax_field", "symbol_to_method_base.rb", 32);
     }
 
+    public void testNamedScopes() throws Exception {
+        checkDeclaration("testfiles/named_scopes_client.rb", "my_model.e^ka", "named_scopes.rb", 49);
+    }
 
+    public void testNamedScopes2() throws Exception {
+        checkDeclaration("testfiles/named_scopes_client.rb", "my_model.to^ka", "named_scopes.rb", 91);
+    }
 
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
