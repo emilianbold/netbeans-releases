@@ -241,7 +241,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                     }
                     case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                     {
-                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), null);
+                        if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
+                            break;
+                        }
+                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 declarators.add(typedef);
@@ -255,8 +258,14 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-            // TODO : implement local forward decls support
-            return null;
+            ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
+            ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, scope, !isRenderingLocalContext());
+            if(fc != null) {
+                declarators.add(fc);
+            }
+            //declarators.add(cfdi);
+            //cfdi.init(ast, scope, !isRenderingLocalContext());
+            return cfdi;
         }
 
 // Never used 
