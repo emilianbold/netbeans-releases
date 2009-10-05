@@ -926,7 +926,7 @@ public class AstRenderer {
         return new TypedefImpl(ast, file, container, type, name, !isRenderingLocalContext());
     }
 
-    public static boolean renderForwardClassDeclaration(
+    public boolean renderForwardClassDeclaration(
             AST ast,
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container,
             FileImpl file,
@@ -947,11 +947,7 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL_class:
             case CPPTokenTypes.LITERAL_struct:
             case CPPTokenTypes.LITERAL_union:
-                ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext);
-                if (container != null) {
-                    container.addDeclaration(cfdi);
-                }
-                cfdi.init(ast, currentNamespace, !isRenderingLocalContext);
+                createForwardClassDeclaration(ast, container, file, currentNamespace);
                 return true;
         }
 
