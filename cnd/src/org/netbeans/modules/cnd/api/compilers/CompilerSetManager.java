@@ -897,6 +897,21 @@ public class CompilerSetManager {
         for (CompilerSet cs : sets) {
             completeCompilerSet(executionEnvironment, cs, sets);
         }
+        for(CompilerFlavor flavor : CompilerFlavor.getFlavors(getPlatform())){
+            ToolchainDescriptor descriptor = flavor.getToolchainDescriptor();
+            if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
+                boolean found = false;
+                for (CompilerSet cs : sets) {
+                    if (cs.getCompilerFlavor() == flavor){
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    add(CompilerSet.getCustomCompilerSet(null, flavor, null));
+                }
+            }
+        }
         if (sets.size() == 0) { // No compilers found
             add(CompilerSet.createEmptyCompilerSet(getPlatform()));
         } else {

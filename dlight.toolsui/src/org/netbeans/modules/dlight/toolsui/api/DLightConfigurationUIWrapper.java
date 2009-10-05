@@ -55,6 +55,7 @@ public class DLightConfigurationUIWrapper {
     private List<DLightToolUIWrapper> tools;
     private boolean profileOnRun;
     private boolean modified;
+    private DLightConfiguration copyOf;
 
     public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
         this.dlightConfiguration = dlightConfiguration;
@@ -62,6 +63,7 @@ public class DLightConfigurationUIWrapper {
         this.displayName = dlightConfiguration.getDisplayedName();
         this.profileOnRun = true;
         this.custom = false;
+        copyOf = null;
         initWrapper(allDLightTools);
     }
 
@@ -228,5 +230,19 @@ public class DLightConfigurationUIWrapper {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    /**
+     * @return the copyOf
+     */
+    public DLightConfiguration getCopyOf() {
+        return copyOf;
+    }
+
+    /**
+     * @param copyOf the copyOf to set
+     */
+    public void setCopyOf(DLightConfiguration copyOf) {
+        this.copyOf = copyOf;
     }
 }

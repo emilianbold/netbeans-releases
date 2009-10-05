@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptionsListener;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -96,9 +97,9 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         Collection<String> result = new ArrayList<String>();
         Collection<String> allNames = gizmoOptions.getNames();
         for (String name : allNames) {
-            if (gizmoOptions.getValueByName(name)) {
+//            if (gizmoOptions.getValueByName(name)) {
                 result.add(name);
-            }
+  //          }
         }
         return result;
     }
@@ -130,39 +131,41 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 break;
             }
         }
-
-        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
-
-
-        DLightCollectorString = DTRACE;
-        DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, PRSTAT_INDICATOR, DTRACE);
-
-        if (currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
-            DLightCollectorString = SUNSTUDIO;
-            DLightIndicatorDPStrings = new ArrayList<String>();
-            DLightIndicatorDPStrings.add(SUNSTUDIO);
-            DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
-            DLightIndicatorDPStrings.add(PROC_READER);
-            DLightIndicatorDPStrings.add(PROCFS_READER);
-            if (!hasSunStudio) {
-                //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
-                String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
-                if (platform.indexOf("Linux") != -1) {//NOI18N
-                    setForLinux();
-                }
-            }
-        } else if (currentProvider == GizmoOptions.DataProvider.SIMPLE) {//On Linux - LL On Solaris Dtrace + Proc + PRSTATE
-            log.log(Level.FINEST, "Simple Data provider is used will try to set LL monitor + proc reader");//NOI18N
-            if (!setForLinux()) {
-                log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName());//NOI18N
-            }
-
-        } else if (currentProvider == GizmoOptions.DataProvider.DTRACE) {//DTRACE?
-            String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
-            if (platform.indexOf("Solaris") == -1) {//NOI18N
-                setForLinux();
-            }
-        }
+        DLightConfiguration dlightConfiguration = gizmoOptions.getDLightConfiguration();
+        //get all names from the inside usinf providers
+//        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
+        DLightCollectorString = dlightConfiguration.getCollectorProviders();
+        DLightIndicatorDPStrings = dlightConfiguration.getIndicatorProviders();
+        setForLinux();
+//        DLightCollectorString = DTRACE;
+//        DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, PRSTAT_INDICATOR, DTRACE);
+//
+//        if (currentProvider == GizmoOptions.DataProvider.SUN_STUDIO) {//NOI18N
+//            DLightCollectorString = SUNSTUDIO;
+//            DLightIndicatorDPStrings = new ArrayList<String>();
+//            DLightIndicatorDPStrings.add(SUNSTUDIO);
+//            DLightIndicatorDPStrings.add(PRSTAT_INDICATOR);
+//            DLightIndicatorDPStrings.add(PROC_READER);
+//            DLightIndicatorDPStrings.add(PROCFS_READER);
+//            if (!hasSunStudio) {
+//                //if we are on Linux set LL, I do not think it is correct if user had selected Sun Studio in Project Properties
+//                String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
+//                if (platform.indexOf("Linux") != -1) {//NOI18N
+//                    setForLinux();
+//                }
+//            }
+//        } else if (currentProvider == GizmoOptions.DataProvider.SIMPLE) {//On Linux - LL On Solaris Dtrace + Proc + PRSTATE
+//            log.log(Level.FINEST, "Simple Data provider is used will try to set LL monitor + proc reader");//NOI18N
+//            if (!setForLinux()) {
+//                log.log(Level.FINEST, "Looks like it is not linux and not MacOS platform is " + ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName());//NOI18N
+//            }
+//
+//        } else if (currentProvider == GizmoOptions.DataProvider.DTRACE) {//DTRACE?
+//            String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
+//            if (platform.indexOf("Solaris") == -1) {//NOI18N
+//                setForLinux();
+//            }
+//        }
     }
 
     private boolean setForLinux() {

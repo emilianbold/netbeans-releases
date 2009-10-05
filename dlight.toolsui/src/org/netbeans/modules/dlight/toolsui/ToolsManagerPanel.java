@@ -124,12 +124,17 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
         // save configurations and tools
         for (DLightConfigurationUIWrapper configuration : dLightConfigurations){
-            if (configuration.isCustom()){
-                DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName());
+            if (configuration.getCopyOf() != null) {
+                DLightConfiguration origDLightConfiguration = configuration.getCopyOf();
+                String category = origDLightConfiguration.getCategoryName();
+                List<String> platforms = origDLightConfiguration.getPlatforms();
+                String collector = origDLightConfiguration.getCollectorProviders();
+                List<String> indicators = origDLightConfiguration.getIndicatorProviders();
+                DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
                 configuration.setDLightConfiguration(dlightConfiguration);
             }
-            for (DLightToolUIWrapper toolUI : configuration.getTools()){
-                if (toolUI.isModified()){
+            for (DLightToolUIWrapper toolUI : configuration.getTools()) {
+                if (toolUI.isModified() || configuration.getCopyOf() != null) {
                     //if it was disabled and now enabled: should register
                     if (!toolUI.isEnabled()){
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
@@ -137,6 +142,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                         DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), toolUI.isOnByDefault());
                     }
                 }
+            }
+            if (configuration.getCopyOf() != null) {
+                configuration.setCopyOf(null);
             }
         }
         return true;
@@ -331,22 +339,24 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         public MyListEditorPanel(List<DLightConfigurationUIWrapper> list) {
             super(list);
             setPreferredSize(new Dimension(400, 300));
+            getAddButton().setVisible(false);
         }
 
-        @Override
-        public DLightConfigurationUIWrapper addAction() {
-            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-            notifyDescriptor.setInputText(getString("NewConfigurationName"));
-            DialogDisplayer.getDefault().notify(notifyDescriptor);
-            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
-                return null;
-            }
-            String newS = notifyDescriptor.getInputText();
-            return new DLightConfigurationUIWrapper(newS, newS, allDLightTools);
-        }
+//        @Override
+//        public DLightConfigurationUIWrapper addAction() {
+//            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
+//            notifyDescriptor.setInputText(getString("NewConfigurationName"));
+//            DialogDisplayer.getDefault().notify(notifyDescriptor);
+//            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+//                return null;
+//            }
+//            String newS = notifyDescriptor.getInputText();
+//            return new DLightConfigurationUIWrapper(newS, newS, allDLightTools);
+//        }
 
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {
+            String newName = getString("CopyOf", o.getDisplayName());
             DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper("copyof" + o.getName(), getString("CopyOf", o.getDisplayName()), allDLightTools); // NOI18N
             List<DLightToolUIWrapper> tools = o.getTools();
             List<DLightToolUIWrapper> copyTools = copy.getTools();
@@ -356,6 +366,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 copy.setToolEnabled(copyTool, tool.isEnabled());
                 copyTool.setOnByDefault(tool.isOnByDefault());
             }
+            copy.setCopyOf(o.getDLightConfiguration());
             return copy;
         }
 

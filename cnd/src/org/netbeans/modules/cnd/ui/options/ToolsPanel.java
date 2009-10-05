@@ -124,6 +124,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
+    private boolean isUrl = false;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final ToolsCacheManager cacheManager = new ToolsCacheManager();
 
@@ -588,8 +589,16 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
-            tfBaseDirectory.setText(cs.getDirectory());
-            btBaseDirectory.setEnabled(!isRemoteHostSelected());
+            if (cs.isUrlPointer()) {
+                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl()+":"+ //NOI18N
+                                        cs.getCompilerFlavor().getToolchainDescriptor().getModuleID());
+                btBaseDirectory.setEnabled(false);
+                isUrl = true;
+            } else {
+                tfBaseDirectory.setText(cs.getDirectory());
+                btBaseDirectory.setEnabled(!isRemoteHostSelected());
+                isUrl = false;
+            }
             lbFamilyValue.setText(cs.getCompilerFlavor().toString());
         } else {
             lbFamilyValue.setText(""); // NOI18N
@@ -815,7 +824,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 repaint();
             }
 
-            boolean baseDirValid = new File(tfBaseDirectory.getText()).exists();
+            boolean baseDirValid = !isUrl && new File(tfBaseDirectory.getText()).exists();
             boolean enableText = baseDirValid || (isRemoteHostSelected() && isHostValidForEditing());
             boolean enableBrowse = baseDirValid && !isRemoteHostSelected();
             boolean enableVersions = (baseDirValid || isRemoteHostSelected()) && isHostValidForEditing();
@@ -1819,6 +1828,9 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_btVersionsActionPerformed
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
+    if (isUrl) {
+        return;
+    }
     String seed = null;
     if (tfBaseDirectory.getText().length() > 0) {
         seed = tfBaseDirectory.getText();

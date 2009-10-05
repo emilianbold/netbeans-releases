@@ -33,6 +33,8 @@ static void* hndl = NULL;
 static struct mallinfo (*mall_hndl)(void) = NULL;
 
 static int reporter(void* arg);
+static void send_messages(int last);
+static int wait_ack();
 
 static int init_sync_tracing();
 
@@ -48,6 +50,8 @@ static int mallinfo_enabled = 0;
 
 void cleanup(void* p) {
     if (0 <= msqid) {
+        send_messages(1);
+        wait_ack();
         struct msqid_ds msbuf;
         msgctl(msqid, IPC_RMID, &msbuf); // closing the queue
         msqid = -1;
@@ -191,7 +195,7 @@ INSTRUMENT(pthread_barrier_wait, , )
 INSTRUMENT(pthread_mutex_timedlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_rwlock_timedrdlock, VOID1P, ACTUAL1)
 INSTRUMENT(pthread_rwlock_timedwrlock, VOID1P, ACTUAL1)
-INSTRUMENT(pthread_spin_lock, , )
+//INSTRUMENT(pthread_spin_lock, , )
 //INSTRUMENT(pthread_cleanup_push);
 
 static int (* ORIG(pthread_create))(void *newthread,
@@ -209,6 +213,9 @@ typedef struct start_pkg {
 static int carret = 0;
 #define MAXTHR (64)
 static int* flags[MAXTHR];
+long sync_wait = 0;
+struct tms prev_times;
+clock_t prev_clock;
 
 
 void* start_routine(void* pkg) {
@@ -337,6 +344,54 @@ static void check_control(int wait) {
     //printf("%d, %d, %d\n", trace_cpu, trace_mem, trace_sync);
 }
 
+static int wait_ack() {
+    struct ackrequestmsg request = {ACKREQUEST};
+    if (msgsnd(msqid, &request, sizeof(request) - sizeof(request.type), IPC_NOWAIT) >= 0) {
+        int i;
+        struct ackreplymsg reply = {ACKREPLY};
+        for (i = 0; i < 20; ++i) {
+            if (msgrcv(msqid, &reply, sizeof(reply) - sizeof(reply.type), ACKREPLY, IPC_NOWAIT) >= 0) {
+                return 1;
+            }
+            usleep(100000);
+        }
+    }
+    return 0;
+}
+
+static void send_messages(int last) {
+    if (trace_sync && !last) {
+        struct syncmsg syncbuf = {
+            SYNCMSG,
+            (I32) sync_wait,
+            (I32) thr_count
+        };
+        msgsnd(msqid, &syncbuf, sizeof(syncbuf) - sizeof(syncbuf.type), IPC_NOWAIT);
+    }
+    if (trace_cpu && !last) {
+        struct tms cur_times;
+        clock_t cur_clock = times(&cur_times);
+        long delta = (long) (cur_clock - prev_clock);
+        struct cpumsg cpubuf = {
+            CPUMSG,
+            (I32) (100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta),
+            (I32) (100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta)
+        };
+        msgsnd(msqid, &cpubuf, sizeof(cpubuf) - sizeof(cpubuf.type), IPC_NOWAIT);
+        prev_clock = cur_clock;
+        prev_times.tms_utime = cur_times.tms_utime;
+        prev_times.tms_stime = cur_times.tms_stime;
+    }
+    if (trace_mem) {
+        struct mallinfo mi = mall_hndl();
+        struct memmsg membuf = {
+            MEMMSG,
+            mi.uordblks + mi.hblkhd
+        };
+        msgsnd(msqid, &membuf, sizeof(membuf) - sizeof(membuf.type), IPC_NOWAIT);
+    }
+}
+
 int reporter(void* arg) {
     LOG("reporter started\n");
     key_t key = getpid(); // use pid as a name of queue
@@ -351,9 +406,7 @@ int reporter(void* arg) {
     w.tv_nsec = (GRANULARITY*resolution);
     long rep_interval = 1000000000L/w.tv_nsec;
     int counter = 0;
-    long sync_wait = 0;
-    struct tms prev_times;
-    clock_t prev_clock = times(&prev_times);
+    prev_clock = times(&prev_times);
     int i = 0;
 
     if(ORIG(pthread_cleanup_push))
@@ -376,36 +429,7 @@ int reporter(void* arg) {
 
         if (counter++ > rep_interval) {
             counter = 0;
-            if (trace_sync) {
-                struct syncmsg syncbuf = {
-                    SYNCMSG,
-                    (I32) sync_wait,
-                    (I32) thr_count
-                };
-                msgsnd(msqid, &syncbuf, sizeof (syncbuf) - sizeof (syncbuf.type), IPC_NOWAIT);
-            }
-            if (trace_cpu) {
-                struct tms cur_times;
-                clock_t cur_clock = times(&cur_times);
-                long delta = (long) (cur_clock - prev_clock);
-                struct cpumsg cpubuf = {
-                    CPUMSG,
-                    (I32) (100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta),
-                    (I32) (100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta)
-                };
-                msgsnd(msqid, &cpubuf, sizeof (cpubuf) - sizeof (cpubuf.type), IPC_NOWAIT);
-                prev_clock = cur_clock;
-                prev_times.tms_utime = cur_times.tms_utime;
-                prev_times.tms_stime = cur_times.tms_stime;
-            }
-            if (trace_mem) {
-                struct mallinfo mi = mall_hndl();
-                struct memmsg membuf = {
-                    MEMMSG,
-                    mi.uordblks + mi.hblkhd
-                };
-                msgsnd(msqid, &membuf, sizeof (membuf) - sizeof (membuf.type), IPC_NOWAIT);
-            }
+            send_messages(0);
             check_control(0);
         }
     }
