@@ -95,6 +95,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
     private Set<PropertyChangeListener> dataObjectListeners;
     private boolean attachManagerListener = true;
+    private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
 
     public void annotate (Line.Set set, Lookup lookup) {
         final FileObject fo = lookup.lookup(FileObject.class);
@@ -160,7 +161,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         if (isAnnotatable(breakpoint)) {
             JPDABreakpoint b = (JPDABreakpoint) breakpoint;
             b.addPropertyChangeListener (this);
-            RequestProcessor.getDefault().post(new AnnotationRefresh(b, false, true));
+            annotationProcessor.post(new AnnotationRefresh(b, false, true));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().registerForLineUpdates(lb);
@@ -172,7 +173,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         if (isAnnotatable(breakpoint)) {
             JPDABreakpoint b = (JPDABreakpoint) breakpoint;
             b.removePropertyChangeListener (this);
-            RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, false));
+            annotationProcessor.post(new AnnotationRefresh(b, true, false));
             if (b instanceof LineBreakpoint) {
                 LineBreakpoint lb = (LineBreakpoint) b;
                 LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
@@ -209,7 +210,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             // breakpoint has been removed
             return;
         }
-        RequestProcessor.getDefault().post(new AnnotationRefresh(b, true, true));
+        annotationProcessor.post(new AnnotationRefresh(b, true, true));
     }
     
     private final class AnnotationRefresh implements Runnable {
