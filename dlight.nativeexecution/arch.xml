@@ -484,7 +484,7 @@ DialogDisplayer.getDefault().createDialog(
 -->
     <answer id="dep-platform">
         <p>
-        The module was written to support D-Light functionality, so the focus
+        The module was written to support DLight functionality, so the focus
         was Solaris/Linux environment. It was not tested under other environments.
         For remote execution it is required that remote host is running ssh
         server. For privileged execution it is required that remote host runs Solaris 10+.
