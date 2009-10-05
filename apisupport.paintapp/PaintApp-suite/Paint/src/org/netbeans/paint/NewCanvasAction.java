@@ -30,17 +30,17 @@
 
 package org.netbeans.paint;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
-public final class NewCanvasAction extends CallableSystemAction {
+public final class NewCanvasAction implements ActionListener {
 
     private static final int MAX_PAINT_TC_COUNT = 8;
 
-    public void performAction() {
+    public void actionPerformed(ActionEvent e) {
         if (PaintTopComponent.getPaintTCCount() < MAX_PAINT_TC_COUNT) {
             PaintTopComponent tc = new PaintTopComponent();
             tc.open();
@@ -52,23 +52,5 @@ public final class NewCanvasAction extends CallableSystemAction {
                 NbBundle.getMessage(NewCanvasAction.class, "MSG_CannotCreateNewCanvas")));
         }
     }
-    
-    public String getName() {
-        return NbBundle.getMessage(NewCanvasAction.class, "CTL_NewCanvasAction");
-    }
-    
-    @Override
-    protected String iconResource() {
-        return "org/netbeans/paint/new-canvas.png";
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
+
 }

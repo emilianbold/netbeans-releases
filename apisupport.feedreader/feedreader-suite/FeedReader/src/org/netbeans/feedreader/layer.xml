@@ -32,7 +32,12 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Window">
-            <file name="org-netbeans-feedreader-FeedAction.instance"/>
+            <file name="org-netbeans-feedreader-FeedAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+                <attr name="component" methodvalue="org.netbeans.feedreader.FeedTopComponent.getDefault"/>
+                <attr name="displayName" bundlevalue="org.netbeans.feedreader.Bundle#CTL_FeedAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/feedreader/rss16.gif"/>
+            </file>
         </folder>
     </folder>
     <folder name="Menu">
