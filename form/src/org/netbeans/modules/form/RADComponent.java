@@ -790,6 +790,7 @@ public class RADComponent {
         FakeBeanInfo fbi = (FakeBeanInfo) getBeanInfo();        
         fbi.removePropertyDescriptors();
         for (int i = 0; i < propNames.length; i++) {
+            System.err.println("getFakeBeanProperties add " + propNames[i] + ":" + propertyTypes[i].getName());
             fbi.addPropertyDescriptor(propNames[i], propertyTypes[i]);
         }
         return getBeanProperties(propNames);
@@ -1081,6 +1082,9 @@ public class RADComponent {
         accessibilityProperties = null;
     }
 
+    static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
+            "nb.form.suppressTabs");
+
     protected void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
             createBeanProperties();
@@ -1097,6 +1101,10 @@ public class RADComponent {
                 return getBeanProperties1();
             }
         });
+
+        if (SUPPRESS_PROPERTY_TABS) {
+            return;
+        }
 
         if(isValid()) {
             Iterator entries = otherProperties.entrySet().iterator();
