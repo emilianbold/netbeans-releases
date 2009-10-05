@@ -445,7 +445,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (f.contains("config/Windows2Local")) {
             return false;
         }
-        if (f.contains("var/cache/felix")) {
+        if (f.contains("var/cache/netigso")) {
             return false;
         }
         if (f.endsWith(".hg")) {
