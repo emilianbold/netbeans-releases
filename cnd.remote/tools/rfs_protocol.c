@@ -86,11 +86,12 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     int received;
     received = recv(sd, header, 3, 0); // 3-rd is for kind
     if (received != 3) {
-        return sr_failure;
+        return (received == 0) ? sr_reset : sr_failure;
     }
     p->kind = (enum pkg_kind) header[0];
     int size =  ((0x0FF & header[1])) * 256 + ((0x0FF & header[2]));
     if (size > max_data_size) {
+        //trace("pkg_recv: packet too large: %d\n", size);
         errno = EMSGSIZE;
         return sr_failure;
     }
@@ -99,6 +100,7 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
         return sr_reset;
     }
     if (received != size) {
+        //trace("pkg_recv: received %d instead of %d\n", received, size);
         return sr_failure;
     }
     return sr_success;
