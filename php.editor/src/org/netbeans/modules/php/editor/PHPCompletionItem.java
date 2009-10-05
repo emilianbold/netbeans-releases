@@ -629,6 +629,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         void doNotInsertDollarPrefix(){
             insertDollarPrefix = false;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            Completion.get().showToolTip();
+            return super.getCustomInsertTemplate();
+        }
     }
 
     /**

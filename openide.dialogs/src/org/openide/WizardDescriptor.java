@@ -2137,9 +2137,18 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         /** Accepts client property changes of user component */
-        public void propertyChange(PropertyChangeEvent e) {
+        public void propertyChange(final PropertyChangeEvent e) {
             if (wizardPanel == null) {
                 return;
+            }
+
+            if (! SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        propertyChange(e);
+                    }
+                });
+                return ;
             }
 
             String propName = e.getPropertyName();

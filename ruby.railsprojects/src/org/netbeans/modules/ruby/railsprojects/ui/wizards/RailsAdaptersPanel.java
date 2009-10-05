@@ -109,7 +109,9 @@ class RailsAdaptersPanel extends SettingsPanel {
         }
         RailsDatabaseConfiguration configuration = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
         databaseNameField.getDocument().removeDocumentListener(databaseNameListener);
-        databaseNameField.setText(configuration.getDatabaseName(projectName)); //NOI18N
+        if (configuration != null) {
+            databaseNameField.setText(configuration.getDatabaseName(projectName)); //NOI18N
+        }
         databaseNameField.getDocument().addDocumentListener(databaseNameListener);
     }
 

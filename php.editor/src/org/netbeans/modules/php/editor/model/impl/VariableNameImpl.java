@@ -42,6 +42,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -74,13 +75,18 @@ import org.openide.util.Union2;
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
     List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
+    enum TypeResolutionKind {
+        LAST_ASSIGNMENT,
+        MERGE_ASSIGNMENTS
+    };
+    private TypeResolutionKind typeResolutionKind = TypeResolutionKind.LAST_ASSIGNMENT;
     private boolean globallyVisible;
     VariableNameImpl(IndexScope inScope, IndexedVariable indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
-    VarAssignmentImpl createElement(Scope scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
+    VarAssignmentImpl createAssignment(Scope scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
         return retval;
     }
@@ -92,6 +98,10 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
         super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
         this.globallyVisible = globallyVisible;
+    }
+
+    void setTypeResolutionKind(TypeResolutionKind typeResolutionKind) {
+        this.typeResolutionKind = typeResolutionKind;
     }
 
     static String toName(Variable node) {
@@ -230,43 +240,81 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     public Collection<? extends String> getTypeNames(int offset) {
+        return getTypeNamesImpl(offset, false);
+    }
+    public Collection<? extends String> getArrayAccessTypeNames(int offset) {
+        return getTypeNamesImpl(offset, true);
+    }
+
+    public Collection<? extends TypeScope> getArrayAccessTypes(int offset) {
+        return getTypesImpl(offset, true);
+    }
+
+    public Collection<? extends TypeScope> getTypes(int offset) {
+        return getTypesImpl(offset, false);
+    }
+    private Collection<? extends String> getTypeNamesImpl(int offset, boolean arrayAccess) {
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope.getName());
         }
-        AssignmentImpl assignment = findVarAssignment(offset);
-        while(assignment != null) {
-            Collection<String> typeNames = assignment.getTypeNames();
-            if (typeNames.isEmpty()) {
-                AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
-                if (nextAssignment != null && !nextAssignment.equals(assignment)) {
-                    assignment = nextAssignment;
-                    continue;
+        Collection<String> retval = Collections.emptyList();
+        TypeResolutionKind useTypeResolutionKind = arrayAccess ?
+            TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
+        if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
+            AssignmentImpl assignment = findVarAssignment(offset);
+            while (assignment != null) {
+                Collection<String> typeNames = assignment.getTypeNames();
+                if (typeNames.isEmpty() || assignment.isArrayAccess()) {
+                    if (assignment.isArrayAccess()) {
+                        retval = Collections.singleton("array"); //NOI18N
+                    }
+                    AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
+                    if (nextAssignment != null && !nextAssignment.equals(assignment)) {
+                        assignment = nextAssignment;
+                        continue;
+                    }
+                    break;
                 }
+                return typeNames;
             }
-            if (assignment.isIsArray()) {
-                return Collections.singleton("array");//NOI18N
+            return retval;
+        } else {
+            Collection<String> types = new HashSet<String>();
+            List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+            for (VarAssignmentImpl vAssignment : varAssignments) {
+                    types.addAll(vAssignment.getTypeNames());
             }
-            return typeNames;
+            return types;
         }
-
-        return Collections.emptyList();
     }
 
-    public Collection<? extends TypeScope> getTypes(int offset) {
+    private Collection<? extends TypeScope> getTypesImpl(int offset, boolean arrayAccess) {
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope);
         }
-        AssignmentImpl assignment = findVarAssignment(offset);
-        while(assignment != null) {
-            Collection<TypeScope> types = assignment.getTypes();
-            if (types.isEmpty()) {
-                AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
-                if (nextAssignment != null && !nextAssignment.equals(assignment)) {
-                    assignment = nextAssignment;
-                    continue;
-                } 
+        TypeResolutionKind useTypeResolutionKind = arrayAccess ?
+            TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
+        if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
+            AssignmentImpl assignment = findVarAssignment(offset);
+            while (assignment != null) {
+                Collection<TypeScope> types = assignment.getTypes();
+                if (types.isEmpty() || assignment.isArrayAccess()) {
+                    AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
+                    if (nextAssignment != null && !nextAssignment.equals(assignment)) {
+                        assignment = nextAssignment;
+                        continue;
+                    }
+                    break;
+                }
+                return types;
+            }
+        } else {
+            Collection<TypeScope> types = new HashSet<TypeScope>();
+            List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+            for (VarAssignmentImpl vAssignment : varAssignments) {
+                    types.addAll(vAssignment.getTypes());
             }
             return types;
         }

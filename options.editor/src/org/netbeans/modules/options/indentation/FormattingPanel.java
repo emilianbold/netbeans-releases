@@ -333,7 +333,10 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
     }//GEN-LAST:event_languageChanged
 
     private void categoryChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryChanged
-        selector.setSelectedCustomizer(((PreferencesCustomizer)categoryCombo.getSelectedItem()).getId());
+        PreferencesCustomizer selectedCustomizer = ((PreferencesCustomizer)categoryCombo.getSelectedItem());
+        if (selectedCustomizer != null) {
+            selector.setSelectedCustomizer(selectedCustomizer.getId());
+        } // else #168066 - no idea how this can happen
     }//GEN-LAST:event_categoryChanged
     
     

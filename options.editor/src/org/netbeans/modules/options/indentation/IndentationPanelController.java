@@ -113,7 +113,7 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
     }
 
     public String getId() {
-        return "tabs-and-indents"; //NOI18N
+        return PreferencesCustomizer.TABS_AND_INDENTS_ID;
     }
 
     public HelpCtx getHelpCtx () {
