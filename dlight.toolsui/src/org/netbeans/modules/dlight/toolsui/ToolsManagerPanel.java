@@ -46,6 +46,7 @@ package org.netbeans.modules.dlight.toolsui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -119,7 +120,28 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
     }
 
+    private DLightConfigurationUIWrapper inList(String name, List<DLightConfigurationUIWrapper> list) {
+        for (DLightConfigurationUIWrapper wrapper : list) {
+            if (name.equals(wrapper.getName())) {
+                return wrapper;
+            }
+        }
+        return null;
+    }
+
     public boolean apply() {
+        // delete deleted configurations
+        List<DLightConfigurationUIWrapper> oldDLightConfiguration = DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers();
+        List<DLightConfigurationUIWrapper> toBeDeleted = new ArrayList<DLightConfigurationUIWrapper>();
+        for (DLightConfigurationUIWrapper wrapper : oldDLightConfiguration) {
+            DLightConfigurationUIWrapper c = inList(wrapper.getName(), dLightConfigurations);
+            if (c == null || c.getCopyOf() != null) {
+                toBeDeleted.add(wrapper);
+            }
+        }
+        for (DLightConfigurationUIWrapper conf : toBeDeleted) {
+            DLightConfigurationSupport.getInstance().removeConfiguration(conf.getName());
+        }
         // save wrappers
         DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
         // save configurations and tools
