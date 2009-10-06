@@ -110,10 +110,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if(filters == null) {
             filters = new Filter[] {
                 Filter.getAllFilter(query),
-                Filter.getNewFilter(query),
                 Filter.getNotSeenFilter(),
                 Filter.getObsoleteDateFilter(query),
-                 Filter.getAllButObsoleteDateFilter(query)
+                Filter.getAllButObsoleteDateFilter(query)
             };
         }
         return filters;

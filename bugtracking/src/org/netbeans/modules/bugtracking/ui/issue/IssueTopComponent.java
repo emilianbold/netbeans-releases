@@ -144,10 +144,20 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         setNameAndTooltip();
     }
 
-    public void initNoIssue() {
-        preparingLabel.setVisible(true);
-        repoPanel.setVisible(false);
-        setNameAndTooltip();
+    public void initNoIssue(final String preparingText) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                preparingLabel.setVisible(true);
+                repoPanel.setVisible(false);
+                if(preparingText != null) {
+                    preparingLabel.setText(preparingText);
+                    setName(preparingText);
+                    setToolTipText(preparingText);
+                } else {
+                    setNameAndTooltip();
+                }
+            }
+        });
     }
 
     /**
