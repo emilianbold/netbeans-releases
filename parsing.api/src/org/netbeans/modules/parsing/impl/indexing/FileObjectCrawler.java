@@ -102,15 +102,15 @@ public final class FileObjectCrawler extends Crawler {
                 }
                 for(FileObject parent : clusters.keySet()) {
                     Set<FileObject> cluster = clusters.get(parent);
-                    String relativePath = FileUtil.getRelativePath(root, parent);
-                    finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, new StringBuilder(relativePath));
+                    StringBuilder relativePath = getRelativePath(root, parent);
+                    finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, relativePath);
                     if (!finished) {
                         break;
                     }
                 }
             } else if (files.length == 1) {
-                String relativePath = FileUtil.getRelativePath(root, files[0].getParent());
-                finished = collect(files, root, resources, allResources, stats, entry, new StringBuilder(relativePath));
+                StringBuilder relativePath = getRelativePath(root, files[0].getParent());
+                finished = collect(files, root, resources, allResources, stats, entry, relativePath);
             }
         } else {
             finished = collect(root.getChildren(), root, resources, allResources, stats, entry, new StringBuilder());
@@ -190,6 +190,14 @@ public final class FileObjectCrawler extends Crawler {
         }
 
         return true;
+    }
+
+    private StringBuilder getRelativePath(FileObject folder, FileObject fo) {
+        StringBuilder relativePath = new StringBuilder(FileUtil.getRelativePath(folder, fo));
+        if (relativePath.length() > 0) {
+            relativePath.append('/'); //NOI18N
+        }
+        return relativePath;
     }
 
     private static final class Stats {
