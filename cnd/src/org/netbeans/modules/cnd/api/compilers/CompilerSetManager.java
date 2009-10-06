@@ -1118,6 +1118,10 @@ public class CompilerSetManager {
     }
 
     private static void completeCompilerSet(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets) {
+        if (cs.findTool(Tool.CCompiler) == null && cs.findTool(Tool.CCCompiler) == null) {
+            // do not complete empty tool
+            return;
+        }
         if (cs.findTool(Tool.CCompiler) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), Tool.CCompiler);
         }
