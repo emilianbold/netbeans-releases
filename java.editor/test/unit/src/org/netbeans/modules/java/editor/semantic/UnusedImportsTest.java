@@ -334,6 +334,16 @@ public class UnusedImportsTest extends NbTestCase {
         performUnusedImportsTest("import cannot.resolve.*;\n");
     }
 
+    public void testBrokenImport() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("test/Main.java",
+                                          "package test;\n" +
+                                          "import cannot.\n" +
+                                          "public class Main { }"));
+
+        performUnusedImportsTest();
+    }
+
     private void performUnusedImportsTest(String... golden) throws Exception {
         CompilationInfo ci = SourceUtilsTestUtil.getCompilationInfo(JavaSource.forFileObject(src.getFileObject("test/Main.java")), Phase.RESOLVED);
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
