@@ -130,14 +130,28 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
         sb.append("function").append(" ").append(getName());//NOI18N
         sb.append("(");//NOI18N
-        List<? extends String> parameterNames = getParameterNames();
-        for (int i = 0; i < parameterNames.size(); i++) {
-            String param = parameterNames.get(i);
-            if (i > 0) {
-                sb.append(",");//NOI18N
+        List<? extends Parameter> parameterList = getParameters();
+        if (parameterList.size() > 0) {
+            for (int i = 0, n = parameterList.size(); i < n; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                final Parameter param = parameterList.get(i);
+                    List<QualifiedName> types = param.getTypes();
+                    if (types.size() == 1) {
+                        for (QualifiedName qName : types) {
+                            sb.append(qName.toString()).append(' ');//NOI18N
+                        }
+                    }
+
+                sb.append(param.getName());
+                    String defaultValue = param.getDefaultValue();
+                    if (defaultValue != null) {
+                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                    }
             }
-            sb.append(param);
         }
+
         sb.append(")");
         sb.append("{\n}\n");//NOI18N
         return sb.toString();
