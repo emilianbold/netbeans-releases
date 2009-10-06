@@ -41,6 +41,7 @@ package org.netbeans.modules.hibernateweb.framework;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
@@ -61,7 +62,13 @@ public class Util {
     public static Project getEnclosingProjectFromWebModule(WebModule webModule) {
         FileObject documentBase = webModule.getDocumentBase();
         if(documentBase == null) {
-            return null;
+            documentBase = webModule.getDeploymentDescriptor();
+            if (documentBase == null) {
+                documentBase = webModule.getWebInf();
+                if (documentBase == null) {
+                    return null;
+                }
+            }
         }
         return FileOwnerQuery.getOwner(documentBase);
     }
