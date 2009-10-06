@@ -183,6 +183,7 @@ public final class SetExecutionUriAction extends NodeAction {
         return false;
     }
     
+    // Fix for IZ#170419 - Invoking Run took 29110 ms.
     public static boolean isScanInProgress( WebModule webModule, 
             FileObject fileObject, final ServletScanObserver observer )
     {
@@ -207,7 +208,11 @@ public final class SetExecutionUriAction extends NodeAction {
                                 event.getNewValue()!= null && 
                                     event.getNewValue()!= MARKER )
                         {
-                            if ( observer!= null ){
+                            MarkerClass marker = source.getLookup().lookup(
+                                    MarkerClass.class);
+                            if ( marker!= null && marker!= MARKER && 
+                                    observer!= null )
+                            {
                                 observer.scanFinished();
                                 source.removePropertyChangeListener(this);
                             }
@@ -226,7 +231,11 @@ public final class SetExecutionUriAction extends NodeAction {
         return isScan;
     }
     
-    public static String[] getServletMappings(WebModule webModule, FileObject javaClass) {
+    public static String[] getServletMappings(WebModule webModule, 
+            FileObject javaClass) 
+    {
+        // Fix for IZ#170419 - Invoking Run took 29110 ms.
+        assert checkScanFinished( webModule , javaClass );
         if (webModule == null)
             return null;
         
@@ -251,6 +260,20 @@ public final class SetExecutionUriAction extends NodeAction {
         }
     }
     
+    private static boolean checkScanFinished(WebModule webModule, FileObject fileObject) {
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project != null ){
+            final ProjectWebModule prjWebModule = project.getLookup().lookup( 
+                    ProjectWebModule.class);
+            if (prjWebModule != null) {
+                MarkerClass marker = prjWebModule.getLookup().lookup(
+                        MarkerClass.class );
+                return marker!=null && marker!=MARKER;
+            }
+        }
+        return true;
+    }
+
     /**
      * Method check if initial servlet scanning has been started.
      * It's done via setting special mark for project ( actually 

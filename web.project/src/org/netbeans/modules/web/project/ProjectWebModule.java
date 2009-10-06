@@ -676,7 +676,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             //     try {
             //         project.getWebModule().getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             //             public Void run(WebAppMetadata metadata) throws MetadataModelException, IOException {
-            //                 WebApp webApp = metadata.getRoot();
+            //                 WebApp webAp p = metadata.getRoot();
             //                 PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, ProjectWebModule.this, webApp);
             //                 webApp.addPropertyChangeListener(l);
             //                 return null;
@@ -692,7 +692,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
-
+    
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         if (propertyChangeSupport == null) {
             return;
