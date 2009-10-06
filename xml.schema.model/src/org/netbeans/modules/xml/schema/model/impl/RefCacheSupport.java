@@ -62,12 +62,14 @@ import org.openide.util.WeakListeners;
  */
 public class RefCacheSupport {
 
+    public static final long UNRESOLVED_EXPIRATION_DELAY = 5000;
+
     // Owning schema model.
     private SchemaModel mSModel;
 
     // The caching map.
-    private WeakHashMap<SchemaModelReference, SmAttachment> refModelCache =
-            new WeakHashMap<SchemaModelReference, SmAttachment>();
+    private WeakHashMap<SchemaModelReference, Object> refModelCache =
+            new WeakHashMap<SchemaModelReference, Object>();
 
     // Listens self schema model.
     private PropertyChangeListener mPropertySelfListener = null;
@@ -108,8 +110,12 @@ public class RefCacheSupport {
      * @return
      */
     public SchemaModelImpl getCachedModel(SchemaModelReference ref) {
-        SmAttachment sma = refModelCache.get(ref);
-        return sma == null ? null : sma.mSchemaModel;
+        Object cachedValue = refModelCache.get(ref);
+        if (cachedValue != null && cachedValue instanceof SmAttachment) {
+            return SmAttachment.class.cast(cachedValue).mSchemaModel;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -129,17 +135,28 @@ public class RefCacheSupport {
      */
     public SchemaModelImpl optimizedResolve(SchemaModelReference ref) {
         try {
-            SmAttachment sma = refModelCache.get(ref);
-            if (sma != null) {
-                SchemaModelImpl cachedModel = sma.mSchemaModel;
-                State cachedModelState = cachedModel.getState();
-                if (cachedModelState == State.VALID) {
-                    return cachedModel;
-                } else {
-                    // If the cached model is invalid then it has to be
-                    // unsubscribed and removed from cached first.
-                    // Otherwize it can remain in cache forever.
-                    excludeModel(cachedModel);
+            Object cachedValue = refModelCache.get(ref);
+            if (cachedValue != null) {
+                if (cachedValue instanceof SmAttachment) {
+                    SmAttachment sma = SmAttachment.class.cast(cachedValue);
+                    SchemaModelImpl cachedModel = sma.mSchemaModel;
+                    State cachedModelState = cachedModel.getState();
+                    if (cachedModelState == State.VALID) {
+                        return cachedModel;
+                    } else {
+                        // If the cached model is invalid then it has to be
+                        // unsubscribed and removed from cached first.
+                        // Otherwize it can remain in cache forever.
+                        excludeModel(cachedModel);
+                    }
+                } else if (cachedValue instanceof UnresolvedSchemaRef) {
+                    if (System.currentTimeMillis() <
+                            UnresolvedSchemaRef.class.cast(
+                            cachedValue).expiratoinTime) {
+                        //
+                        // The unresolved schema reference hasn't expared yet.
+                        return null;
+                    }
                 }
             }
             //
@@ -147,9 +164,12 @@ public class RefCacheSupport {
             //
             if (resolved != null) {
                 attach(ref, resolved);
+            } else {
+                refModelCache.put(ref, new UnresolvedSchemaRef());
             }
             return resolved;
         } catch (CatalogModelException ex) {
+            refModelCache.put(ref, new UnresolvedSchemaRef());
             return null;
         }
     }
@@ -161,8 +181,11 @@ public class RefCacheSupport {
      * The method can be helpful for finalization. 
      */
     public void discardCache() {
-        for (SmAttachment sma : refModelCache.values()) {
-           sma.mSchemaModel.removePropertyChangeListener(sma.mPCL);
+        for (Object cachedValue : refModelCache.values()) {
+            if (cachedValue instanceof SmAttachment) {
+                SmAttachment sma = SmAttachment.class.cast(cachedValue);
+                sma.mSchemaModel.removePropertyChangeListener(sma.mPCL);
+            }
         }
         refModelCache.clear();
         mSModel.removePropertyChangeListener(mPropertySelfListener);
@@ -262,18 +285,25 @@ public class RefCacheSupport {
         //
         // Find cache entry to remove
         List<SchemaModelReference> toRemove = new ArrayList<SchemaModelReference>();
-        for (Entry<SchemaModelReference, SmAttachment> entry : refModelCache.entrySet()) {
-           if (referencedModel.equals(entry.getValue().mSchemaModel)) {
-               toRemove.add(entry.getKey());
-           }
+        for (Entry<SchemaModelReference, Object> entry : refModelCache.entrySet()) {
+            Object cachedValue = entry.getValue();
+            if (cachedValue instanceof SmAttachment) {
+                SmAttachment sma = SmAttachment.class.cast(cachedValue);
+                if (referencedModel.equals(sma.mSchemaModel)) {
+                    toRemove.add(entry.getKey());
+                }
+            }
         }
         //
         // Remove
         for (SchemaModelReference smr : toRemove) {
-            SmAttachment sma = refModelCache.get(smr);
-            referencedModel.removePropertyChangeListener(sma.mPCL);
-            //
-            refModelCache.remove(smr);
+            Object cachedValue = refModelCache.get(smr);
+            if (cachedValue instanceof SmAttachment) {
+                SmAttachment sma = SmAttachment.class.cast(cachedValue);
+                referencedModel.removePropertyChangeListener(sma.mPCL);
+                //
+                refModelCache.remove(smr);
+            }
         }
     }
 
@@ -282,11 +312,13 @@ public class RefCacheSupport {
      * @param sModelRef
      */
     private synchronized void excludeModelRef(SchemaModelReference sModelRef) {
-        SmAttachment sma = refModelCache.get(sModelRef);
-        if (sma != null) {
+        Object cachedValue = refModelCache.get(sModelRef);
+        if (cachedValue != null && cachedValue instanceof SmAttachment) {
+            SmAttachment sma = SmAttachment.class.cast(cachedValue);
             sma.mSchemaModel.removePropertyChangeListener(sma.mPCL);
-            refModelCache.remove(sModelRef);
         }
+        //
+        refModelCache.remove(sModelRef);
     }
 
     /**
@@ -333,6 +365,14 @@ public class RefCacheSupport {
             //
             mSchemaModel = sModel;
             mPCL = pcl;
+        }
+    }
+
+    private static class UnresolvedSchemaRef {
+        public long expiratoinTime;
+
+        public UnresolvedSchemaRef() {
+            expiratoinTime = System.currentTimeMillis() + UNRESOLVED_EXPIRATION_DELAY;
         }
     }
 
