@@ -343,29 +343,30 @@ public class VariousUtils {
             int len = (justDispatcher) ? fragments.length - 1 : fragments.length;
             for (int i = 0; i < len; i++) {
                 oldRecentTypes = recentTypes;                
-                String frag = fragments[i];
-                if (frag.trim().length() == 0) {
+                String frag = fragments[i].trim();
+                if (frag.length() == 0) {
                     continue;
                 }
-                if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
+                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
-                } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.VAR_TYPE_PREFIX;
-                } else if (VariousUtils.ARRAY_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.ARRAY_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.ARRAY_TYPE_PREFIX;
-                } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
-                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
-                        assert i == 0;
+                        assert i == 0 : frag;
                         NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
                         QualifiedNameKind kind = filter.getKind();
                         String query = kind.isUnqualified() ? frag : filter.getName();
@@ -485,7 +486,12 @@ public class VariousUtils {
                                 Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PHPIndex.ANY_ATTR);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
-                                        newRecentTypes.addAll(var.getFieldTypes(fieldElement, offset));
+                                        final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
+                                        if (fieldTypes.isEmpty() && (fieldElement instanceof FieldElementImpl)) {
+                                            newRecentTypes.addAll(((FieldElementImpl)fieldElement).getDefaultTypes());
+                                        } else {
+                                            newRecentTypes.addAll(fieldTypes);
+                                        }
                                     } else {
                                         newRecentTypes.addAll(fieldElement.getTypes(offset));
                                     }

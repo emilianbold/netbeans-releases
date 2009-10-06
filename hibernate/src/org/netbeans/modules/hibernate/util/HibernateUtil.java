@@ -688,7 +688,7 @@ public class HibernateUtil {
             if (sourceRoot != null) {
                 result.add(sourceRoot);
             } else {
-                Exceptions.printStackTrace(new IllegalStateException("No FileObject found for the following URL: " + url));
+                logger.log(Level.SEVERE, "No FileObject found for the following URL: " + url + " the test(s) will be skipped");
             }
         }
         return result;
