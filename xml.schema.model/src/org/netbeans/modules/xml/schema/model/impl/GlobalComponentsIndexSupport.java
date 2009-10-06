@@ -173,7 +173,7 @@ public class GlobalComponentsIndexSupport implements Runnable {
             indexAllowed = mTestSupport.isIndexAllowed();
         }
         //
-        int childrenCount = schema.getChildren().size();
+        int childrenCount = schema.getChildrenCount();
         //
         boolean indexCreateRequired =
                 childrenCount > GLOBAL_COMPONENT_INDEX_CREATE_THRESHOLD;

@@ -138,7 +138,33 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
         List<C> result = new ArrayList<C>(_getChildren());
         return Collections.unmodifiableList(result);
     }
-    
+
+    /**
+     * This method guarantee that children are populated.
+     * It's preferable to use it instead of getChildren() if children themselves
+     * aren't necessary. This method works much faster then using getChildren()
+     * in case of big amount of children because of absence of copying children
+     * to a separate list.
+     *
+     * @since 1.6.1
+     */
+    public void checkChildrenPopulated() {
+        _getChildren();
+    }
+
+    /**
+     * Sometimes it's necessary to know amount of children but the children 
+     * themselves aren't necessary. This method works much faster then using
+     * getChildren().size() in case of big amount of children because of
+     * absence of copying children to a separate list.
+     *
+     * @return number of children
+     * @since 1.6.1
+     */
+    public int getChildrenCount() {
+        return _getChildren().size();
+    }
+
     /**
      * This method provides the ability to detect whether calling getChildren()
      * will trigger population of children. This can be used for meta models
@@ -426,10 +452,12 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
             }
         }
         
+        @Override
         public boolean equals(Object obj) {
             return delegate == obj;
         }
         
+        @Override
         public int hashCode() {
             return delegate.hashCode();
         }
