@@ -790,7 +790,6 @@ public class RADComponent {
         FakeBeanInfo fbi = (FakeBeanInfo) getBeanInfo();        
         fbi.removePropertyDescriptors();
         for (int i = 0; i < propNames.length; i++) {
-            System.err.println("getFakeBeanProperties add " + propNames[i] + ":" + propertyTypes[i].getName());
             fbi.addPropertyDescriptor(propNames[i], propertyTypes[i]);
         }
         return getBeanProperties(propNames);
