@@ -297,13 +297,7 @@ public class RefCacheSupport {
         //
         // Remove
         for (SchemaModelReference smr : toRemove) {
-            Object cachedValue = refModelCache.get(smr);
-            if (cachedValue instanceof SmAttachment) {
-                SmAttachment sma = SmAttachment.class.cast(cachedValue);
-                referencedModel.removePropertyChangeListener(sma.mPCL);
-                //
-                refModelCache.remove(smr);
-            }
+            excludeModelRef(smr);
         }
     }
 
@@ -312,13 +306,12 @@ public class RefCacheSupport {
      * @param sModelRef
      */
     private synchronized void excludeModelRef(SchemaModelReference sModelRef) {
-        Object cachedValue = refModelCache.get(sModelRef);
-        if (cachedValue != null && cachedValue instanceof SmAttachment) {
-            SmAttachment sma = SmAttachment.class.cast(cachedValue);
+        Object oldValue = refModelCache.remove(sModelRef);
+        //
+        if (oldValue != null && oldValue instanceof SmAttachment) {
+            SmAttachment sma = SmAttachment.class.cast(oldValue);
             sma.mSchemaModel.removePropertyChangeListener(sma.mPCL);
         }
-        //
-        refModelCache.remove(sModelRef);
     }
 
     /**
