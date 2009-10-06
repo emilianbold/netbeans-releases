@@ -145,7 +145,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         
         // Rename renamed configurations
         for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
-            if (/*configuration.isCustom() || */configuration.getCopyOf() == null) {
+            if (configuration.isCustom() && configuration.getCopyOf() == null) {
                 if (!configuration.getName().equals(configuration.getDLightConfiguration().getConfigurationName())) {
                     DLightConfiguration origDLightConfiguration = configuration.getDLightConfiguration();
                     String category = origDLightConfiguration.getCategoryName();
@@ -162,11 +162,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             }
         }
 
-        // save wrappers
-        DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
-        // save configurations and tools
-        for (DLightConfigurationUIWrapper configuration : dLightConfigurations){
-            if (configuration.getCopyOf() != null) {
+        // create duplicates
+        for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
+            if (configuration.isCustom() && configuration.getCopyOf() != null) {
                 DLightConfiguration origDLightConfiguration = configuration.getCopyOf();
                 String category = origDLightConfiguration.getCategoryName();
                 List<String> platforms = origDLightConfiguration.getPlatforms();
@@ -174,9 +172,17 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 List<String> indicators = origDLightConfiguration.getIndicatorProviders();
                 DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
                 configuration.setDLightConfiguration(dlightConfiguration);
+                for (DLightToolUIWrapper toolUI : configuration.getTools()) {
+                    toolUI.setModified(true);
+                }
+                configuration.setCopyOf(null);
             }
+        }
+
+        // save all changes to tools
+        for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
             for (DLightToolUIWrapper toolUI : configuration.getTools()) {
-                if (toolUI.isModified() || configuration.getCopyOf() != null) {
+                if (toolUI.isModified()) {
                     //if it was disabled and now enabled: should register
                     if (!toolUI.isEnabled()){
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
@@ -185,10 +191,10 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (configuration.getCopyOf() != null) {
-                configuration.setCopyOf(null);
-            }
         }
+
+        // save wrappers
+        DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
         return true;
     }
 
@@ -458,8 +464,8 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         protected void checkSelection(int i) {
             super.checkSelection(i);
             DLightConfigurationUIWrapper dLightConfigurationWrapper = getListData().elementAt(i);
-            getEditButton().setEnabled(dLightConfigurationWrapper.isCustom() || DLightConfigurationSupport.getInstance().canRemoveConfiguration(dLightConfigurationWrapper.getName()));
-            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom() || DLightConfigurationSupport.getInstance().canRemoveConfiguration(dLightConfigurationWrapper.getName()));
+            getEditButton().setEnabled(dLightConfigurationWrapper.isCustom());
+            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom());
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

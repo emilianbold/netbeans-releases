@@ -42,6 +42,7 @@ import org.netbeans.modules.dlight.api.tool.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
+import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationSupport;
 
 /**
  *
@@ -62,7 +63,7 @@ public class DLightConfigurationUIWrapper {
         this.name = dlightConfiguration.getConfigurationName();
         this.displayName = dlightConfiguration.getDisplayedName();
         this.profileOnRun = true;
-        this.custom = false;
+        this.custom = DLightConfigurationSupport.getInstance().canRemoveConfiguration(dlightConfiguration.getConfigurationName());
         copyOf = null;
         initWrapper(allDLightTools);
     }
@@ -74,6 +75,7 @@ public class DLightConfigurationUIWrapper {
         this.name = name;
         this.displayName = displayName;
         this.custom = true;
+        copyOf = null;
         initWrapper(allDLightTools);
     }
 
