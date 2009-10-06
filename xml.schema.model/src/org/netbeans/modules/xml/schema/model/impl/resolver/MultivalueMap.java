@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.schema.model.impl;
+package org.netbeans.modules.xml.schema.model.impl.resolver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +61,12 @@ public class MultivalueMap<K, V> {
         if (oldValue == null) {
             mContainer.put(key, value);
         } else if (oldValue instanceof List) {
-            List.class.cast(oldValue).add(value);
+            List valueList = List.class.cast(oldValue);
+            //
+            // Dublicate links not allowed!
+            if (!valueList.contains(value)) {
+                valueList.add(value);
+            }
         } else {
             ArrayList newList = new ArrayList();
             mContainer.put(key, newList);
@@ -96,6 +101,46 @@ public class MultivalueMap<K, V> {
      * @param <I>
      */
     public static class Graph<I> extends MultivalueMap<I, I> {
+    }
+
+    public static class BidirectionalGraph<I> {
+        private Graph<I> mForward = new Graph<I>();
+        private Graph<I> mBackward = new Graph<I>();
+        private Set<I> mRoots = null;
+
+        public void put(I from, I to) {
+            mForward.put(from, to);
+            mBackward.put(to, from);
+        }
+
+        public List<I> getTo(I key) {
+            return mForward.get(key);
+        }
+
+        public List<I> getFrom(I key) {
+            return mBackward.get(key);
+        }
+
+        public boolean containsKey(I key) {
+            return mForward.containsKey(key) || mBackward.containsKey(key);
+        }
+
+        public boolean isEmpty() {
+            return mForward.isEmpty();
+        }
+
+        public Set<I> getRoots(I startItem, boolean recalculate) {
+            if (mRoots == null) {
+                recalculate = true;
+            }
+            //
+            if (recalculate) {
+                mRoots = Utils.getTreeRoots(this, startItem);
+            }
+            //
+            return mRoots;
+        }
+
     }
 
     public static class Utils {
@@ -136,12 +181,59 @@ public class MultivalueMap<K, V> {
         public static <I> void populateAllSubItems(Graph<I> source, I startItem, Set<I> result) {
             result.add(startItem);
             //
-            //
             // Process children
             List<I> children = source.get(startItem);
             for (I child : children) {
                 if (!result.contains(child)) {
                     populateAllSubItems(source, child, result);
+                }
+            }
+        }
+
+        //---------------------------------------------------------------------
+
+        public static <I> Set<I> getTreeRoots(BidirectionalGraph<I> source, I startItem) {
+            HashSet<I> leafs = new HashSet<I>();
+            //
+            // The processedItems is required because the sourceTree can be not
+            // a tree but rather a graph. So it's necessary to exclude cycling!
+            HashSet<I> processedItems = new HashSet<I>();
+            populateRoots(source, startItem, leafs, processedItems);
+            return leafs;
+        }
+
+        private static <I> void populateRoots(BidirectionalGraph<I> source,
+                I startItem, Set<I> leafs, Set<I> processedItems) {
+            //
+            List<I> children = source.getFrom(startItem);
+            if (children.isEmpty()) {
+                leafs.add(startItem);
+            }
+            processedItems.add(startItem);
+            //
+            // Process children
+            for (I child : children) {
+                if (!processedItems.contains(child)) {
+                    populateRoots(source, child, leafs, processedItems);
+                }
+            }
+        }
+
+        public static <I> void populateAllSubItems(BidirectionalGraph<I> source, 
+                I startItem, I excludeItem, Set<I> result) {
+            //
+            if (startItem == excludeItem) {
+                // exclude item has to be ignored
+                return;
+            }
+            //
+            result.add(startItem);
+            //
+            // Process children
+            List<I> children = source.getTo(startItem);
+            for (I child : children) {
+                if (!result.contains(child)) {
+                    populateAllSubItems(source, child, excludeItem, result);
                 }
             }
         }

@@ -40,12 +40,8 @@
  */
 
 package org.netbeans.modules.xml.schema.model.impl;
-import java.util.Collection;
 import org.netbeans.modules.xml.schema.model.*;
-import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xml.schema.model.visitor.SchemaVisitor;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.w3c.dom.Node;
 
 /**
  * This class provides the algorithm to determine what classes to create

@@ -40,9 +40,10 @@
  */
 
 package org.netbeans.modules.xml.schema.model.impl;
+
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.NamedReferenceable;
+
 /**
  *
  * @author rico

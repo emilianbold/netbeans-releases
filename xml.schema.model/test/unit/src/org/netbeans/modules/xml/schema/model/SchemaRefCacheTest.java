@@ -652,7 +652,7 @@ public class SchemaRefCacheTest extends TestCase {
      */
     public void testCacheContainsRelevantComponents() throws Exception {
         SchemaModel sm;
-        sm = Util.loadSchemaModel("resources/B.xsd"); // the source of incorrect components
+        sm = Util.loadSchemaModel("resources/address.xsd"); // NOI18N // the source of incorrect components
         sm = Util.loadSchemaModel(TEST_XSD);
         RefCacheSupport cache = loadReferencedModels(sm);
         //
