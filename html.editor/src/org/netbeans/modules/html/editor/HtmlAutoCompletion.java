@@ -40,11 +40,12 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.html.editor.api.Utils;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.editor.completion.Completion;
@@ -131,7 +132,7 @@ public class HtmlAutoCompletion {
             throws BadLocationException {
 
         //we must not access the indent lock under the document lock!
-        final boolean isHtmlContext[] = new boolean[1];
+        final AtomicBoolean isHtmlContext = new AtomicBoolean();
         doc.render(new Runnable() {
 
             public void run() {
@@ -172,14 +173,14 @@ public class HtmlAutoCompletion {
                             Exceptions.printStackTrace(ex);
                         }
 
-                        isHtmlContext[0] = true;
+                        isHtmlContext.set(true);
                         break;
                     }
                 }
             }
         });
 
-        if (isHtmlContext[0]) {
+        if (isHtmlContext.get()) {
             final Indent indent = Indent.get(doc);
             indent.lock();
             try {
@@ -203,7 +204,7 @@ public class HtmlAutoCompletion {
     }
 
     private static void handleEmptyTagCloseSymbol(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
-        final BadLocationException[] ex = new BadLocationException[1];
+        final AtomicReference<BadLocationException> ex = new AtomicReference<BadLocationException>();
         doc.runAtomic(new Runnable() {
 
             public void run() {
@@ -228,14 +229,14 @@ public class HtmlAutoCompletion {
                             //ignore next &gt; char if typed
                             insertIgnore = new DocumentInsertIgnore(dotPos + 2, '>');
                         } catch (BadLocationException ble) {
-                            ex[0] = ble;
+                            ex.set(ble);
                         }
                     }
                 }
             }
         });
-        if (ex[0] != null) {
-            throw ex[0];
+        if (ex.get() != null) {
+            throw ex.get();
         }
     }
 

@@ -171,7 +171,10 @@ public class HibernateUtil {
         List<String> databaseTables = new ArrayList<String>();
         DBSchemaManager dbSchemaManager = new DBSchemaManager();
         DatabaseConnection dbConnection = getDBConnection(((HibernateCfgDataObject)DataObject.find(configurationFO)).getHibernateConfiguration());
-        SchemaElement schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        SchemaElement schemaElement=null;
+        if (dbConnection!=null) {
+            schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        }
         TableProvider tableProvider = null;
         if(schemaElement != null) {
             tableProvider = new DBSchemaTableProvider(schemaElement);
