@@ -361,6 +361,8 @@ public class VariousUtils {
                     operation = VariousUtils.ARRAY_TYPE_PREFIX;
                 } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.startsWith(frag)) {
+                    operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
                         assert i == 0;
@@ -374,6 +376,9 @@ public class VariousUtils {
                         if (!kind.isUnqualified()) {
                             recentTypes = filter.filterModelElements(recentTypes, true);
                         }
+                    } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
+                        //new FooImpl()-> not allowed in php
+                        return Collections.emptyList();
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {

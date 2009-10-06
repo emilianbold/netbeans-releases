@@ -120,6 +120,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (returnType != null && returnType.length() > 0) {
             retval = new ArrayList<TypeScope>();
             for (String typeName : returnType.split("\\|")) {//NOI18N
+                if (typeName.trim().length() > 0) {
                     if (resolve && typeName.contains("@")) {//NOI18N
                         try {
                             if (recursionDetection.add(typeName) && recursionDetection.size() < 30) {
@@ -128,9 +129,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                         } finally {
                             recursionDetection.remove(typeName);
                         }
-                    } else {                        
+                    } else {
                         retval.addAll(CachingSupport.getTypes(typeName, this));
                     }
+                }
             }
             returnType = null;//NOI18N
             for (TypeScope typeScope : retval) {
