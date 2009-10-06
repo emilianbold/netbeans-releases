@@ -188,7 +188,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 //        }
 
         // Gizmo configurations
-        if (gizmoConfigurations == null) {
+        if (gizmoConfigurations == null || configurationNames.length == 0) {
             List<String> names = new ArrayList<String>();
             List<DLightConfiguration> confs = new ArrayList<DLightConfiguration>();
             for (DLightConfiguration dlightConfiguration : DLightConfigurationManager.getInstance().getConfigurationsByCategoryName(GIZMO_CATEGORY)) {

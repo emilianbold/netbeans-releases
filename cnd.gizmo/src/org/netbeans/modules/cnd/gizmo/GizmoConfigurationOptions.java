@@ -98,8 +98,8 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         Collection<String> allNames = gizmoOptions.getNames();
         for (String name : allNames) {
 //            if (gizmoOptions.getValueByName(name)) {
-                result.add(name);
-  //          }
+            result.add(name);
+            //          }
         }
         return result;
     }
@@ -107,10 +107,11 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     public void configure(Project project) {
         areCollectorsTurnedOn = true;
         this.currentProject = project;
+        Configuration activeConfiguration = getActiveConfiguration();
 //        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
         //set up as following:
         //get data from the project about selected provider of detailed voew
-        Configuration activeConfiguration = getActiveConfiguration();
+
         gizmoOptions = GizmoOptionsProvider.getOptions(activeConfiguration);
         gizmoOptions.init(activeConfiguration);
         turnCollectorsState(true);
@@ -131,12 +132,19 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
                 break;
             }
         }
+        String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
         DLightConfiguration dlightConfiguration = gizmoOptions.getDLightConfiguration();
         //get all names from the inside usinf providers
 //        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
         DLightCollectorString = dlightConfiguration.getCollectorProviders();
         DLightIndicatorDPStrings = dlightConfiguration.getIndicatorProviders();
-        setForLinux();
+        if ((DLightCollectorString != null && DLightCollectorString.equals(SUNSTUDIO) && !hasSunStudio) || 
+                (platform.indexOf("Linux") != -1 &&DLightCollectorString != null && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)){
+            setForLinux();
+        }
+//        List<String> platforms = dlightConfiguration.getPlatforms();
+        //if platform is not supported
+        
 //        DLightCollectorString = DTRACE;
 //        DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, PRSTAT_INDICATOR, DTRACE);
 //
@@ -248,5 +256,4 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
             }
         }
     }
-  
 }
