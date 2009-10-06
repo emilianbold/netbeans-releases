@@ -16,6 +16,7 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -126,6 +127,7 @@ final class NetigsoModule extends Module {
             case Bundle.INSTALLED: break;
             case Bundle.ACTIVE: break;
             case Bundle.RESOLVED: break;
+            case Bundle.STARTING: break;
             default: return;
         }
         try {
@@ -152,6 +154,13 @@ final class NetigsoModule extends Module {
 
     @Override
     public ClassLoader getClassLoader() throws IllegalArgumentException {
+        if (loader == null) {
+            try {
+                classLoaderUp(null);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         if (loader == null) {
             throw new IllegalArgumentException("No classloader for " + getCodeNameBase()); // NOI18N
         }
