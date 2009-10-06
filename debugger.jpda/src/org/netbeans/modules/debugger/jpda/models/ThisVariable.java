@@ -51,6 +51,8 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 class ThisVariable extends AbstractObjectVariable implements This {
 
+    private int cloneNumber = 1;
+
     ThisVariable (
         JPDADebuggerImpl debugger,
         Value value,
@@ -66,13 +68,15 @@ class ThisVariable extends AbstractObjectVariable implements This {
 
     // This impl................................................................
 
+    @Override
     public ThisVariable clone() {
         return new ThisVariable(getDebugger(), getJDIValue(),
-                getID().substring(0, getID().length() - ".this^".length()));
+                getID().substring(0, getID().length() - ".this^".length()) + "_clone" + (cloneNumber++));
     }
 
     // other methods ...........................................................
     
+    @Override
     public String toString () {
         return "ThisVariable this";
     }
