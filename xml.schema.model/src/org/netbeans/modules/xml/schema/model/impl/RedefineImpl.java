@@ -188,4 +188,10 @@ public class RedefineImpl extends SchemaComponentImpl implements Redefine {
 	    ModelSource ms = resolveModel(getSchemaLocation());
         return SchemaModelFactory.getDefault().getModel(ms);
 	}
+
+    @Override
+    public String toString() {
+        return getModel().toString() + " --redefine--> " + getSchemaLocation(); // NOI18N
+    }
+
 }

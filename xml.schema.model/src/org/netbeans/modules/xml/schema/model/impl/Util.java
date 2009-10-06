@@ -96,4 +96,10 @@ public class Util {
     }
     
     public static final String SEP = " ";
+
+    public static boolean equal(Object o1, Object o2) {
+        if (o1 == o2) return true;
+        return (o1 == null || o2 == null) ? false : o1.equals(o2);
+    }
+    
 }

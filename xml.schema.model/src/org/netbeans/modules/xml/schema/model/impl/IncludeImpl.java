@@ -99,4 +99,10 @@ public class IncludeImpl extends SchemaComponentImpl implements Include{
         ModelSource ms = resolveModel(getSchemaLocation());
         return SchemaModelFactory.getDefault().getModel(ms);
     }
+
+    @Override
+    public String toString() {
+        return getModel().toString() + " --include--> " + getSchemaLocation(); // NOI18N
+    }
+
 }
