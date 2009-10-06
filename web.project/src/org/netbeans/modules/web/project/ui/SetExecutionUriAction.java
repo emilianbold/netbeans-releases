@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.web.project.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +83,7 @@ public final class SetExecutionUriAction extends NodeAction {
                 "org.netbeans.modules.web.IsServletFile";            // NOI18N
     public static final String ATTR_EXECUTION_URI = "execution.uri"; //NOI18N
     // Added as  fix for IZ#171708.
-    private final MarkerClass myMarker = new MarkerClass();
+    private static final MarkerClass MARKER = new MarkerClass();
     
     /**
      * Creates and starts a thread for generating documentation
@@ -181,6 +183,49 @@ public final class SetExecutionUriAction extends NodeAction {
         return false;
     }
     
+    public static boolean isScanInProgress( WebModule webModule, 
+            FileObject fileObject, final ServletScanObserver observer )
+    {
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        ProjectWebModule prjWebModule = null;
+        if ( project != null ){
+             prjWebModule = project.getLookup().lookup( 
+                    ProjectWebModule.class);
+        }
+        boolean isScan = project!= null;
+        if ( isScan ){
+                isScan = servletFilesScanning(webModule, fileObject);
+                if ( !isScan ){
+                    return false;
+                }
+                final ProjectWebModule source = prjWebModule;
+                PropertyChangeListener listener = new PropertyChangeListener() {
+                    
+                    public void propertyChange( PropertyChangeEvent event ) {
+                        String name = event.getPropertyName();
+                        if ( ProjectWebModule.LOOKUP_ITEM.equals(name) &&
+                                event.getNewValue()!= null && 
+                                    event.getNewValue()!= MARKER )
+                        {
+                            if ( observer!= null ){
+                                observer.scanFinished();
+                                source.removePropertyChangeListener(this);
+                            }
+                        }
+                    }
+                };
+                prjWebModule.addPropertyChangeListener( listener );
+                isScan = servletFilesScanning(webModule, fileObject);
+                if ( !isScan ){
+                    prjWebModule.removePropertyChangeListener(listener);
+                }
+            }
+            else {
+                isScan = false;
+            }
+        return isScan;
+    }
+    
     public static String[] getServletMappings(WebModule webModule, FileObject javaClass) {
         if (webModule == null)
             return null;
@@ -218,7 +263,7 @@ public final class SetExecutionUriAction extends NodeAction {
      * 
      * Fix for IZ#171708 - AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir)
      */
-    private boolean servletFilesScanning( final WebModule webModule , 
+    private static boolean servletFilesScanning( final WebModule webModule , 
             final FileObject fileObject ) 
     {
         Project project = FileOwnerQuery.getOwner( fileObject );
@@ -232,7 +277,7 @@ public final class SetExecutionUriAction extends NodeAction {
                     Runnable runnable = new Runnable(){
                         public void run() {
                             isServletFile(webModule, fileObject , true );
-                            prjWebModule.removeCookie( myMarker);
+                            prjWebModule.removeCookie( MARKER);
                             prjWebModule.addCookie( new MarkerClass() );
                         }
                     };
@@ -241,11 +286,11 @@ public final class SetExecutionUriAction extends NodeAction {
                          * In the worst case we will start several initial scanning.
                          */
                         RequestProcessor.getDefault().post(runnable);
-                        prjWebModule.addCookie( myMarker );
+                        prjWebModule.addCookie( MARKER );
                      }
                     return true;
                 }
-                else if ( marker == myMarker ){
+                else if ( marker == MARKER ){
                     return true;
                 }
                 else {
@@ -352,6 +397,6 @@ public final class SetExecutionUriAction extends NodeAction {
     /*
      * Created as  fix for IZ#171708 = AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir) 
      */
-    private class MarkerClass {
+    private static class MarkerClass {
     }
 }
