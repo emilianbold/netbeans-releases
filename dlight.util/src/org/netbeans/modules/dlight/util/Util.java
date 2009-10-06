@@ -240,4 +240,8 @@ public class Util {
         }
         return null;
     }
+
+    public static <T> T maskNull(T value, T nullValue) {
+        return value == null? nullValue : value;
+    }
 }

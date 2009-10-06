@@ -184,13 +184,13 @@ public final class THAProjectSupport implements PropertyChangeListener {
                 return true;
             }
         }
-	if (!(mc.getCRequired().getValue() && mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
+	if ((mc.getCRequired().getValue() && !mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
 	    return false;
 	}
-	if (!(mc.getCppRequired().getValue() && mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
+	if ((mc.getCppRequired().getValue() && !mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
 	    return false;
 	}
-	if (!(mc.getFortranRequired().getValue() && mc.getFortranCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
+	if ((mc.getFortranRequired().getValue() && !mc.getFortranCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
 	    return false;
 	}
 	if (!(mc.getLinkerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getLinkerOptions()))) {
