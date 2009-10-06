@@ -285,20 +285,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return current stack frame or null
      */
     public CallStackFrame getCurrentCallStackFrame () {
-        CallStackFrame csf = null;
         synchronized (currentThreadAndFrameLock) {
-            if (currentCallStackFrame != null) {
-                try {
-                    if (!currentCallStackFrame.getThread().isSuspended()) {
-                        currentCallStackFrame = null;
-                    }
-                } catch (InvalidStackFrameException isfex) {
-                    currentCallStackFrame = null;
-                }
-                csf = currentCallStackFrame;
-            }
+            return currentCallStackFrame;
         }
-        return csf;
     }
 
     /**
@@ -1780,6 +1769,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private void setState (int state) {
+        if (state == STATE_RUNNING) {
+            synchronized (currentThreadAndFrameLock) {
+                currentCallStackFrame = null;
+            }
+        }
         PropertyChangeEvent evt = setStateNoFire(state);
         if (evt != null) {
             firePropertyChange(evt);
