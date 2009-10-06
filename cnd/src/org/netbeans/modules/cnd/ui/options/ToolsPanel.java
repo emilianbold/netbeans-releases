@@ -609,13 +609,15 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 if (cs.getCompilerFlavor().getToolchainDescriptor().getModuleID().equals(unit.getCodeName())) {
                     installContainer.add(unit.getAvailableUpdates());
                     InstallSupport support = installContainer.getSupport();
-                    try {
-                        ProgressHandle progress = null;
-                        InstallSupport.Validator v = support.doDownload(progress, false);
-                        InstallSupport.Installer i = support.doValidate(v, progress);
-                        Restarter r = support.doInstall(i, progress);
-                    } catch (OperationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    if (support != null) {
+                        try {
+                            ProgressHandle progress = null;
+                            InstallSupport.Validator v = support.doDownload(progress, false);
+                            InstallSupport.Installer i = support.doValidate(v, progress);
+                            Restarter r = support.doInstall(i, progress);
+                        } catch (OperationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                     break;
                 }
@@ -630,9 +632,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             if (cs.isUrlPointer()) {
-                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl()+":"+ //NOI18N
-                                        cs.getCompilerFlavor().getToolchainDescriptor().getModuleID());
-                btBaseDirectory.setEnabled(false);
+                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+                btBaseDirectory.setEnabled(true);
                 isUrl = true;
                 //downloadCompilerSet(cs);
             } else {
@@ -1870,6 +1871,10 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     if (isUrl) {
+        String uc = tfBaseDirectory.getText();
+        NotifyDescriptor nd = new NotifyDescriptor.Message(getString("ToolsPanel.UpdateCenterMessage", uc));
+        nd.setTitle(getString("ToolsPanel.UpdateCenterTitle")); // NOI18N
+        DialogDisplayer.getDefault().notify(nd);
         return;
     }
     String seed = null;
