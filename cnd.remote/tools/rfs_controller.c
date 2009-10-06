@@ -104,7 +104,7 @@ static void serve_connection(void* data) {
         trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
         enum pkg_kind expected_kind = first ? pkg_handshake : pkg_request;
         if (pkg->kind != expected_kind) {
-            fprintf(stderr, "prodocol error: got %s instead of %s from %s\n", pkg_kind_to_string(pkg->kind), pkg_kind_to_string(expected_kind), requestor_id);
+            fprintf(stderr, "prodocol error: got %s instead of %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg_kind_to_string(expected_kind), requestor_id, conn_data->sd);
             break;
         }
 
@@ -231,7 +231,7 @@ static void init_files() {
 }
 
 int main(int argc, char* argv[]) {
-    trace_startup("RFS_C", "RFS_CONTROLLER_LOG");
+    trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);

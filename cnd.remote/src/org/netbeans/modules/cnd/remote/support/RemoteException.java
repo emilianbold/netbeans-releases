@@ -37,25 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.cnd.remote.support;
 
-import org.netbeans.modules.cnd.remote.project.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
+ * General-purpose exception for handling errors related with remote commands execution.
+ * For example, if some function gets a value from remote host via executing a command on this host,
+ * and that command returned nonzero result code,
+ * then such function can throw a RemoteException.
  *
+ * TODO: should it be moved to remote API?
+ * 
  * @author Vladimir Kvashin
  */
-public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
-
-    static {
-        System.setProperty("cnd.remote.fs", "true");
-    }
-
-    public RfsRemoteBuildTestBase(String testName) {
-        super(testName);
-    }
-
-    public RfsRemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+public class RemoteException extends Exception {
+    public RemoteException(String message) {
+        super(message);
     }
 }

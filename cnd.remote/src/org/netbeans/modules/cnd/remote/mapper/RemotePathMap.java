@@ -144,14 +144,24 @@ public class RemotePathMap extends PathMap {
     // PathMap
     public String getRemotePath(String lpath, boolean useDefault) {
         String ulpath = unifySeparators(lpath);
+        String rpath = null;
+        int max = 0;
+        // search for the *longest* key that starts with lpath
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = unifySeparators(entry.getKey());
             if (ulpath.startsWith(key)) {
-                String mpoint = entry.getValue();
-                return mpoint + lpath.substring(key.length()).replace('\\', '/');
+                if (rpath == null || key.length() > max) {
+                    max = key.length();
+                    String mpoint = entry.getValue();
+                    rpath = mpoint + lpath.substring(key.length()).replace('\\', '/');
+                }
             }
         }
-        return useDefault ? lpath : null;
+        if (rpath != null) {
+            return rpath;
+        } else {
+            return useDefault ? lpath : null;
+        }
     }
 
     public String getLocalPath(String rpath, boolean useDefault) {
