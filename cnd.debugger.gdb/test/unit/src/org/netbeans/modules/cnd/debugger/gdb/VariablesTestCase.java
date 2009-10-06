@@ -214,6 +214,20 @@ public class VariablesTestCase extends GdbTestCase {
         assertEquals("\"xyz\"", var.getFields()[1].getValue());
     }
 
+    @Test
+    public void testUnnamedUnion() { // IZ 131429
+        AbstractVariable var = createLocalVariable(
+                "test",
+                "A",
+                "{{a = 12, b = 23}}",
+                "class A {\\n  public:\\n    union {\\n        int a;\\n        int b;\\n    };\\n}\\n");
+
+        // Should have 1 field
+        assertEquals(1, var.getFields().length);
+        assertEquals("union", var.getFields()[0].getType());
+        assertEquals("{a = 12, b = 23}", var.getFields()[0].getValue());
+    }
+
     private AbstractVariable createLocalVariable(String name, String type, String value, String ptype) {
         return createLocalVariable(name, type, value, ptype, false);
     }
