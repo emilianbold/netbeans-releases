@@ -96,6 +96,14 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/162320.php");
     }
 
+    /**
+     * issue 162586
+     * @throws Exception
+     */
+
+    public void testCommentsFormattingMixedWithHTML() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/162586.php");
+    }
     
 
     public void testIfElseStatement() throws Exception {
