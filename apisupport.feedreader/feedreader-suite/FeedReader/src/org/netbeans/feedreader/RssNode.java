@@ -28,7 +28,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.myorg.feedreader;
+package org.netbeans.feedreader;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
@@ -141,7 +141,7 @@ public class RssNode extends FilterNode {
         
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif");
+            return ImageUtilities.loadImage("org/netbeans/feedreader/rss16.gif");
         }
         
         @Override
@@ -238,7 +238,7 @@ public class RssNode extends FilterNode {
     
     /** Looking up a feed */
     private static Feed getFeed(Node node) {
-        InstanceCookie ck = node.getCookie(InstanceCookie.class);
+        InstanceCookie ck = node.getLookup().lookup(InstanceCookie.class);
         if (ck == null) {
             throw new IllegalStateException("Bogus file in feeds folder: " + node.getLookup().lookup(FileObject.class));
         }

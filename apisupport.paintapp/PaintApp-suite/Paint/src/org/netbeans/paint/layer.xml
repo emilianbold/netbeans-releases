@@ -32,7 +32,12 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Edit">
-            <file name="org-netbeans-paint-NewCanvasAction.instance"/>
+            <file name="org-netbeans-paint-NewCanvasAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.paint.NewCanvasAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.paint.Bundle#CTL_NewCanvasAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/paint/new-canvas.png"/>
+            </file>
             <file name="org-netbeans-paint-SaveCanvasAction.instance"/>
         </folder>
     </folder>

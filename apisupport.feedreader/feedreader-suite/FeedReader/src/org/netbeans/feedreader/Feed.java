@@ -27,34 +27,54 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.myorg.feedreader;
+package org.netbeans.feedreader;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import com.sun.syndication.feed.synd.SyndFeed;
+import com.sun.syndication.fetcher.FeedFetcher;
+import com.sun.syndication.fetcher.impl.HashMapFeedInfoCache;
+import com.sun.syndication.fetcher.impl.HttpURLFeedFetcher;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URL;
 
-/**
- * Action which shows Feed component.
- */
-public class FeedAction extends AbstractAction {
+public class Feed implements Serializable {
 
-    public FeedAction() {
-        super(NbBundle.getMessage(FeedAction.class, "CTL_FeedAction"),
-                ImageUtilities.image2Icon(ImageUtilities.loadImage("org/myorg/feedreader/rss16.gif", true)));
+    private static final long serialVersionUID = 1L;
+
+    private static final FeedFetcher FEED_FETCHER =
+            new HttpURLFeedFetcher(HashMapFeedInfoCache.getInstance());
+    
+    private transient SyndFeed syndFeed;
+    private final URL url;
+    private String name;
+    
+    public Feed(URL url) {
+        this.url = url;
+        name = url.toExternalForm();
     }
     
-    public void actionPerformed(ActionEvent evt) {
-        TopComponent win = WindowManager.getDefault().findTopComponent("FeedTopComponent");
-        if (win == null) {
-            Logger.getLogger(FeedAction.class.getName()).warning("Cannot find Feed component.");
-            return;
+    public URL getURL() {
+        return url;
+    }
+    
+    public SyndFeed getSyndFeed() throws IOException {
+        if (syndFeed == null) {
+            try {
+                syndFeed = FEED_FETCHER.retrieveFeed(url);
+                String title = syndFeed.getTitle();
+                if (title != null) {
+                    name = title;
+                }
+            } catch (Exception ex) {
+                throw (IOException) new IOException(ex.toString()).initCause(ex);
+            }
         }
-        win.open();
-        win.requestActive();
+        return syndFeed;
+    }
+    
+    @Override
+    public String toString() {
+        return name;
     }
     
 }
