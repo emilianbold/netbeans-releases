@@ -2423,6 +2423,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
 
                     { // <editor-fold defaultstate="collapsed" desc="process single files and folder">
+                        fullRescanFiles = new HashMap<URL, Set<FileObject>>();
+                        checkTimestampFiles = new HashMap<URL, Set<FileObject>>();
                         for(Pair<FileObject, Boolean> f : suspects) {
                             for(URL root : scannedRoots2Dependencies.keySet()) {
                                 FileObject rootFo = URLCache.getInstance().findFileObject(root);
