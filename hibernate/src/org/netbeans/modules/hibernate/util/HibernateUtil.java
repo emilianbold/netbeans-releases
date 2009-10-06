@@ -496,6 +496,15 @@ public class HibernateUtil {
 
     public static String getDbConnectionDetails(HibernateConfiguration configuration, String property) {
         SessionFactory fact = configuration.getSessionFactory();
+        if(fact == null) {
+            logger.log(Level.WARNING, "Hibernate Configuration xml is missing <session-factory>, applying temporary fix, please check your xml.");
+            configuration.setSessionFactory( new SessionFactory());
+            fact = configuration.getSessionFactory();
+            if(fact == null) {
+                logger.log(Level.SEVERE, "Hibernate configuration xml is missing <session-factory>, xml must be fixed!");
+                return "";
+            }
+        }
         int count = 0;
         for (String val : fact.getProperty2()) {
             String propName = fact.getAttributeValue(SessionFactory.PROPERTY2, count++, "name");  //NOI18N
