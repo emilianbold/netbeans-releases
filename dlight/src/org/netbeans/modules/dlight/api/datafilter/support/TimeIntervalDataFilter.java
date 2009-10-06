@@ -36,25 +36,42 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.datafilter.support;
 
-import org.netbeans.modules.dlight.api.datafilter.support.NumericDataFilter;
 import org.netbeans.modules.dlight.util.Range;
+import org.netbeans.modules.dlight.util.Util;
 
 /**
  *
  * @author mt154047
  */
-public final class TimeIntervalDataFilter implements NumericDataFilter{
-    private Range<Long> timeInterval;
+public final class TimeIntervalDataFilter implements NumericDataFilter<Range<Long>> {
 
+    private final Range<Long> timeInterval;
+
+    /**
+     * Null <code>timeInterval.start</code> is replaced with <code>Long.MIN_VALUE</code>,
+     * null <code>timeInterval.end</code> is replaced with <code>Long.MAX_VALUE</code>.
+     *
+     * @param timeInterval
+     */
     TimeIntervalDataFilter(Range<Long> timeInterval) {
-        this.timeInterval = timeInterval;
+        if (timeInterval == null) {
+            throw new NullPointerException("timeInterval is null"); // NOI18N
+        }
+        if (timeInterval.getStart() != null && timeInterval.getEnd() != null) {
+            this.timeInterval = timeInterval;
+        } else {
+            this.timeInterval = new Range<Long>(
+                    Util.maskNull(timeInterval.getStart(), Long.MIN_VALUE),
+                    Util.maskNull(timeInterval.getEnd(), Long.MAX_VALUE));
+        }
     }
 
-    public Range<Long> getInterval(){
+    /**
+     * @return  time interval with non-null <code>start</code> and <code>end</code>
+     */
+    public Range<Long> getInterval() {
         return timeInterval;
     }
-    
 }
