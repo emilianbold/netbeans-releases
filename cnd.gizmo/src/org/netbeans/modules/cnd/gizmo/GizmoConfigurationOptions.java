@@ -139,7 +139,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         DLightCollectorString = dlightConfiguration.getCollectorProviders();
         DLightIndicatorDPStrings = dlightConfiguration.getIndicatorProviders();
         if ((DLightCollectorString != null && DLightCollectorString.equals(SUNSTUDIO) && !hasSunStudio) || 
-                (platform.indexOf("Linux") != -1 &&DLightCollectorString != null && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)){
+                (platform.indexOf("Linux") != -1 && DLightCollectorString != null && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)){//NOI18N
             setForLinux();
         }
 //        List<String> platforms = dlightConfiguration.getPlatforms();
