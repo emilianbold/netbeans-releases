@@ -191,7 +191,7 @@ public class TreeEvaluator {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (ObjectCollectedException e) {
-            Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
+            loggerMethod.log(Level.CONFIG, "During evaluation of '"+expression.getExpression()+"'", e); // Just log it.
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_collected"));
         } catch (ClassNotPreparedException e) {
