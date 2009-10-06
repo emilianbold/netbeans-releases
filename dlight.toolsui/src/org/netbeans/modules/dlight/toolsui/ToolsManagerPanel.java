@@ -354,10 +354,35 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 //            return new DLightConfigurationUIWrapper(newS, newS, allDLightTools);
 //        }
 
+        private String makeNameUnique(String suggestedName) {
+            if (findDLightConfigurationUIWrapper(suggestedName) == null) {
+                return suggestedName;
+            }
+            else {
+                for (int i = 1;; i++) {
+                    String newName = suggestedName + "_" + i; // NOI18N
+                    if (findDLightConfigurationUIWrapper(newName) == null) {
+                        return newName;
+                    }
+                }
+            }
+        }
+
+        private DLightConfigurationUIWrapper findDLightConfigurationUIWrapper(String name) {
+            for (DLightConfigurationUIWrapper dlightConfigurationUIWrapper : getListData()) {
+                if (dlightConfigurationUIWrapper.getDisplayName().equals(name)) {
+                    return dlightConfigurationUIWrapper;
+                }
+            }
+            return null;
+        }
+
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {
-            String newName = getString("CopyOf", o.getDisplayName());
-            DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper("copyof" + o.getName(), getString("CopyOf", o.getDisplayName()), allDLightTools); // NOI18N
+            String newDisplayName = makeNameUnique(getString("CopyOf", o.getDisplayName()));
+            String newName = newDisplayName.replace("/", "_FSLASH_"); // No spaces // NOI18N
+            newName = newName.replace("\\", "_BSLASH_"); // No spaces // NOI18N
+            DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(newName, newDisplayName, allDLightTools); // NOI18N
             List<DLightToolUIWrapper> tools = o.getTools();
             List<DLightToolUIWrapper> copyTools = copy.getTools();
             int i = 0;
