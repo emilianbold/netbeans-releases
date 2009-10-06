@@ -24,7 +24,7 @@
     <target name="release" depends="init">
         <property name="jython_dir" location="${cluster}/jython-${jython_src_version}"/>
     
-        <unzip dest="${cluster}" src="external/jython-2.5.zip"/>
+        <unzip dest="${cluster}" src="external/jython-2.5.1.zip"/>
 
         <chmod perm="ugo+x">
           <fileset dir="${jython_dir}/">

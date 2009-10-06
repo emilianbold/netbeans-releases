@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
@@ -86,7 +87,11 @@ public class PHPHintsProvider implements HintsProvider {
                 if (mgr.isEnabled(astRule)) {
                     if (astRule instanceof AbstractRule) {
                         AbstractRule icm = (AbstractRule) astRule;
-                        icm.computeHintsImpl(ruleContext, hints, PHPHintsProvider.Kind.HINT);
+                        try {
+                            icm.computeHintsImpl(ruleContext, hints, PHPHintsProvider.Kind.HINT);
+                        } catch (BadLocationException ex) {
+                           return;// #172881
+                        }
                     }
                 }
             }
@@ -116,7 +121,11 @@ public class PHPHintsProvider implements HintsProvider {
                 if (mgr.isEnabled(astRule)) {
                     if (astRule instanceof AbstractRule) {
                         AbstractRule icm = (AbstractRule) astRule;
-                        icm.computeHintsImpl(ruleContext, suggestions, PHPHintsProvider.Kind.SUGGESTION);
+                        try {
+                            icm.computeHintsImpl(ruleContext, suggestions, PHPHintsProvider.Kind.SUGGESTION);
+                        } catch (BadLocationException ex) {
+                            return;// #172881
+                        }
                     }
                 }
             }

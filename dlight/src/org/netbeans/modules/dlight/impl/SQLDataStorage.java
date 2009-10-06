@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.impl;
 
+import java.io.InterruptedIOException;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -460,7 +461,14 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             rs = connection.createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
-            logger.log(Level.SEVERE, null, ex);
+	    Throwable cause = ex.getCause();
+	    if (cause != null &&
+		(cause instanceof InterruptedIOException ||
+		 cause instanceof InterruptedException)) {
+		// skip exception
+	    } else {
+		logger.log(Level.SEVERE, null, ex);
+	    }
         }
 
         return rs;

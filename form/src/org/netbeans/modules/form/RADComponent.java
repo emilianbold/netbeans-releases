@@ -1081,6 +1081,9 @@ public class RADComponent {
         accessibilityProperties = null;
     }
 
+    static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
+            "nb.form.suppressTabs");
+
     protected void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
             createBeanProperties();
@@ -1097,6 +1100,10 @@ public class RADComponent {
                 return getBeanProperties1();
             }
         });
+
+        if (SUPPRESS_PROPERTY_TABS) {
+            return;
+        }
 
         if(isValid()) {
             Iterator entries = otherProperties.entrySet().iterator();
@@ -1203,7 +1210,7 @@ public class RADComponent {
 
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, getBeanInfo().getBeanDescriptor());
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        if (Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+        if (propsCats != null && Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
             try {
                 Object[] newPropsCats = new Object[propsCats.length+2*props.length];
                 for (int i=0; i<props.length; i++) {

@@ -87,4 +87,9 @@ public final class AxisMark {
     public int getTextOpacity() {
         return textOpacity;
     }
+
+    @Override
+    public String toString() {
+        return "pos=" + pos + ", text=" + text; // NOI18N
+    }
 }

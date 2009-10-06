@@ -216,6 +216,9 @@ public class RADVisualComponent extends RADComponent {
     @Override
     protected void createPropertySets(List<Node.PropertySet> propSets) {
         super.createPropertySets(propSets);
+        if (SUPPRESS_PROPERTY_TABS) {
+            return;
+        }
 
         if (constraintsProperties == null)
             createConstraintsProperties();

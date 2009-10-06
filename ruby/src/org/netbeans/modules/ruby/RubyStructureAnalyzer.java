@@ -1474,7 +1474,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 return content;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return DEFAULT_LABEL;

@@ -83,6 +83,15 @@ public class ConcurrentTasksSupport {
                 final int id = counter.incrementAndGet();
 
                 public void run() {
+                    TaskFactory factoryToUse = factories.get(r.nextInt(factories.size()));
+
+                    Runnable task = factoryToUse.newTask();
+
+                    if (task == null) {
+                        throw new NullPointerException("TaskFactory " + factoryToUse + " returned null task!"); // NOI18N
+                    }
+
+
                     try {
                         startSignal.await();
                     } catch (BrokenBarrierException ex) {
@@ -91,10 +100,8 @@ public class ConcurrentTasksSupport {
                         log.info("InterruptedException while waiting startSignal");
                     }
 
-                    TaskFactory factoryToUse = factories.get(r.nextInt(factories.size()));
-
                     try {
-                        factoryToUse.newTask().run();
+                        task.run();
                     } catch (Throwable th) {
                         log.info("Exception in task " + th.toString());
                     } finally {

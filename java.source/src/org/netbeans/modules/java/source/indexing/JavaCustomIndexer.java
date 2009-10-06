@@ -263,7 +263,13 @@ public class JavaCustomIndexer extends CustomIndexer {
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
                 return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            } catch (AssertionError ae) {
+                //Add more debug messages
+                throw Exceptions.attachMessage(ae, "Root FileObject: " + FileUtil.getFileDisplayName(context.getRoot()) +   //NOI18N
+                                                   " Indexable URL: " + indexable.getURL() +    //NOI18N
+                                                   " Normalized root: " + FileUtil.normalizeFile(root).getAbsolutePath());  //NOI18N
+            }
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
         return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;

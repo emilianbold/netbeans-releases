@@ -51,6 +51,9 @@ import java.io.File;
 import org.netbeans.modules.jmx.MBeanDO;
 //import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGenInfo;
 import org.netbeans.modules.jmx.mbeanwizard.generator.Translator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
         
 /**
  * MBeanGeneratorTest.java 
@@ -67,7 +70,10 @@ public class MBeanGeneratorTest extends TestCase {
     }
 
     protected void setUp() throws java.lang.Exception {
+        File tmp = new File(System.getProperty("java.io.tmpdir"));
+        DataFolder target = DataFolder.findFolder(FileUtil.toFileObject(tmp));
         wizard = new TemplateWizard();
+        wizard.setTargetFolder(target);
     }
 
     protected void tearDown() throws java.lang.Exception {

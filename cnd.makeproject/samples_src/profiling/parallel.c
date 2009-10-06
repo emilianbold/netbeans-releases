@@ -51,7 +51,7 @@ static void estimate_usage(int work_count, work_t* works, int seconds) {
 static volatile int done;
 static pthread_barrier_t start;
 
-static void* threadfunc(void *p) {
+static void* parallel_threadfunc(void *p) {
     pthread_barrier_wait(&start);
     work_t* work = (work_t*) p;
     while (!done) {
@@ -80,7 +80,7 @@ void parallel_demo(int work_count, work_t* works, int seconds_per_work) {
     pthread_barrier_init(&start, NULL, work_count + 1);
     EXPLAIN("Creating threads with pthread_create()\n");
     for (i = 0; i < work_count; ++i) {
-        pthread_create(&t[i], NULL, &threadfunc, &works[i]);
+        pthread_create(&t[i], NULL, &parallel_threadfunc, &works[i]);
     }
 
     pthread_barrier_wait(&start);

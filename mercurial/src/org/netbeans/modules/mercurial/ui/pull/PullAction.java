@@ -75,7 +75,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
-import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
  * Pull action for mercurial:
@@ -101,8 +100,12 @@ public class PullAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        final File root = HgUtils.getRootFile(context);
-        if (root == null) {
+        final File roots[] = HgUtils.getActionRoots(context);
+        final File repository =
+                roots != null && roots.length > 0 ?
+                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
+                    null;
+        if (repository == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
@@ -116,11 +119,11 @@ public class PullAction extends ContextAction {
             logger.closeLog();
             return;
         }
-        pull(context);
+        pull(context, repository);
     }
 
     public static boolean confirmWithLocalChanges(File rootFile, Class bundleLocation, String title, String query, 
-            List<String> listIncoming, OutputLogger logger) {
+        List<String> listIncoming, OutputLogger logger) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         File[] roots = new File[1];
         roots[0] = rootFile;
@@ -185,23 +188,22 @@ public class PullAction extends ContextAction {
         outRed.close();
     }
 
-    public static void pull(final VCSContext ctx) {
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
-
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+    public static void pull(final VCSContext ctx, final File repository) {
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { getDefaultAndPerformPull(ctx, root, this.getLogger()); } };
-
-        support.start(rp, root, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
+            public void perform() { 
+                getDefaultAndPerformPull(ctx, repository, this.getLogger());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
-        final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
+        final String pullSourceString = HgRepositoryContextCache.getInstance().getPullDefault(root);
         // If the repository has no default pull path then inform user
         if (isNullOrEmpty(pullSourceString)) {
             notifyDefaultPullUrlNotSpecified(logger);
