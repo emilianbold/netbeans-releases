@@ -86,7 +86,7 @@ public abstract class SQLDataStorage implements DataStorage {
     private static final Logger logger = DLightLogger.getLogger(SQLDataStorage.class);
     protected Connection connection;
     protected HashMap<String, DataTableMetadata> tables = new HashMap<String, DataTableMetadata>();
-    protected static final HashMap<Class, String> classToType = new HashMap<Class, String>();
+    protected static final HashMap<Class<?>, String> classToType = new HashMap<Class<?>, String>();
     private boolean enabled = false;
     private AsyncThread asyncThread = null;
     private ServiceInfoDataStorage serviceInfoDataStorage;
@@ -231,7 +231,7 @@ public abstract class SQLDataStorage implements DataStorage {
 
     protected abstract void connect(String dburl) throws SQLException;
 
-    protected String classToType(Class clazz) {
+    protected String classToType(Class<?> clazz) {
         return classToType.get(clazz);
     }
 
@@ -274,18 +274,19 @@ public abstract class SQLDataStorage implements DataStorage {
                 }));
         createViewQuery.append(" FROM " + tableName); // NOI18N
         //check if we can create WHERE expression
-        boolean hasWhereExpression = false;
-        StringBuilder whereBuilder = new StringBuilder(" WHERE "); // NOI18N
+        String whereClause = null;
         for (DataTableMetadataFilter filter : filters) {
             Column filterColumn = filter.getFilteredColumn();
             if (columns.contains(filterColumn)) {
-                Range range = filter.getNumericDataFilter().getInterval();
-                hasWhereExpression = true;
-                whereBuilder.append(filterColumn.getColumnName() + ">=" + range.getStart() + " AND " + filterColumn.getColumnName() + "<=" + range.getEnd()); // NOI18N
+                Range<?> range = filter.getNumericDataFilter().getInterval();
+                if (range.getStart() != null || range.getEnd() != null) {
+                    whereClause = range.toString(" WHERE ", "%d <= " + filterColumn.getColumnName(), " AND ", filterColumn.getColumnName() + " <= %d", null); // NOI18N
+                    break;
+                }
             }
         }
-        if (hasWhereExpression) {
-            createViewQuery.append(whereBuilder);
+        if (whereClause != null) {
+            createViewQuery.append(whereClause);
         } else {
             return tableName;
         }
