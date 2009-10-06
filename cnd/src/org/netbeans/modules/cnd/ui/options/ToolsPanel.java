@@ -633,7 +633,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         if (cs != null) {
             if (cs.isUrlPointer()) {
                 tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
-                btBaseDirectory.setEnabled(false);
+                btBaseDirectory.setEnabled(true);
                 isUrl = true;
                 //downloadCompilerSet(cs);
             } else {
