@@ -53,6 +53,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -85,8 +86,11 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private final CardLayout cardLayout = new CardLayout();
     private DLightSession session;
     private List<DataFilter> filters;
-    private static final class Lock{}
+
+    private static final class Lock { }
+    private static final class UiLock { }
     private final Object lock = new Lock();
+    private final Object uiLock = new UiLock();
     private boolean needUpdate = false;
 
     ThreadStackVisualizer(ThreadStackVisualizerConfiguration configuraiton, StackDataProvider sourceFileInfo) {
@@ -107,6 +111,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     private void setEmptyContent() {
+	assert SwingUtilities.isEventDispatchThread();
         cardLayout.show(this, "empty");//NOI18N
         emptyPanel.removeAll();
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
@@ -123,12 +128,10 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
     private void setNonEmptyContent() {
         synchronized (lock) {
-            stackPanel.clean();
             //and now add all you need
             final long time = ThreadStateColumnImpl.timeStampToMilliSeconds(descriptor.getTimestamp()) - dumpTime;
-            String timeString = TimeLineUtils.getMillisValue(time);
-            String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
-            stackPanel.setRootVisible(rootName);
+            final String timeString = TimeLineUtils.getMillisValue(time);
+            final String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
             //collect all and then update UI
             final CountDownLatch doneFlag = new CountDownLatch(descriptor.getThreadStates().size());
 //            for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
@@ -154,20 +157,25 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                     }
                     UIThread.invoke(new Runnable() {
 
-                        public void run() {                            
-                            for (int i = 0, size = snapshots.length; i < size; i++) {
-                                ThreadSnapshot snapshot = snapshots[i];
-                                final MSAState msa = snapshot.getState();
-                                final ThreadStateResources res = ThreadStateResources.forState(msa);
-                                if (res != null) {
-                                    final List<FunctionCall> functionCalls = stacks.get(i);
-                                    if (functionCalls != null){
-                                        stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                        public void run() {
+                            synchronized(uiLock){
+				assert SwingUtilities.isEventDispatchThread();
+                                stackPanel.clean();
+                                stackPanel.setRootVisible(rootName);
+                                for (int i = 0, size = snapshots.length; i < size; i++) {
+                                    ThreadSnapshot snapshot = snapshots[i];
+                                    final MSAState msa = snapshot.getState();
+                                    final ThreadStateResources res = ThreadStateResources.forState(msa);
+                                    if (res != null) {
+                                        final List<FunctionCall> functionCalls = stacks.get(i);
+                                        if (functionCalls != null) {
+                                            stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                        }
                                     }
                                 }
+                                cardLayout.show(ThreadStackVisualizer.this, "stack");//NOI18N
+                                selectRootNode();
                             }
-                            cardLayout.show(ThreadStackVisualizer.this, "stack");//NOI18N
-                            selectRootNode();                            
 
                         }
                     });
@@ -187,8 +195,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-          //      try {
-                    stackPanel.expandAll();
+                //      try {
+                stackPanel.expandAll();
 //                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
 //                } catch (PropertyVetoException ex) {
 //                    Exceptions.printStackTrace(ex);
@@ -244,7 +252,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                     setEmptyContent();
                 } else {
                     setNonEmptyContent();
-                }                
+                }
             }
         }
     }
@@ -286,10 +294,8 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
         synchronized (lock) {
             //check new and old one's
-            this.filters = newSet;
+            this.filters = new ArrayList<DataFilter>(newSet);
             needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
         }
-
-
     }
 }

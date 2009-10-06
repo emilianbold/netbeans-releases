@@ -211,7 +211,7 @@ public class RewriteOccasionalStatements extends GeneratorTest {
         return "";
     }
 
-    public void XtestExtractInterface117986() throws Exception {
+    public void testExtractInterface117986() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String source = "public class ExtractSuperInterface implements MyInterface1, MyInterface2, MyInterface3 {\n" +
                 "}\n";

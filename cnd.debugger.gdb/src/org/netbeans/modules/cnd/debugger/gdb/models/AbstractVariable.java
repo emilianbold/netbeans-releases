@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,6 +53,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.common.utils.GeneralUtils;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -88,7 +89,7 @@ public abstract class AbstractVariable implements LocalVariable {
         assert !SwingUtilities.isEventDispatchThread();
         this.debugger = debugger;
 
-        if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+        if (debugger.getPlatform() != PlatformTypes.PLATFORM_MACOSX) {
             this.value = value;
         } else {
             // Convert the Mac-specific value to standard gdb/mi format
@@ -479,18 +480,19 @@ public abstract class AbstractVariable implements LocalVariable {
         return fields.toArray(new Field[fields.size()]);
     }
 
-    // We can NOT use names for equals
-    // otherwise trees mixes instances when updating
-//    @Override
-//    public boolean equals(Object o) {
-//        return o instanceof AbstractVariable &&
-//                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return getFullName(true).hashCode();
-//    }
+    @Override
+    public final boolean equals(Object o) {
+        // DO NOT use name here!
+        // (tree model starts to mix variables)
+        return super.equals(o);
+    }
+
+    @Override
+    public final int hashCode() {
+        // DO NOT use name here!
+        // (tree model starts to mix variables)
+        return super.hashCode();
+    }
 
     protected final GdbDebugger getDebugger() {
         return debugger;

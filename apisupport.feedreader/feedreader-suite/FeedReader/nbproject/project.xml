@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.myorg.feedreader</code-name-base>
+            <code-name-base>org.netbeans.feedreader</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>

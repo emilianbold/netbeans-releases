@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -97,7 +97,7 @@ public class FastDeploy extends IncrementalDeployment {
      */
     public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, final File dir) {
         final String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
-        final String contextRoot = dm.getContextRoot(dir);
+        String contextRoot = null;
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
                 contextRoot, dir.getAbsolutePath());
@@ -123,7 +123,7 @@ public class FastDeploy extends IncrementalDeployment {
             restartProgress.addProgressListener(new ProgressListener() {
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
-                        commonSupport.deploy(deployProgress, dir, moduleName, contextRoot);
+                        commonSupport.deploy(deployProgress, dir, moduleName);
                     } else {
                         deployProgress.fireHandleProgressEvent(event.getDeploymentStatus());
                     }
@@ -132,7 +132,7 @@ public class FastDeploy extends IncrementalDeployment {
             commonSupport.restartServer(restartProgress);
             return updateCRProgress;
         } else {
-            commonSupport.deploy(deployProgress, dir, moduleName, contextRoot);
+            commonSupport.deploy(deployProgress, dir, moduleName);
             return updateCRProgress;
         }
     }
@@ -172,19 +172,17 @@ public class FastDeploy extends IncrementalDeployment {
                 appChangeDescriptor.manifestChanged() ||
                 appChangeDescriptor.serverDescriptorChanged();
         
-        // this will not be a 100% catch.. but should help..
-        File[] changedFiles = appChangeDescriptor.getChangedFiles();
-        if (null != changedFiles && changedFiles.length > 0 && null != changedFiles[0])
-            ResourceRegistrationHelper.deployResources(changedFiles[0],dm);
-
-        final String contextRoot = dm.getContextRoot(changedFiles[0]);
+        File dir = getDirectoryForModule(targetModuleID);
+        if (null != dir) {
+            ResourceRegistrationHelper.deployResources(dir, dm);
+        }
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
                 public void handleProgressEvent(ProgressEvent event) {
                     if (event.getDeploymentStatus().isCompleted()) {
                         if (hasChanges) {
-                            commonSupport.redeploy(progressObject, targetModuleID.getModuleID(), contextRoot);
+                            commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
                         } else {
                             progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
                         }
@@ -197,7 +195,7 @@ public class FastDeploy extends IncrementalDeployment {
             return updateCRObject;
         } else {
             if (hasChanges) {
-                commonSupport.redeploy(progressObject, targetModuleID.getModuleID(), contextRoot);
+                commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
             } else {
                 progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
                         NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));
@@ -243,7 +241,12 @@ public class FastDeploy extends IncrementalDeployment {
             if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
                throw new IllegalStateException();
             }
-            dest = new File(dest, "gfdeploy");  // NOI18N
+            String moduleName = Utils.computeModuleID(app, null, null);
+            String dirName = "gfdeploy"; // NOI18N
+            if (null != moduleName) {
+                dirName += "/"+moduleName; // NOI18N
+            }
+            dest = new File(dest, dirName);
             boolean retval = true;
             if (!dest.exists()) {
                 retval = dest.mkdirs();

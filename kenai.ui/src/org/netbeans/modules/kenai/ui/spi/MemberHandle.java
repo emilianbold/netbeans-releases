@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
  * @author Jan Becicka
  */
 public abstract class MemberHandle implements Comparable <MemberHandle> {
+    public abstract String getFullName();
     public abstract String getDisplayName();
     public abstract String getName();
     public String getRole() { return null; }
@@ -53,8 +54,4 @@ public abstract class MemberHandle implements Comparable <MemberHandle> {
     public abstract boolean isOnline();
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
-
-    public int compareTo(MemberHandle o) {
-        return getDisplayName().compareToIgnoreCase(o.getDisplayName());
-    }
 }

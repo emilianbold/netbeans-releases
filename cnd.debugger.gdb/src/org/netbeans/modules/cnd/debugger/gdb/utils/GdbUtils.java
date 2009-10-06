@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -493,7 +493,7 @@ public class GdbUtils {
                     }
                 } else if (ch == '\'') {
                     inSingleQuote = true;
-                } else if (ch == 'n' && !isSlashBefore(info, idx)) {
+                } else if (ch == 'n' && isSlashBefore(info, idx)) {
                     s.deleteCharAt(s.length() - 1);
                     ch = 0;
                 } else if (info.substring(idx).startsWith("members of ")) { // NOI18N

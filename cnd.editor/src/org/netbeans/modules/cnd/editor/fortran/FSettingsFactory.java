@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,7 +49,7 @@ import org.netbeans.editor.AcceptorFactory;
  */
 public class FSettingsFactory {
 
-    public static final int MAXIMUM_TEXT_WIDTH = 132;
+    public static final int MAXIMUM_TEXT_WIDTH = 72;
 
     public static Acceptor getDefaultAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;

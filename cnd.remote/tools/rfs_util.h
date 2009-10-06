@@ -47,49 +47,11 @@ enum {
 };
 
 #if TRACE
-
-#if RFS_PRELOAD
-static const char* prefix = "%u #RFS_PRLD[%d]: ";
-#elif RFS_CONTROLLER
-static const char* prefix = "%u #RFS_CNTL[%d]: ";
+    void trace(const char *format, ...);
+    void trace_startup(const char* prefix, const char* env_var, const char* binary);
+    void trace_shutdown();
 #else
-#error either RFS_PRELOAD or RFS_CONTROLLER should be defined and nonzero
-#endif
-
-static unsigned long get_timestamp() {
-    struct timespec tp;
-    clock_gettime(CLOCK_REALTIME, &tp);
-    return tp.tv_sec*1000000000+tp.tv_nsec;
-}
-
-FILE *trace_file;
-#define trace(args...) { fprintf(trace_file, prefix, get_timestamp(), getpid()); fprintf(trace_file, ## args); fflush(trace_file); }
-void trace_startup(const char* env_var) {
-    char *file_name = getenv(env_var);
-    if (file_name) {        
-        trace_file = fopen(file_name, "a");
-        if (trace_file) {
-            fprintf(stderr, "Redirecting trace to %s\n", file_name);
-            fprintf(trace_file, "\n\n--------------------\n");
-            fflush(trace_file);
-        } else {
-            fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
-            trace_file = stderr;
-        }
-    } else {
-        trace_file = stderr;
-    }
-    char dir[PATH_MAX];
-    getcwd(dir, sizeof dir);
-    trace("started in %s\n", dir);
-}
-void trace_shutdown() {
-    if (trace_file && trace_file != stderr) {
-        fclose(trace_file);
-    }
-}
-#else
-#define trace_startup(...)
-#define trace(...) 
-#define trace_shutdown()
+    #define trace_startup(...)
+    #define trace(...)
+    #define trace_shutdown()
 #endif

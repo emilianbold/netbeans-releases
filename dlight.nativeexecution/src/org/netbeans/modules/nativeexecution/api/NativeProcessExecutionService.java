@@ -73,6 +73,14 @@ public final class NativeProcessExecutionService {
         return NativeTaskExecutorService.submit(task, descr);
     }
 
+    public ProcessInfo getProcessInfo() {
+        if (task.process == null) {
+            throw new IllegalThreadStateException("Not started yet"); // NOI18N
+        }
+
+        return task.process.getProcessInfo();
+    }
+
     private static class ExecutionTask implements Callable<Integer> {
 
         private final static Logger log = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
@@ -80,6 +88,7 @@ public final class NativeProcessExecutionService {
         private final LineProcessor outProcessor;
         private final LineProcessor errProcessor;
         private final String descr;
+        private NativeProcess process = null;
 
         public ExecutionTask(NativeProcessBuilder npb, LineProcessor outProcessor, LineProcessor errProcessor, String descr) {
             this.npb = npb;
@@ -88,15 +97,17 @@ public final class NativeProcessExecutionService {
             this.descr = descr;
         }
 
-        public Integer call() throws Exception {
+        public synchronized Integer call() throws Exception {
+            if (process != null) {
+                throw new IllegalThreadStateException("Already started!"); // NOI18N
+            }
+
             int result = -1;
 
-            Process process = null;
             InputStream is = null;
             BufferedReader br = null;
 
             try {
-
                 if (outProcessor != null) {
                     outProcessor.reset();
                 }

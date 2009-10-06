@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -284,30 +284,19 @@ public class PHPFormatter implements Formatter {
 
     private void astReformat(final Context context, final Map<Position, Integer> indentLevels) {
         Document document = context.document();
-        int startOffset = context.startOffset();
-        int endOffset = context.endOffset();
         document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
 
         try {
             final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
             final Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
-
-            if (endOffset > doc.getLength()) {
-                endOffset = doc.getLength();
-            }
-            
-            startOffset = Utilities.getFirstNonWhiteBwd(doc, startOffset);
-
-            if (startOffset < 0){
-                startOffset = context.startOffset();
-            }
-
+            final int startOffset = Utilities.getRowStart(doc, context.startOffset());
             final int firstLine = Utilities.getLineOffset(doc, startOffset);
             
             doc.runAtomic(new Runnable() {
 
                 public void run() {
                     int indentBias = 0;
+                    boolean indentBiasCalculated = (startOffset == 0);
                     try {
                         int numberOfLines = Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
                         Map<Integer, Integer> indentDeltaByLine = new LinkedHashMap<Integer, Integer>();
@@ -347,8 +336,9 @@ public class PHPFormatter implements Formatter {
                                     }
                                 }
 
-                                if (i == firstLine) {
+                                if (i >= firstLine && !indentBiasCalculated) {
                                     indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion;
+                                    indentBiasCalculated = true;
                                 }
 
 //                                System.err.println("lineDelta[" + i + "]=" + lineDelta);

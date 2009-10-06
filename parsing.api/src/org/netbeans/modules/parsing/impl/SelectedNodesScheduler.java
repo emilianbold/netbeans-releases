@@ -67,6 +67,7 @@ public class SelectedNodesScheduler extends Scheduler {
 
     public SelectedNodesScheduler () {
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
+        refresh ();
     }
 
     private RequestProcessor requestProcessor;

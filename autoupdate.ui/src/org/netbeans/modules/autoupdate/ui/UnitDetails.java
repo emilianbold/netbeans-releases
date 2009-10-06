@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -208,7 +208,9 @@ public class UnitDetails extends DetailsPanel {
             Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
             Map<UpdateElement, Set<UpdateElement>> requiredMap = new HashMap<UpdateElement, Set<UpdateElement>>();
 
-            for (OperationInfo<InstallSupport> info : container.listAll()) {
+            List <OperationInfo<InstallSupport>> infos = container.listAll();
+
+            for (OperationInfo<InstallSupport> info : infos) {
                 Set<UpdateElement> reqs = requiredMap.get(uu.getRelevantElement());
                 if (reqs == null) {
                     reqs = info.getRequiredElements();
@@ -217,25 +219,22 @@ public class UnitDetails extends DetailsPanel {
 
                 for (UpdateElement req : reqs) {
                     if (req.getUpdateUnit().getInstalled() != null && !req.getUpdateUnit().isPending()) {
-
+                        required.add(req);
                         Set<UpdateElement> requiredElements = requiredMap.get(req);
                         if (requiredElements == null) {
                             requiredElements = OperationContainer.createForUpdate().add(req).getRequiredElements();
                             requiredMap.put(req, requiredElements);
                         }
                         for (UpdateElement e : requiredElements) {
-                            if (!required.contains(e)) {
-                                required.add(e);
-                            }
+                            required.add(e);
                         }
                     } else {
                         //OperationContainer.createForInstall().
                     }
-                }
-                required.addAll(reqs);
+                }                
             }
-            for (OperationInfo<InstallSupport> i : container.listAll()) {
-                if (!required.contains(i.getUpdateElement()) && !i.getUpdateUnit().equals(u.updateUnit)) {
+            for (OperationInfo<InstallSupport> i : infos) {
+                if (!i.getUpdateUnit().equals(u.updateUnit)) {
                     required.add(i.getUpdateElement());
                 }
             }

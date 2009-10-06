@@ -90,8 +90,8 @@ public final class KenaiProjectMember {
      */
     public static enum Role {
         ADMIN,
-        OBSERVER,
         DEVELOPER,
-        CONTENT
+        CONTENT,
+        OBSERVER
     }
 }

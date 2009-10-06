@@ -106,7 +106,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
      */
     private FileObject            fileObject;
 
-    private final EditorUI        editorUI;
     private final FoldHierarchy   foldHierarchy;
     private final BaseDocument    document;
     
@@ -131,9 +130,8 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     public DiffSidebar(JTextComponent target, FileObject file) {
         this.textComponent = target;
         this.fileObject = file;
-        this.editorUI = Utilities.getEditorUI(target);
-        this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
-        this.document = editorUI.getDocument();
+        this.foldHierarchy = FoldHierarchy.get(target);
+        this.document = (BaseDocument) textComponent.getDocument();
         this.markProvider = new DiffMarkProvider();
         setToolTipText(""); // NOI18N
         refreshDiffTask = DiffSidebarManager.getInstance().createDiffSidebarTask(new RefreshDiffTask());
@@ -248,7 +246,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
      */
     private Difference getCloserDifference(MouseEvent event, Difference previous, Difference next) {
         Difference returnedDiff = next;
-        JTextComponent component = editorUI.getComponent();
+        JTextComponent component = textComponent;
         if (component != null) {
             BaseTextUI textUI = (BaseTextUI) component.getUI();
             try {
@@ -369,6 +367,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             lineEnd = lineStart;
         }
         try {
+            EditorUI editorUI = Utilities.getEditorUI(textComponent);
             int visibleBorder = editorUI.getLineHeight() * 5;
             int startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) textComponent.getDocument(), lineStart);
             int endOffset = Utilities.getRowStartFromLineOffset((BaseDocument) textComponent.getDocument(), lineEnd);
@@ -474,6 +473,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private int getLineFromMouseEvent(MouseEvent e){
         int line = -1;
+        EditorUI editorUI = Utilities.getEditorUI(textComponent);
         if (editorUI != null) {
             try{
                 JTextComponent component = editorUI.getComponent();
@@ -546,12 +546,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private Reader getDocumentReader() {
-        JTextComponent component = editorUI.getComponent();
-        if (component == null) {
-            return null;
-        }
-
-        return Utils.getDocumentReader(component.getDocument());
+        return Utils.getDocumentReader(textComponent.getDocument());
     }
     
     private void refreshDiff() {
@@ -597,12 +592,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             clip.height += 16;
         }
 
-        JTextComponent component = editorUI.getComponent();
-        if (component == null) {
-            return;
-        }
-
+        JTextComponent component = textComponent;
         BaseTextUI textUI = (BaseTextUI)component.getUI();
+        EditorUI editorUI = Utilities.getEditorUI(textComponent);
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
             return;

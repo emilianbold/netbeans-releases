@@ -36,14 +36,9 @@
 # 
 # Portions Copyrighted 2008 Sun Microsystems, Inc.
  
-require 'test/unit'
-require 'test/unit/testcase'
-require 'test/unit/testsuite'
-require 'test/unit/ui/testrunnermediator'
+require File.join(File.expand_path(File.dirname(__FILE__)), "nb_test_helper")
 require 'getoptlong'
-require 'rubygems'
 require 'rake'
-require File.join(File.expand_path(File.dirname(__FILE__)), "nb_suite_runner")
 
 class NbTestMediator
 

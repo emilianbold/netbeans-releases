@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
   Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
 
@@ -29,36 +29,40 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
-
 <filesystem>
     <folder name="Actions">
         <folder name="Edit">
             <file name="org-netbeans-paint-NewCanvasAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.paint.NewCanvasAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.paint.NewCanvasAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.paint.Bundle#CTL_NewCanvasAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/paint/new-canvas.png"/>
             </file>
-            <file name="org-netbeans-paint-SaveCanvasAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.paint.SaveCanvasAction"/>
-            </file>
+            <file name="org-netbeans-paint-SaveCanvasAction.instance"/>
         </folder>
     </folder>
     <folder name="Menu">
         <folder name="File">
-            <attr name="SeparatorNew.instance/org-netbeans-paint-separatorBefore.instance" boolvalue="true"/>
+            <attr name="position" intvalue="100"/>
             <file name="org-netbeans-paint-separatorBefore.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="410"/>
             </file>
-            <attr name="org-netbeans-paint-separatorBefore.instance/org-netbeans-paint-NewCanvasAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-paint-NewCanvasAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-NewCanvasAction.instance"/>
+                <attr name="position" intvalue="420"/>
             </file>
-            <attr name="org-netbeans-paint-NewCanvasAction.shadow/org-netbeans-paint-SaveCanvasAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-paint-SaveCanvasAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-SaveCanvasAction.instance"/>
+                <attr name="position" intvalue="430"/>
             </file>
-            <attr name="org-netbeans-paint-SaveCanvasAction.shadow/org-netbeans-paint-separatorAfter.instance" boolvalue="true"/>
             <file name="org-netbeans-paint-separatorAfter.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="440"/>
             </file>
+        </folder>
+        <folder name="Tools">
+            <attr name="position" intvalue="1000"/>
         </folder>
         <folder name="View_hidden"/>
         <folder name="GoTo_hidden"/>
@@ -66,10 +70,11 @@
     <folder name="Toolbars">
         <folder name="File">
             <file name="org-netbeans-paint-NewCanvasAction.shadow">
+                <attr name="position" intvalue="110"/>
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-NewCanvasAction.instance"/>
             </file>
-            <attr name="org-netbeans-paint-NewCanvasAction.shadow/org-netbeans-paint-SaveCanvasAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-paint-SaveCanvasAction.shadow">
+                <attr name="position" intvalue="120"/>
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-paint-SaveCanvasAction.instance"/>
             </file>
         </folder>

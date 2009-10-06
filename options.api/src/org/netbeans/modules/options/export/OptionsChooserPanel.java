@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -144,10 +143,28 @@ public final class OptionsChooserPanel extends JPanel {
         // add bottom user notification area
         dd.createNotificationLineSupport();
         dd.setValid(false);
+        ExportConfirmationPanel exportConfirmationPanel = null;
+        if (!ExportConfirmationPanel.getSkipOption()) {
+            exportConfirmationPanel = new ExportConfirmationPanel();
+            final ExportConfirmationPanel finalExportConfirmationPanel = exportConfirmationPanel;
+            dd.setButtonListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    if (e.getSource() == DialogDescriptor.OK_OPTION) {
+                        // show confirmation dialog when user click OK
+                        finalExportConfirmationPanel.showConfirmation();
+                    }
+                }
+            });
+        }
         optionsChooserPanel.setDialogDescriptor(dd);
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
 
         if (DialogDescriptor.OK_OPTION.equals(dd.getValue())) {
+            if (exportConfirmationPanel != null && !exportConfirmationPanel.confirmed()) {
+                LOGGER.fine("Export canceled.");  //NOI18N
+                return;
+            }
             String targetPath = optionsChooserPanel.getSelectedFilePath();
             optionsChooserPanel.getOptionsExportModel().doExport(new File(targetPath));
             StatusDisplayer.getDefault().setStatusText(
@@ -419,9 +436,9 @@ public final class OptionsChooserPanel extends JPanel {
             }
         } else {
             fileChooserBuilder.setTitle(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.title"));
-            JFileChooser fileChooser = fileChooserBuilder.createFileChooser();
-            if (JFileChooser.APPROVE_OPTION == fileChooser.showDialog(this, approveText)) {
-                String selectedFileName = fileChooser.getSelectedFile().getAbsolutePath();
+            File selectedFile = fileChooserBuilder.showSaveDialog();
+            if (selectedFile != null) {
+                String selectedFileName = selectedFile.getAbsolutePath();
                 if (!selectedFileName.endsWith(".zip")) {  //NOI18N
                     selectedFileName += ".zip";  //NOI18N
                 }

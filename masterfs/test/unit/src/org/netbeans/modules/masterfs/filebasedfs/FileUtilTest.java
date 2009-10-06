@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -457,6 +457,7 @@ public class FileUtilTest extends NbTestCase {
      * {@link FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File) }.
      * It is expected that all events from sub folders are delivered just once.
      */
+    @RandomlyFails
     public void testAddRecursiveListenerToFileFolder() throws Exception {
         checkFolderRecursiveListener(true);
     }

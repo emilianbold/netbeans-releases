@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,6 +55,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.openide.util.NbBundle;
 
@@ -91,7 +92,7 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
             sorter = new TableSorter(tableModel);
         } 
         this.sorter = sorter;   
-        table = new JTable(this.sorter);
+        table = new SortedTable(this.sorter);
         table.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesTable.class, "tableProperties.AccessibleContext.accessibleName"));
         table.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesTable.class, "tableProperties.AccessibleContext.accessibleDescription"));
         table.getTableHeader().setReorderingAllowed(false);
@@ -103,7 +104,6 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
                             .getPreferredSize().height + 2));
         //table.setDefaultEditor(CommitOptions.class, new CommitOptionsCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
-        this.sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight());
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);

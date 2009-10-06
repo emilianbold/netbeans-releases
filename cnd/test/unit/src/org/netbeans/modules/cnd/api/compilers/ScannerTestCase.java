@@ -60,6 +60,62 @@ public class ScannerTestCase extends NbTestCase {
         super(testName);
     }
 
+    public void testGNUpatterns() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        String[] GCC_ERROR_SCANNER = new String[]{"^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+)[\\.:]([^:$]*):([^$]*)", // NOI18N
+						  "^([^:$]*):([0-9]+): ([a-zA-Z]*):*.*", // NOI18N
+						  "^([^\\($]*)\\(([0-9]+)\\): ([^:$]*): ([^$]*)"}; // NOI18N
+	String GCC_DIRECTORY_ENTER = "[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Entering[\\w+\\s+]+`([^']*)'"; // NOI18N
+	String GCC_DIRECTORY_LEAVE = "[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Leaving[\\w+\\s+]+`([^']*)'"; // NOI18N
+	String GCC_DIRECTORY_CD    = "cd\\s+([\\S]+)[\\s;]";// NOI18N
+	String GCC_STACK_HEADER = "^In file included from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"; // NOI18N
+	String GCC_STACK_NEXT =   "^                 from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"; // NOI18N
+	ScannerDescriptor scanner = toolchain.getScanner();
+	assertEquals(scanner.getPatterns().get(0).getPattern(),GCC_ERROR_SCANNER[0]);
+	assertEquals(scanner.getPatterns().get(1).getPattern(),GCC_ERROR_SCANNER[1]);
+	assertEquals(scanner.getPatterns().get(2).getPattern(),GCC_ERROR_SCANNER[2]);
+	assertEquals(scanner.getEnterDirectoryPattern(),GCC_DIRECTORY_ENTER);
+	assertEquals(scanner.getLeaveDirectoryPattern(),GCC_DIRECTORY_LEAVE);
+	assertEquals(scanner.getChangeDirectoryPattern(),GCC_DIRECTORY_CD);
+	assertEquals(scanner.getStackHeaderPattern(),GCC_STACK_HEADER);
+	assertEquals(scanner.getStackNextPattern(),GCC_STACK_NEXT);
+    }
+
+    public void testSUNpatterns() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        String[] SUN_ERROR_SCANNER = new String[]{"^\"(.*)\", line ([0-9]+):", // NOI18N
+						  "^\"(.*)\", line ([0-9]+): Error:", // NOI18N
+						  "^\"(.*)\", Line = ([0-9]+),", // NOI18N
+						  "^\"(.*)\", line ([0-9]+): warning:", // NOI18N
+						  "^\"(.*)\", line ([0-9]+): Warning:", // NOI18N
+						  "^\"(.*)\", Line = ([0-9]+), Column = ([0-9]+): WARNING:"}; // NOI18N
+	String SUN_DIRECTORY_ENTER = "^\\(([^)]*)\\)[^:]*:"; // NOI18N
+        String[] SUN_FILTER_OUT = new String[]{"^::\\(.*\\)", // NOI18N
+					       "^:\\(.*\\).*", // NOI18N
+					       "^\\(.*\\).*:",}; // NOI18N
+	ScannerDescriptor scanner = toolchain.getScanner();
+	assertEquals(scanner.getPatterns().get(0).getPattern(),SUN_ERROR_SCANNER[0]);
+	assertEquals(scanner.getPatterns().get(1).getPattern(),SUN_ERROR_SCANNER[1]);
+	assertEquals(scanner.getPatterns().get(2).getPattern(),SUN_ERROR_SCANNER[2]);
+	assertEquals(scanner.getPatterns().get(3).getPattern(),SUN_ERROR_SCANNER[3]);
+	assertEquals(scanner.getPatterns().get(4).getPattern(),SUN_ERROR_SCANNER[4]);
+	assertEquals(scanner.getPatterns().get(5).getPattern(),SUN_ERROR_SCANNER[5]);
+	assertEquals(scanner.getEnterDirectoryPattern(),SUN_DIRECTORY_ENTER);
+	assertEquals(scanner.getFilterOutPatterns().get(0),SUN_FILTER_OUT[0]);
+	assertEquals(scanner.getFilterOutPatterns().get(1),SUN_FILTER_OUT[1]);
+	assertEquals(scanner.getFilterOutPatterns().get(2),SUN_FILTER_OUT[2]);
+    }
+
+    public void testMSVCpatterns() throws Exception {
+	String s = "../../../hbver.c(308) : error C2039: 'wProductType' : is not a member of";
+	Pattern pattern = Pattern.compile("^([^\\($]*)\\(([0-9]+)\\) : ([^:$]*):([^$]*)"); // NOI18N
+	Matcher m = pattern.matcher(s);
+	assertTrue(m.matches());
+	assertTrue(m.group(1).equals("../../../hbver.c"));
+	assertTrue(m.group(2).equals("308"));
+	assertTrue(m.group(3).indexOf("error")>=0);
+    }
+
     public void testCygwinLogs() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         doTest(getLogs(), toolchain.getScanner(), getRef());

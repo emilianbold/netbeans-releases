@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -87,24 +87,6 @@ public final class CompositeFCS extends FontColorSettings {
     /** The name of the default coloring. */
     private static final String DEFAULT = "default"; //NOI18N
     
-    private static final int DEFAULT_FONT_SIZE;
-    static {
-        if (GraphicsEnvironment.isHeadless()) {
-            DEFAULT_FONT_SIZE = 12;
-        } else {
-            Integer i = (Integer)UIManager.get("customFontSize"); //NOI18N
-            DEFAULT_FONT_SIZE= (i != null) ? i : UIManager.getFont("TextField.font").getSize(); //NOI18N
-        }
-    }
-    
-    private static final AttributeSet HARDCODED_DEFAULT_COLORING = AttributesUtilities.createImmutable(
-        StyleConstants.NameAttribute, DEFAULT,
-        StyleConstants.Foreground, Color.black,
-        StyleConstants.Background, Color.white,
-        StyleConstants.FontFamily, "Monospaced", //NOI18N
-        StyleConstants.FontSize, DEFAULT_FONT_SIZE < 13 ? 13 : DEFAULT_FONT_SIZE
-    );
-
     // Special instance to mark 'no attributes' for a token. This should never
     // be passed outside of this class, use SimpleAttributeSet.EMPTY instead. There
     // might be other code doing 'attribs == SAS.EMPTY'.
@@ -210,7 +192,7 @@ public final class CompositeFCS extends FontColorSettings {
         }
 
         if (tokenName.equals(DEFAULT)) {
-            colorings.add(HARDCODED_DEFAULT_COLORING);
+            colorings.add(getHardcodedDefaultColoring());
             colorings.add(AttributesUtilities.createImmutable(
                 EditorStyleConstants.RenderingHints, getRenderingHints()));
         }
@@ -423,5 +405,28 @@ public final class CompositeFCS extends FontColorSettings {
         }
 
         return s != null ? s : c != null ? c.toString() : null;
+    }
+
+    private static AttributeSet hardCodedDefaultColoring = null;
+    private static AttributeSet getHardcodedDefaultColoring() {
+        if (hardCodedDefaultColoring == null) {
+            int defaultFontSize;
+            if (GraphicsEnvironment.isHeadless()) {
+                defaultFontSize = 12;
+            } else {
+                Integer i = (Integer)UIManager.get("customFontSize"); //NOI18N
+                defaultFontSize = (i != null) ? i : UIManager.getFont("TextField.font").getSize(); //NOI18N
+            }
+
+            hardCodedDefaultColoring = AttributesUtilities.createImmutable(
+                StyleConstants.NameAttribute, DEFAULT,
+                StyleConstants.Foreground, Color.black,
+                StyleConstants.Background, Color.white,
+                StyleConstants.FontFamily, "Monospaced", //NOI18N
+                StyleConstants.FontSize, defaultFontSize < 13 ? 13 : defaultFontSize
+            );
+        }
+        assert hardCodedDefaultColoring != null;
+        return hardCodedDefaultColoring;
     }
 }

@@ -117,10 +117,12 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
             return;
         }
         //show dialog here with the configuration
-        JButton startB = new JButton("Start");//NOI18N
+        JButton startB = new JButton(NbBundle.getMessage(THAMainProjectAction.class, "THAMainProjectAction.ConfigureDialog.Start"));//NOI18N
         Object[] options = new Object[]{DialogDescriptor.CANCEL_OPTION, startB};
         THAConfigurationPanel configurationPanel = new THAConfigurationPanel();
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(configurationPanel, "Configure Profile", true, options, startB, DialogDescriptor.BOTTOM_ALIGN, null, null);//NOI18N
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(configurationPanel, 
+                NbBundle.getMessage(THAMainProjectAction.class, "THAMainProjectAction.ConfigureDialog.Title"),//NOI18N
+                true, options, startB, DialogDescriptor.BOTTOM_ALIGN, null, null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret != startB) {
             return;

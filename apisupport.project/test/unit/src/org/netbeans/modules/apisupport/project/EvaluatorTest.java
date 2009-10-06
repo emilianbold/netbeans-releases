@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -57,11 +57,14 @@ import org.netbeans.junit.Log;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImplTest;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * Test {@link Evaluator} generally (but also see {@link ClassPathProviderImplTest}).
@@ -329,5 +332,42 @@ public class EvaluatorTest extends TestBase {
             mlLogger.removeHandler(handler);
             mlLogger.setLevel(origLevel);
         }
+    }
+
+    public void testGetPlatformInPMWriteAccessDeadlock173345() throws Exception {
+        final Logger LOG = Logger.getLogger(this.getClass().getName());
+        Logger observer = Logger.getLogger("observer");
+        Log.enable(LOG.getName(), Level.ALL);
+
+        String mt = "THREAD: Test Watch Dog: testGetPlatformInPMWriteAccessDeadlock173345 MSG:";
+        String wt = "THREAD: worker MSG:";
+        String order =
+            mt + "before NbPlatform.getPlatforms" +
+            wt + "got PM write access";
+        Log.controlFlow(LOG, observer, order, 0);
+        NbPlatform.reset();
+        Thread t = new Thread("worker") {
+
+            @Override
+            public void run() {
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        public Void run() throws Exception {
+                            LOG.log(Level.FINE, "got PM write access");
+                            NbPlatform.getPlatforms();
+                            LOG.log(Level.FINE, "after NbPlatform.getPlatforms");
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+        t.start();
+        LOG.log(Level.FINE, "before NbPlatform.getPlatforms");
+        NbPlatform.getPlatforms();
+        LOG.log(Level.FINE, "after NbPlatform.getPlatforms");
+        t.join();
     }
 }

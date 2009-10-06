@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -74,6 +75,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyP
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -82,6 +84,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,6 +93,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -105,33 +109,59 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Tomas Musil
  */
 final class UnitTestLibrariesNode extends AbstractNode {
-    
-    private final Action[] actions;
+
+    private final String testType;
+    private final NbModuleProject project;
+    private boolean missingJUnit4;
     
     public UnitTestLibrariesNode(String testType, final NbModuleProject project) {
         super(new LibrariesChildren(testType, project), org.openide.util.lookup.Lookups.fixed(project));
+        this.testType = testType;
+        this.project = project;
         setName(testType);
         setDisplayName(getMessage("LBL_" + testType + "_test_libraries"));
-        actions = new Action[] {
-            new AddUnitTestDependencyAction(testType, project)
-        };
     }
     
-    public Image getIcon(int type) {
+    public @Override Image getIcon(int type) {
         return getIcon(false);
     }
     
-    public Image getOpenedIcon(int type) {
+    public @Override Image getOpenedIcon(int type) {
         return getIcon(true);
+    }
+
+    private void setMissingJUnit4(boolean missingJUnit4) {
+        this.missingJUnit4 = missingJUnit4;
+        fireIconChange();
+        fireOpenedIconChange();
+        fireShortDescriptionChange(null, null);
     }
     
     private Image getIcon(boolean opened) {
         Image badge = ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/ui/resources/libraries-badge.png", true);
-        return ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
+        Image img = ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
+        if (missingJUnit4) {
+            badge = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/brokenProjectBadge.gif", true);
+            img = ImageUtilities.mergeImages(img, badge, 0, 0);
+        }
+        return img;
     }
     
-    public Action[] getActions(boolean context) {
-        return actions;
+    public @Override Action[] getActions(boolean context) {
+        List<Action> actions = new ArrayList<Action>(2);
+        if (missingJUnit4) {
+            actions.add(new AddJUnit4Action(testType, project));
+        }
+        actions.add(new AddUnitTestDependencyAction(testType, project));
+        return actions.toArray(new Action[actions.size()]);
+    }
+
+    public @Override String getShortDescription() {
+        if (missingJUnit4) {
+            return NbBundle.getMessage(UnitTestLibrariesNode.class, "HINT_missing_junit4");
+        } else {
+            return null;
+        }
     }
     
     private static String createHtmlDescription(final TestModuleDependency dep) {
@@ -171,13 +201,13 @@ final class UnitTestLibrariesNode extends AbstractNode {
             this.project = project;
         }
         
-        protected void addNotify() {
+        protected @Override void addNotify() {
             super.addNotify();
             project.getHelper().addAntProjectListener(this);
             refreshKeys();
         }
         
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             setKeys(Collections.<TestModuleDependency>emptySet());
             project.getHelper().removeAntProjectListener(this);
             super.removeNotify();
@@ -190,6 +220,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                         ProjectXMLManager pxm = new ProjectXMLManager(project);
                         final List<TestModuleDependency> keys = new ArrayList<TestModuleDependency>();
                         SortedSet<TestModuleDependency> deps = new TreeSet<TestModuleDependency>(TestModuleDependency.CNB_COMPARATOR);
+                        final AtomicBoolean missingJUnit4 = new AtomicBoolean(true);
                         Set<TestModuleDependency> d =  pxm.getTestDependencies(
                                 project.getModuleList()).get(testType);
                         //draw only compile time deps
@@ -198,11 +229,15 @@ final class UnitTestLibrariesNode extends AbstractNode {
                                 if(tmd.isCompile()) {
                                     deps.add(tmd);
                                 }
+                                if (tmd.getModule().getCodeNameBase().equals("org.netbeans.libs.junit4")) { // NOI18N
+                                    missingJUnit4.set(false);
+                                }
                             }
                             keys.addAll(deps);
                         }
                         ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
                             public void run() {
+                                ((UnitTestLibrariesNode) getNode()).setMissingJUnit4(missingJUnit4.get());
                                 setKeys(Collections.unmodifiableList(keys));
                             }
                         });
@@ -293,7 +328,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
         }
         
-        public Action[] getActions(boolean context) {
+        public @Override Action[] getActions(boolean context) {
             
             if (actions == null) {
                 Set<Action> result = new LinkedHashSet<Action>();
@@ -308,7 +343,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return actions;
         }
         
-        public Action getPreferredAction() {
+        public @Override Action getPreferredAction() {
             return getActions(false)[0]; // open
         }
         
@@ -334,7 +369,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
         }
         
-        public Action[] getActions(boolean context) {
+        public @Override Action[] getActions(boolean context) {
             if (actions == null) {
                 Set<Action> result = new LinkedHashSet<Action>();
                 result.add(new EditTestDependencyAction(dep, testType, project));
@@ -350,7 +385,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return actions;
         }
         
-        public Action getPreferredAction() {
+        public @Override Action getPreferredAction() {
             return getActions(false)[0];
         }
         
@@ -407,8 +442,48 @@ final class UnitTestLibrariesNode extends AbstractNode {
             d.dispose();
         }
         
-        
-        
+    }
+
+    private static class AddJUnit4Action extends AbstractAction {
+        private final String testType;
+        private final NbModuleProject project;
+        AddJUnit4Action(String testType, NbModuleProject project) {
+            super(NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_resolve_missing_junit4"));
+            this.testType = testType;
+            this.project = project;
+        }
+        public void actionPerformed(ActionEvent e) {
+            try {
+                ModuleList moduleList = project.getModuleList();
+                ModuleEntry junit4 = moduleList.getEntry("org.netbeans.libs.junit4");
+                ModuleEntry nbjunit = moduleList.getEntry("org.netbeans.modules.nbjunit");
+                if (junit4 == null || nbjunit == null) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_cannot_resolve_missing_junit4"),
+                            NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
+                Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_question"),
+                        NbBundle.getMessage(UnitTestLibrariesNode.class, "LBL_also_add_nbjunit_title")));
+                boolean addNBJUnit;
+                if (result == NotifyDescriptor.NO_OPTION) {
+                    addNBJUnit = false;
+                } else if (result == NotifyDescriptor.YES_OPTION) {
+                    addNBJUnit = true;
+                } else {
+                    return; // cancelled
+                }
+                ProjectXMLManager pxm = new ProjectXMLManager(project);
+                pxm.addTestDependency(testType, new TestModuleDependency(junit4, false, false, true));
+                if (addNBJUnit) {
+                    pxm.addTestDependency(testType, new TestModuleDependency(nbjunit, false, true, true));
+                }
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     private static final class Pair<F, S> {
@@ -464,7 +539,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             return HelpCtx.DEFAULT_HELP;
         }
         
-        protected boolean asynchronous() {
+        protected @Override boolean asynchronous() {
             return false;
         }
         

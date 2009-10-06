@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -351,6 +351,7 @@ public class JpaControllerGenerator {
                     }
                     if(Persistence.VERSION_2_0.equals(version)){//add criteria classes if appropriate
                         modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "javax.persistence.criteria.CriteriaQuery");
+                        modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "javax.persistence.criteria.Root");
                     }
 
                     String oldMe = null;
@@ -810,7 +811,17 @@ public class JpaControllerGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
                     
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                        "return ((Long) em.createQuery(\"select count(o) from " + simpleEntityName + " as o\").getSingleResult()).intValue();\n" + 
+                        (
+                        Persistence.VERSION_2_0.equals(version) ?
+                            "CriteriaQuery cq = em.getQueryBuilder().createQuery();\n"+
+                            "Root<DiscountCode> rt = cq.from("+simpleEntityName+".class); "+
+                            "cq.select(em.getQueryBuilder().count(rt));\n"+
+                            "Query q = em.createQuery(cq);\n"
+                            :
+                            "Query q = em.createQuery(\"select count(o) from " + simpleEntityName + " as o\");\n"
+                        )
+                        +
+                        "return ((Long) q.getSingleResult()).intValue();\n" +
                         "} finally {\n em.close();\n}";
                     methodInfo = new MethodInfo("get" + simpleEntityName + "Count", publicModifier, "int", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 

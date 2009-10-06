@@ -53,4 +53,5 @@ public interface Parameter {
     /** mixed types can be documented in php doc*/
     List<QualifiedName> getTypes();
     OffsetRange getOffsetRange();
+    String getIndexSignature();
 }

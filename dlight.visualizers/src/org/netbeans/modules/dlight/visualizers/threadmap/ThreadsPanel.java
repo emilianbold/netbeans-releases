@@ -113,6 +113,7 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -1054,13 +1055,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 ThreadState found = null;
                 for (int j = 0; j < row.size(); j++) {
                     ThreadState state = row.getThreadStateAt(j);
+		    long timeStamp = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
                     if (j < row.size()-1) {
-                        if (state.getTimeStamp() <= t && t <= row.getThreadStateAt(j+1).getTimeStamp()) {
+                        if (timeStamp <= t && t <= ThreadStateColumnImpl.timeStampToMilliSeconds(row.getThreadStateAt(j+1).getTimeStamp())) {
                             found = state;
                             break;
                         }
                     } else {
-                        if (state.getTimeStamp() <= t && t <= state.getTimeStamp()+ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod())) {
+                        if (timeStamp <= t && t <= timeStamp+ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod())) {
                             found = state;
                             break;
                         }
@@ -1090,7 +1092,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     final MSAState prefferedState = ThreadStateColumnImpl.point2MSA(this, threadData.getThreadStateAt(index), point);
                     if (prefferedState != null) {
                         final ThreadState state = threadData.getThreadStateAt(index);
-                        int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod());
+                        int interval = (int) state.getMSASamplePeriod();
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), interval);
                         LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
                         final List<Integer> showThreadsID = new ArrayList<Integer>();
@@ -1322,7 +1324,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
     void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
         this.timeFilters = timeFilters;
-        updateUI();
+        UIThread.invoke(new Runnable() {
+            public void run() {
+                updateUI();
+            }
+        });        
     }
 
     Collection<TimeIntervalDataFilter> getTimeIntervalSelection(){

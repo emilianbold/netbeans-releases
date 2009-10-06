@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -133,7 +133,7 @@ public class LocalHistory {
         WindowManager.getDefault().getRegistry().addPropertyChangeListener(new OpenedFilesListener());
     }
 
-    private LocalHistoryVCS getLocalHistoryVCS() {
+    private synchronized LocalHistoryVCS getLocalHistoryVCS() {
         if (lhvcs == null) {
             lhvcs = org.openide.util.Lookup.getDefault().lookup(LocalHistoryVCS.class);
         }
@@ -450,6 +450,9 @@ public class LocalHistory {
                 return false;
             }
             LocalHistoryVCS lh = getLocalHistoryVCS();
+            if(lh == null) {
+                return false;
+            }
             lh.managedFilesChanged();
             return true;
         }

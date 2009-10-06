@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -295,12 +295,10 @@ public class GdbDebugger implements PropertyChangeListener {
             String cspath = getCompilerSetPath(pae);
             // see IZ 158224, gdb should be run with the default environment
             // see IZ 170287, PATH should be set on Windows
+            // see IZ 166812, on windows we should add all defined env variables
             String[] debuggerEnv = new String[0];
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
-                if (path != null) {
-                    debuggerEnv = new String[]{path}; //NOI18N
-                }
+               debuggerEnv = pae.getProfile().getEnvironment().getenv();
             }
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
@@ -2070,7 +2068,10 @@ public class GdbDebugger implements PropertyChangeListener {
             conf = (MakeConfiguration)conf.cloneConf();
             conf.setDevelopmentHost(new DevelopmentHostConfiguration(exEnv));
 
-            String path = getExecutableOrSharedLibrary(pinfo, conf);
+            String path = getBuildResult(pinfo, conf);
+            if (target.checkExecutable() && !isExecutableOrSharedLibrary(conf, path)) {
+                path = null;
+            }
 
             if (path != null) {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
@@ -2096,11 +2097,6 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
             }
         }
-    }
-
-    private static String getExecutableOrSharedLibrary(ProjectInformation pinfo, MakeConfiguration conf) {
-        String buildResult = getBuildResult(pinfo, conf);
-        return isExecutableOrSharedLibrary(conf, buildResult) ? buildResult : null;
     }
 
     /**

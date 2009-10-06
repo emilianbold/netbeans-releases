@@ -55,6 +55,7 @@ public class DLightConfigurationUIWrapper {
     private List<DLightToolUIWrapper> tools;
     private boolean profileOnRun;
     private boolean modified;
+    private DLightConfiguration copyOf;
 
     public DLightConfigurationUIWrapper(DLightConfiguration dlightConfiguration, List<DLightTool> allDLightTools) {
         this.dlightConfiguration = dlightConfiguration;
@@ -62,6 +63,7 @@ public class DLightConfigurationUIWrapper {
         this.displayName = dlightConfiguration.getDisplayedName();
         this.profileOnRun = true;
         this.custom = false;
+        copyOf = null;
         initWrapper(allDLightTools);
     }
 
@@ -75,6 +77,16 @@ public class DLightConfigurationUIWrapper {
         initWrapper(allDLightTools);
     }
 
+    private boolean canEnable(String dataProviders, String toolID) {
+        if (dataProviders != null && dataProviders.indexOf("DTrace") < 0) { // NOI18N
+            if (toolID.equals("dlight.tool.threadmap") || toolID.equals("dlight.tool.fops")) { // NOI18N
+                return false;
+            }
+            return true;
+        }
+        return true;
+    }
+
     private void initWrapper(List<DLightTool> allDLightTools) {
         tools = new ArrayList<DLightToolUIWrapper>();
         List<DLightTool> confDlightTools = dlightConfiguration.getToolsSet();
@@ -82,8 +94,10 @@ public class DLightConfigurationUIWrapper {
         for (DLightTool dlightTool : allDLightTools) {
             DLightTool toolToAdd = findTool(confDlightTools, dlightTool.getID());
             toolToAdd = toolToAdd == null ? dlightTool : toolToAdd;
-            if (toolToAdd != null && toolToAdd.isVisible()){
-                tools.add(new DLightToolUIWrapper(toolToAdd,  inList(dlightTool, confDlightTools)));
+            if (toolToAdd != null && toolToAdd.isVisible()) {
+                boolean canEnable = canEnable(dlightConfiguration.getCollectorProviders(), dlightTool.getID());
+                boolean enabled = canEnable ? inList(dlightTool, confDlightTools) : false;
+                tools.add(new DLightToolUIWrapper(toolToAdd, enabled, canEnable));
             }
         }
     }
@@ -132,12 +146,6 @@ public class DLightConfigurationUIWrapper {
         return custom;
     }
 
-    /**
-     * @param custom the custom to set
-     */
-    public void setCustom(boolean custom) {
-        this.custom = custom;
-    }
 
     /**
      * @return the dLightConfiguration
@@ -234,5 +242,19 @@ public class DLightConfigurationUIWrapper {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    /**
+     * @return the copyOf
+     */
+    public DLightConfiguration getCopyOf() {
+        return copyOf;
+    }
+
+    /**
+     * @param copyOf the copyOf to set
+     */
+    public void setCopyOf(DLightConfiguration copyOf) {
+        this.copyOf = copyOf;
     }
 }

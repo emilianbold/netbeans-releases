@@ -43,6 +43,7 @@ import org.netbeans.modules.dlight.extras.api.support.dragging.AbstractDraggable
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -71,6 +72,7 @@ import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.ImageUtilities;
 
@@ -83,14 +85,11 @@ import org.openide.util.ImageUtilities;
     private static final Color VIEWPORT_HANDLE_COLOR = new Color(0x72, 0x8A, 0x84);
     private static final int VIEWPORT_HANDLE_WIDTH = VIEWPORT_HANDLE.getWidth(null);
     private static final int VIEWPORT_HANDLE_HEIGHT = VIEWPORT_HANDLE.getHeight(null);
-
     private static final Image FILTER_HANDLE = ImageUtilities.loadImage("org/netbeans/modules/dlight/extras/resources/filter_handle.png"); // NOI18N
     private static final Color FILTER_HANDLE_COLOR = new Color(0xE7, 0x6F, 0x00);
     private static final int FILTER_HANDLE_WIDTH = FILTER_HANDLE.getWidth(null);
     private static final int FILTER_HANDLE_HEIGHT = FILTER_HANDLE.getHeight(null);
-
     private static final Color GRADIENT_DARK_COLOR = new Color(0xB4, 0xB4, 0xB4);
-
     private final ViewportModel viewportModel;
     private final DataFilterManager filterManager;
     private final Draggable viewportStartMark;
@@ -125,7 +124,7 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
                 Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
-                if (viewport != null && startTime >= viewport.getEnd()){
+                if (viewport != null && startTime >= viewport.getEnd()) {
                     return;
                 }
                 viewportModel.setViewport(new Range<Long>(startTime, null));
@@ -152,6 +151,7 @@ import org.openide.util.ImageUtilities;
             }
         };
         this.viewportEndMark = new AbstractDraggable(this) {
+
             @Override
             public int getPosition() {
                 ViewportModelState vms = getViewportModelState();
@@ -163,7 +163,7 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
                 Long endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
-                if (viewport != null && viewport.getStart() >= endTime){
+                if (viewport != null && viewport.getStart() >= endTime) {
                     return;
                 }
                 viewportModel.setViewport(new Range<Long>(null, endTime));
@@ -212,7 +212,7 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
                 Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
-                if (selection != null && selection.getEnd() <= startTime){
+                if (selection != null && selection.getEnd() <= startTime) {
                     //return
                     return;
                 }
@@ -256,7 +256,7 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Long endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
-                if (selection  != null && selection.getStart() >= endTime){
+                if (selection != null && selection.getStart() >= endTime) {
                     return;
                 }
                 setTimeSelection(new Range<Long>(null, endTime), isAdjusting);
@@ -395,7 +395,12 @@ import org.openide.util.ImageUtilities;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
-        repaint();
+        //repaint in UI thread
+        UIThread.invoke(new Runnable() {
+            public void run() {
+                repaint();
+            }
+        });
     }
 
     /**

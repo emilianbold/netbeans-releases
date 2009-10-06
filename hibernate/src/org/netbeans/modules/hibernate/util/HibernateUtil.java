@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -171,7 +171,10 @@ public class HibernateUtil {
         List<String> databaseTables = new ArrayList<String>();
         DBSchemaManager dbSchemaManager = new DBSchemaManager();
         DatabaseConnection dbConnection = getDBConnection(((HibernateCfgDataObject)DataObject.find(configurationFO)).getHibernateConfiguration());
-        SchemaElement schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        SchemaElement schemaElement=null;
+        if (dbConnection!=null) {
+            schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        }
         TableProvider tableProvider = null;
         if(schemaElement != null) {
             tableProvider = new DBSchemaTableProvider(schemaElement);

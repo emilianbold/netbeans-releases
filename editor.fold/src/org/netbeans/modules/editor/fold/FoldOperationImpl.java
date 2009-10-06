@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -76,17 +78,9 @@ import org.netbeans.api.editor.fold.FoldType;
  */
 
 public final class FoldOperationImpl {
-    
-    private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.fold");
-    
-    /** Dump the stacktraces for certain opertaions
-     * such as creating of the folds.
-     * Has only effect with the "debug" turned on.
-     */
-    private static final boolean debugStack
-        = Boolean.getBoolean("netbeans.debug.editor.fold.stack");
-    
+
+    // -J-Dorg.netbeans.api.editor.fold.FoldHierarchy.level=FINEST
+    private static final Logger LOG = Logger.getLogger(FoldHierarchy.class.getName());
     
     private FoldOperation operation;
     
@@ -116,6 +110,10 @@ public final class FoldOperationImpl {
     
     public void initFolds(FoldHierarchyTransactionImpl transaction) {
         manager.initFolds(transaction.getTransaction());
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("Fold Hierarchy after initFolds():\n" + execution + '\n');
+            execution.checkConsistency();
+        }
     }
     
     public FoldHierarchy getHierarchy() {
@@ -138,17 +136,17 @@ public final class FoldOperationImpl {
     int startOffset, int endOffset, int startGuardedLength, int endGuardedLength,
     Object extraInfo)
     throws BadLocationException {
-        if (debug) {
-            /*DEBUG*/System.err.println("Creating fold: type=" + type // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Creating fold: type=" + type // NOI18N
                 + ", description='" + description + "', collapsed=" + collapsed // NOI18N
                 + ", startOffset=" + startOffset + ", endOffset=" + endOffset // NOI18N
                 + ", startGuardedLength=" + startGuardedLength // NOI18N
                 + ", endGuardedLength=" + endGuardedLength // NOI18N
-                + ", extraInfo=" + extraInfo // NOI18N
+                + ", extraInfo=" + extraInfo + '\n' // NOI18N
             );
             
-            if (debugStack) {
-                /*DEBUG*/Thread.dumpStack();
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.INFO, "Fold creation stack", new Exception());
             }
         }
 

@@ -40,10 +40,8 @@ package org.netbeans.modules.nativeexecution;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
@@ -56,13 +54,12 @@ import org.openide.util.Utilities;
  *
  */
 // @NotThreadSafe
-// This class is always used in a thread-safe manner ...
 public final class NativeProcessInfo {
 
     public final MacroExpander macroExpander;
     private final ExecutionEnvironment execEnv;
     private final boolean isWindows;
-    private final MacroMap envVariables;
+    private final MacroMap environment;
     private final List<String> arguments = new ArrayList<String>();
     private String executable;
     private String commandLine;
@@ -79,7 +76,7 @@ public final class NativeProcessInfo {
         this.unbuffer = false;
         this.workingDirectory = null;
         this.macroExpander = MacroExpanderFactory.getExpander(execEnv);
-        this.envVariables = MacroMap.forExecEnv(execEnv);
+        this.environment = MacroMap.forExecEnv(execEnv);
         isWindows = execEnv.isLocal() && Utilities.isWindows();
         redirectError = false;
     }
@@ -132,42 +129,16 @@ public final class NativeProcessInfo {
         return suspend;
     }
 
-    /**
-     *
-     * @param name
-     * @param value
-     */
-    public void putEnvironmentVariable(final String name, final String value) {
-        envVariables.put(name, value);
-    }
-
-    public void addPathVariable(String name, String path, boolean prepend) {
-        char delimiter = ':';
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            name = name.toUpperCase();
-            delimiter = ';';
-        }
-
-        if (prepend) {
-            envVariables.put(name, "${" + name + '}' + delimiter + path); // NOI18N
-        } else {
-            envVariables.put(name, path + delimiter + "${" + name + '}'); // NOI18N
-        }
-    }
-
-    public void putAllEnvironmentVariables(Map<String, String> envs) {
-        for (Map.Entry<String, String> entry : envs.entrySet()) {
-            putEnvironmentVariable(entry.getKey(), entry.getValue());
-        }
-    }
-
     public void setArguments(String... arguments) {
         if (commandLine != null) {
             throw new IllegalStateException("commandLine is already defined. No additional parameters can be set"); // NOI18N
         }
 
         this.arguments.clear();
-        this.arguments.addAll(Arrays.asList(arguments));
+
+        for (String arg : arguments) {
+            this.arguments.add(arg.trim());
+        }
     }
 
     public List<String> getCommand() {
@@ -282,28 +253,18 @@ public final class NativeProcessInfo {
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
-        String result;
-
+        String result = workingDirectory;
         if (expandMacros && macroExpander != null) {
             try {
                 result = macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
-                result = workingDirectory;
+                // nothing
             }
         }
-
-        result = workingDirectory;
-
         return result;
     }
 
-    public MacroMap getEnvVariables() {
-        return getEnvVariables(null);
-    }
-
-    public MacroMap getEnvVariables(Map<String, String> prependMap) {
-        // TODO: is there a need of prepending prependMap ?
-        // there was some implementation in one of previous version...
-        return envVariables;
+    public MacroMap getEnvironment() {
+        return environment;
     }
 }
