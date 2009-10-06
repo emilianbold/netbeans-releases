@@ -105,7 +105,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
-        String port = parts[4];
+        String port = parts[4] != null ? parts[4].trim() : parts[4];
 
         WLBaseDeploymentManager dm = NEW_DEPLOYMENT ?
             null : // PENDING - use the new APIs
@@ -123,7 +123,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
-        String port = parts[4];
+        String port = parts[4] != null ? parts[4].trim() : parts[4];
         WLBaseDeploymentManager dm = NEW_DEPLOYMENT ?
             null : // PENDING - use the new APIs
             new WLOldDeploymentManager(this, uri, host, port);

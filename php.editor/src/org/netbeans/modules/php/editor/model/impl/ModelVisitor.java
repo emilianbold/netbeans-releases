@@ -1102,7 +1102,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (varScope instanceof VariableScope) {
                             FileObject fileObject = varScope.getFileObject();
                             if (fileObject == scope.getFileObject()) {
-                                atOffset = (VariableScope) varScope;
+                                VariableScope variableScope = (VariableScope) varScope;
+                                OffsetRange blockRange = variableScope.getBlockRange();
+                                if (blockRange == null || blockRange.containsInclusive(offset)) {
+                                    atOffset = variableScope;
+                                }
                             }
                         }
                     }
@@ -1114,7 +1118,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             while (scope != null && !(scope instanceof VariableScope)) {
                 scope = scope.getInScope();
             }
-            atOffset = (VariableScope) scope;
+            if (scope != null) {
+                OffsetRange blockRange = scope.getBlockRange();
+                if (blockRange == null || blockRange.containsInclusive(offset)) {
+                    atOffset = (VariableScope) scope;
+                }
+            }
         }
         return atOffset;
     }
