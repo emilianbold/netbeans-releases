@@ -67,6 +67,10 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mercurial.hooks.spi.HgHook.class)
 public class HgHookImpl extends HgHook {
+
+    private static final String[] SUPPORTED_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
+    private static final String[] SUPPORTED_REVISION_VARIABLES = new String[] {"changeset", "author", "date", "message"}; // NOI18N
+
     private HookPanel panel;
     private final String name;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
@@ -106,8 +110,7 @@ public class HgHookImpl extends HgHook {
 
             Format format = VCSHooksConfig.getInstance().getHgIssueInfoTemplate();
             String formatString = format.getFormat();
-            formatString = formatString.replaceAll("\\{id\\}", "\\{0\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{summary\\}", "\\{1\\}");    // NOI18N
+            formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_ISSUE_INFO_VARIABLES);
             
             Issue issue = getIssue();
             if (issue == null) {
@@ -139,12 +142,12 @@ public class HgHookImpl extends HgHook {
         VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
 
         if(context.getFiles().length == 0) {
-            LOG.warning("calling hg afterCommit for zero files");               // NOI18N
+            LOG.warning("calling hg afterCommit for zero files");                   // NOI18N
             return;
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg afterCommit start for " + file);                // NOI18N
+        LOG.log(Level.FINE, "hg afterCommit start for " + file);                    // NOI18N
 
         if (!isLinkSelected() &&
             !isResolveSelected())
@@ -155,7 +158,7 @@ public class HgHookImpl extends HgHook {
 
         Issue issue = getIssue();
         if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+            LOG.log(Level.FINE, " no issue set for " + file);                       // NOI18N
             return;
         }
 
@@ -167,10 +170,7 @@ public class HgHookImpl extends HgHook {
             String message = context.getLogEntries()[0].getMessage();
 
             String formatString = VCSHooksConfig.getInstance().getHgRevisionTemplate().getFormat();
-            formatString = formatString.replaceAll("\\{changeset\\}", "\\{0\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{author\\}",    "\\{1\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{date\\}",      "\\{2\\}");           // NOI18N
-            formatString = formatString.replaceAll("\\{message\\}",   "\\{3\\}");           // NOI18N
+            formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_REVISION_VARIABLES); // NOI18N
 
             msg = new MessageFormat(formatString).format(
                     new Object[] {
@@ -278,8 +278,10 @@ public class HgHookImpl extends HgHook {
                 new FormatPanel(
                     VCSHooksConfig.getInstance().getHgRevisionTemplate(),
                     VCSHooksConfig.getDefaultHgRevisionTemplate(),
+                    SUPPORTED_REVISION_VARIABLES,
                     VCSHooksConfig.getInstance().getHgIssueInfoTemplate(),
-                    VCSHooksConfig.getDefaultIssueInfoTemplate());
+                    VCSHooksConfig.getDefaultIssueInfoTemplate(),
+                    SUPPORTED_ISSUE_INFO_VARIABLES);
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
             VCSHooksConfig.getInstance().setHgRevisionTemplate(p.getIssueFormat());
             VCSHooksConfig.getInstance().setHgIssueInfoTemplate(p.getCommitFormat());

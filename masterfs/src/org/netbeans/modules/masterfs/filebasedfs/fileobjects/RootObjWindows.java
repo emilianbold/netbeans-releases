@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
 
@@ -127,7 +126,7 @@ public final class RootObjWindows extends FileObject {
         throw new FileStateInvalidException(); // NOI18N        
     }
 
-    public final Enumeration getAttributes() {
+    public final Enumeration<String> getAttributes() {
         return Enumerations.empty();
     }
 
@@ -202,6 +201,7 @@ public final class RootObjWindows extends FileObject {
     }
 
     
+    @Override
     public String toString() {
         return "";
     }

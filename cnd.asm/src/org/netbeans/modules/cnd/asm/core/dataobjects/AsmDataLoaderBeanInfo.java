@@ -48,11 +48,10 @@ import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 public class AsmDataLoaderBeanInfo extends SimpleBeanInfo {
     /*package*/static final String IMAGE_ICON_BASE = 
-                "org/netbeans/modules/asm/core/resources/file_asm_16.png"; // NOI18N
+                "org/netbeans/modules/cnd/asm/core/resources/file_asm_16.png"; // NOI18N
     
     @Override
     public BeanInfo[] getAdditionalBeanInfo() {

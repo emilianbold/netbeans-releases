@@ -1894,6 +1894,26 @@ class_head
 	)? LCURLY
 	;
 
+// so far this one is used in predicates only
+class_forward_declaration
+        { String s; }
+	:	// Used only by predicates
+	(
+		LITERAL_struct
+	|	LITERAL_union
+	|	LITERAL_class
+	)
+        (options {greedy=true;} : type_attribute_specification)?
+	(
+
+            s = scope_override
+
+            ID
+		(LESSTHAN template_argument_list GREATERTHAN)?
+		(base_clause)?
+	)? SEMICOLON
+	;
+
 protected
 typedef_class_fwd
 { String id = "", td = ""; }
@@ -2764,6 +2784,17 @@ statement
 		declaration[declOther]
 		{ #statement = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #statement); }
 	|  
+                ((  storage_class_specifier
+		|   cv_qualifier
+		|   LITERAL_typedef
+		)* class_forward_declaration) =>
+		{if (statementTrace>=1)
+			printf("statement_1[%d]: Class forward declaration\n",
+				LT(1).getLine());
+		}
+		declaration[declOther]
+		{ #statement = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #statement); }
+	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
 		(LITERAL_enum (ID)? LCURLY)=>

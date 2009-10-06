@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Kvashin
  */
-public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBase {
+public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
 
     public static final String SECTION = "remote.rfs.build.parameterized";
 
@@ -91,12 +91,24 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsRemoteBuildTestBa
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         long time = System.currentTimeMillis();
-        buildProject(makeProject, buildCommand, 60*6, TimeUnit.SECONDS);
+        addPropertyFromRcFile(rcFile, "cnd.rfs.preload.sleep");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.preload.log");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.log");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.port");
+        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.host");
+        buildProject(makeProject, buildCommand, 60*60*24*7, TimeUnit.SECONDS);
         time = System.currentTimeMillis() - time;
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
     }
 
-    @Conditional(section=SECTION, key = "measure.build")
+    private void addPropertyFromRcFile(RcFile rcFile, String varName) {
+        String value = rcFile.get(SECTION, varName);
+        if (value != null && value.length() > 0) {
+            System.setProperty(varName, value);
+        }
+    }
+
+    @Conditional(section=SECTION, key = "test.build")
     @ForAllEnvironments(section = SECTION)
     public void testBuildRfsParameterized() throws Exception {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();

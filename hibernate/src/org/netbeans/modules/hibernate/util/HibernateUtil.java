@@ -171,7 +171,10 @@ public class HibernateUtil {
         List<String> databaseTables = new ArrayList<String>();
         DBSchemaManager dbSchemaManager = new DBSchemaManager();
         DatabaseConnection dbConnection = getDBConnection(((HibernateCfgDataObject)DataObject.find(configurationFO)).getHibernateConfiguration());
-        SchemaElement schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        SchemaElement schemaElement=null;
+        if (dbConnection!=null) {
+            schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        }
         TableProvider tableProvider = null;
         if(schemaElement != null) {
             tableProvider = new DBSchemaTableProvider(schemaElement);
@@ -493,6 +496,15 @@ public class HibernateUtil {
 
     public static String getDbConnectionDetails(HibernateConfiguration configuration, String property) {
         SessionFactory fact = configuration.getSessionFactory();
+        if(fact == null) {
+            logger.log(Level.WARNING, "Hibernate Configuration xml is missing <session-factory>, applying temporary fix, please check your xml.");
+            configuration.setSessionFactory( new SessionFactory());
+            fact = configuration.getSessionFactory();
+            if(fact == null) {
+                logger.log(Level.SEVERE, "Hibernate configuration xml is missing <session-factory>, xml must be fixed!");
+                return "";
+            }
+        }
         int count = 0;
         for (String val : fact.getProperty2()) {
             String propName = fact.getAttributeValue(SessionFactory.PROPERTY2, count++, "name");  //NOI18N
@@ -676,7 +688,7 @@ public class HibernateUtil {
             if (sourceRoot != null) {
                 result.add(sourceRoot);
             } else {
-                Exceptions.printStackTrace(new IllegalStateException("No FileObject found for the following URL: " + url));
+                logger.log(Level.SEVERE, "No FileObject found for the following URL: " + url + " the test(s) will be skipped");
             }
         }
         return result;

@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
 import javax.swing.Action;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -90,7 +91,7 @@ final class FunctionCallNode extends AbstractNode implements GoToSourceAction.Go
         if (!action.isEnabled()) {
             String baseName = super.getHtmlDisplayName();
             baseName = baseName != null ? baseName : getDisplayName();
-            return "<font color='!controlShadow'>" + baseName; // NOI18N
+            return "<font color='!controlShadow'>" + baseName.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
             }
         return super.getHtmlDisplayName();
     }

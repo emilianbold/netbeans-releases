@@ -85,7 +85,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
     private final String WAIT_STRING = String.format("<html><table cellpadding=\"0\" border=\"0\" cellspacing=\"0\"><tr><td width=\"30\"><img src=\"%s\"></td><td>%s</td></tr></table></html>", //NOI18N
                         SourcesInformationPanel.class.getResource("/org/netbeans/modules/kenai/ui/resources/wait.gif"), //NOI18N
-                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT"));
+                        NbBundle.getMessage(SourcesInformationPanel.class, "MSG_WAIT_ISSUES"));
 
     private KenaiProject instPr = null;
 
