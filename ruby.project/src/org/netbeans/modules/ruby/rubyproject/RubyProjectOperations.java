@@ -47,15 +47,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.EditableProperties;
 import org.openide.util.NbBundle;
 
 public class RubyProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private final RubyProject project;
+    /**
+     * Holds the original private properties of a project that is being moved/copied. 
+     * 
+     * Needed since unlike in other project types we copy the contents of the orig private.properties
+     * to the new private.properties - this needs to be done here as the project infrastructure 
+     * does not copy private.properties. See #172794 for more.
+     */
+    private static EditableProperties origPrivateProperties;
     
     public RubyProjectOperations(RubyProject project) {
         this.project = project;
@@ -95,7 +105,7 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyCopying() {
-        // nothing needed in the meantime
+        origPrivateProperties = project.getRakeProjectHelper().getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -106,9 +116,11 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         
         project.getReferenceHelper().fixReferences(originalPath);
         project.setName(nueName);
+        copyPrivateProps();
     }
     
     public void notifyMoving() throws IOException {
+        origPrivateProperties = project.getRakeProjectHelper().getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
         if (!this.project.getUpdateHelper().requestSave()) {
             throw new IOException (NbBundle.getMessage(RubyProjectOperations.class,
                 "MSG_OldProjectMetadata"));
@@ -124,6 +136,11 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         
         project.setName(nueName);        
         project.getReferenceHelper().fixReferences(originalPath);
+        copyPrivateProps();
     }
-    
+
+    private void copyPrivateProps() {
+        project.getReferenceHelper().copyToPrivateProperties(origPrivateProperties);
+        origPrivateProperties = null;
+    }
 }
