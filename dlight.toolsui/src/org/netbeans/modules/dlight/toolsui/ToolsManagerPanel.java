@@ -130,7 +130,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     }
 
     public boolean apply() {
-        // delete deleted configurations
+        // Delete deleted configurations
         List<DLightConfigurationUIWrapper> oldDLightConfiguration = DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers();
         List<DLightConfigurationUIWrapper> toBeDeleted = new ArrayList<DLightConfigurationUIWrapper>();
         for (DLightConfigurationUIWrapper wrapper : oldDLightConfiguration) {
@@ -142,6 +142,26 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         for (DLightConfigurationUIWrapper conf : toBeDeleted) {
             DLightConfigurationSupport.getInstance().removeConfiguration(conf.getName());
         }
+        
+        // Rename renamed configurations
+        for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
+            if (/*configuration.isCustom() || */configuration.getCopyOf() == null) {
+                if (!configuration.getName().equals(configuration.getDLightConfiguration().getConfigurationName())) {
+                    DLightConfiguration origDLightConfiguration = configuration.getDLightConfiguration();
+                    String category = origDLightConfiguration.getCategoryName();
+                    List<String> platforms = origDLightConfiguration.getPlatforms();
+                    String collector = origDLightConfiguration.getCollectorProviders();
+                    List<String> indicators = origDLightConfiguration.getIndicatorProviders();
+                    DLightConfigurationSupport.getInstance().removeConfiguration(origDLightConfiguration.getConfigurationName());
+                    DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
+                    configuration.setDLightConfiguration(dlightConfiguration);
+                    for (DLightToolUIWrapper toolUI : configuration.getTools()) {
+                        toolUI.setModified(true);
+                    }
+                }
+            }
+        }
+
         // save wrappers
         DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
         // save configurations and tools
@@ -419,7 +439,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         @Override
         public void editAction(DLightConfigurationUIWrapper o) {
-            String s = o.getName();
+            String s = o.getDisplayName();
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
             notifyDescriptor.setInputText(s);
@@ -427,15 +447,18 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
-            o.setName(newS);
+            String newDisplayName = notifyDescriptor.getInputText();
+            o.setDisplayName(newDisplayName);
+            String newName = newDisplayName.replace("/", "_FSLASH_"); // No spaces // NOI18N
+            newName = newName.replace("\\", "_BSLASH_"); // No spaces // NOI18N
+            o.setName(newName);
         }
 
         @Override
         protected void checkSelection(int i) {
             super.checkSelection(i);
             DLightConfigurationUIWrapper dLightConfigurationWrapper = getListData().elementAt(i);
-            getEditButton().setEnabled(dLightConfigurationWrapper.isCustom());
+            getEditButton().setEnabled(dLightConfigurationWrapper.isCustom() || DLightConfigurationSupport.getInstance().canRemoveConfiguration(dLightConfigurationWrapper.getName()));
             getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom() || DLightConfigurationSupport.getInstance().canRemoveConfiguration(dLightConfigurationWrapper.getName()));
         }
     }
