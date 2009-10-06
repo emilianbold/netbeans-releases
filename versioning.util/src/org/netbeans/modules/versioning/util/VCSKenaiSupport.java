@@ -309,7 +309,7 @@ public abstract class VCSKenaiSupport {
          * @param notification
          */
         protected abstract void handleVCSNotification(VCSKenaiNotification notification);
-
+        
     }
     
 }

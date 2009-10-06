@@ -462,15 +462,20 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 final Icon projectIcon;
                 try {
                     projectIcon = proj.getProjectIcon();
-                SwingUtilities.invokeLater(new Runnable() {
+                    SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
-                        projectImage.setIcon(projectIcon);
-                    }
-                });
+                        public void run() {
+                            projectImage.setIcon(projectIcon);
+                        }
+                    });
                 } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
-           }
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            projectImage.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/default.jpg", true));
+                        }
+                    });
+                }
             }
         });
 
