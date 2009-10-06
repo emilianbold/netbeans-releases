@@ -61,7 +61,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.schema.model.impl.xdm.SyncUpdateVisitor;
-import org.netbeans.modules.xml.schema.model.visitor.FindGlobalReferenceVisitor;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -81,16 +80,19 @@ import org.netbeans.modules.xml.schema.model.impl.resolver.IncludeResolver;
  * @author Vidhya Narayanan
  */
 public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> implements SchemaModel {
-    
+
     private SchemaImpl mSchema;
     private SchemaComponentFactory csef;
     private RefCacheSupport mRefCacheSupport;
+    private GlobalComponentsIndexSupport mGlobalIndexSupport;
     
     public SchemaModelImpl(ModelSource modelSource) {
         super(modelSource);
+        //
         csef = new SchemaComponentFactoryImpl(this);
         //getAccess().setAutoSync(true);
         mRefCacheSupport = new RefCacheSupport(this);
+        mGlobalIndexSupport = new GlobalComponentsIndexSupport(this);
     }
 
     /**
@@ -101,6 +103,14 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return mRefCacheSupport;
     }
     
+    /**
+     * It is mainly intended to be used by JUnit tests.
+     * @return
+     */
+    public GlobalComponentsIndexSupport getGlobalComponentsIndexSupport() {
+        return mGlobalIndexSupport;
+    }
+
     /**
      *
      *
@@ -219,11 +229,11 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         }
         return refs;
     }
-
-    public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
-        return new FindGlobalReferenceVisitor<T>().find(type, localName, getSchema());
-    }
     
+    public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
+        return mGlobalIndexSupport.findByNameAndType(localName, type);
+    }
+
     public Set<Schema> findSchemas(String namespace) {
         Set<Schema> result = new HashSet<Schema>();
         
