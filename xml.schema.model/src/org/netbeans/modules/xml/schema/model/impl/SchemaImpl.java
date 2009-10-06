@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.xml.schema.model.impl;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.xml.schema.model.Annotation;
@@ -62,7 +63,6 @@ import org.netbeans.modules.xml.schema.model.GlobalGroup;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Include;
 import org.netbeans.modules.xml.schema.model.Redefine;
-import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.Schema.Block;
 import org.netbeans.modules.xml.schema.model.Schema.Final;
@@ -81,6 +81,9 @@ public class SchemaImpl extends SchemaComponentImpl implements Schema {
     public static final String TNS = "tns"; //NOI18N
     
     private Component foreignParent;
+
+    private CachedTargetNamespace mCachedTargetNamespace =
+            new CachedTargetNamespace(this);
     
     /** Creates a new instance of SchemaImpl */
     public SchemaImpl(SchemaModelImpl model) {
@@ -212,7 +215,7 @@ public class SchemaImpl extends SchemaComponentImpl implements Schema {
     }
     
     public String getTargetNamespace() {
-        return getAttribute(SchemaAttributes.TARGET_NS);
+        return mCachedTargetNamespace.getTargetNamespace();
     }
     
     public void setElementFormDefault(Form form) {
@@ -390,5 +393,51 @@ public class SchemaImpl extends SchemaComponentImpl implements Schema {
 
     public void setForeignParent(Component component) {
         foreignParent = component;
+    }
+
+    /**
+     * Helps to impove performance because the targetNamespace is asked too frequently.
+     * See the issue #169435
+     */
+    private static class CachedTargetNamespace {
+
+        private Schema mSchema;
+        // This separate flag is required because the targetNamespace can be null
+        // so it can't be used as a flag for initialization state.
+        private boolean mCached = false; 
+        private String mTargetNamespace;
+
+        public CachedTargetNamespace(Schema schema) {
+            mSchema = schema;
+            //
+            SchemaModel sModel = mSchema.getModel();
+            assert sModel != null;
+            sModel.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propName = evt.getPropertyName();
+                    if (Schema.TARGET_NAMESPACE_PROPERTY.equals(propName)) {
+                        // The TNS has to be repopulated
+                        discardCache();
+                    }
+                }
+            });
+        }
+
+        public synchronized void discardCache() {
+            mCached = false;
+        }
+
+        public synchronized String getTargetNamespace() {
+            if (!mCached || mSchema.getModel().isIntransaction()) {
+                //
+                // Use ordinary way if the model in transaction because
+                // the cached value remains unchanged before transaction is commited.
+                //
+                mTargetNamespace = mSchema.getAttribute(SchemaAttributes.TARGET_NS);
+                mCached = true;
+            }
+            return mTargetNamespace;
+        }
+
     }
 }
