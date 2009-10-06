@@ -79,12 +79,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -610,14 +609,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                     installContainer.add(unit.getAvailableUpdates());
                     InstallSupport support = installContainer.getSupport();
                     if (support != null) {
-                        try {
-                            ProgressHandle progress = null;
-                            InstallSupport.Validator v = support.doDownload(progress, false);
-                            InstallSupport.Installer i = support.doValidate(v, progress);
-                            Restarter r = support.doInstall(i, progress);
-                        } catch (OperationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        PluginManager.openInstallWizard(installContainer);
                     }
                     break;
                 }
@@ -1872,9 +1864,15 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     if (isUrl) {
         String uc = tfBaseDirectory.getText();
-        NotifyDescriptor nd = new NotifyDescriptor.Message(getString("ToolsPanel.UpdateCenterMessage", uc));
-        nd.setTitle(getString("ToolsPanel.UpdateCenterTitle")); // NOI18N
-        DialogDisplayer.getDefault().notify(nd);
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                getString("ToolsPanel.UpdateCenterMessage", uc),
+                getString("ToolsPanel.UpdateCenterTitle"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object ret = DialogDisplayer.getDefault().notify(nd);
+        if (ret == NotifyDescriptor.YES_OPTION) {
+            CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
+            downloadCompilerSet(cs);
+        }
         return;
     }
     String seed = null;
