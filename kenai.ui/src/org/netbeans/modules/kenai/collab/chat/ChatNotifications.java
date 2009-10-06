@@ -118,7 +118,7 @@ public class ChatNotifications {
         r.notifyMessageReceived(msg);
         String title = null;
         try {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getNewMessageCount()});
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getMessageCount()});
             final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
 
             final ActionListener l = new ActionListener() {
@@ -130,7 +130,7 @@ public class ChatNotifications {
                 }
             };
 
-            if (r.getNewMessageCount()>0) {
+            if (r.getMessageCount()>0) {
                 Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
                 r.updateNotification(n);
             }
@@ -175,7 +175,7 @@ public class ChatNotifications {
     synchronized void clearAll() {
         for (MessagingHandleImpl h:groupMessages.values()) {
             h.disposeNotification();
-            h.setMessageCount(-1);
+            h.setMessageCount(0);
             h.setOnlineCount(-1);
         }
         groupMessages.clear();

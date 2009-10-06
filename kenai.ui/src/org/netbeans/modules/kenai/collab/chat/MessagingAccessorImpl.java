@@ -89,7 +89,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
             } catch (Exception ex) {
                 Logger.getLogger(MessagingAccessorImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     MessagingHandleImpl m = new MessagingHandleImpl(project.getId());
-                    m.setMessageCount(-1);
+                    m.setMessageCount(0);
                     m.setOnlineCount(-3);
                     return m;
                 }
