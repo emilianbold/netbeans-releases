@@ -45,23 +45,43 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class FormatPanel extends javax.swing.JPanel {
+public class FormatPanel extends javax.swing.JPanel{
     private final Format defaultIssueInfoTemplate;
     private final Format defaultRevisionTemplate;
+    private final String[] supportedIssueInfoVariables;
+    private final String[] supportedRevisionVariables;
 
     /** Creates new form FormatPanel */
-    FormatPanel(Format revisionTemplate, Format defaultRevisionTemplate, Format issueInfoTemplate, Format defaultIssueInfoTemplate) {
+    FormatPanel(
+            Format revisionTemplate,
+            Format defaultRevisionTemplate,
+            String[] supportedRevisionVariables,
+            Format issueInfoTemplate,
+            Format defaultIssueInfoTemplate,
+            String[] supportedIssueInfoVariables)
+    {
         initComponents();
+        warningLabel.setVisible(false);
+        
         this.defaultIssueInfoTemplate = defaultIssueInfoTemplate;
+        this.supportedIssueInfoVariables = supportedIssueInfoVariables;
         this.defaultRevisionTemplate = defaultRevisionTemplate;
+        this.supportedRevisionVariables = supportedRevisionVariables;
         setRevisionTemplate(revisionTemplate);
         setIssueInfoTemplate(issueInfoTemplate);
+
+        issueInfoTextArea.getDocument().addDocumentListener(new MsgListener(issueInfoTextArea));
+        revisionTextArea.getDocument().addDocumentListener(new MsgListener(revisionTextArea));
     }
 
     Format getCommitFormat() {
@@ -95,6 +115,8 @@ public class FormatPanel extends javax.swing.JPanel {
         revisionTextArea = new javax.swing.JTextArea();
         resetIssueButton = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        warningLabel = new javax.swing.JLabel();
+        placeholder = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(issueInfoTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel1.text")); // NOI18N
@@ -144,6 +166,11 @@ public class FormatPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.jLabel4.text")); // NOI18N
 
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/bugtracking/bridge/resources/warning.gif"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.warningLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(placeholder, org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.placeholder.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -168,8 +195,12 @@ public class FormatPanel extends javax.swing.JPanel {
                             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel3, 0, 0, Short.MAX_VALUE)
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel3, 0, 0, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(warningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(placeholder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -195,7 +226,12 @@ public class FormatPanel extends javax.swing.JPanel {
                         .add(belowCommitRadio)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(resetIssueButton))
-                    .add(resetCommitButton)))
+                    .add(resetCommitButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(warningLabel)
+                    .add(placeholder))
+                .addContainerGap())
         );
 
         aboveCommitRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormatPanel.class, "FormatPanel.aboveRadio.AccessibleContext.accessibleDescription")); // NOI18N
@@ -229,9 +265,11 @@ public class FormatPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel placeholder;
     private javax.swing.JButton resetCommitButton;
     private javax.swing.JButton resetIssueButton;
     private javax.swing.JTextArea revisionTextArea;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 
     private void setRevisionTemplate(Format format) {
@@ -244,4 +282,47 @@ public class FormatPanel extends javax.swing.JPanel {
         belowCommitRadio.setSelected(!format.isAbove());
     }
 
+
+    private void validateText(JTextArea textArea) {
+        assert textArea == revisionTextArea || textArea == issueInfoTextArea;
+        String[] variables = textArea == revisionTextArea ? supportedRevisionVariables : supportedIssueInfoVariables;
+
+        boolean valid = !HookUtils.containsUnsupportedVariables(textArea.getText(), variables);
+        warningLabel.setText(NbBundle.getMessage(FormatPanel.class, "FormatPanel.warningLabel.text", list(variables)));
+        warningLabel.setVisible(!valid);
+    }
+
+    private String list(String[] str) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < str.length; i++) {
+            sb.append("{");                                                     // NOI18N
+            sb.append(str[i]);
+            sb.append("}");                                                     // NOI18N
+            if(i < str.length - 1) {
+                sb.append(", ");                                                // NOI18N
+            }
+        }
+        return sb.toString();
+    }
+
+    private class MsgListener implements DocumentListener {
+        private final JTextArea textArea;
+
+        public MsgListener(JTextArea textArea) {
+            this.textArea = textArea;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            validateText(textArea);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            validateText(textArea);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            validateText(textArea);
+        }
+
+    }
 }

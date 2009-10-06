@@ -811,11 +811,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     /**
      *
-     * @param timestamp  in milliseconds
+     * @param timestamp  in nanoseconds
      * @return bucket id
      */
     private static long timeToBucketId(long timestamp) {
-        return timestamp / 1000;  // bucket is 1 second
+        return timestamp / 1000 / 1000 / 1000;  // bucket is 1 second
     }
 
     /**

@@ -976,7 +976,7 @@ public class TaskProcessor {
                     }
                     parser = activeParser;
                 }
-                if (parser != null) {
+                if (parser != null && mayCancelParser) {
                     parser.cancel();
                 }
             }

@@ -79,12 +79,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -601,7 +600,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void downloadCompilerSet(CompilerSet cs) {
         try {
             URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
-            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD);
+            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD); // NOI18N
             provider.refresh(null, true);
             List<UpdateUnit> list = provider.getUpdateUnits(TYPE.MODULE);
             OperationContainer<InstallSupport> installContainer = OperationContainer.createForInstall();
@@ -609,13 +608,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 if (cs.getCompilerFlavor().getToolchainDescriptor().getModuleID().equals(unit.getCodeName())) {
                     installContainer.add(unit.getAvailableUpdates());
                     InstallSupport support = installContainer.getSupport();
-                    try {
-                        ProgressHandle progress = null;
-                        InstallSupport.Validator v = support.doDownload(progress, false);
-                        InstallSupport.Installer i = support.doValidate(v, progress);
-                        Restarter r = support.doInstall(i, progress);
-                    } catch (OperationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    if (support != null) {
+                        PluginManager.openInstallWizard(installContainer);
                     }
                     break;
                 }
@@ -630,9 +624,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             if (cs.isUrlPointer()) {
-                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl()+":"+ //NOI18N
-                                        cs.getCompilerFlavor().getToolchainDescriptor().getModuleID());
-                btBaseDirectory.setEnabled(false);
+                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+                btBaseDirectory.setEnabled(true);
                 isUrl = true;
                 //downloadCompilerSet(cs);
             } else {
@@ -1096,7 +1089,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (ServerListUIEx.showServerListDialog(cacheManager)) {
+        if (ServerListUIEx.showServerListDialog(cacheManager, null)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -1870,6 +1863,16 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     if (isUrl) {
+        String uc = tfBaseDirectory.getText();
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                getString("ToolsPanel.UpdateCenterMessage", uc),
+                getString("ToolsPanel.UpdateCenterTitle"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object ret = DialogDisplayer.getDefault().notify(nd);
+        if (ret == NotifyDescriptor.YES_OPTION) {
+            CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
+            downloadCompilerSet(cs);
+        }
         return;
     }
     String seed = null;

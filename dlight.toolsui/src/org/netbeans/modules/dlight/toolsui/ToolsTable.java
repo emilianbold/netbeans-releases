@@ -117,22 +117,11 @@ public class ToolsTable extends JTable {
             DLightToolUIWrapper dlightTool = allDLightTools.get(row);
             JCheckBox checkBox = new JCheckBox();
             checkBox.setSelected(dlightTool.isEnabled());
-            checkBox.setEnabled(enabled(dlightTool.getDLightTool().getID()));
+            checkBox.setEnabled(dlightTool.canEnable());
             return new DefaultCellEditor(checkBox);
         } else {
             return super.getCellEditor(row, col);
         }
-    }
-
-    // FIXUP: should be moved each tool...
-    private boolean enabled(String toolID) {
-        if (dlightConfigurationUIWrapper.getName().equals("GizmoSunStudioStandard") || dlightConfigurationUIWrapper.getName().equals("GizmoSimple")) { // NOI18N
-            if (toolID.equals("dlight.tool.threadmap") || toolID.equals("dlight.tool.fops")) { // NOI18N
-                return false;
-            }
-            return true;
-        }
-        return true;
     }
 
     class MyTableCellRenderer extends DefaultTableCellRenderer {
@@ -147,7 +136,7 @@ public class ToolsTable extends JTable {
                 JCheckBox checkBox = new JCheckBox();
                 checkBox.setSelected(dlightTool.isEnabled());
                 checkBox.setBackground(label.getBackground());
-                checkBox.setEnabled(enabled(dlightTool.getDLightTool().getID()));
+                checkBox.setEnabled(dlightTool.canEnable());
                 return checkBox;
             } else {
                 label.setText(dlightTool.getDLightTool().getName()); // NOI18N
@@ -185,7 +174,8 @@ public class ToolsTable extends JTable {
         @Override
         public boolean isCellEditable(int row, int col) {
             if (col == 0) {
-                return true;
+                DLightToolUIWrapper dlightTool = allDLightTools.get(row);
+                return dlightTool.canEnable();
             } else {
                 return false;
             }

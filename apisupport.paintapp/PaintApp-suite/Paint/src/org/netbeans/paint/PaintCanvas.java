@@ -59,6 +59,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         addMouseListener(this);
         addMouseMotionListener(this);
         setBackground(Color.WHITE);
+        putClientProperty(/*PrintManager.PRINT_PRINTABLE*/"print.printable", true);
     }
     
     public void setBrush(int diam) {

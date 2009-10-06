@@ -48,13 +48,13 @@ public class DLightToolUIWrapper {
 
     private DLightTool dlightTool;
     private boolean enabled;
-    private boolean onByDefault;
     private boolean modified = false;
+    private boolean canEnable = true;
 
-    public DLightToolUIWrapper(DLightTool dlightTool, boolean enabled) {
+    public DLightToolUIWrapper(DLightTool dlightTool, boolean enabled, boolean canChange) {
         this.dlightTool = dlightTool;
         this.enabled = enabled;
-        this.onByDefault = dlightTool.isEnabled();
+        this.canEnable = canChange;
     }
 
     /**
@@ -81,33 +81,11 @@ public class DLightToolUIWrapper {
     /**
      * @param enabled the enabled to set
      */
-    void setEnabled(boolean enabled) {
+    public void setEnabled(boolean enabled) {
         if (this.enabled != enabled){
             modified = true;
         }
         this.enabled = enabled;
-    }
-
-    /**
-     * @return the onByDefault
-     */
-    public boolean isOnByDefault() {
-        return onByDefault;
-    }
-
-    /**
-     * @param onByDefault the onByDefault to set
-     */
-    public void setOnByDefault(boolean onByDefault) {
-        if (this.onByDefault != onByDefault){
-            modified = true;
-        }
-        this.onByDefault = onByDefault;
-        if (this.onByDefault){
-            dlightTool.enable();
-        }else{
-            dlightTool.disable();
-        }
     }
 
     /**
@@ -125,9 +103,22 @@ public class DLightToolUIWrapper {
     }
 
     public DLightToolUIWrapper copy() {
-        DLightToolUIWrapper copy = new DLightToolUIWrapper(getDLightTool(), isEnabled());
-        copy.setOnByDefault(isOnByDefault());
+        DLightToolUIWrapper copy = new DLightToolUIWrapper(getDLightTool(), isEnabled(), canEnable());
         copy.setModified(false);
         return copy;
+    }
+
+    /**
+     * @return the canChange
+     */
+    public boolean canEnable() {
+        return canEnable;
+    }
+
+    /**
+     * @param canChange the canChange to set
+     */
+    public void setCanEnable(boolean canChange) {
+        this.canEnable = canChange;
     }
 }

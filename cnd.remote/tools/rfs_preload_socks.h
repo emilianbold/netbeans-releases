@@ -40,7 +40,13 @@
 #ifndef _RFS_PRELOAD_SOCKS_H
 #define	_RFS_PRELOAD_SOCKS_H
 
+/**
+ * as well as open syscall, returns
+ * -1 if an error occurred, or
+ * non-negative integer in the case of success
+ */
 int get_socket(int create);
+
 void release_socket();
 
 #if TRACE

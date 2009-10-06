@@ -966,6 +966,10 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
         if (!does) {
+            if (!isProjectOpened() || !isModelAvaliable()) {
+                isFinished = true;
+                return;
+            }
             if (TRACE) {
                 logger.log(Level.INFO, "#start discovery by model"); // NOI18N
             }
@@ -1007,6 +1011,15 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
     }
+
+    private boolean isModelAvaliable(){
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model != null && makeProject != null) {
+            return CsmModelAccessor.getModel().getProject(makeProject) != null;
+        }
+        return false;
+    }
+
     private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
 
     static enum State {

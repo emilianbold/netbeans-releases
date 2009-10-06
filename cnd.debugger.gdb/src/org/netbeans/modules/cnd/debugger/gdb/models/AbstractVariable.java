@@ -616,13 +616,13 @@ public abstract class AbstractVariable implements LocalVariable {
                 log.warning("GdbDebugger.completeFieldDefinition: Missing type information for " + info);
             }
         } else {
-            String fName, fType, fValue;
             int pos = info.indexOf('=');
             if (pos != -1) {
+                String fName, fType;
+                String fValue = info.substring(pos + 1).trim();
                 if (info.charAt(0) == '<') {
                     fName = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
                     fType = info.substring(1, pos - 2).trim();
-                    fValue = info.substring(pos + 1).trim();
                     if (fType.length() == 0) {
                         // I think this is handling a gdb bug. Its hard to say because the exact response
                         // from gdb isn't well documented. In any case, this is triggered when the value
@@ -635,7 +635,6 @@ public abstract class AbstractVariable implements LocalVariable {
                     }
                 } else {
                     fName = info.substring(0, pos - 1).trim();
-                    fValue = info.substring(pos + 1).trim();
                     if (fName.startsWith("_vptr")) { // NOI18N
                         return anon_count;
                     }

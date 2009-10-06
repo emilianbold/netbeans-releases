@@ -47,10 +47,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   This module contains  API and SPI classes which can be used by D-Light
-    Toolkit clients to build observability tools on the top of D-Light Toolkit.
+   This module contains  API and SPI classes which can be used by DLight
+    Toolkit clients to build observability tools on the top of DLight Toolkit.
      The overall architecture is decsribed here
-      <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a>.
+      <a href="http://wiki.netbeans.org/DLightToolkitDesign">DLight Toolkit</a>.
      This module provides <api name="ClientAPI" group="java" type="export" category="devel"/>,
       <api name="VisualizerSPI" group="java" type="export" category="devel"/>,
       <api name="IndicatorSPI" group="java" type="export" category="devel"/>,
@@ -62,14 +62,14 @@ Microsystems, Inc. All Rights Reserved.
      See use case section for more details.
      Clients which wants to add new
       <api name="VisualizerSPI" group="java" type="export" category="devel"/>
-     to D-Light Toolkit infrastructure and pusblish it to other clients
+     to DLight Toolkit infrastructure and pusblish it to other clients
      should implement Visualizer interface and provide
      VisualizerConfiguration implementation
-     which is actually a part of D-Light Toolkit  <api name="ClientAPI" group="java" type="export" category="devel"/> .
+     which is actually a part of DLight Toolkit  <api name="ClientAPI" group="java" type="export" category="devel"/> .
      VisualizerConfiguration.getID() and
      Visualizer.getID() should return the same value to be able to find Visualizer instance
      using VisualizerConfiguration. Visualizer should be registered in Global Lookup.
-     Clients who want to create their own D-Light tools on the base of already provided API/SPI implemetations should
+     Clients who want to create their own DLight tools on the base of already provided API/SPI implemetations should
      implements DLightToolConfigurationProvider interface to provide their own DLightToolConfiguration. See Use Cases
          section for more details.
   </p>
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
         <a href="http://wiki.netbeans.org/CND70GizmoUserView">Gizmo User View</a> for
      more details about Gizmo.
 
-     How to use D-Light Toolkit to implement Gizmo:
+     How to use DLight Toolkit to implement Gizmo:
         <ul>
           <li>Create "Gizmo" configuration: list tools to be used in Gizmo:
             <pre>
@@ -167,7 +167,7 @@ Microsystems, Inc. All Rights Reserved.
           </li>
           <li>Create target to be d-lighted: use API support class NativeExecutableTarget and
           NativeExecutableTargetConfiguration to create DLightTarget. Use org.netbeans.modules.dlight.api.execution.DLightToolkitManagement#createSession(org.netbeans.modules.dlight.api.execution.DLightTarget
-          to get DLightSessionReference object which can be used later to run D-Light.
+          to get DLightSessionReference object which can be used later to run DLight.
             <pre>
     final NativeExecutableTarget target = new NativeExecutableTarget(new NativeExecutableTargetConfiguration(application, arguments, environment));
     final DLightToolkitManagement dtm = DLightToolkitManagement.getInstance();
@@ -203,7 +203,7 @@ Microsystems, Inc. All Rights Reserved.
         <a href="http://jupiter.czech.sun.com/wiki/view/Netbeans/NB70DynLangDTrace">Photon</a> for more
         details about Photon.
 
-To create own D-Light Tool client should implement SPI interface DLightToolConfigurationProvider.
+To create own DLight Tool client should implement SPI interface DLightToolConfigurationProvider.
         <pre>
 public final class MySQLConfigurationProvider implements DLightToolConfigurationProvider {
 
@@ -263,10 +263,10 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
 -->
  <answer id="arch-what">
   <p>
-   D-Light Toolkit provides all infrastructure to collect data using dtrace (and not only dtrace but any other data collector),
+   DLight Toolkit provides all infrastructure to collect data using dtrace (and not only dtrace but any other data collector),
    put it into a storage and provide information collected to end user using NetBeans IDE.
-   C/C++ Observability Tool(codename Gizmo) will be built on top of D-Light Toolkit.
-   D-Light Toolkit itself in NetBeans is not going to be directly available
+   C/C++ Observability Tool(codename Gizmo) will be built on top of DLight Toolkit.
+   DLight Toolkit itself in NetBeans is not going to be directly available
    to end users and will be just a tool for other toolmakers.
    All the visualizers are just a library of predefined widgets that might be used by NetBeans developers.
   </p>
@@ -469,7 +469,7 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
 -->
  <answer id="dep-platform">
   <p>
-   D-Light Toolkit is pure API/SPI module which is OS independent.
+   DLight Toolkit is pure API/SPI module which is OS independent.
   </p>
  </answer>
 
@@ -888,7 +888,7 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
  <answer id="lookup-register">
   <p>
    2 services are registered using ServiceProvider tag.
-   D-Light Toolkit Management module which is closed module(infrastructure) is supposed to
+   DLight Toolkit Management module which is closed module(infrastructure) is supposed to
    use the services registered
   </p>
  </answer>
@@ -1039,9 +1039,9 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
 -->
  <answer id="perf-scale">
   <p>
-     The performance of D-Light Toolkit in common  will be defenitely influenced
+     The performance of DLight Toolkit in common  will be defenitely influenced
      by SPI implementator modules, but I think this question should be
-     answered by D-Light Toolkit users (Gizmo and Photon)
+     answered by DLight Toolkit users (Gizmo and Photon)
   </p>
  </answer>
 

@@ -76,7 +76,6 @@ import org.netbeans.modules.csl.editor.fold.GsfFoldManager;
 import org.netbeans.modules.csl.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.csl.editor.semantic.GoToMarkOccurrencesAction;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -250,27 +249,11 @@ public class GsfEditorKitFactory {
         
         public class GsfDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
             private JTextComponent currentTarget;
-            
+
             @Override
-            public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
+            public void actionPerformed(ActionEvent evt, JTextComponent target) {
                 currentTarget = target;
-                //run the super.actionPerformed() with indentation lock
-                if (target != null) {
-                    BaseDocument adoc = (BaseDocument) target.getDocument();
-                    final Indent indent = Indent.get(adoc);
-                    indent.lock();
-                    try {
-                        adoc.runAtomic(new Runnable() {
-                            public void run() {
-                                GsfDefaultKeyTypedAction.super.actionPerformed(evt, target);
-                            }
-                        });
-                    } finally {
-                        indent.unlock();
-                    }
-                } else {
-                    super.actionPerformed(evt, target);
-                }
+                super.actionPerformed(evt, target);
                 currentTarget = null;
             }
 

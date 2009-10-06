@@ -121,6 +121,8 @@ public class AstUtilities {
     private static final String[] ATTR_ACCESSORS = {"attr", "attr_reader", "attr_accessor", "attr_writer",
         "attr_internal", "attr_internal_accessor", "attr_internal_reader", "attr_internal_writer"};
 
+    private static final String[] NAMED_SCOPE = {"named_scope"};
+
     /**
      * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
      * and returns it. Returns <code>null</code> if it wasn't an instance of <code>RubyParseResult</code>.
@@ -1050,8 +1052,8 @@ public class AstUtilities {
             break;
 
         case FCALLNODE:
-            if (isAttr(node)) {
-                SymbolNode[] symbols = getAttrSymbols(node);
+            if (isAttr(node) || isNamedScope(node)) {
+                SymbolNode[] symbols = getSymbols(node);
                 for (SymbolNode sym : symbols) {
                     if (name.equals(sym.getName())) {
                         return sym;
@@ -1485,6 +1487,14 @@ public class AstUtilities {
         return isNodeNameIn(node, ATTR_ACCESSORS);
     }
 
+    static boolean isNamedScope(Node node) {
+        if (!isCallNode(node)) {
+            return false;
+        }
+        return isNodeNameIn(node, NAMED_SCOPE);
+    }
+
+
     public static boolean isActiveRecordAssociation(Node node) {
         if (!isCallNode(node)) {
             return false;
@@ -1505,9 +1515,8 @@ public class AstUtilities {
     private static boolean isCallNode(Node node) {
         return node instanceof FCallNode || node instanceof VCallNode;
     }
-    public static SymbolNode[] getAttrSymbols(Node node) {
-        assert isAttr(node);
 
+    static SymbolNode[] getSymbols(Node node) {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
@@ -1526,6 +1535,10 @@ public class AstUtilities {
         }
 
         return new SymbolNode[0];
+    }
+    public static SymbolNode[] getAttrSymbols(Node node) {
+        assert isAttr(node);
+        return getSymbols(node);
     }
 
     public static Node getRoot(final FileObject sourceFO) {

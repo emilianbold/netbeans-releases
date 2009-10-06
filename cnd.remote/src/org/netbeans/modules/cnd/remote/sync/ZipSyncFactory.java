@@ -44,6 +44,7 @@ import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -54,6 +55,7 @@ import org.openide.util.NbBundle;
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
 class ZipSyncFactory extends RemoteSyncFactory {
 
+    /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
     /*package*/ static final String ID = "scp"; //NOI18N
     
     @Override
@@ -81,6 +83,6 @@ class ZipSyncFactory extends RemoteSyncFactory {
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ! RemoteUtil.isForeign(execEnv);
+        return ENABLE_SCP && ! RemoteUtil.isForeign(execEnv);
     }
 }
