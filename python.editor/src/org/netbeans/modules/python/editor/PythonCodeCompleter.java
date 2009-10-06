@@ -1663,6 +1663,7 @@ public class PythonCodeCompleter implements CodeCompletionHandler {
             if (doc == null) {
                 return false;
             }
+            lexOffset = Math.min(lexOffset, doc.getLength());
             int newLexOffset = PythonLexerUtils.findSpaceBegin(doc, lexOffset);
             if (newLexOffset < lexOffset) {
                 astOffset -= (lexOffset - newLexOffset);

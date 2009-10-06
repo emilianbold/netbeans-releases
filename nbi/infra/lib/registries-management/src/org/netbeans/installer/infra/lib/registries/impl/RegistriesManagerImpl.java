@@ -954,7 +954,12 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 bundle = new File(
                         bundle.getAbsolutePath().replaceFirst("\\.jar$", ".sh"));
             }
-            
+            if (!bundle.exists()) {
+                throw new ManagerException("Could not create bundle." +
+                        "\nOutput:\n" + results.getStdOut() +
+                        "\nStderr:\n" + results.getStdErr());
+
+            }
             bundlesList.add(key);
             bundlesList.add(bundle.getAbsolutePath());
             FileUtils.writeStringList(bundlesListFile, bundlesList);

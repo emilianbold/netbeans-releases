@@ -102,10 +102,10 @@
                 <include name="netbeans/enterprise6/**"/>
                 <include name="netbeans/etc/**"/>
                 <include name="netbeans/harness/**"/>
-                <include name="netbeans/ide11/**"/>
+                <include name="netbeans/ide12/**"/>
                 <include name="netbeans/java3/**"/>
-                <include name="netbeans/nb6.7/**"/>
-                <include name="netbeans/platform10/**"/>
+                <include name="netbeans/nb6.8/**"/>
+                <include name="netbeans/platform11/**"/>
                 <include name="netbeans/soa2/**"/>
                 <include name="netbeans/websvccommon1/**"/>
                 <include name="netbeans/xml2/**"/>

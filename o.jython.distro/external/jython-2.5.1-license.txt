@@ -1,12 +1,12 @@
 Name: Jython
-Version: 2.5
+Version: 2.5.1
 Description: The Java-based implementation of Python
 License: Jython
 OSR: 9913
 Origin: http://www.jython.org
 Source: http://www.jython.org
 
-Use of Jython version  2.5 is governed by the terms of the license below:
+Use of Jython version  2.5.1 is governed by the terms of the license below:
 
 A. TERMS AND CONDITIONS FOR ACCESSING OR OTHERWISE USING JYTHON
 =======================================================
