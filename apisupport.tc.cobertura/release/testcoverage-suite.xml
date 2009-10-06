@@ -7,15 +7,7 @@
   At present, this only measure coverage for unit tests.  Functional
   tests, performance tests and other types of tests are not considered.
 
-  NOTE: Implemented using Cobertura, will be moved to separate module.
-  General contract for test coverage implementation for suite projects is
-  to create Ant script testcoverage-suite.xml in ${netbeans.dest.dir}/harness.
-  Script must:
-  * set property testcoverage.suite.present to true outside of any target
-  * define target 'coverage-report' in the script
-  * set property testcoverage.report.dir in 'coverage-report' target to dir
-    with index.html file with results.
-    Clients should make no other assumptions beyond this contract.
+  NOTE: Implemented using Cobertura, follows general contract described in harness README.
 -->
     <property name="testcoverage.suite.present" value="true"/>
     <property name="cobertura.dir" value="${harness.dir}/testcoverage/cobertura"/>
