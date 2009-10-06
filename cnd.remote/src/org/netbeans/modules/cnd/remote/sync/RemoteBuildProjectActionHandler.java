@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -187,15 +186,12 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         env2add.put("LD_LIBRARY_PATH", ldLibraryPath); // NOI18N
         env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
         env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
-        
-        String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
-        if (preloadLog != null) {
-            env2add.put("RFS_PRELOAD_LOG", preloadLog); // NOI18N
-        }
-        String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
-        if (controllerLog != null) {
-            env2add.put("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
-        }
+
+        addRemoteEnv(env2add, "cnd.rfs.preload.sleep", "RFS_PRELOAD_SLEEP"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
         for (Map.Entry<String, String> entry : env2add.entrySet()) {
@@ -214,6 +210,13 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 shutdownRfs();
             }
         });
+    }
+
+    private void addRemoteEnv(Map<String, String> env2add, String localJavaPropertyName, String remoteEnvVarName) {
+        String value = System.getProperty(localJavaPropertyName, null);
+        if (value != null) {
+            env2add.put(remoteEnvVarName, value);
+        }
     }
 
     private void shutdownRfs() {

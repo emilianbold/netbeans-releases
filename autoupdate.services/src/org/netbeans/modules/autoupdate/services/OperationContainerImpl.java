@@ -224,6 +224,9 @@ public final class OperationContainerImpl<Support> {
                 //TODO: what if elImpl instanceof FeatureUpdateElementImpl ?
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
+                if(eagerEl.getUpdateUnit().isPending()) {
+                    continue;
+                }
                 UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
                 List <ModuleInfo> infos = new ArrayList <ModuleInfo>();
                 if(impl instanceof ModuleUpdateElementImpl) {
@@ -239,12 +242,13 @@ public final class OperationContainerImpl<Support> {
                 for(ModuleInfo mi: infos) {
                     Set<UpdateElement> reqs = new HashSet<UpdateElement> ();
                     for (Dependency dep : mi.getDependencies ()) {
-                        UpdateElement req = Utilities.handleDependency (eagerEl, dep, Collections.singleton (mi), new HashSet<Dependency> (), false);
+                        UpdateElement req = Utilities.handleDependency (eagerEl, dep, Collections.singleton (mi), new HashSet<Dependency> (), 
+                                type == OperationType.UPDATE || type == OperationType.INTERNAL_UPDATE);
                         if (req != null) {
                             reqs.add (req);
                         }
                     }
-                    if ((! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) ||
+                    if ((! reqs.isEmpty() && all.containsAll(reqs) && ! all.contains (eagerEl)) ||
                             (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && !eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty() && type == OperationType.UPDATE && operations.size() > 0)) {
                         // adds affectedEager into list of elements for the operation
                         OperationInfo<Support> i = null;
@@ -253,7 +257,7 @@ public final class OperationContainerImpl<Support> {
                         } catch (IllegalArgumentException e) {
                             //investigate the reason of 172220, 171975, 169588
                             boolean firstCondition = (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl));
-                            boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0;
+                            boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && !eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty() && type == OperationType.UPDATE && operations.size() > 0;
                             StringBuilder sb = new StringBuilder();
                             sb.append("\nIAE while adding eager element to the " + type + " container\n");
                             sb.append("\nEager: " + eagerEl);

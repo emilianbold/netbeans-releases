@@ -211,7 +211,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             processError = new ByteArrayInputStream(new byte[0]);
 
-            waitPID(pb.start(), pidFileFile);
+            Process terminalProcess = pb.start();
+
+            creation_ts = System.nanoTime();
+            
+            waitPID(terminalProcess, pidFileFile);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
             processError = new ByteArrayInputStream(msg.getBytes());

@@ -73,15 +73,18 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -117,7 +120,7 @@ public final class DtraceDataCollector
     private URL localScriptUrl;
     private String extraArgs;
     private String scriptPath;
-    private DTraceRunner dtraceRunner = null;
+    private CollectorRunner dtraceRunner = null;
     private DTDCConfiguration configuration;
     private ValidationStatus validationStatus =
             ValidationStatus.initialStatus();
@@ -290,7 +293,7 @@ public final class DtraceDataCollector
         File scriptFile;
         try {
             scriptFile = Util.copyToTempDir(localScriptUrl);
-            DTraceRunner.preprocessDTraceScript(scriptFile);
+            DTraceScriptUtils.insertEOFMarker(scriptFile);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             scriptPath = null;
@@ -346,6 +349,10 @@ public final class DtraceDataCollector
      */
     protected String getCollectorTaskExtraParams() {
         return extraArgs;
+    }
+
+    /*package*/ void packageVisibleSuggestIndicatorsRepaint() {
+        super.suggestIndicatorsRepaint();
     }
 
     private void targetFinished(DLightTarget target) {
@@ -522,7 +529,10 @@ public final class DtraceDataCollector
             taskCommand += " " + extraParams; // NOI18N
         }
 
-        this.dtraceRunner = new DTraceRunner(target.getExecEnv(), taskCommand, getOutputProcessor());
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
+        npb.setCommandLine(taskCommand);
+
+        this.dtraceRunner = new CollectorRunner(new FakeIndicatorNotificationListener(), npb, getOutputProcessor(), DTraceScriptUtils.EOF_MARKER, "DTrace"); // NOI18N
 
         log.fine("DtraceDataCollector (" + dtraceRunner.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
@@ -623,6 +633,7 @@ public final class DtraceDataCollector
         public void close() {
             DataRow dataRow = parser.processClose();
             addDataRow(dataRow);
+            suggestIndicatorsRepaint();
         }
     }
 
@@ -657,6 +668,25 @@ public final class DtraceDataCollector
             for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                 entry.getValue().getOutputProcessor().close();
             }
+            suggestIndicatorsRepaint();
+        }
+    }
+
+    private class FakeIndicatorNotificationListener implements IndicatorNotificationsListener {
+
+        @Override
+        public void reset() {
+            resetIndicators();
+        }
+
+        @Override
+        public void suggestRepaint() {
+            suggestIndicatorsRepaint();
+        }
+
+        @Override
+        public void updated(List<DataRow> data) {
+            notifyIndicators(data);
         }
     }
 

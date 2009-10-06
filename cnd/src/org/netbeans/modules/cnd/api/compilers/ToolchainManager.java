@@ -68,6 +68,10 @@ public final class ToolchainManager {
 
         String[] getPlatforms();
 
+        String getUpdateCenterUrl();
+
+        String getModuleID();
+
         String getDriveLetterPrefix();
 
         List<BaseFolder> getBaseFolders();

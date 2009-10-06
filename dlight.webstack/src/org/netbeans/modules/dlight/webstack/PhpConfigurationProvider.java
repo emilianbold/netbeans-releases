@@ -66,7 +66,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
   public DLightToolConfiguration create() {
     final String toolName = getMessage("PhpTool.Name"); // NOI18N
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
+    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("php.id", toolName); // NOI18N
     List<Column> indicatorColumns = Arrays.asList(
             new Column("utime", Double.class, getMessage("Column.UserTime"), null), // NOI18N
             new Column("stime", Double.class, getMessage("Column.SystemTime"), null), // NOI18N

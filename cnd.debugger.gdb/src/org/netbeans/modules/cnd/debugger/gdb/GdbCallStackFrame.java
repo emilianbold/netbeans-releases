@@ -250,10 +250,8 @@ public class GdbCallStackFrame extends CallStackFrame {
                 locals[i] = new GdbLocalVariable(debugger, list.get(i));
             }
             cachedLocalVariables = locals;
-            return locals;
-        } else {
-            return cachedLocalVariables;
-        }
+        } 
+        return cachedLocalVariables;
     }
 
     public AbstractVariable[] getAutos() {

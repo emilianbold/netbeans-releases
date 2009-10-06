@@ -55,10 +55,12 @@ public final class DTraceScriptUtils {
     private DTraceScriptUtils() {
     }
 
-    public static void appendToScript(File script, String text) throws IOException {
+    public static final String EOF_MARKER = "__EOF_MARKER__"; // NOI18N
+
+    public static void insertEOFMarker(File script) throws IOException {
         BufferedWriter w = new BufferedWriter(new FileWriter(script, true));
         try {
-            w.write(text);
+            w.write("END { printf(\"" + EOF_MARKER + "\") }"); // NOI18N
         } finally {
             w.close();
         }

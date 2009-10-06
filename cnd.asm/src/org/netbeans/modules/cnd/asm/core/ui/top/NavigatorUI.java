@@ -160,7 +160,7 @@ public class NavigatorUI extends javax.swing.JPanel implements
     private static class AsmFunctionNode extends AbstractNode {                
         
         private static final String FUNC_ICON = 
-                "org/netbeans/modules/asm/core/resources/function.png";    // NOI18N
+                "org/netbeans/modules/cnd/asm/core/resources/function.png";    // NOI18N
         
         private final AsmOffsetable off;     
         private final DataObject dob;

@@ -1896,6 +1896,7 @@ public class CasualDiff {
         int[][] matrix = estimator.getMatrix();
         int testPos = initialPos;
         int i = 0;
+        boolean firstNewItem = true;
         for (int j = 0; j < result.length; j++) {
             JCTree oldT;
             ResultItem<JCTree> item = result[j];
@@ -1909,7 +1910,8 @@ public class CasualDiff {
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
                     oldT = oldIter.next(); ++i;
-                    copyTo(lastOldPos, getOldPos(oldT));
+                    if (!firstNewItem)
+                        copyTo(lastOldPos, getOldPos(oldT));
 
                     if (treesMatch(oldT, item.element, false)) {
                         lastOldPos = diffTree(oldT, item.element, getBounds(oldT));
@@ -1917,6 +1919,7 @@ public class CasualDiff {
                         printer.print(item.element);
                         lastOldPos = Math.max(testPos, endPos(oldT));
                     }
+                    firstNewItem = false;
                     break;
                 }
                 case INSERT: {
@@ -1930,6 +1933,7 @@ public class CasualDiff {
                     printer.print(item.element);
                     printer.print(tail);
                     //append(Diff.insert(testPos, prec, item.element, tail, LineInsertionType.NONE));
+                    firstNewItem = false;
                     break;
                 }
                 case DELETE: {
@@ -1974,6 +1978,7 @@ public class CasualDiff {
                     }
                     oldT = oldIter.next(); ++i;
                     copyTo(lastOldPos, lastOldPos = endPos(oldT));
+                    firstNewItem = false;
                     break;
                 }
             }

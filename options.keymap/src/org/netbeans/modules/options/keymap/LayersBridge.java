@@ -400,7 +400,7 @@ public class LayersBridge extends KeymapManager {
         for (Map.Entry<ShortcutAction, Set<String>> entry: actionToShortcuts.entrySet()) {
             ShortcutAction action = entry.getKey();
             Set<String> shortcuts = entry.getValue();
-            action = action.getKeymapManagerInstance(LAYERS_BRIDGE);
+            action = action != null ? action.getKeymapManagerInstance(LAYERS_BRIDGE) : null; // #161164
             if (!(action instanceof GlobalAction)) continue;
             for (String multiShortcut: shortcuts) {
                 shortcutToAction.put (multiShortcut, action);

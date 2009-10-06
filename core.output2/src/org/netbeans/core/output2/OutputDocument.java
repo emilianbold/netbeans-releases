@@ -153,15 +153,15 @@ public class OutputDocument implements Document, Element, ChangeListener {
     }
     
     public String getText(int offset, int length) throws BadLocationException {
-        if (offset < 0 || offset > getLines().getCharCount() + inBuffer.length() || length < 0) {
-            throw new BadLocationException ("Bad: " + offset + "," +  //NOI18N
-                length, offset);
-        }
         if (length == 0) {
             return ""; //NOI18N
         }
         String result;
         synchronized (getLines().readLock()) {
+            if (offset < 0 || offset + length > getLines().getCharCount() + inBuffer.length() || length < 0) {
+                throw new BadLocationException("Bad: " + offset + "," + //NOI18N
+                        length + " (" + getLines().getCharCount() + ", " + inBuffer.length() + ")", offset);
+            }
             int linesOffset = Math.min(getLines().getCharCount(), offset);
             int linesEnd = Math.min(getLines().getCharCount(), offset + length);
             result = getLines().getText(linesOffset, linesEnd);

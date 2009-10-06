@@ -61,7 +61,10 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
     private final List<TimeSeriesDescriptor> seriesDescriptors;
     private final List<DetailDescriptor> detailDescriptors;
     private DataRowToTimeSeries dataRowHandler;
+    private long granularity;
+    private Aggregation aggr;
     private ValueFormatter formatter;
+    private boolean lastNonNull;
 
     public TimeSeriesIndicatorConfiguration(IndicatorMetadata metadata, int position) {
         super(metadata, position, true);
@@ -69,6 +72,9 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         this.scale = 100;
         this.seriesDescriptors = new ArrayList<TimeSeriesDescriptor>();
         this.detailDescriptors = new ArrayList<DetailDescriptor>();
+        this.granularity = 1000000000;
+        this.aggr = Aggregation.LAST;
+        this.lastNonNull = true;
     }
 
     @Override
@@ -124,6 +130,30 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         return formatter;
     }
 
+    public void setAggregation(Aggregation aggr) {
+        this.aggr = aggr;
+    }
+
+    private Aggregation getAggregation() {
+        return aggr;
+    }
+
+    public void setGranularity(long granularity) {
+        this.granularity = granularity;
+    }
+
+    private long getGranularity() {
+        return granularity;
+    }
+
+    public void setLastNonNull(boolean lastNonNull) {
+        this.lastNonNull = lastNonNull;
+    }
+
+    private boolean getLastNonNull() {
+        return lastNonNull;
+    }
+
     private static class TimeSeriesIndicatorConfigurationAccessorImpl extends TimeSeriesIndicatorConfigurationAccessor {
 
         @Override
@@ -154,6 +184,21 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         @Override
         public ValueFormatter getLabelRenderer(TimeSeriesIndicatorConfiguration conf) {
             return conf.getLabelRenderer();
+        }
+
+        @Override
+        public long getGranularity(TimeSeriesIndicatorConfiguration conf) {
+            return conf.getGranularity();
+        }
+
+        @Override
+        public Aggregation getAggregation(TimeSeriesIndicatorConfiguration conf) {
+            return conf.getAggregation();
+        }
+
+        @Override
+        public boolean getLastNonNull(TimeSeriesIndicatorConfiguration conf) {
+            return conf.getLastNonNull();
         }
     }
 

@@ -115,6 +115,10 @@ public final class KenaiUserUI {
     }
 
     public void startChat() {
+        startChat(null);
+    }
+
+    public void startChat(final String stringToInsert) {
         Runnable run = new Runnable() {
 
             public void run() {
@@ -160,6 +164,7 @@ public final class KenaiUserUI {
                 tc.open();
                 tc.requestActive();
                 tc.setActivePrivate(user.getUserName());
+                tc.insertToActiveChat(stringToInsert);
                 tc.requestFocus();
             }
         };

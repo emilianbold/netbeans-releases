@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -121,8 +122,11 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())
-                        && isDocumentLoaded() && getDocument() != null) {
-                    getDocument().addDocumentListener(docListener);
+                        && isDocumentLoaded()) {
+                    StyledDocument doc = getDocument();
+                    if (doc != null) {
+                        doc.addDocumentListener(docListener);
+                    }
                 }
             }
         });
