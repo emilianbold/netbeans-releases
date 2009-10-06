@@ -110,9 +110,9 @@ public class PHPFormatterTest extends PHPTestBase {
      * @throws Exception
      */
 
-    public void test173899() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173899.php");
-    }
+//    public void test173899() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/173899.php");
+//    }
     
 
     public void testIfElseStatement() throws Exception {
