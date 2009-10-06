@@ -53,6 +53,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.common.utils.GeneralUtils;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -88,7 +89,7 @@ public abstract class AbstractVariable implements LocalVariable {
         assert !SwingUtilities.isEventDispatchThread();
         this.debugger = debugger;
 
-        if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+        if (debugger.getPlatform() != PlatformTypes.PLATFORM_MACOSX) {
             this.value = value;
         } else {
             // Convert the Mac-specific value to standard gdb/mi format

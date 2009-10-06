@@ -85,6 +85,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     static {
         System.setProperty("cnd.remote.force.setup", "true");
+        System.setProperty("socket.connection.timeout", "10000");
     }
 
     static {
@@ -213,6 +214,12 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected void removeRemoteHome() {
         String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
+        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
+        assertEquals("Failed to run " + cmd, 0, rc);
+    }
+
+    protected void removeRemoteHomeSubdir(String subdir) {
+        String cmd = "rm -rf ${HOME}/.netbeans/remote/" + subdir;
         int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
         assertEquals("Failed to run " + cmd, 0, rc);
     }

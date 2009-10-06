@@ -144,9 +144,10 @@ public class ErprintSession {
     }
 
     private synchronized Erprint restartAndLock(boolean restart) throws IOException {
+        // Never return null, do throw an exception instead. See IZ 173754.
         while (!ready) {
             if (Thread.interrupted()) {
-                return null;
+                throw new IOException("Interrupted during warmup"); // NOI18N
             }
 
             try {
@@ -174,7 +175,12 @@ public class ErprintSession {
         } catch (Throwable ex) {
             // failed to start er_print ?
         }
-        return er_print;
+
+        if (er_print == null) {
+            throw new IOException("Failed to start er_print"); // NOI18N
+        } else {
+            return er_print;
+        }
     }
 
     private synchronized void stop_er_print() {

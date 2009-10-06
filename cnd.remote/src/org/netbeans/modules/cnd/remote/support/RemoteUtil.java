@@ -58,6 +58,17 @@ public class RemoteUtil {
 
     private RemoteUtil() {}
 
+    public static String getEnv(ExecutionEnvironment env, String varName) throws RemoteException {
+        String cmd = String.format("echo ${%s}", varName); // NOI18N
+        RemoteCommandSupport rcs = new RemoteCommandSupport(env, cmd);
+        int rc = rcs.run();
+        if (rc != 0) {
+            throw new RemoteException(String.format("Failed to run %s at %s")); // NOI18N
+        }
+        String result = rcs.getOutput();
+        return result;
+    }
+
     /** 
      * Returns home directory for the given host
      * NB: this is a LONG RUNNING method - never call from UI thread

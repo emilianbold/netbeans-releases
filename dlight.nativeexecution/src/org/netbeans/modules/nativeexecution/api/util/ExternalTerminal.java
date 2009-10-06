@@ -203,7 +203,7 @@ public final class ExternalTerminal {
         return NbBundle.getMessage(ExternalTerminal.class, key, params);
     }
 
-    private static class TermEnvPair {
+    /*package*/final static class TermEnvPair {
 
         public final ExecutionEnvironment env;
         public final String termexec;
