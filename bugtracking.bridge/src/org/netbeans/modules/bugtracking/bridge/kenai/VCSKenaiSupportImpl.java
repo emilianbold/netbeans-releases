@@ -216,6 +216,16 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
 
         @Override
+        public void startChat(String msg) {
+            delegate.startChat(msg);
+        }
+
+        @Override
+        public void chatFileLink(File file, int line) {
+            delegate.startChat(getChatLink(file, line));
+        }
+
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             delegate.getKenaiUser().removePropertyChangeListener(listener);
         }

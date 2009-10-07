@@ -165,7 +165,7 @@ public abstract class VCSKenaiSupport {
     /**
      * Repesents a Kenai user
      */
-    public abstract class KenaiUser {
+    public static abstract class KenaiUser {
 
         /**
          * Determines wheter the {@link KenaiUser} is online or not
@@ -207,12 +207,27 @@ public abstract class VCSKenaiSupport {
          * Start a chat session with this user
          */
         public abstract void startChat();
+
+        /**
+         * Start a chat session with this user and inserts the given message
+         */
+        public abstract void startChat(String msg);
+
+        /**
+         * Start a chat session with this user and inserts a link pointing
+         * to the given file and line
+         */
+        public abstract void chatFileLink(File file, int line);
+
+        public static String getChatLink(File file, int line) {
+            return "FILE:" + file.getAbsolutePath() + ":" + line;                                 // NOI18N
+        }
     }
 
     /**
      * Represents a change in a kenai VCS repository
      */
-    public abstract class VCSKenaiNotification {
+    public static abstract class VCSKenaiNotification {
 
         /**
          * The repository uri
