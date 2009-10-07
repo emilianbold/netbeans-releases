@@ -1759,6 +1759,15 @@ final class Central implements ControllerHandler {
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(mode, 
                 View.CHANGE_TOPCOMPONENT_ACTIVATED, null, tc));
+
+            //restore floating windows if iconified
+            if( mode.getState() == Constants.MODE_STATE_SEPARATED ) {
+                Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, tc);
+                if( null != frame && frame != WindowManagerImpl.getInstance().getMainWindow()
+                        && (frame.getExtendedState() & Frame.ICONIFIED) > 0 ) {
+                    frame.setExtendedState(frame.getExtendedState() - Frame.ICONIFIED );
+                }
+            }
         }
         
         // Notify registry.
