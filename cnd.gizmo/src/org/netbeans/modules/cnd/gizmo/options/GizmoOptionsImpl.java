@@ -189,6 +189,10 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return -1;
     }
 
+    public String getConfiurationNameValue() {
+        return configurations[getGizmoConfigurations().getValue()].getConfigurationName();
+    }
+
     public Collection<String> getNames() {
         List<DLightTool> tools = new ArrayList<DLightTool>(getDLightConfiguration().getToolsSet());
         Collection<String> result = new ArrayList<String>();
@@ -295,6 +299,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldBoolValue, getProfileOnRunValue());
         if (getGizmoConfigurations() != null) { // IZ173904, FIXUP: configuration dup will loose gizmo configuration setting
             getGizmoConfigurations().assign(gizmoOptions.getGizmoConfigurations());
+        }
+        else {
+            preferredConfigurationName = gizmoOptions.getConfiurationNameValue();
         }
     }
 
