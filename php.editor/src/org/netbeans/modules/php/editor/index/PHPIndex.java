@@ -423,17 +423,19 @@ public class PHPIndex {
         collectedConstants =
                 qualifiedTypeName.getKind().isUnqualified() ? collectedConstants : namespaceFilter.filter(collectedConstants, true);
 
-        Map<String, IndexedClassMember<IndexedConstant>> retval = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
+        Set<String> checkSet = new HashSet<String>();
+        Set<IndexedClassMember<IndexedConstant>> retval = new HashSet<IndexedClassMember<IndexedConstant>>();
 
         for (IndexedClassMember<IndexedConstant> classMember : collectedConstants) {
             IndexedConstant constant = classMember.getMember();
             IndexedType type = classMember.getType();
             String methodName = constant.getName();
-            if (!retval.containsKey(methodName) || type.getName().equals(typeName)) {
-                retval.put(methodName, classMember);
+            if (!checkSet.contains(methodName) || type.getName().equals(typeName)) {
+                checkSet.add(methodName);
+                retval.add(classMember);
             }
         }
-        return retval.values();
+        return retval;
     }
 
     /** returns constnats of a class. */
@@ -459,17 +461,19 @@ public class PHPIndex {
         collectedMethods =
                 qualifiedTypeName.getKind().isUnqualified()? collectedMethods : namespaceFilter.filter(collectedMethods, true);
 
-        Map<String, IndexedClassMember<IndexedFunction>> retval = new TreeMap<String, IndexedClassMember<IndexedFunction>>();
+        Set<String> checkSet = new HashSet<String>();
+        Set<IndexedClassMember<IndexedFunction>> retval = new HashSet<IndexedClassMember<IndexedFunction>>();
 
         for (IndexedClassMember<IndexedFunction> classMember : collectedMethods) {
             IndexedFunction method = classMember.getMember();
             IndexedType type = classMember.getType();
             String methodName = method.getName();
-            if (!retval.containsKey(methodName) || type.getFullyQualifiedName().equalsIgnoreCase(fqn)) {
-                retval.put(methodName, classMember);
+            if (!checkSet.contains(methodName) || type.getFullyQualifiedName().equalsIgnoreCase(fqn)) {
+                checkSet.add(methodName);
+                retval.add(classMember);
             }
         }
-        return retval.values();
+        return retval;
     }
 
     /** returns all methods of a class or an interface. */
@@ -494,17 +498,19 @@ public class PHPIndex {
         collectedFields =
                 qualifiedTypeName.getKind().isUnqualified()? collectedFields : namespaceFilter.filter(collectedFields, true);
 
-        Map<String, IndexedClassMember<IndexedConstant>> retval = new TreeMap<String, IndexedClassMember<IndexedConstant>>();
+        Set<String> checkSet = new HashSet<String>();
+        Set<IndexedClassMember<IndexedConstant>> retval = new HashSet<IndexedClassMember<IndexedConstant>>();
 
         for (IndexedClassMember<IndexedConstant> classMember : collectedFields) {
             IndexedConstant field = classMember.getMember();
             IndexedType type = classMember.getType();
             String methodName = field.getName();
-            if (!retval.containsKey(methodName) || type.getName().equals(typeName)) {
-                retval.put(methodName, classMember);
+            if (!checkSet.contains(methodName) || type.getName().equals(typeName)) {
+                checkSet.add(methodName);
+                retval.add(classMember);
             }
         }
-        return retval.values();
+        return retval;
     }
 
     /** returns all fields of a class or an interface. */
