@@ -54,8 +54,10 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -75,6 +77,8 @@ public class Bugzilla {
     private RequestProcessor rp;
     private BugzillaCorePlugin bcp;
     private BugzillaClientManager clientManager;
+
+    private KenaiSupport kenaiSupport;
 
     private Bugzilla() {
         bcp = new BugzillaCorePlugin();
@@ -104,6 +108,13 @@ public class Bugzilla {
         }
     }
 
+    public KenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = new KenaiSupportImpl();
+        }
+        return kenaiSupport;
+    }
+    
     public BugzillaRepositoryConnector getRepositoryConnector() {
         return brc;
     }
