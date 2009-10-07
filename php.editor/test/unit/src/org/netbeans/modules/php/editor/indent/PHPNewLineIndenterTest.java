@@ -156,6 +156,14 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue168908.php");
     }
 
+//    146247
+    /**
+     * 173966 issue - a regression from 146247
+     * @throws Exception
+     */
+    public void test173966() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/173966.php");
+    }
     /**
      * 13900 issue
      * @throws Exception
