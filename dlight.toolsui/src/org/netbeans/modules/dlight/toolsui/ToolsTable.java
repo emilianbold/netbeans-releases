@@ -51,8 +51,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.dlight.toolsui.api.DLightConfigurationUIWrapper;
-import org.netbeans.modules.dlight.toolsui.api.DLightToolUIWrapper;
 import org.openide.util.ImageUtilities;
 
 /**

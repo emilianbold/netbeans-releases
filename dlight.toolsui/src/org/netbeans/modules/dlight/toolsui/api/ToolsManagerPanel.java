@@ -56,9 +56,9 @@ import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationSupport;
-import org.netbeans.modules.dlight.toolsui.api.DLightConfigurationUIWrapper;
-import org.netbeans.modules.dlight.toolsui.api.DLightConfigurationUIWrapperProvider;
-import org.netbeans.modules.dlight.toolsui.api.DLightToolUIWrapper;
+import org.netbeans.modules.dlight.toolsui.DLightConfigurationUIWrapper;
+import org.netbeans.modules.dlight.toolsui.DLightConfigurationUIWrapperProvider;
+import org.netbeans.modules.dlight.toolsui.DLightToolUIWrapper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -100,7 +100,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     private void initConfigurationPanel(DLightConfigurationUIWrapper dlightConfigurationUIWrapper) {
         DLightConfiguration gizmoConfiguration = dlightConfigurationUIWrapper.getDLightConfiguration();
         assert gizmoConfiguration != null;
-        profileOnRunCheckBox.setSelected(dlightConfigurationUIWrapper.isProfileOnRun());
 //        defaultDataProviderComboBox.removeAllItems();
 //        defaultDataProviderComboBox.addItem("SunStudio"); // NOI18N
 //        defaultDataProviderComboBox.addItem("DTrace"); // NOI18N
@@ -232,7 +231,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         profileConfigurationLabel = new javax.swing.JLabel();
         profileConfigurationComboBox = new javax.swing.JComboBox();
-        profileOnRunCheckBox = new javax.swing.JCheckBox();
         toolsPanel = new javax.swing.JPanel();
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
@@ -247,9 +245,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         profileConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileConfigurationLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(profileConfigurationLabel, gridBagConstraints);
 
         profileConfigurationComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -259,26 +257,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 12);
         add(profileConfigurationComboBox, gridBagConstraints);
-
-        profileOnRunCheckBox.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileOnRunCheckBox.text")); // NOI18N
-        profileOnRunCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                profileOnRunCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
-        add(profileOnRunCheckBox, gridBagConstraints);
 
         toolsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -337,7 +321,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -377,11 +361,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         }
         lastSelectedIndex = profileConfigurationComboBox.getSelectedIndex();
     }//GEN-LAST:event_profileConfigurationComboBoxActionPerformed
-
-    private void profileOnRunCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileOnRunCheckBoxActionPerformed
-        DLightConfigurationUIWrapper dLightConfigurationWrapper = (DLightConfigurationUIWrapper) profileConfigurationComboBox.getSelectedItem();
-        dLightConfigurationWrapper.setProfileOnRun(!dLightConfigurationWrapper.isProfileOnRun());
-    }//GEN-LAST:event_profileOnRunCheckBoxActionPerformed
 
     class MyListEditorPanel extends ListEditorPanel<DLightConfigurationUIWrapper> {
 
@@ -475,7 +454,6 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
     private javax.swing.JList jList1;
     private javax.swing.JComboBox profileConfigurationComboBox;
     private javax.swing.JLabel profileConfigurationLabel;
-    private javax.swing.JCheckBox profileOnRunCheckBox;
     private javax.swing.JPanel toolPropertyPanel;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
