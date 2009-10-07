@@ -44,7 +44,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
@@ -64,8 +63,8 @@ public class DependencyTreeFactory {
             PlexusContainer container = embedder.getPlexusContainer();
             DependencyTreeBuilder builder = (DependencyTreeBuilder) container.lookup(DependencyTreeBuilder.ROLE);
             ArtifactFactory factory = (ArtifactFactory)container.lookup(ArtifactFactory.ROLE);
-            ArtifactMetadataSource source = (ArtifactMetadataSource)container.lookup(ArtifactMetadataSource.ROLE);
-            ArtifactCollector collector = (ArtifactCollector)container.lookup(ArtifactCollector.ROLE);
+            ArtifactMetadataSource source = (ArtifactMetadataSource)container.lookup("org.apache.maven.artifact.metadata.ArtifactMetadataSource");
+            ArtifactCollector collector = (ArtifactCollector)container.lookup("org.apache.maven.artifact.resolver.ArtifactCollector");
             return createDependencyTree(project, builder, embedder.getLocalRepository(), factory, source, collector, scope);
         } catch (ComponentLookupException ex) {
             Exceptions.printStackTrace(ex);
