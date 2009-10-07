@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -63,30 +62,39 @@ import org.openide.filesystems.FileUtil;
  */
 public class FileObjectCrawlerTest extends NbTestCase {
 
+    private static final CancelRequest CR = new CancelRequest() {
+        public boolean isRaised() {
+            return false;
+        }
+    };
+
     public FileObjectCrawlerTest(String name) {
         super(name);
     }
 
-
-    public void testIncludesExcludes() throws IOException {
+    protected @Override void setUp() throws IOException {
         clearWorkDir();
         File wd = getWorkDir();
         final FileObject wdFO = FileUtil.toFileObject(wd);
-        final FileObject src = FileUtil.createFolder(wdFO, "src");
         final FileObject cache = FileUtil.createFolder(wdFO, "cache");
 
         CacheFolder.setCacheFolder(cache);
+    }
 
+    public void testIncludesExcludes() throws IOException {
+        final FileObject src = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "src");
         assertNotNull(src);
 
-        FileUtil.createData(src, "p1/Included1.java");
-        FileUtil.createData(src, "p1/Included2.java");
-        FileUtil.createData(src, "p1/a/Included3.java");
-        FileUtil.createData(src, "p1/a/Included4.java");
-        FileUtil.createData(src, "p2/Excluded1.java");
-        FileUtil.createData(src, "p2/Excluded2.java");
-        FileUtil.createData(src, "p2/a/Excluded3.java");
-        FileUtil.createData(src, "p2/a/Excluded4.java");
+        populateFolderStructure(new File(getWorkDir(), "src"),
+            "p1/Included1.java",
+            "p1/Included2.java",
+            "p1/a/Included3.java",
+            "p1/a/Included4.java",
+            "p2/Excluded1.java",
+            "p2/Excluded2.java",
+            "p2/a/Excluded3.java",
+            "p2/a/Excluded4.java"
+        );
 
         ClassPath cp = ClassPathSupport.createClassPath(Arrays.asList(new FilteringPathResourceImplementation() {
             private final Pattern p = Pattern.compile("p1/.*");
@@ -111,24 +119,64 @@ public class FileObjectCrawlerTest extends NbTestCase {
             public void removePropertyChangeListener(PropertyChangeListener listener) {}
         }));
 
-        Collection<IndexableImpl> resources = new FileObjectCrawler(src, false, cp.entries().get(0), new CancelRequest() {
-            public boolean isRaised() {
-                return false;
-            }
-        }).getResources();
+        FileObjectCrawler crawler = new FileObjectCrawler(src, false, cp.entries().get(0), CR);
+        assertCollectedFiles("Wrong files collected", crawler,
+                "p1/Included1.java",
+                "p1/Included2.java",
+                "p1/a/Included3.java",
+                "p1/a/Included4.java"
+        );
+    }
 
-        assertEquals(4, resources.size());
+    public void testRelativePaths() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/pckg1/file1.txt",
+                "org/pckg1/pckg2/file1.txt",
+                "org/pckg1/pckg2/file2.txt",
+                "org/pckg2/"
+        };
+        populateFolderStructure(root, paths);
 
-        Set<String> out = new HashSet<String>();
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("Wrong files collected", crawler1, paths);
+        
+        FileObject folder = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
+        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { folder }, false, null, CR);
+        assertCollectedFiles("Wrong files collected from " + folder, crawler2,
+            "org/pckg1/pckg2/file1.txt",
+            "org/pckg1/pckg2/file2.txt"
+        );
+    }
 
-        for (IndexableImpl i : resources) {
-            out.add(i.getRelativePath());
+    protected void assertCollectedFiles(String message, FileObjectCrawler crawler, String... expectedPaths) throws IOException {
+        Set<String> collectedPaths = new HashSet<String>();
+        for(IndexableImpl ii : crawler.getAllResources()) {
+            collectedPaths.add(ii.getRelativePath());
         }
+        Set<String> expectedPathsFiltered = new HashSet<String>();
+        for(String path : expectedPaths) {
+            if (!path.endsWith("/")) { // crawler only collects files
+                expectedPathsFiltered.add(path);
+            }
+        }
+        assertEquals(message, expectedPathsFiltered, collectedPaths);
+    }
 
-        Set<String> golden = new HashSet<String>(Arrays.asList("p1/Included1.java",
-                                                           "p1/Included2.java",
-                                                           "p1/a/Included3.java",
-                                                           "p1/a/Included4.java"));
-        assertEquals(golden, out);
+    private static void populateFolderStructure(File root, String... filesOrFolders) throws IOException {
+        root.mkdirs();
+        for(String fileOrFolder : filesOrFolders) {
+            if (fileOrFolder.endsWith("/")) {
+                // folder
+                File folder = new File(root, fileOrFolder.substring(0, fileOrFolder.length() - 1));
+                folder.mkdirs();
+            } else {
+                // file
+                File file = new File(root, fileOrFolder);
+                File folder = file.getParentFile();
+                folder.mkdirs();
+                FileUtil.createData(FileUtil.toFileObject(folder), file.getName());
+            }
+        }
     }
 }
