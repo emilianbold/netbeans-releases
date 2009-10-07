@@ -28,7 +28,9 @@
       <param name="textFontStyle" value="italic">
       <param name="textFontWeight" value="bold">
       <param name="textColor" value="blue">
-    </object>:</p>
+    </object>. In Java EE 5 and 6 enterprise applications, the descriptor files are optional and
+    you can use annotations to specify most deployment settings and resources.
+    J2EE 1.4 enterprise applications will generally require the following descriptor files.</p>
     <ul>
         <li>A general J2EE deployment descriptor that configures deployment settings 
         on any J2EE-compliant implementation. It describes the enterprise application, 
@@ -37,7 +39,7 @@
         is called <tt>application.xml</tt>.</li>
         <li>A server-specific deployment descriptor that configures deployment settings 
         for the application server to which you are deploying.
-        If you are deploying your application to the Sun Java System Application Server/GlassFish, 
+        If you are deploying your application to the Sun Java System Application Server or GlassFish,
         the IDE provides a graphical deployment descriptor editor 
         and automatically updates the deployment descriptor as you edit your files. 
         For all other application servers, you have to write the server-specific deployment 
@@ -67,7 +69,7 @@ files in the Source Editor. The <tt>sun-application.xml</tt> file can also
 </ol>
 
 <ul class="note">
-        <li>If you have a Java EE 5 enterprise application that is deployed to a Java EE 5 application server,
+        <li>If you have a Java EE 5 or Java EE 6 enterprise application that is deployed to a Java EE container,
         you can specify most deployment settings using annotations.
         However, you have the option of using XML descriptors as an alternative to annotations 
         or to supplement or override some annotations.</li>

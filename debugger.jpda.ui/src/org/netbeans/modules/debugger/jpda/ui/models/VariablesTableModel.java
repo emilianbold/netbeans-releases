@@ -172,6 +172,9 @@ public class VariablesTableModel implements TableModel, Constants {
         if (row == "noDebugInfoWarning") { // NOI18N
             return ""; // NOI18N
         }
+        if (row == "No current thread") { // NOI18N
+            return "";
+        }
         throw new UnknownTypeException (row);
     }
     
@@ -242,6 +245,9 @@ public class VariablesTableModel implements TableModel, Constants {
             return true;
         }
         if (row == "noDebugInfoWarning") {
+            return true;
+        }
+        if (row == "No current thread") {
             return true;
         }
         throw new UnknownTypeException (row);

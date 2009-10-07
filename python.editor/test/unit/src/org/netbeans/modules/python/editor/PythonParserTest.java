@@ -125,4 +125,14 @@ public class PythonParserTest extends PythonTestBase {
     public void testPython26Syntax() throws Exception {
         checkNoParseAbort("testfiles/exceptas.py");
     }
+
+    public void testMissingColons1() throws Exception {
+        checkNoParseAbort("testfiles/errors10.py");
+        checkErrors("testfiles/errors10.py");
+    }
+
+    public void testMissingColons2() throws Exception {
+        checkNoParseAbort("testfiles/errors11.py");
+        checkErrors("testfiles/errors11.py");
+    }
 }

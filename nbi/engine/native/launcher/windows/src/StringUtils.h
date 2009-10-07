@@ -125,10 +125,17 @@ extern const char * MAIN_WINDOW_TITLE;
     char * int64ttoCHAR(int64t*);
     WCHAR * int64ttoWCHAR(int64t*);
     char * DWORDtoCHAR(DWORD);
-    WCHAR * DWORDtoWCHAR(DWORD);    
+    char * DWORDtoCHARN(DWORD,int);
     
-    char * doubleToChar(double dl);
+    WCHAR * DWORDtoWCHAR(DWORD);
+    WCHAR * DWORDtoWCHARN(DWORD,int);
     
+    char * long2char(long value);
+    char * long2charN(long value,int fillZeros);
+
+    char * word2char(WORD value);
+    char * word2charN(WORD value,int fillZeros);
+
     void freeSizedString(SizedString ** s);
         
     WCHAR * getLocaleName();

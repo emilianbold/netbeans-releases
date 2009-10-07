@@ -151,6 +151,9 @@ public class TestMethodNode extends AbstractNode {
         }
 
         if (cause != null) {
+            cause = TestsuiteNode.cutLine(cause, 
+                                          TestsuiteNode.MAX_MSG_LINE_LENGTH,
+                                          true); // Issue #172772
             buf.append(NbBundle.getMessage(TestMethodNode.class,
                     DisplayNameMapper.getCauseKey(status), cause));
         } else {

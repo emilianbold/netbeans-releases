@@ -157,7 +157,15 @@ public class EvaluationContext {
         if (contextVariable != null) {
             return contextVariable;
         } else {
-            return frame.thisObject();
+            try {
+                return frame.thisObject();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 35) { // INVALID_SLOT, see http://www.netbeans.org/issues/show_bug.cgi?id=173327
+                    return null;
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         }
     }
 
