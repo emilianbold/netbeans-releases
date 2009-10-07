@@ -90,6 +90,7 @@ public class ExportDiffChangesAction extends ContextAction {
         putValue(Action.NAME, name);
     }
 
+    @Override
     public boolean isEnabled () {
         if(!HgUtils.isFromHgRepository(context)) {
             return false;
