@@ -54,6 +54,8 @@ import org.xmlpull.v1.XmlPullParser;
 
 public class NotificationExtensionProvider implements PacketExtensionProvider {
 
+    final static String NAMESPACE = "http://kenai.com/schema/XMPPNotification";
+    
     public NotificationExtensionProvider() {
     }
 
@@ -69,16 +71,21 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
 
         int tag = parser.next();
         List<KenaiNotification.Modification> modifications = new ArrayList();
-        while (!(tag == XmlPullParser.END_TAG && "modification".equals(parser.getName()))) {
-            if ("modification".equals(parser.getName())) {
+        while (!(tag == XmlPullParser.END_TAG && "notification".equals(parser.getName()))) {
+            if (tag == XmlPullParser.START_TAG && "modification".equals(parser.getName())) {
                 String mid = parser.getAttributeValue("", "id");
                 String mresource = parser.getAttributeValue("", "resource");
-                KenaiNotification.Modification.Type mtype = KenaiNotification.Modification.Type.valueOf(parser.getAttributeValue("", "type").toUpperCase());
+                KenaiNotification.Modification.Type mtype;
+                try {
+                    mtype = KenaiNotification.Modification.Type.valueOf(parser.getAttributeValue("", "type").toUpperCase());
+                } catch (Exception e) {
+                    mtype = KenaiNotification.Modification.Type.UNKNOWN;
+                }
                 modifications.add(new KenaiNotification.Modification(mresource, mid, mtype));
             }
             tag = parser.next();
         }
-        return new NotificationExtension("notification", "jabber:client",
+        return new NotificationExtension("notification", NAMESPACE,
                 new KenaiNotification(stamp,type,uri,author,serviceName,modifications));
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,8 +45,6 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,7 +81,6 @@ import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.DependencyListModel;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -157,17 +153,16 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         platformValue.setEnabled(getProperties().isStandalone());
         managePlafsButton.setEnabled(getProperties().isStandalone());
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
-        dependencyList.setModel(getProperties().getDependenciesListModel());
+        final DefaultListModel model = getProperties().getWrappedJarsListModel();
+        wrappedJarsList.setModel(model);
+        emListComp = EditMediator.createListComponent(wrappedJarsList);
+        updateJarExportedMap();
+        runDependenciesListModelRefresh();
         dependencyList.getModel().addListDataListener(new ListDataListener() {
             public void contentsChanged(ListDataEvent e) { updateEnabled(); }
             public void intervalAdded(ListDataEvent e) { updateEnabled(); }
             public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
         });
-        final DefaultListModel model = getProperties().getWrappedJarsListModel();
-        wrappedJarsList.setModel(model);
-        emListComp = EditMediator.createListComponent(wrappedJarsList);
-        updateJarExportedMap();
-        updateEnabled();
     }
     
     private void attachListeners() {
@@ -214,22 +209,11 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     private Logger LOG = Logger.getLogger(CustomizerLibraries.class.getName());
     
     private void runDependenciesListModelRefresh() {
-        dependencyList.setModel(CustomizerComponentFactory.createListWaitModel());
-        RequestProcessor.getDefault().post(new Runnable() {
+        dependencyList.setModel(getProperties().getDependenciesListModelInBg(new Runnable() {
             public void run() {
-                // generate fresh dependencies list
-                final DependencyListModel newModel = getProperties().getDependenciesListModel();
-                LOG.log(Level.FINER, "DependenciesListModel generated");
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        LOG.log(Level.FINER, "DependenciesListModel invokeLater entered");
-                        dependencyList.setModel(newModel);
-                        LOG.log(Level.FINER, "DependenciesListModel model set");
-                        updateEnabled();
-                    }
-                });
+                updateEnabled();
             }
-        });
+        }));
         updateEnabled();
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1120,10 +1120,12 @@ public class FormUtils
     // ---------
 
     /** Returns explicit property category classification (defined in
-     * propertyCategories table)for properties of given class.
+     * propertyCategories table) for properties of given class.
      * The returned array can be used in getPropertyCategory method to get
      * category for individual property. Used for SWING components to
      * correct their default (insufficient) classification.
+     * @return Object[] array of property categories for given bean class, or
+     *         null if nothing specified for the class
      */
     static Object[] getPropertiesCategoryClsf(Class beanClass,
                                               BeanDescriptor beanDescriptor)

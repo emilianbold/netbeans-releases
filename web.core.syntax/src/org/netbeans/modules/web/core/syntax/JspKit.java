@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,7 +53,6 @@ import org.netbeans.modules.csl.editor.InstantRenameAction;
 import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -424,46 +423,37 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
         @Override
         public void actionPerformed(final ActionEvent e, final JTextComponent target) {
-            //assure we have indent lock inside so can reindent then
-            if (target != null) {
-                currentTarget = target; //hack
-                BaseDocument adoc = (BaseDocument) target.getDocument();
-                final Indent indent = Indent.get(adoc);
-                indent.lock();
-                try {
-                    adoc.runAtomic(new Runnable() {
-                        public void run() {
-                            //trigger JavaDKTAction
-                            if(!triggerJavaDefaultKeyTypedAction(e, target)) {
-                                //delegate to jsp default action if java didn't handle this keystroke
-                                JspDefaultKeyTypedAction.super.actionPerformed(e, target);
-                            }
-                        }
-                    });
-                } finally {
-                    indent.unlock();
+            currentTarget = target;
+            try {
+                if (!triggerJavaDefaultKeyTypedAction(e, target)) {
+                    super.actionPerformed(e, target);
+                } else {
+                    return; //java triggered this already
                 }
-                currentTarget = null; //hack
-            } else {
-                //backw. comp.
-                super.actionPerformed(e, target);
+            } finally {
+                currentTarget = null;
             }
-
         }
 
-        private boolean triggerJavaDefaultKeyTypedAction(ActionEvent e, JTextComponent target) {
-            TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
-            if (javaTokenSequence != null) {
-                JavaKit jkit = (JavaKit) getKit(JavaKit.class);
-                if (jkit != null) {
-                    Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
-                    if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
-                        ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
-                        return true;
+        private boolean triggerJavaDefaultKeyTypedAction(final ActionEvent e, final JTextComponent target) {
+            BaseDocument bdoc = (BaseDocument) target.getDocument();
+            final boolean[] retcode = new boolean[1];
+            bdoc.runAtomic(new Runnable() {
+                public void run() {
+                    TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+                    if (javaTokenSequence != null) {
+                        JavaKit jkit = (JavaKit) getKit(JavaKit.class);
+                        if (jkit != null) {
+                            Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
+                            if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
+                                ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
+                                retcode[0] = true;
+                            }
+                        }
                     }
                 }
-            }
-            return false;
+            });
+            return retcode[0];
         }
 
         /** called under document atomic lock */
@@ -471,7 +461,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
-
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
@@ -484,7 +473,7 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                     if (!handled) {
                         super.insertString(doc, dotPos, caret, str, overwrite);
                         handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
-                                str.charAt(0));
+                                    str.charAt(0));
                     }
 
                     return;
@@ -524,10 +513,10 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                             if (!handled) {
                                 if (str.length() > 0) {
                                     doc.insertString(p0, str, null);
+                                    handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget, str.charAt(0));
                                 }
 
-                                bracketCompletion.afterCharInserted(doc, caret.getDot() - 1,
-                                        target, insertedChar);
+
                             }
                         } catch (BadLocationException e) {
                             e.printStackTrace();

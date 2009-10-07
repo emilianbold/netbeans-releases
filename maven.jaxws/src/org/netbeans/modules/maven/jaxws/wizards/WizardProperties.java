@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -56,6 +56,9 @@ public class WizardProperties {
     public static final String WSDL_PORT = "wsdlPort"; //NOI18N
     public static final String WSDL_SERVICE_HANDLER = "wsdlServiceHandler"; //NOI18N
     public static final String USE_PROVIDER = "useProvider"; //NOI18N
-     
+    public static final String USE_DISPATCH = "useDispatch"; // NOI18N
+    public static final String IS_STATELESS_BEAN = "endpointAsStatelessBean"; // NOI18N
+    
+    public static final String WSDL_SOURCE = "wsdlSource"; // NOI18N
     public static final String WSDL_DOWNLOAD_URL = "wsdlDownloadUrl"; // NOI18N
 }

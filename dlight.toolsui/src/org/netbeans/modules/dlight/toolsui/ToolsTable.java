@@ -117,6 +117,7 @@ public class ToolsTable extends JTable {
             DLightToolUIWrapper dlightTool = allDLightTools.get(row);
             JCheckBox checkBox = new JCheckBox();
             checkBox.setSelected(dlightTool.isEnabled());
+            checkBox.setEnabled(dlightTool.canEnable());
             return new DefaultCellEditor(checkBox);
         } else {
             return super.getCellEditor(row, col);
@@ -135,6 +136,7 @@ public class ToolsTable extends JTable {
                 JCheckBox checkBox = new JCheckBox();
                 checkBox.setSelected(dlightTool.isEnabled());
                 checkBox.setBackground(label.getBackground());
+                checkBox.setEnabled(dlightTool.canEnable());
                 return checkBox;
             } else {
                 label.setText(dlightTool.getDLightTool().getName()); // NOI18N
@@ -172,7 +174,8 @@ public class ToolsTable extends JTable {
         @Override
         public boolean isCellEditable(int row, int col) {
             if (col == 0) {
-                return true;
+                DLightToolUIWrapper dlightTool = allDLightTools.get(row);
+                return dlightTool.canEnable();
             } else {
                 return false;
             }

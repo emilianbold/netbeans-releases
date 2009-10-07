@@ -173,8 +173,9 @@ public class CompositeComponentModel extends JsfPageModel {
         if (wm != null) {
             //we are in webmodule
             FileObject docRoot = wm.getDocumentBase();
-            assert docRoot != null;
-            return getChild(docRoot, RESOURCES_FOLDER_NAME);
+            if(docRoot != null) { //document root may be null if the folder is deleted
+                return getChild(docRoot, RESOURCES_FOLDER_NAME);
+            }
         } else {
             //out of a webmodule, means in a library archive
             //just check if the parent's parent directory is resources and then META-INF

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -80,5 +80,13 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
     
     public void testClass1() throws Exception {
         checkDeclaration(TEST_BASE + "Consumer.groovy", "        Fin^der finder = new Finder()", "class ^Finder {");
+    }
+
+    public void testMethod1() throws Exception {
+        checkDeclaration(TEST_BASE + "Methods1.groovy", "println get^Name(x)", "^def getName(a) {");
+    }
+
+    public void testMethod2() throws Exception {
+        checkDeclaration(TEST_BASE + "Methods2.groovy", "println get^Name()", "^def getName() {");
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -105,11 +105,6 @@ public class RestServicesNodeFactory implements NodeFactory {
         }
 
         public List<String> keys() {
-            final RestServicesModel model = getModel();
-            if (model == null) {
-                return Collections.emptyList();
-            }
-
             if (!result.isEmpty()) {
                 List<String> tmpResult = new ArrayList<String>();
                 String keys = result.get(0);
@@ -125,20 +120,23 @@ public class RestServicesNodeFactory implements NodeFactory {
 
                     public void run() {
                         try {
-                            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                            RestServicesModel model = getModel();
+                            if (model != null) {
+                                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
 
-                                public Void run(RestServicesMetadata metadata) throws IOException {
-                                    RestServices root = metadata.getRoot();
+                                    public Void run(RestServicesMetadata metadata) throws IOException {
+                                        RestServices root = metadata.getRoot();
 
-                                    if (root.sizeRestServiceDescription() > 0) {
-                                        result.add(KEY_SERVICES);
-                                    } else {
-                                        result.add(NO_SERVICES);
+                                        if (root.sizeRestServiceDescription() > 0) {
+                                            result.add(KEY_SERVICES);
+                                        } else {
+                                            result.add(NO_SERVICES);
+                                        }
+                                        return null;
                                     }
-                                    return null;
-                                }
-                            });
-                            fireChange();
+                                });
+                                fireChange();
+                            }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -121,6 +121,7 @@ public class Attributes extends DefaultAttributes {
     }
 
     /** isn't filtered anymore as it was in DefaultAttributes*/
+    @Override
     public String[] children(String f) {
         return list.children(f);
     }
@@ -130,6 +131,7 @@ public class Attributes extends DefaultAttributes {
     * @param attrName name of the attribute
     * @return appropriate (serializable) value or <CODE>null</CODE> if the attribute is unset (or could not be properly restored for some reason)
     */
+    @Override
     public Object readAttribute(String name, String attrName) {
         final String translatedName = translateName(name);
         Object retVal = getPreferedAttributes().readAttribute(translatedName, attrName);
@@ -149,6 +151,7 @@ public class Attributes extends DefaultAttributes {
     * @param value new value or <code>null</code> to clear the attribute. Must be serializable, although particular filesystems may or may not use serialization to store attribute values.
     * @exception IOException if the attribute cannot be set. If serialization is used to store it, this may in fact be a subclass such as {@link NotSerializableException}.
     */
+    @Override
     public void writeAttribute(String name, String attrName, Object value)
             throws IOException {
         getPreferedAttributes().writeAttribute(translateName(name), attrName, value);
@@ -158,21 +161,22 @@ public class Attributes extends DefaultAttributes {
     * @param name the file
     * @return enumeration of keys (as strings)
     */
-    public synchronized Enumeration attributes(String name) {
-        Enumeration retVal = getPreferedAttributes().attributes(translateName(name));
+    @Override
+    public synchronized Enumeration<String> attributes(String name) {
+        Enumeration<String> retVal = getPreferedAttributes().attributes(translateName(name));
         if ((retVal == null || !retVal.hasMoreElements()) && isBackwardCompatible()) {
             retVal = copyAllToUserDir(name, super.attributes(name));
         }
         return retVal;
     }
 
-    private Enumeration copyAllToUserDir(String name, Enumeration attributeNames) {
+    private Enumeration<String> copyAllToUserDir(String name, Enumeration<String> attributeNames) {
         
         if (attributeNames != null && attributeNames.hasMoreElements() && isBackwardCompatible()) {
             final String translatedName = translateName(name);
             
             while (attributeNames.hasMoreElements()) {
-                String attrName = (String) attributeNames.nextElement();
+                String attrName = attributeNames.nextElement();
                 Object value = super.readAttribute(name, attrName);
                 try {
                     getPreferedAttributes().writeAttribute(translatedName, attrName, value);
@@ -191,8 +195,11 @@ public class Attributes extends DefaultAttributes {
     * @param oldName old name of the file
     * @param newName new name of the file
     */
+    @Override
     public synchronized void renameAttributes(String oldName, String newName) {
-        if (isBackwardCompatible()) copyAllToUserDir(oldName, super.attributes(oldName));
+        if (isBackwardCompatible()) {
+            copyAllToUserDir(oldName, super.attributes(oldName));
+        }
         getPreferedAttributes().renameAttributes(translateName(oldName), translateName(newName));
     }
 
@@ -200,8 +207,11 @@ public class Attributes extends DefaultAttributes {
     *
     * @param name name of the file
     */
+    @Override
     public synchronized void deleteAttributes(String name) {
-        if (isBackwardCompatible()) super.deleteAttributes(name);
+        if (isBackwardCompatible()) {
+            super.deleteAttributes(name);
+        }
         getPreferedAttributes().deleteAttributes(translateName(name));
     }
 

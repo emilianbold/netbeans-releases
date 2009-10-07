@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -296,10 +296,11 @@ public class StartTask extends BasicTask<OperationState> {
         
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
-        Logger.getLogger("glassfish").log(Level.FINE, "V3 Failed to start, killing process: " + serverProcess); // NOI18N
+        Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: " + serverProcess+" after "+  // NOI18N
+                (System.currentTimeMillis() - start));
         serverProcess.destroy();
         return fireOperationStateChanged(OperationState.FAILED,
-                "MSG_START_SERVER_FAILED", instanceName); // NOI18N
+                "MSG_START_SERVER_FAILED2", instanceName); // NOI18N
     }
 
     private String[] createEnvironment() {

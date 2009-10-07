@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -83,6 +83,7 @@ import java.awt.Point;
 import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
@@ -147,8 +148,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
-        table = new JTable(sorter);
-        sorter.setTableHeader(table.getTableHeader());
+        table = new SortedTable(sorter);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());

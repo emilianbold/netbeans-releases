@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.core.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
 import org.openide.DialogDescriptor;
@@ -111,12 +112,23 @@ public class InvokeOperationAction extends NodeAction {
                         });
                 descriptor.setValid(false);
                 DialogDisplayer.getDefault().notify(descriptor);
-                if(descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
+                if (descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
                     // !PW FIXME refactor this as a method implemented in a cookie
                     // on the method node.
                     InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO);
                     if (invokeCookie!=null)
                         invokeCookie.invokeOperation(serviceExplorer.getSelectedClient(), null);
+
+                    // logging usage of action
+                    Object[] params = new Object[2];
+                    String cookieClassName = invokeCookie.getClass().getName();
+                    if (cookieClassName.contains("jaxrpc")) { // NOI18N
+                        params[0] = LogUtils.WS_STACK_JAXRPC;
+                    } else {
+                        params[0] = LogUtils.WS_STACK_JAXWS;
+                    }
+                    params[1] = "CALL WS OPERATION"; // NOI18N
+                    LogUtils.logWsAction(params);
                 }
             }
         }

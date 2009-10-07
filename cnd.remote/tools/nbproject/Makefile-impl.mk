@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=tools
 
 # Active Configuration
-DEFAULTCONF=Default
+DEFAULTCONF=Debug32
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Default 
+ALLCONFS=Debug32 Debug64 Release32 Release64 Test32 
 
 
 # build

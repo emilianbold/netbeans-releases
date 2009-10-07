@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,6 +49,7 @@ import javax.swing.*;
 import org.netbeans.modules.welcome.ui.StartPageContent;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.util.NbPreferences;
 
 /**
  * The welcome screen.
@@ -186,8 +187,16 @@ public class WelcomeComponent extends TopComponent {
     protected void componentClosed() {
         super.componentClosed();
         TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("InitialLayout"); //NOI18N
-        if( null != group )
+        if( null != group ) {
             group.open();
+            boolean firstTimeClose = NbPreferences.forModule(WelcomeComponent.class).getBoolean("firstTimeClose", true); //NOI18N
+            NbPreferences.forModule(WelcomeComponent.class).putBoolean("firstTimeClose", false); //NOI18N
+            if( firstTimeClose ) {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("projectTabLogical_tc"); //NOI18N
+                if( null != tc && tc.isOpened() )
+                    tc.requestActive();
+            }
+        }
     }
     
     @Override protected void componentHidden() {

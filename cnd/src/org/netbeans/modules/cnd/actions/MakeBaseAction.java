@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -153,14 +153,14 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Make"); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
-        .putAllEnvironmentVariables(envMap)
         .setWorkingDirectory(buildDir.getPath())
         .setArguments(args)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
+        npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         
-        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(execEnv, fileObject.getParent()));
+        LineConvertorFactory factory = new ProcessLineConvertorFactory(outputListener, new CompilerLineConvertor(project, execEnv, fileObject.getParent()));
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
         .frontWindow(true)

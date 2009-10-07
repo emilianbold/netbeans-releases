@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -43,6 +43,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio"/>
+    <!-- download uc_url="http://elif.russia.sun.com/uc/catalog.xml" module_id="org.netbeans.libs.sunstudio" / -->
     <platforms stringvalue="linux"/>
     <c>
         <architecture>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -91,7 +91,17 @@ public class PresenceIndicator {
         label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
         if (status!=Kenai.Status.ONLINE) {
             label.setText(""); // NOI18N
-            label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
+        }
+        switch (status) {
+            case OFFLINE:
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline_Tooltip")); // NOI18N
+                break;
+            case LOGGED_IN:
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedInButNotOnChat_Tooltip")); // NOI18N
+                break;
+            case ONLINE:
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip")); // NOI18N
+                break;
         }
             label.setVisible(status!=Kenai.Status.OFFLINE);
     }
@@ -109,10 +119,10 @@ public class PresenceIndicator {
 
     
     private PresenceIndicator() {
-        label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
+        label = new JLabel(); //OFFLINE, JLabel.HORIZONTAL);
         label.setVisible(false);
         label.setBorder(new EmptyBorder(0, 5, 0, 5));
-        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
+//        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
         helper = new MouseL();
         label.addMouseListener(helper);
         Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
@@ -173,7 +183,7 @@ public class PresenceIndicator {
                             kenai.logout();
                         }
                     });
-                    menu.show(label, 0, 0);
+                    menu.show(label, event.getPoint().x, event.getPoint().y);
                 }
             }
         }

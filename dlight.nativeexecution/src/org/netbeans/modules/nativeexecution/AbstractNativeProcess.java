@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -53,8 +54,12 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.ProcessInfo;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public abstract class AbstractNativeProcess extends NativeProcess {
@@ -65,6 +70,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             "dlight.nativeexecutor.pidtimeout", "70")); // NOI18N
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
+    protected long creation_ts = -1;
     private final String id;
     private final ExecutionEnvironment execEnv;
     // Immutable listeners list.
@@ -75,6 +81,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile Integer exitValue = null;
     private volatile boolean isInterrupted;
     private boolean cancelled = false;
+    private ProcessInfoProvider infoProvider;
 
     public AbstractNativeProcess(NativeProcessInfo info) {
         this.info = info;
@@ -112,6 +119,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             setState(State.STARTING);
             create();
             setState(State.RUNNING);
+            findInfoProvider();
         } catch (Throwable ex) {
             //String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
             //log.info(loc("NativeProcess.exceptionOccured.text", msg)); // NOI18N
@@ -355,7 +363,33 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
+    @Override
+    public ProcessInfo getProcessInfo() {
+        return infoProvider == null ? new ProcessInfo() {
+
+            public long getCreationTimestamp(TimeUnit unit) {
+                return unit.convert(creation_ts, TimeUnit.NANOSECONDS);
+            }
+        } : infoProvider.getProcessInfo();
+    }
+
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(AbstractNativeProcess.class, key, params);
+    }
+
+    private void findInfoProvider() {
+        final Collection<? extends ProcessInfoProviderFactory> factories =
+                Lookup.getDefault().lookupAll(ProcessInfoProviderFactory.class);
+
+        ProcessInfoProvider pip = null;
+
+        for (ProcessInfoProviderFactory factory : factories) {
+            pip = factory.getProvider(execEnv, pid);
+            if (pip != null) {
+                break;
+            }
+        }
+
+        infoProvider = pip;
     }
 }

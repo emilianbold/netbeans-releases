@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -207,13 +207,6 @@ public class JsAnalyzer implements StructureScanner {
                         Node node = element.getNode();
                         OffsetRange range = AstUtilities.getRange(node);
 
-                        int lexStart = result.getSnapshot().getOriginalOffset(range.getStart());
-                        int lexEnd = result.getSnapshot().getOriginalOffset(range.getEnd());
-                        if (lexStart < lexEnd) {
-                            //recalculate the range if we parsed the virtual source
-                            range = new OffsetRange(lexStart, lexEnd);
-                        }
-
                         if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
                                 // Only make nested classes/modules foldable, similar to what the java editor is doing
                                 (range.getStart() > GsfUtilities.getRowStart(text, Math.min(range.getStart(), text.length())))) {
@@ -221,13 +214,35 @@ public class JsAnalyzer implements StructureScanner {
                             int start = range.getStart();
                             // Start the fold at the END of the line
                             start = GsfUtilities.getRowEnd(text, Math.min(start, text.length()));
+
+                            // find the nearest { and start the fold here. 
+                            int index = start;
+                            char c = text.charAt(index);
+                            if (c == '\n') {
+                                //skip new line at the end of the line
+                                index --;
+                            }
+                            do {
+                                c = text.charAt(index);
+                                index--;
+                            } while (index > 0 && c != '\n' && c != '{');
+
+                            if (c == '{') {
+                                start = index + 1;
+                            }
+                            
                             int end = range.getEnd();
                             if (start != (-1) && end != (-1) && start < end && end <= text.length()) {
-                                range = new OffsetRange(start, end);
-                                codeblocks.add(range);
+                                int lexStart = result.getSnapshot().getOriginalOffset(start);
+                                int lexEnd = result.getSnapshot().getOriginalOffset(end);
+                                if (lexStart < lexEnd) {
+                                    //recalculate the range if we parsed the virtual source
+                                    range = new OffsetRange(lexStart, lexEnd);
+                                    codeblocks.add(range);
+                                }
                             }
-                        }
                         break;
+                        }
                 }
 
                 assert element.getChildren().size() == 0;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -182,6 +182,8 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
+                // workaround for #172594
+                int blockLength = Math.min(token.length(), snapshot.getText().length() - blockStart);
 
                 JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
                 List<Embedding> buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
@@ -190,10 +192,10 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
                     // see issue #116598
                     buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
-                    buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                    buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
                 } else {
-                    buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                    buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }
             }

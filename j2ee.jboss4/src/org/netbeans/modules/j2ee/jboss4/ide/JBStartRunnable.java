@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -205,8 +205,12 @@ class JBStartRunnable implements Runnable {
             String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
 
             String strHTTPConnectorPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
-            int HTTPConnectorPort = new Integer(strHTTPConnectorPort).intValue();
-            if (!JBPluginUtils.isPortFree(HTTPConnectorPort)) {
+            int httpConnectorPort = Integer.parseInt(strHTTPConnectorPort);
+            if (httpConnectorPort <= 0) {
+                // server will complain hopefully
+                return true;
+            }
+            if (!JBPluginUtils.isPortFree(httpConnectorPort)) {
                 fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_HTTP_PORT_IN_USE", strHTTPConnectorPort));
                 return false;
             }

@@ -41,6 +41,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 /**
  * Supporting class to provide functionality of requesting additional
@@ -72,11 +73,11 @@ public interface SolarisPrivilegesSupport {
 
     public void requestPrivileges(
             Collection<String> requestedPrivileges,
-            boolean askForPassword) throws NotOwnerException;
+            boolean askForPassword) throws NotOwnerException, CancellationException;
 
     public void requestPrivileges(
             Collection<String> requestedPrivs,
-            String user, char[] passwd) throws NotOwnerException;
+            String user, char[] passwd) throws NotOwnerException, CancellationException;
 
     /**
      * Tests whether the <tt>ExecutionEnvironment</tt> has all needed

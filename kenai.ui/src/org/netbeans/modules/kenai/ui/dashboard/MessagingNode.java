@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
@@ -65,6 +66,7 @@ import org.openide.util.NbBundle;
  * Node showing links to project's wiki, downloads and messages.
  *
  * @author S. Aubrecht
+ * @author Jan Becicka
  */
 public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
 
@@ -78,6 +80,9 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     public MessagingNode( TreeListNode parent, ProjectHandle project ) {
         super( parent, null );
         this.project = project;
+        messaging = load();
+        messaging.addPropertyChangeListener(this);
+        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
     }
 
     @Override
@@ -97,10 +102,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     @Override
     protected JComponent createComponent( MessagingHandle data ) {
         MessagingAccessor accessor = MessagingAccessor.getDefault();
-        if( null != messaging ) {
-            messaging.removePropertyChangeListener(this);
-        }
-        this.messaging = data;
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
@@ -156,7 +157,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
 
             panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
-        messaging.addPropertyChangeListener(this);
         return panel;
     }
 
@@ -166,7 +166,18 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        refresh();
+        if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
+            if (evt.getOldValue() == null) {
+                refresh();
+            } else if (evt.getNewValue() == null) {
+                messaging.removePropertyChangeListener(this);
+                messaging = load();
+                messaging.addPropertyChangeListener(this);
+                refresh();
+            }
+        } else {
+            refresh();
+        }
     }
 
     @Override
@@ -174,5 +185,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
         super.dispose();
         if( null != messaging )
             messaging.removePropertyChangeListener(this);
+        Kenai.getDefault().removePropertyChangeListener(this);
     }
 }

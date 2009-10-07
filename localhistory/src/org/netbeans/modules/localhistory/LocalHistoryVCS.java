@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,6 +47,8 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
@@ -54,7 +56,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
+@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=LocalHistoryVCS.class)})
 public class LocalHistoryVCS extends VersioningSystem {
         
     public LocalHistoryVCS() {
@@ -75,14 +77,29 @@ public class LocalHistoryVCS extends VersioningSystem {
         if(file == null) {
             return null;
         }                
-        return LocalHistory.getInstance().isManagedByParent(file);        
-    }
+
+        LocalHistory lh = LocalHistory.getInstance();
+
+        if(lh.isOpenedOrTouched(file)) {
+            return file;
+        }
     
+        File a = lh.isManagedByParent(file);
+        if(a != null) {
+            return a;
+        }
+        return null;
+    }
+
     public VCSAnnotator getVCSAnnotator() {
         return LocalHistory.getInstance().getVCSAnnotator();
     }
     
     public VCSInterceptor getVCSInterceptor() {
         return LocalHistory.getInstance().getVCSInterceptor();
+    }
+
+    void managedFilesChanged() {
+        fireVersionedFilesChanged();
     }
 }

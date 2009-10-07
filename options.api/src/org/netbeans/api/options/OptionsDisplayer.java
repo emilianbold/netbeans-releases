@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -149,16 +149,26 @@ public final class OptionsDisplayer {
     }
 
     private static void showWaitCursor() {
-        JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
-        mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        mainWindow.getGlassPane().setVisible(true);
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsDisplayerImpl.class, "CTL_Loading_Options"));
+        Mutex.EVENT.readAccess(new Runnable() {
+
+            public void run() {
+                JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                mainWindow.getGlassPane().setVisible(true);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsDisplayerImpl.class, "CTL_Loading_Options"));
+            }
+        });
     }
 
     private static void hideWaitCursor() {
-        StatusDisplayer.getDefault().setStatusText("");  //NOI18N
-        JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
-        mainWindow.getGlassPane().setVisible(false);
-        mainWindow.getGlassPane().setCursor(null);
+        Mutex.EVENT.readAccess(new Runnable() {
+
+            public void run() {
+                StatusDisplayer.getDefault().setStatusText("");  //NOI18N
+                JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                mainWindow.getGlassPane().setVisible(false);
+                mainWindow.getGlassPane().setCursor(null);
+            }
+        });
     }
 }

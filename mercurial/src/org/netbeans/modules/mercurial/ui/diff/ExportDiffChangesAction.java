@@ -99,7 +99,7 @@ public class ExportDiffChangesAction extends ContextAction {
     }
 
     public boolean isEnabled () {
-        if(HgUtils.getRootFile(context) == null) {
+        if(!HgUtils.isFromHgRepository(context)) {
             return false;
         }  
         TopComponent activated = TopComponent.getRegistry().getActivated();
@@ -125,11 +125,11 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {HgUtils.getRootFile(context)}, HgModuleConfig.getDefault().getPreferences()) {
+        final File root = HgUtils.getRootFile(context);
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {root}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
                 ExportDiffAction.saveFolderToPrefs(toFile);
-                File root = HgUtils.getRootFile(context);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport ps = new HgProgressSupport() {
                     protected void perform() {

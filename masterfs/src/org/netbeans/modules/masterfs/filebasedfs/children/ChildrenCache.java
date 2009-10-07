@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,10 +53,10 @@ public interface ChildrenCache {
 
     FileNaming getChild(String childName, boolean rescan);
     void removeChild(FileNaming childName);    
-    Set getChildren(boolean rescan);
+    Set<FileNaming> getChildren(boolean rescan);
     //cached existing
-    Set getCachedChildren();
+    Set<FileNaming> getCachedChildren();
     boolean isCacheInitialized();    
-    Map refresh();
+    Map<FileNaming, Integer> refresh();
     Mutex.Privileged getMutexPrivileged();
 }

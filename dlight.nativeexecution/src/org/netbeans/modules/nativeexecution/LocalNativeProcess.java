@@ -46,11 +46,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -90,12 +91,11 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             workingDirectory = new File(workingDirectory).getAbsolutePath();
         }
 
-        final MacroMap env = info.getEnvVariables();
+        final MacroMap env = info.getEnvironment().clone();
 
-        UnbufferSupport.initUnbuffer(info, env);
-
-        // Always prepend /bin and /usr/bin to PATH
-//        env.put("PATH", "/bin:/usr/bin:${PATH}"); // NOI18N
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
 
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
@@ -128,6 +128,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
         processInput.flush();
 
+        creation_ts = System.nanoTime();
+
         readPID(processOutput);
     }
 
@@ -138,43 +140,42 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         // Suspend is not supported on Windows.
 
-        final MacroMap env = info.getEnvVariables();
+        final MacroMap env = info.getEnvironment().clone();
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
-        final Map<String, String> envVars = new HashMap<String, String>();
 
-        // To deal with different cases of env vars names (Path vs. PATH)
-        // Create a map to make binding between upper-case name and used in
-        // pb.environment() name...
-        for (String key : pb.environment().keySet()) {
-            envVars.put(key.toUpperCase(), key);
+        // Do all env variables upper-case
+        Map<String, String> _env = new HashMap<String, String>(pb.environment());
+
+        pb.environment().clear();
+
+        for (Entry<String, String> envEntry : _env.entrySet()) {
+            pb.environment().put(envEntry.getKey().toUpperCase(), envEntry.getKey());
         }
 
         if (isInterrupted()) {
             throw new InterruptedException();
         }
 
-        UnbufferSupport.initUnbuffer(info, env);
+        // In case we want to run application that was compiled with cygwin
+        // and require cygwin1.dll to run - we need the path to the dll in the
+        // PATH variable..
+
+        if (hostInfo.getShell() != null) {
+            env.appendPathVariable("PATH", new File(hostInfo.getShell()).getParent()); // NOI18N
+        }
+
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
+
+        for (Entry<String, String> envEntry : env.entrySet()) {
+            pb.environment().put(envEntry.getKey(), envEntry.getValue());
+        }
 
         pb.command(info.getCommand());
 
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
-        }
-
-
-        String val = null;
-
-        if (!env.isEmpty()) {
-            for (String var : env.keySet()) {
-                String envVarName = envVars.containsKey(var.toUpperCase()) ? envVars.get(var.toUpperCase()) : var;
-                val = env.get(var);
-                if (val != null) {
-                    pb.environment().put(envVarName, val);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{envVarName, val}); // NOI18N
-                    }
-                }
-            }
         }
 
         String wdir = info.getWorkingDirectory(true);
@@ -189,6 +190,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         }
 
         process = pb.start();
+
+        creation_ts = System.nanoTime();
 
         processInput = process.getOutputStream();
         processError = process.getErrorStream();

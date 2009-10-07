@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,13 +48,17 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -125,7 +129,23 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         DataObject dTemplate = DataObject.find( template );                
         ClientCreator creator = CreatorProvider.getClientCreator(project, wiz);
         if (creator!=null) creator.createClient();
-                
+
+        // logging usage of wizard
+        Object[] params = new Object[5];
+        boolean isJaxWs = ClientWizardProperties.JAX_WS.equals(wiz.getProperty(ClientWizardProperties.JAX_VERSION));
+        params[0] = isJaxWs ? LogUtils.WS_STACK_JAXWS : LogUtils.WS_STACK_JAXRPC ;
+        params[1] = project.getClass().getName();
+        J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
+        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+        params[3] = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH) ? "DISPATCH": "WS CLIENTL"; //NOI18N
+        int wsdlSource = (Integer)wiz.getProperty(ClientWizardProperties.WSDL_SOURCE);
+        switch (wsdlSource) {
+            case 0: params[4] = "FROM PROJECT";break; //NOI18N
+            case 1: params[4] = "FROM FILE";break; //NOI18N
+            default: params[4] = "FROM URL"; //NOI18N
+        }
+        LogUtils.logWsWizard(params);
+
         return Collections.singleton(dTemplate);
     }
 

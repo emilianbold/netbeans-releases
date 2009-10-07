@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1239,119 +1239,124 @@ public class ResourceUtils implements WizardConstants{
     public static HashMap fillInPoolValues(SunDeploymentManagerInterface eightDM, ObjectName configObjName, String poolName) throws Exception {
         HashMap connPoolAttrs = new HashMap();
         ServerInterface mejb = (ServerInterface)eightDM.getManagement();
-        //Get Values from JDBC Connection Pool : driver
-        ObjectName connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
-        String dsClassName = (String)mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
-        String resType = (String)mejb.getAttribute(connPoolObj, "res-type"); //NOI18N
-        String url = ""; //NOI18N
-        String username = ""; //NOI18N
-        String password = ""; //NOI18N
-        String serverName = ""; //NOI18N
-        String portNo = ""; //NOI18N
-        String dbName = ""; //NOI18N
-        String sid = ""; //NOI18N
-        String driverClass = ""; //NOI18N
-        String informixServerName = ""; //NOI18N
-        String informixHostName = ""; //NOI18N
-        String derbyConnAttr = ""; //NOI18N
-        
-        AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, __GetProperties, null, null);
-        HashMap attrs = getObjMap(attrList);
-        Object[] keys = attrs.keySet().toArray();
-        for(int i=0; i<keys.length; i++){
-            String keyName = (String)keys[i];
-            if(keyName.equalsIgnoreCase(__DatabaseName)){
-                if(dsClassName.indexOf("pointbase") != -1){ //NOI18N
-                    url = getStringVal(attrs.get(keyName));
-                }else{
-                    dbName = getStringVal(attrs.get(keyName));
-                }
-            }else if(keyName.equalsIgnoreCase(__User)) {
-                username = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__Password)) {
-                password = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__Url)) {
-                url = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__ServerName)) {
-                serverName = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__DerbyPortNumber)) {
-                portNo = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__SID)) {
-                sid = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__DriverClass)) {
-                driverClass = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__InformixServer)) {
-                informixServerName = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__InformixHostName)) {
-                informixHostName = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(__DerbyConnAttr)){
-                derbyConnAttr = getStringVal(attrs.get(keyName));
-            }
-            
-        }
-        if (url == null || url.equals("")) {
-            if (dsClassName.indexOf("derby") != -1) { //NOI18N
-                url = "jdbc:derby://"; //NOI18N
-                if (serverName != null) {
-                    url = url + serverName;
-                    if (portNo != null && portNo.length() > 0) {
-                        url = url + ":" + portNo; //NOI18N
-                    }
-                    url = url + "/" + dbName; //NOI18N
-                    if(derbyConnAttr != null && (! derbyConnAttr.equals(""))) { //NOI18N
-                        url = url + derbyConnAttr;
-                    }
-                }
-            } else if (url.equals("")) { //NOI18N
-                String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName, resType);
-                String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
-                if (serverName != null) {
-                    if (vName.equals("sybase2")) { //NOI18N
-                        url = urlPrefix + serverName;
-                    }if (vName.equals("informix")) { //NOI18N
-                        url = urlPrefix + "//" + informixHostName;
+
+        List connPools = getResourceNames(eightDM, __GetJdbcConnectionPool, "name"); //NOI18N
+        if(connPools.contains(poolName)) {
+            //Get Values from JDBC Connection Pool : driver
+            ObjectName connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
+            String dsClassName = (String) mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
+            String resType = (String) mejb.getAttribute(connPoolObj, "res-type"); //NOI18N
+            String url = ""; //NOI18N
+            String username = ""; //NOI18N
+            String password = ""; //NOI18N
+            String serverName = ""; //NOI18N
+            String portNo = ""; //NOI18N
+            String dbName = ""; //NOI18N
+            String sid = ""; //NOI18N
+            String driverClass = ""; //NOI18N
+            String informixServerName = ""; //NOI18N
+            String informixHostName = ""; //NOI18N
+            String derbyConnAttr = ""; //NOI18N
+
+            AttributeList attrList = (AttributeList) mejb.invoke(connPoolObj, __GetProperties, null, null);
+            HashMap attrs = getObjMap(attrList);
+            Object[] keys = attrs.keySet().toArray();
+            for (int i = 0; i < keys.length; i++) {
+                String keyName = (String) keys[i];
+                if (keyName.equalsIgnoreCase(__DatabaseName)) {
+                    if (dsClassName.indexOf("pointbase") != -1) { //NOI18N
+                        url = getStringVal(attrs.get(keyName));
                     } else {
-                        url = urlPrefix + "//" + serverName; //NOI18N
+                        dbName = getStringVal(attrs.get(keyName));
                     }
-                    if (portNo != null && portNo.length() > 0) {
-                        url = url + ":" + portNo; //NOI18N
+                } else if (keyName.equalsIgnoreCase(__User)) {
+                    username = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__Password)) {
+                    password = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__Url)) {
+                    url = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__ServerName)) {
+                    serverName = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__DerbyPortNumber)) {
+                    portNo = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__SID)) {
+                    sid = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__DriverClass)) {
+                    driverClass = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__InformixServer)) {
+                    informixServerName = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__InformixHostName)) {
+                    informixHostName = getStringVal(attrs.get(keyName));
+                } else if (keyName.equalsIgnoreCase(__DerbyConnAttr)) {
+                    derbyConnAttr = getStringVal(attrs.get(keyName));
+                }
+
+            }
+            if (url == null || url.equals("")) {
+                if (dsClassName.indexOf("derby") != -1) { //NOI18N
+                    url = "jdbc:derby://"; //NOI18N
+                    if (serverName != null) {
+                        url = url + serverName;
+                        if (portNo != null && portNo.length() > 0) {
+                            url = url + ":" + portNo; //NOI18N
+                        }
+                        url = url + "/" + dbName; //NOI18N
+                        if (derbyConnAttr != null && (!derbyConnAttr.equals(""))) { //NOI18N
+                            url = url + derbyConnAttr;
+                        }
                     }
-                }
-                if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
-                    url = url + ";SID=" + sid; //NOI18N
-                } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
-                    url = url + ";databaseName=" + dbName; //NOI18N
-                } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
-                    url = url + "/" + dbName; //NOI18N
-                }
-                if (vName.equals("informix")) { //NOI18N
-                    url = url + ":INFORMIXSERVER=" + serverName;
-                }else if(vName.equals("datadirect_informix")){
-                    url = url + ";InformixServer=" + informixServerName;
+                } else if (url.equals("")) { //NOI18N
+                    String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName, resType);
+                    String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
+                    if (serverName != null) {
+                        if (vName.equals("sybase2")) { //NOI18N
+                            url = urlPrefix + serverName;
+                        }
+                        if (vName.equals("informix")) { //NOI18N
+                            url = urlPrefix + "//" + informixHostName;
+                        } else {
+                            url = urlPrefix + "//" + serverName; //NOI18N
+                        }
+                        if (portNo != null && portNo.length() > 0) {
+                            url = url + ":" + portNo; //NOI18N
+                        }
+                    }
+                    if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
+                        url = url + ";SID=" + sid; //NOI18N
+                    } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
+                        url = url + ";databaseName=" + dbName; //NOI18N
+                    } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
+                        url = url + "/" + dbName; //NOI18N
+                    }
+                    if (vName.equals("informix")) { //NOI18N
+                        url = url + ":INFORMIXSERVER=" + serverName;
+                    } else if (vName.equals("datadirect_informix")) {
+                        url = url + ";InformixServer=" + informixServerName;
+                    }
                 }
             }
-        }
-        
-        if((! eightDM.isLocal()) && (url.indexOf("localhost") != -1)){ //NOI18N
-            String hostName = eightDM.getHost();
-            url = url.replaceFirst("localhost", hostName); //NOI18N
-        }
-        DatabaseConnection databaseConnection = getDatabaseConnection(url);
-        if (driverClass == null || driverClass.equals("")) {
-            if (databaseConnection != null) {
-                driverClass = databaseConnection.getDriverClass();
-            } else {
-                //Fix Issue 78212 - NB required driver classname
-                String drivername = DatabaseUtils.getDriverName(url);
-                if (drivername != null) {
-                    driverClass = drivername;
+
+            if ((!eightDM.isLocal()) && (url.indexOf("localhost") != -1)) { //NOI18N
+                String hostName = eightDM.getHost();
+                url = url.replaceFirst("localhost", hostName); //NOI18N
+            }
+            DatabaseConnection databaseConnection = getDatabaseConnection(url);
+            if (driverClass == null || driverClass.equals("")) {
+                if (databaseConnection != null) {
+                    driverClass = databaseConnection.getDriverClass();
+                } else {
+                    //Fix Issue 78212 - NB required driver classname
+                    String drivername = DatabaseUtils.getDriverName(url);
+                    if (drivername != null) {
+                        driverClass = drivername;
+                    }
                 }
             }
+            connPoolAttrs.put(__User, username);
+            connPoolAttrs.put(__Password, password);
+            connPoolAttrs.put(__Url, url);
+            connPoolAttrs.put(__DriverClass, driverClass);
         }
-        connPoolAttrs.put(__User, username);
-        connPoolAttrs.put(__Password, password);
-        connPoolAttrs.put(__Url, url);
-        connPoolAttrs.put(__DriverClass, driverClass);
         return connPoolAttrs;
     }
     

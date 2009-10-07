@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -86,7 +86,7 @@ class MappingPanel extends JPanel implements ActionListener,
         this.parent = parent;
         this.wizard = wizard;
         initComponents();
-    }
+}
 
     private void initComponents() {
         // Layout description
@@ -99,15 +99,15 @@ class MappingPanel extends JPanel implements ActionListener,
         fullRowC.gridwidth = 2;
         fullRowC.anchor = GridBagConstraints.WEST;
         fullRowC.fill = GridBagConstraints.HORIZONTAL;
-        fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.insets = new Insets(4, 0, 4, 0);
 
         // Button
         GridBagConstraints bC = new GridBagConstraints();
         bC.gridx = 1;
         bC.gridy = 1;
-        bC.weightx = 0.1;
+        bC.weightx = 0.05;
         bC.fill = GridBagConstraints.HORIZONTAL;
-        bC.insets = new Insets(4, 20, 4, 60);
+        bC.insets = new Insets(4, 20, 4, 0);
 
         // Table panel
         GridBagConstraints tablePanelC = new GridBagConstraints();
@@ -115,7 +115,7 @@ class MappingPanel extends JPanel implements ActionListener,
         tablePanelC.gridy = 1;
         tablePanelC.gridheight = 6;
         tablePanelC.fill = GridBagConstraints.BOTH;
-        tablePanelC.weightx = 0.9;
+        tablePanelC.weightx = 0.95;
         tablePanelC.weighty = 1.0;
         tablePanelC.anchor = GridBagConstraints.WEST;
         tablePanelC.insets = new Insets(4, 0, 4, 0);

@@ -61,13 +61,13 @@ public abstract class ProjectAccessor {
      * for given project.
      */
     //maybe same as 'details'?
-    public abstract Action getDefaultAction( ProjectHandle project );
+    public abstract Action getDefaultAction( ProjectHandle project, boolean opened );
     /**
      *
      * @param project
      * @return Action for project's popup menu, null entries represent menu separator.
      */
-    public abstract Action[] getPopupActions( ProjectHandle project );
+    public abstract Action[] getPopupActions( ProjectHandle project, boolean opened );
 
     public abstract Action getOpenWikiAction( ProjectHandle project );
 

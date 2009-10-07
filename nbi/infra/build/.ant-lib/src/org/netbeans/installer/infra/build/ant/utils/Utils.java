@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -796,7 +796,12 @@ public final class Utils {
             }
             
             int permissions = 0;
-            for (int i = 0; i < 9; i++) {
+
+            if(output.length() < 9) { 
+                return 777;
+            }
+
+            for (int i = 0; i < 9; i++) {                
                 char character = output.charAt(i + 1);
                 
                 if (i % 3 == 0) {
@@ -812,7 +817,7 @@ public final class Utils {
                 } else if ((i % 3 == 2) && (character == 'x')) {
                     permissions += 1;
                 } else {
-                    return -1;
+                    return 777;
                 }
             }
             

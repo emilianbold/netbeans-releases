@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,6 +46,7 @@ import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -108,8 +109,12 @@ public final class CustomizerComponentFactory {
     /**
      * Conveninent method which delegates to {@link #hasOnlyValue} passing a
      * given model and {@link #WAIT_VALUE} as a value.
+     * Also recognizes when {@link DependencyListModel} is in waiting state.
      */
     public static boolean isWaitModel(final ListModel model) {
+        if (model instanceof DependencyListModel) {
+            return ((DependencyListModel) model).isWaiting();
+        }
         return hasOnlyValue(model, CustomizerComponentFactory.WAIT_VALUE);
     }
     
@@ -155,7 +160,7 @@ public final class CustomizerComponentFactory {
     
     static synchronized CustomizerComponentFactory.DependencyListModel getInvalidDependencyListModel() {
         if (INVALID_DEP_LIST_MODEL == null) {
-            INVALID_DEP_LIST_MODEL = new DependencyListModel();
+            INVALID_DEP_LIST_MODEL = new DependencyListModel(DependencyListModel.State.INVALID, true);
         }
         return INVALID_DEP_LIST_MODEL;
     }
@@ -176,7 +181,8 @@ public final class CustomizerComponentFactory {
         private final Set<ModuleDependency> currentDeps;
         
         private boolean changed;
-        private final boolean invalid;
+        private enum State { INVALID, WAITING, OK };
+        private State state;
         
         DependencyListModel(Set<ModuleDependency> deps, boolean sorted) {
             if (sorted) {
@@ -185,20 +191,59 @@ public final class CustomizerComponentFactory {
             } else {
                 currentDeps = deps;
             }
-            invalid = false;
+            state = State.OK;
         }
         
-        DependencyListModel() {
-            currentDeps = Collections.emptySet();
-            invalid = true;
+        private DependencyListModel(State st, boolean sorted) {
+            if (st == State.INVALID) {
+                currentDeps = Collections.emptySet();
+            } else if (sorted) {
+                currentDeps = new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+            } else {
+                currentDeps = new HashSet<ModuleDependency>();
+            }
+            state = st;
         }
         
         public int getSize() {
-            return invalid ? 1 : currentDeps.size();
+            return state != State.OK ? 1 : currentDeps.size();
         }
         
         public Object getElementAt(int i) {
-            return invalid ? INVALID_PLATFORM : currentDeps.toArray()[i];
+            switch (state) {
+                case OK:
+                    return currentDeps.toArray()[i];
+                case INVALID:
+                    return INVALID_PLATFORM;
+                case WAITING:
+                default:
+                    return CustomizerComponentFactory.WAIT_VALUE;
+            }
+        }
+
+        public static DependencyListModel createBgWaitModel(boolean sorted) {
+            return new DependencyListModel(State.WAITING, sorted);
+        }
+
+        void setDependencies(SortedSet<ModuleDependency> deps) {
+            if (state != State.WAITING)
+                throw new IllegalStateException("Method can be called only on model waiting for bg thread to populate it.");    // NOI18N
+            currentDeps.addAll(deps);
+            state = State.OK;
+            int origSize = currentDeps.size();
+            fireContentsChanged(this, 0, origSize);
+        }
+
+        void setInvalid() {
+            if (state == State.INVALID)
+                throw new IllegalStateException("DependencyListModel already marked 'invalid'.");    // NOI18N
+            state = State.INVALID;
+            int origSize = currentDeps.size();
+            fireContentsChanged(this, 0, origSize);
+        }
+
+        boolean isWaiting() {
+            return state == State.WAITING;
         }
         
         ModuleDependency getDependency(int i) {

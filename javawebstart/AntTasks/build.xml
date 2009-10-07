@@ -69,7 +69,7 @@
     <target name="-post-jar">
         <!-- Compilation of additional task needed for backward compatibility -->
         <javac srcdir="${src.dir}" classpath="${javac.classpath}"
-            destdir="${build.classes.dir}">
+            destdir="${build.classes.dir}" source="${javac.source}" target="${javac.target}">
             <exclude name="**/anttasks/**"/>
         </javac>
         <copy file="${src.dir}/org/netbeans/modules/javawebstart/antlib.xml"

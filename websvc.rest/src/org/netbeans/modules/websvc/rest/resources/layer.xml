@@ -64,8 +64,10 @@
             </file>
         </folder>
         <folder name="WebServices">
+            <!-- defined in websvc.core
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
             <attr name="position" intvalue="1500"/>
+            -->
             <file name="RestServicesFromEntities">         
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>

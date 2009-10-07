@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -209,7 +209,22 @@ public class CsmBaseUtilities {
         }
         return clazz;
     }   
-        
+
+    public static CsmClass getFunctionClassByQualifiedName(CsmFunction fun) {
+        if (fun != null) {
+            String className = fun.getQualifiedName().toString().replaceAll("(.*)::.*", "$1"); // NOI18N
+            CsmObject obj = CsmClassifierResolver.getDefault().findClassifierUsedInFile(className, fun.getContainingFile(), false);
+            if (CsmKindUtilities.isClassifier(obj)) {
+                CsmClassifier cls = (CsmClassifier) obj;
+                cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, fun.getContainingFile());
+                if (CsmKindUtilities.isClass(cls)) {
+                    return (CsmClass) cls;
+                }
+            }
+        }
+        return null;
+    }
+
     public static CsmClass getObjectClass(CsmObject obj) {
         CsmClass objClass = null;
         if (CsmKindUtilities.isFunction(obj)) {

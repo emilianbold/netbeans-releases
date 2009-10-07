@@ -72,6 +72,12 @@ public abstract class NativeProcess extends Process {
     public abstract State getState();
 
     /**
+     * Returns ProcessInfo (if available), or null
+     * @return ProcessInfo
+     */
+    public abstract ProcessInfo getProcessInfo();
+
+    /**
      * Enumerates possible states of the {@link NativeProcess}.
      */
     public static enum State {
