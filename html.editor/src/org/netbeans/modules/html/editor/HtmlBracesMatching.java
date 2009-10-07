@@ -93,7 +93,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
             if (!testMode && MatcherContext.isTaskCanceled()) {
                 return null;
             }
-            TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(context.getDocument());
+            TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(context.getDocument(), context.getSearchOffset());
             TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
 
             if (ts.language() == HTMLTokenId.language()) {
