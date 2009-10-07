@@ -130,8 +130,9 @@ public final class RubyProcessCreator implements Callable<Process> {
         }
 
         for (String arg : args) {
-            builder = builder.addArgument(arg);
-
+            if (arg != null) {
+                builder = builder.addArgument(arg);
+            }
         }
         if (descriptor.getPwd() != null) {
             builder = builder.workingDirectory(descriptor.getPwd());
