@@ -47,7 +47,7 @@ import org.apache.maven.project.path.PathTranslator;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
-import hidden.org.codehaus.plexus.util.introspection.ReflectionValueExtractor;
+import org.codehaus.plexus.util.introspection.ReflectionValueExtractor;
 
 /**
  * a stripped down version of plugin parameter expression evaluator
@@ -77,7 +77,7 @@ public class NBPluginParameterExpressionEvaluator
         this.project = project;
         this.settings = settings;
 
-        String basedir = null;
+        String bsdir = null;
 
         if ( project != null )
         {
@@ -86,16 +86,16 @@ public class NBPluginParameterExpressionEvaluator
             // this should always be the case for non-super POM instances...
             if ( projectFile != null )
             {
-                basedir = projectFile.getAbsolutePath();
+                bsdir = projectFile.getAbsolutePath();
             }
         }
 
-        if ( basedir == null )
+        if ( bsdir == null )
         {
-            basedir = System.getProperty( "user.dir" );
+            bsdir = System.getProperty( "user.dir" );
         }
 
-        this.basedir = basedir;
+        this.basedir = bsdir;
     }
 
 
