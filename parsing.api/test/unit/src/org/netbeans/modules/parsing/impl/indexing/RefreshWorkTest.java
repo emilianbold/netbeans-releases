@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -171,9 +172,37 @@ public class RefreshWorkTest  extends NbTestCase {
         assertTrue("Expecting " + rootCUrl + " to be scanned", indexer.indexedFiles.containsKey(rootCUrl));
 
         Set<String> files = indexer.indexedFiles.get(rootCUrl);
-        assertEquals("Wrong number of rescanned files", 2, files.size());
-        assertTrue("Expecting org/pckg1/pckg2/file1.txt", files.contains("org/pckg1/pckg2/file1.txt"));
-        assertTrue("Expecting org/pckg1/pckg2/file2.txt", files.contains("org/pckg1/pckg2/file2.txt"));
+        assertEquals("Wrong files scanned", new HashSet<String>(Arrays.asList(new String [] {
+            "org/pckg1/pckg2/file1.txt",
+            "org/pckg1/pckg2/file2.txt"
+        })), files);
+    }
+
+    public void testInnerFiles() throws IOException {
+        File innerFile = new File(outerFolder2, "rootC/org/pckg1/pckg2/file1.txt");
+
+        RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
+            scannedRoots2Dependencies,
+            Collections.<URL>emptySet(), // scannedBinaries
+            Collections.<URL>emptySet(), // sourceForBinaryRoots
+            false, // fullRescan
+            false, // logStatistics
+            Collections.singleton(innerFile), // suspectFilesOrFolders
+            new RepositoryUpdater.FSRefreshInterceptor());
+
+        Indexer indexer = new Indexer();
+        MockMimeLookup.setInstances(MimePath.EMPTY, new IndexerFactory(indexer));
+
+        assertTrue("Work has not finished", rw.getDone());
+        assertEquals("Wrong number of scanned roots", 1, indexer.indexCalls.size());
+        assertFalse("Expecting " + rootAUrl + " not to be scanned", indexer.indexedFiles.containsKey(rootAUrl));
+        assertFalse("Expecting " + rootBUrl + " not to be scanned", indexer.indexedFiles.containsKey(rootBUrl));
+        assertTrue("Expecting " + rootCUrl + " to be scanned", indexer.indexedFiles.containsKey(rootCUrl));
+
+        Set<String> files = indexer.indexedFiles.get(rootCUrl);
+        assertEquals("Wrong files scanned", new HashSet<String>(Arrays.asList(new String [] {
+            "org/pckg1/pckg2/file1.txt"
+        })), files);
     }
 
     private static final class Indexer extends CustomIndexer {
