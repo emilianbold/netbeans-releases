@@ -297,7 +297,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         oldBoolValue = getProfileOnRun().getValue();
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldBoolValue, getProfileOnRunValue());
-        if (getGizmoConfigurations() != null) { // IZ173904, FIXUP: configuration dup will loose gizmo configuration setting
+        if (getGizmoConfigurations() != null) {
             getGizmoConfigurations().assign(gizmoOptions.getGizmoConfigurations());
         }
         else {
