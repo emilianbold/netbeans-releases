@@ -39,17 +39,29 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.openide.util.RequestProcessor;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
@@ -70,14 +82,20 @@ import org.openide.util.NbBundle;
  */
 public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConvertor {
 
-    private static final String WEB_PATH = "webpagePath";//NOI18N
-    public static final String ATTR_EXECUTION_URI = "execution.uri"; //NOI18N
-    public static final String FILE_DD        = "web.xml";//NOI18N
+    private static final String WEB_PATH =          "webpagePath";      //NOI18N
+    public static final String ATTR_EXECUTION_URI = "execution.uri";    //NOI18N
+    public static final String FILE_DD        =     "web.xml";          //NOI18N
+    private static final String IS_SERVLET_FILE = 
+        "org.netbeans.modules.web.IsServletFile";                       //NOI18N
 
     private Project project;
+    private AtomicBoolean   isScanStarted;
+    private AtomicBoolean   isScanFinished;
 
     public WebReplaceTokenProvider(Project prj) {
         project = prj;
+        isScanStarted = new AtomicBoolean( false );
+        isScanFinished = new AtomicBoolean(false);
     }
     /**
      * just gets the array of FOs from lookup.
@@ -197,6 +215,11 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                 if ("text/x-java".equals(fo.getMIMEType())) { //NOI18N
                     //TODO sorty of clashes with .main (if both servlet and main are present.
                     // also prohitibs any other conversion method.
+                    if ( fo.getAttribute(ATTR_EXECUTION_URI) == null &&
+                            servletFilesScanning( fo ) )
+                    {
+                        return null;
+                    }
                     Sources srcs = project.getLookup().lookup(Sources.class);
                     SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                     for (int i = 0; i < grp.length; i++) {
@@ -204,14 +227,14 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                             String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                             if (relPath != null) {
                                 if (fo.getAttribute(ATTR_EXECUTION_URI) != null ||
-                                        Boolean.TRUE.equals(fo.getAttribute("org.netbeans.modules.web.IsServletFile"))) {//NOI18N
+                                        Boolean.TRUE.equals(fo.getAttribute(IS_SERVLET_FILE))) {//NOI18N
                                     return action + ".deploy"; //NOI18N
                                 }
-                                WebModule webModule = WebModule.getWebModule(fo);
-                                if (isServletFile(webModule, fo))  {
+                                if (isServletFile(fo,false))  {
                                     try {
-                                        fo.setAttribute("org.netbeans.modules.web.IsServletFile", Boolean.TRUE); //NOI18N
-                                    } catch (IOException ex) {
+                                        fo.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
+                                    } catch (java.io.IOException ex) {
+                                        //we tried
                                     }
                                     return action + ".deploy"; //NOI18N
                                 }
@@ -230,8 +253,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         return null;
     }
 
-    private static boolean isServletFile(WebModule webModule, FileObject javaClass) {
-        if (webModule == null || javaClass == null) {
+    private static boolean isServletFile(FileObject javaClass, boolean initialScan) {
+        if (javaClass == null) {
             return false;
         }
 
@@ -244,18 +267,114 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             return false;
         }
 
+        WebModule webModule = WebModule.getWebModule(javaClass);
         try {
-            List<ServletInfo> servlets =
-                    WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
-            for (ServletInfo si : servlets) {
-                if (className.equals(si.getServletClass())) {
-                    return true;
+            MetadataModel<WebAppMetadata> metadataModel = webModule
+                    .getMetadataModel();
+            boolean result = false;
+            if ( initialScan || metadataModel.isReady()) {
+                List<ServletInfo> servlets = WebAppMetadataHelper
+                        .getServlets(metadataModel);
+                List<String> servletClasses = new ArrayList<String>( servlets.size() );
+                for (ServletInfo si : servlets) {
+                    if (className.equals(si.getServletClass())) {
+                        result =  true;
+                    }
+                    else {
+                        servletClasses.add( si.getServletClass() );
+                    }
                 }
+                setServletClasses( servletClasses,  javaClass , initialScan);
             }
+            return result;
         } catch (java.io.IOException ex) {
             ex.printStackTrace();
         }
         return false;
+    }
+    
+    /**
+     * Method check if initial servlet scanning has been started.
+     * It's done via setting special mark for project ( actually 
+     * for  ProjectWebModule ).
+     * 
+     * Fix for IZ#172931 - [68cat] AWT thread blocked for 29229 ms.
+     */
+    private boolean servletFilesScanning( final FileObject fileObject ) 
+ {
+        if ( isScanFinished.get()){
+            return false;
+        }
+        if ( isScanStarted.get()) {
+            return true;
+        }
+        else {
+            Runnable runnable = new Runnable() {
+
+                public void run() {
+                    isServletFile(fileObject, true);
+                    isScanFinished.set(true);
+                }
+            };
+            if (!isScanStarted.get()) {
+                /*
+                 * Double check . It's not good but not fatal. In the worst case
+                 * we will start several initial scanning.
+                 */
+                RequestProcessor.getDefault().post(runnable);
+                isScanStarted.set(true);
+            }
+            return true;
+        }
+    }
+    
+    /*
+     * Created as  fix for IZ#172931 - [68cat] AWT thread blocked for 29229 ms.
+     */
+    private static void setServletClasses( final List<String> servletClasses, 
+            final FileObject orig, boolean initial )
+    {
+        if ( initial ){
+            JavaSource javaSource = JavaSource.forFileObject( orig );
+            if ( javaSource == null) {
+                return;
+            }
+            try {
+            javaSource.runUserActionTask( new Task<CompilationController>(){
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase( Phase.ELEMENTS_RESOLVED );
+                    for( String servletClass : servletClasses){
+                        TypeElement typeElem = controller.getElements().
+                            getTypeElement( servletClass);
+                        if ( typeElem == null ){
+                            continue;
+                        }
+                        ElementHandle<TypeElement> handle = 
+                            ElementHandle.create( typeElem );
+                        FileObject fileObject = SourceUtils.getFile( handle, 
+                                controller.getClasspathInfo());
+                        if ( fileObject != null && !Boolean.TRUE.equals(
+                                fileObject.getAttribute(IS_SERVLET_FILE)))
+                        {
+                            fileObject.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
+                        }
+                    }
+                }
+            }, true);
+            }
+            catch(IOException e ){
+                e.printStackTrace();
+            }
+        }
+        else {
+            Runnable runnable = new Runnable() {
+                
+                public void run() {
+                    setServletClasses(servletClasses, orig, true);
+                }
+            };
+            RequestProcessor.getDefault().post(runnable);
+        }
     }
 
 }

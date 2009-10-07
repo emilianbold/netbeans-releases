@@ -40,7 +40,6 @@ package org.netbeans.modules.dlight.procfs.reader.api;
 
 import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
 import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
-import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -49,9 +48,8 @@ public final class ProcReaderFactory {
     private ProcReaderFactory() {
     }
 
-    public static ProcReader getReader(ExecutionEnvironment execEnv, AttachableTarget target) {
+    public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
         final ProcReaderImpl reader;
-        final int pid = target.getPID();
 
         if (execEnv.isLocal()) {
             reader = new LocalProcReader(pid);

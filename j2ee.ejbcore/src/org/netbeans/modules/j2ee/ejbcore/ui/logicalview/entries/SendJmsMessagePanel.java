@@ -216,6 +216,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         mdbCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
+                handleConnectionFactory();
             }
         });
         connectionFactoryTextField.getDocument().addDocumentListener(new DocumentListener() {

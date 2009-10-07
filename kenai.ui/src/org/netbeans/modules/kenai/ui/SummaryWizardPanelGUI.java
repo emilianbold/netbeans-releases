@@ -228,7 +228,7 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE),
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE))
         );
-        projectURL.setText("<html><a href=''>" + NameAndLicenseWizardPanelGUI.PRJ_NAME_PREVIEW_PREFIX + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME));
+        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.PRJ_NAME_PREVIEW_PREFIX + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
 
         boolean autoCommit = Boolean.valueOf((String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT));
         commitedLabel.setText(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitedLabel.text",
@@ -238,7 +238,7 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
         commitPrepareLabel.setText(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitPrepareLabel.text",
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_TYPE)));
 
-        repoURL.setText("<html><a href=''>" + settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_PREVIEW) + "</a>");
+        repoURL.setText("<html><b>" + settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_PREVIEW) + "</b></html>");
 
         List<SharedItem> sharedItems = (List<SharedItem>) settings.getProperty(NewKenaiProjectWizardIterator.PROP_FOLDERS_TO_SHARE);
         commitedItems.setListData(sharedItems.toArray(new SharedItem[sharedItems.size()]));
@@ -252,11 +252,15 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
         String newPrjScmLocal = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_SCM_LOCAL);
         boolean inPlaceRepository = NewKenaiProjectWizardIterator.isCommonParent(sharedItems, newPrjScmLocal);
         projectsMoveLabel.setVisible(!inPlaceRepository);
+        if (sharedItems.size()==0) {
+            Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectsMoveLabelNoSelection.text"));
+        }
         localRoot.setVisible(!inPlaceRepository);
-        localRoot.setText(newPrjScmLocal);
+        localRoot.setText("<html><b>"+newPrjScmLocal+"</b></html>");
 
         String issues = (String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES);
         issueTrackingLabel.setVisible(KenaiService.Names.BUGZILLA.equals(issues) || KenaiService.Names.JIRA.equals(issues));
+        validate();
     }
 
     public void store(WizardDescriptor settings) {

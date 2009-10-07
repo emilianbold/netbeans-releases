@@ -53,25 +53,32 @@ import org.netbeans.modules.dlight.api.storage.DataUtil;
  */
 public final class DefaultDataRowToTimeSeries implements DataRowToTimeSeries {
 
-    private final float[] data;
+    private final int dataLength;
     private final Map<String, Integer> columnToIndex;
 
     public DefaultDataRowToTimeSeries(Column[][] columns) {
-        this.data = new float[columns.length];
+        this.dataLength = columns.length;
         this.columnToIndex = Collections.unmodifiableMap(buildColumnToIndexMap(columns));
     }
 
-    public synchronized void addDataRow(DataRow row) {
+    @Override
+    public float[] getData(DataRow row) {
+        float[] result = null;
         for (String columnName : row.getColumnNames()) {
             Integer index = columnToIndex.get(columnName);
             if (index != null) {
-                data[index] = DataUtil.toFloat(row.getData(columnName));
+                if (result == null) {
+                    result = new float[dataLength];
+                }
+                result[index] = DataUtil.toFloat(row.getData(columnName));
             }
         }
+        return result;
     }
 
-    public synchronized void tick(float[] data, Map<String, String> details) {
-        System.arraycopy(this.data, 0, data, 0, Math.min(this.data.length, data.length));
+    @Override
+    public Map<String, String> getDetails() {
+        return Collections.emptyMap();
     }
 
     private static Map<String, Integer> buildColumnToIndexMap(Column[][] columns) {

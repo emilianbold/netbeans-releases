@@ -44,12 +44,12 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
  *
  * @author masha
  */
-public abstract class DLightTargetAccessor {
+public abstract class DLightTargetAccessor<T extends DLightTarget> {
 
-    private static volatile DLightTargetAccessor DEFAULT;
+    private static volatile DLightTargetAccessor<? extends DLightTarget> DEFAULT;
 
-    public static DLightTargetAccessor getDefault() {
-        DLightTargetAccessor a = DEFAULT;
+    public static DLightTargetAccessor<? extends DLightTarget> getDefault() {
+        DLightTargetAccessor<? extends DLightTarget> a = DEFAULT;
         if (a != null) {
             return a;
         }
@@ -63,7 +63,7 @@ public abstract class DLightTargetAccessor {
         return DEFAULT;
     }
 
-    public static void setDefault(DLightTargetAccessor accessor) {
+    public static void setDefault(DLightTargetAccessor<? extends DLightTarget> accessor) {
         if (DEFAULT != null) {
             throw new IllegalStateException();
         }
@@ -71,6 +71,6 @@ public abstract class DLightTargetAccessor {
         DEFAULT = accessor;
     }
 
-    public abstract DLightTarget.DLightTargetExecutionService getDLightTargetExecution(DLightTarget target);
+    public abstract DLightTarget.DLightTargetExecutionService<DLightTarget> getDLightTargetExecution(DLightTarget target);
     public abstract DLightTarget.Info getDLightTargetInfo(DLightTarget target);
 }

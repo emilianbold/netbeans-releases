@@ -1286,7 +1286,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        }
        
        ExpressionNode(TypeHelper type) {
-           super("root", designSupport.getBindingDescriptors(type)); // NOI18N
+           super("-root-", designSupport.getBindingDescriptors(type)); // NOI18N
            this.type = type;
            setAllowsChildren(true);
        }
@@ -1335,7 +1335,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        @Override
        protected void loadChildren() {
            loadedChildren = true;
-           if ("root".equals(getUserObject())) { // NOI18N
+           if ("-root-".equals(getUserObject())) { // NOI18N
                add(new ExpressionNode()); // null expression
            }
            if (childValue instanceof List[]) {

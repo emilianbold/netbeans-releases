@@ -115,7 +115,7 @@ public class RemoteFileSystemNotifier {
         String envString = getDisplayName(env);
         notification = NotificationDisplayer.getDefault().notify(
                 NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString),
-                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.png", false), // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.gif", false), // NOI18N
                 NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.DETAILS", envString),
                 onClickAction,
                 NotificationDisplayer.Priority.HIGH);
@@ -130,7 +130,8 @@ public class RemoteFileSystemNotifier {
     private void showConnectDialog() {
         final NotifierPanel panel = new NotifierPanel(env);
         panel.setPendingFiles(callback.getPendingFiles());
-        String caption = NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE");
+        String envString = getDisplayName(env);
+        String caption = NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString);
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true,
                 new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
                 DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);

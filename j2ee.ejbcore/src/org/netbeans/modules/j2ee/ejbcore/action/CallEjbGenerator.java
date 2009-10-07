@@ -400,7 +400,7 @@ public class CallEjbGenerator {
     }
     
     private ElementHandle<ExecutableElement> generateJNDI(final FileObject fileObject, final String className,
-            boolean throwCheckedExceptions, EjbRefIType refIType, boolean global, Project ejbProject) throws IOException {
+            boolean throwCheckedExceptions, EjbRefIType refIType, final boolean global, Project ejbProject) throws IOException {
         final String name = "lookup" + ejbName + refIType;
         String body = null;
         String componentName = ejbReference.getComponentName(refIType);
@@ -479,18 +479,19 @@ public class CallEjbGenerator {
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
                 ClassTree newClassTree = treeMaker.addClassMember(classTree, methodTree);
 
-                // field itself
-                VariableTree variableTree = treeMaker.Variable(
-                        treeMaker.Modifiers(Collections.EMPTY_SET),
-                        _RetoucheUtil.uniqueMemberName(fileObject, className, ejbName, "ejb"),
-                        methodTree.getReturnType(),
-                        treeMaker.MethodInvocation(Collections.EMPTY_LIST,
-                                                   treeMaker.Identifier(methodTree.getName()),
-                                                   Collections.EMPTY_LIST)
-                        );
-                // adding field to class
-                newClassTree = treeMaker.insertClassMember(newClassTree, 0, variableTree);
-
+                if (global){
+                    // field itself
+                    VariableTree variableTree = treeMaker.Variable(
+                            treeMaker.Modifiers(Collections.EMPTY_SET),
+                            _RetoucheUtil.uniqueMemberName(fileObject, className, ejbName, "ejb"),
+                            methodTree.getReturnType(),
+                            treeMaker.MethodInvocation(Collections.EMPTY_LIST,
+                                                       treeMaker.Identifier(methodTree.getName()),
+                                                       Collections.EMPTY_LIST)
+                            );
+                    // adding field to class
+                    newClassTree = treeMaker.insertClassMember(newClassTree, 0, variableTree);
+                }
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();

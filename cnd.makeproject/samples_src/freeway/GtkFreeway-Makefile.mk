@@ -82,6 +82,8 @@ RANLIB=ranlib
 build: .build-post
 
 .build-pre:
+	@test -f `which pkg-config` || (echo "ERROR: no pkg-config found.\n\tInstall pkg-config package or add it to PATH.\n\tFor more information visit http://pkg-config.freedesktop.org" && false)
+	@pkg-config --libs gtk+-2.0
 # Add your pre 'build' code here...
 
 .build-post: .build-impl

@@ -115,6 +115,8 @@ public class VariousUtils {
     public static final String FIELD_TYPE_PREFIX = "fld:";
     public static final String STATIC_FIELD__TYPE_PREFIX = "static.fld:";
     public static final String VAR_TYPE_PREFIX = "var:";
+    public static final String ARRAY_TYPE_PREFIX = "array:";
+
     public static enum Kind {
         CONSTRUCTOR,
         FUNCTION,
@@ -233,6 +235,10 @@ public class VariousUtils {
     @CheckForNull
     static String extractVariableTypeFromAssignment(Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         Expression expression = assignment.getRightHandSide();
+        return extractVariableTypeFromExpression(expression, allAssignments);
+    }
+
+    static String extractVariableTypeFromExpression(Expression expression, Map<String, AssignmentImpl> allAssignments) {
         if (expression instanceof Assignment) {
             // handle nested assignments, e.g. $l = $m = new ObjectName;
             return extractVariableTypeFromAssignment((Assignment) expression, allAssignments);
@@ -252,7 +258,7 @@ public class VariousUtils {
         } else if (expression instanceof ArrayCreation) {
             return "array"; //NOI18N
         } else if (expression instanceof VariableBase) {
-            return extractTypeFroVariableBase((VariableBase) expression, allAssignments);//extractVariableTypeFromVariableBase(varBase);
+            return extractTypeFroVariableBase((VariableBase) expression, allAssignments); //extractVariableTypeFromVariableBase(varBase);
         } else if (expression instanceof Scalar) {
             Scalar scalar = (Scalar) expression;
             Type scalarType = scalar.getScalarType();
@@ -264,10 +270,9 @@ public class VariousUtils {
                 return Type.STRING.toString().toLowerCase();
             }
         }
-
         return null;
     }
-    
+
     public static String replaceVarNames(String semiTypeName, Map<String,String> var2Type)  {
         StringBuilder retval = new StringBuilder();
         String[] fragments = semiTypeName.split("[@:]");
@@ -338,25 +343,30 @@ public class VariousUtils {
             int len = (justDispatcher) ? fragments.length - 1 : fragments.length;
             for (int i = 0; i < len; i++) {
                 oldRecentTypes = recentTypes;                
-                String frag = fragments[i];
-                if (frag.trim().length() == 0) {
+                String frag = fragments[i].trim();
+                if (frag.length() == 0) {
                     continue;
                 }
-                if (VariousUtils.METHOD_TYPE_PREFIX.startsWith(frag)) {
+                String operationPrefix = (frag.endsWith(":")) ? frag : String.format("%s:", frag);
+                if (VariousUtils.METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.FUNCTION_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FUNCTION_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.STATIC_METHOD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.STATIC_METHOD_TYPE_PREFIX;
-                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.STATIC_FIELD__TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
-                } else if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.VAR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.VAR_TYPE_PREFIX;
-                } else if (VariousUtils.FIELD_TYPE_PREFIX.startsWith(frag)) {
+                } else if (VariousUtils.ARRAY_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
+                    operation = VariousUtils.ARRAY_TYPE_PREFIX;
+                } else if (VariousUtils.FIELD_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
+                } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
+                    operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
-                        assert i == 0;
+                        assert i == 0 : frag;
                         NamespaceIndexFilter filter = new NamespaceIndexFilter(frag);
                         QualifiedNameKind kind = filter.getKind();
                         String query = kind.isUnqualified() ? frag : filter.getName();
@@ -367,6 +377,9 @@ public class VariousUtils {
                         if (!kind.isUnqualified()) {
                             recentTypes = filter.filterModelElements(recentTypes, true);
                         }
+                    } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
+                        //new FooImpl()-> not allowed in php
+                        return Collections.emptyList();
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
@@ -423,7 +436,8 @@ public class VariousUtils {
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
-                    } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)) {
+                    } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)
+                            || (operation.startsWith(VariousUtils.ARRAY_TYPE_PREFIX))) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         String varName = frag;
                         VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
@@ -435,7 +449,12 @@ public class VariousUtils {
                            boolean added = recursionDetection.add(checkName);
                             try {
                                 if (added) {
-                                    newRecentTypes.addAll(var.getTypes(offset));
+                                    boolean isArray = operation.startsWith(VariousUtils.ARRAY_TYPE_PREFIX);
+                                    if (isArray) {
+                                        newRecentTypes.addAll(var.getArrayAccessTypes(offset));
+                                    } else {
+                                        newRecentTypes.addAll(var.getTypes(offset));
+                                    }
                                 } 
                             } finally {
                                 recursionDetection.remove(checkName);
@@ -467,7 +486,12 @@ public class VariousUtils {
                                 Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PHPIndex.ANY_ATTR);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
-                                        newRecentTypes.addAll(var.getFieldTypes(fieldElement, offset));
+                                        final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
+                                        if (fieldTypes.isEmpty() && (fieldElement instanceof FieldElementImpl)) {
+                                            newRecentTypes.addAll(((FieldElementImpl)fieldElement).getDefaultTypes());
+                                        } else {
+                                            newRecentTypes.addAll(fieldTypes);
+                                        }
                                     } else {
                                         newRecentTypes.addAll(fieldElement.getTypes(offset));
                                     }
@@ -796,7 +820,8 @@ public class VariousUtils {
 
 
     public enum State {
-        START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, REFERENCE, STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, CLASSNAME, STOP
+        START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, ARRAYREFERENCE, REFERENCE, 
+        STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, ARRAY_FIELD, ARRAY_VARIABLE, CLASSNAME, STOP, IDX
     };
 
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
@@ -823,17 +848,28 @@ public class VariousUtils {
                             metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
                         }
                         break;
+                    case IDX:
+                        if (isLeftArryBracket(token)) {
+                            state = State.ARRAYREFERENCE;
+                        } else if (CTX_DELIMITERS.contains(token.id())) {
+                            state = State.INVALID;
+                        }
+                        break;
+                    case ARRAYREFERENCE:
                     case REFERENCE:
+                        boolean isArray = state.equals(State.ARRAYREFERENCE);
                         state = State.INVALID;
                         if (isRightBracket(token)) {
                             rightBraces++;
                             state = State.PARAMS;
+                        } else if (isRightArryBracket(token)) {
+                            state = State.IDX;
                         } else if (isString(token)) {
                             metaAll.insert(0, token.text().toString());
-                            state = State.FIELD;
+                            state = isArray ? State.ARRAY_FIELD : State.FIELD;
                         } else if (isVariable(token)) {
                             metaAll.insert(0, token.text().toString());
-                            state = State.VARBASE;
+                            state = isArray? State.ARRAY_VARIABLE : State.VARBASE;
                         }
                         break;
                     case STATIC_REFERENCE:
@@ -876,6 +912,7 @@ public class VariousUtils {
                             state = State.METHOD;
                         }
                         break;
+                    case ARRAY_FIELD:
                     case FIELD:
                         state = State.INVALID;
                         if (isReference(token)) {
@@ -891,8 +928,13 @@ public class VariousUtils {
                         } else {
                             state = State.VARIABLE;
                         }
+                    case ARRAY_VARIABLE:
                     case VARIABLE:
-                        metaAll.insert(0, "@" + VariousUtils.VAR_TYPE_PREFIX);
+                        if (state.equals(State.ARRAY_VARIABLE)) {
+                            metaAll.insert(0, "@" + VariousUtils.ARRAY_TYPE_PREFIX);
+                        } else {
+                            metaAll.insert(0, "@" + VariousUtils.VAR_TYPE_PREFIX);
+                        }
                     case CLASSNAME:
                         //TODO: self, parent not handled yet
                         //TODO: maybe rather introduce its own State for self, parent
@@ -988,7 +1030,12 @@ public class VariousUtils {
     private static boolean isRightBracket(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text());//NOI18N
     }
-
+    private static boolean isRightArryBracket(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "]".contentEquals(token.text());//NOI18N
+    }
+    private static boolean isLeftArryBracket(Token<PHPTokenId> token) {
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "[".contentEquals(token.text());//NOI18N
+    }
     private static boolean isComma(Token<PHPTokenId> token) {
         return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text());//NOI18N
     }

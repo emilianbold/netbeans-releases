@@ -118,7 +118,7 @@ public abstract class OperationWizardModel {
         }
         return primaryElements;
     }
-    
+
     public boolean hasRequiredUpdateElements () {
         return ! getRequiredUpdateElements ().isEmpty ();
     }
@@ -262,13 +262,13 @@ public abstract class OperationWizardModel {
 
     public Set<UpdateElement> getAllVisibleUpdateElements () {
         Set <UpdateElement> visible = new HashSet <UpdateElement> ();
-        visible.addAll(getPrimaryVisibleUpdateElements());
+        visible.addAll(getPrimaryVisibleUpdateElements(true));
         visible.addAll(getRequiredVisibleUpdateElements());
         return visible;
     }
-    public Set<UpdateElement> getPrimaryVisibleUpdateElements () {
+    public Set<UpdateElement> getPrimaryVisibleUpdateElements (boolean checkInternalUpdates) {
         Set <UpdateElement> primary = getPrimaryUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation(), true);
+        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation(), checkInternalUpdates);
         return visible;
     }
     public Set<UpdateElement> getRequiredVisibleUpdateElements () {
