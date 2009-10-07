@@ -156,7 +156,23 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue168908.php");
     }
 
-//    146247
+    /**
+     * issue 146247 there are 4 cases to be tested 
+     * @throws Exception
+     */
+    public void test146247_1() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/146247_1.php");
+    }
+    public void test146247_2() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/146247_2.php");
+    }
+    public void test146247_3() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/146247_3.php");
+    }
+    public void test146247_4() throws Exception{
+        testIndentInFile("testfiles/indent/qa/issues/146247_4.php");
+    }
+
     /**
      * 173966 issue - a regression from 146247
      * @throws Exception

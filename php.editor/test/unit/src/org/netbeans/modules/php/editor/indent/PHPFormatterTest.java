@@ -117,9 +117,9 @@ public class PHPFormatterTest extends PHPTestBase {
      * issue 173903
      * @throws Exception
      */
-//    public void test173903() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/173903.php");
-//    }
+    public void test173903() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173903.php");
+    }
 
     /**
      * issue 173906
