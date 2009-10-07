@@ -167,7 +167,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
         @Override
         public Component getCustomEditor() {
-            return new DevelopmentHostCustomizer(configuration, env);
+            return new DevelopmentHostCustomizer(configuration, this, env);
         }
 
         public void attachEnv(PropertyEnv env) {

@@ -344,7 +344,7 @@ public class WLStartServer extends StartServer {
         }
         if (checkResponse) {
             String host = dm.getHost();
-            int port = new Integer(dm.getPort()).intValue();
+            int port = Integer.parseInt(dm.getPort().trim());
             return ping(host, port, SERVER_CHECK_TIMEOUT); // is server responding?
         } else {
             return false; // cannot resolve the state

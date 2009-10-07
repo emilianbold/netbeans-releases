@@ -510,7 +510,7 @@ public class JSFClientGenerator {
                 }
             }
 
-            String find = "Hello from the Facelets client template!"; //NOI18N
+            String find = "Hello from the Facelets"; //NOI18N
             if ( content.indexOf(find) > -1){
                 StringBuffer replace = new StringBuffer();
                 replace.append(find);

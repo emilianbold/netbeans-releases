@@ -46,6 +46,7 @@ package org.netbeans.modules.dlight.toolsui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -119,12 +120,51 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
     }
 
+    private DLightConfigurationUIWrapper inList(String name, List<DLightConfigurationUIWrapper> list) {
+        for (DLightConfigurationUIWrapper wrapper : list) {
+            if (name.equals(wrapper.getName())) {
+                return wrapper;
+            }
+        }
+        return null;
+    }
+
     public boolean apply() {
-        // save wrappers
-        DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
-        // save configurations and tools
-        for (DLightConfigurationUIWrapper configuration : dLightConfigurations){
-            if (configuration.getCopyOf() != null) {
+        // Delete deleted configurations
+        List<DLightConfigurationUIWrapper> oldDLightConfiguration = DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers();
+        List<DLightConfigurationUIWrapper> toBeDeleted = new ArrayList<DLightConfigurationUIWrapper>();
+        for (DLightConfigurationUIWrapper wrapper : oldDLightConfiguration) {
+            DLightConfigurationUIWrapper c = inList(wrapper.getName(), dLightConfigurations);
+            if (c == null || c.getCopyOf() != null) {
+                toBeDeleted.add(wrapper);
+            }
+        }
+        for (DLightConfigurationUIWrapper conf : toBeDeleted) {
+            DLightConfigurationSupport.getInstance().removeConfiguration(conf.getName());
+        }
+        
+        // Rename renamed configurations
+        for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
+            if (configuration.isCustom() && configuration.getCopyOf() == null) {
+                if (!configuration.getName().equals(configuration.getDLightConfiguration().getConfigurationName())) {
+                    DLightConfiguration origDLightConfiguration = configuration.getDLightConfiguration();
+                    String category = origDLightConfiguration.getCategoryName();
+                    List<String> platforms = origDLightConfiguration.getPlatforms();
+                    String collector = origDLightConfiguration.getCollectorProviders();
+                    List<String> indicators = origDLightConfiguration.getIndicatorProviders();
+                    DLightConfigurationSupport.getInstance().removeConfiguration(origDLightConfiguration.getConfigurationName());
+                    DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
+                    configuration.setDLightConfiguration(dlightConfiguration);
+                    for (DLightToolUIWrapper toolUI : configuration.getTools()) {
+                        toolUI.setModified(true);
+                    }
+                }
+            }
+        }
+
+        // create duplicates
+        for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
+            if (configuration.isCustom() && configuration.getCopyOf() != null) {
                 DLightConfiguration origDLightConfiguration = configuration.getCopyOf();
                 String category = origDLightConfiguration.getCategoryName();
                 List<String> platforms = origDLightConfiguration.getPlatforms();
@@ -132,21 +172,29 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 List<String> indicators = origDLightConfiguration.getIndicatorProviders();
                 DLightConfiguration dlightConfiguration = DLightConfigurationSupport.getInstance().registerConfiguration(configuration.getName(), configuration.getDisplayName(), category, platforms, collector, indicators);
                 configuration.setDLightConfiguration(dlightConfiguration);
+                for (DLightToolUIWrapper toolUI : configuration.getTools()) {
+                    toolUI.setModified(true);
+                }
+                configuration.setCopyOf(null);
             }
+        }
+
+        // save all changes to tools
+        for (DLightConfigurationUIWrapper configuration : dLightConfigurations) {
             for (DLightToolUIWrapper toolUI : configuration.getTools()) {
-                if (toolUI.isModified() || configuration.getCopyOf() != null) {
+                if (toolUI.isModified()) {
                     //if it was disabled and now enabled: should register
                     if (!toolUI.isEnabled()){
                         DLightConfigurationSupport.getInstance().deleteTool(configuration.getName(), toolUI.getDLightTool());
                     }else{
-                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), toolUI.isOnByDefault());
+                        DLightConfigurationSupport.getInstance().registerTool(configuration.getName(), toolUI.getDLightTool().getID(), true);
                     }
                 }
             }
-            if (configuration.getCopyOf() != null) {
-                configuration.setCopyOf(null);
-            }
         }
+
+        // save wrappers
+        DLightConfigurationUIWrapperProvider.getInstance().setDLightConfigurationUIWrappers(dLightConfigurations);
         return true;
     }
 
@@ -354,17 +402,42 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 //            return new DLightConfigurationUIWrapper(newS, newS, allDLightTools);
 //        }
 
+        private String makeNameUnique(String suggestedName) {
+            if (findDLightConfigurationUIWrapper(suggestedName) == null) {
+                return suggestedName;
+            }
+            else {
+                for (int i = 1;; i++) {
+                    String newName = suggestedName + "_" + i; // NOI18N
+                    if (findDLightConfigurationUIWrapper(newName) == null) {
+                        return newName;
+                    }
+                }
+            }
+        }
+
+        private DLightConfigurationUIWrapper findDLightConfigurationUIWrapper(String name) {
+            for (DLightConfigurationUIWrapper dlightConfigurationUIWrapper : getListData()) {
+                if (dlightConfigurationUIWrapper.getDisplayName().equals(name)) {
+                    return dlightConfigurationUIWrapper;
+                }
+            }
+            return null;
+        }
+
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {
-            String newName = getString("CopyOf", o.getDisplayName());
-            DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper("copyof" + o.getName(), getString("CopyOf", o.getDisplayName()), allDLightTools); // NOI18N
+            String newDisplayName = makeNameUnique(getString("CopyOf", o.getDisplayName()));
+            String newName = newDisplayName.replace("/", "_FSLASH_"); // No spaces // NOI18N
+            newName = newName.replace("\\", "_BSLASH_"); // No spaces // NOI18N
+            DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(newName, newDisplayName, allDLightTools); // NOI18N
             List<DLightToolUIWrapper> tools = o.getTools();
             List<DLightToolUIWrapper> copyTools = copy.getTools();
             int i = 0;
             for (DLightToolUIWrapper tool : tools) {
                 DLightToolUIWrapper copyTool = copyTools.get(i++);
-                copy.setToolEnabled(copyTool, tool.isEnabled());
-                copyTool.setOnByDefault(tool.isOnByDefault());
+                copyTool.setEnabled(tool.isEnabled());
+                copyTool.setCanEnable(tool.canEnable());
             }
             copy.setCopyOf(o.getDLightConfiguration());
             return copy;
@@ -372,7 +445,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         @Override
         public void editAction(DLightConfigurationUIWrapper o) {
-            String s = o.getName();
+            String s = o.getDisplayName();
 
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
             notifyDescriptor.setInputText(s);
@@ -380,8 +453,11 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
-            o.setName(newS);
+            String newDisplayName = notifyDescriptor.getInputText();
+            o.setDisplayName(newDisplayName);
+            String newName = newDisplayName.replace("/", "_FSLASH_"); // No spaces // NOI18N
+            newName = newName.replace("\\", "_BSLASH_"); // No spaces // NOI18N
+            o.setName(newName);
         }
 
         @Override
@@ -389,7 +465,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             super.checkSelection(i);
             DLightConfigurationUIWrapper dLightConfigurationWrapper = getListData().elementAt(i);
             getEditButton().setEnabled(dLightConfigurationWrapper.isCustom());
-            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom() || DLightConfigurationSupport.getInstance().canRemoveConfiguration(dLightConfigurationWrapper.getName()));
+            getRemoveButton().setEnabled(dLightConfigurationWrapper.isCustom());
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

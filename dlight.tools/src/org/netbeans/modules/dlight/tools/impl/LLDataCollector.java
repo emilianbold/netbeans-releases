@@ -196,8 +196,10 @@ public class LLDataCollector
                 }
                 paths.append(getRemoteDir(env, entry.getValue(), entry.getKey()));
             }
-            vars.put(NativeToolsUtil.getLdPathName(env), paths.toString());
-            vars.put(NativeToolsUtil.getLdPreloadName(env), agentFilename);
+            String ldPathName = NativeToolsUtil.getLdPathName(env);
+            vars.put(ldPathName, "${" + ldPathName + "}:" + paths.toString()); // NOI18N
+            String ldPreloadName = NativeToolsUtil.getLdPreloadName(env);
+            vars.put(ldPreloadName, "${" + ldPreloadName + "}:" + agentFilename); // NOI18N
             return vars;
         } else {
             return Collections.emptyMap();
@@ -299,7 +301,9 @@ public class LLDataCollector
             profRunner = null;
         }
 
-        collectorToStop.shutdown();
+        if (collectorToStop != null) {
+            collectorToStop.shutdown();
+        }
     }
 
     @Override

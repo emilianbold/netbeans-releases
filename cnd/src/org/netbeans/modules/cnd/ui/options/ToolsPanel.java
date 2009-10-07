@@ -49,6 +49,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -74,6 +77,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -90,6 +100,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -161,7 +172,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         this();
         this.model = model;
     }
-
 
     private void initializeLong() {
         csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
@@ -587,13 +597,37 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return true; //serverList == null ? true : serverList.get((String)cbDevHost.getSelectedItem()).isOnline();
     }
 
+    private void downloadCompilerSet(CompilerSet cs) {
+        try {
+            URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD); // NOI18N
+            provider.refresh(null, true);
+            List<UpdateUnit> list = provider.getUpdateUnits(TYPE.MODULE);
+            OperationContainer<InstallSupport> installContainer = OperationContainer.createForInstall();
+            for (UpdateUnit unit : list) {
+                if (cs.getCompilerFlavor().getToolchainDescriptor().getModuleID().equals(unit.getCodeName())) {
+                    installContainer.add(unit.getAvailableUpdates());
+                    InstallSupport support = installContainer.getSupport();
+                    if (support != null) {
+                        PluginManager.openInstallWizard(installContainer);
+                    }
+                    break;
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             if (cs.isUrlPointer()) {
-                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl()+":"+ //NOI18N
-                                        cs.getCompilerFlavor().getToolchainDescriptor().getModuleID());
-                btBaseDirectory.setEnabled(false);
+                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+                btBaseDirectory.setEnabled(true);
                 isUrl = true;
+                //downloadCompilerSet(cs);
             } else {
                 tfBaseDirectory.setText(cs.getDirectory());
                 btBaseDirectory.setEnabled(!isRemoteHostSelected());
@@ -1055,7 +1089,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (ServerListUIEx.showServerListDialog(cacheManager)) {
+        if (ServerListUIEx.showServerListDialog(cacheManager, null)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -1829,6 +1863,16 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     if (isUrl) {
+        String uc = tfBaseDirectory.getText();
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                getString("ToolsPanel.UpdateCenterMessage", uc),
+                getString("ToolsPanel.UpdateCenterTitle"),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object ret = DialogDisplayer.getDefault().notify(nd);
+        if (ret == NotifyDescriptor.YES_OPTION) {
+            CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
+            downloadCompilerSet(cs);
+        }
         return;
     }
     String seed = null;

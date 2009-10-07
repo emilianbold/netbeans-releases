@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import java.awt.EventQueue;
 import java.awt.FontMetrics;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
@@ -146,8 +145,12 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
         if (tmpTimeFilter != null) {
             Range<Long> filterInterval = tmpTimeFilter.getInterval();
-            filterStart = (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
-            filterEnd = (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
+            filterStart = filterInterval.getStart() == null?
+                    Integer.MIN_VALUE :
+                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
+            filterEnd = filterInterval.getEnd() == null?
+                    Integer.MAX_VALUE :
+                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
         } else {
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;

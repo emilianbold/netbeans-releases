@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,53 +34,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model.nodes;
+package org.netbeans.modules.cnd.api.compilers;
 
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Radek Matous
+ * @author Alexander Simon
  */
-class ParameterImpl implements Parameter {
-    private String name;
-    private String defaultValue;
-    private List<QualifiedName> types;
-    private OffsetRange range;
+public abstract class ToolChainPathProvider {
+    private static final ToolChainPathProvider DEFAULT = new DefaultToolChainPathProvider();
 
-    ParameterImpl(String name, String defaultValue, List<QualifiedName> types, OffsetRange range) {
-        this.name = name;
-        this.defaultValue = defaultValue;
-        this.types = types;
-        this.range = range;
+    public static ToolChainPathProvider getDefault() {
+	return DEFAULT;
     }
 
-    @NonNull
-    public String getName() {
-        return name;
-    }
+    public abstract String getPath(CompilerFlavor flavor);
 
-    @NonNull
-    public String getDefaultValue() {
-        return defaultValue;//NOI18N
-    }
+    private static final class DefaultToolChainPathProvider extends ToolChainPathProvider {
+        private final Lookup.Result<ToolChainPathProvider> res;
+        DefaultToolChainPathProvider() {
+            res = Lookup.getDefault().lookupResult(ToolChainPathProvider.class);
+        }
 
-    public boolean isMandatory() {
-        return defaultValue == null;
-    }
-
-    public List<QualifiedName> getTypes() {
-        return types;
-    }
-
-    public OffsetRange getOffsetRange() {
-        return range;
+	@Override
+	public String getPath(CompilerFlavor flavor) {
+	    for (ToolChainPathProvider service : res.allInstances()) {
+                String path = service.getPath(flavor);
+                if (path != null) {
+                    return path;
+                }
+	    }
+            return null;
+	}
     }
 }

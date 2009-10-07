@@ -427,7 +427,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintMethodDesc",
-                    item.getFunction().getFunctionSignature(), clsName, fileName);//NOI18N
+                    item.getFunction().getFunctionSignature(true), clsName, fileName);//NOI18N
 
         }
 
@@ -465,7 +465,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = clz.getName();
             String fileName = clz.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
-                    item.getFunction().getFunctionSignature(), clsName, fileName);//NOI18N
+                    item.getFunction().getFunctionSignature(true), clsName, fileName);//NOI18N
         }
 
         static MethodDeclarationItem createMethodDeclarationItem(StaticMethodInvocation node) {

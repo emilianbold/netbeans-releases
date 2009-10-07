@@ -51,6 +51,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.remote.support.RemoteException;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -101,7 +103,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         this.execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
     }
 
-    private void initRfsIfNeed() throws IOException, InterruptedException, ExecutionException {
+    private void initRfsIfNeed() throws IOException, InterruptedException, ExecutionException, RemoteException {
         if (RfsSyncFactory.ENABLE_RFS) {            
             if (execEnv.isRemote()) {
                 if (ServerList.get(execEnv).getSyncFactory().getID().equals(RfsSyncFactory.ID)) {
@@ -127,7 +129,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
     }
 
-    private void initRfs() throws IOException, InterruptedException, ExecutionException {
+    private void initRfs() throws IOException, InterruptedException, ExecutionException, RemoteException {
 
         final Env env = pae.getProfile().getEnvironment();
 
@@ -182,8 +184,18 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         // to be able to trace what we're doing, first put it all to a map
         Map<String, String> env2add = new HashMap<String, String>();
 
+        //Alas, this won't work
+        //MacroMap mm = MacroMap.forExecEnv(execEnv);
+        //mm.prependPathVariable("LD_LIBRARY_PATH", ldLibraryPath);
+        //mm.prependPathVariable("LD_PRELOAD", preload); // NOI18N
+
         env2add.put("LD_PRELOAD", preload); // NOI18N
-        env2add.put("LD_LIBRARY_PATH", ldLibraryPath); // NOI18N
+        String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
+        String oldLdLibPath = RemoteUtil.getEnv(execEnv, ldLibPathVar);
+        if (oldLdLibPath != null) {
+            ldLibraryPath += ":" + oldLdLibPath; // NOI18N
+        }
+        env2add.put(ldLibPathVar, ldLibraryPath); // NOI18N
         env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
         env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
 
@@ -254,21 +266,24 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         } catch (InterruptedIOException ex) {
             // reporting does not make sense, just return false
             RemoteUtil.LOGGER.finest(ex.getMessage());
+        } catch (RemoteException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+            printErr(ex, io);
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
-            if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage()));
-            }
+            printErr(ex, io);
         } catch (ExecutionException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
-            if (err != null) {
-                String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
-                io.getErr().printf("%s\n", message); // NOI18N
-                io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
-                err.printf("%s\n", message); // NOI18N
-            }
+            printErr(ex, io);
+        }
+    }
+
+    private void printErr(Exception ex, InputOutput io) throws MissingResourceException {
+        if (err != null) {
+            String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying", remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
+            io.getErr().printf("%s\n", message); // NOI18N
+            io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
+            err.printf("%s\n", message); // NOI18N
         }
     }
 

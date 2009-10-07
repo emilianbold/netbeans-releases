@@ -1092,7 +1092,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     final MSAState prefferedState = ThreadStateColumnImpl.point2MSA(this, threadData.getThreadStateAt(index), point);
                     if (prefferedState != null) {
                         final ThreadState state = threadData.getThreadStateAt(index);
-                        int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod());
+                        int interval = (int) state.getMSASamplePeriod();
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), interval);
                         LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
                         final List<Integer> showThreadsID = new ArrayList<Integer>();

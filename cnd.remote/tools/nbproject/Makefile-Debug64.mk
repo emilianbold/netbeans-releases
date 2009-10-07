@@ -56,7 +56,7 @@ LDLIBSOPTIONS=
 .build-subprojects:
 
 # Clean Targets
-.clean-conf:
+.clean-conf: ${CLEAN_SUBPROJECTS}
 	cd . && ${MAKE}  64BITS=1 clean
 
 # Subprojects

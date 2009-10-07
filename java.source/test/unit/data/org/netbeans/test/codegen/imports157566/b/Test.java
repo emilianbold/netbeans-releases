@@ -1,0 +1,14 @@
+package org.netbeans.test.codegen.imports157566.b;
+
+public class Test {
+    C methodThatReturnsC() {
+        return null;
+    }
+
+    Object methodThatReturnsObject() {
+        return null;
+    }
+    Character c() {
+        return null;
+    }
+}

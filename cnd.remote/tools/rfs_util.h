@@ -48,7 +48,7 @@ enum {
 
 #if TRACE
     void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var);
+    void trace_startup(const char* prefix, const char* env_var, const char* binary);
     void trace_shutdown();
 #else
     #define trace_startup(...)

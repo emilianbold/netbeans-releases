@@ -33,7 +33,7 @@ static void* hndl = NULL;
 static struct mallinfo (*mall_hndl)(void) = NULL;
 
 static int reporter(void* arg);
-static void send_messages(int last);
+static int send_messages(int cleanup);
 static int wait_ack();
 
 static int init_sync_tracing();
@@ -50,8 +50,9 @@ static int mallinfo_enabled = 0;
 
 void cleanup(void* p) {
     if (0 <= msqid) {
-        send_messages(1);
-        wait_ack();
+        if (send_messages(1)) {
+            wait_ack();
+        }
         struct msqid_ds msbuf;
         msgctl(msqid, IPC_RMID, &msbuf); // closing the queue
         msqid = -1;
@@ -359,16 +360,20 @@ static int wait_ack() {
     return 0;
 }
 
-static void send_messages(int last) {
-    if (trace_sync && !last) {
+static int send_messages(int cleanup) {
+    // on cleanup only memory message is sent
+    int sent = 0;
+    if (trace_sync && !cleanup) {
         struct syncmsg syncbuf = {
             SYNCMSG,
             (I32) sync_wait,
             (I32) thr_count
         };
-        msgsnd(msqid, &syncbuf, sizeof(syncbuf) - sizeof(syncbuf.type), IPC_NOWAIT);
+        if (msgsnd(msqid, &syncbuf, sizeof(syncbuf) - sizeof(syncbuf.type), IPC_NOWAIT) == 0) {
+            ++sent;
+        }
     }
-    if (trace_cpu && !last) {
+    if (trace_cpu && !cleanup) {
         struct tms cur_times;
         clock_t cur_clock = times(&cur_times);
         long delta = (long) (cur_clock - prev_clock);
@@ -377,7 +382,9 @@ static void send_messages(int last) {
             (I32) (100.0 * (cur_times.tms_utime - prev_times.tms_utime) / delta),
             (I32) (100.0 * (cur_times.tms_stime - prev_times.tms_stime) / delta)
         };
-        msgsnd(msqid, &cpubuf, sizeof(cpubuf) - sizeof(cpubuf.type), IPC_NOWAIT);
+        if (msgsnd(msqid, &cpubuf, sizeof(cpubuf) - sizeof(cpubuf.type), IPC_NOWAIT) == 0) {
+            ++sent;
+        }
         prev_clock = cur_clock;
         prev_times.tms_utime = cur_times.tms_utime;
         prev_times.tms_stime = cur_times.tms_stime;
@@ -388,8 +395,11 @@ static void send_messages(int last) {
             MEMMSG,
             mi.uordblks + mi.hblkhd
         };
-        msgsnd(msqid, &membuf, sizeof(membuf) - sizeof(membuf.type), IPC_NOWAIT);
+        if (msgsnd(msqid, &membuf, sizeof(membuf) - sizeof(membuf.type), IPC_NOWAIT) == 0) {
+            ++sent;
+        }
     }
+    return sent;
 }
 
 int reporter(void* arg) {

@@ -37,25 +37,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.cnd.remote.project.*;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+
 /**
+ * Empty Node. E.g. No Projects Open, No Projects Bookmarked
  *
- * @author Vladimir Kvashin
+ * @author Jan Becicka
  */
-public abstract class RfsRemoteBuildTestBase extends RemoteBuildTestBase {
+public class EmptyNode extends LeafNode {
 
-    static {
-        System.setProperty("cnd.remote.fs", "true");
+    private JPanel panel;
+    private JLabel lbl;
+    private String title;
+    private Icon icon;
+
+    private final Object LOCK = new Object();
+
+    public EmptyNode( DashboardImpl dashboard, String name, Icon icon ) {
+        super( null );
+        this.title = name;
+        this.icon = icon;
     }
 
-    public RfsRemoteBuildTestBase(String testName) {
-        super(testName);
-    }
+    @Override
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        synchronized (LOCK) {
+            if (null == panel) {
+                panel = new JPanel(new BorderLayout());
+                panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+                panel.setOpaque(false);
 
-    public RfsRemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+                lbl = new TreeLabel(title);
+                if (icon != null) {
+                    panel.add(new JLabel(icon), BorderLayout.EAST);
+                }
+                panel.add(lbl, BorderLayout.WEST);
+            }
+            return panel;
+        }
     }
 }
