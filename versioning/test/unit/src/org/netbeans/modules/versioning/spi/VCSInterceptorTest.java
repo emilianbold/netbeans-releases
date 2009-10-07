@@ -53,6 +53,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Versioning SPI unit tests of VCSInterceptor.
@@ -187,9 +188,11 @@ public class VCSInterceptorTest extends TestCase {
             f.delete();
         } else {
             File[] files = f.listFiles();
-            for (File file : files) {
-                deleteRecursively(file);
-                file.delete();
+            if(files != null) {
+                for (File file : files) {
+                    deleteRecursively(file);
+                    file.delete();
+                }
             }
         }
     }
