@@ -201,7 +201,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             case ' ':
                 doc.readLock();
                 try {
-                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
                     if (ts == null) {
                         //no suitable token sequence found
                         return false;
@@ -226,7 +226,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 doc.runAtomic(new Runnable() {
 
                     public void run() {
-                        TokenSequence ts = Utils.getJoinedHtmlSequence(doc);
+                        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
                         if (ts == null) {
                             //no suitable token sequence found
                             ret[0] = false;
