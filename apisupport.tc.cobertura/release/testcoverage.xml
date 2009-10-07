@@ -6,15 +6,7 @@
 
   Unit and functional tests supported.
 
-  NOTE: Implemented using Cobertura, will be moved to separate module.
-  General contract for test coverage implementation for module projects is
-  to create Ant script testcoverage.xml in ${netbeans.dest.dir}/harness.
-  Script must:
-  * set property testcoverage.present to true outside of any target
-  * define target 'coverage-report' in the script
-  * set property testcoverage.report.dir in 'coverage-report' target to dir
-    with index.html file with results.
-    Clients should make no other assumptions beyond this contract.
+  Implemented using Cobertura, follows general contract described in harness README.
 -->
     <property name="testcoverage.present" value="true"/>
     <condition property="cobertura.dir" value="${harness.dir}/testcoverage/cobertura" else="${netbeans.dest.dir}/harness/testcoverage/cobertura">

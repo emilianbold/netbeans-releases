@@ -2287,6 +2287,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         }
+        if (getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+            response = GdbUtils.mackHack(response);
+        }
         return response.length() > 0 ? response : null;
     }
 

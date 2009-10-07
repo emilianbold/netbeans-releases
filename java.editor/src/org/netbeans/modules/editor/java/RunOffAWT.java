@@ -72,12 +72,15 @@ import org.openide.windows.WindowManager;
  */
 public class RunOffAWT {
 
+    private static final int DISPLAY_DIALOG_MS = 9450;
+    private static final int DISPLAY_CLOCK_MS = 50;
+
     public static void runOffAWT(final Runnable what, String featureName, final AtomicBoolean cancelOut) {
         if (!SwingUtilities.isEventDispatchThread()) {
             what.run();
         }
 
-        final CountDownLatch l = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
         
         WORKER.post(new Runnable() {
@@ -86,7 +89,7 @@ public class RunOffAWT {
                 
                 what.run();
 
-                l.countDown();
+                latch.countDown();
 
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -102,12 +105,12 @@ public class RunOffAWT {
 
         Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
         
-        if (waitMomentarily(glassPane, null, 50, l))
+        if (waitMomentarily(glassPane, null, DISPLAY_CLOCK_MS, latch))
             return ;
 
         Cursor wait = org.openide.util.Utilities.createProgressCursor(glassPane);
 
-        if (waitMomentarily(glassPane, wait, 1450, l))
+        if (waitMomentarily(glassPane, wait, DISPLAY_DIALOG_MS, latch))
             return ;
 
             String warning = NbBundle.getMessage(GoToSupport.class, "LBL_Long", featureName);
@@ -198,5 +201,8 @@ public class RunOffAWT {
 
     public static interface Worker<T> {
         T process(CompilationInfo info);
+    }
+
+    private RunOffAWT() {
     }
 }

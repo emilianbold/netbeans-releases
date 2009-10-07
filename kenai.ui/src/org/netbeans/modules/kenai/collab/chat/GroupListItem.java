@@ -103,6 +103,6 @@ public class GroupListItem implements ContactListItem {
     }
 
     public boolean hasMessages() {
-        return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getNewMessageCount()>0;
+        return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getMessageCount()>0;
     }
 }
