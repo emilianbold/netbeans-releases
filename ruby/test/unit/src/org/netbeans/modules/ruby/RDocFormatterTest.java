@@ -288,6 +288,18 @@ public class RDocFormatterTest extends RubyTestBase {
     public void testFormatLists() throws Exception {
         formatFile("testfiles/lists.comment");
     }
+
+    public void testLinks() throws Exception {
+        RDocFormatter instance = new RDocFormatter();
+
+        instance.appendLine("#");
+        instance.appendLine("#This should not be a link");
+        instance.appendLine("# This#should be a link");
+        instance.appendLine("# ");
+        String html = instance.toHtml();
+        assertEquals("This should not be a link <a href=\"This#should\">This#should</a> be a link <br><br>", html);
+
+    }
     
     // TODO test bullets, labels, preformat
 }
