@@ -597,7 +597,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return true; //serverList == null ? true : serverList.get((String)cbDevHost.getSelectedItem()).isOnline();
     }
 
-    private void downloadCompilerSet(CompilerSet cs) {
+    private static void downloadCompilerSet(CompilerSet cs) {
         try {
             URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
             UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD); // NOI18N
@@ -621,16 +621,34 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         }
     }
 
+    public static boolean showDownloadConfirmation(CompilerSet cs) {
+        String name = cs.getDisplayName();
+        String uc = cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl();
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                getString("ToolsPanel.UpdateCenterMessage", name, uc),
+                getString("ToolsPanel.UpdateCenterTitle"), NotifyDescriptor.YES_NO_OPTION);
+        Object ret = DialogDisplayer.getDefault().notify(nd);
+        if (ret == NotifyDescriptor.YES_OPTION) {
+            downloadCompilerSet(cs);
+            return true;
+        }
+        return false;
+    }
+
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             if (cs.isUrlPointer()) {
-                tfBaseDirectory.setText(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+                String message = NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterTextField",
+                        cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
+                tfBaseDirectory.setText(message);
+                tfBaseDirectory.setCaretPosition(0);
+                btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterInstallButton"));
                 btBaseDirectory.setEnabled(true);
                 isUrl = true;
-                //downloadCompilerSet(cs);
             } else {
                 tfBaseDirectory.setText(cs.getDirectory());
                 btBaseDirectory.setEnabled(!isRemoteHostSelected());
+                btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.text")); // NOI18N
                 isUrl = false;
             }
             lbFamilyValue.setText(cs.getCompilerFlavor().toString());
@@ -1863,16 +1881,8 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     if (isUrl) {
-        String uc = tfBaseDirectory.getText();
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                getString("ToolsPanel.UpdateCenterMessage", uc),
-                getString("ToolsPanel.UpdateCenterTitle"),
-                NotifyDescriptor.YES_NO_OPTION);
-        Object ret = DialogDisplayer.getDefault().notify(nd);
-        if (ret == NotifyDescriptor.YES_OPTION) {
-            CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
-            downloadCompilerSet(cs);
-        }
+        CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
+        showDownloadConfirmation(cs);
         return;
     }
     String seed = null;
@@ -2108,6 +2118,11 @@ private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private static String getString(String key, Object param) {
         return NbBundle.getMessage(ToolsPanel.class, key, param);
     }
+
+    private static String getString(String key, Object param1, Object param2) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param1, param2);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;

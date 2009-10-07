@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.toolsui;
 
+import org.netbeans.modules.dlight.toolsui.api.ToolsManagerPanel;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

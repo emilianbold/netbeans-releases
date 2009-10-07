@@ -42,8 +42,9 @@
  *
  * Created on Aug 8, 2009, 1:20:21 PM
  */
-package org.netbeans.modules.dlight.toolsui;
+package org.netbeans.modules.dlight.toolsui.api;
 
+import org.netbeans.modules.dlight.toolsui.*;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.util.ArrayList;

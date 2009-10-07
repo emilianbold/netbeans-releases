@@ -62,15 +62,18 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
-    private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
+    public static final String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
+    public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
+    public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
+    private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
+    private static final String GIZMO_SIMPLE_CONFIGURATION = "GizmoSimple"; // NOI18N
+    private static final String GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION = "GizmoSunStudioStandard"; // NOI18N
+    private static final String GIZMO_DTRACE_STANDARD_CONFIGURATION = "GizmoDTraceStandard"; // NOI18N
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
     private BooleanConfiguration profileOnRun;
-    public static final String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
-    public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
-    public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
     private String[] configurationNames;
     private DLightConfiguration[] configurations;
     private IntConfiguration gizmoConfigurations = null;
@@ -152,6 +155,13 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
                     }
 
             }
+
+            if (names.size() == 0) {
+                DLightConfiguration config = DLightConfigurationManager.getInstance().getConfigurationByName(GIZMO_SIMPLE_CONFIGURATION); // NOI18N
+                names.add(config.getDisplayedName());
+                confs.add(config);
+            }
+
             configurationNames = names.toArray(new String[names.size()]);
             configurations = confs.toArray(new DLightConfiguration[confs.size()]);
             // Figure out default;
@@ -163,12 +173,12 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             if (defConf == -1) {
                 if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
                     if (hasSunStudio || platform.indexOf("Linux") >= 0) { // NOI18N
-                        defConf = getConfigurationIndexByName("GizmoSunStudioStandard"); // NOI18N
+                        defConf = getConfigurationIndexByName(GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION);
                     } else {
-                        defConf = getConfigurationIndexByName("GizmoDTraceStandard"); // NOI18N
+                        defConf = getConfigurationIndexByName(GIZMO_DTRACE_STANDARD_CONFIGURATION);
                     }
                 } else {
-                    defConf = getConfigurationIndexByName("GizmoSimple"); // NOI18N
+                    defConf = getConfigurationIndexByName(GIZMO_SIMPLE_CONFIGURATION); // NOI18N
                 }
             }
             if (defConf == -1) {
@@ -187,6 +197,10 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             index++;
         }
         return -1;
+    }
+
+    public String getConfiurationNameValue() {
+        return configurations[getGizmoConfigurations().getValue()].getConfigurationName();
     }
 
     public Collection<String> getNames() {
@@ -293,7 +307,12 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         oldBoolValue = getProfileOnRun().getValue();
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldBoolValue, getProfileOnRunValue());
-        getGizmoConfigurations().assign(gizmoOptions.getGizmoConfigurations());
+        if (getGizmoConfigurations() != null) {
+            getGizmoConfigurations().assign(gizmoOptions.getGizmoConfigurations());
+        }
+        else {
+            preferredConfigurationName = gizmoOptions.getConfiurationNameValue();
+        }
     }
 
     @Override
