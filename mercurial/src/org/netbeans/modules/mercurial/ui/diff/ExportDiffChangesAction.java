@@ -169,9 +169,9 @@ public class ExportDiffChangesAction extends ContextAction {
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
-                    Mercurial.LOG.log(Level.INFO, "setups {0}", file);
+                    Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
                     Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                    Mercurial.LOG.log(Level.INFO, "setup {0}", setup.getBaseFile());
+                    Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
                     setups.add(setup);
                 }
             }
@@ -212,7 +212,8 @@ public class ExportDiffChangesAction extends ContextAction {
             while (it.hasNext()) {
                 Setup setup = it.next();
                 File file = setup.getBaseFile();                
-                Mercurial.LOG.log(Level.INFO, "setup {0}", file.getName());
+                Mercurial.LOG.log(Level.FINE, "exporting setup {0}", file.getName()); //NOI18N
+                logger.output(NbBundle.getMessage(ExportDiffChangesAction.class, "MSG_Export_Changes_Exporting", file.getName())); //NOI18N
                 if (file.isDirectory()) continue;
                 progress.setDisplayName(file.getName());
 
@@ -231,7 +232,9 @@ public class ExportDiffChangesAction extends ContextAction {
 
             exportedFiles = i;
             success = true;
+            logger.outputInRed(NbBundle.getMessage(ExportDiffChangesAction.class, "MSG_EXPORT_CHANGES_DONE")); // NOI18N
         } catch (IOException ex) {
+            logger.outputInRed(NbBundle.getMessage(ExportDiffChangesAction.class, "BK3003")); //NOI18N
             Mercurial.LOG.log(Level.INFO, NbBundle.getMessage(ExportDiffChangesAction.class, "BK3003"), ex);
         } finally {
             if (out != null) {
@@ -251,10 +254,7 @@ public class ExportDiffChangesAction extends ContextAction {
             } else {
                 destination.delete();
             }
-            logger.outputInRed(NbBundle.getMessage(ExportDiffChangesAction.class, "MSG_EXPORT_CHANGES_DONE")); // NOI18N
             logger.output(""); // NOI18N
-
-
         }
     }
 
