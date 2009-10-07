@@ -121,7 +121,6 @@ public final class KenaiUserUI {
 
     public void startChat() {
         startChat(chatMessage);
-        chatMessage=null;
     }
 
     public void startChat(final String message) {
