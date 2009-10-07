@@ -1,5 +1,4 @@
-<?
-//issue #160996
+<?php
 if(true) {
 echo "test";
 }else {
