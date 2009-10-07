@@ -266,6 +266,10 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     }
 
     public TableClosure getTableClosure() {
+        // prevent NPE from IZ#164960
+        if (tableClosure == null) {
+            fillDatabaseTables();
+        }
         return tableClosure;
     }
 
