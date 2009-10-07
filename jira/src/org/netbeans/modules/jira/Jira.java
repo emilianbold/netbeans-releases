@@ -53,9 +53,11 @@ import org.eclipse.mylyn.internal.tasks.core.TaskTask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.issue.JiraIssueProvider;
+import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.openide.util.RequestProcessor;
@@ -80,6 +82,8 @@ public class Jira {
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
+    private KenaiSupport kenaiSupport;
+    
     private Jira() {
         JiraCorePlugin jcp = new JiraCorePlugin();
         try {
@@ -88,6 +92,13 @@ public class Jira {
             throw new RuntimeException(ex); // XXX thisiscrap
         }
         BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
+    }
+
+    public KenaiSupport getKenaiSupport() {
+        if(kenaiSupport == null) {
+            kenaiSupport = new KenaiSupportImpl();
+        }
+        return kenaiSupport;
     }
 
     public static synchronized Jira getInstance() {

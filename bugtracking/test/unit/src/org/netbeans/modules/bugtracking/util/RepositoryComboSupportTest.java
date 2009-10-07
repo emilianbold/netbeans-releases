@@ -109,7 +109,7 @@ public class RepositoryComboSupportTest {
         return Lookup.getDefault().lookup(DummyBugtrackingOwnerSupport.class);
     }
 
-    abstract class AbstractRepositoryComboTest {
+    abstract class AbstractRepositoryComboTezt {
 
         protected final DummyBugtrackingConnector connector = getBugtrackingConnector();
 
@@ -152,7 +152,7 @@ public class RepositoryComboSupportTest {
 
         protected void scheduleTests(ProgressTester progressTester) {
             progressTester.scheduleTest          (Progress.STARTED, AWT,
-                                                    new ComboBoxItemsTest(
+                                                    new ComboBoxItemsTezt(
                                                             LOADING_REPOSITORIES));
             progressTester.scheduleTest          (Progress.WILL_LOAD_REPOS, NON_AWT);
             progressTester.scheduleTest          (Progress.LOADED_REPOS, NON_AWT);
@@ -163,7 +163,7 @@ public class RepositoryComboSupportTest {
 
     }
 
-    abstract class SingleRepoComboTest extends AbstractRepositoryComboTest {
+    abstract class SingleRepoComboTezt extends AbstractRepositoryComboTezt {
         @Override
         protected void createRepositories() {
             createRepository1();
@@ -173,7 +173,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testNoRepoAvailable() throws InterruptedException {
         printTestName("testNoRepoAvailable");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void createRepositories() {
                 //do not create any repository
@@ -186,9 +186,9 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 RepositoryComboSupport.NO_REPOSITORIES),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 RepositoryComboSupport.NO_REPOSITORIES));
             }
         });
@@ -206,7 +206,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testSingleRepoTrue() throws InterruptedException {
         printTestName("testSingleRepoNoNodeTrue");
-        runRepositoryComboTest(new SingleRepoComboTest() {
+        runRepositoryComboTest(new SingleRepoComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
                 return RepositoryComboSupport.setup(null, comboBox, true);
@@ -215,9 +215,9 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository1));
             }
         });
@@ -233,7 +233,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testSingleRepoNoNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoNoNodeFalse");
-        runRepositoryComboTest(new SingleRepoComboTest() {
+        runRepositoryComboTest(new SingleRepoComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
                 return RepositoryComboSupport.setup(null, comboBox, false);
@@ -242,10 +242,10 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -264,7 +264,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testSingleRepoNoMatchingNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoNoMatchingNodeFalse");
-        runRepositoryComboTest(new SingleRepoComboTest() {
+        runRepositoryComboTest(new SingleRepoComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(node1);
@@ -277,10 +277,10 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -298,7 +298,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testSingleRepoMatchingNodeFalse() throws InterruptedException {
         printTestName("testSingleRepoMatchingNodeFalse");
-        runRepositoryComboTest(new SingleRepoComboTest() {
+        runRepositoryComboTest(new SingleRepoComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(repoNode1);
@@ -311,10 +311,10 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -322,9 +322,9 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
                 progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository1));
             }
         });
@@ -338,7 +338,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposNoMatchingNodeFalse() throws InterruptedException {
         printTestName("testMoreReposNoMatchingNodeFalse");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(node1);
@@ -351,12 +351,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -372,7 +372,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposNoMatchingNodeTrue() throws InterruptedException {
         printTestName("testMoreReposNoMatchingNodeTrue");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(node1);
@@ -385,12 +385,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -406,7 +406,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposMatchingNode() throws InterruptedException {
         printTestName("testMoreReposMatchingNode");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(repoNode2);
@@ -419,12 +419,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -432,11 +432,11 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
                 progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository2));
             }
         });
@@ -450,7 +450,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposMoreMatchingNodesSameRepo() throws InterruptedException {
         printTestName("testMoreReposMoreMatchingNodesSameRepo");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             private Node repoNode2_2;
             @Override
             protected void createRepositories() {
@@ -470,12 +470,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -483,11 +483,11 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
                 progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository2));
             }
         });
@@ -501,7 +501,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposMatchingNodesDifferentRepos() throws InterruptedException {
         printTestName("testMoreReposMatchingNodesDifferentRepos");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(repoNode2, repoNode3);
@@ -514,12 +514,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -534,7 +534,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposMatchingNodesRepoAndNull() throws InterruptedException {
         printTestName("testMoreReposMatchingNodesRepoAndNull");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(repoNode2, node3);
@@ -547,12 +547,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -560,11 +560,11 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
                 progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository2));
             }
         });
@@ -579,7 +579,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposNoMatchingNodeAwtRetarded() throws InterruptedException {
         printTestName("testMoreReposNoMatchingNodeAwtRetarded");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
                 return RepositoryComboSupport.setup(null, comboBox, false);
@@ -587,7 +587,7 @@ public class RepositoryComboSupportTest {
             @Override
             protected void scheduleTests(ProgressTester progressTester) {
                 progressTester.scheduleTest          (Progress.STARTED, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 LOADING_REPOSITORIES));
                 progressTester.scheduleTest          (Progress.WILL_LOAD_REPOS, NON_AWT);
                 progressTester.scheduleTest          (Progress.LOADED_REPOS, NON_AWT);
@@ -597,12 +597,12 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleResumingTest  (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
             }
         });
@@ -616,7 +616,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testMoreReposMatchingNodeAwtRetarded() throws InterruptedException {
         printTestName("testMoreReposMatchingNodeAwtRetarded");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             protected void setUpEnvironment() {
                 selectNodes(repoNode2);
@@ -628,7 +628,7 @@ public class RepositoryComboSupportTest {
             @Override
             protected void scheduleTests(ProgressTester progressTester) {
                 progressTester.scheduleTest          (Progress.STARTED, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 LOADING_REPOSITORIES));
                 progressTester.scheduleTest          (Progress.WILL_LOAD_REPOS, NON_AWT);
                 progressTester.scheduleTest          (Progress.LOADED_REPOS, NON_AWT);
@@ -640,11 +640,11 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleTest          (Progress.WILL_SCHEDULE_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleResumingTest  (Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository2));
             }
         });
@@ -658,7 +658,7 @@ public class RepositoryComboSupportTest {
     @Test(timeout=10000)
     public void testDefaultRepoExplicitlySet() throws InterruptedException {
         printTestName("testDefaultRepoExplicitlySet");
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
                 return RepositoryComboSupport.setup(null, comboBox, repository2);
@@ -667,11 +667,11 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository2));
             }
         });
@@ -694,7 +694,7 @@ public class RepositoryComboSupportTest {
      */
     @Test(timeout=10000)
     public void testDefaultRepoByFile() throws InterruptedException {
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             private File dummyFile = new File("dummy file");
             @Override
             protected void setUpEnvironment() {
@@ -708,12 +708,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -721,11 +721,11 @@ public class RepositoryComboSupportTest {
                 progressTester.scheduleSuspendingTest(Progress.SCHEDULED_SELECTION_OF_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.WILL_SELECT_DEFAULT_REPO, AWT);
                 progressTester.scheduleResumingTest  (Progress.SELECTED_DEFAULT_REPO, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 repository2));
             }
         });
@@ -738,7 +738,7 @@ public class RepositoryComboSupportTest {
      */
     @Test(timeout=10000)
     public void testDefaultRepoByFileNotFound() throws InterruptedException {
-        runRepositoryComboTest(new AbstractRepositoryComboTest() {
+        runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
                 return RepositoryComboSupport.setup(null, comboBox, new File("dummy file name.dummy"));
@@ -747,12 +747,12 @@ public class RepositoryComboSupportTest {
             protected void scheduleTests(ProgressTester progressTester) {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
-                                                        new ComboBoxItemsTest(
+                                                        new ComboBoxItemsTezt(
                                                                 SELECT_REPOSITORY,
                                                                 repository1,
                                                                 repository2,
                                                                 repository3),
-                                                        new SelectedItemTest(
+                                                        new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
                 progressTester.scheduleTest          (Progress.WILL_DETERMINE_DEFAULT_REPO, NON_AWT);
                 progressTester.scheduleTest          (Progress.DETERMINED_DEFAULT_REPO, NON_AWT);
@@ -775,7 +775,7 @@ public class RepositoryComboSupportTest {
         System.out.println("--- " + testName + " ---");
     }
 
-    private void runRepositoryComboTest(AbstractRepositoryComboTest test)
+    private void runRepositoryComboTest(AbstractRepositoryComboTezt test)
                                                 throws InterruptedException {
         test.createRepositories();
         test.setUpEnvironment();
@@ -856,11 +856,11 @@ public class RepositoryComboSupportTest {
         }
     }
 
-    final class ComboBoxItemsTest implements Runnable {
+    final class ComboBoxItemsTezt implements Runnable {
 
         private final Object[] expectedItems;
 
-        ComboBoxItemsTest(Object... expectedItems) {
+        ComboBoxItemsTezt(Object... expectedItems) {
             this.expectedItems = expectedItems;
         }
 
@@ -881,11 +881,11 @@ public class RepositoryComboSupportTest {
 
     }
 
-    final class SelectedItemTest implements Runnable {
+    final class SelectedItemtezt implements Runnable {
 
         private final Object expectedSelectedItem;
 
-        SelectedItemTest(Object expectedSelectedItem) {
+        SelectedItemtezt(Object expectedSelectedItem) {
             this.expectedSelectedItem = expectedSelectedItem;
         }
 
@@ -897,7 +897,7 @@ public class RepositoryComboSupportTest {
 
     }
 
-    static final class ProgressTest {
+    static final class ProgressTesst {
         static final Boolean SUSPENDING = Boolean.TRUE;
         static final Boolean RESUMING = Boolean.FALSE;
         private final Progress progressState;
@@ -905,16 +905,16 @@ public class RepositoryComboSupportTest {
         private final Runnable[] additionalTests;
         private final Boolean synchrType;
         private final StackTraceElement[] callStack;
-        ProgressTest(Progress progressState,
+        ProgressTesst(Progress progressState,
                      ThreadType threadType) {
             this(progressState, threadType, (Runnable[]) null);
         }
-        ProgressTest(Progress progressState,
+        ProgressTesst(Progress progressState,
                      ThreadType threadType,
                      Runnable... additionalTests) {
             this(null, progressState, threadType, additionalTests);
         }
-        ProgressTest(Boolean synchronizationType,
+        ProgressTesst(Boolean synchronizationType,
                      Progress progressState,
                      ThreadType threadType,
                      Runnable... additionalTests) {
@@ -960,14 +960,14 @@ public class RepositoryComboSupportTest {
 
         private final Object testLock;
         private final Object suspendedThreadLock = new Object();
-        private final Queue<ProgressTest> progressTestQueue
-                                  = new ConcurrentLinkedQueue<ProgressTest>();
+        private final Queue<ProgressTesst> progressTestQueue
+                                  = new ConcurrentLinkedQueue<ProgressTesst>();
         private volatile boolean listening;
         private volatile Throwable failure;
         private Boolean[] threadFinished
                                    = new Boolean[ThreadType.values().length];
         private int numRunningThreads;
-        private ProgressTest pendingSuspendingProgressTest;
+        private ProgressTesst pendingSuspendingProgressTest;
         private boolean pendingSuspendingProgressTestResumeExecuted;
 
         /**
@@ -990,7 +990,7 @@ public class RepositoryComboSupportTest {
                                   ThreadType threadType,
                                   Runnable... additionalTests) {
             checkNonSuspendingTestType(threadType);
-            scheduleTest(new ProgressTest(progressState, threadType,
+            scheduleTest(new ProgressTesst(progressState, threadType,
                                           additionalTests));
         }
 
@@ -1031,7 +1031,7 @@ public class RepositoryComboSupportTest {
                         " test is scheduled for the previously scheduled" +
                         " suspending test");
             }
-            scheduleTest(new ProgressTest(ProgressTest.SUSPENDING,
+            scheduleTest(new ProgressTesst(ProgressTesst.SUSPENDING,
                                           progressState, threadType,
                                           additionalTests));
             unpairedSuspendingTestType = threadType;
@@ -1062,13 +1062,13 @@ public class RepositoryComboSupportTest {
                         " corresponding suspending test has been scheduled.");
             }
             checkNonSuspendingTestType(threadType);
-            scheduleTest(new ProgressTest(ProgressTest.RESUMING,
+            scheduleTest(new ProgressTesst(ProgressTesst.RESUMING,
                                           progressState, threadType,
                                           additionalTests));
             unpairedSuspendingTestType = null;
         }
 
-        private void scheduleTest(ProgressTest progressTest) {
+        private void scheduleTest(ProgressTesst progressTest) {
             if (progressTest.progressState == Progress.THREAD_PROGRESS_DONE) {
                 throw new IllegalArgumentException(
                         "Test for progress " + Progress.THREAD_PROGRESS_DONE
@@ -1091,7 +1091,7 @@ public class RepositoryComboSupportTest {
         }
 
         public void stateChanged(ChangeEvent e) {
-            ProgressTest progressTest;
+            ProgressTesst progressTest;
             boolean isPendingSuspendingTest = false;
             boolean shouldSuspend = false;
             boolean shouldResume = false;
@@ -1172,7 +1172,7 @@ public class RepositoryComboSupportTest {
             }
         }
 
-        private void performTest(ProgressTest progressTest) {
+        private void performTest(ProgressTesst progressTest) {
             try {
                 final ThreadType currThreadType = getCurrThreadType();
                 final int threadTypeIndex = currThreadType.ordinal();
@@ -1224,7 +1224,7 @@ public class RepositoryComboSupportTest {
             return ThreadType.forBoolean(EventQueue.isDispatchThread());
         }
 
-        private void suspendCurrentThread(ProgressTest progressTest) {
+        private void suspendCurrentThread(ProgressTesst progressTest) {
             System.out.println("Suspending the current thread.");
             try {
                 suspendedThreadLock.wait();
