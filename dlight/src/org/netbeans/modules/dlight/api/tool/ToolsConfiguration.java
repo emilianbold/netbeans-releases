@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
 final class ToolsConfiguration {
 
     private static final String ENABLE_BY_DEFAULT_ATTRIBUTE = "enabledByDefault";//NOI18N
-    private static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
+    static final String KNOWN_TOOLS_SET = "KnownToolsConfigurationProviders"; //NOI18N
     private final FileObject rootFolder;
     private boolean useRootFolder = false;
     private List<DLightTool> cachedList = null;
@@ -159,78 +159,80 @@ final class ToolsConfiguration {
      * @return tools set
      */
     final List<DLightTool> getToolsSet() {
-        List<DLightTool> result = new ArrayList<DLightTool>();
+        synchronized(this){
+            List<DLightTool> result = new ArrayList<DLightTool>();
 
-        FileObject configurationsFolder = useRootFolder ? rootFolder : rootFolder.getFileObject(KNOWN_TOOLS_SET);
+            FileObject configurationsFolder = useRootFolder ? rootFolder : rootFolder.getFileObject(KNOWN_TOOLS_SET);
 
-        if (configurationsFolder == null) {
-            return result;
-        }
-
-        FileObject[] children = configurationsFolder.getChildren();
-
-        if (children == null || children.length == 0) {
-            return result;
-        }
-
-        for (FileObject child : children) {
-            Enumeration<String> attrs = child.getAttributes();
-            DataObject dobj = null;
-            try {
-                dobj = DataObject.find(child);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            if (configurationsFolder == null) {
+                return result;
             }
 
-            InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
-            if (ic == null) {
-                String message = "D-Light tool configuration " + child.getName() + " not found"; //NOI18N
-                Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, message, new Exception(message));
-                continue;
+            FileObject[] children = configurationsFolder.getChildren();
+
+            if (children == null || children.length == 0) {
+                return result;
             }
-            try {
-                @SuppressWarnings("unchecked")
-                Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
-                DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
-                DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
-                toolsProviders.put(tool.getID(), child);
-                boolean enabledByDefault = true;
-                while (attrs.hasMoreElements()) {
-                    String an = attrs.nextElement();
-                    if (ENABLE_BY_DEFAULT_ATTRIBUTE.equals(an)) {
-                        enabledByDefault = (Boolean) child.getAttribute(an);
-                        break;
+
+            for (FileObject child : children) {
+                Enumeration<String> attrs = child.getAttributes();
+                DataObject dobj = null;
+                try {
+                    dobj = DataObject.find(child);
+                } catch (DataObjectNotFoundException ex) {
+                    Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
+                if (ic == null) {
+                    String message = "D-Light tool configuration " + child.getName() + " not found"; //NOI18N
+                    Logger.getLogger(ToolsConfiguration.class.getName()).log(Level.SEVERE, message, new Exception(message));
+                    continue;
+                }
+                try {
+                    @SuppressWarnings("unchecked")
+                    Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
+                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
+                    DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
+                    toolsProviders.put(tool.getID(), child);
+                    boolean enabledByDefault = true;
+                    while (attrs.hasMoreElements()) {
+                        String an = attrs.nextElement();
+                        if (ENABLE_BY_DEFAULT_ATTRIBUTE.equals(an)) {
+                            enabledByDefault = (Boolean) child.getAttribute(an);
+                            break;
+                        }
                     }
+                    if (enabledByDefault) {
+                        tool.enable();
+                    } else {
+                        tool.disable();
+                    }
+                    result.add(tool);
+    //        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
+    //        result.add(clazz.getConstructor().newInstance());
+                } catch (InstantiationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ClassNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                if (enabledByDefault) {
-                    tool.enable();
-                } else {
-                    tool.disable();
-                }
-                result.add(tool);
-//        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
-//        result.add(clazz.getConstructor().newInstance());
-            } catch (InstantiationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (NoSuchMethodException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
             }
+            if (cachedList == null) {
+                cachedList = result;
+            }
+            return result;
         }
-        if (cachedList == null) {
-            cachedList = result;
-        }
-        return result;
     }
 }

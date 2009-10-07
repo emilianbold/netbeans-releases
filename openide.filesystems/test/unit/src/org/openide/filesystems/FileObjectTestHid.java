@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -218,7 +218,63 @@ public class FileObjectTestHid extends TestBaseHid {
             fold.getFileSystem().removeFileChangeListener(listener1);
             fold.removeFileChangeListener(noFileDataCreatedListener);
         }
-    }    
+    }
+
+    public void  testEventsDeliveryWhenFinishedOnFolder() throws Exception {
+        checkSetUp();
+        final FileObject fold = getTestFolder1(root);
+        if (fold.getFileSystem().isReadOnly()) {
+            return;
+        }
+        final FileChangeListener noFileDataCreatedListener = new FileChangeAdapter(){
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                fail();
+            }
+        };
+        class Once implements Runnable {
+            int once;
+
+            public void run() {
+                assertEquals("No calls yet", 0, once);
+                once++;
+            }
+        }
+        final Once post = new Once();
+        final FileChangeListener listener1 = new FileChangeAdapter(){
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                fold.removeFileChangeListener(noFileDataCreatedListener);
+                fold.addFileChangeListener(noFileDataCreatedListener);
+                fe.runWhenDeliveryOver(post);
+            }
+        };
+        assertEquals("Not called yet", 0, post.once);
+        try {
+            fold.addFileChangeListener(listener1);
+            fold.getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
+                public void run() throws java.io.IOException {
+                    FileObject fo1 = fold.createData("file1");
+                    OutputStream os = fo1.getOutputStream();
+                    os.write("Ahoj\n".getBytes());
+                    os.close();
+                    FileObject fo2 = fold.createData("file2");
+                    FileLock l = fo1.lock();
+                    fo1.rename(l, "filerenamed", "txt");
+                    l.releaseLock();
+                    fo2.delete();
+                    FileObject fo3 = fold.createFolder("folder");
+                    fo3.setAttribute("newAttr", 10);
+                    assertEquals("attr set", 10, fo3.getAttribute("newAttr"));
+                    assertEquals("Called not", 0, post.once);
+                }
+            });
+            assertEquals("Called once", 1, post.once);
+        } finally {
+            fold.removeFileChangeListener(listener1);
+            fold.removeFileChangeListener(noFileDataCreatedListener);
+        }
+    }
     
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
     public void  testCopy()  {

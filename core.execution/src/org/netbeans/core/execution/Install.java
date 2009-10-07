@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -50,6 +50,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.Introspector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -58,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -70,6 +70,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.TopSecurityManager;
+import org.netbeans.core.ModuleActions;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.openide.DialogDescriptor;
@@ -91,7 +92,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -107,7 +107,7 @@ public class Install extends ModuleInstall {
     private static final String EDITOR_PATH
             = "org.netbeans.core.execution.beaninfo.editors"; // NOI18N
     
-    public void restored() {
+    public @Override void restored() {
         TopSecurityManager.register(SecMan.DEFAULT);
         
         // Add beaninfo search path.
@@ -131,7 +131,7 @@ public class Install extends ModuleInstall {
         }
     }
     
-    public void uninstalled() {
+    public @Override void uninstalled() {
         showPendingTasks();
         
         TopSecurityManager.unregister(SecMan.DEFAULT);
@@ -157,7 +157,7 @@ public class Install extends ModuleInstall {
         }
     }
     
-    public boolean closing() {
+    public @Override boolean closing() {
         return showPendingTasks();
     }
     
@@ -199,7 +199,7 @@ public class Install extends ModuleInstall {
         }
         
         // Dialog was opened but pending tasks could disappear inbetween.
-        public void windowOpened(java.awt.event.WindowEvent evt) {
+        public @Override void windowOpened(WindowEvent evt) {
             checkClose();
         }
         
@@ -349,11 +349,11 @@ public class Install extends ModuleInstall {
         public Lookup getLookup() {
             return lookup;
         }
-        public void addNotify() {
+        public @Override void addNotify() {
             super.addNotify();
             ExplorerUtils.activateActions(manager, true);
         }
-        public void removeNotify() {
+        public @Override void removeNotify() {
             ExplorerUtils.activateActions(manager, false);
             super.removeNotify();
         }
@@ -365,9 +365,7 @@ public class Install extends ModuleInstall {
     static Collection<?> getPendingTasks() {
 
         ArrayList<Object> pendingTasks = new ArrayList<Object>( 10 ); // Action | ExecutorTask | InternalHandle
-        // XXX no access to running actions at the moment
-        //pendingTasks.addAll(CallableSystemAction.getRunningActions());
-        pendingTasks.addAll(org.netbeans.core.ModuleActions.getDefaultInstance().getRunningActions());
+        pendingTasks.addAll(ModuleActions.getDefaultInstance().getRunningActions());
         
         ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
         if (ee != null) {
@@ -399,10 +397,7 @@ public class Install extends ModuleInstall {
         if (ee == null) {
             return;
         }
-        ArrayList<ExecutorTask> tasks = new ArrayList<ExecutorTask>(ee.getRunningTasks());
-
-        for ( Iterator<ExecutorTask> it = tasks.iterator(); it.hasNext(); ) {
-            ExecutorTask et = it.next();
+        for (ExecutorTask et : new ArrayList<ExecutorTask>(ee.getRunningTasks())) {
             if ( !et.isFinished() ) {
                 et.stop();
             }
@@ -470,14 +465,12 @@ public class Install extends ModuleInstall {
             return n == null ? null : new Node[] { n };
         }
         
-        /** Implements superclass abstract method. */
-        protected void addNotify() {
+        protected @Override void addNotify() {
             setKeys(getPendingTasks());
             super.addNotify();
         }
         
-        /** Implements superclass abstract method. */
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             setKeys(Collections.emptySet());
             super.removeNotify();
             ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
@@ -526,13 +519,13 @@ public class Install extends ModuleInstall {
         }
         
         /** @return empty array of actions */
-        public Action[] getActions(boolean context) {
+        public @Override Action[] getActions(boolean context) {
             return new Action[0];
         }
         
         /** @return provided icon or delegate to superclass if no icon provided.
          */
-        public Image getIcon(int type) {
+        public @Override Image getIcon(int type) {
             return img == null ? super.getIcon(type) : img;
         }
     }

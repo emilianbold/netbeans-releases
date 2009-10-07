@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -136,7 +136,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         // Create OS dependent relative name
         if (preselectedGroup != null) {
             locationComboBox.setSelectedItem( preselectedGroup );
-            folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
+            FileObject rootFolder = preselectedGroup.getRootFolder();
+            if (rootFolder == null) {
+                throw new NullPointerException("#173645: null returned illegally from " + preselectedGroup.getClass().getName() + ".getRootFolder()");
+            }
+            folderTextField.setText(getRelativeNativeName(rootFolder, preselectedFolder));
         }
 
         String ext = template == null ? "" : template.getExt(); // NOI18N
@@ -386,10 +390,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
     private String getRelativeNativeName( FileObject root, FileObject folder ) {
-        if (root == null) {
-            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
-        }
-        
+        assert root != null;
         String path;
         
         if (folder == null) {

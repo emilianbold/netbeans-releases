@@ -60,7 +60,6 @@ import org.netbeans.modules.editor.indent.ProxyPreferences;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -193,7 +192,6 @@ public final class CodeStylePreferences {
     private final Reference<Document> refDoc;
     private final String filePath;
     
-    private final Preferences projectRoot;
     private final Preferences globalPrefs;
     private Preferences projectPrefs;
     private boolean useProject;
@@ -210,8 +208,8 @@ public final class CodeStylePreferences {
     };
     
     private static CodeStylePreferences getPreferences(final Object obj, final String mimeType) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<CodeStylePreferences>() {
-            public CodeStylePreferences run() {
+//        return ProjectManager.mutex().readAccess(new Mutex.Action<CodeStylePreferences>() {
+//            public CodeStylePreferences run() {
                 synchronized (cache) {
                     Map<String, CodeStylePreferences> csps = cache.get(obj);
                     CodeStylePreferences csp = csps != null ? csps.get(mimeType) : null;
@@ -228,10 +226,9 @@ public final class CodeStylePreferences {
                         }
 
                         csp = new CodeStylePreferences(
-                                findProjectPreferences(file),
                                 mimeType,
                                 doc == null ? null : new CleaningWeakReference(doc),
-                                file == null ? "no file" : file.getPath()); //NOI18N
+                                file);
                         if (csps == null) {
                             csps = new HashMap<String, CodeStylePreferences>();
                             cache.put(obj, csps);
@@ -241,8 +238,8 @@ public final class CodeStylePreferences {
 
                     return csp;
                 }
-            }
-        });
+//            }
+//        });
     }
 
     private static final class CleaningWeakReference extends WeakReference<Document> implements Runnable {
@@ -260,11 +257,10 @@ public final class CodeStylePreferences {
         
     }
 
-    private CodeStylePreferences(Preferences projectRoot, String mimeType, Reference<Document> refDoc, String filePath) {
-        this.projectRoot = projectRoot;
+    private CodeStylePreferences(String mimeType, Reference<Document> refDoc, final FileObject file) {
         this.mimeType = mimeType;
         this.refDoc = refDoc;
-        this.filePath = filePath; // just for logging
+        this.filePath = file == null ? "no file" : file.getPath(); //NOI18N just for logging
 
         this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
         this.projectPrefs = null;
@@ -273,8 +269,9 @@ public final class CodeStylePreferences {
         ProjectManager.mutex().postReadRequest(new Runnable() {
             public void run() {
                 synchronized (CodeStylePreferences.this) {
-                    if (CodeStylePreferences.this.projectRoot != null) {
-                        Preferences allLangCodeStyle = CodeStylePreferences.this.projectRoot.node(NODE_CODE_STYLE);
+                    Preferences projectRoot = findProjectPreferences(file);
+                    if (projectRoot != null) {
+                        Preferences allLangCodeStyle = projectRoot.node(NODE_CODE_STYLE);
                         Preferences p = allLangCodeStyle.node(PROJECT_PROFILE);
 
                         // determine if we are using code style preferences from the project
@@ -282,7 +279,7 @@ public final class CodeStylePreferences {
                         useProject = PROJECT_PROFILE.equals(usedProfile);
                         projectPrefs = CodeStylePreferences.this.mimeType == null ?
                             p :
-                            new ProxyPreferences(CodeStylePreferences.this.projectRoot.node(CodeStylePreferences.this.mimeType).node(NODE_CODE_STYLE).node(PROJECT_PROFILE), p);
+                            new ProxyPreferences(projectRoot.node(CodeStylePreferences.this.mimeType).node(NODE_CODE_STYLE).node(PROJECT_PROFILE), p);
 
                         // listen on changes
                         allLangCodeStyle.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, switchTrakcer, allLangCodeStyle));

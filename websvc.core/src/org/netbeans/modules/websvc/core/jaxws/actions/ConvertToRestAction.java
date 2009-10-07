@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -85,6 +86,11 @@ public class ConvertToRestAction extends CookieAction {
             ConvertToRestCookie cookie = node.getCookie(ConvertToRestCookie.class);
             if(cookie != null){
                 cookie.convertToRest();
+                // logging usage of action
+                Object[] params = new Object[2];
+                params[0] = LogUtils.WS_STACK_JAXWS;
+                params[1] = "CONVERT TO REST"; // NOI18N
+                LogUtils.logWsAction(params);
             }
         }
     }

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -59,6 +59,21 @@ made subject to such option by the copyright holder.
             <path refid="cluster.path.id"/>
             <regexpmapper from="(.*[/\\])platform[0-9]*$$" to="\1"/>
         </pathconvert>
+        
+        <!-- clear modulename_hidden files from external clusters so they do not influence the availability of
+              modules selected by the current cluster -->
+        <!-- We'll clear only clusters under 'build' folder to avoid deleting
+             files in binary platform/clusters (e.g. user hacks), while
+             un-hiding modules hidden by depended-upon suites. Cf. issue #172727 -->
+        <pathconvert property="cluster.path.projects" refid="cluster.path.id">
+            <regexpmapper handledirsep="true" from="^.*/build/[^/]+$$" to="\0"/>
+        </pathconvert>
+        <delete>
+            <pathfileset include="config/Modules/*_hidden">
+                <path path="${cluster.path.projects}"/>
+            </pathfileset>
+        </delete>
+        
         <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
         <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans.exe">
             <available file="${install}\bin\nb.exe"/>

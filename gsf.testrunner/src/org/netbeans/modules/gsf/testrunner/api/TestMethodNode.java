@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -151,6 +151,9 @@ public class TestMethodNode extends AbstractNode {
         }
 
         if (cause != null) {
+            cause = TestsuiteNode.cutLine(cause, 
+                                          TestsuiteNode.MAX_MSG_LINE_LENGTH,
+                                          true); // Issue #172772
             buf.append(NbBundle.getMessage(TestMethodNode.class,
                     DisplayNameMapper.getCauseKey(status), cause));
         } else {

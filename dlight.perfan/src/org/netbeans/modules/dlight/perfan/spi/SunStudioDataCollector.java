@@ -552,6 +552,10 @@ public class SunStudioDataCollector
         this.notifyIndicators(data);
     }
 
+    /*package*/ void notifyIndicatorsThatProviderFinished() {
+        super.suggestIndicatorsRepaint();
+    }
+
     private void targetStarted(DLightTarget source) {
         synchronized (lock) {
             if (source != config.target) {

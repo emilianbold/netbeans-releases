@@ -62,8 +62,7 @@ public class MessagingHandleImpl extends MessagingHandle {
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private Notification notification;
     private int onlineCount;
-    private int messageCount = -1;
-    private int newMessageCount = 0;
+    private int messageCount = 0;
     private Date lastMessage;
     private Date lastMessageRead;
     private String id;
@@ -143,22 +142,17 @@ public class MessagingHandleImpl extends MessagingHandle {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public int getNewMessageCount() {
-        return newMessageCount;
-    }
-
     public void notifyMessageReceived(Message m) {
-        setMessageCount(messageCount+1);
         lastMessage = ChatPanel.getTimestamp(m);
         if (lastMessage.after(lastMessageRead)) {
-            newMessageCount++;
+            setMessageCount(messageCount+1);
         }
     }
 
     public void notifyMessagesRead() {
         lastMessageRead = lastMessage;
         prefs.put(id+LASTMESSAGEAT, Long.toString(lastMessageRead.getTime()));
-        newMessageCount=0;
+        setMessageCount(0);
     }
 
     public void updateNotification(Notification notification) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,6 +71,7 @@ import java.awt.Component;
 import java.awt.Point;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.versioning.util.SortedTable;
 
 /**
  * Table that displays nodes in the Update Results view. 
@@ -129,8 +130,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
-        table = new JTable(sorter);
-        sorter.setTableHeader(table.getTableHeader());
+        table = new SortedTable(sorter);
         int height = new JLabel("FONTSIZE").getPreferredSize().height * 6 / 5;  // NOI18N
         table.setRowHeight(height);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);

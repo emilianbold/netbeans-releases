@@ -44,12 +44,14 @@ import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.security.acl.NotOwnerException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -60,7 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public final class SPSRemoteImpl extends SPSCommonImpl {
 
@@ -115,7 +117,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             try {
                 ProcessUtils.logError(Level.FINE, Logger.getInstance(), pidFetchProcess);
             } catch (IOException ioex) {
-                Exceptions.printStackTrace(ioex);
+                Logger.getInstance().log(Level.FINE, "", ioex); // NOI18N
             }
         }
 
@@ -159,6 +161,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
 
         ChannelShell channel = null;
         PrintWriter w = null;
+        int status = 1;
 
         try {
             channel = (ChannelShell) session.openChannel("shell"); // NOI18N
@@ -180,30 +183,29 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             w.flush();
 
             String exitStatus = expect(in, "ExitStatus:%"); // NOI18N
+            status = Integer.valueOf(exitStatus).intValue();
 
-            int status = 1;
-            try {
-                status = Integer.valueOf(exitStatus).intValue();
-            } finally {
-                if (status != 0) {
-                    NotifyDescriptor dd =
-                            new NotifyDescriptor.Message("/sbin/su failed"); // NOI18N
-                    DialogDisplayer.getDefault().notify(dd);
-                }
-            }
+        } catch (InterruptedIOException ex) {
+            throw new CancellationException();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } catch (JSchException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } finally {
-            // DO NOT CLOSE CHANNEL HERE...
+            if (status != 0) {
+                NotifyDescriptor dd =
+                        new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
+                DialogDisplayer.getDefault().notify(dd);
+            }
+
+            // DO NOT CLOSE A CHANNEL HERE... (Why?)
             // channel.disconnect();
 
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
                 }
             }
 
@@ -211,7 +213,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
                 try {
                     in.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
                 }
             }
 
@@ -229,31 +231,27 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
      */
     private final static String expect(
             final InputStream in,
-            final String expectedString) {
+            final String expectedString) throws IOException {
 
         int pos = 0;
         int len = expectedString.length();
         char[] cbuf = new char[2];
         StringBuffer sb = new StringBuffer();
 
-        try {
-            Reader r = new InputStreamReader(in);
-            while (pos != len && r.read(cbuf, 0, 1) != -1) {
-                char currentChar = expectedString.charAt(pos);
-                if (currentChar == '%') {
-                    pos++;
-                    sb.append(cbuf[0]);
-                } else if (currentChar == cbuf[0]) {
-                    pos++;
-                } else {
-                    pos = 0;
-                }
+        Reader r = new InputStreamReader(in);
+
+        while (pos != len && r.read(cbuf, 0, 1) != -1) {
+            char currentChar = expectedString.charAt(pos);
+            if (currentChar == '%') {
+                pos++;
+                sb.append(cbuf[0]);
+            } else if (currentChar == cbuf[0]) {
+                pos++;
+            } else {
+                pos = 0;
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
 
         return sb.toString();
-
     }
 }

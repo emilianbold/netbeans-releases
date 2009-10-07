@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -28,7 +28,6 @@
 package org.netbeans.modules.css.editor.indent;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.editor.CssIndenter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
@@ -37,18 +36,15 @@ import org.openide.util.lookup.Lookups;
 
 public class CssIndentTask implements IndentTask, Lookup.Provider {
 
-    private Context context;
     private CssIndenter indenter;
     private Lookup lookup;
     
     CssIndentTask(Context context) {
-        this.context = context;
         indenter = new CssIndenter(context);
         lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
     public void reindent() throws BadLocationException {
-        //new JSPLexerFormatter().process(context);
         indenter.reindent();
     }
     

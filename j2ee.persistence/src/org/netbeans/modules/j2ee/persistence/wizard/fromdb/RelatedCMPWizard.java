@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -365,13 +365,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
             
-            //            if (EjbJar.VERSION_3_0.equals(dd.getVersion().toString())) {
-            //                JavaPersistenceGenerator jpg = new JavaPersistenceGenerator();
-            //                jpg.generateBeans(
-            //            } else {
-            //                CmpGenerator gen = new CmpGenerator();
-            //                gen.generateBeans(progressPanel,helper, pkg, dbschemaFile, genHelper, handle, module.getDeploymentDescriptor(), pwm, dd, false);
-            //            }
         } finally {
             handle.finish();
             SwingUtilities.invokeLater(new Runnable() {

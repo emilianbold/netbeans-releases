@@ -47,6 +47,8 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
@@ -60,12 +62,14 @@ import org.openide.util.NbBundle;
 final class THAControlPanel extends JToolBar{
     private final Project project;
     private final THAConfiguration thaConfiguration;
+    private static final Color RECORDING_COLOR = new Color(51, 153, 0);
+    private static final Color PAUSED_COLOR = new Color(204, 0, 0);
 
     static synchronized final THAControlPanel create(THAActionsProvider actionsSupport, Project project, THAConfiguration thaConfiguration){
         return new THAControlPanel(actionsSupport, project, thaConfiguration);
     }
 
-    public THAControlPanel(THAActionsProvider actionsSupport, Project project, final THAConfiguration thaConfiguration) {
+    THAControlPanel(THAActionsProvider actionsSupport, Project project, final THAConfiguration thaConfiguration) {
         this.project = project;
         this.thaConfiguration = thaConfiguration;
         final JLabel statusLabel = new JLabel();
@@ -81,7 +85,7 @@ final class THAControlPanel extends JToolBar{
                     statusLabel.setText(getMessage("THAControlPanel.Recording", collectionKind)); // NOI18N
                     statusLabel.setForeground(Color.GREEN);
                 } else if (THAActionsProvider.STOP_COMMAND.equals(e.getActionCommand())){
-                    statusLabel.setText("");//NOI18N
+                    statusLabel.setText(getMessage("THAControlPanel.Stopped", collectionKind));//NOI18N
                 }
             }
         });
@@ -89,16 +93,16 @@ final class THAControlPanel extends JToolBar{
         Action resumeAction = actionsSupport.getResumeCollectionAction();
 
         statusLabel.setText(getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" :  "THAControlPanel.Paused", collectionKind)); // NOI18N
-        statusLabel.setForeground(thaConfiguration.collectFromBeginning()  ? Color.GREEN : Color.RED);
+        statusLabel.setForeground(thaConfiguration.collectFromBeginning()  ? RECORDING_COLOR : PAUSED_COLOR);
+        statusLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
         JButton suspendButton = new JButton(suspendAction);
         suspendButton.setDisabledIcon(ImageUtilities.image2Icon((Image)suspendAction.getValue("disabledIcon")));//NOI18N
         add(suspendButton);
-        addSeparator();
         JButton resumeButton = new JButton(resumeAction);
         resumeButton.setDisabledIcon(ImageUtilities.image2Icon((Image)resumeAction.getValue("disabledIcon")));//NOI18N
         add(resumeButton);
-        addSeparator();
         add(actionsSupport.getStopAction());
+        addSeparator(null);
         add(statusLabel);
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -28,10 +28,7 @@
 
 package org.openide.filesystems.test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -82,20 +79,8 @@ public class TestFileUtils {
      * @param ref if not null, make f newer than this file; else make f newer than it was before
      */
     public static void touch(FileObject f, FileObject ref) throws IOException, InterruptedException {
-        File ff = FileUtil.toFile(f);
-        long older = ff.lastModified();
-        if (ref != null) {
-            older = Math.max(older, FileUtil.toFile(ref).lastModified());
-        }
-        for (long pause = 1; pause < 9999; pause *= 2) {
-            Thread.sleep(pause);
-            ff.setLastModified(System.currentTimeMillis());
-            if (ff.lastModified() > older) {
-                f.refresh();
-                return;
-            }
-        }
-        fail("Did not manage to touch " + ff);
+        org.openide.util.test.TestFileUtils.touch(FileUtil.toFile(f), ref != null ? FileUtil.toFile(ref) : null);
+        f.refresh();
     }
 
     /**

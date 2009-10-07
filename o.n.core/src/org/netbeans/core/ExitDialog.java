@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,11 +43,11 @@ package org.netbeans.core;
 
 import java.awt.Dimension;
 import java.beans.BeanInfo;
-import java.util.Iterator;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -65,6 +65,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /** Dialog which lets the user select which open files to close.
@@ -93,9 +94,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         setLayout (new java.awt.BorderLayout ());
 
         listModel = new DefaultListModel();
-        Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
-        while (iter.hasNext()) {
-            DataObject obj = (DataObject) iter.next();
+        for (DataObject obj : DataObject.getRegistry().getModifiedSet()) {
             listModel.addElement(obj);
         }
         draw ();
@@ -131,7 +130,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     }
 
     /** @return preffered size */
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         Dimension prev = super.getPreferredSize();
         return new Dimension(Math.max(300, prev.width), Math.max(150, prev.height));
     }
@@ -181,7 +180,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
      */
     private void save (DataObject dataObject) {
         try {
-            SaveCookie sc = (SaveCookie)dataObject.getCookie(SaveCookie.class);
+            SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
             if (sc != null) {
                 sc.save();
             }
@@ -224,7 +223,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
      * Opens the ExitDialog.
      */
     private static boolean innerShowDialog() {
-        java.util.Set set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
+        Set<DataObject> set = DataObject.getRegistry().getModifiedSet();
         if (!set.isEmpty()) {
 
             // XXX(-ttran) caching this dialog is fatal.  If the user
@@ -319,7 +318,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
 
             Node node = obj.getNodeDelegate();
 
-            ImageIcon icon = new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
+            Icon icon = ImageUtilities.image2Icon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
             super.setIcon(icon);
 
             setText(node.getDisplayName());

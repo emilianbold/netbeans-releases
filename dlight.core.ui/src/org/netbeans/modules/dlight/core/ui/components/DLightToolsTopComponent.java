@@ -120,7 +120,7 @@ public final class DLightToolsTopComponent extends TopComponent {
 
   @Override
   public int getPersistenceType() {
-    return TopComponent.PERSISTENCE_ALWAYS;
+    return TopComponent.PERSISTENCE_ONLY_OPENED;
   }
 
   @Override

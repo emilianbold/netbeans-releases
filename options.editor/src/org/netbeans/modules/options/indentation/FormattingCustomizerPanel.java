@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -634,7 +634,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
 
         public boolean isKeyOverridenForMimeType(String key, String mimeType) {
-            Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
+            Preferences p = projectPrefs != null ? projectPrefs : ProjectUtils.getPreferences(project, IndentUtils.class, true);
             p = p.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
             return p.get(key, null) != null;
         }

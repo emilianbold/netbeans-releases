@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -89,6 +89,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -138,7 +139,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
-        final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY));
+
+        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+        final String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
+
+        final boolean jsf2Generator = "true".equals(wizard.getProperty(JSF2_GENERATOR_PROPERTY)) && "Facelets".equals(preferredLanguage);   //NOI18N
         final String bundleName = (String)wizard.getProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME);
         
         PersistenceUnit persistenceUnit = 
@@ -197,8 +202,10 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                                 SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
                                 FileObject webRoot = sgWeb[0].getRootFolder();
                                 generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot);
+                                PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Object[]{entities.size(), preferredLanguage});
                             } else {
                                 generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
+                                PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Object[]{entities.size(), preferredLanguage});
                             }
                             progressContributor.progress(progressStepCount);
                         }
@@ -448,7 +455,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
         }
-
+        //Create template.xhtml if it is not created yet, because it is used by other generated templates
+        if (webRoot.getFileObject(JSFClientGenerator.TEMPLATE_JSF_FL_PAGE) == null) {
+            FileObject target = TemplateIterator.createTemplate(project, webRoot, false);
+            progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", target.getNameExt()); //NOI18N
+            progressContributor.progress(progressMsg, progressIndex++);
+            progressPanel.setText(progressMsg);
+        }
+        
         List<TemplateData> bundleData = new ArrayList<TemplateData>();
 
         for (int i = 0; i < controllerFileObjects.length; i++) {
@@ -674,9 +688,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-        String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
-        if (preferredLanguage.equals("Facelets") && (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL))) {    //NOI18N
+        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
         }
 

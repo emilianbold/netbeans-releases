@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,9 +43,13 @@ package org.netbeans.modules.form.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import javax.swing.*;
 import java.awt.*;
 
+import java.awt.event.WindowAdapter;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
@@ -64,8 +68,12 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Pavek, Jan Stola
  */
 public class TestAction extends CallableSystemAction implements Runnable {
-
     private static String name;
+    /**
+     * Maps path of form file to laf-classname -> preview map.
+     * It is used to keep at most one preview per laf per file.
+     */
+    private Map<String,Map<String,Frame>> previews = new HashMap<String,Map<String,Frame>>();
 
     public TestAction() {
         setEnabled(false);
@@ -131,11 +139,29 @@ public class TestAction extends CallableSystemAction implements Runnable {
                 selectedLaf = UIManager.getLookAndFeel().getClass();
             }
 
-            // create a copy of form
+            // Dispose the previous preview (if it exists)
             FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+            Map<String,Frame> map = previews.get(formFile.getPath());
+            if (map == null) {
+                map = new HashMap<String,Frame>();
+                previews.put(formFile.getPath(), map);
+            }
+            Frame previousFrame = map.get(selectedLaf.getName());
+            if (previousFrame != null) {
+                previousFrame.dispose();
+            }
+
+            // create a copy of form
             final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
             final FormLAF.PreviewInfo previewInfo = FormLAF.initPreviewLaf(selectedLaf, classLoader);
             final Frame frame = (Frame) FormDesigner.createFormView(topComp, previewInfo);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    frame.dispose();
+                }
+            });
+            map.put(selectedLaf.getName(), frame);
 
             // set title
             String title = frame.getTitle();

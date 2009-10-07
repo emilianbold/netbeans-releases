@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -84,7 +84,7 @@ public class Hk2TargetModuleID implements TargetModuleID {
             if (!location.endsWith(File.separator)) {
                 location += File.separator;
             }
-            String key = docBaseURI+location;
+            String key = target.getServerUri()+docBaseURI+location;
             Hk2TargetModuleID retVal = knownModules.get(key);
             if (null == retVal) {
                 retVal = new Hk2TargetModuleID(target, docBaseURI, contextPath, location);

@@ -119,6 +119,11 @@ public class ImportAnalysisTest extends GeneratorTest {
         suite.addTest(new ImportAnalysisTest("testImportNoClashCurrentPackage127486"));
         suite.addTest(new ImportAnalysisTest("test130479"));
         suite.addTest(new ImportAnalysisTest("test157162"));
+        suite.addTest(new ImportAnalysisTest("test157566a"));
+        suite.addTest(new ImportAnalysisTest("test157566b"));
+        suite.addTest(new ImportAnalysisTest("test157566c"));
+        suite.addTest(new ImportAnalysisTest("test157566d"));
+        suite.addTest(new ImportAnalysisTest("test157566e"));
         return suite;
     }
 
@@ -1020,6 +1025,106 @@ public class ImportAnalysisTest extends GeneratorTest {
         assertFiles("testImports157162.pass");
     }
     
+    public void test157566a() throws IOException {
+        testFile = getFile(getSourceDir(), "org/netbeans/test/codegen/imports157566/b/Test.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                final TypeElement foo = workingCopy.getElements().getTypeElement("org.netbeans.test.codegen.imports157566.a.C");
+                assertNotNull(foo);
+                Tree type = make.QualIdent(foo);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImports157566a.pass");
+    }
+
+    public void test157566b() throws IOException {
+        testFile = getFile(getSourceDir(), "org/netbeans/test/codegen/imports157566/b/Test.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                final TypeElement foo = workingCopy.getElements().getTypeElement("org.netbeans.test.codegen.imports157566.b.String");
+                assertNotNull(foo);
+                Tree type = make.QualIdent(foo);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImports157566b.pass");
+    }
+
+    public void test157566c() throws IOException {
+        testFile = getFile(getSourceDir(), "org/netbeans/test/codegen/imports157566/b/Test.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                final TypeElement foo = workingCopy.getElements().getTypeElement("java.lang.Character");
+                assertNotNull(foo);
+                Tree type = make.QualIdent(foo);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImports157566c.pass");
+    }
+
+    public void test157566d() throws IOException {
+        testFile = getFile(getSourceDir(), "org/netbeans/test/codegen/imports157566/b/Testd.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                final TypeElement foo = workingCopy.getElements().getTypeElement("java.lang.String");
+                assertNotNull(foo);
+                Tree type = make.QualIdent(foo);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImports157566d.pass");
+    }
+
+    public void test157566e() throws IOException {
+        testFile = getFile(getSourceDir(), "org/netbeans/test/codegen/imports157566/b/Teste.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                final TypeElement foo = workingCopy.getElements().getTypeElement("org.netbeans.test.codegen.imports157566.b.String");
+                assertNotNull(foo);
+                Tree type = make.QualIdent(foo);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImports157566e.pass");
+    }
+
     String getSourcePckg() {
         if (getName().contains("DefaultPackage")) {
             return "";

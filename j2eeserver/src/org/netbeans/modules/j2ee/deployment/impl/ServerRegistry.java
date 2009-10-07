@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -317,7 +317,11 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     public static FileObject getInstanceFileObject(String url) {
-        FileObject[] installedServers = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS).getChildren();
+        FileObject installedServersDir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
+        if (installedServersDir == null) {
+            return null;
+        }
+        FileObject[] installedServers = installedServersDir.getChildren();
         for (int i=0; i<installedServers.length; i++) {
             String val = (String) installedServers[i].getAttribute(URL_ATTR);
             if (val != null && val.equals(url))

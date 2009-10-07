@@ -7,6 +7,11 @@
       <in>rfs_filedata.c</in>
       <in>rfs_filedata.h</in>
       <in>rfs_preload.c</in>
+      <in>rfs_preload_socks.c</in>
+      <in>rfs_preload_socks.h</in>
+      <in>rfs_protocol.c</in>
+      <in>rfs_protocol.h</in>
+      <in>rfs_util.c</in>
       <in>rfs_util.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -21,16 +26,16 @@
   </sourceRootList>
   <projectmakefile>Makefile-tools.mk</projectmakefile>
   <confs>
-    <conf name="Default" type="0">
+    <conf name="Debug32" type="0">
       <toolsSet>
-        <developmentServer>vk155633@elif:22</developmentServer>
+        <developmentServer>localhost</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>1</platform>
       </toolsSet>
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} TRACE=1 DEBUG=-g</buildCommand>
+          <buildCommand>${MAKE} TRACE=1 DEBUG=-g all</buildCommand>
           <cleanCommand>${MAKE}  clean</cleanCommand>
           <executablePath>../release/bin/SunOS-x86/rfs_controller</executablePath>
           <cTool>
@@ -41,6 +46,111 @@
             <preprocessorList>
               <Elem>TRACE=1</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>HANDSHAKING=1</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+    </conf>
+    <conf name="Debug64" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>1</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} TRACE=1 DEBUG=-g 64BITS=1 all</buildCommand>
+          <cleanCommand>${MAKE}  64BITS=1 clean</cleanCommand>
+          <executablePath>../release/bin/SunOS-x86_64/rfs_controller</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>TRACE=1</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>HANDSHAKING=1</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+    </conf>
+    <conf name="Release32" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>1</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} DEBUG=-g all</buildCommand>
+          <cleanCommand>${MAKE}  clean</cleanCommand>
+          <executablePath>../release/bin/SunOS-x86/rfs_controller</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>TRACE=1</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>HANDSHAKING=1</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+    </conf>
+    <conf name="Release64" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>1</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} DEBUG=-g 64BITS=1 all</buildCommand>
+          <cleanCommand>${MAKE}  64BITS=1 clean</cleanCommand>
+          <executablePath>../release/bin/SunOS-x86_64/rfs_controller</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>TRACE=1</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>HANDSHAKING=1</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+    </conf>
+    <conf name="Test32" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>1</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} TRACE=1 DEBUG=-g test_build</buildCommand>
+          <cleanCommand>${MAKE}  clean</cleanCommand>
+          <executablePath>build/SunOS-x86/test_pkg_client</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>TRACE=1</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>HANDSHAKING=1</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>

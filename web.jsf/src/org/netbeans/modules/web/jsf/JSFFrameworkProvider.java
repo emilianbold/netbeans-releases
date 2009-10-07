@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -101,6 +101,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
+    private static String WELCOME_XHTML_TEMPLATE = "simpleFacelets.template"; //NOI18N
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
@@ -108,6 +109,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
     private boolean createWelcome = true;
     
@@ -253,6 +255,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         } else {
             panel = new JSFConfigurationPanel(this, controller, !defaultValue);
         }
+        panel.setCreateExamples(createWelcome);
         if (!defaultValue){
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
@@ -530,7 +533,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
 
             }
-            final String baseFolder = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
             if (panel.isEnableFacelets() && panel.isCreateExamples()) {
                 InputStream is;
@@ -538,36 +540,36 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 FileObject target;
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
 
-                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){
-                    if (isJSF20) {
-                        is= JSFFrameworkProvider.class.getClassLoader()
-                            .getResourceAsStream(baseFolder + TEMPLATE_XHTML2);
-                    } else {
-                        is= JSFFrameworkProvider.class.getClassLoader()
-                            .getResourceAsStream(baseFolder + TEMPLATE_XHTML);
-                    }
-                    content = readResource(is, encoding.name());
-                    target = FileUtil.createData(webModule.getDocumentBase(), TEMPLATE_XHTML);
-                    createFile(target, content, encoding.name());
-                }
+//                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){
+//                    if (isJSF20) {
+//                        is= JSFFrameworkProvider.class.getClassLoader()
+//                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML2);
+//                    } else {
+//                        is= JSFFrameworkProvider.class.getClassLoader()
+//                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML);
+//                    }
+//                    content = readResource(is, encoding.name());
+//                    target = FileUtil.createData(webModule.getDocumentBase(), TEMPLATE_XHTML);
+//                    createFile(target, content, encoding.name());
+//                }
                 if (webModule.getDocumentBase().getFileObject(WELCOME_XHTML) == null){
                     is = JSFFrameworkProvider.class.getClassLoader()
-                    .getResourceAsStream(baseFolder + WELCOME_XHTML);
+                    .getResourceAsStream(FL_RESOURCE_FOLDER + WELCOME_XHTML_TEMPLATE);
                     content = readResource(is, encoding.name());
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     createFile(target, content, encoding.name());
                 }
-                String defaultCSSFolder = CSS_FOLDER;
-                if (isJSF20) {
-                    defaultCSSFolder = CSS_FOLDER2;
-                }
-                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+"/"+DEFAULT_CSS) == null){   //NOI18N
-                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(baseFolder + DEFAULT_CSS);  
-                    content = readResource(is, encoding.name());
-                    //File.separator replaced by "/" because it is used in createData method
-                    target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + "/"+ DEFAULT_CSS);  //NOI18N
-                    createFile(target, content, encoding.name());
-                }
+//                String defaultCSSFolder = CSS_FOLDER;
+//                if (isJSF20) {
+//                    defaultCSSFolder = CSS_FOLDER2;
+//                }
+//                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+"/"+DEFAULT_CSS) == null){   //NOI18N
+//                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + DEFAULT_CSS);
+//                    content = readResource(is, encoding.name());
+//                    //File.separator replaced by "/" because it is used in createData method
+//                    target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + "/"+ DEFAULT_CSS);  //NOI18N
+//                    createFile(target, content, encoding.name());
+//                }
             }
             //copy Welcome.jsp
             if (!panel.isEnableFacelets() && createWelcome && canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {

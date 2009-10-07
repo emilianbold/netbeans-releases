@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -61,26 +61,26 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  * @author Radek Matous
  */
 public final class FileBasedFileSystem extends FileSystem {
     private static FileBasedFileSystem INSTANCE = new FileBasedFileSystem();
-    transient private RootObj root;
+    transient private RootObj<? extends FileObject> root;
     transient private final StatusImpl status = new StatusImpl();
     transient private static  int modificationInProgress;
     
     public FileBasedFileSystem() {
         if (Utilities.isWindows()) {
             RootObjWindows realRoot = new RootObjWindows();
-            root = new RootObj(realRoot);
+            root = new RootObj<RootObjWindows>(realRoot);
         } else {
             FileObjectFactory factory = FileObjectFactory.getInstance(new File("/"));//NOI18N
-            root = new RootObj(factory.getRoot());
+            root = new RootObj<BaseFileObj>(factory.getRoot());
         }
     }
    
@@ -204,7 +204,8 @@ public final class FileBasedFileSystem extends FileSystem {
         return new SystemAction[] {};
     }
 
-    public final SystemAction[] getActions(final Set/*<FileObject>*/ foSet) {
+    @Override
+    public final SystemAction[] getActions(final Set<FileObject> foSet) {
         SystemAction[] some = status.getActions (foSet);
         if (some != null) {
             return some;
@@ -213,6 +214,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
     }
     
+    @Override
     public Status getStatus() {
         return status;
     }
@@ -221,35 +223,37 @@ public final class FileBasedFileSystem extends FileSystem {
             org.openide.util.LookupListener, org.openide.filesystems.FileStatusListener {
 
         /** result with providers */
-        private org.openide.util.Lookup.Result annotationProviders;
-        private Collection previousProviders;
+        private org.openide.util.Lookup.Result<AnnotationProvider> annotationProviders;
+        private Collection<? extends AnnotationProvider> previousProviders;
         
 
         {
-            annotationProviders = org.openide.util.Lookup.getDefault().lookup(
-                    new org.openide.util.Lookup.Template(AnnotationProvider.class));
+            annotationProviders = Lookup.getDefault().lookup(new Lookup.Template<AnnotationProvider>(AnnotationProvider.class));
             annotationProviders.addLookupListener(this);
             resultChanged(null);
         }
 
         public ProvidedExtensions getExtensions() {
-            Collection c = (previousProviders != null) ? Collections.unmodifiableCollection(previousProviders) : Collections.EMPTY_LIST;
+            Collection<? extends AnnotationProvider> c;
+            if (previousProviders != null) {
+                c = Collections.unmodifiableCollection(previousProviders);
+            } else {
+                c = Collections.emptyList();
+            }
             return new ProvidedExtensionsProxy(c);
         }
 
         public void resultChanged(org.openide.util.LookupEvent ev) {
-            java.util.Collection now = annotationProviders.allInstances();
-            java.util.Collection add;
+            Collection<? extends AnnotationProvider> now = annotationProviders.allInstances();
+            Collection<? extends AnnotationProvider> add;
 
             if (previousProviders != null) {
-                add = new HashSet(now);
+                add = new HashSet<AnnotationProvider>(now);
                 add.removeAll(previousProviders);
 
-                HashSet toRemove = new HashSet(previousProviders);
+                HashSet<AnnotationProvider> toRemove = new HashSet<AnnotationProvider>(previousProviders);
                 toRemove.removeAll(now);
-                java.util.Iterator it = toRemove.iterator();
-                while (it.hasNext()) {
-                    AnnotationProvider ap = (AnnotationProvider) it.next();
+                for (AnnotationProvider ap : toRemove) {
                     ap.removeFileStatusListener(this);
                 }
 
@@ -259,9 +263,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
 
 
-            java.util.Iterator it = add.iterator();
-            while (it.hasNext()) {
-                AnnotationProvider ap = (AnnotationProvider) it.next();
+            for (AnnotationProvider ap : add) {
                 try {
                     ap.addFileStatusListener(this);
                 } catch (java.util.TooManyListenersException ex) {
@@ -272,12 +274,12 @@ public final class FileBasedFileSystem extends FileSystem {
             previousProviders = now;
         }
 
-        public SystemAction[] getActions(java.util.Set foSet) {
+        public SystemAction[] getActions(Set<FileObject> foSet) {
 
             javax.swing.Action[] retVal = null;
-            java.util.Iterator it = annotationProviders.allInstances().iterator();
+            java.util.Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
             while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = (AnnotationProvider) it.next();
+                AnnotationProvider ap = it.next();
                 retVal = ap.actions(foSet);
             }
             if (retVal != null) {
@@ -297,12 +299,12 @@ public final class FileBasedFileSystem extends FileSystem {
             fireFileStatusChanged(ev);
         }
 
-        public Image annotateIcon(Image icon, int iconType, Set files) {
+        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
             Image retVal = null;
 
-            Iterator it = annotationProviders.allInstances().iterator();
+            Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
             while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = (AnnotationProvider) it.next();
+                AnnotationProvider ap = it.next();
                 retVal = ap.annotateIcon(icon, iconType, files);
             }
             if (retVal != null) {
@@ -312,11 +314,11 @@ public final class FileBasedFileSystem extends FileSystem {
             return icon;
         }
 
-        public String annotateName(String name, Set files) {
+        public String annotateName(String name, Set<? extends FileObject> files) {
             String retVal = null;
-            Iterator it = annotationProviders.allInstances().iterator();
+            Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
             while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = (AnnotationProvider) it.next();
+                AnnotationProvider ap = it.next();
                 retVal = ap.annotateName(name, files);
             }
             if (retVal != null) {
@@ -325,11 +327,11 @@ public final class FileBasedFileSystem extends FileSystem {
             return name;
         }
 
-        public String annotateNameHtml(String name, Set files) {
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
             String retVal = null;
-            Iterator it = annotationProviders.allInstances().iterator();
+            Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
             while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = (AnnotationProvider) it.next();
+                AnnotationProvider ap = it.next();
                 retVal = ap.annotateNameHtml(name, files);
             }
             return retVal;

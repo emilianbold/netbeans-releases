@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -120,6 +120,11 @@ public class InstantRenamePerformerTest extends NbTestCase {
         performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 80 - 22, ke, "package test; public class Test { public void test() {int bc = 0; int y = bc; } }", true);
     }
 
+    public void testSimple6() throws Exception {
+        KeyEvent[] kes = new KeyEvent[] {new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0'), new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0')};
+        performTest("package test; public class Test { public void test() {int b| = 0; int y = b; } }", 80 - 22, kes, 81 - 22, "package test; public class Test { public void test() {int = 0; int y = ; } }", false);
+    }
+
     public void testCancel1() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, "package test; public class Test { public void test() {inta xxx = 0; int y = xxx; } }", false);
@@ -199,8 +204,13 @@ public class InstantRenamePerformerTest extends NbTestCase {
     private void performTest(String sourceCode, int offset, KeyEvent ke, String golden, boolean stillInRename) throws Exception {
         performTest(sourceCode, offset, ke, -1, golden, stillInRename);
     }
-    
+
     private void performTest(String sourceCode, int offset, KeyEvent ke, int selectionEnd, String golden, boolean stillInRename) throws Exception {
+        KeyEvent[] kes = new KeyEvent[] {ke};
+        performTest(sourceCode, offset, kes, selectionEnd, golden, stillInRename);
+    }
+    
+    private void performTest(String sourceCode, int offset, KeyEvent[] kes, int selectionEnd, String golden, boolean stillInRename) throws Exception {
         clearWorkDir();
         
         FileObject root = FileUtil.toFileObject(getWorkDir());
@@ -249,10 +259,16 @@ public class InstantRenamePerformerTest extends NbTestCase {
             p.moveCaretPosition(selectionEnd);
         }
         
-        p.processKeyEvent(ke);
+        processKeyevents(p, kes);
         
         assertEquals(stillInRename, p.getClientProperty(InstantRenamePerformer.class) != null);
         assertEquals(golden, doc.getText(0, doc.getLength()));
+    }
+
+    private void processKeyevents(C p, KeyEvent[] kes) {
+        for (int i = 0; i < kes.length; i++) {
+            p.processKeyEvent(kes[i]);
+        }
     }
 
     @Override

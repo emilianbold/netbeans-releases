@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -105,21 +105,22 @@ public final class ImportWizard implements ChangeListener {
             }            
         } else if (value == WizardDescriptor.FINISH_OPTION) {
             if(wizardIterator.current() == importStep) {
-                setupImportPreviewStep();
+                setupImportPreviewStep(true);
             } else if (wizardIterator.current() == importPreviewStep) {
                 importPreviewStep.storeTableSorter();
+                importPreviewStep.startCommitTask(repositoryStep.getRepositoryFile().getRepositoryUrl());
             }            
         }
         return finnished;
     }    
 
-    private void setupImportPreviewStep() {
+    private void setupImportPreviewStep(boolean startCommitTask) {
         // must be initialized so we may retrieve the commitFiles for the ImportAction
         SVNUrl repository = repositoryStep.getRepositoryFile().getRepositoryUrl();
         String repositoryUrl = repository.toString();
         String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
-        String localPath = context.getRootFiles()[0].getAbsolutePath();            
-        importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath, repository);
+        String localPath = context.getRootFiles()[0].getAbsolutePath();
+        importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath, repository, importStep.getImportMessage(), startCommitTask);
     }
     
     private void setErrorMessage(AbstractStep.WizardMessage msg) {
@@ -210,7 +211,7 @@ public final class ImportWizard implements ChangeListener {
                 File file = context.getRootFiles()[0];
                 importStep.setup(repositoryStep.getRepositoryFile().appendPath(file.getName()));
             } else if(current() == importStep) {
-                setupImportPreviewStep();
+                setupImportPreviewStep(false);
             }
             super.nextPanel();
             if(current() == importStep) {                                                            
@@ -224,16 +225,8 @@ public final class ImportWizard implements ChangeListener {
         return repositoryStep.getRepositoryFile().getRepositoryUrl(); 
     }
 
-    public String getMessage() {
-        return importStep.getImportMessage();
-    }
-
     public SVNUrl getRepositoryFolderUrl() {
         return importStep.getRepositoryFolderUrl();
-    }
-
-    public Map getCommitFiles() {
-        return importPreviewStep.getCommitFiles();
     }
 
 }

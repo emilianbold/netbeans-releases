@@ -48,7 +48,7 @@ import org.openide.DialogDescriptor;
  *
  * @author Tim Boudreau
  */
-final class DialogDescriptorAdapter implements ValidationUI {
+public final class DialogDescriptorAdapter implements ValidationUI {
     private DialogDescriptor d;
 
     public DialogDescriptorAdapter (DialogDescriptor d) {

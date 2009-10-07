@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -101,6 +101,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
 //    public static final String FOLDER_CLASSES = "classes";//NOI18N
 //    public static final String FOLDER_LIB     = "lib";//NOI18N
     public static final String FILE_DD        = "web.xml";//NOI18N
+    
+    public static final String LOOKUP_ITEM    = "lookup.item";//NOI18N
 
     private WebProject project;
     private UpdateHelper helper;
@@ -133,11 +135,20 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public void addCookie( Object cookie ){
+        if ( cookie == null ){
+            return;
+        }
+        Object old = getLookup().lookup(cookie.getClass());
         myContent.add( cookie );
+        getPropertyChangeSupport().firePropertyChange(LOOKUP_ITEM, old, cookie);
     }
     
     public void removeCookie( Object cookie ){
+        if ( cookie == null ){
+            return;
+        }
         myContent.remove( cookie);
+        getPropertyChangeSupport().firePropertyChange(LOOKUP_ITEM, cookie, null);
     }
     
     public FileObject getDeploymentDescriptor() {
@@ -665,7 +676,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             //     try {
             //         project.getWebModule().getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             //             public Void run(WebAppMetadata metadata) throws MetadataModelException, IOException {
-            //                 WebApp webApp = metadata.getRoot();
+            //                 WebApp webAp p = metadata.getRoot();
             //                 PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, ProjectWebModule.this, webApp);
             //                 webApp.addPropertyChangeListener(l);
             //                 return null;
@@ -681,7 +692,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
-
+    
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         if (propertyChangeSupport == null) {
             return;

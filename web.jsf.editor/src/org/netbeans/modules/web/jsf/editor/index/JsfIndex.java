@@ -122,7 +122,9 @@ public class JsfIndex {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT, CompositeComponentModel.LIBRARY_NAME_KEY);
             for (IndexResult result : results) {
                 FileObject file = result.getFile();
-                components.add(file.getName());
+                if(file != null) {
+                    components.add(file.getName());
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -144,10 +146,12 @@ public class JsfIndex {
                     CompositeComponentModel.HAS_IMPLEMENTATION_KEY);
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
-                String fileName = file.getName();
-                //the filename w/o extenstion is the component name
-                if (fileName.equals(componentName)) {
-                    return (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
+                if(file != null) {
+                    String fileName = file.getName();
+                    //the filename w/o extenstion is the component name
+                    if (fileName.equals(componentName)) {
+                        return (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
+                    }
                 }
 
             }
@@ -166,7 +170,9 @@ public class JsfIndex {
 
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
-                map.put(result.getValue(JsfBinaryIndexer.LIB_NAMESPACE_KEY), file);
+                if(file != null) {
+                    map.put(result.getValue(JsfBinaryIndexer.LIB_NAMESPACE_KEY), file);
+                }
 
             }
         } catch (IOException ex) {
@@ -197,7 +203,9 @@ public class JsfIndex {
 
             for (IndexResult result : results) {
                 FileObject file = result.getFile();
-                files.add(file);
+                if(file != null) {
+                    files.add(file);
+                }
 
             }
         } catch (IOException ex) {

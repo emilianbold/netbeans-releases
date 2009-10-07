@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,19 +48,14 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -73,35 +68,19 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
     private int startOffset;
     private int endOffset;
     private Tree.Kind ctx = null;
-    private RequestProcessor requestProcessor;
     
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
         this.startOffset = offset;
         this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-        final JavaSource js = JavaSource.forDocument(component.getDocument());
-        if (js != null && !SourceUtils.isScanInProgress()) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                if (requestProcessor == null)
-                    requestProcessor = new RequestProcessor ("JavaCodeTemplateFilter");
-                requestProcessor.post (new Runnable () {
-                    public void run () {
-                        try {
-                            Future<Void> f = js.runWhenScanFinished(JavaCodeTemplateFilter.this, true);
-                            if (!f.isDone())
-                                f.cancel(true);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            } else
-                try {
-                    Future<Void> f = js.runWhenScanFinished(this, true);
-                    if (!f.isDone())
-                        f.cancel(true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        JavaSource js = JavaSource.forDocument(component.getDocument());
+        if (js != null) {
+            try {
+                Future<Void> f = js.runWhenScanFinished(this, true);
+                if (!f.isDone())
+                    f.cancel(true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

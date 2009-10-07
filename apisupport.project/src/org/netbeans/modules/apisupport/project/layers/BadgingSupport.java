@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -163,10 +163,15 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             String bundleName;
             if (bundleKey != null) {
                 String[] arr = bundleKey.split(":", 2); // NOI18N
-                assert arr[0].equals("bundle") : "Literal displayName value should start with 'bundle:'";    // NOI18N
-                arr = arr[1].split("#", 2);    // NOI18N
-                bundleName = arr[0];
-                bundleKey = arr[1];
+                if (arr[0].equals("bundle")) { // NOI18N
+                    // bundlevalue
+                    arr = arr[1].split("#", 2);    // NOI18N
+                    bundleName = arr[0];
+                    bundleKey = arr[1];
+                } else {
+                    // stringvalue
+                    return bundleKey;
+                }
             } else {
                 bundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
                 bundleKey = fo.getPath();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -106,47 +106,47 @@ public class WebResourceCollectionPanel extends javax.swing.JPanel {
     }
     
     public void setHttpMethods(String[] methods) {
-        boolean allSelected = true;
         
+        if ( methods == null || methods.length == 0 ){
+            allHttpMethodsRB.setSelected(true);
+            return;
+        }
+
         for (int i = 0; i < allMethods.length; i++) {
-            boolean found = false;
             String method = allMethods[i];
-            
+
             for (int j = 0; j < methods.length; j++) {
                 if (method.equals(methods[j])) {
-                    found = true;
                     break;
                 }
             }
-            
-            if (!found) {
-                allSelected = false;
-                break;
-            }
+
         }
-        
-        if (allSelected) {
-            allHttpMethodsRB.setSelected(true);
-        } else {
-            subsetHttpMethodsRB.setSelected(true);
-            for (int i =0; i < methods.length; i++) {
-                String method = methods[i];
-                
-                if (method.equals(GET)) {
-                    getCB.setSelected(true);
-                } else if (method.equals(PUT)) {
-                    putCB.setSelected(true);
-                } else if (method.equals(HEAD)) {
-                    headCB.setSelected(true);
-                } else if (method.equals(POST)) {
-                    postCB.setSelected(true);
-                } else if (method.equals(TRACE)) {
-                    traceCB.setSelected(true);
-                } else if (method.equals(DELETE)) {
-                    deleteCB.setSelected(true);
-                } else if (method.equals(OPTIONS)) {
-                    optionsCB.setSelected(true);
-                }
+
+        subsetHttpMethodsRB.setSelected(true);
+        for (int i = 0; i < methods.length; i++) {
+            String method = methods[i];
+
+            if (method.equals(GET)) {
+                getCB.setSelected(true);
+            }
+            else if (method.equals(PUT)) {
+                putCB.setSelected(true);
+            }
+            else if (method.equals(HEAD)) {
+                headCB.setSelected(true);
+            }
+            else if (method.equals(POST)) {
+                postCB.setSelected(true);
+            }
+            else if (method.equals(TRACE)) {
+                traceCB.setSelected(true);
+            }
+            else if (method.equals(DELETE)) {
+                deleteCB.setSelected(true);
+            }
+            else if (method.equals(OPTIONS)) {
+                optionsCB.setSelected(true);
             }
         }
         
@@ -155,7 +155,7 @@ public class WebResourceCollectionPanel extends javax.swing.JPanel {
                   
     public String[] getSelectedHttpMethods() {
         if (allHttpMethodsRB.isSelected()) {
-            return allMethods;
+            return null;
         } else if (subsetHttpMethodsRB.isSelected()) {
             ArrayList list = new ArrayList();
             

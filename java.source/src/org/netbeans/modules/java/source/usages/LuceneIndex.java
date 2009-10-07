@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,8 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,21 +92,26 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.util.LMListener;
+import org.netbeans.modules.parsing.impl.indexing.lucene.IndexCacheFactory;
+import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-class LuceneIndex extends Index {
-    
+class LuceneIndex extends Index implements Evictable {
+
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
     private static final String REFERENCES = "refs";    // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
     
     private final File refCacheRoot;
     //@GuardedBy(this)
@@ -496,6 +503,38 @@ class LuceneIndex extends Index {
             final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);            
             result.put (convertor.convert(kindHolder[0],binaryName),docNum.getValue());
         }        
+    }
+    
+    //<editor-fold desc="Implementation of Evictable interface">
+    public void evicted() {
+        //Threading: The called may own the CIM.readAccess, perform by dedicated worker to prevent deadlock
+        RP.post(new Runnable() {
+            public void run () {
+                try {
+                    ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                        public Void run() throws IOException, InterruptedException {
+                            close(false);
+                            LOGGER.fine("Evicted index: " + refCacheRoot.getAbsolutePath()); //NOI18N
+                            return null;
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ie) {
+                    Exceptions.printStackTrace(ie);
+                }
+            }
+        });
+    }
+    ///</editor-fold>
+
+    private void _hit() {
+        try {
+            final URL url = this.refCacheRoot.toURI().toURL();
+            IndexCacheFactory.getDefault().getCache().put(url, this);
+        } catch (MalformedURLException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
     
     private static int findNextUpper(String text, int offset ) {
@@ -977,6 +1016,7 @@ class LuceneIndex extends Index {
     }
     
     private synchronized IndexReader getReader () throws IOException {
+        _hit();
         if (this.reader == null) {
             //Issue #149757 - logging
             try {
@@ -990,7 +1030,8 @@ class LuceneIndex extends Index {
         return this.reader;
     }
     
-    private synchronized IndexWriter getWriter (final boolean create) throws IOException {        
+    private synchronized IndexWriter getWriter (final boolean create) throws IOException {
+        _hit();
         //Issue #149757 - logging
         try {
             IndexWriter writer = new IndexWriter (this.directory, analyzer, create);

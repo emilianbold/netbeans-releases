@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import junit.framework.Assert;
 
 /**
  * Common utility methods for massaging and inspecting files from tests.
@@ -144,6 +145,26 @@ public class TestFileUtils {
         zos.finish();
         zos.close();
         os.close();
+    }
+
+    /**
+     * Make sure the timestamp on a file changes.
+     * @param f a file to touch (make newer)
+     * @param ref if not null, make f newer than this file; else make f newer than it was before
+     */
+    public static void touch(File f, File ref) throws IOException, InterruptedException {
+        long older = f.lastModified();
+        if (ref != null) {
+            older = Math.max(older, ref.lastModified());
+        }
+        for (long pause = 1; pause < 9999; pause *= 2) {
+            Thread.sleep(pause);
+            f.setLastModified(System.currentTimeMillis());
+            if (f.lastModified() > older) {
+                return;
+            }
+        }
+        Assert.fail("Did not manage to touch " + f);
     }
 
 }

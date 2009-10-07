@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,6 +46,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -84,6 +85,7 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassImplementsTest("testRemoveAllImplExtends"));
 //        suite.addTest(new ClassImplementsTest("testRenameInImpl"));
 //        suite.addTest(new ClassImplementsTest("testRenameInImpl2"));
+//        suite.addTest(new ClassImplementsTest("test156731"));
         return suite;
     }
     
@@ -761,6 +763,37 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void test156731() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test implements java.awt.event.ActionListener, java.awt.event.MouseListener, javax.swing.event.AncestorListener {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.awt.event.ActionListener;\n" +
+            "import java.awt.event.MouseListener;\n" +
+            "import javax.swing.event.AncestorListener;\n\n" +
+            "public class Test implements ActionListener, MouseListener, AncestorListener {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                workingCopy.rewrite(cut, GeneratorUtilities.get(workingCopy).importFQNs(cut));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     protected void setUp() throws Exception {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "Test.java");

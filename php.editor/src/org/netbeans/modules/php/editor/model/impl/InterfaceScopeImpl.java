@@ -109,7 +109,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         sb.append(getOffset()).append(";");//NOI18N
         List<? extends String> superInterfaces = getSuperInterfaceNames();
         for (int i = 0; i < superInterfaces.size(); i++) {
-            String iface = superInterfaces.get(0);
+            String iface = superInterfaces.get(i);
             if (i > 0) {
                 sb.append(",");
             }

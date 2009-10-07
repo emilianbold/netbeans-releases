@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -48,7 +50,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.MissingResourceException;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -62,6 +66,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.WindowManager;
 
 /**
  * Convenient class to be used by {@link CustomizerProvider} implementations.
@@ -119,30 +124,30 @@ abstract class BasicCustomizer implements CustomizerProvider {
     public void showCustomizer(String preselectedCategory) {
         showCustomizer(preselectedCategory, null);
     }
-    
+
     public void showCustomizer(String preselectedCategory, final String preselectedSubCategory) {
         if (dialog != null) {
             dialog.setVisible(true);
             return;
         } else {
             final String category = (preselectedCategory != null) ? preselectedCategory : lastSelectedCategory;
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    final Lookup context = new ProxyLookup(prepareData(), Lookups.fixed(new SubCategoryProvider(category, preselectedSubCategory)));
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            OptionListener listener = new OptionListener();
-                            dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context,
-                                    category, listener,
-                                    null);
-                            dialog.addWindowListener(listener);
-                            dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
-                                    ProjectUtils.getInformation(getProject()).getDisplayName()));
-                            dialog.setVisible(true);
-                        }
-                    });
-                }
-            });
+            Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
+            try {
+                glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                glassPane.setVisible(true);
+                final Lookup context = new ProxyLookup(prepareData(), Lookups.fixed(new SubCategoryProvider(category, preselectedSubCategory)));
+                OptionListener listener = new OptionListener();
+                dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context,
+                        category, listener,
+                        null);
+                dialog.addWindowListener(listener);
+                dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
+                        ProjectUtils.getInformation(getProject()).getDisplayName()));
+                dialog.setVisible(true);
+            } finally {
+                glassPane.setVisible(false);
+                glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
         }
     }
     

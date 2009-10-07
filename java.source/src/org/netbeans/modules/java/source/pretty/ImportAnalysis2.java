@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -90,8 +90,8 @@ public class ImportAnalysis2 {
     private PackageElement pack;
     private ASTService model;
     private CompilationUnitTree cut; //current compilation unit
-    private Set<String> usedClassesFromJavaLangCache;
-    private Set<String> javaLangElements;
+    private Map<String, Element> usedImplicitlyImportedClassesCache;
+    private Set<String> implicitlyImportedClassNames;
     private PackageElement javaLang;
 
     public ImportAnalysis2(Context env) {
@@ -117,23 +117,32 @@ public class ImportAnalysis2 {
         this.pack = elements.getPackageElement(packageName);
     }
 
+    /*
+     * setPackage must be called before this method!
+     */
     public void setImports(List<? extends ImportTree> importsToAdd) {
         imports = new ArrayList<ImportTree>();
         imported = new HashSet<Element>();
         simpleNames2Elements = new HashMap<String, Element>();
         visibleThroughClasses = new Stack<Set<Element>>();
-        usedClassesFromJavaLangCache = null;
+        usedImplicitlyImportedClassesCache = null;
 
         for (ImportTree imp : importsToAdd) {
             addImport(imp, false);
         }
         
-        javaLangElements = new HashSet<String>();
+        implicitlyImportedClassNames = new HashSet<String>();
         javaLang = elements.getPackageElement("java.lang");
         
         if (javaLang != null) {//might be null for broken platforms
             for (Element e : javaLang.getEnclosedElements()) {
-                javaLangElements.add(e.getSimpleName().toString());
+                implicitlyImportedClassNames.add(e.getSimpleName().toString());
+            }
+        }
+
+        if (pack != null) {
+            for (Element e : pack.getEnclosedElements()) {
+                implicitlyImportedClassNames.add(e.getSimpleName().toString());
             }
         }
     }
@@ -340,9 +349,11 @@ public class ImportAnalysis2 {
             return orig;
         }
         
-        if (!clash && javaLangElements.contains(simpleName) && !element.getEnclosingElement().equals(javaLang)) {
+        if (!clash && implicitlyImportedClassNames.contains(simpleName)) {
             //check clashes between (hidden) java.lang and the newly added element:
-            clash = getUsedClassesFromJavaLang().contains(simpleName);
+            Element used = getUsedImplicitlyImportedClasses().get(simpleName);
+
+            clash = used != null && !element.equals(used);
         }
         
         if (clash) {
@@ -405,28 +416,27 @@ public class ImportAnalysis2 {
         visible.addAll(elements.getAllMembers((TypeElement) e));
     }
     
-    private Set<String> getUsedClassesFromJavaLang() {
-        if (usedClassesFromJavaLangCache != null) {
-            return usedClassesFromJavaLangCache;
+    private Map<String, Element> getUsedImplicitlyImportedClasses() {
+        if (usedImplicitlyImportedClassesCache != null) {
+            return usedImplicitlyImportedClassesCache;
         }
         
-        usedClassesFromJavaLangCache = new HashSet<String>();
+        usedImplicitlyImportedClassesCache = new HashMap<String, Element>();
         
-        if (javaLang != null) {//might be null for broken platforms
-            new TreeScanner<Void, Void>() {
-                @Override
-                public Void visitIdentifier(IdentifierTree node, Void p) {
-                    Element e = model.getElement(node);
-                    
-                    if (e != null && javaLang.equals(e.getEnclosingElement())) {
-                        usedClassesFromJavaLangCache.add(e.getSimpleName().toString());
-                    }
-                    
-                    return null;
+        new TreeScanner<Void, Void>() {
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                Element e = model.getElement(node);
+
+                //javaLang might be null for broken platforms
+                if (e != null && ((javaLang != null && javaLang.equals(e.getEnclosingElement())) || (pack != null && pack.equals(e.getEnclosingElement())))) {
+                    usedImplicitlyImportedClassesCache.put(e.getSimpleName().toString(), e);
                 }
-            }.scan(cut, null);
-        }
+
+                return null;
+            }
+        }.scan(cut, null);
         
-        return usedClassesFromJavaLangCache;
+        return usedImplicitlyImportedClassesCache;
     }
 }
