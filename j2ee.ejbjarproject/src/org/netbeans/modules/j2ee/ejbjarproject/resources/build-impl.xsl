@@ -271,6 +271,10 @@ is divided into following sections:
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>             
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
             
             <!-- COS feature - used in run-deploy -->
@@ -402,6 +406,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
@@ -454,6 +459,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                         </junit>
                     </sequential>
@@ -477,6 +483,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
                                 <path path="${{build.classes.dir}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
