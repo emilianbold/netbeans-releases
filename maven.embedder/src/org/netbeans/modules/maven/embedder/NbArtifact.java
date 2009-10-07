@@ -58,7 +58,7 @@ import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 
 /**
  *
@@ -339,24 +339,33 @@ public class NbArtifact implements Artifact {
         return original.isSelectedVersionKnown();
     }
     
-    public int compareTo(Object o) {
-        return original.compareTo(o);
-    }
-    
     @Override
     public String toString() {
         return original.toString();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return original.equals(obj);
+    public int compareTo(Artifact o) {
+        return original.compareTo(o);
     }
 
     @Override
     public int hashCode() {
         return original.hashCode();
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NbArtifact other = (NbArtifact) obj;
+        if (this.original != other.original && (this.original == null || !this.original.equals(other.original))) {
+            return false;
+        }
+        return true;
+    }
     
 }
