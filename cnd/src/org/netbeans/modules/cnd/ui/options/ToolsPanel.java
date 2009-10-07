@@ -641,6 +641,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 String message = NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterTextField",
                         cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
                 tfBaseDirectory.setText(message);
+                tfBaseDirectory.setCaretPosition(0);
                 btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterInstallButton"));
                 btBaseDirectory.setEnabled(true);
                 isUrl = true;
