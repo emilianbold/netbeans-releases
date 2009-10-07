@@ -1416,6 +1416,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     // List of primarily supported templates
     private static final String[] TYPES = new String[] {
         "java-classes",         // NOI18N
+        "ejb-deployment-descriptor",// NOI18N
         "ejb-types_2_1",      // NOI18N
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
@@ -1440,6 +1441,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
      */
     private static final String[] JAVAEE5_TYPES = new String[] {
         "java-classes",         // NOI18N
+        "ejb-deployment-descriptor",// NOI18N
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_0",        // NOI18N
@@ -1463,6 +1465,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
      */
     private static final String[] JAVAEE6_TYPES = new String[] {
         "java-classes",         // NOI18N
+        "ejb-deployment-descriptor",// NOI18N
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_1",        // NOI18N
