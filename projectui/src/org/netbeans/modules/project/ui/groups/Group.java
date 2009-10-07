@@ -314,6 +314,7 @@ public abstract class Group {
             handleLabel = NbBundle.getMessage(Group.class, "Group.close_handle");
         }
         ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
+        try {
         h.start(200);
         ProjectUtilities.WaitCursor.show();
         OpenProjects op = OpenProjects.getDefault();
@@ -332,8 +333,11 @@ public abstract class Group {
         if (g != null) {
             op.setMainProject(g.getMainProject());
         }
-        ProjectUtilities.WaitCursor.hide();
-        h.finish();
+        } finally {
+            ProjectUtilities.WaitCursor.hide();
+            h.finish();
+        }
+        
     }
 
     /**
