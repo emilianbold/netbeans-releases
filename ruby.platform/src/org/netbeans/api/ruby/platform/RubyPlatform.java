@@ -217,9 +217,9 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *        valid autotest installed
      */
     public boolean hasValidAutoTest(boolean warn) {
-        boolean valid = isValidFile(getAutoTest());
-        possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
-        return valid;
+        boolean validBinary = isValidFile(getAutoTest());
+        possiblyNotifyUser(warn, validBinary, "autotest"); // NOI18N
+        return validBinary && hasZenTest();
     }
 
     /**
@@ -229,9 +229,13 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *        valid autotest installed
      */
     public boolean hasValidAutoSpec(boolean warn) {
-        boolean valid = isValidFile(getAutoSpec());
-        possiblyNotifyUser(warn, valid, "autospec"); // NOI18N
-        return valid;
+        boolean validBinary = isValidFile(getAutoSpec());
+        possiblyNotifyUser(warn, validBinary, "autospec"); // NOI18N
+        return validBinary && hasZenTest();
+    }
+
+    private boolean hasZenTest() {
+        return getGemManager() != null && getGemManager().isGemInstalled("ZenTest"); //NOI18N
     }
 
     private boolean isValidFile(String path) {

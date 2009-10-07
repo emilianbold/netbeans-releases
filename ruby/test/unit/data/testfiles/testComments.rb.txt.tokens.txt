@@ -90,6 +90,8 @@ COMMENT_LINK    "mailto:foo@bar.com", la=1
 COMMENT_TEXT    "\n"
 COMMENT_LINK    "http://www.netbeans.org", la=1
 COMMENT_TEXT    "\n"
+COMMENT_LINK    "https://www.netbeans.org", la=1
+COMMENT_TEXT    "\n"
 COMMENT_LINK    "ftp:foo@bar:80/pub/hello.txt", la=1
 COMMENT_TEXT    "\n"
 COMMENT_LINK    "#mymethod", la=1
