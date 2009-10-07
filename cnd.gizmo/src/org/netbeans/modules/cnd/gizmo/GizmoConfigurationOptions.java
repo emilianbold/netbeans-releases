@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -116,35 +115,39 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         gizmoOptions.init(activeConfiguration);
         turnCollectorsState(true);
         profileOnRun = gizmoOptions.getProfileOnRunValue();
-        String hkey = null;
+
         if (!(activeConfiguration instanceof MakeConfiguration)) {
             return;
         }
 
-        hkey = ((MakeConfiguration) activeConfiguration).getDevelopmentHost().getHostKey();
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
+
         boolean hasSunStudio = false;
+
         for (CompilerSet cs : compilers) {
             if (cs.isSunCompiler()) {
                 hasSunStudio = true;
                 break;
             }
         }
+
         String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
         DLightConfiguration dlightConfiguration = gizmoOptions.getDLightConfiguration();
         //get all names from the inside usinf providers
 //        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
         DLightCollectorString = dlightConfiguration.getCollectorProviders();
         DLightIndicatorDPStrings = dlightConfiguration.getIndicatorProviders();
-        if ((DLightCollectorString != null && DLightCollectorString.equals(SUNSTUDIO) && !hasSunStudio) || 
-                (platform.indexOf("Linux") != -1 && DLightCollectorString != null && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)){//NOI18N
+
+        if ((DLightCollectorString != null && DLightCollectorString.equals(SUNSTUDIO) && !hasSunStudio) ||
+                (platform.indexOf("Linux") != -1 && DLightCollectorString != null //NOI18N
+                && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)) {
             setForLinux();
         }
 //        List<String> platforms = dlightConfiguration.getPlatforms();
         //if platform is not supported
-        
+
 //        DLightCollectorString = DTRACE;
 //        DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, PRSTAT_INDICATOR, DTRACE);
 //
