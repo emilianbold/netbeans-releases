@@ -354,16 +354,112 @@ WCHAR * escapeString(const WCHAR * string) {
     return result;     
 }
 
-char * DWORDtoCHAR(DWORD dw) {
-    char * str = (char*) LocalAlloc(LPTR, sizeof(char)*17);
-    sprintf(str, "%u", dw);
+char * DWORDtoCHARN(DWORD value, int fillZeros) {
+    int digits = 0;
+    DWORD tmpValue = value;
+    int i = 0;
+    char * str;
+
+    do {
+        digits++;
+        tmpValue = tmpValue / 10;
+    } while(tmpValue!=0);
+    tmpValue = value;
+    if(digits < fillZeros) {
+        digits = fillZeros;
+    }
+    str = (char*) LocalAlloc(LPTR, sizeof(char)*(digits +1));
+    str[digits] = '\0';
+    for(i=0;i<digits;i++) {
+        str [digits - i - 1] = '0' + (char) (tmpValue - ((tmpValue / 10) * 10));
+        tmpValue = tmpValue / 10;
+    }
     return str;
 }
 
-WCHAR * DWORDtoWCHAR(DWORD dw) {
-    WCHAR * str = (WCHAR*) LocalAlloc(LPTR,sizeof(WCHAR)*17);
-    wsprintfW(str, L"%u", dw);
+WCHAR * DWORDtoWCHARN(DWORD value, int fillZeros) {
+    int digits = 0;
+    DWORD tmpValue = value;
+    int i = 0;
+    WCHAR * str;
+
+    do {
+        digits++;
+        tmpValue = tmpValue / 10;
+    } while(tmpValue!=0);
+    tmpValue = value;
+    if(digits < fillZeros) {
+        digits = fillZeros;
+    }
+    
+    str = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR)*(digits +1));
+    str[digits] = L'\0';
+    for(i=0;i<digits;i++) {
+        str [digits - i - 1] = L'0' + (WCHAR) (tmpValue - ((tmpValue / 10) * 10));
+        tmpValue = tmpValue / 10;
+    }
     return str;
+}
+WCHAR * DWORDtoWCHAR(DWORD value) {
+    return DWORDtoWCHARN(value, 0);
+}
+
+char * DWORDtoCHAR(DWORD value) {
+    return DWORDtoCHARN(value,0);
+}
+
+char * long2charN(long value, int fillZeros) {
+    int digits = 0;
+    long tmpValue = value;
+    int i = 0;
+    char * str;
+    
+    do {
+        digits++;
+        tmpValue = tmpValue / 10;
+    } while(tmpValue!=0);
+    tmpValue = value;
+    if(digits < fillZeros) {
+        digits = fillZeros;
+    }
+    str = (char*) LocalAlloc(LPTR, sizeof(char)*(digits +1));
+    str[digits] = '\0';
+    for(i=0;i<digits;i++) {
+        str [digits - i - 1] = '0' + (char) (tmpValue - ((tmpValue / 10) * 10));
+        tmpValue = tmpValue / 10;
+    }
+    return str;
+}
+
+char * long2char(long value) {
+    return long2charN(value,0);
+}
+
+char * word2charN(WORD value, int fillZeros) {
+    int digits = 0;
+    WORD tmpValue = value;
+    int i = 0;
+    char * str;
+
+    do {
+        digits++;
+        tmpValue = tmpValue / 10;
+    } while(tmpValue!=0);
+    tmpValue = value;
+    if(digits < fillZeros) {
+        digits = fillZeros;
+    }
+    str = (char*) LocalAlloc(LPTR, sizeof(char)*(digits +1));
+    str[digits] = '\0';
+    for(i=0;i<digits;i++) {
+        str [digits - i - 1] = '0' + (char) (tmpValue - ((tmpValue / 10) * 10));
+        tmpValue = tmpValue / 10;
+    }
+    return str;
+}
+
+char * word2char(WORD value) {
+    return word2charN(value,0);
 }
 
 double int64ttoDouble(int64t * value) {
@@ -389,12 +485,6 @@ WCHAR * int64ttoWCHAR(int64t*value) {
         wsprintfW(str, L"%.0Lf", d);
         return str;
     }
-}
-
-char * doubleToChar(double dl) {
-    char * str = newpChar(17);
-    sprintf(str, "%.0lf", dl);
-    return str;
 }
 
 void freeStringList(StringListEntry **ss) {
@@ -610,15 +700,19 @@ int64t * newint64_t(DWORD low, DWORD high) {
 }
 WCHAR * getErrorDescription(DWORD dw) {
     WCHAR * lpMsgBuf;
-    WCHAR * lpDisplayBuf;
+    WCHAR * lpDisplayBuf = NULL;
+    WCHAR * res = DWORDtoWCHAR(dw);
     
     FormatMessageW( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
     NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &lpMsgBuf, 0, NULL );
     
-    lpDisplayBuf = newpWCHAR(getLengthW(lpMsgBuf) + 40);
-    wsprintfW(lpDisplayBuf, L"Error code (%u): %s", dw, lpMsgBuf);
-    
+    lpDisplayBuf = appendStringW(lpDisplayBuf, L"Error code (");
+    lpDisplayBuf = appendStringW(lpDisplayBuf, res);
+    lpDisplayBuf = appendStringW(lpDisplayBuf, L"): ");
+    lpDisplayBuf = appendStringW(lpDisplayBuf, lpMsgBuf);
+
     FREE(lpMsgBuf);
+    FREE(res);
     
     return lpDisplayBuf;
     

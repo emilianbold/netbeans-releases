@@ -64,7 +64,7 @@ public class PythonOptions {
         while (!found && token.hasMoreTokens() ){
             String tempToken = token.nextToken();
             if(tempToken.contains(pattern) || tempToken.contains(pattern.toLowerCase()) ){
-                defaultPython = tempToken + File.separator + "jython-2.5" 
+                defaultPython = tempToken + File.separator + "jython-2.5.1" 
                         + File.separator + "bin" + File.separator + "jython";
                 if (System.getProperty("os.name").toLowerCase().contains("windows")){
                     defaultPython += ".bat";

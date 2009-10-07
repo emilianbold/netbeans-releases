@@ -68,6 +68,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -112,12 +113,16 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
                     fillOpenedDebuggerComponents(componentsInitiallyOpened);
                 }
-                SwingUtilities.invokeLater (new Runnable () {
+                RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
+                if (rp == null) {
+                    rp = RequestProcessor.getDefault();
+                }
+                rp.post (new Runnable () {
                     public void run () {
                         List<Component> cs = new ArrayList<Component>(componentProxies.size());
                         try {
                             for (BeanContextChildComponentProxy cp : componentProxies) {
-                                Component c;
+                                final Component c;
                                 try {
                                     c = cp.getComponent();
                                     if (c == null) {
@@ -131,17 +136,25 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 cs.add(c);
                                 boolean doOpen = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
                                 if (c instanceof TopComponent) {
-                                    TopComponent tc = (TopComponent) c;
+                                    final TopComponent tc = (TopComponent) c;
                                     boolean wasClosed = Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                             getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), false);
                                     boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                             getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
                                     if (doOpen && !wasClosed || !doOpen && wasOpened) {
-                                        tc.open();
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                tc.open();
+                                            }
+                                        });
                                     }
                                 } else {
                                     if (doOpen) {
-                                        c.setVisible(true);
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                c.setVisible(true);
+                                            }
+                                        });
                                     }
                                 }
                             }

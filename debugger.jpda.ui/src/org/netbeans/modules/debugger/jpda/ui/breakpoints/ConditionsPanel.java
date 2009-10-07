@@ -78,10 +78,13 @@ public class ConditionsPanel extends javax.swing.JPanel {
         conditionCheckBoxActionPerformed(null);
         cbWhenHitCountActionPerformed(null);
         int preferredHeight = tfConditionFieldForUI.getPreferredSize().height;
-        if (spCondition.getPreferredSize().height > preferredHeight) {
-            preferredHeight = spCondition.getPreferredSize().height;
+        Dimension spDim = spCondition.getPreferredSize();
+        if (spDim.height > preferredHeight) {
+            preferredHeight = spDim.height;
             tfConditionFieldForUI.setPreferredSize(new java.awt.Dimension(tfConditionFieldForUI.getPreferredSize().width, preferredHeight));
         }
+        spCondition.setPreferredSize(spDim);
+        spCondition.setMinimumSize(spDim);
         tfHitCountFilter.setPreferredSize(
                 new Dimension(8*tfHitCountFilter.getFontMetrics(tfHitCountFilter.getFont()).charWidth('8'),
                               tfHitCountFilter.getPreferredSize().height));
@@ -458,7 +461,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        gridBagConstraints.insets = new java.awt.Insets(1, 3, 3, 1);
         add(spCondition, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSD_Conditions")); // NOI18N
