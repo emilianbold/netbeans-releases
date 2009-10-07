@@ -62,7 +62,7 @@ build_info.USE_HTML_ZIP_LISTING = 1;
 
 build_info.add_download_tabs = function() {
 	add_download_tab("6.7.1", "http://www.netbeans.org/downloads");
-	add_download_tab("6.8 Beta");
+	add_download_tab("6.8 M2");
 	add_download_tab(DEVELOPMENT_TITLE, DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

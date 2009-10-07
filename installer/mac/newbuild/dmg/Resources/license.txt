@@ -1,4 +1,4 @@
-NETBEANS IDE 6.8 Beta ("Product")
+NETBEANS IDE 6.8 Milestone 2 ("Product")
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
