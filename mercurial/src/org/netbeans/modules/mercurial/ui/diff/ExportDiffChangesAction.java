@@ -82,14 +82,6 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
  * @author Petr Kuzel
  */
 public class ExportDiffChangesAction extends ContextAction {
-    
-    private static final int enabledForStatus =
-            FileInformation.STATUS_VERSIONED_MERGE |
-            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |
-            FileInformation.STATUS_VERSIONED_DELETEDLOCALLY |
-            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY |
-            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
-            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
     private final VCSContext context;
 
