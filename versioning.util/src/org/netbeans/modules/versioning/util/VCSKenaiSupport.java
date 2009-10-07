@@ -39,14 +39,17 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,6 +61,8 @@ public abstract class VCSKenaiSupport {
      * Some kenai vcs repository was changed
      */
     public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
+
+    protected static Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport");
 
     /**
      * A Kenai service
@@ -276,6 +281,35 @@ public abstract class VCSKenaiSupport {
          * @return
          */
         public abstract String getId();
+    }
+
+    /**
+     * Hadles VCS notifications from kenai
+     */
+    public abstract static class KenaiNotificationListener extends VCSNotificationDisplayer implements PropertyChangeListener {
+
+        protected static Logger LOG = VCSKenaiSupport.LOG;
+
+        private RequestProcessor rp = new RequestProcessor("Kenai VCS notifications");                                  //NOI18N
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(VCSKenaiSupport.PROP_KENAI_VCS_NOTIFICATION)) {
+                final VCSKenaiNotification notification = (VCSKenaiNotification) evt.getNewValue();
+                rp.post(new Runnable() {
+                    public void run() {
+                        handleVCSNotification(notification);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Do whatever you have to do with a nofitication
+         *
+         * @param notification
+         */
+        protected abstract void handleVCSNotification(VCSKenaiNotification notification);
+        
     }
     
 }

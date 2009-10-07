@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -50,7 +50,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -68,7 +70,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
@@ -88,26 +89,60 @@ public class ConfigurationMakefileWriter {
     }
 
     public void write() {
-        cleanup();
+        Collection<MakeConfiguration> protectedConfs = getProtectedConfigurations();
+        cleanup(protectedConfs);
         writeMakefileImpl();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
-            writeMakefileConf((MakeConfiguration) confs[i]);
-            writePackagingScript((MakeConfiguration) confs[i]);
+            MakeConfiguration conf = (MakeConfiguration) confs[i];
+            if (!protectedConfs.contains(conf)) {
+                writeMakefileConf(conf);
+                writePackagingScript(conf);
+            }
         }
         writeMakefileVariables(projectDescriptor);
     }
 
-    private void cleanup() {
-        // Remove all Makefile-* files
+    /**
+     * @return configurations that should be kept intact, i.e. Makefile
+     * and Package script should not be changed. Reason for protecting
+     * a configuration is missing tool collection. See IZ #168540.
+     */
+    private Collection<MakeConfiguration> getProtectedConfigurations() {
+        List<MakeConfiguration> result = new ArrayList<MakeConfiguration>();
+        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        for (int i = 0; i < confs.length; i++) {
+            MakeConfiguration conf = (MakeConfiguration) confs[i];
+            if (conf.getCompilerSet().getCompilerSet() == null) {
+                result.add(conf);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Remove all Makefile-* and Package-* files
+     * except for those belonging to protected configurations.
+     *
+     * @param protectedConfs
+     */
+    private void cleanup(Collection<MakeConfiguration> protectedConfs) {
         File folder = new File(projectDescriptor.getBaseDir() + '/' + "nbproject"); // UNIX path // NOI18N
         File[] children = folder.listFiles();
         for (int i = 0; i < children.length; i++) {
-            if (children[i].getName().startsWith("Makefile-")) { // NOI18N
-                children[i].delete();
-            }
-            if (children[i].getName().startsWith("Package-")) { // NOI18N
-                children[i].delete();
+            String filename = children[i].getName();
+            if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
+                boolean protect = false;
+                for (MakeConfiguration conf : protectedConfs) {
+                    if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
+                            || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
+                        protect = true;
+                        break;
+                    }
+                }
+                if (!protect) {
+                    children[i].delete();
+                }
             }
         }
     }

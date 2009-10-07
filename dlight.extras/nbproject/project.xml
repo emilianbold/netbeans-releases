@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.dlight.extras</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -22,11 +31,28 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.17</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -49,7 +75,10 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.dlight.core.ui</friend>
+                <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.indicators</friend>
+                <friend>org.netbeans.modules.dlight.tools</friend>
                 <package>org.netbeans.modules.dlight.extras.api</package>
                 <package>org.netbeans.modules.dlight.extras.api.support</package>
             </friend-packages>

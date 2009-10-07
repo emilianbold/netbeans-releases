@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -105,7 +105,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
-        String port = parts[4];
+        String port = parts[4] != null ? parts[4].trim() : parts[4];
 
         WLBaseDeploymentManager dm = NEW_DEPLOYMENT ?
             null : // PENDING - use the new APIs
@@ -123,7 +123,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
-        String port = parts[4];
+        String port = parts[4] != null ? parts[4].trim() : parts[4];
         WLBaseDeploymentManager dm = NEW_DEPLOYMENT ?
             null : // PENDING - use the new APIs
             new WLOldDeploymentManager(this, uri, host, port);

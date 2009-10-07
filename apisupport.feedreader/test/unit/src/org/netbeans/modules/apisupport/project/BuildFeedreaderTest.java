@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -162,7 +162,7 @@ public class BuildFeedreaderTest extends TestBase {
         assertFileExists("build/updates/com-sun-syndication-fetcher.nbm");
         assertFileExists("build/updates/com-sun-syndication.nbm");
         assertFileExists("build/updates/org-jdom.nbm");
-        assertFileExists("build/updates/org-myorg-feedreader.nbm");
+        assertFileExists("build/updates/org-netbeans-feedreader.nbm");
         assertFileExists("build/updates/updates.xml");
         assertEquals("build ant target should return zero - build successful", 0 , ret);
     }

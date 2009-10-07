@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -126,10 +126,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning");
 
     /**
-     * What folders are managed by local history. 
+     * What files or folders are managed by local history.
      * TODO: use SoftHashMap if there is one available in APIs
      */
-    private Map<File, Boolean> localHistoryFolders = new HashMap<File, Boolean>(200);
+    private final Map<File, Boolean> localHistoryFiles = new LinkedHashMap<File, Boolean>(200);
     
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
     };
@@ -192,8 +192,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     }
     
     private synchronized void flushFileOwnerCache() {
-        folderOwners.clear();
-        localHistoryFolders.clear();
+        folderOwners.clear();        
     }
 
     synchronized VersioningSystem[] getVersioningSystems() {
@@ -302,27 +301,52 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      */
     synchronized VersioningSystem getLocalHistory(File file) {
         if (localHistory == null) return null;
+
+        synchronized(localHistoryFiles) {
+            Boolean isManagedByLocalHistory = localHistoryFiles.get(file);
+            if (isManagedByLocalHistory != null && isManagedByLocalHistory) {
+                return localHistory;
+            }
+        }
         File folder = file;
         if (file.isFile()) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
-        
-        Boolean isManagedByLocalHistory = localHistoryFolders.get(folder);
-        if (isManagedByLocalHistory != null) {
-            return isManagedByLocalHistory ? localHistory : null;
+
+        synchronized(localHistoryFiles) {
+            Boolean isManagedByLocalHistory = localHistoryFiles.get(folder);
+            if (isManagedByLocalHistory != null) {
+                return isManagedByLocalHistory ? localHistory : null;
+            }
         }
-                
+
         boolean isManaged = localHistory.getTopmostManagedAncestor(folder) != null;            
         if (isManaged) {
-            localHistoryFolders.put(folder, Boolean.TRUE);
+            putLocalHistoryFile(Boolean.TRUE, folder);
             return localHistory;
         } else {
-            localHistoryFolders.put(folder, Boolean.FALSE);
+            isManaged = localHistory.getTopmostManagedAncestor(file) != null;
+            putLocalHistoryFile(isManaged, file, folder);
             return null;
         }        
     }
-    
+
+    private synchronized void putLocalHistoryFile(Boolean b, File... files) {
+        synchronized(localHistoryFiles) {
+            if(localHistoryFiles.size() > 1500) {
+                Iterator<File> it = localHistoryFiles.keySet().iterator();
+                for (int i = 0; i < 150; i++) {
+                    it.next();
+                    it.remove();
+                }
+            }
+            for (File file : files) {
+                localHistoryFiles.put(file, b);
+            }
+        }
+    }
+
     public void resultChanged(LookupEvent ev) {
         refreshVersioningSystems();
     }
@@ -339,8 +363,14 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            flushFileOwnerCache();
-            refreshDiffSidebars(null);
+            if(evt.getSource() == localHistory) {
+                synchronized(localHistoryFiles) {
+                    localHistoryFiles.clear();
+                }
+            } else {
+                flushFileOwnerCache();
+                refreshDiffSidebars(null);
+            }
         }
     }
 

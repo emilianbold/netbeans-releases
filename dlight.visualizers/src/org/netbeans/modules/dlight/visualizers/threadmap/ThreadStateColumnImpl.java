@@ -80,7 +80,7 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
     }
 
     static long timeStampToMilliSeconds(long timeStamp) {
-        return timeStamp;
+        return timeStamp / 1000 / 1000; // timestamp is in nanoseconds
     }
 
     static int timeInervalToMilliSeconds(long samplingInterval) {
@@ -299,6 +299,10 @@ public class ThreadStateColumnImpl implements ThreadStateColumn {
 
     void updateName(String newName) {
         info.setThreadName(newName);
+    }
+
+    void resetName() {
+        info.resetName();
     }
 
     void add(ThreadState state) {

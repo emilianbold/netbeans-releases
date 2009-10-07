@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -86,6 +87,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private PropertyChangeSupport pcs;
     private boolean buttonsEnabled;
     private final ToolsCacheManager cacheManager;
+    private final AtomicReference<ExecutionEnvironment> selectedEnv;
 
     private static final String CMD_ADD = "Add"; // NOI18N
     private static final String CMD_REMOVE = "Remove"; // NOI18N
@@ -94,7 +96,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static final String CMD_PROPERTIES = "Properties"; // NOI18N
     private static final String CMD_RETRY = "Retry"; // NOI18N
 
-    public EditServerListDialog(ToolsCacheManager cacheManager) {
+    public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
         this.cacheManager = cacheManager;
         initComponents();
         initServerList(cacheManager.getServerUpdateCache());
@@ -102,6 +104,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         //lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
         tfReason.setEnabled(false); // setVisible(false);
         pbarStatusPanel.setVisible(false);
+        this.selectedEnv = selectedEnv;
         initListeners();
     }
 
@@ -146,12 +149,36 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
-    private boolean isEmptyToolchains(ExecutionEnvironment env) {
-        if (env.isLocal()) {
-            return false;
+    private void checkDefaultButton(RemoteServerRecord record) {
+        final ExecutionEnvironment env = record.getExecutionEnvironment();
+        // make fast checks just in the UI thread, in which we are called
+        if (record.equals(defaultRecord)) {
+            btSetAsDefault.setEnabled(false);
+        } else if (!buttonsEnabled) {
+            btSetAsDefault.setEnabled(false);
+        } else if (env.isLocal()) {
+            btSetAsDefault.setEnabled(true);
         } else {
-            CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
-            return compilerSetManagerCopy.isEmpty();
+            // need to check remote tool chains in a separate thread
+            btSetAsDefault.setEnabled(false);
+            final Runnable enabler = new Runnable() {
+                public void run() {
+                    // check if it has already changed
+                    ServerRecord curr = (ServerRecord) lstDevHosts.getSelectedValue();
+                    if (curr != null && curr.getExecutionEnvironment().equals(env)) {
+                        btSetAsDefault.setEnabled(true);
+                    }
+                }
+            };
+            Runnable checker = new Runnable() {
+                public void run() {
+                    CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
+                    if (!compilerSetManagerCopy.isEmpty()) {
+                        SwingUtilities.invokeLater(enabler);
+                    }
+                }
+            };
+            RequestProcessor.getDefault().post(checker);
         }
     }
 
@@ -254,8 +281,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
         if (record != null) {
             tfStatus.setText(record.getStateAsText());
-            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);
-            btSetAsDefault.setEnabled( ! record.equals(defaultRecord) && buttonsEnabled && !isEmptyToolchains(record.getExecutionEnvironment()));
+            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);            
+            checkDefaultButton(record);
             btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote());
             if (!record.isOnline()) {
@@ -265,8 +292,14 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 hideReason();
                 btRetry.setEnabled(false);
             }
+            if (selectedEnv != null) {
+                selectedEnv.set(record.getExecutionEnvironment());
+            }
         } else {
             RemoteUtil.LOGGER.warning("ESLD.valueChanged: No selection in Dev Hosts list");
+            if (selectedEnv != null) {
+                selectedEnv.set(null);
+            }
         }
     }
 
@@ -355,7 +388,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason = new javax.swing.JTextField();
         pbarStatusPanel = new javax.swing.JPanel();
 
-        setMinimumSize(new java.awt.Dimension(258, 315));
+        setMinimumSize(new java.awt.Dimension(419, 255));
         setLayout(new java.awt.GridBagLayout());
 
         lbDevHosts.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_ServerList").charAt(0));

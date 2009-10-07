@@ -59,7 +59,7 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
     private JTextComponent  currentEditor;
     
     public CurrentEditorTaskScheduler () {
-        currentEditor = EditorRegistry.focusedComponent ();
+        setEditor (EditorRegistry.focusedComponent ());
         EditorRegistry.addPropertyChangeListener (new AListener ());
     }
     

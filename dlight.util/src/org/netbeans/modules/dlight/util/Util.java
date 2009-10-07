@@ -60,6 +60,9 @@ public class Util {
 
     private static final Logger log = DLightLogger.getLogger(Util.class);
 
+    private Util() {
+    }
+
     /**
      * Gets an absolute path of the module-installed file.
      * @param relpath path from install root, e.g. <samp>modules/ext/somelib.jar</samp>
@@ -76,69 +79,57 @@ public class Util {
 
     /**
      * Copies a file from resources to a temporary directory
+     *
      * @param clazz Determines the jar from which the file should be copied
-     * @param resourceFileName The resource file name
-     * @return the canonical path of the newly-created file or null if the operation failed
+     * @param resourceName The resource file name
+     * @return the newly-created file
+     * @throws IOException
      */
-    public static String copyResource(Class clazz, String resourceFileName) {
-        return copyResource(clazz.getClassLoader().getResource(resourceFileName));
+    public static File copyToTempDir(Class<?> clazz, String resourceName) throws IOException {
+        return copyToTempDir(clazz.getClassLoader().getResource(resourceName));
     }
 
-    public static String copyResource(URL resourceUrl) {
-        if (resourceUrl == null) {
+    /**
+     * Downloads URL content to a file in temporary directory.
+     *
+     * @param url
+     * @return the newly-created file
+     * @throws IOException
+     */
+    public static File copyToTempDir(URL url) throws IOException {
+        if (url == null) {
             return null;
         }
 
-        InputStream is = null;
-        OutputStream os = null;
-
+        InputStream is = url.openStream();
         try {
-            is = resourceUrl.openStream();
-
-            if (is == null) {
-                return null;
-            }
-
             HostInfo hostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
 
             if (hostInfo == null) {
-                return null;
+                throw new IOException("Failed to get local ExecutionEnvironment"); // NOI18N
             }
 
-            String prefix = "_dlight_" + getBriefName(resourceUrl); // NOI18N
+            String prefix = "_dlight_" + getBriefName(url); // NOI18N
             String tmpDirBase = hostInfo.getTempDir();
 
             if (hostInfo.getOSFamily() == hostInfo.getOSFamily().WINDOWS) {
                 tmpDirBase = WindowsSupport.getInstance().convertToWindowsPath(tmpDirBase);
             }
 
-            File result_file = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
-            result_file.deleteOnExit();
+            File result = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
+            result.deleteOnExit();
 
-            os = new FileOutputStream(result_file);
-            FileUtil.copy(is, os);
-            os.flush();
-            return result_file.getCanonicalPath();
-        } catch (IOException ex) {
-            log.info("copyResource failed: " + ex.getMessage()); // NOI18N
-        } catch (NullPointerException ex1) {
-            return null;
+            OutputStream os = new FileOutputStream(result);
+            try {
+                FileUtil.copy(is, os);
+                os.flush();
+                return result;
+            } finally {
+                os.close();
+            }
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                }
-            }
-
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException ex) {
-                }
-            }
+            is.close();
         }
-        return null;
     }
 
     public static String getBriefName(URL resourceUrl) {
@@ -190,7 +181,7 @@ public class Util {
      * @param cls a class to return base path for
      * @return the base path for the given class
      */
-    public static String getBasePath(Class cls) {
+    public static String getBasePath(Class<?> cls) {
         String path = cls.getName().replace('.', '/');//NOI18N
         int pos = path.lastIndexOf('/');//NOI18N
         return (pos > 0) ? path.substring(0, pos) : path;
@@ -248,5 +239,9 @@ public class Util {
             }
         }
         return null;
+    }
+
+    public static <T> T maskNull(T value, T nullValue) {
+        return value == null? nullValue : value;
     }
 }

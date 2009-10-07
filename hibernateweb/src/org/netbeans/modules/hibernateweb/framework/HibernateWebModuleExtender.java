@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -142,25 +142,28 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     @Override
     public Set<FileObject> extend(WebModule webModule) {
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(webModule);
-        Sources sources = ProjectUtils.getSources(enclosingProject);
-        try {
-            SourceGroup[] javaSourceGroup = sources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-            if (javaSourceGroup == null || javaSourceGroup.length == 0) {
-                javaSourceGroup = sources.getSourceGroups(
-                        JavaProjectConstants.SOURCES_TYPE_JAVA);
-            }
-            if (javaSourceGroup != null && javaSourceGroup.length != 0) {
-                FileObject targetFolder = javaSourceGroup[0].getRootFolder();
-                CreateHibernateConfiguration createHibernateConfiguration =
-                        new CreateHibernateConfiguration(targetFolder, enclosingProject);
-                targetFolder.getFileSystem().runAtomicAction(createHibernateConfiguration);
 
-                return createHibernateConfiguration.getCreatedFiles();
-            }
+        // when there is no enclosing project found empty set is returned
+        if (enclosingProject!=null) {
+            Sources sources = ProjectUtils.getSources(enclosingProject);
+            try {
+                SourceGroup[] javaSourceGroup = sources.getSourceGroups(
+                        JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                if (javaSourceGroup == null || javaSourceGroup.length == 0) {
+                    javaSourceGroup = sources.getSourceGroups(
+                            JavaProjectConstants.SOURCES_TYPE_JAVA);
+                }
+                if (javaSourceGroup != null && javaSourceGroup.length != 0) {
+                    FileObject targetFolder = javaSourceGroup[0].getRootFolder();
+                    CreateHibernateConfiguration createHibernateConfiguration =
+                            new CreateHibernateConfiguration(targetFolder, enclosingProject);
+                    targetFolder.getFileSystem().runAtomicAction(createHibernateConfiguration);
 
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+                    return createHibernateConfiguration.getCreatedFiles();
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return Collections.EMPTY_SET;
     }

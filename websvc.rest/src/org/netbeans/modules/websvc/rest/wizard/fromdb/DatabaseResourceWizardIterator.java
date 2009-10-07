@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -66,6 +66,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -76,6 +77,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorP
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
@@ -214,6 +216,16 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         // if (created.size() == 0) {
         //     created = Collections.singleton(SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName()));
         // }
+
+        // logging usage of wizard
+        Object[] params = new Object[5];
+        params[0] = LogUtils.WS_STACK_JAXRS;
+        Project project = Templates.getProject(wizard);
+        params[1] = project.getClass().getName();
+        J2eeModule j2eeModule = RestUtils.getJ2eeModule(project);
+        params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+        params[3] = "REST FROM DATABASE"; //NOI18N
+        LogUtils.logWsWizard(params);
 
         return Collections.<DataObject>singleton(DataFolder.findFolder(
                 getFolderForPackage(helper.getLocation(), helper.getPackageName())));

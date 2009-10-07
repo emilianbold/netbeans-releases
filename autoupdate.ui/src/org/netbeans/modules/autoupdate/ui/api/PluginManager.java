@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.autoupdate.ui.api;
 
+import java.util.List;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -65,13 +66,15 @@ public final class PluginManager {
         if (updateContainer == null) {
             throw new IllegalArgumentException ("OperationContainer cannot be null."); // NOI18N
         }
-        if (updateContainer.listAll ().isEmpty ()) {
+        List<OperationContainer.OperationInfo<InstallSupport>> all = updateContainer.listAll ();
+        if (all.isEmpty ()) {
             throw new IllegalArgumentException ("OperationContainer cannot be empty."); // NOI18N
         }
-        if (! updateContainer.listInvalid ().isEmpty ()) {
-            throw new IllegalArgumentException ("OperationContainer cannot contain invalid elements but " + updateContainer.listInvalid ()); // NOI18N
+        List<OperationContainer.OperationInfo<InstallSupport>> invalid = updateContainer.listInvalid();
+        if (! invalid.isEmpty ()) {
+            throw new IllegalArgumentException ("OperationContainer cannot contain invalid elements but " + invalid); // NOI18N
         }
-        OperationInfo<InstallSupport> info = updateContainer.listAll ().get (0);
+        OperationInfo<InstallSupport> info = all.get (0);
         OperationType doOperation = info.getUpdateUnit ().getInstalled () == null ? OperationType.INSTALL : OperationType.UPDATE;
         return new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (doOperation, updateContainer));
     }

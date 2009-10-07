@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -286,6 +286,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
 
         javaCompletionIncludeScrollPane.setViewportView(javaCompletionIncludeJlist);
         javaCompletionIncludeJlist.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeJlist.AccessibleContext.accessibleName")); // NOI18N
+        javaCompletionIncludeJlist.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_LT_Include")); // NOI18N
 
         javaCompletionExcluderTab.addTab(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeScrollPane.TabConstraints.tabTitle"), javaCompletionIncludeScrollPane); // NOI18N
         javaCompletionIncludeScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeScrollPane.AccessibleContext.accessibleName")); // NOI18N
@@ -411,13 +412,26 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                     .add(javaCompletionPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(javaCompletionSelectorsLabel)
                         .add(javaCompletionSelectorsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(255, Short.MAX_VALUE)))
+                    .addContainerGap(268, Short.MAX_VALUE)))
         );
 
+        guessMethodArguments.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_GuessMethodArgs")); // NOI18N
+        guessMethodArguments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_CB_GuessMethodArgs")); // NOI18N
+        javaAutoPopupOnIdentifierPart.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_AutoPopupOnIdentifierPartBox")); // NOI18N
+        javaAutoPopupOnIdentifierPart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_CB_AutoPopupOnIdentifierPartBox")); // NOI18N
+        javaAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaTriggers")); // NOI18N
+        javaAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaTrigger")); // NOI18N
+        javaCompletionSelectorsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaCompletionSelectors")); // NOI18N
+        javaCompletionSelectorsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaCompletionSelectors")); // NOI18N
+        javaCompletionSelectorsField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaCompletionSelectors")); // NOI18N
+        javaCompletionSelectorsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaCompletionSelectors")); // NOI18N
+        javadocAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavadocTriggers")); // NOI18N
+        javadocAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavadocTrigger")); // NOI18N
         javadocAutoCompletionTriggersField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavadocTriggers")); // NOI18N
         javadocAutoCompletionTriggersField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavadocTrigger")); // NOI18N
         javaCompletionExcluderTab.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderTab.AccessibleContext.accessibleName")); // NOI18N
         javaCompletionExcluderTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Table")); // NOI18N
+        javaCompletionExcluderMethodsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_ApplyRulesToMethods")); // NOI18N
         javaCompletionExcluderMethodsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_MethodsCB")); // NOI18N
         javaCompletionExcluderAddButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Add")); // NOI18N
         javaCompletionExcluderRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Remove")); // NOI18N

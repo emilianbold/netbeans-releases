@@ -100,7 +100,9 @@ public class BackoutAction extends ContextAction {
                 return;
             }
         }else{
-            root = HgUtils.getRootFile(ctx);
+            File roots[] = HgUtils.getActionRoots(ctx);
+            if (roots == null || roots.length == 0) return;
+            root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         }
         if (root == null) return;
          
@@ -205,6 +207,6 @@ public class BackoutAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
  *    tell low level to kill the debugger
  */
 public class GdbProxy {
+    private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
@@ -100,6 +101,9 @@ public class GdbProxy {
 
         ArrayList<String> dc = new ArrayList<String>();
         dc.add(debuggerCommand);
+        if (!GDBINIT) {
+            dc.add("-nx"); // NOI18N
+        }
         dc.add("--nw"); // NOI18N
         dc.add("--silent"); // NOI18N
         dc.add("--interpreter=mi"); // NOI18N

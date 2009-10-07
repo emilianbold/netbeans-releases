@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1850,7 +1850,7 @@ abstract public class CsmCompletionQuery {
                                 if (resolve(varPos, mtdName, openingSource)) {
                                     compResolver.getResult().addResulItemsToCol(mtdList);
                                 }
-                                if (!last || findType) {
+                                if (!last || findType || look4Constructors) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES | CompletionResolver.RESOLVE_LOCAL_VARIABLES);
                                     if (resolve(varPos, mtdName, true)) {
@@ -1861,9 +1861,16 @@ abstract public class CsmCompletionQuery {
                                             CsmType varType = ((CsmVariable) object).getType();
                                             if (varType != null) {
                                                 CsmClassifier cls = getClassifier(varType, contextFile);
-                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
-                                                if (funCall != null) {
-                                                    mtdList.add(funCall);
+                                                if (!last || findType) {
+                                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                                    if (funCall != null) {
+                                                        mtdList.add(funCall);
+                                                    }
+                                                }
+                                                if (look4Constructors) {
+                                                    if (CsmKindUtilities.isClass(cls)) {
+                                                        mtdList.addAll(getConstructors((CsmClass) cls));
+                                                    }
                                                 }
                                             }
                                         }
@@ -1886,23 +1893,58 @@ abstract public class CsmCompletionQuery {
                                         // There is no need for searching in parents for global declarations/definitions
                                         boolean inspectParentClasses = (this.contextElement != null);
                                         mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, inspectParentClasses, scopeAccessedClassifier, this.sort));
-                                        if ((!last || findType) && (mtdList == null || mtdList.size() == 0)) {
-                                            // could be pointer to function-type field
-                                            lastType = null;
+                                        if((mtdList == null || mtdList.size() == 0)) {
                                             List<CsmField> foundFields = finder.findFields(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
                                             if (foundFields != null && !foundFields.isEmpty()) {
-                                                // we found field with correct name, check if it has function pointer type
-                                                for (CsmField csmField : foundFields) {
-                                                    CsmType fldType = csmField.getType();
-                                                    if (CsmKindUtilities.isFunctionPointerType(fldType)) {
-                                                        // that was a function-type field
-                                                        lastType = fldType;
+                                                if (!last || findType) {
+                                                    lastType = null;
+                                                    // we found field with correct name, check if it has function pointer type
+                                                    for (CsmField csmField : foundFields) {
+                                                        CsmType fldType = csmField.getType();
+                                                        if (fldType != null) {
+                                                            if (CsmKindUtilities.isFunctionPointerType(fldType)) {
+                                                                // that was a function-type field
+                                                                lastType = fldType;
+                                                            } else {
+                                                                // variable like function definition (IZ#159422)
+                                                                CsmClassifier cls = fldType.getClassifier();
+                                                                if (CsmKindUtilities.isTypedef(cls)) {
+                                                                    CsmType type = ((CsmTypedef) cls).getType();
+                                                                    if (CsmKindUtilities.isFunctionPointerType(type)) {
+                                                                        fldType = type;
+                                                                        lastType = fldType;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        if (fldType != null) {
+                                                            CsmClassifier cls = getClassifier(fldType, contextFile);
+                                                            CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                                            if (funCall != null) {
+                                                                lastType = funCall.getReturnType();
+                                                            }
+                                                        }
                                                     }
+                                                }
+                                                if (last) {
+                                                    // variable like function definition (IZ#159422)
+                                                    CsmField csmField = foundFields.get(0);
+                                                    CsmType fldType = csmField.getType();
                                                     if (fldType != null) {
-                                                        CsmClassifier cls = getClassifier(fldType, contextFile);
-                                                        CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
-                                                        if (funCall != null) {
-                                                            lastType = funCall.getReturnType();
+                                                        CsmClassifier cls = fldType.getClassifier();
+                                                        if (CsmKindUtilities.isTypedef(cls)) {
+                                                            CsmType type = ((CsmTypedef) cls).getType();
+                                                            if (CsmKindUtilities.isFunctionPointerType(type)) {
+                                                                fldType = type;
+                                                                lastType = fldType;
+                                                                List typeList = getTypeList(item, 1);
+                                                                String parmStr = formatTypeList(typeList, methodOpen);
+                                                                Collection<CsmVariable> varList = new LinkedHashSet<CsmVariable>();
+                                                                varList.add(csmField);
+                                                                result = new CsmCompletionResult(component, getBaseDocument(), varList,
+                                                                        formatType(lastType, true, true, false) + mtdName + '(' + parmStr + ')',
+                                                                        item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                                            }
                                                         }
                                                     }
                                                 }

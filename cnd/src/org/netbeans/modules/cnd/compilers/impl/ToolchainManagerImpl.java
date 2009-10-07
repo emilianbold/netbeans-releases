@@ -543,6 +543,13 @@ public final class ToolchainManagerImpl {
                         }
                         root.appendChild(element);
 
+                        if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null){
+                            element = doc.createElement("download"); // NOI18N
+                            element.setAttribute("uc_url", descriptor.getUpdateCenterUrl()); // NOI18N
+                            element.setAttribute("module_id", descriptor.getModuleID()); // NOI18N
+                            root.appendChild(element);
+                        }
+
                         element = doc.createElement("platforms"); // NOI18N
                         element.setAttribute("stringvalue", unsplit(descriptor.getPlatforms())); // NOI18N
                         root.appendChild(element);
@@ -645,6 +652,7 @@ public final class ToolchainManagerImpl {
                         ScannerDescriptor scanner = descriptor.getScanner();
                         if (scanner != null) {
                             element = doc.createElement("scanner"); // NOI18N
+                            element.setAttribute("id", scanner.getID()); // NOI18N
                             writeScanner(doc, element, scanner);
                             root.appendChild(element);
                         }
@@ -1011,6 +1019,11 @@ public final class ToolchainManagerImpl {
             c.setAttribute("pattern", scanner.getLeaveDirectoryPattern()); // NOI18N
             element.appendChild(c);
         }
+        for (String pattern : scanner.getFilterOutPatterns()) {
+            c = doc.createElement("filter_out"); // NOI18N
+            c.setAttribute("pattern", pattern); // NOI18N
+            element.appendChild(c);
+        }
     }
 
     private void writeLinker(Document doc, Element element, LinkerDescriptor linker) {
@@ -1147,6 +1160,8 @@ public final class ToolchainManagerImpl {
         Map<String, List<String>> default_locations;
         String family;
         String platforms;
+        String uc;
+        String module;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
         List<FolderInfo> commandFolder;
@@ -1249,12 +1264,14 @@ public final class ToolchainManagerImpl {
      */
     static final class Scanner {
 
+        String id;
         List<ErrorPattern> patterns = new ArrayList<ErrorPattern>();
         String changeDirectoryPattern;
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
         String stackHeaderPattern;
         String stackNextPattern;
+        List<String> filterOut = new ArrayList<String>();
     }
 
     /**
@@ -1562,6 +1579,10 @@ public final class ToolchainManagerImpl {
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
                 return;
+            } else if (path.endsWith(".download")) { // NOI18N
+                v.uc = getValue(attributes, "uc_url"); // NOI18N
+                v.module = getValue(attributes, "module_id"); // NOI18N
+                return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
                 return;
@@ -1698,11 +1719,15 @@ public final class ToolchainManagerImpl {
                 }
                 return;
             }
-            if (path.indexOf(".scanner.") > 0) { // NOI18N
+            if (path.endsWith(".scanner")) { // NOI18N
                 if (!isScanerOverrided) {
                     v.scanner = new Scanner();
                     isScanerOverrided = true;
+		    v.scanner.id = getValue(attributes, "id"); // NOI18N
                 }
+		return;
+	    }
+            if (path.indexOf(".scanner.") > 0) { // NOI18N
                 Scanner s = v.scanner;
                 if (path.endsWith(".error")) { // NOI18N
                     ErrorPattern e = new ErrorPattern();
@@ -1726,6 +1751,8 @@ public final class ToolchainManagerImpl {
                     s.stackHeaderPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".stack_next")) { // NOI18N
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
+                } else if (path.endsWith(".filter_out")) { // NOI18N
+                    s.filterOut.add(getValue(attributes, "pattern")); // NOI18N
                 }
                 return;
             }
@@ -2036,6 +2063,14 @@ public final class ToolchainManagerImpl {
             return new String[]{};
         }
 
+        public String getUpdateCenterUrl() {
+            return v.uc;
+        }
+
+        public String getModuleID() {
+            return v.module;
+        }
+
         public String getDriveLetterPrefix() {
             return v.driveLetterPrefix;
         }
@@ -2332,12 +2367,17 @@ public final class ToolchainManagerImpl {
 
         private Scanner s;
         private List<ScannerPattern> patterns;
+        private List<String> filterOut;
 
         private ScannerDescriptorImpl(Scanner s) {
             this.s = s;
         }
 
-        public List<ScannerPattern> getPatterns() {
+	public String getID() {
+	    return s.id;
+	}
+
+	public List<ScannerPattern> getPatterns() {
             if (patterns == null) {
                 patterns = new ArrayList<ScannerPattern>();
                 for (ErrorPattern p : s.patterns) {
@@ -2366,6 +2406,16 @@ public final class ToolchainManagerImpl {
         public String getStackNextPattern() {
             return s.stackNextPattern;
         }
+
+	public List<String> getFilterOutPatterns() {
+	    if (filterOut == null){
+                filterOut = new ArrayList<String>();
+		if (s.filterOut != null) {
+		    filterOut.addAll(s.filterOut);
+		}
+	    }
+	    return filterOut;
+	}
     }
 
     private static final class ScannerPatternImpl implements ScannerPattern {

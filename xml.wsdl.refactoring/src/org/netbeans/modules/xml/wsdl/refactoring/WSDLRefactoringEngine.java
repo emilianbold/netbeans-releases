@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,9 @@
 package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -58,26 +61,25 @@ import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Nam Nguyen
  */
-public class WSDLRefactoringEngine {//extends RefactoringEngine {
+public class WSDLRefactoringEngine {
     public static final String WSDL_MIME_TYPE = "text/x-wsdl+xml";  // NOI18N
-    
-    /** Creates a new instance of WSDLRefactoringEngine */
-    public WSDLRefactoringEngine() {
-    }
 
     public Component getSearchRoot(FileObject fo) throws IOException {
         return getWSDLDefinitions(fo);
@@ -110,70 +112,80 @@ public class WSDLRefactoringEngine {//extends RefactoringEngine {
         return Collections.emptyList();
     }
 
-  
-    
-   public void _refactorUsages(Model model,Set<RefactoringElementImplementation> elements, AbstractRefactoring request) {
-        if (request == null || elements == null || model == null) return;
-        if (! (model instanceof WSDLModel)) return;
+    public void _refactorUsages(Model model, Set<RefactoringElementImplementation> elements, AbstractRefactoring request) {
+//System.out.println();
+//System.out.println("DO REFACTOR: " + elements.size());
 
-        
-        boolean startTransaction = ! model.isIntransaction();
+        if (request == null || elements == null || model == null) {
+//System.out.println("return 1");
+            return;
+        }
+//System.out.println("           " + model.getModelSource().getLookup().lookup(FileObject.class));
+        boolean startTransaction = !model.isIntransaction();
+
         try {
             if (startTransaction) {
                 model.startTransaction();
             }
-        
-            for (RefactoringElementImplementation u : elements) {
-                Import ref = u.getLookup().lookup(Import.class);
-                if (ref!=null) {
-                    String newLocation = ref.getLocation();
-                    if(request instanceof RenameRefactoring ) {
-                         newLocation = SharedUtils.calculateNewLocationString(ref.getLocation(), (RenameRefactoring)request);
-                    } else if (request instanceof MoveRefactoring) {
+            for (RefactoringElementImplementation element : elements) {
+                Import _import = element.getLookup().lookup(Import.class);
+//System.out.println("          import: " + _import);
+
+                if (_import != null) {
+                    String newLocation = _import.getLocation();
+                    
+                    if (request instanceof RenameRefactoring) {
+                         newLocation = SharedUtils.calculateNewLocationString(_import.getLocation(), (RenameRefactoring) request);
+                    }
+                    else if (request instanceof MoveRefactoring) {
                         try {
-                             newLocation = SharedUtils.calculateNewLocationString(model , (MoveRefactoring)request);
-                        } catch (Exception io) {
-                            //do nothing, let the old schema location remain
+                             newLocation = SharedUtils.calculateNewLocationString(model, (MoveRefactoring) request);
+                        }
+                        catch (Exception e) {
+                            // do nothing, let the old wsdl location remain
                         }
                     }
-                    ref.setLocation(newLocation);
+                    _import.setLocation(newLocation);
+                }
+                // # 172444
+                SchemaModelReference reference = element.getLookup().lookup(SchemaModelReference.class);
+//System.out.println("      schema ref: " + reference);
+                if (reference != null) {
+                    String newLocation = reference.getSchemaLocation();
+//System.out.println("        xml location: " + newLocation);
+//System.out.println("       wsdl location: " + model.getModelSource().getLookup().lookup(FileObject.class));
+                    
+                    if (request instanceof MoveRefactoring) {
+                        try {
+                            newLocation = getRelativePath(reference.resolveReferencedModel(), (MoveRefactoring) request);
+//System.out.println("    new location: " + newLocation);
+                        }
+                        catch (Exception e) {
+                            // do nothing, let the old wsdl location remain
+                        }
+                    }
+                    reference.setSchemaLocation(newLocation);
                 }
             }
-        } finally {
+//System.out.println();
+//System.out.println();
+        }
+        finally {
             if (startTransaction && model.isIntransaction()) {
                 model.endTransaction();
             }
         }
-    }
-    
-    public String calculateNewLocationString(String currentLocationString, RenameRefactoring request) {
-        StringBuilder sb = new StringBuilder();
-        int i = currentLocationString.lastIndexOf('/');
-        if (i > -1) {
-            sb.append(currentLocationString.substring(0, i+1));
-        }
-        sb.append(request.getNewName());
-        sb.append("."); //NOI18N
-        Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
-        Model model = SharedUtils.getModel(ref);
-        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
-        sb.append(fo.getExt());
-        return sb.toString();
+//System.out.println(" DONE");
     }
 
-    
+    private String getRelativePath(SchemaModel model, MoveRefactoring request) throws IOException, URISyntaxException, CatalogModelException {
+        URI sourceURI = ((MoveRefactoring) request).getTarget().lookup(URL.class).toURI();
+//System.out.println("    source: " + sourceURI);
 
-    
-    
-    
-    public String getModelReference(Component component) {
-        if (component instanceof Import) {
-            return ((Import)component).getLocation();
-        }
-        return null;
+        FileObject targetFile = model.getModelSource().getLookup().lookup(FileObject.class);
+        URI targetURI = FileUtil.toFile(targetFile.getParent()).toURI();
+//System.out.println("    target: " + targetURI);
+
+        return SharedUtils.getRelativePath(sourceURI.toString(), targetURI.toString()) + "/" + targetFile.getNameExt();
     }
-    
-  
-
-   
 }

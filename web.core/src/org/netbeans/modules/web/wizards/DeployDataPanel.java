@@ -56,6 +56,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
@@ -101,7 +102,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         fullRowC.gridwidth = 8;
         fullRowC.anchor = GridBagConstraints.WEST;
         fullRowC.fill = GridBagConstraints.HORIZONTAL;
-        fullRowC.insets = new Insets(4, 0, 4, 60);
+        fullRowC.insets = new Insets(4, 0, 4, 0);
 
         // Initial label
         GridBagConstraints firstC = new GridBagConstraints();
@@ -118,7 +119,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
         tfC.gridy = 0;
         tfC.gridwidth = 7;
         tfC.fill = GridBagConstraints.HORIZONTAL;
-        tfC.insets = new Insets(4, 20, 4, 60);
+        tfC.insets = new Insets(4, 20, 4, 0);
 
         // Short textfield
         GridBagConstraints stfC = new GridBagConstraints();
@@ -271,6 +272,12 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener {
     }
 
     void setData() {
+
+        String displayName = null;
+        DataObject templateDo = wizard.getTemplate();
+        displayName = templateDo.getNodeDelegate ().getDisplayName ();
+        wizard.putProperty("NewFileWizard_Title", displayName);
+        
         deployData.setClassName(evaluator.getClassName());
         jTFclassname.setText(deployData.getClassName());
 

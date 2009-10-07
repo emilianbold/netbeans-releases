@@ -16,7 +16,7 @@ function fnc_b() {
         protected function meth_bb() {}
     }
     $bVar = new cls_B();
-    $bVar->meth_b();
+    /**/$bVar->meth_b();
 }
 
 $aVar = new cls_A();

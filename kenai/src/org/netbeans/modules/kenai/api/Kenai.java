@@ -200,7 +200,7 @@ public final class Kenai {
             }
         }
         PasswordAuthentication old = auth;
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, username));
         try {
             synchronized (this) {
                 String shortName = impl.verify(username, password);

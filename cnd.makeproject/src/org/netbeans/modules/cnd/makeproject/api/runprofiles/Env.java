@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.runprofiles;
 
-import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -89,8 +90,7 @@ public class Env implements Cloneable {
      * Returns the entry in the form of String[2]
      */
     public String[] getenvAsPair(String name) {
-        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
-            String[] nameValue = (String[]) e.nextElement();
+        for (String[] nameValue : environ) {
             if (nameValue[0].equals(name)) {
                 return nameValue;
             }
@@ -102,8 +102,7 @@ public class Env implements Cloneable {
      * Returns just the value, like getenv(3).
      */
     public String getenv(String name) {
-        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
-            String[] nameValue = (String[]) e.nextElement();
+        for (String[] nameValue : environ) {
             if (nameValue[0].equals(name)) {
                 return nameValue[1];
             }
@@ -186,8 +185,7 @@ public class Env implements Cloneable {
         String array[] = new String[environ.size()];
 
         int index = 0;
-        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
-            String[] nameValue = (String[]) e.nextElement();
+        for (String[] nameValue : environ) {
             array[index++] = nameValue[0] + "=" + nameValue[1]; // NOI18N
         }
         return array;
@@ -200,12 +198,23 @@ public class Env implements Cloneable {
         String array[][] = new String[environ.size()][2];
 
         int index = 0;
-        for (Enumeration e = environ.elements(); e.hasMoreElements();) {
-            String[] nameValue = (String[]) e.nextElement();
+        for (String[] nameValue : environ) {
             array[index++] = nameValue;
         }
         return array;
-    } 
+    }
+
+    /**
+     * Converts the internal representation to a map of variable/value pairs
+     */
+    public Map<String, String> getenvAsMap() {
+        Map<String, String> res = new HashMap<String, String>(environ.size());
+
+        for (String[] nameValue : environ) {
+            res.put(nameValue[0], nameValue[1]);
+        }
+        return res;
+    }
 
     public void assign(Env env) {
         if (this != env) {

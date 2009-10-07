@@ -128,8 +128,17 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
         try {
             try {
                 RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-                Collection<String> t = rcFile.getKeys(section);
-                return t.toArray(new String[t.size()]);
+                List<String> result = new ArrayList<String>();
+                // We specify environments as just keys in the given section - without values.
+                // We also allow specifying some other parameters in the same sections.
+                // So we treat a key=value pair as another parameter, not an execution environment
+                for (String key : rcFile.getKeys(section)) {
+                    String value = rcFile.get(section, key, null);
+                    if (value == null) {
+                        result.add(key);
+                    }
+                }
+                return result.toArray(new String[result.size()]);
             } catch (FileNotFoundException ex) {
                 // rcfile does not exists - no tests to run
             }

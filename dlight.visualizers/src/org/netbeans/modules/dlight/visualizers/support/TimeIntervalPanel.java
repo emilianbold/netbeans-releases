@@ -44,10 +44,12 @@
  */
 package org.netbeans.modules.dlight.visualizers.support;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
@@ -56,6 +58,7 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.Range;
+import org.netbeans.modules.dlight.util.UIThread;
 
 /**
  *
@@ -67,6 +70,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     private DataFilterManager manager;
     private final ChangeListener startTimeChangeListener = new StartTimeSpinnerListener();
     private final ChangeListener endTimeChangeListener = new EndTimeSpinnerListener();
+    private final Object uiLock = new String("TimeIntervalPanel.uiLock"); // NOI18N
 
     /** Creates new form TimeIntervalPanel */
     public TimeIntervalPanel(DataFilterManager manager) {
@@ -200,7 +204,11 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
-        update(manager.getDataFilter(TimeIntervalDataFilter.class));
+            UIThread.invoke(new Runnable() {
+            public void run() {
+                update(manager.getDataFilter(TimeIntervalDataFilter.class));
+            }
+        });
     }
 
     private final void update(Collection<TimeIntervalDataFilter> filters) {
@@ -217,12 +225,14 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         if (filter == null) {
             return;
         }
-        startTimeSpinner.removeChangeListener(startTimeChangeListener);
-        endTimeSpinner.removeChangeListener(endTimeChangeListener);
-        endTimeSpinner.setValue((filter.getInterval().getEnd() / NANOSECONDS_PER_SECOND));
-        startTimeSpinner.setValue((long) filter.getInterval().getStart() / NANOSECONDS_PER_SECOND);
-        startTimeSpinner.addChangeListener(startTimeChangeListener);
-        endTimeSpinner.addChangeListener(endTimeChangeListener);
+        synchronized(uiLock){
+            startTimeSpinner.removeChangeListener(startTimeChangeListener);
+            endTimeSpinner.removeChangeListener(endTimeChangeListener);
+            endTimeSpinner.setValue((filter.getInterval().getEnd() / NANOSECONDS_PER_SECOND));
+            startTimeSpinner.setValue((long) filter.getInterval().getStart() / NANOSECONDS_PER_SECOND);
+            startTimeSpinner.addChangeListener(startTimeChangeListener);
+            endTimeSpinner.addChangeListener(endTimeChangeListener);
+        }
 
     }
 

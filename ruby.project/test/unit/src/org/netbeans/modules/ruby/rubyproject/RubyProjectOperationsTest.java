@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -62,7 +62,6 @@ public class RubyProjectOperationsTest extends RubyProjectTestBase {
         
         FileObject[] expectedMetadataFiles = {
             prjDir.getFileObject("nbproject"),
-            prjDir.getFileObject("Rakefile"),
             prjDir.getFileObject("README"),
             prjDir.getFileObject("LICENSE"),
         };
@@ -72,6 +71,7 @@ public class RubyProjectOperationsTest extends RubyProjectTestBase {
             prjDir.getFileObject("lib"),
             prjDir.getFileObject("test"),
             prjDir.getFileObject("spec"),
+            prjDir.getFileObject("Rakefile"),
         };
         assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(project));
     }

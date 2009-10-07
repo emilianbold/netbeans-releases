@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -153,15 +153,15 @@ public class OutputDocument implements Document, Element, ChangeListener {
     }
     
     public String getText(int offset, int length) throws BadLocationException {
-        if (offset < 0 || offset > getLines().getCharCount() + inBuffer.length() || length < 0) {
-            throw new BadLocationException ("Bad: " + offset + "," +  //NOI18N
-                length, offset);
-        }
         if (length == 0) {
             return ""; //NOI18N
         }
         String result;
         synchronized (getLines().readLock()) {
+            if (offset < 0 || offset + length > getLines().getCharCount() + inBuffer.length() || length < 0) {
+                throw new BadLocationException("Bad: " + offset + "," + //NOI18N
+                        length + " (" + getLines().getCharCount() + ", " + inBuffer.length() + ")", offset);
+            }
             int linesOffset = Math.min(getLines().getCharCount(), offset);
             int linesEnd = Math.min(getLines().getCharCount(), offset + length);
             result = getLines().getText(linesOffset, linesEnd);

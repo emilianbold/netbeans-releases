@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -72,6 +72,13 @@ public class CompilerSet {
         return isDefault;
     }
 
+    public boolean isUrlPointer(){
+        if (getDirectory() == null || getDirectory().length() == 0){
+            return flavor.descriptor.getUpdateCenterUrl() != null && flavor.descriptor.getModuleID() != null;
+        }
+        return false;
+    }
+
     void setAsDefault(boolean isDefault) {
         this.isDefault = isDefault;
     }
@@ -101,7 +108,7 @@ public class CompilerSet {
         public ToolchainDescriptor getToolchainDescriptor(){
             return descriptor;
         }
-        
+
         public boolean isGnuCompiler() {
             ToolchainDescriptor d = getToolchainDescriptor();
             if (d != null) {
@@ -364,11 +371,13 @@ public class CompilerSet {
     }
     
     public void addDirectory(String path) {
-        if (directory.length() == 0) {
-            directory.append(path);
-        } else {
-            directory.append(File.pathSeparator);
-            directory.append(path); 
+        if (path != null) {
+            if (directory.length() == 0) {
+                directory.append(path);
+            } else {
+                directory.append(File.pathSeparator);
+                directory.append(path);
+            }
         }
     }
     

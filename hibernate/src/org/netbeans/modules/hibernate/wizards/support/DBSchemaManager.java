@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -62,10 +62,12 @@ import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
 import org.netbeans.modules.dbschema.util.NameUtil;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -124,8 +126,12 @@ public class DBSchemaManager {
 
             @Override
             public boolean isEnabled() {
-                conn = dbconn.getJDBCConnection();
-                oldDBConnWasConnected = conn != null;
+                if (dbconn==null) {
+                    oldDBConnWasConnected=false;
+                } else {
+                    conn = dbconn.getJDBCConnection();
+                    oldDBConnWasConnected = conn != null;
+                }
                 return !oldDBConnWasConnected;
             }
         });

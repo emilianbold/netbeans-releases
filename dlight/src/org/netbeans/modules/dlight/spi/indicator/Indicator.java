@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.spi.indicator;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -218,6 +217,9 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     protected abstract void tick();
 
+    public void suggestRepaint() {
+    }
+
     public final boolean isVisible() {
         return visible;
     }
@@ -235,21 +237,21 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
         component.addMouseListener(new MouseAdapter() {
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (component == null) {
-                    return;
-                }
-                component.setBorder(BorderFactory.createEtchedBorder());
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (component == null) {
-                    return;
-                }
-                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
-            }
+//            @Override
+//            public void mouseEntered(MouseEvent e) {
+//                if (component == null) {
+//                    return;
+//                }
+//                component.setBorder(BorderFactory.createEtchedBorder());
+//            }
+//
+//            @Override
+//            public void mouseExited(MouseEvent e) {
+//                if (component == null) {
+//                    return;
+//                }
+//                component.setBorder(BorderFactory.createEmptyBorder(PADDING, PADDING, PADDING, PADDING));
+//            }
 
             @Override
             public void mouseClicked(MouseEvent e) {

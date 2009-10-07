@@ -136,9 +136,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                 }
                 // Indent the inner lines of the multi-line comment by one
                 if (!getFormatLeadingStarInComment()) {
-                    return findIndent(token) + 1;
+                    return getTokenColumn(token) + 1;
                 } else {
-                    int indent = findIndent(token) + 1;
+                    int indent = getTokenColumn(token) + 1;
                     try {
                         if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
                             doc.insertString(caretOffset, "* ", null); // NOI18N

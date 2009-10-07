@@ -39,25 +39,181 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
-import javax.swing.JPanel;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.wizards.BrowseFolders;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ChangeSupport;
+
+// XXX I18N
 
 /**
  *
  * @author alexeybutenko
  */
-public final class CompositeComponentVisualPanel extends JPanel{
+public class CompositeComponentVisualPanel extends javax.swing.JPanel implements ActionListener, DocumentListener  {
+    private static final Logger LOG = Logger.getLogger(CompositeComponentVisualPanel.class.getName());
+    
+    private Project project;
+    private SourceGroup[] folders;
+    private WebModule wm;
+    private static final String RESOURCES_FOLDER = "resources"; //NOI18N
+    private static final String COMPONENT_FOLDER = "ezcomp";    //NOI18N
+    private String expectedExtension;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
 
-    /** Creates new form CompositeComponentVisualPanel */
-    public CompositeComponentVisualPanel(String selectedText) {
+
+    public CompositeComponentVisualPanel(Project project, SourceGroup[] folders, String selectedText) {
+        this.project = project;
+        this.folders=folders;
         initComponents();
-        jTextArea1.setText(selectedText);
+        locationCB.setRenderer( CELL_RENDERER );
+
+        if (selectedText != null) {
+            selectedTextArea.setText(selectedText);
+        } else {
+            customPanel.setVisible(false);
+        }
+        initValues(null, null, null);
+        
+        browseButton.addActionListener( this );
+        locationCB.addActionListener( this );
+        documentNameTextField.getDocument().addDocumentListener( this );
+        folderTextField.getDocument().addDocumentListener( this );
     }
 
-    @Override
-    public String getName() {
-        return "Create Composite Component";
+    WebModule getWebModule() {
+        return wm;
+    }
+    
+    void initValues( FileObject template, FileObject preselectedFolder, String documentName  ) {
+        assert project != null;
+
+        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
+
+        locationCB.setModel( new DefaultComboBoxModel( folders ) );
+        // Guess the group we want to create the file in
+        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );
+        // Create OS dependent relative name
+        if (preselectedGroup != null) {
+            locationCB.setSelectedItem( preselectedGroup );
+            if (preselectedFolder != null && preselectedFolder.getName().equals(RESOURCES_FOLDER)) {
+                folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder )+File.separatorChar+COMPONENT_FOLDER );
+            } else {
+                folderTextField.setText(RESOURCES_FOLDER + File.separatorChar + COMPONENT_FOLDER);
+            }
+        }
+
+        String ext = template == null ? "" : template.getExt(); // NOI18N
+        expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
+
+        String displayName = null;
+        try {
+            if (template != null) {
+                DataObject templateDo = DataObject.find (template);
+                displayName = templateDo.getNodeDelegate ().getDisplayName ();
+            }
+        } catch (DataObjectNotFoundException ex) {
+            displayName = template.getName ();
+        }
+        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N
+        if (template != null) {
+            final String baseName = template.getName ();
+            if (documentName == null) {
+                documentName = baseName;
+            }
+            if (preselectedFolder != null) {
+                int index = 0;
+                while (true) {
+                    FileObject _tmp = preselectedFolder.getFileObject(documentName, template.getExt());
+                    if (_tmp == null) {
+                        break;
+                    }
+                    documentName = baseName + ++index;
+                }
+            }
+
+            documentNameTextField.setText (documentName);
+            documentNameTextField.selectAll ();
+        }
+        
+    }
+    
+    private SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {
+        for( int i = 0; folder != null && i < groups.length; i++ ) {
+            if( FileUtil.isParentOf( groups[i].getRootFolder(), folder )
+                || groups[i].getRootFolder().equals(folder)) {
+                return groups[i];
+            }
+        }
+        if (groups.length > 0) {
+            return groups[0];
+        }
+        return null;
     }
 
+    private String getRelativeNativeName( FileObject root, FileObject folder ) {
+        if (root == null) {
+            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
+        }
+
+        String path;
+
+        if (folder == null) {
+            path = ""; // NOI18N
+        }
+        else {
+            path = FileUtil.getRelativePath( root, folder );
+        }
+
+        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
+    }
+    
+    public SourceGroup getTargetGroup() {
+        return (SourceGroup)locationCB.getSelectedItem();
+    }
+
+    
+    public String getTargetFolder() {
+        String folderName = folderTextField.getText().trim();
+
+        if ( folderName.length() == 0 ) {
+            return "";
+        }
+        else {
+            return folderName.replace( File.separatorChar, '/' ); // NOI18N
+        }
+    }
+    
+    public String getTargetName() {
+        
+        String text = documentNameTextField.getText().trim();
+        
+        if ( text.length() == 0 ) {
+            return "";
+        }
+        else {
+            return text;
+        }
+    }
+        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -65,43 +221,322 @@ public final class CompositeComponentVisualPanel extends JPanel{
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        nameLabel = new javax.swing.JLabel();
+        documentNameTextField = new javax.swing.JTextField();
+        projectLabel = new javax.swing.JLabel();
+        projectTextField = new javax.swing.JTextField();
+        locationLabel = new javax.swing.JLabel();
+        locationCB = new javax.swing.JComboBox();
+        folderLabel = new javax.swing.JLabel();
+        folderTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
+        pathLabel = new javax.swing.JLabel();
+        fileTextField = new javax.swing.JTextField();
+        targetSeparator = new javax.swing.JSeparator();
+        customPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        selectedTextArea = new javax.swing.JTextArea();
+        fillerPanel = new javax.swing.JPanel();
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_IMPLEMENTATION")); // NOI18N
+        nameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_FileName_mnem").charAt(0));
+        nameLabel.setLabelFor(documentNameTextField);
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_JspName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(nameLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        add(documentNameTextField, gridBagConstraints);
+        documentNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_DESC_FileName")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                    .add(jLabel2))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        projectLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_Project_mnem").charAt(0));
+        projectLabel.setLabelFor(projectTextField);
+        projectLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_Project")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(projectLabel, gridBagConstraints);
+
+        projectTextField.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(projectTextField, gridBagConstraints);
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_DESC_Project")); // NOI18N
+
+        locationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_Location_mnem").charAt(0));
+        locationLabel.setLabelFor(locationCB);
+        locationLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_Location")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(locationLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(locationCB, gridBagConstraints);
+        locationCB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_DESC_Location")); // NOI18N
+
+        folderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_Folder_mnem").charAt(0));
+        folderLabel.setLabelFor(folderTextField);
+        folderLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_Folder")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(folderLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(folderTextField, gridBagConstraints);
+        folderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_DESC_Folder")); // NOI18N
+
+        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_Browse_Mnemonic").charAt(0));
+        browseButton.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_Browse")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "ACSD_Browse")); // NOI18N
+
+        pathLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_CreatedFile_mnem").charAt(0));
+        pathLabel.setLabelFor(fileTextField);
+        pathLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_CreatedFile")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(pathLabel, gridBagConstraints);
+
+        fileTextField.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(fileTextField, gridBagConstraints);
+        fileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_DESC_CreatedFile")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(targetSeparator, gridBagConstraints);
+
+        customPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_IMPLEMENTATION")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        customPanel.add(jLabel2, gridBagConstraints);
+
+        selectedTextArea.setColumns(20);
+        selectedTextArea.setEditable(false);
+        selectedTextArea.setRows(5);
+        jScrollPane1.setViewportView(selectedTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        customPanel.add(jScrollPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(customPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        add(fillerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
+    private javax.swing.JPanel customPanel;
+    private javax.swing.JTextField documentNameTextField;
+    private javax.swing.JTextField fileTextField;
+    private javax.swing.JPanel fillerPanel;
+    private javax.swing.JLabel folderLabel;
+    private javax.swing.JTextField folderTextField;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JComboBox locationCB;
+    private javax.swing.JLabel locationLabel;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JLabel pathLabel;
+    private javax.swing.JLabel projectLabel;
+    private javax.swing.JTextField projectTextField;
+    private javax.swing.JTextArea selectedTextArea;
+    private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables
-}
 
+    // ActionListener implementation -------------------------------------------
+    
+    public void actionPerformed(java.awt.event.ActionEvent e) {
+        if ( browseButton == e.getSource() ) {
+            FileObject fo=null;
+            // Show the browse dialog
+
+            SourceGroup group = (SourceGroup)locationCB.getSelectedItem();
+            if (group == null) { // #161478
+                return;
+            }
+
+            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, org.openide.loaders.DataFolder.class,
+                                           folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
+
+            if ( fo != null && fo.isFolder() ) {
+                String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
+                folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
+            }
+        }
+        else if ( locationCB == e.getSource() )  {
+            updateCreatedFolder();
+        }
+    }    
+
+    private void updateCreatedFolder() {
+        SourceGroup sg = (SourceGroup)locationCB.getSelectedItem();
+        if (sg == null) return;
+        FileObject root = sg.getRootFolder();
+        if (root == null) return;
+
+        String folderName = folderTextField.getText().trim();
+        String documentName = documentNameTextField.getText().trim();
+
+        String createdFileName = FileUtil.getFileDisplayName( root ) +
+            ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
+            folderName +
+            ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
+            documentName + expectedExtension;
+
+        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N
+
+        changeSupport.fireChange();
+    }
+    // DocumentListener implementation -----------------------------------------
+    
+    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+        updateCreatedFolder();
+    }
+    
+    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+        updateCreatedFolder();
+    }
+    
+    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+        updateCreatedFolder();
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+   
+    public String getCreatedFilePath() {
+        return fileTextField.getText();
+    }
+
+
+    // Rendering of the location combo box -------------------------------------
+
+    private class GroupCellRenderer extends JLabel implements ListCellRenderer {
+
+        public GroupCellRenderer() {
+            setOpaque( true );
+        }
+
+        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+            if (value instanceof SourceGroup) {
+                SourceGroup group = (SourceGroup)value;
+                String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
+                String groupDisplayName = group.getDisplayName();
+                if ( projectDisplayName.equals( groupDisplayName ) ) {
+                    setText( groupDisplayName );
+                }
+                else {
+                    setText( MessageFormat.format( "{1} - {0}",
+                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
+                    /*
+                    setText( MessageFormat.format(
+                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
+                        new Object[] { groupDisplayName, projectDisplayName } ) );
+                    */
+                }
+
+                setIcon( group.getIcon( false ) );
+            }
+            else {
+                setText( value.toString () );
+                setIcon( null );
+            }
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+
+            }
+            return this;
+        }
+
+    }
+
+}

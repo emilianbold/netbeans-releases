@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -54,6 +54,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -63,6 +64,13 @@ import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 public class JSFBeanCache {
     
     public static List<FacesManagedBean> getBeans(WebModule webModule) {
+        //unit testing, tests can provider a fake beans provider >>>
+        JsfBeansProvider beansProvider = Lookup.getDefault().lookup(JsfBeansProvider.class);
+        if(beansProvider != null) {
+            return beansProvider.getBeans(webModule);
+        }
+        //<<<
+
         final List<FacesManagedBean> beans = new ArrayList<FacesManagedBean>();
         /* Old implementation based on several models over faces-config.xml files.
          * 
@@ -113,4 +121,12 @@ public class JSFBeanCache {
     
     private static final Logger LOG = Logger.getLogger( 
             JSFBeanCache.class.getCanonicalName() );
+
+
+    public static interface JsfBeansProvider {
+
+        public List<FacesManagedBean> getBeans(WebModule webModule);
+
+    }
+    
 }

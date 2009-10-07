@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -88,8 +88,8 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         functionPointerDepth = type.functionPointerDepth;
     }
     
-    void init(AST ast, boolean inFunctionParameters) {
-        initFunctionPointerParamList(ast, this, inFunctionParameters);
+    void init(AST ast, boolean inFunctionParameters, boolean inTypedef) {
+        initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);
     }
 
     public Collection<CsmParameter> getParameters() {
@@ -136,10 +136,14 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
     }
 
     public static boolean isFunctionPointerParamList(AST ast, boolean inFunctionParameters) {
-        return initFunctionPointerParamList(ast, null, inFunctionParameters);
+        return isFunctionPointerParamList(ast, inFunctionParameters, false);
     }
 
-    private static boolean initFunctionPointerParamList(AST ast, TypeFunPtrImpl instance, boolean inFunctionParams) {
+    public static boolean isFunctionPointerParamList(AST ast, boolean inFunctionParameters, boolean inTypedef) {
+        return initFunctionPointerParamList(ast, null, inFunctionParameters, inTypedef);
+    }
+
+    private static boolean initFunctionPointerParamList(AST ast, TypeFunPtrImpl instance, boolean inFunctionParams, boolean inTypedef) {
         AST next = null;
         // find opening brace
         AST brace = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LPAREN);
@@ -152,6 +156,8 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
             if (inFunctionParams && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // this is start of function params
                 next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+            } else if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                // typedef void foo_type(...);
             } else {
                 if (next.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
                     return false;
@@ -212,6 +218,16 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
                 }
             }
         }
+
+        // typedef void foo_type(...);
+        if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            if (instance != null) {
+                instance.functionParameters = RepositoryUtils.put(
+                        AstRenderer.renderParameters(next, instance.getContainingFile(), null, false));
+            }
+            return true;
+        }
+
         // last step: verify that it's followed with a closing brace
         next = next.getNextSibling();
         if (next != null && next.getType() == CPPTokenTypes.RPAREN) {

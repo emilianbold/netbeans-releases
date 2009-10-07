@@ -291,7 +291,7 @@ final class IrbTopComponent extends TopComponent {
 
                            text.getCaret().setDot(pos);
                        } catch (BadLocationException ble) {
-                           Exceptions.printStackTrace(ble);
+                           // do nothing - see #154991
                        }
                    }
                });

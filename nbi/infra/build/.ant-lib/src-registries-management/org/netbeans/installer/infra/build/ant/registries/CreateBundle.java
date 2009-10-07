@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -67,6 +67,7 @@ public class CreateBundle extends Task {
     private Platform platform;
     private Vector<Property> properties = new Vector <Property> ();
     private Vector<BundleProperty> bundleProperties = new Vector <BundleProperty> ();
+    private boolean keepTempBundles = false;
     
     public void setRoot(final File root) {
         this.root = root;
@@ -97,6 +98,9 @@ public class CreateBundle extends Task {
     public void addBundleProperty(BundleProperty p) {
         bundleProperties.addElement(p);
     }
+    public void setKeepTempBundles(boolean keepTempBundles) {
+        this.keepTempBundles = keepTempBundles;
+    }
     @Override
     public void execute() throws BuildException {
         try {
@@ -109,8 +113,8 @@ public class CreateBundle extends Task {
                     "Creating bundle: " + platform + ": " + components);
             Properties props = readProperties(properties);
             Properties bundleprops = readProperties(bundleProperties);            
-            
-            final File bundle = new RegistriesManagerImpl().createBundle(
+            RegistriesManagerImpl impl = new RegistriesManagerImpl();
+            final File bundle = impl.createBundle(
                     root,
                     platform,
                     components.toArray(new String[components.size()]),
@@ -118,6 +122,9 @@ public class CreateBundle extends Task {
                     bundleprops);
             
             Utils.copy(bundle, target);
+            if(!keepTempBundles) {
+                impl.deleteBundles(root);
+            }
         } catch (ManagerException e) {
             throw new BuildException(e);
         } catch (IOException e) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -65,6 +65,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -76,7 +78,6 @@ import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -87,12 +88,15 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
-public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {    
+public final class LibrariesCustomizer extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
+
+    private static final Logger LOG = Logger.getLogger(LibrariesCustomizer.class.getName());
     
     private ExplorerManager manager;
     private LibrariesModel model;
@@ -179,7 +183,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             this.model.apply();
             return true;
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
             return false;
         }
     }
@@ -574,7 +578,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             bundle = NbBundle.getBundle(bundleResourceName);
         } catch (MissingResourceException mre) {
             // Bundle should have existed.
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mre);
+            LOG.log(Level.INFO, "Wrong resource bundle", mre);      //NOI18N
             return key;
         }
         try {
