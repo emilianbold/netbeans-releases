@@ -104,29 +104,33 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     }
 
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
-        URL toParse = cache.getCatalogURL (codeName);
-        /*if (toParse == null && !firstRefreshDone) {
+        synchronized (codeName.intern()) {
+            URL toParse = cache.getCatalogURL(codeName);
+            /*if (toParse == null && !firstRefreshDone) {
             firstRefreshDone = true;
             refresh(true);
             toParse = cache.getCatalogURL (codeName);
-        }*/
-        if (toParse == null) {
-            log.log (Level.INFO, "No content in cache for " + codeName + " provider. Returns EMPTY_MAP");
-            return Collections.emptyMap ();
+            }*/
+            if (toParse == null) {
+                log.log (Level.INFO, "No content in cache for " + codeName + " provider. Returns EMPTY_MAP");
+                return Collections.emptyMap ();
+            }
+
+            Map <String, UpdateItem> map = AutoupdateCatalogParser.getUpdateItems (toParse, this);
+            descriptionInitialized = true;
+            return map;
         }
-        
-        Map <String, UpdateItem> map = AutoupdateCatalogParser.getUpdateItems (toParse, this);
-        descriptionInitialized = true;
-        return map;
     }
     
     public boolean refresh (boolean force) throws IOException {
         boolean res = false;
         log.log (Level.FINER, "Try write(force? " + force + ") to cache Update Provider " + codeName + " from "  + getUpdateCenterURL ());
         if (force) {
-            res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
-            description = null;
-            descriptionInitialized = false;
+            synchronized(codeName.intern()) {
+                res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
+                description = null;
+                descriptionInitialized = false;
+            }            
         } else {
             res = true;
         }
