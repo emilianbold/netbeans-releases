@@ -322,21 +322,15 @@ public class TreeModelRoot {
                         final Object[] nodes = ((ModelEvent.SelectionChanged) event).getNodes();
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                TreeModelNode[] tmNodes = new TreeModelNode[nodes.length];
-                                int i = 0;
+                                List<TreeModelNode> tmNodes = new ArrayList<TreeModelNode>(nodes.length);
                                 for (Object node : nodes) {
                                     TreeModelNode[] tmNodesf = findNode(node);
                                     for (TreeModelNode tmNode : tmNodesf) {
-                                        tmNodes[i++] = tmNode;
+                                        tmNodes.add(tmNode);
                                     }
                                 }
-                                if (i < nodes.length) {
-                                    TreeModelNode[] tmNodes2 = new TreeModelNode[i];
-                                    System.arraycopy(tmNodes, 0, tmNodes2, 0, i);
-                                    tmNodes = tmNodes2;
-                                }
                                 try {
-                                    manager.setSelectedNodes(tmNodes);
+                                    manager.setSelectedNodes(tmNodes.toArray(new Node[] {}));
                                 } catch (PropertyVetoException ex) {
                                     Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Selection of "+Arrays.toString(nodes)+" vetoed.", ex); // NOI18N
                                 }
