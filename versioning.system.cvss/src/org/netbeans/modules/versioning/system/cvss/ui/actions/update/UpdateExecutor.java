@@ -192,7 +192,6 @@ public class UpdateExecutor extends ExecutorSupport {
             } else {
                 refreshFlat(files[i]);
             }
-            addFileSystem(filesystems, files[i]);
             if (files[i].isFile()) {
                 cache.refreshCached(files[i].getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
             }
@@ -209,15 +208,6 @@ public class UpdateExecutor extends ExecutorSupport {
                 }
              });
         }        
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            try {
-                CvsVersioningSystem.ignoreFilesystemEvents(true);
-                fileSystem.refresh(true); // fires fileChanged
-            } finally {
-                CvsVersioningSystem.ignoreFilesystemEvents(false);
-            }
-        }
 
         // special case: switching to a branch/tag changes textual annotations on nodes that are NOT changed during this operation, typically folders 
         if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {
@@ -233,21 +223,6 @@ public class UpdateExecutor extends ExecutorSupport {
                 vom.addComponent(cmd.getGlobalOptions().getCVSRoot() + "-UpdateExecutor", results); // NOI18N
             }
         });
-    }
-
-    private void addFileSystem(Set<FileSystem> filesystems, File file) {
-        FileObject fo;
-        for (;;) {
-            fo = FileUtil.toFileObject(file);
-            if (fo != null) break;
-            file = file.getParentFile();
-            if (file == null) return;
-        }
-        try {
-            filesystems.add(fo.getFileSystem());
-        } catch (FileStateInvalidException e) {
-            // ignore invalid filesystems
-        }
     }
 
     private void refreshRecursively(File file) {

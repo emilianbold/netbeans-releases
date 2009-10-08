@@ -117,14 +117,6 @@ public class CommitExecutor extends ExecutorSupport {
 
         if (cmd.hasFailed()) return;
 
-        // refresh all command roots
-        File [] files = xcmd.getFiles();
-        for (int i = 0; i < files.length; i++) {
-            FileObject fo = FileUtil.toFileObject(files[i]);
-            if (fo != null) {
-                fo.refresh(true);
-            }
-        }
     }
 
 }

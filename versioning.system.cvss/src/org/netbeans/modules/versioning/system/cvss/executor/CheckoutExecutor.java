@@ -119,10 +119,6 @@ public class CheckoutExecutor extends ExecutorSupport {
             if (file.isFile()) {
                 cache.refreshCached(file.getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                fo.refresh(true);
-            }
         }
     }
 

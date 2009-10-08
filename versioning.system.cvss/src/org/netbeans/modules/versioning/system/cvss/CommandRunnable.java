@@ -145,7 +145,7 @@ class CommandRunnable implements Runnable, Cancellable {
         }
         
         if(blockIndexing) {
-            if(cmdName.startsWith("checkout")) {
+            if(cmdName.startsWith("checkout") || cmdName.startsWith("remove") || cmdName.startsWith("checkout") || cmdName.startsWith("commit")) {
                 IndexingBridge.getInstance().runWithoutIndexing(c, true, files);
             } else if(files != null) {
                 IndexingBridge.getInstance().runWithoutIndexing(c, false, files);
