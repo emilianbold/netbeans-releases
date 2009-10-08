@@ -60,9 +60,15 @@
 
 int main(int argc, char** argv) {
     test_open(open)
+#ifdef __sun__
     test_open(_open)
+#endif
     test_open(open64)
+#if _FILE_OFFSET_BITS != 64
+#ifdef __sun__
     test_open(_open64)
+#endif
+#endif
     test_fopen(fopen)
     test_fopen(fopen64)
     return 0;

@@ -232,7 +232,7 @@ __attribute__((constructor))
 on_startup(void) {
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
 
-    test_env = (int) getenv("RFS_TEST_ENV"); // like #ifdef :)
+    test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
     trace("test_env %s\n", test_env ? "ON" : "OFF");
     
 //#if TRACE
@@ -353,7 +353,8 @@ int pthread_create(void *newthread,
     inside_open++; \
     trace("%s %s %s\n", #function, path, mode); \
     FILE* result = NULL; \
-    if (on_open(path, O_RDONLY)) { \
+    int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
+    if (on_open(path, int_mode)) { \
         static FILE* (*prev)(const char *, const char *); \
         if (!prev) { \
             prev = (FILE* (*)(const char *, const char *)) get_real_addr(function); \
@@ -369,6 +370,7 @@ int pthread_create(void *newthread,
     trace("%s %s -> %d\n", #function, path, result); \
     inside_open--; \
     return result;
+    //result ? -12345 : fileno(result)
 
 int open(const char *path, int flags, ...) {
     real_open(open, path, flags);
@@ -407,8 +409,9 @@ FILE *fopen64(const char * filename, const char * mode) {
     real_fopen(fopen64, filename, mode);
 }
 #endif
+//#endif
 
 // TODO: int openat(int fd, const char *path, int flags, ...);
 // TODO: int openat64(int fd, const char *path, int flags, ...);
 
-//#endif
+
