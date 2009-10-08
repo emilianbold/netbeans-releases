@@ -361,6 +361,10 @@ public class ThreadsDataManager {
         }
     }
 
+    int getThreadNameFormat(){
+        return threadNameFormat;
+    }
+
     private void updateThreadNames() {
         ThreadMapDataProvider aProvider = provider;
         if (threadNameFormat == 0 || aProvider == null) {

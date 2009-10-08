@@ -42,7 +42,6 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
@@ -57,14 +56,23 @@ import org.openide.util.NbBundle;
 public final class ThreadStackVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     public static final String ID = "ThreadStackVisualizerConfiguration.id";//NOI18N
-    private final ThreadDump threadDump;
-    private final long dumpTime;
-    private final StackNameProvider stackNameProvider;
+    private ThreadDump threadDump;
+    private long dumpTime;
+    private StackNameProvider stackNameProvider;
+    private long preferredSelection;
 
-    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump, StackNameProvider stackNameProvider) {
+    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump, StackNameProvider stackNameProvider, long preferredSelection) {
         this.dumpTime = dumpTime;
         this.threadDump = threadDump;
         this.stackNameProvider = stackNameProvider;
+        this.preferredSelection = preferredSelection;
+    }
+
+    void update(ThreadStackVisualizerConfiguration another){
+        this.dumpTime = another.dumpTime;
+        this.threadDump = another.threadDump;
+        this.stackNameProvider = another.stackNameProvider;
+        this.preferredSelection = another.preferredSelection;
     }
 
     public ThreadDump getThreadDump() {
@@ -80,6 +88,10 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
             return defaultStackNameProvider;
         }
         return stackNameProvider;
+    }
+
+    public long getPreferredSelection(){
+        return preferredSelection;
     }
 
     public DataModelScheme getSupportedDataScheme() {

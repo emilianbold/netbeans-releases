@@ -601,6 +601,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
         return null;
     }
 
+    public void updateVisualizerConfiguration(FunctionsListViewVisualizerConfiguration configuration) {
+    }
+
     public class FunctionCallChildren extends Children.Keys<FunctionCallWithMetric> {
 
         private final List<FunctionCallWithMetric> list;

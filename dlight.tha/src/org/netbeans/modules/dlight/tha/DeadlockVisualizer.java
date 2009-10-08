@@ -51,7 +51,6 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -107,6 +106,9 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
                 }
             });
         }
+    }
+
+    public void updateVisualizerConfiguration(DeadlockVisualizerConfiguration configuration) {
     }
 
     private class DeadlockRenderer implements Renderer {
