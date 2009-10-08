@@ -247,7 +247,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             return owner;
         }
         File folder = file;
-        if (file.isFile()) {
+        if (Utils.isFile(file)) {
             folder = file.getParentFile();
             if (folder == null) {
                 LOG.log(Level.FINE, " null parent");
@@ -309,7 +309,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
         File folder = file;
-        if (file.isFile()) {
+        if (Utils.isFile(file)) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
