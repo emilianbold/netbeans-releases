@@ -92,6 +92,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
+import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -387,16 +388,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
                     panel.changedToTextField.setText(CHANGED_NOW);
 
-                    // XXX
-                    if (urlParameters != null) {
-                        setParameters(urlParameters);
-                    }
+                    setParameters(urlParameters != null ? urlParameters : getDefaultParameters());
 
                     if(query.isSaved()) {
                         final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
                         panel.refreshCheckBox.setSelected(autoRefresh);
                     }
                 }
+
             };
             repository.getExecutor().execute(cmd);
         } finally {
@@ -406,6 +405,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    private String getDefaultParameters() {
+        return BugzillaUtil.isNbRepository(repository) ? BugzillaConstants.DEFAULT_NB_STATUS_PARAMETERS : BugzillaConstants.DEFAULT_STATUS_PARAMETERS;
+    }
     protected void enableFields(boolean bl) {
         // set all non parameter fields
         panel.enableFields(bl);

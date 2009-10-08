@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.editor.api;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -71,13 +72,13 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
     }
 
     // this test is for variables defined and used in the same CU.
-    
+
     public void testField1() throws Exception {
         checkDeclaration(TEST_BASE + "Script.groovy", "        println va^r1", "    def ^var1 = 'aaa'");
     }
-    
+
     // we gotta have a test for class usage:
-    
+
     public void testClass1() throws Exception {
         checkDeclaration(TEST_BASE + "Consumer.groovy", "        Fin^der finder = new Finder()", "class ^Finder {");
     }
@@ -88,5 +89,61 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
 
     public void testMethod2() throws Exception {
         checkDeclaration(TEST_BASE + "Methods2.groovy", "println get^Name()", "^def getName() {");
+    }
+
+    public void testGroovyClass1() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy", "    private Decla^ration1 x", "Declaration1.groovy", 17);
+    }
+
+    public void testGroovyClass2() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy", "    Declara^tion1 y", "Declaration1.groovy", 17);
+    }
+
+    public void testGroovyClass3() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy", "    a.Decla^ration1 z", "Declaration1.groovy", 17);
+    }
+
+    public void testGroovyClass4() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy", "    def foo1(Decla^ration1 foo) {", "Declaration1.groovy", 17);
+    }
+
+    public void testGroovyClass5() throws Exception {
+        assertEquals(DeclarationLocation.NONE,
+                findDeclaration(TEST_BASE + "a/Declaration2.groovy", "    private Declaration1 x^"));
+    }
+
+    public void testGroovyClass6() throws Exception {
+        assertEquals(DeclarationLocation.NONE,
+                findDeclaration(TEST_BASE + "a/Declaration2.groovy", "    Declaration1 y^"));
+    }
+
+    public void testGroovyClass7() throws Exception {
+        assertEquals(DeclarationLocation.NONE,
+                findDeclaration(TEST_BASE + "a/Declaration2.groovy", "    a.Declaration1 z^"));
+    }
+
+    public void testGroovyClass8() throws Exception {
+        assertEquals(DeclarationLocation.NONE,
+                findDeclaration(TEST_BASE + "a/Declaration2.groovy", "    def foo1(Declaration1 f^oo) {"));
+    }
+
+    public void testGroovyClass9() throws Exception {
+        assertEquals(DeclarationLocation.NONE,
+                findDeclaration(TEST_BASE + "a/Declaration2.groovy", "    def foo2(ba^r) {"));
+    }
+
+    public void testExtendsImplements1() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy",
+                "class Declaration2 extends Declar^ation1 implements Interface1, Interface2 {", "Declaration1.groovy", 17);
+    }
+
+    public void testExtendsImplements2() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy",
+                "class Declaration2 extends Declaration1 implements Interfa^ce1, Interface2 {", "Interface1.java", 12);
+    }
+
+    public void testExtendsImplements3() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration2.groovy",
+                "class Declaration2 extends Declaration1 implements Interface1, Int^erface2 {", "Interface2.java", 12);
     }
 }

@@ -1,0 +1,107 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+#include <string.h>
+#include <errno.h>
+#include <sys/errno.h>
+#include <sys/socket.h>
+
+#include "rfs_util.h"
+#include "rfs_protocol.h"
+
+// Actual package layout:
+//  char kind;
+//  char[2] 2-bytes size representation (high byte first)
+//  char[] data 0-32K bytes null-terminated string
+
+static int do_send(int sd, const char* buffer, int size) {
+    int sent = 0;
+    while (sent < size) {
+        int sent_now = send(sd, buffer + sent, size - sent, 0);
+        if (sent_now == -1) {
+            return false;
+        } else {
+            sent += sent_now;
+        }
+    }
+    return true;
+}
+
+enum sr_result pkg_send(int sd, enum pkg_kind kind, const char* buf) {
+    unsigned int size = strlen(buf) + 1;
+    unsigned char header[3];
+    header[0] = (char) kind;
+    header[1] = (unsigned char) (size >> 8); // high byte
+    header[2] = (unsigned char) (size); // low byte
+    if (do_send(sd, header, sizeof header)) {
+        if (do_send(sd, buf, size)) {
+            return sr_success;
+        }
+    }
+    return sr_failure;
+}
+
+enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
+    // clear pkg
+    p->kind = pkg_null;
+    memset(p->data, 0, max_data_size);
+    // get kind and size
+    unsigned char header[3];
+    int received;
+    received = recv(sd, header, 3, 0); // 3-rd is for kind
+    if (received != 3) {
+        return (received == 0) ? sr_reset : sr_failure;
+    }
+    p->kind = (enum pkg_kind) header[0];
+    int size =  ((0x0FF & header[1])) * 256 + ((0x0FF & header[2]));
+    if (size > max_data_size) {
+        //trace("pkg_recv: packet too large: %d\n", size);
+        errno = EMSGSIZE;
+        return sr_failure;
+    }
+    received = recv(sd, p->data, size, 0);
+    if (received == 0) {
+        return sr_reset;
+    }
+    if (received != size) {
+        //trace("pkg_recv: received %d instead of %d\n", received, size);
+        return sr_failure;
+    }
+    return sr_success;
+}

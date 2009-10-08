@@ -317,7 +317,11 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     public static FileObject getInstanceFileObject(String url) {
-        FileObject[] installedServers = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS).getChildren();
+        FileObject installedServersDir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
+        if (installedServersDir == null) {
+            return null;
+        }
+        FileObject[] installedServers = installedServersDir.getChildren();
         for (int i=0; i<installedServers.length; i++) {
             String val = (String) installedServers[i].getAttribute(URL_ATTR);
             if (val != null && val.equals(url))

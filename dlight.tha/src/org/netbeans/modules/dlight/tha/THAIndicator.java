@@ -98,6 +98,11 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     }
 
     @Override
+    public void suggestRepaint() {
+        tick();
+    }    
+
+    @Override
     public void reset() {
         controlPanel.reset();
     }

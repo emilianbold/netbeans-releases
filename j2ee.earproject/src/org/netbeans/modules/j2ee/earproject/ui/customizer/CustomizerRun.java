@@ -572,7 +572,7 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) {
+            if (obj == null || !(obj instanceof ClientModuleItem)) {
                 return false;
             }
             return uri.equals(((ClientModuleItem)obj).uri);
@@ -584,6 +584,9 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         }
 
         public int compareTo(Object obj) {
+            if (obj == null || !(obj instanceof ClientModuleItem)) {
+                return -1;
+            }
             return uri.compareTo(((ClientModuleItem)obj).uri);
         }
 

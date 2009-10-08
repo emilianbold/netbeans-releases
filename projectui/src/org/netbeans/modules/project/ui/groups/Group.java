@@ -64,6 +64,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -313,7 +314,9 @@ public abstract class Group {
             handleLabel = NbBundle.getMessage(Group.class, "Group.close_handle");
         }
         ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
+        try {
         h.start(200);
+        ProjectUtilities.WaitCursor.show();
         OpenProjects op = OpenProjects.getDefault();
         Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(op.getOpenProjects()));
         Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
@@ -330,7 +333,11 @@ public abstract class Group {
         if (g != null) {
             op.setMainProject(g.getMainProject());
         }
-        h.finish();
+        } finally {
+            ProjectUtilities.WaitCursor.hide();
+            h.finish();
+        }
+        
     }
 
     /**

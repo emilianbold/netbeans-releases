@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -59,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -111,12 +113,8 @@ public class WatchPanel {
                     public void run() {
                         final Context c = retrieveContext(den);
                         if (c != null) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    setupContext(editorPane, c.url, c.line);
-                                    if (contextSetUp != null) contextSetUp.actionPerformed(null);
-                                }
-                            });
+                            setupContext(editorPane, c.url, c.line);
+                            if (contextSetUp != null) contextSetUp.actionPerformed(null);
                         }
                     }
                 });
@@ -181,9 +179,9 @@ public class WatchPanel {
         }
     }
     
-    public static void setupContext(JEditorPane editorPane, String url, int line) {
+    public static void setupContext(final JEditorPane editorPane, String url, int line) {
         FileObject file;
-        StyledDocument doc;
+        final StyledDocument doc;
         try {
             file = URLMapper.findFileObject (new URL (url));
             if (file == null) {
@@ -210,10 +208,25 @@ public class WatchPanel {
             return;
         }
         try {
-            int offset = NbDocument.findLineOffset(doc, line - 1);
+            final int offset = NbDocument.findLineOffset(doc, line - 1);
             //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
             //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
-            DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
+            Runnable bindComponentToDocument = new Runnable() {
+                public void run() {
+                    DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                bindComponentToDocument.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(bindComponentToDocument);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         } catch (IndexOutOfBoundsException ioobex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
@@ -278,6 +291,7 @@ public class WatchPanel {
         int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
                          org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
         sp.setPreferredSize(new Dimension(w, h));
+        /*
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
         int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent();
         Insets eInsets = editorPane.getInsets();
@@ -286,7 +300,7 @@ public class WatchPanel {
                 size +
                 eInsets.bottom + eInsets.top +
                 spInsets.bottom + spInsets.top));
-        
+        */
         textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
         panel.setLayout (new BorderLayout ());
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
@@ -332,10 +346,13 @@ public class WatchPanel {
         sp.setViewportView(panel);
         
         int preferredHeight = referenceTextField.getPreferredSize().height;
-        if (sp.getPreferredSize().height < preferredHeight) {
+        Dimension spDim = sp.getPreferredSize();
+        if (spDim.height < preferredHeight) {
             sp.setPreferredSize(referenceTextField.getPreferredSize());
+        } else {
+            sp.setPreferredSize(spDim);
         }
-        sp.setMinimumSize(sp.getPreferredSize());
+        sp.setMinimumSize(spDim);
         
         setupUI(editorPane);
         

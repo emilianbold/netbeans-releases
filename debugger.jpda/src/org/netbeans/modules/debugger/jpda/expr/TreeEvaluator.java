@@ -191,7 +191,7 @@ public class TreeEvaluator {
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (ObjectCollectedException e) {
-            Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
+            loggerMethod.log(Level.CONFIG, "During evaluation of '"+expression.getExpression()+"'", e); // Just log it.
             throw new InvalidExpressionException(NbBundle.getMessage(
                 TreeEvaluator.class, "CTL_EvalError_collected"));
         } catch (ClassNotPreparedException e) {
@@ -202,6 +202,9 @@ public class TreeEvaluator {
             Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
+        } catch (RuntimeException re) {
+            re = Exceptions.attachMessage(re, "During evaluation of '"+expression.getExpression()+"'"); // NOI18N
+            throw re;
         } finally {
             // Garbage collection for the returned value "mirror" is left disabled. Context enable it as soon as the thread is resumed.
             evaluationContext.enableCollectionOfObjects((mirror instanceof Value) ? ((Value) mirror) : null);

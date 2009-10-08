@@ -128,6 +128,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
         processInput.flush();
 
+        creation_ts = System.nanoTime();
+
         readPID(processOutput);
     }
 
@@ -188,6 +190,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         }
 
         process = pb.start();
+
+        creation_ts = System.nanoTime();
 
         processInput = process.getOutputStream();
         processError = process.getErrorStream();

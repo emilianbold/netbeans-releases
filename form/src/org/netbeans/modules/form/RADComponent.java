@@ -1081,6 +1081,9 @@ public class RADComponent {
         accessibilityProperties = null;
     }
 
+    static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
+            "nb.form.suppressTabs");
+
     protected void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
             createBeanProperties();
@@ -1097,6 +1100,10 @@ public class RADComponent {
                 return getBeanProperties1();
             }
         });
+
+        if (SUPPRESS_PROPERTY_TABS) {
+            return;
+        }
 
         if(isValid()) {
             Iterator entries = otherProperties.entrySet().iterator();

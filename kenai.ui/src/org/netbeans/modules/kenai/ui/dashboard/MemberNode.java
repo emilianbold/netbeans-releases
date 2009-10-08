@@ -104,4 +104,10 @@ public class MemberNode extends LeafNode {
     public Action getDefaultAction() {
         return MemberAccessor.getDefault().getStartChatAction(user);
     }
+
+    @Override
+    public Action[] getPopupActions() {
+        return new Action[]{getDefaultAction()};
+    }
+
 }

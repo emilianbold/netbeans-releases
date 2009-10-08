@@ -107,15 +107,12 @@ public class MyProjectNode extends LeafNode {
                         lbl.setText(project.getDisplayName());
                 } else if(MessagingHandle.PROP_MESSAGE_COUNT.equals(evt.getPropertyName())) {
                     if (btnMessages!=null) {
-                        if (mh.getMessageCount()<0) {
-                            setOnline(false);
-                        }
+                        setOnline(mh.getMessageCount()>0);
                         btnMessages.setText(mh.getMessageCount()+"");
                     }
                 } else if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
                     if (evt.getOldValue()==null) {
-                        if (mh.getMessageCount()>=0)
-                            setOnline(true);
+                        setOnline(mh.getMessageCount()>0);
                     } else if (evt.getNewValue()==null) {
                         setOnline(false);
                         mh.removePropertyChangeListener(projectListener);
@@ -168,7 +165,7 @@ public class MyProjectNode extends LeafNode {
                 btnMessages.setHorizontalTextPosition(JLabel.LEFT);
                 component.add(btnMessages, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                setOnline(messaging.getOnlineCount() >= 0);
+                setOnline(messaging.getOnlineCount() >= 0 && count >0);
                 
                 post(new Runnable() {
 
@@ -211,7 +208,7 @@ public class MyProjectNode extends LeafNode {
     }
 
     private void setOnline(final boolean b) {
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable run = new Runnable() {
 
             public void run() {
                 if (btnBugs == null) {
@@ -227,7 +224,12 @@ public class MyProjectNode extends LeafNode {
                 }
                 DashboardImpl.getInstance().dashboardComponent.repaint();
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
     }
 
     private Action getOpenAction() {

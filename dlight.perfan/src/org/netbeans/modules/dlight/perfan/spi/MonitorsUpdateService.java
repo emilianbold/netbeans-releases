@@ -291,6 +291,8 @@ public class MonitorsUpdateService {
                 if (erprintSession != null) {
                     erprintSession.close();
                 }
+
+                ssdc.notifyIndicatorsThatProviderFinished();
             }
         }
 

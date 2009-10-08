@@ -57,11 +57,14 @@ import org.netbeans.junit.Log;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImplTest;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * Test {@link Evaluator} generally (but also see {@link ClassPathProviderImplTest}).
@@ -204,8 +207,10 @@ public class EvaluatorTest extends TestBase {
             String js = eval.getProperty("javac.source");      // does not scan ML
             assertTrue("Valid javac.source value", js != null && ! js.equals("") && ! js.equals("javac.source"));
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            /* No longer calculated due to #172203 optimization:
             String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
             assertTrue("Correct core.startup.dir value", Pattern.matches(".*platform[\\d]*$", coreStartupDir));
+             */
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             String cluster = eval.getProperty("cluster");   // still should not scan ML after fix of #169040
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
@@ -329,5 +334,42 @@ public class EvaluatorTest extends TestBase {
             mlLogger.removeHandler(handler);
             mlLogger.setLevel(origLevel);
         }
+    }
+
+    public void testGetPlatformInPMWriteAccessDeadlock173345() throws Exception {
+        final Logger LOG = Logger.getLogger(this.getClass().getName());
+        Logger observer = Logger.getLogger("observer");
+        Log.enable(LOG.getName(), Level.ALL);
+
+        String mt = "THREAD: Test Watch Dog: testGetPlatformInPMWriteAccessDeadlock173345 MSG:";
+        String wt = "THREAD: worker MSG:";
+        String order =
+            mt + "before NbPlatform.getPlatforms" +
+            wt + "got PM write access";
+        Log.controlFlow(LOG, observer, order, 0);
+        NbPlatform.reset();
+        Thread t = new Thread("worker") {
+
+            @Override
+            public void run() {
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        public Void run() throws Exception {
+                            LOG.log(Level.FINE, "got PM write access");
+                            NbPlatform.getPlatforms();
+                            LOG.log(Level.FINE, "after NbPlatform.getPlatforms");
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+        t.start();
+        LOG.log(Level.FINE, "before NbPlatform.getPlatforms");
+        NbPlatform.getPlatforms();
+        LOG.log(Level.FINE, "after NbPlatform.getPlatforms");
+        t.join();
     }
 }

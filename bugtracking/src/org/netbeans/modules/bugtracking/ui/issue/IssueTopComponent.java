@@ -144,10 +144,21 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         setNameAndTooltip();
     }
 
-    public void initNoIssue() {
-        preparingLabel.setVisible(true);
-        repoPanel.setVisible(false);
-        setNameAndTooltip();
+    public void initNoIssue(final String issueId) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                preparingLabel.setVisible(true);
+                repoPanel.setVisible(false);
+                if(issueId != null) {
+                    String desc = NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
+                    preparingLabel.setText(desc);
+                    setName(NbBundle.getMessage(IssueTopComponent.class, "LBL_LOADING_ISSUE", new Object[]{issueId}));
+                    setToolTipText(desc);
+                } else {
+                    setNameAndTooltip();
+                }
+            }
+        });
     }
 
     /**

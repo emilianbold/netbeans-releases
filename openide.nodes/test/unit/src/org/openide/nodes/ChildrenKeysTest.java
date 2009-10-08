@@ -719,6 +719,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // in ChildrenFilterAsLazyKeysTest in NB-Core-Build #3359
     public void testDestroyIsCalledWhenANodeIsRemoved () throws Exception {
         class K extends Keys {
             public K(boolean lazy) { super(lazy); }

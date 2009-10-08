@@ -56,6 +56,10 @@ public class ValuePresenter {
         return getValue(var.getType(), var.getValue());
     }
 
+    public static String getValue(String value) {
+        return getValue(null, value);
+    }
+
     public static String getValue(String type, String value) {
         for (Presenter vp : presenters) {
             if (vp.accepts(type, value)) {
@@ -73,9 +77,34 @@ public class ValuePresenter {
     private static class StdStringPresenter implements Presenter {
         private static final String VALUE_PREFIX = "_M_p"; // NOI18N
         private static final String TYPE_NAME = "string"; // NOI18N
+        private static final String TYPE_NAME2 = "string &"; // NOI18N
 
         public boolean accepts(String type, String value) {
-            return TYPE_NAME.equals(type) && value != null && value.contains(VALUE_PREFIX);
+            // if type is not provided - try to check value
+            if (type == null) {
+                return checkValue(value);
+            }
+            return (TYPE_NAME.equals(type) || TYPE_NAME2.equals(type)) && value != null && value.contains(VALUE_PREFIX);
+        }
+
+        // checks if value is of string type
+        private static boolean checkValue(String value) {
+            if (value == null || value.length() < 10) {
+                return false;
+            }
+            int start = value.indexOf('{');
+            if (start == -1) {
+                return false;
+            }
+            int end = value.lastIndexOf('}');
+            if (end == -1) {
+                return false;
+            }
+            value = value.substring(start+1, end);
+            if (value.indexOf("static npos") == -1) {// NOI18N
+                return false;
+            }
+            return value.indexOf(VALUE_PREFIX) != -1;
         }
 
         public String present(String type, String value) {

@@ -61,7 +61,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
 
     private final Query query;
     private final String label;
-    private Filter filter;
+    private final Filter filter;
 
     private static MessageFormat totalFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal"));       // NOI18N
     private static MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
@@ -113,7 +113,10 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 StringBuffer label = new StringBuffer();
                 unseenFormat.format(new Object[] {notIssues}, label, null);
                 
-                return new QueryResultHandleImpl(query, label.toString(), Filter.getNotSeenFilter());
+                return new QueryResultHandleImpl(
+                        query,
+                        label.toString(),
+                        Filter.getNotSeenFilter());
 
             case IssueCache.ISSUE_STATUS_NEW:
 
@@ -127,11 +130,25 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 label = new StringBuffer();
                 newFormat.format(new Object[] {newIssues}, label, null);
 
-                return new QueryResultHandleImpl(query, label.toString(), Filter.getNewFilter(query));
+                return new QueryResultHandleImpl(
+                        query,
+                        label.toString(),
+                        Filter.getNewFilter(query));
 
             default:
                 throw new IllegalStateException("wrong status value [" + status + "]"); // NOI18N
         }
+    }
+
+    static QueryResultHandle getAllChangedResult(Query query) {
+        int notIssues = 0;
+        Issue[] issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
+        notIssues = issues == null ? issues.length : 0;
+        
+        return new QueryResultHandleImpl(
+                query,
+                Integer.toString(notIssues),
+                Filter.getNotSeenFilter());
     }
 
 }

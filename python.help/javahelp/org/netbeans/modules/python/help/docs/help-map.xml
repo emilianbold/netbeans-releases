@@ -6,10 +6,6 @@ and open the template in the editor.
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
     <mapID target="org.netbeans.modules.python.help.about" url="help-about.html"/>
-     <mapID target="org.netbeans.modules.python.help.getstarted" url="help-get_started.html"/>
-     <mapID target="org.netbeans.modules.python.help.run" url="help-run.html"/>
-     <mapID target="org.netbeans.modules.python.platform.panels.PythonPlatformPanel" url="help-platforms.html"/>
-     <mapID target="org.netbeans.modules.python.help.pyconsole" url="help-pyconsole.html"/>
-     <mapID target="org.netbeans.modules.python.help.pydebug" url="help-pydebug.html"/>
-     
+     <mapID target="org.netbeans.modules.python.help.quickref" url="help-quickref.html"/>
+     <mapID target="org.netbeans.modules.python.help.pydebug" url="help-pydebug.html"/>     
 </map>

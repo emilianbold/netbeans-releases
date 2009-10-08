@@ -113,9 +113,7 @@ public class NodeTreeModel extends DefaultTreeModel {
                     setRoot(nr);
                     if (visHolder != null) {
                         visHolder.add(nr.getChildren());
-                        if (v != null) {
-                            visHolder.removeRecur(v.getChildren());
-                        }
+                        visHolder.removeRecur(v.getChildren());
                     }
                 }
             }
