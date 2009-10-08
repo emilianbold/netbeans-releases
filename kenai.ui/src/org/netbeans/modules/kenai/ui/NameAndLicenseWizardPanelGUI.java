@@ -665,7 +665,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 setProjectName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                         "NameAndLicenseWizardPanelGUI.defaultPrjName")); // NOI18N
             }
-            projectNameTextField.requestFocusInWindow();
         } else {
             setProjectName(prjName);
         }
