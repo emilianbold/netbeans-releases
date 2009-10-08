@@ -67,17 +67,11 @@ public final class WindowsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final WindowsSupport instance = new WindowsSupport();
-    private static final String REG_EXE;
     private ShellType type = ShellType.NO_SHELL;
     private String shell = null;
     private String bin = null;
     private Properties env = null;
-
-    static {
-        String windir = System.getenv("WINDIR"); // NOI18N
-        File sys32 = new File(windir, "System32"); // NOI18N
-        REG_EXE = new File(sys32, "reg.exe").getPath(); // NOI18N
-    }
+    private String REG_EXE;
 
     private WindowsSupport() {
         init();
@@ -98,6 +92,18 @@ public final class WindowsSupport {
     }
 
     public void init() {
+        String reg_exe = "reg.exe"; // NOI18N
+        
+        try {
+            String windir = System.getenv("WINDIR"); // NOI18N
+            File sys32 = new File(windir, "System32"); // NOI18N
+            reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
+        } catch  (Throwable th) {
+            System.out.println(th);
+        }
+
+        REG_EXE = reg_exe;
+        
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
                 "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
@@ -197,7 +203,7 @@ public final class WindowsSupport {
         }
     }
 
-    private static String queryWindowsRegistry(String key, String param, String regExpr) {
+    private String queryWindowsRegistry(String key, String param, String regExpr) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
                     REG_EXE, "query", key, "/v", param); // NOI18N
