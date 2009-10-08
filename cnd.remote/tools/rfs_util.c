@@ -47,7 +47,8 @@
 #if TRACE
 
 static const char* pattern = "%u #%s[%d]: ";
-static const char* prefix = 0;
+static const char* prefix = "";
+static FILE *trace_file;
 
 static unsigned long get_timestamp() {
     struct timespec tp;
@@ -55,9 +56,11 @@ static unsigned long get_timestamp() {
     return tp.tv_sec*1000000000+tp.tv_nsec;
 }
 
-FILE *trace_file;
 void trace(const char *format, ...) {
-    fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
+    if (!trace_file) {
+        trace_file = stderr;
+    }
+    fprintf(trace_file, pattern, 0/*get_timestamp()*/, prefix, 0/*getpid()*/);
     va_list args;
     va_start (args, format);
     vfprintf(trace_file, format, args);

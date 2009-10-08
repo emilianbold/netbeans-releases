@@ -37,24 +37,39 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-#ifndef _RFS_PRELOAD_SOCKS_H
-#define	_RFS_PRELOAD_SOCKS_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-/**
- * as well as open syscall, returns
- * -1 if an error occurred, or
- * non-negative integer in the case of success
- */
-int get_socket(int create);
+#define test_open(function) \
+    char* filename_##function = "/tmp/" #function; \
+    fprintf(stdout, "RFS_TEST_CLIENT %s\n", filename_##function); \
+    int fd_##function = function(filename_##function, O_RDONLY); \
+    if (fd_##function != -1) { \
+        close(fd_##function); \
+    }
 
-void release_socket();
+#define test_fopen(function) \
+    char* filename_##function = "/tmp/" #function; \
+    fprintf(stdout, "RFS_TEST_CLIENT %s\n", filename_##function); \
+    FILE* file_##function = function(filename_##function, "r"); \
+    if (file_##function) { \
+        fclose(file_##function); \
+    }
 
-#if TRACE
-//void trace_sd(const char* text);
-#define trace_sd(...)
-#else
-#define trace_sd(...)
+int main(int argc, char** argv) {
+    test_open(open)
+#ifdef __sun__
+    test_open(_open)
 #endif
-
-#endif	/* _RFS_PRELOAD_SOCKS_H */
-
+    test_open(open64)
+#if _FILE_OFFSET_BITS != 64
+#ifdef __sun__
+    test_open(_open64)
+#endif
+#endif
+    test_fopen(fopen)
+    test_fopen(fopen64)
+    return 0;
+}
