@@ -349,12 +349,14 @@ public class HgCommand {
     }
     private static final HashSet<String> GUARDED_COMMANDS;
     static {
-        GUARDED_COMMANDS = new HashSet<String>(6);
+        GUARDED_COMMANDS = new HashSet<String>(8);
+        GUARDED_COMMANDS.add(HG_BACKOUT_CMD);
         GUARDED_COMMANDS.add(HG_CLONE_CMD);
         GUARDED_COMMANDS.add(HG_IMPORT_CMD);
         GUARDED_COMMANDS.add(HG_FETCH_CMD);
         GUARDED_COMMANDS.add(HG_PULL_CMD);
         GUARDED_COMMANDS.add(HG_MERGE_CMD);
+        GUARDED_COMMANDS.add(HG_UNBUNDLE_CMD);
         GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
     }
 
