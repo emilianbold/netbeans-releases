@@ -67,10 +67,17 @@ public final class WindowsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final WindowsSupport instance = new WindowsSupport();
+    private static final String REG_EXE;
     private ShellType type = ShellType.NO_SHELL;
     private String shell = null;
     private String bin = null;
     private Properties env = null;
+
+    static {
+        String windir = System.getenv("WINDIR"); // NOI18N
+        File sys32 = new File(windir, "System32"); // NOI18N
+        REG_EXE = new File(sys32, "reg.exe").getPath(); // NOI18N
+    }
 
     private WindowsSupport() {
         init();
@@ -102,6 +109,13 @@ public final class WindowsSupport {
                     "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
                     "rootdir", // NOI18N
                     ".*rootdir.*REG_SZ(.*)"); // NOI18N
+        }
+
+        if (cygwinRoot == null) {
+            cygwinRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
+                    "native", // NOI18N
+                    ".*native.*REG_SZ(.*)"); // NOI18N
         }
 
         if (cygwinRoot != null) {
@@ -186,8 +200,7 @@ public final class WindowsSupport {
     private static String queryWindowsRegistry(String key, String param, String regExpr) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
-                    "c:\\windows\\system32\\reg.exe", // NOI18N
-                    "query", key, "/v", param); // NOI18N
+                    REG_EXE, "query", key, "/v", param); // NOI18N
             Process p = pb.start();
             Pattern pattern = Pattern.compile(regExpr);
 
@@ -215,18 +228,38 @@ public final class WindowsSupport {
         return null;
     }
 
+    public String convertToCygwinPath(String winPath) {
+        return convertToShellPath(winPath, ShellType.CYGWIN);
+    }
+
+    public String convertFromCygwinPath(String cygwinPath) {
+        return convertToWindowsPath(cygwinPath, ShellType.CYGWIN);
+    }
+
+    public String convertToMSysPath(String winPath) {
+        return convertToShellPath(winPath, ShellType.MSYS);
+    }
+
+    public String convertFromMSysPath(String msysPath) {
+        return convertToWindowsPath(msysPath, ShellType.MSYS);
+    }
+
     /**
      * Cygwin is preferrable shell (over msys). So it cygwin is
      * installed we will always use it's for shell
      */
     public String convertToShellPath(String path) {
+        return convertToShellPath(path, type);
+    }
+
+    private String convertToShellPath(String path, ShellType shellType) {
         String result = ""; // NOI18N
 
         if (path == null || path.length() == 0) {
             return result;
         }
 
-        switch (type) {
+        switch (shellType) {
             case CYGWIN:
                 List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
 
@@ -301,9 +334,13 @@ public final class WindowsSupport {
     }
 
     public String convertToWindowsPath(String path) {
+        return convertToWindowsPath(path, type);
+    }
+
+    private String convertToWindowsPath(String path, ShellType shellType) {
         String result = ""; // NOI18N
 
-        switch (type) {
+        switch (shellType) {
             case CYGWIN:
                 List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
 
