@@ -49,9 +49,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -77,13 +74,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.UpdateManager.TYPE;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
-import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -100,7 +90,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -595,53 +584,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private boolean isHostValidForEditing() {
         return true; //serverList == null ? true : serverList.get((String)cbDevHost.getSelectedItem()).isOnline();
-    }
-
-    private static void downloadCompilerSet(CompilerSet cs) {
-        String fail = null;
-        try {
-            URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
-            UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD); // NOI18N
-            provider.refresh(null, true);
-            List<UpdateUnit> list = provider.getUpdateUnits(TYPE.MODULE);
-            OperationContainer<InstallSupport> installContainer = OperationContainer.createForInstall();
-            for (UpdateUnit unit : list) {
-                if (cs.getCompilerFlavor().getToolchainDescriptor().getModuleID().equals(unit.getCodeName())) {
-                    installContainer.add(unit.getAvailableUpdates());
-                    InstallSupport support = installContainer.getSupport();
-                    if (support != null) {
-                        PluginManager.openInstallWizard(installContainer);
-                        return;
-                    }
-                    break;
-                }
-            }
-            fail = getString("ToolsPanel.ModuleNotFound", cs.getDisplayName(),
-                             cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterDisplayName(),
-                             cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (fail != null) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(fail,NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-    }
-
-    public static boolean showDownloadConfirmation(CompilerSet cs) {
-        String name = cs.getDisplayName();
-        String uc = cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl();
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                getString("ToolsPanel.UpdateCenterMessage", name, uc),
-                getString("ToolsPanel.UpdateCenterTitle"), NotifyDescriptor.YES_NO_OPTION);
-        Object ret = DialogDisplayer.getDefault().notify(nd);
-        if (ret == NotifyDescriptor.YES_OPTION) {
-            downloadCompilerSet(cs);
-            return true;
-        }
-        return false;
     }
 
     private void changeCompilerSet(CompilerSet cs) {
@@ -1893,7 +1835,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
     if (isUrl) {
         CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
-        showDownloadConfirmation(cs);
+        DownloadUtils.showDownloadConfirmation(cs);
         return;
     }
     String seed = null;
@@ -2122,19 +2064,19 @@ private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     selectTool(tfCMakePath);
 }//GEN-LAST:event_btCMakeBrowseActionPerformed
 
-    private static String getString(String key) {
+    static String getString(String key) {
         return NbBundle.getMessage(ToolsPanel.class, key);
     }
 
-    private static String getString(String key, Object param) {
+    static String getString(String key, Object param) {
         return NbBundle.getMessage(ToolsPanel.class, key, param);
     }
 
-    private static String getString(String key, Object param1, Object param2) {
+    static String getString(String key, Object param1, Object param2) {
         return NbBundle.getMessage(ToolsPanel.class, key, param1, param2);
     }
 
-    private static String getString(String key, Object param1, Object param2, Object param3) {
+    static String getString(String key, Object param1, Object param2, Object param3) {
         return NbBundle.getMessage(ToolsPanel.class, key, param1, param2, param3);
     }
 
