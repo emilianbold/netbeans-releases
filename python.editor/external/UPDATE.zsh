@@ -16,7 +16,7 @@
 #
 # Configure the following parameters:
 #
-NBHGHOME=~/netbeans/hg/newrhino
+NBHGHOME=~/netbeans/hg/main-silver
 NATIVEPYTHONHOME=/usr
 VMFLAGS=-J-Xmx1024m
 INDEXING_PROJECT=/Users/tor/NetBeansProjects/NewPythonProject

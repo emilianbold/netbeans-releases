@@ -165,6 +165,7 @@ public class PythonFormatter implements Formatter {
     @SuppressWarnings("deprecation") // For doc.getFormatter()
     public void reindent(final Context context, Document document, int startOffset, int endOffset) {
         endOffset = Math.min(endOffset, document.getLength());
+        startOffset = Math.min(startOffset, endOffset);
 
         continuationIndentSize = indentSize = IndentUtils.indentLevelSize(document);
 

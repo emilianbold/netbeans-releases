@@ -207,8 +207,10 @@ public class EvaluatorTest extends TestBase {
             String js = eval.getProperty("javac.source");      // does not scan ML
             assertTrue("Valid javac.source value", js != null && ! js.equals("") && ! js.equals("javac.source"));
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
+            /* No longer calculated due to #172203 optimization:
             String coreStartupDir = eval.getProperty("core.startup.dir");   // does not scan ML after rev #797729b2749e
             assertTrue("Correct core.startup.dir value", Pattern.matches(".*platform[\\d]*$", coreStartupDir));
+             */
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());
             String cluster = eval.getProperty("cluster");   // still should not scan ML after fix of #169040
             assertEquals("No modules scanned yet", 0, handler.scannedDirs.size());

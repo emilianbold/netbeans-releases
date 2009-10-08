@@ -424,11 +424,11 @@ public class Utilities {
         }
         
         ts.moveNext();
-
-        final JavaTokenId id = ts.token().id();
-        if (ts.offset() == start) {
+        Token<JavaTokenId> token = ts.token();
+        if (ts.offset() == start && token != null) {
+            final JavaTokenId id = token.id();
             if (id == JavaTokenId.IDENTIFIER) {
-                return ts.token();
+                return token;
             }
             if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
                 return ts.offsetToken();

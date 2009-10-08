@@ -111,24 +111,29 @@ public class ParentVersionError implements POMErrorFixProvider {
         String currentVersion = null;
         boolean usedSources = false;
         if (useSources && resolvedDir.exists()) {
-            try {
-                Project parentPrj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(resolvedDir));
-                if (parentPrj != null) {
-                    NbMavenProject nbprj = parentPrj.getLookup().lookup(NbMavenProject.class);
-                    if (nbprj != null) { //do we have some non-maven project maybe?
-                        MavenProject mav = nbprj.getMavenProject();
-                        //#167711 check the coordinates to filter out parents in non-default location without relative-path elemnt
-                        if (par.getGroupId().equals(mav.getGroupId()) &&
-                            par.getArtifactId().equals(mav.getArtifactId())) {
-                            currentVersion = mav.getVersion();
-                            usedSources = true;
+            //#172839
+            String parGr = par.getGroupId();
+            String parArt = par.getArtifactId();
+            if (parArt != null && parGr != null) {
+                try {
+                    Project parentPrj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(resolvedDir));
+                    if (parentPrj != null) {
+                        NbMavenProject nbprj = parentPrj.getLookup().lookup(NbMavenProject.class);
+                        if (nbprj != null) { //do we have some non-maven project maybe?
+                            MavenProject mav = nbprj.getMavenProject();
+                            //#167711 check the coordinates to filter out parents in non-default location without relative-path elemnt
+                            if (parGr.equals(mav.getGroupId()) &&
+                                parArt.equals(mav.getArtifactId())) {
+                                currentVersion = mav.getVersion();
+                                usedSources = true;
+                            }
                         }
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         if ((!useSources || currentVersion == null) && declaredVersion != null) {

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxO
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
@@ -82,7 +83,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
-        profileOnRun = new BooleanConfiguration(null, true, null, null);
+        profileOnRun = new BooleanConfiguration(null, MakeProjectOptions.getShowIndicatorsOnRun(), null, null);
     }
 
     public DLightConfiguration getDLightConfiguration() {

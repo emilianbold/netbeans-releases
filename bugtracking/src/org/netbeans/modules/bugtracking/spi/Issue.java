@@ -177,7 +177,7 @@ public abstract class Issue {
                 final Issue[] issue = new Issue[1];
                 issue[0] = tc.getIssue();
                 if (issue[0] == null) {
-                    tc.initNoIssue(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
+                    tc.initNoIssue(issueId);
                 }
                 if(!tcOpened) {
                     tc.open();

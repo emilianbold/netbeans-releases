@@ -54,9 +54,11 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
@@ -86,42 +88,116 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     @Override
-    public List<QueryHandle> getQueries(ProjectHandle project) {
+    public QueryResultHandle getAllChangesResult(ProjectHandle project) {
         Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             FakeJiraSupport jira = FakeJiraSupport.get(project);
-            if(jira != null) {
-                return jira.getQueries();
+            if (jira != null) {
+                return jira.getUnseenResult();
             }
             // XXX log this inconvenience
-            return Collections.emptyList();
+            return null;
         }
-        KenaiRepositoryListener krl = null;
-        synchronized(kenaiRepoListeners) {
-            krl = kenaiRepoListeners.get(repo.getID());
-            if(krl == null) {
-                krl = new KenaiRepositoryListener(repo, project);
-                repo.addPropertyChangeListener(krl);
-                kenaiRepoListeners.put(repo.getID(), krl);
-            } 
+
+        KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
+        if(support == null) {
+            return null;
         }
+
+        registerRepository(repo, project);
+
+        Query allIssuesQuery = support.getAllIssuesQuery(repo);
+        if(allIssuesQuery == null) {
+            return null;
+        }
+        List<QueryHandle> queries = getQueryHandles(project, true, allIssuesQuery);
+        assert queries.size() == 1;
+
+        registerProject(project, queries);
+
+        QueryHandleImpl qhi = (QueryHandleImpl) queries.get(0);
+        qhi.refreshIfNeeded();
+        return QueryResultHandleImpl.getAllChangedResult(qhi.getQuery());
+    }
+
+    @Override
+    public List<QueryHandle> getQueries(ProjectHandle project) {
+        Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
+        if(repo == null) {
+            return getQueriesForNoRepo(project);
+        }
+
+        registerRepository(repo, project);
         
         List<QueryHandle> queries = getQueryHandles(repo, project, true);
 
+        registerProject(project, queries);
+
+        return Collections.unmodifiableList(queries);
+    }
+
+    private List<QueryHandle> getQueriesForNoRepo(ProjectHandle project) {
+        FakeJiraSupport jira = FakeJiraSupport.get(project);
+        if (jira != null) {
+            return jira.getQueries();
+        }
+        // XXX log this inconvenience
+        return Collections.emptyList();
+    }
+
+    private List<QueryHandle> getQueryHandles(ProjectHandle project, boolean newQueriesNeedRefresh, Query... queries) {
+        List<QueryHandle> ret = new ArrayList<QueryHandle>();
+        synchronized (queryHandles) {
+            Map<String, QueryHandle> m = queryHandles.get(project.getId());
+            if (m == null) {
+                m = new HashMap<String, QueryHandle>();
+                queryHandles.put(project.getId(), m);
+            } else {
+                List<String> l = new ArrayList<String>();
+                for (Query q : queries) {
+                    if (q != null) {
+                        l.add(q.getDisplayName());
+                    }
+                }
+                m.keySet().retainAll(l);
+            }
+            for (Query q : queries) {
+                QueryHandle qh = m.get(q.getDisplayName());
+                if (qh == null) {
+                    qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
+                    m.put(q.getDisplayName(), qh);
+                }
+                ret.add(qh);
+            }
+        }
+        return ret;
+    }
+
+    private void registerProject(ProjectHandle project, List<QueryHandle> queries) {
         ProjectHandleListener pl;
-        synchronized(projectListeners) {
+        synchronized (projectListeners) {
             pl = projectListeners.get(project.getId());
         }
-        if(pl != null) {
+        if (pl != null) {
             project.removePropertyChangeListener(pl);
         }
         pl = new ProjectHandleListener(project, queries);
         project.addPropertyChangeListener(pl);
-        synchronized(projectListeners) {
+        synchronized (projectListeners) {
             projectListeners.put(project.getId(), pl);
         }
-        
-        return Collections.unmodifiableList(queries);
+    }
+
+    private void registerRepository(Repository repo, ProjectHandle project) {
+        KenaiRepositoryListener krl = null;
+        synchronized (kenaiRepoListeners) {
+            krl = kenaiRepoListeners.get(repo.getID());
+            if (krl == null) {
+                krl = new KenaiRepositoryListener(repo, project);
+                repo.addPropertyChangeListener(krl);
+                kenaiRepoListeners.put(repo.getID(), krl);
+            }
+        }
     }
 
     private List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle project, boolean newQueriesNeedRefresh) {
@@ -130,32 +206,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
             // XXX is this possible - at least preset queries
             return Collections.emptyList();
         }
-
-        List<QueryHandle> ret = new ArrayList<QueryHandle>();
-        synchronized(queryHandles) {
-            Map<String, QueryHandle> m = queryHandles.get(project.getId());
-            if(m == null) {
-                m = new HashMap<String, QueryHandle>();
-                queryHandles.put(project.getId(), m);
-            } else {
-                // remove all which aren't in the returned query list
-                List<String> l = new ArrayList<String>();
-                for (Query q : queries) {
-                    if(q != null) {
-                        l.add(q.getDisplayName());
-                    }
-                }
-                m.keySet().retainAll(l);
-            }
-            for (Query q : queries) {
-                QueryHandle qh = m.get(q.getDisplayName());
-                if(qh == null) {
-                    qh = new QueryHandleImpl(q, newQueriesNeedRefresh);
-                    m.put(q.getDisplayName(), qh);
-                }
-                ret.add(qh);
-            }
-        }
+        List<QueryHandle> ret = getQueryHandles(project, newQueriesNeedRefresh, queries);
 
         if(!KenaiUtil.isLoggedIn()) {
             QueryHandle myIssuesFake = new QueryHandle() {

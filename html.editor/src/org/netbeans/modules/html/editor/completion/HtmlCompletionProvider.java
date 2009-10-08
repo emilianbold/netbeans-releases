@@ -46,7 +46,6 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
-import org.netbeans.modules.html.editor.*;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
@@ -65,6 +64,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Implementation of {@link CompletionProvider} for Html documents.
@@ -284,6 +284,25 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
     }
 
+    private static class NoDocItem implements CompletionDocumentation {
+
+        public String getText() {
+            return NbBundle.getMessage(HtmlCompletionProvider.class, "MSG_No_Doc_For_Target");
+        }
+
+        public URL getURL() {
+            return null;
+        }
+
+        public CompletionDocumentation resolveLink(String link) {
+            return null;
+        }
+
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+
     private static class DocItem implements CompletionDocumentation {
 
         HtmlCompletionItem item;
@@ -301,7 +320,10 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
 
         public CompletionDocumentation resolveLink(String link) {
-            return new LinkDocItem(HelpManager.getDefault().getRelativeURL(HelpManager.getDefault().getHelpURL(item.getHelpId()), link));
+            URL itemUrl = HelpManager.getDefault().getHelpURL(item.getHelpId());
+            return itemUrl != null ?
+                new LinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link)) :
+                new NoDocItem();
         }
 
         public Action getGotoSourceAction() {

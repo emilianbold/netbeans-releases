@@ -214,6 +214,9 @@ public class CompositeComponentModel extends JsfPageModel {
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
             AstNode node = result.root(JsfUtils.COMPOSITE_LIBRARY_NS); //NOI18N
+            if(node == null) {
+                return null; //no composite library declaration
+            }
             FileObject file = result.getSnapshot().getSource().getFileObject();
 
             //check whether the file lies in appropriate library folder

@@ -63,6 +63,8 @@ public class FormPropertyEditor implements PropertyEditor,
 
     private Object value = BeanSupport.NO_VALUE;
     private boolean valueEdited;
+    private static final boolean SUPPRESS_FORM_EDITORS = 
+            Boolean.getBoolean("nb.form.suppress.editors"); //NOI18N
 
     private FormProperty property;
     private WeakReference<PropertyEnv> propertyEnv;
@@ -335,6 +337,9 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     synchronized PropertyEditor[] getAllEditors() {
+        if (SUPPRESS_FORM_EDITORS) {
+            return new PropertyEditor[] { property.getCurrentEditor() };
+        }
         if (allEditors != null) {
             // the current property editor might have changed and so not
             // present among the cached editors

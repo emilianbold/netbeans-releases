@@ -167,7 +167,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }
 
     private void updateEnabled() {
-        RubyPlatform platform = uiProperties.getPlatform();
+        RubyPlatform platform = (RubyPlatform) platforms.getSelectedItem();
         boolean isJRuby = platform != null && platform.isJRuby();
         jrubyPropsExample.setEnabled(isJRuby);
         jrubyPropsLabel.setEnabled(isJRuby);

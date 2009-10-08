@@ -36,89 +36,23 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui.api;
 
-import org.netbeans.modules.dlight.api.tool.*;
+package org.netbeans.modules.db.dataview.api;
 
-/**
+/** A helper which can return current page size for given data view.
  *
- * @author thp
+ * @author Jiri Rechtacek
+ * @since 1.4
  */
-public class DLightToolUIWrapper {
+public final class DataViewPageContext {
+    private DataViewPageContext() {}
 
-    private DLightTool dlightTool;
-    private boolean enabled;
-    private boolean modified = false;
-    private boolean canEnable = true;
-
-    public DLightToolUIWrapper(DLightTool dlightTool, boolean enabled, boolean canChange) {
-        this.dlightTool = dlightTool;
-        this.enabled = enabled;
-        this.canEnable = canChange;
-    }
-
-    /**
-     * @return the dLightTool
+    /** Returns current page size for given view
+     *
+     * @param data view
+     * @return a page size or -1 if unknown
      */
-    public DLightTool getDLightTool() {
-        return dlightTool;
-    }
-
-    /**
-     * @param dLightTool the dLightTool to set
-     */
-    public void setDLightTool(DLightTool dlightTool) {
-        this.dlightTool = dlightTool;
-    }
-
-    /**
-     * @return the enabled
-     */
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
-     * @param enabled the enabled to set
-     */
-    public void setEnabled(boolean enabled) {
-        if (this.enabled != enabled){
-            modified = true;
-        }
-        this.enabled = enabled;
-    }
-
-    /**
-     * @return the modified
-     */
-    public boolean isModified() {
-        return modified;
-    }
-
-    /**
-     * @param modified the modified to set
-     */
-    public void setModified(boolean modified) {
-        this.modified = modified;
-    }
-
-    public DLightToolUIWrapper copy() {
-        DLightToolUIWrapper copy = new DLightToolUIWrapper(getDLightTool(), isEnabled(), canEnable());
-        copy.setModified(false);
-        return copy;
-    }
-
-    /**
-     * @return the canChange
-     */
-    public boolean canEnable() {
-        return canEnable;
-    }
-
-    /**
-     * @param canChange the canChange to set
-     */
-    public void setCanEnable(boolean canChange) {
-        this.canEnable = canChange;
+    public static int getPageSize(DataView view) {
+        return view.delegate.getPageSize();
     }
 }
