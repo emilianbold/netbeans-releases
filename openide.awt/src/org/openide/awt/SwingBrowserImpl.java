@@ -595,6 +595,21 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             super.scrollToReference(reference);
         }
 
+        @Override
+        public void layout() {
+            try {
+                super.layout();
+            } catch( ArrayIndexOutOfBoundsException aioobE ) {
+                //HACK - workaround for issue #168988
+                StackTraceElement[] stack = aioobE.getStackTrace();
+                if( stack.length > 0 && stack[0].getClassName().endsWith("BoxView") ) { //NOI18N
+                    Logger.getLogger(SwingBrowser.class.getName()).log(Level.INFO, null, aioobE);
+                } else {
+                    throw aioobE;
+                }
+            }
+        }
+
         /**
          * An action to scroll the browser content up or down.
          */
