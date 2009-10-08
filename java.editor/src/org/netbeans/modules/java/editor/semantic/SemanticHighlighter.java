@@ -1484,7 +1484,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         
         private void typeUsed(Element decl, TreePath expr, Collection<UseTypes> type) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
-                if (decl.asType().getKind() != TypeKind.ERROR) {
+                if (decl.asType() != null && decl.asType().getKind() != TypeKind.ERROR) {
                     ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
 
                     if (imp != null) {
@@ -1500,21 +1500,25 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
         }
 
-        private void handleUnresolvableImports(Element decl, Collection<UseTypes> type, boolean removeStarImports) {
-            Collection<ImportTree> imps = simpleName2UnresolvableImports.get(decl.getSimpleName().toString());
+        private void handleUnresolvableImports(Element decl,
+                Collection<UseTypes> type, boolean removeStarImports) {
+            Name simpleName = decl.getSimpleName();
+            if (simpleName != null) {
+                Collection<ImportTree> imps = simpleName2UnresolvableImports.get(simpleName.toString());
 
-            if (imps != null) {
-                for (ImportTree imp : imps) {
-                    if (type.contains(UseTypes.CLASS_USE) || imp.isStatic()) {
-                        import2Highlight.remove(imp);
+                if (imps != null) {
+                    for (ImportTree imp : imps) {
+                        if (type.contains(UseTypes.CLASS_USE) || imp.isStatic()) {
+                            import2Highlight.remove(imp);
+                        }
                     }
-                }
-            } else {
-                if (removeStarImports) {
-                    //TODO: explain
-                    for (ImportTree unresolvable : unresolvablePackageImports) {
-                        if (type.contains(UseTypes.CLASS_USE) || unresolvable.isStatic()) {
-                            import2Highlight.remove(unresolvable);
+                } else {
+                    if (removeStarImports) {
+                        //TODO: explain
+                        for (ImportTree unresolvable : unresolvablePackageImports) {
+                            if (type.contains(UseTypes.CLASS_USE) || unresolvable.isStatic()) {
+                                import2Highlight.remove(unresolvable);
+                            }
                         }
                     }
                 }
