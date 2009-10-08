@@ -142,25 +142,28 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     @Override
     public Set<FileObject> extend(WebModule webModule) {
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(webModule);
-        Sources sources = ProjectUtils.getSources(enclosingProject);
-        try {
-            SourceGroup[] javaSourceGroup = sources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-            if (javaSourceGroup == null || javaSourceGroup.length == 0) {
-                javaSourceGroup = sources.getSourceGroups(
-                        JavaProjectConstants.SOURCES_TYPE_JAVA);
-            }
-            if (javaSourceGroup != null && javaSourceGroup.length != 0) {
-                FileObject targetFolder = javaSourceGroup[0].getRootFolder();
-                CreateHibernateConfiguration createHibernateConfiguration =
-                        new CreateHibernateConfiguration(targetFolder, enclosingProject);
-                targetFolder.getFileSystem().runAtomicAction(createHibernateConfiguration);
 
-                return createHibernateConfiguration.getCreatedFiles();
-            }
+        // when there is no enclosing project found empty set is returned
+        if (enclosingProject!=null) {
+            Sources sources = ProjectUtils.getSources(enclosingProject);
+            try {
+                SourceGroup[] javaSourceGroup = sources.getSourceGroups(
+                        JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+                if (javaSourceGroup == null || javaSourceGroup.length == 0) {
+                    javaSourceGroup = sources.getSourceGroups(
+                            JavaProjectConstants.SOURCES_TYPE_JAVA);
+                }
+                if (javaSourceGroup != null && javaSourceGroup.length != 0) {
+                    FileObject targetFolder = javaSourceGroup[0].getRootFolder();
+                    CreateHibernateConfiguration createHibernateConfiguration =
+                            new CreateHibernateConfiguration(targetFolder, enclosingProject);
+                    targetFolder.getFileSystem().runAtomicAction(createHibernateConfiguration);
 
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+                    return createHibernateConfiguration.getCreatedFiles();
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return Collections.EMPTY_SET;
     }

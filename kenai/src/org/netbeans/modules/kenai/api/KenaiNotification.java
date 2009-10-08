@@ -138,7 +138,8 @@ public final class KenaiNotification {
         public static enum Type {
             NEW,
             CHANGE,
-            DELETE
+            DELETE,
+            UNKNOWN
         }
 
         public Modification(String resource, String id, Type type) {

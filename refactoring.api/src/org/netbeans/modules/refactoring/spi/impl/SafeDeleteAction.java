@@ -46,6 +46,8 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -124,7 +126,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                         performAction(nodes);
                         regularDelete = false;
                     }
-                    
+
                 });
             }
             return true;
@@ -143,25 +145,63 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                 }
             }
             if (delete) {
-                try {
-                    FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
-                            for (int i = 0; i < nodes.length; i++) {
-                                try {
-                                    nodes[i].destroy();
-                                } catch (IOException ioe) {
-                                    LOGGER.log(Level.WARNING, null, ioe);
+                if (doConfirm(nodes)) {
+                    try {
+                        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                            public void run() throws IOException {
+                                for (int i = 0; i < nodes.length; i++) {
+                                    try {
+                                        nodes[i].destroy();
+                                    } catch (IOException ioe) {
+                                        LOGGER.log(Level.WARNING, null, ioe);
+                                    }
                                 }
                             }
-                        }
-                    });
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, null, ioe);
+                        });
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.WARNING, null, ioe);
+                    }
                 }
                 return true;
-            } else {
-                return false;
             }
         }
+        return false;
+    }
+
+    // #173549 - ideally we should somehow reuse this from ExplorerActionsImpl or
+    //  EAI should wrap destroying nodes in FileSystem.AtomicAction the same way as we did
+    //  for #172199
+    private boolean doConfirm(Node[] sel) {
+        String message;
+        String title;
+        boolean customDelete = true;
+
+        for (int i = 0; i < sel.length; i++) {
+            if (!Boolean.TRUE.equals(sel[i].getValue("customDelete"))) { // NOI18N
+                customDelete = false;
+
+                break;
+            }
+        }
+
+        if (customDelete) {
+            return true;
+        }
+
+        if (sel.length == 1) {
+            message = NbBundle.getMessage(
+                    ExtendedDelete.class, "MSG_ConfirmDeleteObject", sel[0].getDisplayName() //NOI18N
+                );
+            title = NbBundle.getMessage(ExtendedDelete.class, "MSG_ConfirmDeleteObjectTitle"); //NOI18N
+        } else {
+            message = NbBundle.getMessage(
+                    ExtendedDelete.class, "MSG_ConfirmDeleteObjects", Integer.valueOf(sel.length) //NOI18N
+                );
+            title = NbBundle.getMessage(ExtendedDelete.class, "MSG_ConfirmDeleteObjectsTitle"); //NOI18N
+        }
+
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
+
+        return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
     }
 }

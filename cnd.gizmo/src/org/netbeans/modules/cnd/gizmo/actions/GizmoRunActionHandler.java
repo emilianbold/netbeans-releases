@@ -168,7 +168,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         // Setup simple output convertor factory...
         targetConf.setOutConvertorFactory(new SimpleOutputConvertorFactory());
 
-        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("GizmoDTraceExtended");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());

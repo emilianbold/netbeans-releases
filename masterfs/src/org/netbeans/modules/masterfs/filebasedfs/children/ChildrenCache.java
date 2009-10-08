@@ -53,10 +53,10 @@ public interface ChildrenCache {
 
     FileNaming getChild(String childName, boolean rescan);
     void removeChild(FileNaming childName);    
-    Set getChildren(boolean rescan);
+    Set<FileNaming> getChildren(boolean rescan);
     //cached existing
-    Set getCachedChildren();
+    Set<FileNaming> getCachedChildren();
     boolean isCacheInitialized();    
-    Map refresh();
+    Map<FileNaming, Integer> refresh();
     Mutex.Privileged getMutexPrivileged();
 }

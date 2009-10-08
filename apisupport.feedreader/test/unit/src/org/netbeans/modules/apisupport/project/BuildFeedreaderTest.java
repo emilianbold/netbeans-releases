@@ -162,7 +162,7 @@ public class BuildFeedreaderTest extends TestBase {
         assertFileExists("build/updates/com-sun-syndication-fetcher.nbm");
         assertFileExists("build/updates/com-sun-syndication.nbm");
         assertFileExists("build/updates/org-jdom.nbm");
-        assertFileExists("build/updates/org-myorg-feedreader.nbm");
+        assertFileExists("build/updates/org-netbeans-feedreader.nbm");
         assertFileExists("build/updates/updates.xml");
         assertEquals("build ant target should return zero - build successful", 0 , ret);
     }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -87,6 +87,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
@@ -149,8 +150,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
-        table = new JTable(sorter);
-        sorter.setTableHeader(table.getTableHeader());
+        table = new SortedTable(sorter);
         int height = new JLabel("FONTSIZE").getPreferredSize().height * 6 / 5;  // NOI18N
         table.setRowHeight(height);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);

@@ -73,9 +73,10 @@ public class ValuePresenter {
     private static class StdStringPresenter implements Presenter {
         private static final String VALUE_PREFIX = "_M_p"; // NOI18N
         private static final String TYPE_NAME = "string"; // NOI18N
+        private static final String TYPE_NAME2 = "string &"; // NOI18N
 
         public boolean accepts(String type, String value) {
-            return TYPE_NAME.equals(type) && value != null && value.contains(VALUE_PREFIX);
+            return (TYPE_NAME.equals(type) || TYPE_NAME2.equals(type)) && value != null && value.contains(VALUE_PREFIX);
         }
 
         public String present(String type, String value) {

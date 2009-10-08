@@ -187,7 +187,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 if (fileAnnotationInfo != null) {
                     JEditorPane jEditorPane = activatedEditorPane(node);
                     if (!fileAnnotationInfo.isAnnotated()) {
-                        fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
+                        fileAnnotationInfo.setEditorPane(jEditorPane);
                         fileAnnotationInfo.setAnnotated(true);
                     }
                     SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));

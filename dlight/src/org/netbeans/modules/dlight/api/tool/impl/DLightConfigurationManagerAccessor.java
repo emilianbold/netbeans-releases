@@ -85,7 +85,7 @@ public abstract class DLightConfigurationManagerAccessor {
     
     public abstract boolean deleteTool(DLightConfigurationManager manager, String configurationName, DLightTool tool);
 
-    public abstract DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName);
+    public abstract DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
 
     public abstract boolean removeConfiguration(String configurationName);
 

@@ -30,8 +30,8 @@
  <answer id="arch-overall">
   <p>
    The module provides implementation of <tt>DataCollectorConfiguration</tt>
-   (<tt>DTDCConfiguration</tt>) that can be used by D-Light clients to create
-   DataCollectors based on dtrace(1M). D-Light infrastructure handles obtaining
+   (<tt>DTDCConfiguration</tt>) that can be used by DLight clients to create
+   DataCollectors based on dtrace(1M). DLight infrastructure handles obtaining
    needed privileges, invokation of dtrace itself and parsing of it's output.
    In the simpliest case user just provides a d-script and set of
    <tt>DataTableMetadata</tt>. Output of d-script should follow this simple
@@ -176,7 +176,7 @@ syscall::read:return
    D-Trace (dtrace(1M)) is a very powerfull observability tool available on
    Solaris 10+ OS. It can be used to obtain almost any information about system
    as a whole as well as about an individual process. This package provides a
-   simple way of integrating dtrace scripts with D-Light infrastructure.
+   simple way of integrating dtrace scripts with DLight infrastructure.
    <br/>
    More information can be found in
    <a href="http://wiki.netbeans.org/DLightToolkitDesign">DLight Toolkit Design Document</a>.
@@ -572,7 +572,7 @@ JRE is enough.
  <answer id="exec-introspection">
   <p>
    Yes. In case if <tt>DLightTarget</tt> is attachable dtrace is started with
-   <tt>PID</tt> (PID of the D-Light target) additional parameter.
+   <tt>PID</tt> (PID of the DLight target) additional parameter.
   </p>
  </answer>
 
@@ -688,7 +688,7 @@ JRE is enough.
 -->
  <answer id="exec-threading">
   <p>
-   No. All threading-related stuff is handled by the D-Light Toolkit.
+   No. All threading-related stuff is handled by the DLight Toolkit.
   </p>
  </answer>
 
@@ -806,7 +806,7 @@ JRE is enough.
  <answer id="lookup-register">
   <p>
    The module provides implementations of <tt>DataCollectorFactory</tt> and
-   <tt>IndicatorDataProviderFactory</tt> (from D-Light Toolkit) that it
+   <tt>IndicatorDataProviderFactory</tt> (from DLight Toolkit) that it
    registers in the Global Lookup.
   </p>
  </answer>

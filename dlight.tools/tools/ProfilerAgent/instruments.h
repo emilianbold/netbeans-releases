@@ -17,7 +17,9 @@ enum {
     SYNCMSG = 2,
     CPUMSG  = 3,
     FAILMSG = 66,
-    CTRLMSG = 99
+    CTRLMSG = 99,
+    ACKREQUEST = 100,
+    ACKREPLY = 101
 };
 
 #define FAILURE (0x7fffffff)
@@ -49,6 +51,14 @@ typedef struct failmsg {
     long    type;
     I32     control;
 } failmsg;
+
+typedef struct ackrequestmsg {
+    long    type;
+} ackrequestmsg;
+
+typedef struct ackreplymsg {
+    long    type;
+} ackreplymsg;
 
 
 #define DEF_RES (10000)
