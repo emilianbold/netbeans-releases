@@ -67,6 +67,7 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -352,7 +353,15 @@ public class JavadocUtilities {
         
     public static AnnotationMirror findDeprecated(CompilationInfo javac, Element elm) {
         TypeElement deprAnn = javac.getElements().getTypeElement("java.lang.Deprecated"); //NOI18N
-        assert deprAnn != null;
+        if (deprAnn == null) {
+            String msg = String.format("Even though the source level of %s" + //NOI18N
+                    " is set to JDK5 or later, java.lang.Deprecated cannot" + //NOI18N
+                    " be found on the bootclasspath: %s", //NOI18N
+                    javac.getClasspathInfo().getClassPath(PathKind.SOURCE),
+                    javac.getClasspathInfo().getClassPath(PathKind.BOOT));
+            Logger.getLogger(JavadocUtilities.class.getName()).warning(msg);
+            return null;
+        }
         for (AnnotationMirror annotationMirror : javac.getElements().getAllAnnotationMirrors(elm)) {
             if (deprAnn.equals(annotationMirror.getAnnotationType().asElement())) {
                 return annotationMirror;
