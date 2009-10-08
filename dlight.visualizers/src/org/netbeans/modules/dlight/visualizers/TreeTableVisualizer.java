@@ -496,6 +496,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         isShown = false;
     }
 
+    public void updateVisualizerConfiguration(TreeTableVisualizerConfiguration configuration) {
+    }
+
     protected class TreeModelImpl implements TreeModel, TreeExpansionModel {
 
         private final Object listenersLock = new Object();

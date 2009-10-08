@@ -37,34 +37,26 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.spi;
+package org.netbeans.modules.dlight.core.stack.dataprovider;
 
-import java.util.List;
-import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 
 /**
- * Provides the following service:
- * in case UI visualizer shows list of function calls with the metrics list
- * one the list is updated showSource method will be invoked,
- * it is also will be invoked on Go To Source action from the View 
- * @author Maria Tishkova
+ * Specify the threshold percentage for highlighting metrics in the annotated source code.
+ * If the value of any metric is equal to or greater than value % of the maximum value of that metric
+ * for any source line in the file, the line on which the metrics
+ * occur have annotation highlited in the editor.
  */
-public interface AnnotatedSourceSupport {
-    /**
-     * This method is invoked in non UI thread
-     * @param sourceFileInfoProvider source file info provider which can be used to get the source file info for the function call
-     * @param metrics metrics list which were displayed
-     * @param functionCallsthe list of function calls with the metrics
-     */
-    void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
-    /**
-     * This method is invoked in non UI thread
-     * @param sourceFileInfoProvider source file info provider which can be used to get the source file info for the function call
-     * @param metrics metrics list which were displayed
-     * @param functionCallsthe list of function calls with the metrics
-     */
-    void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
+public final class ThresholdDataFilter implements DataFilter{
+    private final int value;
+
+
+    public ThresholdDataFilter(int value){
+        this.value = value;
+    }
+
+    public int getValue(){
+        return value;
+    }
 
 }
