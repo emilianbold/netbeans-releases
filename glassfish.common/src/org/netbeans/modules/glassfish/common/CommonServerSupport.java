@@ -134,9 +134,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
         
-        if(isRunning(hostName, adminPort)) {
             refresh();
-        }
     }
     
 //<<<<<<< local
