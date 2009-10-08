@@ -145,7 +145,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //add the text nodes into the ast due to performance reasons
         Document doc = info.getSnapshot().getSource().getDocument(true);
         TokenHierarchy<Document> hierarchy = TokenHierarchy.get(doc);
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc);
+        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
         if(ts == null) {
             return Collections.emptyList();
         }

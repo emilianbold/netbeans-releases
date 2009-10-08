@@ -36,8 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui.api;
+package org.netbeans.modules.dlight.toolsui;
 
+import org.netbeans.modules.dlight.toolsui.api.*;
 import org.netbeans.modules.dlight.api.tool.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,6 @@ public class DLightConfigurationUIWrapper {
     private String name;
     private String displayName;
     private List<DLightToolUIWrapper> tools;
-    private boolean profileOnRun;
     private boolean modified;
     private DLightConfiguration copyOf;
 
@@ -62,7 +62,6 @@ public class DLightConfigurationUIWrapper {
         this.dlightConfiguration = dlightConfiguration;
         this.name = dlightConfiguration.getConfigurationName();
         this.displayName = dlightConfiguration.getDisplayedName();
-        this.profileOnRun = true;
         this.custom = DLightConfigurationSupport.getInstance().canRemoveConfiguration(dlightConfiguration.getConfigurationName());
         copyOf = null;
         initWrapper(allDLightTools);
@@ -191,23 +190,6 @@ public class DLightConfigurationUIWrapper {
     }
 
     /**
-     * @return the profileOnRun
-     */
-    public boolean isProfileOnRun() {
-        return profileOnRun;
-    }
-
-    /**
-     * @param profileOnRun the profileOnRun to set
-     */
-    public void setProfileOnRun(boolean profileOnRun) {
-        if (this.profileOnRun != profileOnRun){
-            modified = true;
-        }
-        this.profileOnRun = profileOnRun;
-    }
-
-    /**
      * @return the modified
      */
     public boolean isModified() {
@@ -227,7 +209,6 @@ public class DLightConfigurationUIWrapper {
             toolsCopy.add(dltuWrapper.getDLightTool());
         }
         DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(getDLightConfiguration(), toolsCopy);
-        copy.setProfileOnRun(isProfileOnRun());
         copy.setModified(false);
         return copy;
     }

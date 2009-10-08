@@ -38,40 +38,87 @@
  */
 package org.netbeans.modules.dlight.toolsui;
 
-import org.netbeans.modules.dlight.toolsui.api.ToolsManagerPanel;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.dlight.api.tool.*;
 
-public final class ToolsCustomizerAction implements ActionListener {
+/**
+ *
+ * @author thp
+ */
+public class DLightToolUIWrapper {
 
-    public void actionPerformed(ActionEvent e) {
-        showCustomizer();
+    private DLightTool dlightTool;
+    private boolean enabled;
+    private boolean modified = false;
+    private boolean canEnable = true;
+
+    public DLightToolUIWrapper(DLightTool dlightTool, boolean enabled, boolean canChange) {
+        this.dlightTool = dlightTool;
+        this.enabled = enabled;
+        this.canEnable = canChange;
     }
 
     /**
-     * Shows libraries customizer displaying all currently open library managers.
-     * @return true if user pressed OK and libraries were sucessfully modified
+     * @return the dLightTool
      */
-    private static boolean showCustomizer () {
-        ToolsManagerPanel customizer = new ToolsManagerPanel();
-        DialogDescriptor descriptor = new DialogDescriptor (customizer,
-                NbBundle.getMessage(ToolsCustomizerAction.class, "TXT_ToolsCustomizer"));
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            dlg.setVisible(true);
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                return customizer.apply();
-            } else {
-                return false;
-            }
-        } finally {
-            dlg.dispose();
-        }
+    public DLightTool getDLightTool() {
+        return dlightTool;
     }
 
+    /**
+     * @param dLightTool the dLightTool to set
+     */
+    public void setDLightTool(DLightTool dlightTool) {
+        this.dlightTool = dlightTool;
+    }
+
+    /**
+     * @return the enabled
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * @param enabled the enabled to set
+     */
+    public void setEnabled(boolean enabled) {
+        if (this.enabled != enabled){
+            modified = true;
+        }
+        this.enabled = enabled;
+    }
+
+    /**
+     * @return the modified
+     */
+    public boolean isModified() {
+        return modified;
+    }
+
+    /**
+     * @param modified the modified to set
+     */
+    public void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
+    public DLightToolUIWrapper copy() {
+        DLightToolUIWrapper copy = new DLightToolUIWrapper(getDLightTool(), isEnabled(), canEnable());
+        copy.setModified(false);
+        return copy;
+    }
+
+    /**
+     * @return the canChange
+     */
+    public boolean canEnable() {
+        return canEnable;
+    }
+
+    /**
+     * @param canChange the canChange to set
+     */
+    public void setCanEnable(boolean canChange) {
+        this.canEnable = canChange;
+    }
 }
