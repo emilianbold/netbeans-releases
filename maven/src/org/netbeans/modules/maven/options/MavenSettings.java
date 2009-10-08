@@ -39,12 +39,12 @@
 
 package org.netbeans.modules.maven.options;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
-import hidden.org.codehaus.plexus.util.cli.Arg;
-import hidden.org.codehaus.plexus.util.cli.CommandLineException;
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
-import hidden.org.codehaus.plexus.util.cli.Commandline;
-import hidden.org.codehaus.plexus.util.cli.StreamConsumer;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.Arg;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.StreamConsumer;
 import java.io.File;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;

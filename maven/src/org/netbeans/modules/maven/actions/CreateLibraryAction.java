@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.actions;
 
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;

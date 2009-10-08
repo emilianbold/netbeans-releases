@@ -69,7 +69,7 @@ import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.NbArtifact;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

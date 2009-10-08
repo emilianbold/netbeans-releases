@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.newproject;
 
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;

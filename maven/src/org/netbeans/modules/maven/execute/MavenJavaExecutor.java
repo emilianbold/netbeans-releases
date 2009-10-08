@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.execute;
 
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;

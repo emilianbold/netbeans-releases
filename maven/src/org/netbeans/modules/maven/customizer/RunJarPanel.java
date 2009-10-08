@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.util.MissingResourceException;

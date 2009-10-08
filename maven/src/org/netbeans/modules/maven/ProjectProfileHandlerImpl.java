@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;

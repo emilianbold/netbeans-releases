@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.awt.Image;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
