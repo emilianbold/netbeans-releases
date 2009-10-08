@@ -43,6 +43,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
@@ -79,7 +80,7 @@ final class MultiPassCompileWorker extends CompileWorker {
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
 
-    ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
@@ -103,6 +104,9 @@ final class MultiPassCompileWorker extends CompileWorker {
         boolean isBigFile = false;
 
         while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
+            if (context.isCancelled()) {
+                return null;
+            }
             try {
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
@@ -129,7 +133,11 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum);
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum, new CancelService() {
+                        public @Override boolean isCanceled() {
+                            return context.isCancelled();
+                        }
+                    });
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
                         JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
                     }

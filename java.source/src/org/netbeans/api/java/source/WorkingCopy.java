@@ -237,7 +237,7 @@ public class WorkingCopy extends CompilationController {
             throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite non-comment token: " + ts.token().id());
         }
         
-        if (ts.offset() + ts.token().length() <= start + length) {
+        if (ts.offset() + ts.token().length() < start + length) {
             throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite text after comment token. Token end offset: " + (ts.offset() + ts.token().length()) + ", rewrite end offset: " + (start + length));
         }
         
