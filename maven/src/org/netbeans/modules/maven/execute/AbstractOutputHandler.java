@@ -47,7 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.embedder.MavenEmbedderLogger;
+import org.netbeans.modules.maven.embedder.MavenEmbedderLogger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.modules.maven.api.execute.RunConfig;
