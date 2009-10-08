@@ -143,6 +143,7 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    @Override
     public boolean isEditable() {
         return Setup.REVISION_CURRENT.equals(revision) && isPrimary();
     }
@@ -160,6 +161,7 @@ public class DiffStreamSource extends StreamSource {
         return true;
     }
 
+    @Override
     public synchronized Lookup getLookup() {
         try {
             init();
@@ -181,7 +183,7 @@ public class DiffStreamSource extends StreamSource {
             return;
         }
         if (start == false) return;
-        start = false;;
+        start = false;
         if (remoteFile != null || revision == null) return;
         mimeType = Mercurial.getInstance().getMimeType(baseFile);
         try {
