@@ -1578,12 +1578,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
                                 forceReindex = votes.get(eif) == Boolean.FALSE;
-                                final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
-                                transactionContexts.add(context);
-                                if (!eif.scanStarted(context)) {
-                                    forceReindex = true;
-                                }
-                                ctxToFinish.put(eif, context);
                             }
                         }
                     }
