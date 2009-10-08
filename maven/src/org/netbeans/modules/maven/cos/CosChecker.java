@@ -289,7 +289,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
                     try {
                         //jvm args, add and for debugging, remove the debugging ones..
-                        params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[2]));
+                        params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[0]));
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
