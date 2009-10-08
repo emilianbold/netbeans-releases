@@ -49,6 +49,7 @@ public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
 
     static {
         System.setProperty("cnd.remote.fs", "true");
+        System.setProperty("cnd.remote.scp", "true");
     }
 
     public RfsBaseRemoteBuildTestCase(String testName) {
