@@ -54,6 +54,7 @@ package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
 import java.util.Collection;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -213,4 +214,19 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    /** replaces this in object stream */
+    public
+    @Override
+    Object writeReplace() {
+        return new ResolvableHelper();
+    }
+
+    final static class ResolvableHelper implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        public Object readResolve() {
+            return ParallelAdviserTopComponent.getDefault();
+        }
+    }
 }
