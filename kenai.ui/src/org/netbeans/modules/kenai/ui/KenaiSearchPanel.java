@@ -708,6 +708,7 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
         private JList kpList;
+        private static final int MAX_PROJECT_COUNT = 100;
 
         private boolean itemSelected = false;
 
@@ -722,8 +723,10 @@ public class KenaiSearchPanel extends JPanel {
 
         public void run() {
             if (projects != null) {
-                while(projects.hasNext()) {
+                int count=0;
+                while(projects.hasNext() && count<MAX_PROJECT_COUNT) {
                     KenaiProject project = projects.next();
+                    count++;
                     try {
                         project.getProjectIcon(); // a project image will be needed, prepare it in advance
                     } catch (KenaiException ex) { // problem with icon loading
