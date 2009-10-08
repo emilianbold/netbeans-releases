@@ -36,32 +36,27 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import java.util.List;
+package org.netbeans.modules.dlight.core.stack.dataprovider;
+
+import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 
 /**
- * Describes a datarace - condition when several threads concurrently read
- * and write the same address in memory.
- *
- * @author Alexey Vladykin
+ * Specify the threshold percentage for highlighting metrics in the annotated source code.
+ * If the value of any metric is equal to or greater than value % of the maximum value of that metric
+ * for any source line in the file, the line on which the metrics
+ * occur have annotation highlited in the editor.
  */
-public interface Datarace {
+public final class ThresholdDataFilter implements DataFilter{
+    private final int value;
 
-    /**
-     * @return memory address if available, <code>-1</code> otherwise
-     */
-    long getAddress();
 
-    /**
-     * 
-     * @return returns string representation, can return Multiple Address
-     */
-    String stringAddress();
+    public ThresholdDataFilter(int value){
+        this.value = value;
+    }
 
-    /**
-     * @return list of unique thread dumps related to this datarace
-     */
-    List<ThreadDump> getThreadDumps();
+    public int getValue(){
+        return value;
+    }
+
 }
