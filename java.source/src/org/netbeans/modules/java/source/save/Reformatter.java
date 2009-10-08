@@ -741,6 +741,16 @@ public class Reformatter implements ReformatTask {
                         String ind = getIndent();
                         if (!ind.equals(text))
                             addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                    } else if (tokens.movePrevious()) {
+                        if (tokens.token().id() == LINE_COMMENT) {
+                            tokens.moveNext();
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                        } else {
+                            tokens.moveNext();
+                        }
                     }
                 }
                 tokens.moveNext();
@@ -1251,6 +1261,16 @@ public class Reformatter implements ReformatTask {
                             String ind = getIndent();
                             if (!ind.equals(text))
                                 addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        } else if (tokens.movePrevious()) {
+                            if (tokens.token().id() == LINE_COMMENT) {
+                                tokens.moveNext();
+                                String ind = getIndent();
+                                if (!ind.equals(text))
+                                    addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                            } else {
+                                tokens.moveNext();
+                            }
                         }
                     }
                     tokens.moveNext();
