@@ -598,6 +598,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private static void downloadCompilerSet(CompilerSet cs) {
+        String fail = null;
         try {
             URL url = new URL(cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
             UpdateUnitProvider provider = UpdateUnitProviderFactory.getDefault().create(cs.getCompilerFlavor().getToolchainDescriptor().getModuleID(), "SunStudio for Linux", url, UpdateUnitProvider.CATEGORY.STANDARD); // NOI18N
@@ -610,14 +611,22 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                     InstallSupport support = installContainer.getSupport();
                     if (support != null) {
                         PluginManager.openInstallWizard(installContainer);
+                        return;
                     }
                     break;
                 }
             }
+            fail = getString("ToolsPanel.ModuleNotFound", cs.getDisplayName(),
+                             cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterDisplayName(),
+                             cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+        if (fail != null) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(fail,NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
         }
     }
 
@@ -638,14 +647,16 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             if (cs.isUrlPointer()) {
-                String message = NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterTextField",
-                        cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl());
-                tfBaseDirectory.setText(message);
+                lbBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbBaseDirectory.text.uc"));
+                tfBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterTextField",
+                        cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterDisplayName(),
+                        cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl()));
                 tfBaseDirectory.setCaretPosition(0);
                 btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterInstallButton"));
                 btBaseDirectory.setEnabled(true);
                 isUrl = true;
             } else {
+                lbBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbBaseDirectory.text"));
                 tfBaseDirectory.setText(cs.getDirectory());
                 btBaseDirectory.setEnabled(!isRemoteHostSelected());
                 btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.text")); // NOI18N
@@ -2121,6 +2132,10 @@ private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     private static String getString(String key, Object param1, Object param2) {
         return NbBundle.getMessage(ToolsPanel.class, key, param1, param2);
+    }
+
+    private static String getString(String key, Object param1, Object param2, Object param3) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param1, param2, param3);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
