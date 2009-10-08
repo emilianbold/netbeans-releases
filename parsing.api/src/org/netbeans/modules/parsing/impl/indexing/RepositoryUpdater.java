@@ -1528,6 +1528,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
                     }
 
+                    if (getShuttdownRequest().isRaised()) {
+                        return false;
+                    }
+                    
                     // now process embedding indexers
                     boolean containsNewIndexers = false;
                     boolean forceReindex = false;
@@ -1538,7 +1542,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
-                                final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, null);
+                                final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
                                 transactionContexts.add(context);
                                 if (!eif.scanStarted(context)) {
                                     forceReindex = true;
@@ -1696,6 +1700,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                                 if (infos != null && infos.size() > 0) {
                                     for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
+                                        if (getShuttdownRequest().isRaised()) {
+                                            return;
+                                        }
+
                                         EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
                                         if (LOGGER.isLoggable(Level.FINE)) {
                                             LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
@@ -1723,6 +1731,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 }
 
                                 for (Embedding embedding : resultIterator.getEmbeddings()) {
+                                    if (getShuttdownRequest().isRaised()) {
+                                        return;
+                                    }
                                     run(resultIterator.getResultIterator(embedding));
                                 }
                             }
@@ -1733,7 +1744,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            return true;
+            return !getShuttdownRequest().isRaised();
         }
 
         /**
