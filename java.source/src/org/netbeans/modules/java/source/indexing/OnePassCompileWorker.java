@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
@@ -80,7 +81,7 @@ import org.openide.filesystems.FileUtil;
  */
 final class OnePassCompileWorker extends CompileWorker {
 
-    ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final Map<JavaFileObject, List<String>> file2FQNs = new HashMap<JavaFileObject, List<String>>();
         final Set<ElementHandle<TypeElement>> addedTypes = new HashSet<ElementHandle<TypeElement>>();
@@ -95,6 +96,9 @@ final class OnePassCompileWorker extends CompileWorker {
         JavacTaskImpl jt = null;
 
         for (CompileTuple tuple : files) {
+            if (context.isCancelled()) {
+                return null;
+            }
             try {
                 if (mem.isLowMemory()) {
                     jt = null;
@@ -103,7 +107,11 @@ final class OnePassCompileWorker extends CompileWorker {
                     System.gc();
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum);
+                    jt = JavacParser.createJavacTask(javaContext.cpInfo, dc, javaContext.sourceLevel, cnffOraculum, new CancelService() {
+                        public @Override boolean isCanceled() {
+                            return context.isCancelled();
+                        }
+                    });
                 }
                 for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                     if (units != null)

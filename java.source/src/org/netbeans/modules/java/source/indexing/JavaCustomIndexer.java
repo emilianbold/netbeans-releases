@@ -178,6 +178,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             CompileWorker.ParsingOutput compileResult = null;
                             for (CompileWorker w : WORKERS) {
                                 compileResult = w.compile(compileResult, context, javaContext, toCompile);
+                                if (compileResult == null || context.isCancelled()) {
+                                    return null; // cancelled, IDE is sutting down
+                                }
                                 if (compileResult.success) {
                                     break;
                                 }
@@ -190,7 +193,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             _rt.removeAll(compileResult.addedTypes);
                             compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
-                            if (!context.isSupplementaryFilesIndexing()) {
+                            if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
                                 compileResult.modifiedTypes.addAll(_rt);
                                 Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
                                 Set<URL> urls = root2Rebuild.get(context.getRootURI());
