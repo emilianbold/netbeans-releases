@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * This class provides means for tight integration between VCS modules and the indexing
@@ -59,6 +58,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public final class IndexingBridge {
 
+    private static final Logger LOG = Logger.getLogger(IndexingBridge.class.getName());
+    private static IndexingBridge instance = null;
+    
     private int delayBeforeRefresh = -1;
     private static final int DEFAULT_DELAY = 100;
     
@@ -143,7 +145,12 @@ public final class IndexingBridge {
                     // let's give the filesystem some time to wake up and to realize that the file has really changed
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                            long t = System.currentTimeMillis();
+                            try {
+                                FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                            } finally {                                
+                                LOG.fine(" refreshing " + parents.size() + " parents took " + (System.currentTimeMillis() - t) + " millis.");
+                            }
                         }
                     }, getDelay()); 
                 }
@@ -182,12 +189,6 @@ public final class IndexingBridge {
     // -----------------------------------------------------------------------
     // private implementation
     // -----------------------------------------------------------------------
-
-    private static final Logger LOG = Logger.getLogger(IndexingBridge.class.getName());
-    private static IndexingBridge instance = null;
-// XXX: is this neccessary?
-//    private static final int DEFAULT_DELAY = 100;
-//    private int delayBeforeRefresh = -1;
     
     private IndexingBridge() {
         // no-op
