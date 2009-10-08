@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.dlight.api.tool;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationManagerAccessor;
 import org.openide.filesystems.FileObject;
@@ -49,7 +51,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class DLightConfigurationManager {
 
-    static{
+    static {
         DLightConfigurationManagerAccessor.setDefault(new DLightConfigurationManagerAccessorImpl());
     }
     private static DLightConfigurationManager instance = null;
@@ -69,6 +71,82 @@ public final class DLightConfigurationManager {
 
     void selectConfiguration(String configurationName) {
         this.selectedConfigurationName = configurationName;
+    }
+
+    boolean canDelete(String configurationName) {
+        DLightConfiguration configuration = getConfigurationByName(configurationName);
+        return configuration != null && !configuration.isSystem();
+    }
+
+    boolean removeConfiguration(String configurationName) {
+        FileObject configurationsFolder = getToolsFSRoot();
+        if (configurationsFolder == null) {
+            System.err.println("Configurations folder is NULL which should not be");//NOI18N
+            return false;
+        }
+        FileObject[] configurations = configurationsFolder.getChildren();
+
+        if (configurations == null || configurations.length == 0) {
+            return false;
+        }
+        FileObject toDelete = null;
+        for (FileObject configuration : configurations) {
+            if (configuration.getName().equals(configurationName)) {
+                try {
+                    configuration.delete();
+                } catch (IOException ex) {
+                    return false;
+                }
+            }
+        }
+        return true;
+
+    }
+
+    private String commaSeparatedList(List<String> list) {
+        StringBuffer res = new StringBuffer();
+        for (String s : list) {
+            if (res.length() > 0) {
+                res.append(","); // NOI18N
+            }
+            res.append(s);
+        }
+        return res.toString();
+    }
+
+    DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
+        FileObject configurationsFolder = getToolsFSRoot();
+        FileObject configurationFolder;
+        try {
+            configurationFolder = configurationsFolder.createFolder(configurationName);
+            configurationFolder.setAttribute("displayedName", displayedName);//NOI18N
+            configurationFolder.setAttribute("category", category);//NOI18N
+            configurationFolder.setAttribute("platforms", commaSeparatedList(platforms));//NOI18N
+            configurationFolder.setAttribute("collector.providers", collector);//NOI18N
+            configurationFolder.setAttribute("indicator.providers", commaSeparatedList(indicators));//NOI18N
+            configurationFolder.createFolder(ToolsConfiguration.KNOWN_TOOLS_SET);
+        } catch (IOException ex) {
+            return null;
+        }
+        return getConfigurationByName(configurationName);
+
+        //and add new with the
+    }
+    
+    /**
+     * Returns DLightConfiguration which belongs to the category with the name  <code>categoryName</code>, <code>empty collection</code> otherwise
+     * @param categoryName category to get the list of the configirations for
+     * @return DLightConfigurations collection for category <code>categoryName</code>, <code>empty collection</code> otherwise
+     */
+    public Collection<DLightConfiguration> getConfigurationsByCategoryName(String categoryName) {
+        List<DLightConfiguration> toolConfigurations = new ArrayList<DLightConfiguration>(getDLightConfigurations());
+        Collection<DLightConfiguration> result = new ArrayList<DLightConfiguration>();
+        for (DLightConfiguration conf : toolConfigurations) {
+            if (categoryName != null && conf.getCategoryName() != null && conf.getCategoryName().equals(categoryName)) {
+                result.add(conf);
+            }
+        }
+        return result;
     }
 
     /**
@@ -91,6 +169,7 @@ public final class DLightConfigurationManager {
         FileObject configurationsFolder = getToolsFSRoot();
 
         if (configurationsFolder == null) {
+            System.err.println("Configurations folder is NULL which should not be");//NOI18N
             return result;
         }
 
@@ -120,7 +199,7 @@ public final class DLightConfigurationManager {
     /**
      * This method returns the default configuration (all tools)
      */
-    final DLightConfiguration getDefaultConfiguration() {
+    public final DLightConfiguration getDefaultConfiguration() {
         return DLightConfiguration.createDefault();
     }
 
@@ -135,19 +214,26 @@ public final class DLightConfigurationManager {
         return instance;
     }
 
-    final boolean registerTool(String configurationName, DLightTool tool){
+    final boolean registerTool(String configurationName, String toolID, boolean isOnByDefault) {
+        DLightConfiguration configurationToRegister = getConfigurationByName(configurationName);
+        DLightConfiguration defaultConfiguration = getDefaultConfiguration();
+        ToolsConfiguration toolsConfiguration = configurationToRegister.getToolsConfiguration();
+        return toolsConfiguration.register(defaultConfiguration.getToolsConfiguration().getFileObject(toolID), isOnByDefault);
+    }
+
+    final boolean registerTool(String configurationName, DLightTool tool) {
         //should find the tool by ID
         DLightConfiguration configurationToRegister = getConfigurationByName(configurationName);
         DLightConfiguration defaultConfiguration = getDefaultConfiguration();
-        ToolsConfiguration toolsConfiguration  = configurationToRegister.getToolsConfiguration();
+        ToolsConfiguration toolsConfiguration = configurationToRegister.getToolsConfiguration();
         return toolsConfiguration.register(defaultConfiguration.getToolsConfiguration().getFileObject(tool.getID()), tool.isEnabled());
     }
 
-    final boolean deleteTool(String configurationName, DLightTool tool){
+    final boolean deleteTool(String configurationName, DLightTool tool) {
         return getConfigurationByName(configurationName).getToolsConfiguration().remove(tool.getID());
     }
 
-    private static class DLightConfigurationManagerAccessorImpl extends DLightConfigurationManagerAccessor{
+    private static class DLightConfigurationManagerAccessorImpl extends DLightConfigurationManagerAccessor {
 
         @Override
         public DLightConfiguration getDefaultConfiguration(DLightConfigurationManager manager) {
@@ -169,8 +255,24 @@ public final class DLightConfigurationManager {
             return manager.deleteTool(configurationName, tool);
         }
 
-        
-        
+        @Override
+        public DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators) {
+            return manager.registerConfiguration(configurationName, displayedName, category, platforms, collector, indicators);
+        }
+
+        @Override
+        public boolean removeConfiguration(String configurationName) {
+            return DLightConfigurationManager.getInstance().removeConfiguration(configurationName);
+        }
+
+        @Override
+        public boolean canRemoveConfiguration(String configurationName) {
+            return DLightConfigurationManager.getInstance().canDelete(configurationName);
+        }
+
+        @Override
+        public boolean registerTool(String configurationName, String toolID, boolean isOneByDefault) {
+            return DLightConfigurationManager.getInstance().registerTool(configurationName, toolID, isOneByDefault);
+        }
     }
-   
 }

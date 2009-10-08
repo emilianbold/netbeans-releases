@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.spi.support;
 
 import org.netbeans.modules.websvc.api.support.ConfigureHandlerCookie;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,6 +74,7 @@ public class ConfigureHandlerAction extends CookieAction{
         return new Class[] {};
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -85,8 +87,15 @@ public class ConfigureHandlerAction extends CookieAction{
     protected void performAction(Node[] activatedNodes) {
         final ConfigureHandlerCookie cookie =
             activatedNodes[0].getCookie(ConfigureHandlerCookie.class);
-        if(cookie != null){
+        if (cookie != null) {
             cookie.configureHandler();
+
+            // logging usage of action
+            Object[] params = new Object[2];
+            String cookieClassName = cookie.getClass().getName();
+            params[0] = cookieClassName.contains("jaxrpc") ? LogUtils.WS_STACK_JAXRPC : LogUtils.WS_STACK_JAXWS; //NOI18N
+            params[1] = "CONFIGURE HANDLERS"; // NOI18N
+            LogUtils.logWsAction(params);
         }
         
     }

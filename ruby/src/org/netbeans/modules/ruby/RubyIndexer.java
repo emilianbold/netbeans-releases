@@ -1324,7 +1324,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                         break;
                     }
                     }
-                }
+                    }
 
                 documents.add(document);
             } finally {
@@ -1363,8 +1363,16 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
         
         private void indexMethod(AstElement child, IndexDocument document, boolean topLevel, boolean nodoc) {
-            MethodDefNode childNode = (MethodDefNode)child.getNode();
-            String signature = AstUtilities.getDefSignature(childNode);
+            String signature = null;
+            Node childNode = child.getNode();
+            // dynamic methods are handled as method elemements as there is no separate
+            // element for them (probably such an element should be added to CSL?).
+            // checking the type here is hence required as dyn methods don't have a method def node
+            if (childNode instanceof MethodDefNode) {
+                signature = AstUtilities.getDefSignature((MethodDefNode) childNode);
+            } else {
+                signature = child.getName();
+            }
             Set<Modifier> modifiers = child.getModifiers();
             
             int flags = getModifiersFlag(modifiers);

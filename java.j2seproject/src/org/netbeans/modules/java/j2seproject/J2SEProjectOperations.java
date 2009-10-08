@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -59,7 +60,6 @@ import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -170,6 +170,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         fixLibraryLocation(origOperations);
         fixPrivateProperties(origOperations);
         fixDistJarProperty (nueName);
+        fixApplicationTitle(nueName);
         project.getReferenceHelper().fixReferences(originalPath);        
         project.setName(nueName);
         restoreConfigurations(origOperations);
@@ -195,6 +196,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         fixLibraryLocation(origOperations);
         fixPrivateProperties (origOperations);
         fixDistJarProperty (nueName);
+        fixApplicationTitle(nueName);
         project.setName(nueName);        
 	project.getReferenceHelper().fixReferences(originalPath);
         restoreConfigurations(origOperations);
@@ -276,6 +278,20 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         });
     }
 
+    private void fixApplicationTitle(final String newName) {
+        ProjectManager.mutex().writeAccess(new Runnable () {
+            public void run () {
+                String oldName = ProjectUtils.getInformation(project).getDisplayName();
+                EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String propValue = ep.getProperty(J2SEProjectProperties.APPLICATION_TITLE);  //NOI18N
+                if (oldName != null && oldName.equals (propValue)) {
+                    ep.put (J2SEProjectProperties.APPLICATION_TITLE,newName); //NOI18N
+                    project.getUpdateHelper().putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                }
+            }
+        });
+    }
+
     private void rememberLibraryLocation() {
         libraryWithinProject = false;
         absolutesRelPath = null;
@@ -329,7 +345,13 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
                         // #131857: SyncFailedException : check for file existence before FileUtil.copyFile
                         FileObject oldFile = privateFolder.getFileObject(fo.getName(), fo.getExt());
                         if (oldFile != null) {
-                            oldFile.delete();
+                            //Probably delete outside of IDE + move. First try to repair FS cache
+                            privateFolder.refresh();
+                            oldFile = privateFolder.getFileObject(fo.getName(), fo.getExt());
+                            if (oldFile != null) {
+                                //The file still exists, delete it.
+                                oldFile.delete();
+                            }
                         }
 
                         FileUtil.copyFile(fo, privateFolder, fo.getName());

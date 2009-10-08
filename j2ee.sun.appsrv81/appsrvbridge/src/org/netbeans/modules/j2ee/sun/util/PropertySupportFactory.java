@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -271,6 +271,7 @@ public class PropertySupportFactory {
                     attribute = revertAttribute(parent, getName(), obj, attribute);
                 }
                 
+                @Override
                 public PropertyEditor getPropertyEditor() {
                    return editorFactory.getEnhancedPropertyEditor(
                         attribute.getValue(), customType);
@@ -378,24 +379,40 @@ public class PropertySupportFactory {
                 if(obj instanceof Object[]){
                     //Map containing previous set of properties
                     java.util.Map attributeMap = (java.util.Map)attribute.getValue();
-                                                            
+                    java.util.Map oldAttrMap = (java.util.Map)attribute.getValue();
+                    
                     //Create a an array of updated properties
                     Object[] currentVal = (Object[])obj;
                     NameValuePair[] pairs = getNameValuePairs(currentVal);
                     java.util.Map propertyList = new java.util.HashMap();
-                    Object[] props = new Object[pairs.length];
+                    java.util.Map newPropsMap = new java.util.HashMap();
+
                     for(int i=0; i<pairs.length; i++){
-                        Attribute attr = new Attribute(pairs[i].getParamName(), pairs[i].getParamValue());
-                        props[i] = attr;
-                        propertyList.put(pairs[i].getParamName(), pairs[i].getParamValue());
+                        String name = pairs[i].getParamName();
+                        String value = pairs[i].getParamValue();
+                        if (attributeMap.containsKey(name)) {
+                            String prevValue = (String)attributeMap.get(name);
+                            if (! prevValue.equals(value)) {
+                                Attribute attr = new Attribute(name, value);
+                                newPropsMap.put(name, attr);
+                            } else {
+                                oldAttrMap.remove(name);
+                            }
+                        } else {
+                            Attribute attr = new Attribute(name, value);
+                            newPropsMap.put(name, attr);
+                        }
+                        propertyList.put(name, value);
                     }
-                    parent.updateExtraProperty(props, attributeMap);
-                    
+                    Object[] props = newPropsMap.values().toArray();
+                    parent.updateExtraProperty(props, oldAttrMap);
+                     
                     //Required to do this set to update UI
                     attribute = new Attribute(getName(), propertyList);
                 }                    
             }
 
+            @Override
             public PropertyEditor getPropertyEditor(){
                 return new NameValuePairsPropertyEditor(attribute.getValue());
             }
@@ -501,6 +518,7 @@ public class PropertySupportFactory {
                 }
             }
             
+            @Override
             public PropertyEditor getPropertyEditor(){
                 return new LogLevelEditor();
             }

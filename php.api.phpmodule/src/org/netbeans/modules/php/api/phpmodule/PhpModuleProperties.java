@@ -44,13 +44,15 @@ import org.openide.util.Parameters;
 
 /**
  * Properties of {@link PhpModule}. This class is used by PHP frameworks
- * to provide default values.
+ * to provide default values or to get current properties of the PHP module
+ * (please note that not all the properties are provided).
  * @author Tomas Mysik
  */
 public final class PhpModuleProperties {
     private final FileObject tests;
     private final FileObject webRoot;
     private final FileObject indexFile;
+    private final String url;
 
     public PhpModuleProperties() {
         this(new PhpModulePropertiesData());
@@ -60,6 +62,7 @@ public final class PhpModuleProperties {
         tests = data.tests;
         webRoot = data.webRoot;
         indexFile = data.indexFile;
+        url = data.url;
     }
 
     /**
@@ -128,10 +131,35 @@ public final class PhpModuleProperties {
         return new PhpModuleProperties(new PhpModulePropertiesData(this).setIndexFile(indexFile));
     }
 
+    /**
+     * Get project URL.
+     * @return project URL
+     * @since 1.19
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Return properties with configured project URL.
+     * <p>
+     * All other properties of the returned properties are inherited from
+     * <code>this</code>.
+     *
+     * @param url project URL
+     * @return new properties with configured project URL
+     * @since 1.19
+     */
+    public PhpModuleProperties setUrl(String url) {
+        Parameters.notNull("url", url);
+        return new PhpModuleProperties(new PhpModulePropertiesData(this).setUrl(url));
+    }
+
     private static final class PhpModulePropertiesData {
         FileObject tests;
         FileObject webRoot;
         FileObject indexFile;
+        String url;
 
         PhpModulePropertiesData() {
         }
@@ -140,6 +168,7 @@ public final class PhpModuleProperties {
             tests = properties.getTests();
             webRoot = properties.getWebRoot();
             indexFile = properties.getIndexFile();
+            url = properties.getUrl();
         }
 
         PhpModulePropertiesData setTests(FileObject tests) {
@@ -154,6 +183,11 @@ public final class PhpModuleProperties {
 
         PhpModulePropertiesData setIndexFile(FileObject indexFile) {
             this.indexFile = indexFile;
+            return this;
+        }
+
+        PhpModulePropertiesData setUrl(String url) {
+            this.url = url;
             return this;
         }
     }

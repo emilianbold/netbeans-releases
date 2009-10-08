@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -189,7 +189,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
     
 
-    public final Enumeration getAttributes() {
+    public final Enumeration<String> getAttributes() {
         return getRealRoot().getAttributes();
     }
 
@@ -217,6 +217,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
         return getRealRoot().lock();
     }
 
+    @Deprecated
     public final void setImportant(final boolean b) {
         getRealRoot().setImportant(b); 
     }
@@ -229,6 +230,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
         return getRealRoot().getFileObject(name, ext);
     }
 
+    @Override
     public final FileObject getFileObject(String relativePath) {
         return getRealRoot().getFileObject(relativePath);
     }
@@ -241,6 +243,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
         return getRealRoot().createData(name, ext);
     }
 
+    @Deprecated
     public final boolean isReadOnly() {
         return getRealRoot().isReadOnly();
     }
@@ -255,6 +258,7 @@ public final class RootObj<T extends FileObject> extends FileObject {
     }
 
     
+    @Override
     public String toString() {
         return getRealRoot().toString();
     }

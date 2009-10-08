@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,8 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -101,12 +99,12 @@ public final class Bookmark {
         StyledDocument document = (StyledDocument) bookmarkList.getDocument ();
         int lineNumber = NbDocument.findLineNumber (document, offset);
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
-        for (Line line : lineToAnnotation.keySet ()) {
-            if (line.getLineNumber () == lineNumber &&
-                line.getLookup().lookup (DataObject.class).equals (dataObject)
+        for (Line _line : lineToAnnotation.keySet ()) {
+            if (_line.getLineNumber () == lineNumber &&
+                _line.getLookup().lookup (DataObject.class).equals (dataObject)
             ) {
-                this.line = line;
-                this.annotation = lineToAnnotation.get (line);
+                this.line = _line;
+                this.annotation = lineToAnnotation.get (_line);
                 return;
             }
         }

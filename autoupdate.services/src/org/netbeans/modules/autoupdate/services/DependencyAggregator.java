@@ -53,17 +53,11 @@ import org.openide.modules.ModuleInfo;
  */
 public class DependencyAggregator extends Object {
     private final static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
-    
     private Collection<ModuleInfo> depending = new CopyOnWriteArraySet<ModuleInfo> ();
     private final DependencyDecoratorKey key;
     
     private DependencyAggregator (DependencyDecoratorKey key) {
-        synchronized(key2dependency) {
-        if (key2dependency.containsKey (key)) {
-            throw new IllegalArgumentException ("No duplicate DependencyDecorator for key " + key);
-        }
-        this.key = key;
-        }
+        this.key = key;        
     }
     
     public static DependencyAggregator getAggregator (Dependency dep) {
@@ -129,9 +123,11 @@ public class DependencyAggregator extends Object {
     public static class DependencyDecoratorKey {
         private final String name;
         private final int type;//, comparison;
+        private final int hashCode;
         public DependencyDecoratorKey (String name, int dependencyType, int comparison) {
             this.name = name;
             this.type = dependencyType;
+            this.hashCode = 772067 ^ type ^ name.hashCode ();
             //this.comparison = comparison;
         }
         
@@ -148,7 +144,7 @@ public class DependencyAggregator extends Object {
         
         @Override
         public int hashCode() {
-            return 772067 ^ type ^ name.hashCode ();
+            return hashCode;
         }
 
         @Override

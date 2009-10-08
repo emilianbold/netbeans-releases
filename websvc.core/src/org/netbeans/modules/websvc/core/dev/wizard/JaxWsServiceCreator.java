@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -199,16 +199,16 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
         FileObject pkg = Templates.getTargetFolder(wiz);
         String wsName = Templates.getTargetName(wiz);
-
+        Project p = projectInfo.getProject();
 
         if (serviceType == WizardProperties.FROM_SCRATCH) {
-            JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
+            JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
             if (jaxWsSupport != null) {
                 wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
                 handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
                 //add the JAXWS 2.0 library, if not already added
                 if (addJaxWsLib) {
-                    addJaxws21Library(projectInfo.getProject());
+                    addJaxws21Library(p);
                 }
                 generateJaxWSImplFromTemplate(pkg, wsName, projectType);
                 handle.finish();
@@ -218,13 +218,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         NotifyDescriptor.ERROR_MESSAGE));
                  handle.finish();
             }
-            return;
-        }
-        if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
+        } else if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
             if (/*(projectType == JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||*/(Util.isJavaEE5orHigher(projectInfo.getProject()) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) //NOI18N
                     ) {
 
-                JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
+                JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(p.getProjectDirectory());
                 if (jaxWsSupport != null) {
                     wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
                     handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
@@ -332,6 +330,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             //convert to URI first to take care of spaces
             wsdlUrl = normalizedWsdlFilePath.toURI().toURL();
         }
+        final Project p = projectInfo.getProject();
         final URL wsdlURL = wsdlUrl;
         final WsdlService service = (WsdlService) wiz.getProperty(WizardProperties.WSDL_SERVICE);
         final Boolean useProvider = (Boolean) wiz.getProperty(WizardProperties.USE_PROVIDER);
@@ -345,7 +344,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
 
             WsdlServiceHandler handler = (WsdlServiceHandler) wiz.getProperty(WizardProperties.WSDL_SERVICE_HANDLER);
-            JaxWsUtils.generateJaxWsArtifacts(projectInfo.getProject(), targetFolder, targetName, wsdlURL, handler.getServiceName(), handler.getPortName());
+            JaxWsUtils.generateJaxWsArtifacts(p, targetFolder, targetName, wsdlURL, handler.getServiceName(), handler.getPortName());
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
             if (wsdlModeler != null && wsdlModeler.getCreationException() != null) {
                 handle.finish();
@@ -376,7 +375,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     FileObject targetFolder = Templates.getTargetFolder(wiz);
                     String targetName = Templates.getTargetName(wiz);
                     try {
-                        JaxWsUtils.generateJaxWsImplementationClass(projectInfo.getProject(),
+                        JaxWsUtils.generateJaxWsImplementationClass(p,
                                 targetFolder,
                                 targetName,
                                 wsdlURL,

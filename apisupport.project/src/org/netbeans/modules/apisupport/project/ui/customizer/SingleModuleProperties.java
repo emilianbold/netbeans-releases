@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -87,17 +88,22 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 
@@ -501,6 +507,62 @@ public final class SingleModuleProperties extends ModuleProperties {
         return updHelper;
     }
 
+    DependencyListModel getDependenciesListModelInBg(final Runnable runAfterPopulated) {
+        if (dependencyListModel == null) {
+            if (isActivePlatformValid()) {
+                // XXX wait for some time in AWT and perhaps fill model in the same event?
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        Runnable r;
+                        try {
+                            final SortedSet<ModuleDependency> deps = getProjectXMLManager().getDirectDependencies(getActivePlatform());
+                            r = new Runnable() {
+
+                                public void run() {
+                                    dependencyListModel.setDependencies(deps);
+                                    if (runAfterPopulated != null)
+                                        runAfterPopulated.run();
+                                }
+                            };
+                        } catch (IOException ioe) {
+                            r = new Runnable() {
+
+                                public void run() {
+                                    dependencyListModel.setInvalid();
+                                    if (runAfterPopulated != null)
+                                        runAfterPopulated.run();
+                                }
+                            };
+                        }
+                        EventQueue.invokeLater(r);
+                    }
+                });
+                dependencyListModel = DependencyListModel.createBgWaitModel(true);
+                // add listener and fire DEPENDENCIES_PROPERTY when deps are changed
+                dependencyListModel.addListDataListener(new ListDataListener() {
+                    public void contentsChanged(ListDataEvent e) {
+                        firePropertyChange(DEPENDENCIES_PROPERTY, null,
+                                getDependenciesListModel());
+                    }
+                    public void intervalAdded(ListDataEvent e) {
+                        contentsChanged(null);
+                    }
+                    public void intervalRemoved(ListDataEvent e) {
+                        contentsChanged(null);
+                    }
+                });
+            } else {
+                dependencyListModel = CustomizerComponentFactory.getInvalidDependencyListModel();
+                if (runAfterPopulated != null)
+                    runAfterPopulated.run();
+            }
+        } else {
+            if (runAfterPopulated != null)
+                runAfterPopulated.run();
+        }
+        return dependencyListModel;
+    }
+
     /**
      * Returns list model of module's dependencies regarding the currently
      * selected platform.
@@ -870,8 +932,9 @@ public final class SingleModuleProperties extends ModuleProperties {
 
             for (Item item : cpExtList) {
                 String binPath = item.getFilePath();
-                if (binPath != null && binPath.startsWith(Util.CPEXT_BINARY_PATH)) {
-                    String runtimePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + binPath.substring(Util.CPEXT_BINARY_PATH.length());
+                if (binPath != null) {
+                    FileObject fo = FileUtil.toFileObject(PropertyUtils.resolveFile(getProjectDirectoryFile(), binPath));
+                    String runtimePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + fo.getNameExt();
                     newCpExt.put(runtimePath, binPath);
                 }
             }
@@ -882,15 +945,12 @@ public final class SingleModuleProperties extends ModuleProperties {
             while (it.hasNext()) {
                 Item item = it.next();
                 if (!jarsSet.contains(item.getFilePath())) {
-                    File f = new File(getProjectDirectoryFile(), item.getFilePath());
-                    FileObject toDel = FileUtil.toFileObject(f);
-                    if (toDel != null) {
-                        Set<String> pp = new HashSet<String>();
-                        Util.scanJarForPackageNames(pp, f);
-                        // TODO delete packages
-//                        getPublicPackagesModel().reloadData(null)
-                        // XXX doesn't work yet: toDel.delete();
-                    }
+                    // XXX deleting here doesn't work on Windows: 
+//                    File f = PropertyUtils.resolveFile(getProjectDirectoryFile(), item.getFilePath());
+//                    FileObject toDel = FileUtil.toFileObject(f);
+//                    if (toDel != null) {
+//                        toDel.delete();
+//                    }
                     assert item.getReference() != null : "getCPExtIterator() initializes references to wrapped JARs";
                     item.removeSourceAndJavadoc(getUpdateHelper());
                     getRefHelper().destroyReference(item.getReference());

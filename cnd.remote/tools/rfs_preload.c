@@ -53,15 +53,13 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#include "rfs_controller.h"
+#include "rfs_protocol.h"
+#include "rfs_preload_socks.h"
 #include "rfs_util.h"
 
 /** the name of the directory under control, including trailing "\" */
 static const char *my_dir = 0;
 static int my_dir_len;
-
-//static char* curr_dir = 0;
-//static int curr_dir_len = 0;
 
 #define get_real_addr(name) _get_real_addr(#name, name);
 
@@ -100,57 +98,6 @@ static inline void print_dlsym() {
     }
 }
 #endif
-
-static int open_socket() {
-    int port = default_controller_port;
-    char *env_port = getenv("RFS_CONTROLLER_PORT");
-    if (env_port) {
-        port = atoi(env_port);
-    }
-    char* hostname = "localhost";
-    char *env_host = getenv("RFS_CONTROLLER_HOST");
-    if (env_host) {
-        hostname = env_host;
-    }
-    trace("Connecting %s:%d\n", hostname, port);
-    struct hostent *hp;
-    if ((hp = gethostbyname(hostname)) == 0) {
-        perror("gethostbyname");
-        return -1;
-    }
-    struct sockaddr_in pin;
-    memset(&pin, 0, sizeof (pin));
-    pin.sin_family = AF_INET;
-    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-    pin.sin_port = htons(port);
-    int sd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sd == -1) {
-        perror("socket");
-        return -1;
-    }
-    if (connect(sd, (struct sockaddr *) & pin, sizeof (pin)) == -1) {
-        perror("connect");
-        return -1;
-    }
-    return sd;
-}
-
-static int get_socket_descriptor(int create) {
-    // 0 means unitialized
-    // -1 means that we failed to open a socket
-    static __thread int sd = 0; // socket descriptor
-    if (!create) {
-        return sd;
-    }
-    if (sd == -1) {
-        return -1;
-    }
-    if (sd == 0) {
-        sd = -1; // in the case of success, it will become > 0
-    }
-    sd = open_socket();
-    return sd;
-}
 
 /* static int is_mine(const char *path) {
     if (path[0] == '/') {
@@ -220,7 +167,12 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            trace("Can not resolve path %s\n", path);
+            fprintf(stderr, "Can not resolve path %s : %s\n", path, strerror(errno));
+            //if (errno == ENOENT) {
+            //    char pwd[PATH_MAX];
+            //    getcwd(pwd, sizeof pwd);
+            //    fprintf(stderr, "\t(current directory: %s)\n", pwd);
+            //}
             inside = 0;
             return false;
         }
@@ -232,31 +184,41 @@ static int on_open(const char *path, int flags) {
         return true;
     }
     int result = false;
-    int sd = get_socket_descriptor(1);
+    int sd = get_socket(true);
     if (sd == -1) {
         trace("On open %s: sd == -1\n", path);
     } else {
         //struct rfs_request;
-        int path_len = strlen(path);
-        trace("Sending %s (%d bytes)\n", path, path_len);
-        if (send(sd, path, path_len, 0) == -1) {
+        trace_sd("sending request");
+        trace("Sending \"%s\" to sd=%d\n", path, sd);
+        enum sr_result send_res = pkg_send(sd, pkg_request, path);
+        if (send_res == sr_failure) {
             perror("send");
-        } else {
-            char response_buf[512];
-            memset(response_buf, 0, sizeof(response_buf));
-            int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
-            if (response_size == -1) {
-                perror("receive");
-                // TODO: correct error processing
-            } else {
-                trace("Got %s for %s, %d\n", response_buf, path, flags);
-                if (response_buf[0] == response_ok) {
-                    result = true;
-                } else if (response_buf[0] == response_failure) {
-                    result = false;
+        } else if (send_res == sr_reset) {
+            perror("Connection reset by peer when sending request");
+        } else { // success
+            trace("Request for \"%s\" sent to sd=%d\n", path, sd);
+            const int maxsize = 256;
+            char buffer[maxsize + sizeof(int)];
+            struct package *pkg = (struct package *) &buffer;
+            enum sr_result recv_res = pkg_recv(sd, pkg, maxsize);
+            if (recv_res == sr_failure) {
+                perror("Error receiving response");
+            } else if (recv_res == sr_reset) {
+                perror("Connection reset by peer when receiving response");
+            } else { // success
+                if (pkg->kind == pkg_reply) {
+                    trace("Got %s for %s, flags=%d, sd=%d\n", pkg->data, path, flags, sd);
+                    if (pkg->data[0] == response_ok) {
+                        result = true;
+                    } else if (pkg->data[0] == response_failure) {
+                        result = false;
+                    } else {
+                        trace("Protocol error, sd=%d\n", sd);
+                        result = false;
+                    }
                 } else {
-                    trace("Protocol error\n");
-                    result = false;
+                    trace("Protocol error: get pkg_kind %d instead of %d\n", pkg->kind, pkg_reply);
                 }
             }
         }
@@ -265,10 +227,39 @@ static int on_open(const char *path, int flags) {
     return result;
 }
 
+static pid_t real_fork(const char* function_name, pid_t (*wrapper_addr)(void)) {
+    pid_t result;
+    static pid_t (*prev)(void);
+        if (!prev) {
+            prev = (pid_t (*)(void)) _get_real_addr(function_name, wrapper_addr);
+        }
+        if (prev) {
+            result = prev();
+        } else {
+            trace("Could not find original \"%s\" function\n", function_name);
+            errno = EFAULT;
+            result = -1;
+        }
+    if (result == 0) {
+        release_socket(); // child
+    } else {
+        trace("%s -> %ld\n", function_name, result);
+    }
+    return result;
+}
+
+pid_t fork() {
+    real_fork("fork", fork);
+}
+
+//pid_t vfork() {
+//    real_fork("vfork", vfork);
+//}
+
 void
 __attribute__((constructor))
 on_startup(void) {
-    trace_startup("RFS_PRELOAD_LOG");    
+    trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
 //#if TRACE
 //    print_dlsym();
 //#endif
@@ -287,22 +278,43 @@ on_startup(void) {
     } else {
         my_dir_len++;
         void *p = malloc(my_dir_len + 1);
-        strcat(p, my_dir);
+        strcpy(p, my_dir);
         strcat(p, "/");
         my_dir = p;
     }
-    trace("RFS startup; my dir: %s\n", my_dir);
+
+    static int startup_count = 0;
+    startup_count++;
+    trace("RFS startup (%d) my dir: %s\n", startup_count, my_dir);
+
+    release_socket();
+    trace_sd("startup");
+
+    const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
+    char *env_sleep = getenv(env_sleep_var);
+    if (env_sleep) {
+        int time = atoi(env_sleep);
+        if (time > 0) {
+            fprintf(stderr, "%s is set. Process %d, sleeping %d seconds...\n", env_sleep_var, getpid(), time);
+            fflush(stderr);
+            sleep(time);
+            fprintf(stderr, "... awoke.\n");
+            fflush(stderr);
+        } else {
+            fprintf(stderr, "Incorrect value, should be a positive integer: %s=%s\n", env_sleep_var, env_sleep);
+            fflush(stderr);
+        }
+    }
 }
 
 void
 __attribute__((destructor))
 on_shutdown(void) {
-    trace("RFS shutdown\n");
+    static int shutdown_count = 0;
+    shutdown_count++;
+    trace("RFS shutdown (%d)\n", shutdown_count);
     trace_shutdown();
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        close(sd);
-    }
+    release_socket();
 }
 
 typedef struct pthread_routine_data {
@@ -316,11 +328,7 @@ static void* pthread_routine_wrapper(void* data) {
     prd->user_start_routine(prd->arg);
     trace("User thread routine finished. Performing cleanup\n");
     free(data);
-    int sd = get_socket_descriptor(0);
-    if (sd != -1) {
-        trace("Closing socked %d\n", sd);
-        close(sd);
-    }
+    release_socket();
     return 0;
 }
 
@@ -366,13 +374,19 @@ int pthread_create(void *newthread,
     va_start(ap, flags); \
     mode = va_arg(ap, mode_t); \
     va_end(ap); \
-    static int (*prev)(const char *, int, mode_t); \
-    if (!prev) { \
-        prev = (int (*)(const char *, int, mode_t)) get_real_addr(function_name); \
-    } \
     int result = -1; \
     if (on_open(path, flags)) { \
-        result = prev(path, flags, mode); \
+        static int (*prev)(const char *, int, ...); \
+        if (!prev) { \
+            prev = (int (*)(const char *, int, ...)) get_real_addr(function_name); \
+        } \
+        if (prev) {\
+            result = prev(path, flags, mode); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function_name); \
+            errno = EFAULT; \
+            result = -1; \
+        } \
     } \
     trace("%s %s -> %d\n", #function_name, path, result); \
     inside_open--; \
@@ -383,9 +397,11 @@ int open(const char *path, int flags, ...) {
     real_open(open, path, flags)
 }
 
+#if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
     real_open(open64, path, flags)
 }
+#endif
 
 int _open(const char *path, int flags, ...) {
     real_open(_open, path, flags)

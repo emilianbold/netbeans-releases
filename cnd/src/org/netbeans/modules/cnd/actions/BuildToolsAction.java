@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,9 +49,12 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -119,6 +122,9 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
                 System.err.println(err);
             }
         }
+        if (downloadIfNeed(model)){
+            return true;
+        }
         tp = new ToolsPanel(model);
         tp.addPropertyChangeListener(this);
         jOK = new JButton(NbBundle.getMessage(BuildToolsAction.class, "BTN_OK")); // NOI18N
@@ -135,7 +141,21 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         }
         return false;
     }
-    
+
+    private boolean downloadIfNeed(ToolsPanelModel model){
+        ExecutionEnvironment env = model.getSelectedDevelopmentHost();
+        if (env.isLocal()){
+            CompilerSet cs = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            if (cs != null) {
+                if (cs.isUrlPointer()){
+                    // Can be downloaded
+                    return ToolsPanel.showDownloadConfirmation(cs);
+                }
+            }
+        }
+        return false;
+    }
+
     private JPanel constructOuterPanel(JPanel innerPanel) {
         JPanel panel = new JPanel();
         panel.setLayout(new java.awt.GridBagLayout());

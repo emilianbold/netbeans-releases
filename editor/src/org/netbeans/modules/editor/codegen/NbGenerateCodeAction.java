@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.editor.codegen;
 
+import java.awt.Frame;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -97,7 +98,7 @@ public class NbGenerateCodeAction extends BaseAction {
             }
             if (where == null)
                 where = new Point(-1, -1);
-            PopupUtil.showPopup(new GenerateCodePanel(target, task.codeGenerators), null, where.x, where.y, true, altHeight);
+            PopupUtil.showPopup(new GenerateCodePanel(target, task.codeGenerators), (Frame)SwingUtilities.getAncestorOfClass(Frame.class, target), where.x, where.y, true, altHeight);
         } else {
             target.getToolkit().beep();
         }

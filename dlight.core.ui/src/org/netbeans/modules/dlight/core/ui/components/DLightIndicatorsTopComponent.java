@@ -38,23 +38,37 @@
  */
 package org.netbeans.modules.dlight.core.ui.components;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BoxLayout;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
+import org.netbeans.modules.dlight.extras.api.support.IndicatorsContainer;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
+import org.openide.explorer.ExplorerManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -64,30 +78,69 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-final class DLightIndicatorsTopComponent extends TopComponent {
+final class DLightIndicatorsTopComponent extends TopComponent implements ExplorerManager.Provider {
 
-    private static DLightIndicatorsTopComponent instance;
+      private static DLightIndicatorsTopComponent instance;
     private DLightSession session;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/dlight/core/ui/resources/indicators_small.png"; // NOI18N
     private static final String PREFERRED_ID = "DLightIndicatorsTopComponent"; // NOI18N
+    private static final AtomicInteger index = new AtomicInteger();
     private final CardLayout cardLayout = new CardLayout();
     private JPanel cardsLayoutPanel;
     private JPanel panel1;
     private JPanel panel2;
+    private Vector<JComponent> indicatorPanels = null;
     private boolean showFirstPanel = true;
+    private boolean dock;
+    private final ExplorerManager manager = new ExplorerManager();
+    private JComponent lastFocusedComponent = null;
+    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl();
+//    private GizmoIndicatorsTopComponentActionsProvider actionsProvider = null;
+    //private final PopupAction popupAction = new PopupAction("popupGizmoIndicatorTopComponentAction");//NOI18N
 
-    private DLightIndicatorsTopComponent() {
+
+    static {
+        DLightIndicatorTopComponentRegsitry.getRegistry();
+    }
+
+    private DLightIndicatorsTopComponent(boolean dock) {
         initComponents();
+        this.dock = dock;
         setSession(null);
         setName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
-        //setToolTipText(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "HINT_DLightIndicatorsTopComponent"));
+        setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent"));//NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-//        if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")){ // NOI18N
-//            if (WindowManager.getDefault().findMode("navigator") != null){ // NOI18N
-//                WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
-//            }
-//        }
+        if (dock) {
+            if (WindowManager.getDefault().findMode(this) == null || WindowManager.getDefault().findMode(this).getName().equals("navigator")) { // NOI18N
+                if (WindowManager.getDefault().findMode("navigator") != null) { // NOI18N
+                    WindowManager.getDefault().findMode("navigator").dockInto(this);//NOI18N
+                }
+            }
+        }
+        setFocusTraversalPolicyProvider(true);
+        setFocusTraversalPolicy(focusPolicy);
+//        ActionMap map = new ActionMap();
+//        map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
+//        this.associateLookup(ExplorerUtils.createLookup(manager, map));
+//        installActions();
+    }
+
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+//    void setActionsProvider(GizmoIndicatorsTopComponentActionsProvider actionsProvoder) {
+//        this.actionsProvider = actionsProvoder;
+//
+//    }
+
+    private Action getPopupAction() {
+        return null;
+    }
+
+    private DLightIndicatorsTopComponent() {
+        this(false);
     }
 
     void initComponents() {
@@ -102,6 +155,12 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     }
 
+    void installActions() {
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(returnKey, "return"); // NOI18N
+        getActionMap().put("return", new ESCHandler()); // NOI18N
+    }
+
     void setActive() {
         cardLayout.show(cardsLayoutPanel, showFirstPanel ? "#1" : "#2");//NOI18N
         showFirstPanel = !showFirstPanel;
@@ -111,76 +170,63 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         return (showFirstPanel ? panel1 : panel2);
     }
 
+    private JPanel getCurrentPanel() {
+        return (showFirstPanel ? panel2 : panel1);
+    }
+
     public void setSession(DLightSession session) {
-        if (this.session != null && this.session != session){
+        if (this.session != null && this.session != session) {
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator<?>> indicators = null;
+        List<Indicator<?>> indicators = new ArrayList<Indicator<?>>();;
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
+            setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             indicators = session.getIndicators();
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
+            setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
             if (emptyContent != null) {
                 indicators = emptyContent.getEmptyContent();
             }
 
         }
-        Collections.sort(indicators, new Comparator<Indicator<?>>() {
+        if (indicators != null){
+            Collections.sort(indicators, new Comparator<Indicator<?>>() {
 
-            public int compare(Indicator<?> o1, Indicator<?> o2) {
-                if (o1.getPosition() < o2.getPosition()) {
-                    return -1;
-                } else if (o2.getPosition() < o1.getPosition()) {
-                    return 1;
-                } else {
-                    return 0;
+                public int compare(Indicator<?> o1, Indicator<?> o2) {
+                    if (o1.getPosition() < o2.getPosition()) {
+                        return -1;
+                    } else if (o2.getPosition() < o1.getPosition()) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
-            }
-        });
-        setContent(indicators);
+            });
+        }
+        setContent(session, indicators);
     }
 
-    private void setContent(List<Indicator<?>> indicators) {
-        JComponent componentToAdd;
-        if (indicators != null) {
-            JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setBorder(BorderFactory.createEmptyBorder());
-            JSplitPane prevSplit = null;
-            for (int i = 0; i < indicators.size(); ++i) {
-                JComponent component = indicators.get(i).getComponent();
-                if (i + 1 < indicators.size()) {
-                    JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-                    splitPane.setBorder(BorderFactory.createEmptyBorder());
-                    splitPane.setContinuousLayout(true);
-                    splitPane.setDividerSize(5);
-                    splitPane.setResizeWeight(1.0 / (indicators.size() - i));
-                    splitPane.setTopComponent(component);
-                    component = splitPane;
-                }
-                if (prevSplit == null) {
-                    scrollPane.setViewportView(component);
-                } else {
-                    prevSplit.setBottomComponent(component);
-                }
-                if (component instanceof JSplitPane) {
-                    prevSplit = (JSplitPane) component;
-                }
-            }
-//            add(scrollPane);
-            componentToAdd = scrollPane;
-        } else {
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(DLightIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
-            emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-            componentToAdd = emptyLabel;
-//            add(emptyLabel);
-        }
+    private void setContent(DLightSession session, List<Indicator<?>> indicators) {
         JPanel panel = getNextPanel();
         panel.removeAll();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(componentToAdd);
+        panel.setLayout(new BorderLayout());
+        if (indicators != null){
+            panel.add(new IndicatorsContainer((DataFilterManager) session, indicators), BorderLayout.CENTER);
+            indicatorPanels = new Vector<JComponent>(indicators.size());
+            indicatorPanels.setSize(indicators.size());
+            for (int i = 0; i < indicators.size(); ++i) {
+                indicatorPanels.set(i, indicators.get(i).getComponent());
+            }
+        }else{
+            indicatorPanels = null;
+            JLabel emptyLabel = new JLabel("");//NOI18N NbBundle.getMessage(THAIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
+            emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+            panel.add(emptyLabel);
+        }
         setActive();
         repaint();
     }
@@ -204,25 +250,42 @@ final class DLightIndicatorsTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");//NOI18N
             return getDefault();
         }
         if (win instanceof DLightIndicatorsTopComponent) {
             return (DLightIndicatorsTopComponent) win;
         }
         Logger.getLogger(DLightIndicatorsTopComponent.class.getName()).warning(
-            "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
-            "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
+                "There seem to be multiple components with the '" + PREFERRED_ID + //NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
     }
 
     public static synchronized DLightIndicatorsTopComponent newInstance() {
-        return new DLightIndicatorsTopComponent();
+        return new DLightIndicatorsTopComponent(true);
+    }
+
+    public static synchronized TopComponent activateInstance() {
+        //find and open VisualizerDispAction
+        DLightIndicatorTopComponentRegsitry registry = DLightIndicatorTopComponentRegsitry.getRegistry();
+        if (registry.getOpened() == null || registry.getOpened().size() == 0){
+            return findInstance();
+        }
+        DLightIndicatorsTopComponent activatedTopComponent = registry.getActivated();
+        if (activatedTopComponent == null){
+            activatedTopComponent = registry.getOpened().iterator().next();
+        }
+        activatedTopComponent.requestActive();
+        return activatedTopComponent;
     }
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        if (!dock) {
+            return TopComponent.PERSISTENCE_ALWAYS;
+        }
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
@@ -231,14 +294,45 @@ final class DLightIndicatorsTopComponent extends TopComponent {
     }
 
     @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        lastFocusedComponent = null;
+        if (indicatorPanels == null || indicatorPanels.size() == 0) {
+            return;
+        }
+        for (JComponent c : indicatorPanels) {
+            if (c.hasFocus()) {
+                lastFocusedComponent = c;
+                break;
+            }
+        }
+        if (lastFocusedComponent == null) {
+            lastFocusedComponent = indicatorPanels.get(0);
+        }
+    }
+
+    @Override
+    protected void componentActivated() {
+        //should request focus
+        super.componentActivated();
+        if (lastFocusedComponent != null) {
+            lastFocusedComponent.requestFocus();
+        } else {
+            focusPolicy.getFirstComponent(this).requestFocus();
+        }
+
+    }
+
+    @Override
     public void componentClosed() {
-        if (session != null){
+        if (session != null) {
+
             DLightManager.getDefault().closeSessionOnExit(session);
         }
         super.componentClosed();
     }
 
-    DLightSession getSession(){
+    DLightSession getSession() {
         return session;
     }
 
@@ -250,7 +344,10 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     @Override
     protected String preferredID() {
-        return PREFERRED_ID;
+        if (!dock) {
+            return PREFERRED_ID;
+        }
+        return PREFERRED_ID + index.incrementAndGet();
     }
 
     final static class ResolvableHelper implements Serializable {
@@ -264,5 +361,104 @@ final class DLightIndicatorsTopComponent extends TopComponent {
 
     private static String getMessage(String name, Object... params) {
         return NbBundle.getMessage(DLightIndicatorsTopComponent.class, name, params);
+    }
+
+
+
+    private final class FocusTraversalPolicyImpl extends FocusTraversalPolicy {
+
+        @Override
+        public Component getComponentAfter(Container aContainer, Component aComponent) {
+            if (aComponent == getCurrentPanel()) {
+                return getCurrentPanel();//no path to go
+            }
+            int indexOf = indicatorPanels.indexOf(aComponent);
+            if (indexOf == -1) {
+                return getCurrentPanel();
+            }
+            if (indexOf == indicatorPanels.size() - 1) {
+                return indicatorPanels.get(0);
+            }
+            return indicatorPanels.get(indexOf + 1);
+        }
+
+        @Override
+        public Component getComponentBefore(Container aContainer, Component aComponent) {
+            if (aComponent == getCurrentPanel()) {
+                return getCurrentPanel();//no path to go
+            }
+            int indexOf = indicatorPanels.indexOf(aComponent);
+            if (indexOf == -1) {
+                return getCurrentPanel();
+            }
+            if (indexOf == 0) {
+                return indicatorPanels.get(indicatorPanels.size() - 1);
+            }
+            return indicatorPanels.get(indexOf - 1);
+        }
+
+        @Override
+        public Component getFirstComponent(Container aContainer) {
+            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+                return getCurrentPanel();
+            }
+            return indicatorPanels.get(0);
+        }
+
+        @Override
+        public Component getLastComponent(Container aContainer) {
+            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+                return getCurrentPanel();
+            }
+            return indicatorPanels.get(indicatorPanels.size() - 1);
+        }
+
+        @Override
+        public Component getDefaultComponent(Container aContainer) {
+            if (indicatorPanels == null || indicatorPanels.size() == 0) {
+                return getCurrentPanel();
+            }
+            return indicatorPanels.get(0);
+        }
+    }
+
+//    private class PopupAction extends AbstractAction implements Runnable {
+//
+//        private PopupAction(String name) {
+//            super(name);
+//        }
+//
+//        public void actionPerformed(ActionEvent e) {
+//            SwingUtilities.invokeLater(this);
+//        }
+//
+//        public void run() {
+//
+//            if (actionsProvider == null) {
+//                return;
+//            }
+//            Action[] actions = actionsProvider.getActions(GizmoIndicatorsTopComponent.this);
+//            if (actions != null && actions.length > 0) {
+//                //System.out.println("I have" + actions.length + " actions to display in menu");
+//                JPopupMenu menu = Utilities.actionsToPopup(actions, GizmoIndicatorsTopComponent.this);
+//                menu.show(GizmoIndicatorsTopComponent.this, 0, 0);
+//
+//            }
+//        }
+//    }
+
+    private class ESCHandler extends AbstractAction {
+
+        public void actionPerformed(ActionEvent e) {
+            Component focusOwner = FocusManager.getCurrentManager().getFocusOwner();
+            if (DLightIndicatorTopComponentRegsitry.getRegistry().getActivated() == null || focusOwner == null ||
+                    !SwingUtilities.isDescendingFrom(focusOwner, DLightIndicatorsTopComponent.this)) {
+                return;
+            }
+            TopComponent prevFocusedTc = DLightIndicatorTopComponentRegsitry.getRegistry().getActivatedNonIndicators();
+            if (prevFocusedTc != null) {
+                prevFocusedTc.requestActive();
+            }
+        }
     }
 }

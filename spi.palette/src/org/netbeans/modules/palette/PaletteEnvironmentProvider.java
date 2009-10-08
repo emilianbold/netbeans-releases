@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -166,14 +166,19 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 InputSource is = new InputSource(fo.getInputStream());
                 is.setSystemId(urlString);
                 reader.setContentHandler(handler);
+                reader.setErrorHandler(handler);
                 reader.parse(is);
             }
             catch (SAXException saxe) {
                 Logger.getLogger( getClass().getName() ).log( Level.INFO, null, saxe );
+                return null;
             } 
             catch (IOException ioe) {
                 Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ioe );
+                return null;
             }
+            if( handler.isError() )
+                return null;
 
             node = createPaletteItemNode(handler);
             refNode = new WeakReference<PaletteItemNode>(node);

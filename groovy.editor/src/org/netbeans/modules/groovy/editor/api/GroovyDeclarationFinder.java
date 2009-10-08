@@ -61,6 +61,8 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -321,8 +323,10 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 }
             } else if (closest instanceof DeclarationExpression ||
                 closest instanceof ConstructorCallExpression ||
-                closest instanceof ClassExpression || 
-                closest instanceof FieldNode) {
+                closest instanceof ClassExpression ||
+                closest instanceof PropertyNode ||
+                closest instanceof FieldNode ||
+                closest instanceof Parameter) {
 
                 String fqName = getFqNameForNode(closest);
                 
@@ -331,8 +335,13 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 if (doc != null && range != null) {
                     String text = doc.getText(range.getStart(), range.getLength());
 
+                    if(!NbUtilities.stripPackage(fqName).equals(text)){
+                        LOG.log(Level.FINEST, "fqName != text");
+                        return DeclarationLocation.NONE;
+                    }
+
                     Set<IndexedClass> classes =
-                        index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
+                        index.getClasses(fqName, QuerySupport.Kind.EXACT, true, false, false);
 
                     for (IndexedClass indexedClass : classes) {
                         ASTNode node = AstUtilities.getForeignNode(indexedClass);
@@ -359,11 +368,6 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                     // simple sanity-check that the literal string in the source document
                     // matches the last part of the full-qualified name of the type.
                     // e.g. "String" means "java.lang.String"
-                    
-                    if(!NbUtilities.stripPackage(fqName).equals(text)){
-                        LOG.log(Level.FINEST, "fqName != text");
-                        return DeclarationLocation.NONE;
-                    }
                     
                     FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                     
@@ -409,8 +413,12 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             return ((BinaryExpression) node).getLeftExpression().getType().getName();
         } else if (node instanceof Expression) {
             return ((Expression) node).getType().getName();
+        } else if (node instanceof PropertyNode) {
+            return ((PropertyNode) node).getField().getType().getName();
         } else if (node instanceof FieldNode) {
             return ((FieldNode) node).getType().getName();
+        } else if (node instanceof Parameter) {
+            return ((Parameter) node).getType().getName();
         }
 
         return "";

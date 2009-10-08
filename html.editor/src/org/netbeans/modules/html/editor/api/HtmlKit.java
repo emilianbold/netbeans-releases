@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -217,41 +217,12 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public static class HtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         private JTextComponent currentTarget;
-        private String insertedText;
-        private int insertedTextPos;
 
         @Override
-        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
-            if (target != null) {
-                currentTarget = target;
-                HtmlDefaultKeyTypedAction.super.actionPerformed(evt, target);
-
-                //issue #172746 fix
-                //we need to perform indentation in the afterCharInserted()
-                //method context which must not run under document atomic lock
-                if(insertedText != null) {
-                    //insert has been performed, now we can safely invoke bracket
-                    //completion out of document's atomic lock
-                    Document doc = target.getDocument();
-                    int dotPos = insertedTextPos;
-                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
-                    if(bracketCompletion != null) {
-                        try {
-                            bracketCompletion.afterCharInserted(doc, dotPos, target, insertedText.charAt(0));
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            insertedText = null;
-                            insertedTextPos = -1;
-                        }
-                    }
-                }
-
-                currentTarget = null;
-            } else {
-                //backw comp.
-                super.actionPerformed(evt, target);
-            }
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            currentTarget = target;
+            super.actionPerformed(evt, target);
+            currentTarget = null;
         }
 
         @Override
@@ -259,9 +230,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
                 
-            insertedText = str;
-            insertedTextPos = dotPos;
-
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
@@ -272,8 +240,11 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                             str.charAt(0));
 
                     if (!handled) {
-                        super.insertString(doc, dotPos, caret, str, overwrite);
-                    }
+                            super.insertString(doc, dotPos, caret, str, overwrite);
+                            handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
+                                    str.charAt(0));
+                        }
+
 
                     return;
                 }
@@ -313,6 +284,9 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                                 if ((str != null) && (str.length() > 0)) {
                                     doc.insertString(p0, str, null);
                                 }
+
+                                bracketCompletion.afterCharInserted(doc, caret.getDot() - 1,
+                                        target, insertedChar);
 
                             }
                         } catch (BadLocationException e) {

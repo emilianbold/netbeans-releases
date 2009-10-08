@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -134,13 +134,14 @@ public class JSFClientGenerator {
     
     private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
     private static final String WELCOME_JSF_FL_PAGE = "index.xhtml";  //NOI18N
-    private static final String TEMPLATE_JSF_FL_PAGE = "template.xhtml";  //NOI18N
+    static final String TEMPLATE_JSF_FL_PAGE = "template.xhtml";  //NOI18N
     public  static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_JSPF = "AjaxScripts.jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_BUSY_IMAGE = "busy.gif"; //NOI18N
     static final String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    static final String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
     private static final String TEMPLATE_FOLDER = RESOURCE_FOLDER+"templates/";  //NOI18N
     private static final String COMMAND_LINK_TEMPLATE = "commandLink.template"; //NOI18N
     private static final String COMMAND_LINK_TEMPLATE2 = "commandLink-jsf2.template"; //NOI18N
@@ -509,7 +510,7 @@ public class JSFClientGenerator {
                 }
             }
 
-            String find = "Hello from the Facelets client template!"; //NOI18N
+            String find = "Hello from the Facelets"; //NOI18N
             if ( content.indexOf(find) > -1){
                 StringBuffer replace = new StringBuffer();
                 replace.append(find);

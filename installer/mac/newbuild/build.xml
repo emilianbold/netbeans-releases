@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/ruby/build"/>
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
-        <delete dir="${basedir}/netBeans/javafx/build"/>
+        <delete dir="${basedir}/netBeans/javafx/build" failonerror="no"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>     
         <delete dir="${basedir}/netBeans/groovy/build"/>
         <delete dir="${basedir}/netBeans/php/build"/> 
@@ -101,16 +101,27 @@ Microsystems, Inc. All Rights Reserved.
            value="${basedir}/tools/classes"/>
     </target>        
 
-    <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
-        <property name="clusters" value="cnd(cpp), dlight(cpp),
+    <target name="init-clusters">
+        <property name="main.clusters" value="
+                                         cnd(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          ruby(ruby),                                       
 					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
                                          ergonomics(ergonomics),
-                                         javafx(javafx), javafx-mac(javafx),
-                                         ide(baseide), nb6.0-etc(baseide), platform(baseide)"/>        
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide)
+                                         "/>
+
+        <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
+
+        <condition property="clusters" value="${main.clusters}" else="${main.clusters},${fx.clusters}"> 
+            <equals arg1="${javafx.build}" arg2="0"/>
+        </condition>
+
+    </target>
+
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters">
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
             <exec executable="sh" failonerror="no">
@@ -168,16 +179,26 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
     </target>
-    
-    <target name="build-modules">        
-        <property name="modules" value="javase(${javase-title}),
-                                        javafx(${javafx-title}),
+
+
+    <target name="init-modules">
+        <property name="main.modules" value="
+                                        javase(${javase-title}),
                                         javaee(${javaee-title}),
                                         cpp(${cpp-title}),
                                         ruby(${ruby-title}),
                                         groovy(${groovy-title}),
                                         ergonomics(${ergonomics-title}),
-                                        php(${php-title})"/>        
+                                        php(${php-title})
+                                        "/>
+        <property name="fx.module" value="javafx(${javafx-title})"/>
+
+        <condition property="modules" value="${main.modules}" else="${main.modules},${fx.module}"> 
+            <equals arg1="${javafx.build}" arg2="0"/>
+        </condition>
+    </target>    
+
+    <target name="build-modules" depends="init-modules">        
         <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
             <ant target="build-module"/>                           
         </for-each>                        
@@ -221,17 +242,28 @@ Microsystems, Inc. All Rights Reserved.
             <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
         </exec>                                         
     </target>          
-    
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg">
-                  
-        <property name="bundles" value="     (./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/cpp.pkg ./build/ruby.pkg ./build/php.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
-                                             -javafx-full(./build/*pkg),
+
+
+    <target name="init-bundles">
+        <property name="main.bundles" value="
+                                                  (./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/cpp.pkg ./build/ruby.pkg ./build/php.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -javase(./build/baseide.pkg ./build/javase.pkg),
-                                             -javafx(./build/baseide.pkg ./build/javase.pkg ./build/javafx.pkg),
                                              -java(./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/groovy.pkg ./build/ergonomics.pkg ./build/glassfish-v3.pkg ./build/tomcat.pkg),
                                              -cpp(./build/baseide.pkg ./build/cpp.pkg),
                                              -ruby(./build/baseide.pkg ./build/ruby.pkg ./build/glassfish-v3.pkg),
-                                             -php(./build/baseide.pkg ./build/php.pkg)"/>        
+                                             -php(./build/baseide.pkg ./build/php.pkg)
+                                             "/>
+
+        <property name="fx.bundles" value="    
+                                               -javafx-full(./build/*pkg), 
+                                               -javafx(./build/baseide.pkg ./build/javase.pkg ./build/javafx.pkg)
+                                          "/>
+
+        <condition property="bundles" value="${main.bundles}" else="${main.bundles},${fx.bundles}"> 
+            <equals arg1="${javafx.build}" arg2="0"/>
+        </condition>
+    </target>
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">

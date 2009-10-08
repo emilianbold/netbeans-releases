@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -50,6 +50,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -127,9 +128,19 @@ import org.openide.util.NbPreferences;
         }
         return shortDesc;
     }        
-    
+
     private boolean isUsingCamelCase() {
-        Preferences p = NbPreferences.forModule(AbstractCamelCasePosition.class);
-        return p.getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            Class accpClass = cl.loadClass("org.netbeans.modules.editor.java.AbstractCamelCasePosition"); // NOI18N
+            if (accpClass == null) {
+                return true;
+            }
+            Preferences p = NbPreferences.forModule(accpClass);
+            return p.getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
+        } catch (ClassNotFoundException ex) {
+            return true;
+        }
     }
+
 }

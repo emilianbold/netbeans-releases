@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -90,6 +90,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
+    static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
+    
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
@@ -136,7 +138,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     PRELUDE_PROP_ROOT + INSTALL_ROOT_SUFFIX,
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
-                    "GlassFish_v3_Prelude", // NOI18N
+                    PRELUDE_DEFAULT_NAME, 
                     "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt", // NOI18N
                     "last-install-root", // NOI18N
@@ -620,6 +622,15 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         final boolean needToRegisterDefaultServer =
                 !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
 
+//        String candidate = System.getProperty(installRootPropName);
+//        String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false"); // NOI18N
+//        boolean needToRegisterDefaultServer = computeNeedToRegister(firstRunValue, candidate, getInstallRoots());
+//        if ("true".equals(firstRunValue) && !needToRegisterDefaultServer) {  // NOI18N
+//            //  change the "true" into the path for future checks
+//            //
+//            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN, candidate);
+//        }
+
         if (needToRegisterDefaultServer) {
             try {
                 String candidate = System.getProperty(installRootPropName); //NOI18N
@@ -680,5 +691,58 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
         retVal.add(domain);
         return retVal.toArray(new String[retVal.size()]);
+    }
+
+    static boolean computeNeedToRegister(String firstRunValue, String candidate, Collection<String> registeredInstalls) {
+        boolean needToRegisterDefaultServer;
+        //String candidate = System.getProperty(installRootPropName);
+        //String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false");
+        if ("false".equals(firstRunValue)) {
+            // this really is a first run.
+            needToRegisterDefaultServer = true;
+        } else if ("true".equals(firstRunValue)) {
+            // the userdir has been run...
+            //
+            //Collection<GlassfishInstance> registeredInstances = getInternalInstances();
+            if (null != candidate) {
+                // we assume that this is userdir has not registered the current
+                // candidate server.
+                //
+                needToRegisterDefaultServer = true;
+                for (String i : registeredInstalls) {
+                    if (candidate.equals(i)) {
+                        // one of the registered servers is the candidate...
+                        //   do not register it again
+                        //
+                        needToRegisterDefaultServer = false;
+                        break;
+                    }
+                }
+            } else {
+                needToRegisterDefaultServer = false;
+            }
+
+        } else {
+            // the firstRunValue is the path to the last "first_run" server...
+            //
+            if (firstRunValue.equals(candidate)) {
+                // the paths match... so we do not need to register
+                needToRegisterDefaultServer = false;
+            } else {
+                // the paths do not match... we do need to register
+                needToRegisterDefaultServer = true;
+            }
+        }
+        return needToRegisterDefaultServer;
+    }
+
+    private Collection<String> getInstallRoots() {
+        Set<String> registeredRoots = new HashSet<String>();
+        if (!instanceMap.isEmpty()) {
+        for (GlassfishInstance i : getInternalInstances()) {
+            registeredRoots.add(i.getInstallRoot());
+        }
+        }
+        return registeredRoots;
     }
 }

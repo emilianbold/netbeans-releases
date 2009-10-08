@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -229,8 +230,15 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
                     result = GlassfishModule.OperationState.COMPLETED;
                 } else {
                     step = "deploy";
+                    Map<String,String> m = new HashMap<String,String>();
+                    String jrubyHome = commonModule.getInstanceProperties().get(GlassfishModule.JRUBY_HOME);
+                   if (null != jrubyHome && jrubyHome.length() > 0) {
+                        m.put("jruby.home", jrubyHome);
+                    } else {
+                        throw new RuntimeException();
+                    }
                     final Future<GlassfishModule.OperationState> deployFuture = 
-                            commonModule.deploy(this, applicationDir, applicationName, contextRoot);
+                            commonModule.deploy(this, applicationDir, applicationName, contextRoot, m);
                     result = deployFuture.get();
                 }
             }

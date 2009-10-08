@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -156,21 +156,29 @@ public final class WatchesModel extends VariablesModel {
             if (var == null) {
                 return getMessage("CTL_WatchesModel.Unknown.Evaluation");
             }
-            if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
+            if (isWatchColumn(columnID)) {
                 return super.getValueAt(var, LOCALS_VALUE_COLUMN_ID);
-            } else if(WATCH_TYPE_COLUMN_ID.equals(columnID)) {
+            } else if(isWatchTypeColumn(columnID)) {
                 return super.getValueAt(var, LOCALS_TYPE_COLUMN_ID);
             }
         } else {
-            if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
+            if (isWatchColumn(columnID)) {
                 return super.getValueAt(node, LOCALS_VALUE_COLUMN_ID);
-            } else if(WATCH_TYPE_COLUMN_ID.equals(columnID)) {
+            } else if(isWatchTypeColumn(columnID)) {
                 return super.getValueAt(node, LOCALS_TYPE_COLUMN_ID);
             }
         }
         throw new UnknownTypeException(node);
     }
     
+    private boolean isWatchColumn(String columnID) {
+        return WATCH_VALUE_COLUMN_ID.equals(columnID) || LOCALS_VALUE_COLUMN_ID.equals(columnID);
+    }
+
+    private boolean isWatchTypeColumn(String columnID) {
+        return WATCH_TYPE_COLUMN_ID.equals(columnID) || LOCALS_TYPE_COLUMN_ID.equals(columnID);
+    }
+
     @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         return true;

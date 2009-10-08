@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -56,6 +56,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -79,6 +80,7 @@ import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -421,19 +423,27 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
     }
     
     private void showSurroundWithHint() {
-        surrounsWithFixes = SurroundWithFix.getFixes(component);
-        if (!surrounsWithFixes.isEmpty()) {
-            try {                
-                Position pos = doc.createPosition(component.getCaretPosition());
-                errorDescription = ErrorDescriptionFactory.createErrorDescription(
-                        Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
-                
-                HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
-            } catch (BadLocationException ble) {
-                Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
-            }
-        } else {
-            hideSurroundWithHint();
+        try {
+            final Position pos = doc.createPosition(component.getCaretPosition());
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final List<Fix> fixes = SurroundWithFix.getFixes(component);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (!fixes.isEmpty()) {
+                                errorDescription = ErrorDescriptionFactory.createErrorDescription(
+                                        Severity.HINT, SURROUND_WITH, surrounsWithFixes = fixes, doc, pos, pos);
+
+                                HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
+                            } else {
+                                hideSurroundWithHint();
+                            }
+                        }
+                    });
+                }
+            });
+        } catch (BadLocationException ble) {
+            Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
         }
     }
 

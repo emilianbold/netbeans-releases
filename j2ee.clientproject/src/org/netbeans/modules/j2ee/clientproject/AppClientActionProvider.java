@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -172,7 +172,7 @@ class AppClientActionProvider implements ActionProvider {
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
         commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        //commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
         commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
@@ -454,6 +454,23 @@ class AppClientActionProvider implements ActionProvider {
                     } else {
                         return null;
                     }
+                }
+                FileObject file = findSources(context)[0];
+                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
+                p.setProperty("javac.includes", clazz); // NOI18N
+                // Convert foo/FooTest.java -> foo.FooTest
+                if (clazz.endsWith(".java")) { // NOI18N
+                    clazz = clazz.substring(0, clazz.length() - 5);
+                }
+                clazz = clazz.replace('/','.');
+
+                if (!Utils.hasMainMethod(file)) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    return null;
+                } else {
+                    p.setProperty("debug.class", clazz); // NOI18N
+                    targetNames = commands.get(COMMAND_DEBUG_SINGLE);
                 }
             }
         } else {

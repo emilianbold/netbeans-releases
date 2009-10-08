@@ -43,8 +43,13 @@ import org.netbeans.modules.dlight.util.Range;
 
 /**
  *
+ * @param <T> 
  * @author mt154047
  */
-public interface NumericDataFilter<T extends Range> extends DataFilter {
-    Range getInterval();
+public interface NumericDataFilter<T extends Range<?>> extends DataFilter {
+
+    /**
+     * @return  interval with non-null <code>start</code> and <code>end</code>
+     */
+    Range<?> getInterval();
 }

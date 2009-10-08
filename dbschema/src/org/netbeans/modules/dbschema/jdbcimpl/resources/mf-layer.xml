@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -131,6 +131,7 @@ made subject to such option by the copyright holder.
     <folder name="Persistence">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/>
       <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/Databases.html"/>
+      <attr name="position" intvalue="1300"/>
 
       <file name="Schema.dbschema" url="templates/Schema.template">
           <attr name="position" intvalue="400"/>

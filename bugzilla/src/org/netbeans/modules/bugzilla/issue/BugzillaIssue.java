@@ -960,7 +960,7 @@ public class BugzillaIssue extends Issue {
         return seenAtributes;
     }
 
-    private String getSeenValue(IssueField f) {
+    String getSeenValue(IssueField f) {
         Map<String, String> attr = getSeenAttributes();
         String seenValue = attr != null ? attr.get(f.key) : null;
         if(seenValue == null) {

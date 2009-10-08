@@ -163,5 +163,11 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             ((JiraQuery)query).setFilter(filter);
         }
     }
+
+    @Override
+    public Query getAllIssuesQuery(Repository repository) {
+        assert repository instanceof KenaiRepository;
+        return ((KenaiRepository)repository).getAllIssuesQuery();
+    }
 }
 

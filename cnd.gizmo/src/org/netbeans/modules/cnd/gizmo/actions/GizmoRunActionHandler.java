@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -76,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -107,7 +107,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
-        Map<String, String> envVars = createMap(pae.getProfile().getEnvironment().getenvAsPairs());
+        Map<String, String> envVars = pae.getProfile().getEnvironment().getenvAsMap();
         NativeExecutableTargetConfiguration targetConf = new NativeExecutableTargetConfiguration(
                 pae.getExecutable(),
                 pae.getProfile().getArgsArray(),
@@ -168,7 +168,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         // Setup simple output convertor factory...
         targetConf.setOutConvertorFactory(new SimpleOutputConvertorFactory());
 
-        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
+        DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("GizmoDTraceExtended");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
             ((GizmoConfigurationOptions) options).configure(pae.getProject());
@@ -195,14 +195,6 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 }
             }
         }, "DLight Session for " + target.toString()); // NOI18N
-    }
-
-    private Map<String, String> createMap(String[][] array) {
-        Map<String, String> result = new HashMap<String, String>();
-        for (int i = 0; i < array.length; ++i) {
-            result.put(array[i][0], array[i][1]);
-        }
-        return result;
     }
 
     public boolean canCancel() {

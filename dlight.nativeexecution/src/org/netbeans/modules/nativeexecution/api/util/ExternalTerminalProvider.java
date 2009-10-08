@@ -74,8 +74,8 @@ public final class ExternalTerminalProvider {
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final HashMap<String, List<TerminalProfile>> profiles =
             new HashMap<String, List<TerminalProfile>>();
-    private static final HashMap<ExecutionEnvironment, TerminalProfile> hash =
-            new HashMap<ExecutionEnvironment, TerminalProfile>();
+    private static final HashMap<ExternalTerminal.TermEnvPair, TerminalProfile> hash =
+            new HashMap<ExternalTerminal.TermEnvPair, TerminalProfile>();
 
     static {
         init();
@@ -99,7 +99,8 @@ public final class ExternalTerminalProvider {
      */
     public static ExternalTerminal getTerminal(ExecutionEnvironment execEnv, String id) {
         synchronized (hash) {
-            TerminalProfile terminalProfile = hash.get(execEnv);
+            ExternalTerminal.TermEnvPair key = new ExternalTerminal.TermEnvPair(execEnv, id);
+            TerminalProfile terminalProfile = hash.get(key);
 
             if (terminalProfile != null) {
                 return new ExternalTerminal(terminalProfile);
@@ -141,7 +142,7 @@ public final class ExternalTerminalProvider {
                         Process pr = npb.call();
                         int result = pr.waitFor();
                         if (result == 0) {
-                            hash.put(execEnv, p);
+                            hash.put(key, p);
                             return t;
                         }
                     } catch (InterruptedException ex) {

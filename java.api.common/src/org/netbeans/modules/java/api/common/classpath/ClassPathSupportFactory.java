@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.api.common.classpath;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -60,7 +61,19 @@ public final class ClassPathSupportFactory {
      * @return classpath implementation
      */
     public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator) {
-        return new BootClassPathImplementation(evaluator);
+        return new BootClassPathImplementation(evaluator, null);
+    }
+
+    /**
+     * Creates implementation of BOOT classpath based on project's <code>platform.active</code>
+     * property and given endorsed classpath which will have precedence of platform classpath.
+     * @param evaluator project's property evaluator
+     * @param endorsedClassPath endorsed classpath to prepend to boot classpath
+     * @return classpath implementation
+     * @since org.netbeans.modules.java.api.common/0 1.11
+     */
+    public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator, ClassPath endorsedClassPath) {
+        return new BootClassPathImplementation(evaluator, endorsedClassPath);
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,27 +40,35 @@
 package org.netbeans.modules.php.editor.index;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.model.impl.ParameterImpl;
 
 /**
  *
  * @author Tor Norbye
  */
 public class IndexedFunction extends IndexedFullyQualified implements FunctionElement {
-    private String arguments;
+    List<Parameter> parameters;
     private String namespaceName;
-    private String[] args;
-    private List<String> parameters;
-    private int[] optionalArgs;
     private String returnType;
     private boolean includeIn;
     
+    public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, List<Parameter> arguments, int offset, int flags, ElementKind kind) {
+        this(name,in,null,index,fileUrl,arguments,offset,flags,kind);
+    }
+
+    public IndexedFunction(String name, String in, String namespaceName, PHPIndex index, String fileUrl, List<Parameter> arguments, int offset, int flags, ElementKind kind) {
+        super(name, in != null ? in : namespaceName, index, fileUrl, offset, flags, kind);
+        this.namespaceName = namespaceName;
+        this.parameters = arguments;
+    }
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
         this(name,in,null,index,fileUrl,arguments,offset,flags,kind);
     }
@@ -68,7 +76,12 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
     public IndexedFunction(String name, String in, String namespaceName, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
         super(name, in != null ? in : namespaceName, index, fileUrl, offset, flags, kind);
         this.namespaceName = namespaceName;
-        this.arguments = arguments;
+        String[] args = arguments.split(",");//NOI18N
+        this.parameters = new ArrayList<Parameter>();
+        for (String oneArgument : args) {
+            this.parameters.add(new ParameterImpl(oneArgument, null, null, OffsetRange.NONE));
+        }
+
     }
     
     @Override
@@ -78,66 +91,57 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
 
     @Override
     public String getSignature() {
-        return getSignatureImpl(true);
+        return getSignatureImpl(true, true);
     }
 
-    public String getFunctionSignature() {
-        return getSignatureImpl(false);
+    public String getFunctionSignature(boolean includeParamInfo) {
+        return getSignatureImpl(false, includeParamInfo);
     }
     
-    private String getSignatureImpl(boolean includeIn) {
-        if (textSignature == null || this.includeIn != includeIn) {
-            this.includeIn = includeIn;
-            StringBuilder sb = new StringBuilder();
-            if (in != null && includeIn) {
-                sb.append(in);
-                sb.append('.');
-            }
-            sb.append(name);
-            sb.append("(");
-            List<String> parameterList = getParameters();
-            if (parameterList.size() > 0) {
-                for (int i = 0, n = parameterList.size(); i < n; i++) {
-                    if (i > 0) {
-                        sb.append(", ");
+    private String getSignatureImpl(boolean includeIn, boolean includeParamInfo) {
+        this.includeIn = includeIn;
+        StringBuilder sb = new StringBuilder();
+        if (in != null && includeIn) {
+            sb.append(in);
+            sb.append('.');
+        }
+        sb.append(name);
+        sb.append("(");
+        List<Parameter> parameterList = getParameters();
+        if (parameterList.size() > 0) {
+            for (int i = 0, n = parameterList.size(); i < n; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                final Parameter param = parameterList.get(i);
+                if (includeParamInfo) {
+                    List<QualifiedName> types = param.getTypes();
+                    //show type
+                    if (types.size() > 1) {
+                        sb.append("mixed ");//NOI18N
+                        } else {
+                        for (QualifiedName qName : types) {
+                            sb.append(qName.toString()).append(' ');//NOI18N
+                            }
                     }
-                    sb.append(parameterList.get(i));
+                }
+                sb.append(param.getName());
+                if (includeParamInfo) {
+                    String defaultValue = param.getDefaultValue();
+                    if (defaultValue != null) {
+                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                    }
                 }
             }
-            sb.append(")");
-            textSignature = sb.toString();
         }
+        sb.append(")");
+        textSignature = sb.toString();
 
         return textSignature;
     }
 
-    public String[] getArgs() {
-        if (args == null) {
-            if(arguments == null || arguments.length() == 0) {
-                return new String[0];
-            } else {
-                args = arguments.split(","); // NOI18N
-            }
-        }
 
-        return args;
-    }
-
-    public List<String> getParameters() {
-        if (parameters == null) {
-            String[] a = getArgs();
-
-            if ((a != null) && (a.length > 0)) {
-                parameters = new ArrayList<String>(a.length);
-
-                for (String arg : a) {
-                    parameters.add(arg);
-                }
-            } else {
-                parameters = Collections.emptyList();
-            }
-        }
-
+    public List<Parameter> getParameters() {
         return parameters;
     }
 
@@ -157,12 +161,22 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
     }
 
     public int[] getOptionalArgs() {
-        return optionalArgs;
+        List<Parameter> params = getParameters();
+        for (int i = 0; i < params.size(); i++) {
+            Parameter parameter = params.get(i);
+            String defaultValue = parameter.getDefaultValue();
+            if (defaultValue != null) {
+                int[] optionalArgs = new int[params.size()-i];
+                for (int j = 0; j < optionalArgs.length; j++) {
+                    optionalArgs[j] = i+j;
+
+                }
+                return optionalArgs;
+            }
+        }
+        return new int[0];
     }
 
-    public void setOptionalArgs(int[] optionalArgs) {
-        this.optionalArgs = optionalArgs;
-    }
 
     @CheckForNull
     public String getReturnType() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -79,6 +79,7 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -87,6 +88,8 @@ import org.openide.util.WeakListeners;
  */
 public final class FileUtil extends Object {
 
+    private static final RequestProcessor REFRESH_RP = new RequestProcessor("FileUtil-Refresh-All");//NOI18N
+    private static RequestProcessor.Task refreshTask = null;
     /** Contains mapping of FileChangeListener to File. */
     private static final Map<FileChangeListener,Map<File,Holder>> holders = new WeakHashMap<FileChangeListener,Map<File,Holder>>();
 
@@ -161,14 +164,37 @@ public final class FileUtil extends Object {
      * @since 7.7
      */
     public static void refreshAll() {
-        refreshFor(File.listRoots());
-        try {
-            getConfigRoot().getFileSystem().refresh(true);
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+        // run just one refreshTask in time and always wait for finish
+        final RequestProcessor.Task taskToWaitFor;  // prevent possible NPE with only refreshTask.waitFinished
+        synchronized (REFRESH_RP) {
+            if (refreshTask != null) {
+                refreshTask.cancel();
+            } else {
+                refreshTask = REFRESH_RP.create(new Runnable() {
+
+                    public void run() {
+                        LOG.fine("refreshAll - started");  //NOI18N
+                        refreshFor(File.listRoots());
+                        try {
+                            getConfigRoot().getFileSystem().refresh(true);
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            LOG.fine("refreshAll - finished");  //NOI18N
+                            synchronized (REFRESH_RP) {
+                                refreshTask = null;
+                            }
+                        }
+                    }
+                });
+            }
+            taskToWaitFor = refreshTask;
+            refreshTask.schedule(0);
+            LOG.fine("refreshAll - scheduled");  //NOI18N
         }
-    }         
-    
+        taskToWaitFor.waitFinished();
+    }
+
     /**
      * Registers <code>listener</code> so that it will receive
      * <code>FileEvent</code>s from <code>FileSystem</code>s providing instances

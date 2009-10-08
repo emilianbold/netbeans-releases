@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -424,11 +424,11 @@ public class Utilities {
         }
         
         ts.moveNext();
-
-        final JavaTokenId id = ts.token().id();
-        if (ts.offset() == start) {
+        Token<JavaTokenId> token = ts.token();
+        if (ts.offset() == start && token != null) {
+            final JavaTokenId id = token.id();
             if (id == JavaTokenId.IDENTIFIER) {
-                return ts.token();
+                return token;
             }
             if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
                 return ts.offsetToken();

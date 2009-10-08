@@ -68,7 +68,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  * @author Radek Matous
  */
 public class ParameterInfoSupport {
-
     private ModelVisitor modelVisitor;
     private Document document;
     private int offset;
@@ -404,12 +403,28 @@ public class ParameterInfoSupport {
         List<String> paramNames = new ArrayList<String>();
         List<? extends Parameter> parameters = functionScope.getParameters();
         for (Parameter parameter : parameters) {
-            if (parameter.isMandatory()) {
-                paramNames.add(parameter.getName());
-            } else {
-                paramNames.add(parameter.getName() + "=" + parameter.getDefaultValue() != null ? parameter.getDefaultValue() : "");//NOI18N
-            }
+            String paramString = paramToStr(parameter);
+            paramNames.add(paramString);
         }
         return paramNames;
     }
+    private static String paramToStr(Parameter parameter) {
+        StringBuilder sb = new StringBuilder();
+        List<QualifiedName> types = parameter.getTypes();
+        if (types.size() > 1) {
+            sb.append("mixed ");
+        } else {
+            for (QualifiedName qualifiedName : types) {
+                sb.append(qualifiedName.toString()).append(" "); //NOI18N
+            }
+        }
+        sb.append(parameter.getName());
+        String defaultValue = parameter.getDefaultValue();
+        if (defaultValue != null) {
+            sb.append("=").append(defaultValue).append(" "); //NOI18N
+        }
+        final String paramString = sb.toString();
+        return paramString;
+    }
+
 }

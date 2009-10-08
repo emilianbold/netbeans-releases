@@ -9,7 +9,6 @@
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/j2ee/samples"/>
         <property name="excludes" value="private build-impl.xml" />
         <mkdir dir="${examples}"/>
-        <zip basedir="samples_src/CustomerCMP" excludes="${excludes}" destfile="${examples}/CustomerCMP.zip"/>
         <zip basedir="samples_src/InterceptorStateless" excludes="${excludes}" destfile="${examples}/InterceptorStateless.zip"/>
         <zip basedir="samples_src/ServletStateless" excludes="${excludes}" destfile="${examples}/ServletStateless.zip"/>
         <zip basedir="samples_src/LotteryAnnotation" excludes="${excludes}" destfile="${examples}/LotteryAnnotation.zip"/>

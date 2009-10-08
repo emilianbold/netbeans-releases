@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.web.project.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +83,7 @@ public final class SetExecutionUriAction extends NodeAction {
                 "org.netbeans.modules.web.IsServletFile";            // NOI18N
     public static final String ATTR_EXECUTION_URI = "execution.uri"; //NOI18N
     // Added as  fix for IZ#171708.
-    private final MarkerClass myMarker = new MarkerClass();
+    private static final MarkerClass MARKER = new MarkerClass();
     
     /**
      * Creates and starts a thread for generating documentation
@@ -181,7 +183,59 @@ public final class SetExecutionUriAction extends NodeAction {
         return false;
     }
     
-    public static String[] getServletMappings(WebModule webModule, FileObject javaClass) {
+    // Fix for IZ#170419 - Invoking Run took 29110 ms.
+    public static boolean isScanInProgress( WebModule webModule, 
+            FileObject fileObject, final ServletScanObserver observer )
+    {
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        ProjectWebModule prjWebModule = null;
+        if ( project != null ){
+             prjWebModule = project.getLookup().lookup( 
+                    ProjectWebModule.class);
+        }
+        boolean isScan = project!= null;
+        if ( isScan ){
+                isScan = servletFilesScanning(webModule, fileObject);
+                if ( !isScan ){
+                    return false;
+                }
+                final ProjectWebModule source = prjWebModule;
+                PropertyChangeListener listener = new PropertyChangeListener() {
+                    
+                    public void propertyChange( PropertyChangeEvent event ) {
+                        String name = event.getPropertyName();
+                        if ( ProjectWebModule.LOOKUP_ITEM.equals(name) &&
+                                event.getNewValue()!= null && 
+                                    event.getNewValue()!= MARKER )
+                        {
+                            MarkerClass marker = source.getLookup().lookup(
+                                    MarkerClass.class);
+                            if ( marker!= null && marker!= MARKER && 
+                                    observer!= null )
+                            {
+                                observer.scanFinished();
+                                source.removePropertyChangeListener(this);
+                            }
+                        }
+                    }
+                };
+                prjWebModule.addPropertyChangeListener( listener );
+                isScan = servletFilesScanning(webModule, fileObject);
+                if ( !isScan ){
+                    prjWebModule.removePropertyChangeListener(listener);
+                }
+            }
+            else {
+                isScan = false;
+            }
+        return isScan;
+    }
+    
+    public static String[] getServletMappings(WebModule webModule, 
+            FileObject javaClass) 
+    {
+        // Fix for IZ#170419 - Invoking Run took 29110 ms.
+        assert checkScanFinished( webModule , javaClass );
         if (webModule == null)
             return null;
         
@@ -206,6 +260,20 @@ public final class SetExecutionUriAction extends NodeAction {
         }
     }
     
+    private static boolean checkScanFinished(WebModule webModule, FileObject fileObject) {
+        Project project = FileOwnerQuery.getOwner( fileObject );
+        if ( project != null ){
+            final ProjectWebModule prjWebModule = project.getLookup().lookup( 
+                    ProjectWebModule.class);
+            if (prjWebModule != null) {
+                MarkerClass marker = prjWebModule.getLookup().lookup(
+                        MarkerClass.class );
+                return marker!=null && marker!=MARKER;
+            }
+        }
+        return true;
+    }
+
     /**
      * Method check if initial servlet scanning has been started.
      * It's done via setting special mark for project ( actually 
@@ -218,7 +286,7 @@ public final class SetExecutionUriAction extends NodeAction {
      * 
      * Fix for IZ#171708 - AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir)
      */
-    private boolean servletFilesScanning( final WebModule webModule , 
+    private static boolean servletFilesScanning( final WebModule webModule , 
             final FileObject fileObject ) 
     {
         Project project = FileOwnerQuery.getOwner( fileObject );
@@ -232,7 +300,7 @@ public final class SetExecutionUriAction extends NodeAction {
                     Runnable runnable = new Runnable(){
                         public void run() {
                             isServletFile(webModule, fileObject , true );
-                            prjWebModule.removeCookie( myMarker);
+                            prjWebModule.removeCookie( MARKER);
                             prjWebModule.addCookie( new MarkerClass() );
                         }
                     };
@@ -241,11 +309,11 @@ public final class SetExecutionUriAction extends NodeAction {
                          * In the worst case we will start several initial scanning.
                          */
                         RequestProcessor.getDefault().post(runnable);
-                        prjWebModule.addCookie( myMarker );
+                        prjWebModule.addCookie( MARKER );
                      }
                     return true;
                 }
-                else if ( marker == myMarker ){
+                else if ( marker == MARKER ){
                     return true;
                 }
                 else {
@@ -352,6 +420,6 @@ public final class SetExecutionUriAction extends NodeAction {
     /*
      * Created as  fix for IZ#171708 = AWT thread blocked for 15766 ms. (project not usable after opening - fresh userdir) 
      */
-    private class MarkerClass {
+    private static class MarkerClass {
     }
 }

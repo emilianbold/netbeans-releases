@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -380,6 +380,7 @@ public class SourceUtils {
             ClassPath cp = ClassPathSupport.createProxyClassPath(
                 new ClassPath[] {
                     cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),
+                    createClassPath(cpInfo,ClasspathInfo.PathKind.OUTPUT),
                     createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),                    
                     createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
                 });

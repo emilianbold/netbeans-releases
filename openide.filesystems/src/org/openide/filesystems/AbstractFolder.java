@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -518,7 +518,12 @@ abstract class AbstractFolder extends FileObject {
 
         if (fileevent.getFile().equals(this) && (parent != null)) {
             FileEvent ev = new FileEvent(parent, fileevent.getFile(), fileevent.isExpected());
-            parent.fileDeleted0(ev);
+            try {
+                ev.inheritPostNotify(fileevent);
+                parent.fileDeleted0(ev);
+            } finally {
+                ev.setPostNotify(null);
+            }
         }
     }
 
@@ -534,7 +539,12 @@ abstract class AbstractFolder extends FileObject {
 
         if (fileevent.getFile().equals(this) && (parent != null)) {
             FileEvent ev = new FileEvent(parent, fileevent.getFile(), fileevent.isExpected());
-            parent.fileCreated0(ev, isData);
+            try {
+                ev.inheritPostNotify(fileevent);
+                parent.fileCreated0(ev, isData);
+            } finally {
+                ev.setPostNotify(null);
+            }
         }
     }
 
@@ -549,7 +559,12 @@ abstract class AbstractFolder extends FileObject {
 
         if (fileevent.getFile().equals(this) && (parent != null)) {
             FileEvent ev = new FileEvent(parent, fileevent.getFile(), fileevent.isExpected());
-            parent.fileChanged0(ev);
+            try {
+                ev.inheritPostNotify(fileevent);
+                parent.fileChanged0(ev);
+            } finally {
+                ev.setPostNotify(null);
+            }
         }
     }
 
@@ -567,7 +582,12 @@ abstract class AbstractFolder extends FileObject {
                     parent, filerenameevent.getFile(), filerenameevent.getName(), filerenameevent.getExt(),
                     filerenameevent.isExpected()
                 );
-            parent.fileRenamed0(ev);
+            try {
+                ev.inheritPostNotify(filerenameevent);
+                parent.fileRenamed0(ev);
+            } finally {
+                ev.setPostNotify(null);
+            }
         }
     }
 
@@ -580,7 +600,12 @@ abstract class AbstractFolder extends FileObject {
                     parent, fileattributeevent.getFile(), fileattributeevent.getName(), fileattributeevent.getOldValue(),
                     fileattributeevent.getNewValue(), fileattributeevent.isExpected()
                 );
-            parent.fileAttributeChanged0(ev);
+            try {
+                ev.inheritPostNotify(fileattributeevent);
+                parent.fileAttributeChanged0(ev);
+            } finally {
+                ev.setPostNotify(null);
+            }
         }
     }
 

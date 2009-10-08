@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -484,12 +484,12 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
 
                 // search for AR associations
                 if (location == DeclarationLocation.NONE) {
-                    location = new ActiveRecordAssociationFinder(parserResult, (SymbolNode) closest, root, path).findAssociationLocation();
+                    location = new ActiveRecordAssociationFinder(index, (SymbolNode) closest, root, path).findAssociationLocation();
                 }
 
                 // search for helpers
                 if (location == DeclarationLocation.NONE) {
-                    location = new HelpersFinder(parserResult, (SymbolNode) closest, root, path).findHelperLocation();
+                    location = new HelpersFinder(index, (SymbolNode) closest, root, path).findHelperLocation();
                 }
 
                 if (location == DeclarationLocation.NONE) {
@@ -627,7 +627,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return DeclarationLocation.NONE;
@@ -1313,7 +1313,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
             return candidate;
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return null;

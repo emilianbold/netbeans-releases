@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -68,6 +68,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     public static final String SAVE = "save";  // NOI18N
     // Reuse
     public static final String REUSE = "reuse";  // NOI18N
+    //
+    public static final String SHOW_PROFILING = "showProfiling"; // NOI18N
 
     // Display binary files
     public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
@@ -177,6 +179,19 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         getPreferences().putBoolean(REUSE, reuse);
         if (oldValue != reuse) {
             firePropertyChange(REUSE, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
+        }
+    }
+
+    // Show Profiling
+    public boolean getShowProfiling() {
+        return getPreferences().getBoolean(SHOW_PROFILING, true);
+    }
+
+    public void setShowProfiling(boolean reuse) {
+        boolean oldValue = getReuse();
+        getPreferences().putBoolean(SHOW_PROFILING, reuse);
+        if (oldValue != reuse) {
+            firePropertyChange(SHOW_PROFILING, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
         }
     }
 
