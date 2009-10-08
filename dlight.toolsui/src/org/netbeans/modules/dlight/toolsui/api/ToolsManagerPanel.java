@@ -442,7 +442,9 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             if (newDisplayName.length() == 0) {
                 newDisplayName = o.getDisplayName();
             }
-            newDisplayName = makeNameUnique(newDisplayName);
+            else {
+                newDisplayName = makeNameUnique(newDisplayName);
+            }
             o.setDisplayName(newDisplayName);
             String newName = makeNameLegal(newDisplayName);
             o.setName(newName);
