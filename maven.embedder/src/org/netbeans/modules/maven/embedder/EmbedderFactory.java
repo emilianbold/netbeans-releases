@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -53,26 +54,13 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.embedder.Configuration;
-import org.apache.maven.embedder.ConfigurationValidationResult;
-import org.apache.maven.embedder.ContainerCustomizer;
-import org.apache.maven.embedder.DefaultConfiguration;
-import org.apache.maven.embedder.MavenEmbedder;
-import org.apache.maven.embedder.MavenEmbedderException;
-import org.apache.maven.embedder.MavenEmbedderLogger;
 import org.apache.maven.lifecycle.LifecycleExecutor;
-import org.apache.maven.lifecycle.plan.BuildPlanner;
 import org.apache.maven.profiles.DefaultProfileManager;
 import org.apache.maven.profiles.ProfileManager;
-import org.apache.maven.profiles.activation.DefaultProfileActivationContext;
-import org.apache.maven.profiles.activation.ProfileActivationContext;
 import org.apache.maven.project.DefaultProjectBuilderConfiguration;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.project.build.model.DefaultModelLineage;
-import org.apache.maven.project.build.model.ModelLineage;
-import org.apache.maven.project.build.model.ModelLineageBuilder;
-import org.apache.maven.wagon.providers.ssh.knownhost.KnownHostsProvider;
 import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
@@ -82,10 +70,22 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
-import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.util.prefs.Preferences;
+import org.apache.maven.classrealm.ClassRealmManagerDelegate;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.plugin.MavenPluginManager;
+import org.apache.maven.project.artifact.MavenMetadataCache;
+import org.codehaus.plexus.ContainerConfiguration;
+import org.codehaus.plexus.DefaultContainerConfiguration;
+import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.component.discovery.ComponentDiscoverer;
+import org.codehaus.plexus.component.discovery.ComponentDiscoveryEvent;
+import org.codehaus.plexus.component.discovery.ComponentDiscoveryListener;
+import org.codehaus.plexus.component.repository.ComponentRequirement;
+import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
+import org.codehaus.plexus.context.Context;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
-import org.netbeans.modules.maven.embedder.exec.NBBuildPlanner;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -105,8 +105,6 @@ import org.openide.util.NbPreferences;
  */
 public final class EmbedderFactory {
 
-    private static ThreadLocal<MavenEmbedder> projectTL = new ThreadLocal<MavenEmbedder>();
-    private static boolean wasReset = true;
     private static MavenEmbedder project;
     private static MavenEmbedder online;
     private static SettingsFileListener fileListener = new SettingsFileListener();
@@ -121,11 +119,9 @@ public final class EmbedderFactory {
      * embedder seems to cache some values..
      */
     public synchronized static void resetProjectEmbedder() {
-        project = null;
-        wasReset = true;
     }
 
-    private static void setLocalRepoPreference(Configuration req) {
+    private static void setLocalRepoPreference(EmbedderConfiguration req) {
         Preferences prefs = NbPreferences.root().node("org/netbeans/modules/maven"); //NOI18N
         String localRepo = prefs.get("localRepository", null); //NOI18N
         if (localRepo != null) {
@@ -139,290 +135,315 @@ public final class EmbedderFactory {
         }
     }
 
-    public static MavenEmbedder createProjectLikeEmbedder() {
-        Configuration req = new DefaultConfiguration();
-        req.setClassLoader(EmbedderFactory.class.getClassLoader());
+    public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
+        final String mavenCoreRealmId = "plexus.core";
+        ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
+            .setName("mavenCore");
+
+
+        dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
+
+      public List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm)
+          throws PlexusConfigurationException {
+        List<ComponentSetDescriptor> componentSetDescriptors = new ArrayList<ComponentSetDescriptor>();
+//TODO        if (mavenCoreRealmId.equals(classRealm.getId())) {
+//          ComponentSetDescriptor componentSetDescriptor = new ComponentSetDescriptor();
+//
+//          ComponentDescriptor componentDescriptor = new ComponentDescriptor();
+//          componentDescriptor.setRealm(classRealm);
+//          componentDescriptor.setRole(ClassRealmManagerDelegate.class.getName());
+//          componentDescriptor.setImplementationClass(EclipseClassRealmManagerDelegate.class);
+//          ComponentRequirement plexusRequirement = new ComponentRequirement();
+//          plexusRequirement.setRole("org.codehaus.plexus.PlexusContainer");
+//          plexusRequirement.setFieldName("plexus");
+//          componentDescriptor.addRequirement(plexusRequirement );
+//          componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+//
+//          componentSetDescriptors.add(componentSetDescriptor);
+//        }
+        return componentSetDescriptors;
+      }
+
+    });
+
+    dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
+      @SuppressWarnings("unchecked")
+      public void componentDiscovered(ComponentDiscoveryEvent event) {
+        ComponentSetDescriptor set = event.getComponentSetDescriptor();
+//        for (ComponentDescriptor desc : set.getComponents()) {
+//          if (MavenMetadataCache.class.getName().equals(desc.getRole())) {
+//            desc.setImplementationClass(EclipseMavenMetadataCache.class);
+//          } else if (BuildContext.class.getName().equals(desc.getRole())) {
+//            desc.setImplementationClass(ThreadBuildContext.class);
+//          } else if (MavenPluginManager.class.getName().equals(desc.getRole())) {
+//            desc.setImplementationClass(EclipseMavenPluginManager.class);
+//          }
+//        }
+      }
+    });
+        DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
+
+        EmbedderConfiguration req = new EmbedderConfiguration();
+        req.setContainer(dpc);
         setLocalRepoPreference(req);
 
-        //TODO remove explicit activation
-        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
+//        //TODO remove explicit activation
+//        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
         Properties props = new Properties();
         props.putAll(System.getProperties());
         req.setSystemProperties(fillEnvVars(props));
         File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
         File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
 
-        //validating  Configuration
-        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-        Exception userSettingsException = cvr.getUserSettingsException();
-        if (userSettingsException != null) {
-            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-        }
-        if (cvr.isValid()) {
-            req.setUserSettingsFile(userSettingsPath);
-        } else {
-            LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-            req.setUserSettingsFile(globalSettingsPath);
-        }
-
-        req.setGlobalSettingsFile(globalSettingsPath);
-        req.setMavenEmbedderLogger(new NullEmbedderLogger());
-        req.setConfigurationCustomizer(new ContainerCustomizer() {
-
-            public void customize(PlexusContainer plexusContainer) {
-                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
-                desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
-
-                desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
-                desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
-
-                desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
-                desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
-
-                desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
-                desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
-
-                desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
-                desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
-
-                //MEVENIDE-634
-                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
-                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-
-                //MEVENIDE-634
-                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
-                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                }
-        });
+//        //validating  Configuration
+//        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
+//        Exception userSettingsException = cvr.getUserSettingsException();
+//        if (userSettingsException != null) {
+//            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
+//                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
+//        }
+//        if (cvr.isValid()) {
+//            req.setUserSettingsFile(userSettingsPath);
+//        } else {
+//            LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
+//            req.setUserSettingsFile(globalSettingsPath);
+//        }
+//
+//        req.setGlobalSettingsFile(globalSettingsPath);
+//        req.setMavenEmbedderLogger(new NullEmbedderLogger());
+//        req.setConfigurationCustomizer(new ContainerCustomizer() {
+//
+//            public void customize(PlexusContainer plexusContainer) {
+//                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(ArtifactFactory.ROLE);
+//                desc.setImplementation(NbArtifactFactory.class.getName()); //NOI18N
+//
+//                desc = plexusContainer.getComponentDescriptor("org.apache.maven.extension.ExtensionManager");
+//                desc.setImplementation(NbExtensionManager.class.getName()); //NOI18N
+//
+//                desc = plexusContainer.getComponentDescriptor("org.apache.maven.workspace.MavenWorkspaceStore");
+//                desc.setImplementation(NbMavenWorkspaceStore.class.getName()); //NOI18N
+//
+//                desc = plexusContainer.getComponentDescriptor(ArtifactResolver.ROLE);
+//                desc.setImplementation(NbArtifactResolver.class.getName()); //NOI18N
+//
+//                desc = plexusContainer.getComponentDescriptor(WagonManager.ROLE);
+//                desc.setImplementation(NbWagonManager.class.getName()); //NOI18N
+//
+//                //MEVENIDE-634
+//                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+//                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+//
+//                //MEVENIDE-634
+//                desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
+//                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+//                }
+//        });
         MavenEmbedder embedder = null;
         try {
             embedder = new MavenEmbedder(req);
-            try {
-                //MEVENIDE-634 make all instances non-interactive
-                WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
-                wagonManager.setInteractive(false);
-            } catch (ComponentLookupException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-
-        } catch (MavenEmbedderException e) {
-            ErrorManager.getDefault().notify(e);
+            //MEVENIDE-634 make all instances non-interactive
+//            WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
+//            wagonManager.setInteractive(false);
+        } catch (ComponentLookupException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
+
         return embedder;
     }
 
 
     public synchronized static MavenEmbedder getProjectEmbedder() /*throws MavenEmbedderException*/ {
-        MavenEmbedder projectEmbedder;
-        //since yarda's introduction of lazy project loading, mutliple threads use the embedder at startup at once.
-        // that breaks embedder/plexus in many ways..
-        // introducing ThreadLocal project embedder instance to workaround the problem
-        // 
-        if (!wasReset) {
-            projectEmbedder = projectTL.get();
-        } else {
-            projectEmbedder = project;
-            projectTL.remove();
-        }
-        if (projectEmbedder == null) {
-            MavenEmbedder embedder = createProjectLikeEmbedder();
-            if (!wasReset) {
-                projectTL.set(embedder);
-            } else {
-                project = embedder;
+        if (project == null) {
+            try {
+                project = createProjectLikeEmbedder();
+            } catch (PlexusContainerException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            projectEmbedder = embedder;
         }
-        return projectEmbedder;
+        return project;
     }
 
     public synchronized static MavenEmbedder getOnlineEmbedder() {
-        return createOnlineEmbedder();
-//        if (online == null) {
-//            online = createOnlineEmbedder();
-//        }
-//        return online;
+        if (online == null) {
+            try {
+                online = createOnlineEmbedder();
+            } catch (PlexusContainerException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return online;
 
     }
 
-    /*public*/ static MavenEmbedder createOnlineEmbedder() {
-        Configuration req = new DefaultConfiguration();
-        req.setClassLoader(EmbedderFactory.class.getClassLoader());
+    /*public*/ static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
+        final String mavenCoreRealmId = "plexus.core";
+        ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
+            .setName("mavenCore");
+
+
+        DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
+
+        EmbedderConfiguration req = new EmbedderConfiguration();
+        req.setContainer(dpc);
         setLocalRepoPreference(req);
 
-        //TODO remove explicit activation
-        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-
-        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
-        File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
-
-        //validating  Configuration
-        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-        Exception userSettingsException = cvr.getUserSettingsException();
-        if (userSettingsException != null) {
-            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-        }
-        if (cvr.isValid()) {
-            req.setUserSettingsFile(userSettingsPath);
-        } else {
-            LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-
-            req.setUserSettingsFile(globalSettingsPath);
-        }
-        req.setGlobalSettingsFile(globalSettingsPath);
-        
+//        //TODO remove explicit activation
+//        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
         Properties props = new Properties();
         props.putAll(System.getProperties());
         req.setSystemProperties(fillEnvVars(props));
-        
-        req.setConfigurationCustomizer(new ContainerCustomizer() {
-
-            public void customize(PlexusContainer plexusContainer) {
-                    //MEVENIDE-634 
-                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
-                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-                    
-                    //MEVENIDE-634 
-                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
-                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
-            }
-        });
-
-        req.setMavenEmbedderLogger(new NullEmbedderLogger());
-        MavenEmbedder embedder = null;
-        try {
-            embedder = new MavenEmbedder(req);
-            try {
-                //MEVENIDE-634 make all instances non-interactive
-                WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
-                wagonManager.setInteractive( false );
-                wagonManager.setDownloadMonitor(new ProgressTransferListener());
-            } catch (ComponentLookupException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-            
-        } catch (MavenEmbedderException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        return embedder;
-    }
-        
-    public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
-        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
 
 
-        ClassWorld world = new ClassWorld();
-        File rootPackageFolder = InstalledFileLocator.getDefault().locate("maven2/rootpackage", null, false); //NOI18N
-        if (rootPackageFolder != null) {
-            rootPackageFolder = FileUtil.normalizeFile(rootPackageFolder);
-        }
-        // kind of separation layer between the netbeans classloading world and maven classworld.
-        try {
-            ClassRealm nbRealm = world.newRealm("netbeans", loader); //NOI18N
-            //MEVENIDE-647
-            ClassRealm plexusRealm = world.newRealm("plexus.core", loader.getParent()); //NOI18N
-            //loader.getParent() contains rt.jar+tools.jar (what's what we want) but also openide.modules, openide.util and startup (that's what we don't want but probably can live with)
-
-            // these are all packages that are from the embedder jar..
-            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.doxia"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.plexus"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.classworlds"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.apache.maven"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.apache.commons"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.apache.log4j"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xbean"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xerces"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "META-INF/maven"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "META-INF/plexus"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "com.jcraft.jsch"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.aspectj"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.cyberneko"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.easymock"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "hidden.org.codehaus.plexus"); //NOI18N
-
-            // from netbeans allow just Lookup and the mevenide bridges
-            plexusRealm.importFrom(nbRealm.getId(), "org.openide.util"); //NOI18N
-            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.bridges"); //NOI18N
-            //have custom lifecycle executor to collect all projects in reactor..
-            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.embedder.exec"); //NOI18N
-
-            if (rootPackageFolder != null) { //#154108 well, the broken embedder is more broken in jnlp based netbeans..
-                //hack to enable reports, default package is EVIL!
-                plexusRealm.addURL(rootPackageFolder.toURI().toURL());
-            }
-        } catch (NoSuchRealmException ex) {
-            ex.printStackTrace();
-        } catch (DuplicateRealmException ex) {
-            ex.printStackTrace();
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-        }
-        Configuration req = new DefaultConfiguration();
-        req.setClassWorld(world);
-        req.setMavenEmbedderLogger(logger);
-        setLocalRepoPreference(req);
-
-        //TODO remove explicit activation
-        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE; //NOI18N
-        File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
-        
-        //validating  Configuration
-        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-        Exception userSettingsException = cvr.getUserSettingsException();
-        if (userSettingsException != null) {
-            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-        }
-        if (userSettingsPath.exists()) {
-            if (cvr.isValid()) {
-                req.setUserSettingsFile(userSettingsPath);
-            } else {
-                LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-                req.setUserSettingsFile(globalSettingsPath);
-            }
-        }
-
-        req.setGlobalSettingsFile(globalSettingsPath);
-
-        req.setConfigurationCustomizer(new ContainerCustomizer() {
-
-            public void customize(PlexusContainer plexusContainer) {
-                //have custom lifecycle executor to collect all projects in reactor..
-                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(LifecycleExecutor.ROLE);
-                desc.setImplementation(MyLifecycleExecutor.class.getName()); //NOI18N
-                try {
-                    PlexusConfiguration oldConf = desc.getConfiguration();
-                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
-                    copyConfig(oldConf, conf);
-                    desc.setConfiguration(conf);
-                } catch (PlexusConfigurationException ex) {
-                    ex.printStackTrace();
-                }
-                
-                desc = plexusContainer.getComponentDescriptor(BuildPlanner.class.getName());
-                desc.setImplementation(NBBuildPlanner.class.getName()); //NOI18N
-                try {
-                    PlexusConfiguration oldConf = desc.getConfiguration();
-                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
-                    copyConfig(oldConf, conf);
-                    desc.setConfiguration(conf);
-                } catch (PlexusConfigurationException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
+//        req.setConfigurationCustomizer(new ContainerCustomizer() {
+//
+//            public void customize(PlexusContainer plexusContainer) {
+//                    //MEVENIDE-634
+//                    ComponentDescriptor desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "file"); //NOI18N
+//                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+//
+//                    //MEVENIDE-634
+//                    desc = plexusContainer.getComponentDescriptor(KnownHostsProvider.ROLE, "null"); //NOI18N
+//                    desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
+//            }
+//        });
 
         MavenEmbedder embedder = null;
         try {
             embedder = new MavenEmbedder(req);
-        } catch (MavenEmbedderException e) {
-            ErrorManager.getDefault().notify(e);
+            //MEVENIDE-634 make all instances non-interactive
+//            WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
+//            wagonManager.setInteractive(false);
+        } catch (ComponentLookupException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
+//            try {
+//                //MEVENIDE-634 make all instances non-interactive
+//                WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
+//                wagonManager.setInteractive( false );
+//                wagonManager.setDownloadMonitor(new ProgressTransferListener());
+//            } catch (ComponentLookupException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//            }
+
         return embedder;
     }
+//
+//    public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
+//        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+//
+//
+//        ClassWorld world = new ClassWorld();
+//        File rootPackageFolder = InstalledFileLocator.getDefault().locate("maven2/rootpackage", null, false); //NOI18N
+//        if (rootPackageFolder != null) {
+//            rootPackageFolder = FileUtil.normalizeFile(rootPackageFolder);
+//        }
+//        // kind of separation layer between the netbeans classloading world and maven classworld.
+//        try {
+//            ClassRealm nbRealm = world.newRealm("netbeans", loader); //NOI18N
+//            //MEVENIDE-647
+//            ClassRealm plexusRealm = world.newRealm("plexus.core", loader.getParent()); //NOI18N
+//            //loader.getParent() contains rt.jar+tools.jar (what's what we want) but also openide.modules, openide.util and startup (that's what we don't want but probably can live with)
+//
+//            // these are all packages that are from the embedder jar..
+//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.doxia"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.plexus"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.classworlds"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.maven"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.commons"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.log4j"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xbean"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xerces"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "META-INF/maven"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "META-INF/plexus"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "com.jcraft.jsch"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.aspectj"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.cyberneko"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.easymock"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "hidden.org.codehaus.plexus"); //NOI18N
+//
+//            // from netbeans allow just Lookup and the mevenide bridges
+//            plexusRealm.importFrom(nbRealm.getId(), "org.openide.util"); //NOI18N
+//            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.bridges"); //NOI18N
+//            //have custom lifecycle executor to collect all projects in reactor..
+//            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.embedder.exec"); //NOI18N
+//
+//            if (rootPackageFolder != null) { //#154108 well, the broken embedder is more broken in jnlp based netbeans..
+//                //hack to enable reports, default package is EVIL!
+//                plexusRealm.addURL(rootPackageFolder.toURI().toURL());
+//            }
+//        } catch (NoSuchRealmException ex) {
+//            ex.printStackTrace();
+//        } catch (DuplicateRealmException ex) {
+//            ex.printStackTrace();
+//        } catch (MalformedURLException ex) {
+//            ex.printStackTrace();
+//        }
+//        Configuration req = new DefaultConfiguration();
+//        req.setClassWorld(world);
+//        req.setMavenEmbedderLogger(logger);
+//        setLocalRepoPreference(req);
+//
+//        //TODO remove explicit activation
+//        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
+//        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE; //NOI18N
+//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
+//
+//        //validating  Configuration
+//        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
+//        Exception userSettingsException = cvr.getUserSettingsException();
+//        if (userSettingsException != null) {
+//            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
+//                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
+//        }
+//        if (userSettingsPath.exists()) {
+//            if (cvr.isValid()) {
+//                req.setUserSettingsFile(userSettingsPath);
+//            } else {
+//                LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
+//                req.setUserSettingsFile(globalSettingsPath);
+//            }
+//        }
+//
+//        req.setGlobalSettingsFile(globalSettingsPath);
+//
+//        req.setConfigurationCustomizer(new ContainerCustomizer() {
+//
+//            public void customize(PlexusContainer plexusContainer) {
+//                //have custom lifecycle executor to collect all projects in reactor..
+//                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(LifecycleExecutor.ROLE);
+//                desc.setImplementation(MyLifecycleExecutor.class.getName()); //NOI18N
+//                try {
+//                    PlexusConfiguration oldConf = desc.getConfiguration();
+//                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
+//                    copyConfig(oldConf, conf);
+//                    desc.setConfiguration(conf);
+//                } catch (PlexusConfigurationException ex) {
+//                    ex.printStackTrace();
+//                }
+//
+//                desc = plexusContainer.getComponentDescriptor(BuildPlanner.class.getName());
+//                desc.setImplementation(NBBuildPlanner.class.getName()); //NOI18N
+//                try {
+//                    PlexusConfiguration oldConf = desc.getConfiguration();
+//                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
+//                    copyConfig(oldConf, conf);
+//                    desc.setConfiguration(conf);
+//                } catch (PlexusConfigurationException ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        });
+//
+//        MavenEmbedder embedder = null;
+//        try {
+//            embedder = new MavenEmbedder(req);
+//        } catch (MavenEmbedderException e) {
+//            ErrorManager.getDefault().notify(e);
+//        }
+//        return embedder;
+//    }
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         try {
@@ -438,50 +459,50 @@ public final class EmbedderFactory {
         return null;
     }
 
-    /**
-     * creates model lineage for the given pom file.
-     * Useful to be able to locate where certain elements are defined.
-     * 
-     * @param pom
-     * @param embedder
-     * @param allowStubs
-     * @return
-     */
-    public static ModelLineage createModelLineage(File pom, MavenEmbedder embedder, boolean allowStubs) throws ProjectBuildingException {
-        try {
-            ModelLineageBuilder bldr = (ModelLineageBuilder) embedder.getPlexusContainer().lookup(ModelLineageBuilder.class);
-            ProfileActivationContext context = new DefaultProfileActivationContext(new Properties(), true); //TODO shall we pass some execution props in here?
-            ProfileManager manager = new DefaultProfileManager(embedder.getPlexusContainer(), context);
-            DefaultProjectBuilderConfiguration conf = new DefaultProjectBuilderConfiguration();
-            conf.setGlobalProfileManager(manager);
-            conf.setExecutionProperties(new Properties());
-            conf.setLocalRepository(embedder.getLocalRepository());
-            conf.setUserProperties(new Properties());
-            return bldr.buildModelLineage(pom, conf, new ArrayList(), allowStubs, true);
-        } catch (ComponentLookupException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return new DefaultModelLineage();
-    }
+//    /**
+//     * creates model lineage for the given pom file.
+//     * Useful to be able to locate where certain elements are defined.
+//     *
+//     * @param pom
+//     * @param embedder
+//     * @param allowStubs
+//     * @return
+//     */
+//    public static ModelLineage createModelLineage(File pom, MavenEmbedder embedder, boolean allowStubs) throws ProjectBuildingException {
+//        try {
+//            ModelLineageBuilder bldr = (ModelLineageBuilder) embedder.getPlexusContainer().lookup(ModelLineageBuilder.class);
+//            ProfileActivationContext context = new DefaultProfileActivationContext(new Properties(), true); //TODO shall we pass some execution props in here?
+//            ProfileManager manager = new DefaultProfileManager(embedder.getPlexusContainer(), context);
+//            DefaultProjectBuilderConfiguration conf = new DefaultProjectBuilderConfiguration();
+//            conf.setGlobalProfileManager(manager);
+//            conf.setExecutionProperties(new Properties());
+//            conf.setLocalRepository(embedder.getLocalRepository());
+//            conf.setUserProperties(new Properties());
+//            return bldr.buildModelLineage(pom, conf, new ArrayList(), allowStubs, true);
+//        } catch (ComponentLookupException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        return new DefaultModelLineage();
+//    }
 
-    private static void copyConfig(PlexusConfiguration old, XmlPlexusConfiguration conf) throws PlexusConfigurationException {
-        conf.setValue(old.getValue());
-        String[] attrNames = old.getAttributeNames();
-        if (attrNames != null && attrNames.length > 0) {
-            for (int i = 0; i < attrNames.length; i++) {
-                conf.setAttribute(attrNames[i], old.getAttribute(attrNames[i]));
-            }
-        }
-        if ("lifecycle".equals(conf.getName())) { //NOI18N
-            conf.setAttribute("implementation", "org.apache.maven.lifecycle.Lifecycle"); //NOI18N
-        }
-        for (int i = 0; i < old.getChildCount(); i++) {
-            PlexusConfiguration oldChild = old.getChild(i);
-            XmlPlexusConfiguration newChild = new XmlPlexusConfiguration(oldChild.getName());
-            conf.addChild(newChild);
-            copyConfig(oldChild, newChild);
-        }
-    }
+//    private static void copyConfig(PlexusConfiguration old, XmlPlexusConfiguration conf) throws PlexusConfigurationException {
+//        conf.setValue(old.getValue());
+//        String[] attrNames = old.getAttributeNames();
+//        if (attrNames != null && attrNames.length > 0) {
+//            for (int i = 0; i < attrNames.length; i++) {
+//                conf.setAttribute(attrNames[i], old.getAttribute(attrNames[i]));
+//            }
+//        }
+//        if ("lifecycle".equals(conf.getName())) { //NOI18N
+//            conf.setAttribute("implementation", "org.apache.maven.lifecycle.Lifecycle"); //NOI18N
+//        }
+//        for (int i = 0; i < old.getChildCount(); i++) {
+//            PlexusConfiguration oldChild = old.getChild(i);
+//            XmlPlexusConfiguration newChild = new XmlPlexusConfiguration(oldChild.getName());
+//            conf.addChild(newChild);
+//            copyConfig(oldChild, newChild);
+//        }
+//    }
 
 
     /**
