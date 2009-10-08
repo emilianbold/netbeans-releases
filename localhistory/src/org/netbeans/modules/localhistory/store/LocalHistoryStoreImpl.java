@@ -734,8 +734,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         DataInputStream dis = null;
         DataOutputStream oos = null;
         try {
+            oos = getOutputStream(labelsFile, false);
             for(Entry<Long, String> label : labels.entrySet()) {
-                oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(labelsFile)));
                 oos.writeLong(label.getKey());
                 writeString(oos, label.getValue());                
             }            
