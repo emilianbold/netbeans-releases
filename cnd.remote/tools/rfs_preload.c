@@ -339,21 +339,66 @@ int pthread_create(void *newthread,
     inside_open--; \
     return result;
 
+#define real_fopen(function, path, mode) \
+    inside_open++; \
+    trace("%s %s %s\n", #function, path, mode); \
+    FILE* result = NULL; \
+    if (on_open(path, O_RDONLY)) { \
+        static FILE* (*prev)(const char *, const char *); \
+        if (!prev) { \
+            prev = (FILE* (*)(const char *, const char *)) get_real_addr(function); \
+        } \
+        if (prev) { \
+            result = prev(path, mode); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function); \
+            errno = EFAULT; \
+            result = NULL; \
+        } \
+    } \
+    trace("%s %s -> %d\n", #function, path, result); \
+    inside_open--; \
+    return result;
 
 int open(const char *path, int flags, ...) {
-    real_open(open, path, flags)
+    real_open(open, path, flags);
 }
 
 #if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
-    real_open(open64, path, flags)
+    real_open(open64, path, flags);
 }
 #endif
 
 int _open(const char *path, int flags, ...) {
-    real_open(_open, path, flags)
+    real_open(_open, path, flags);
 }
 
 int _open64(const char *path, int flags, ...) {
-    real_open(_open64, path, flags)
+    real_open(_open64, path, flags);
 }
+
+int __open(const char *path, int flags, ...) {
+    real_open(__open, path, flags);
+}
+
+int __open64(const char *path, int flags, ...) {
+    real_open(__open64, path, flags);
+}
+
+
+//#ifdef __linux__
+FILE *fopen(const char * filename, const char * mode) {
+    real_fopen(fopen, filename, mode);
+}
+
+#if _FILE_OFFSET_BITS != 64
+FILE *fopen64(const char * filename, const char * mode) {
+    real_fopen(fopen64, filename, mode);
+}
+#endif
+
+// TODO: int openat(int fd, const char *path, int flags, ...);
+// TODO: int openat64(int fd, const char *path, int flags, ...);
+
+//#endif
