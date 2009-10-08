@@ -61,6 +61,8 @@
 static const char *my_dir = 0;
 static int my_dir_len;
 
+static int test_env = 0;
+
 static int __thread inside_open = 0;
 
 #define get_real_addr(name) _get_real_addr(#name, name);
@@ -108,6 +110,10 @@ static inline void print_dlsym() {
  * false means that the file is ourm, but can't be synched
  */
 static int on_open(const char *path, int flags) {
+    if (test_env) {
+        fprintf(stdout, "RFS_TEST_PRELOAD %s\n", path);
+        return true;
+    }
     if (inside_open != 1) {
         trace("%s inside_open == %d   returning\n", path, inside_open);
         return true; // recursive call to open
@@ -225,6 +231,10 @@ void
 __attribute__((constructor))
 on_startup(void) {
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
+
+    test_env = (int) getenv("RFS_TEST_ENV"); // like #ifdef :)
+    trace("test_env %s\n", test_env ? "ON" : "OFF");
+    
 //#if TRACE
 //    print_dlsym();
 //#endif

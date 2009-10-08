@@ -37,13 +37,9 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-INSTALLDIR = /dev/null
+DEBUG := -g
 
-ifdef DEBUG
-    C_DBG_FLAGS := -g
-endif
-
-CFLAGS-COMMON := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE -Wimplicit -Werror
+CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
 CFLAGS-Linux := ${CFLAGS-COMMON}
 CFLAGS-SunOS := ${CFLAGS-COMMON}
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
@@ -77,10 +73,9 @@ ifeq (Darwin,$(UNAME_S))
 	OSNAME = Mac_OS_X
 endif
 
-DEBUG := 
 TRACE := 0
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${DEBUG} ${EXTRA_CFLAGS}
-LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
+LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
 LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
 
 ifneq (${TRACE}, 0)
@@ -89,8 +84,10 @@ endif
 
 ifdef 64BITS
     PLATFORM_64 := _64
+    TEST_ENV_PARAM := 64
 else
     PLATFORM_64 :=
+    TEST_ENV_PARAM := 
 endif
 
 PLATFORM-i386  :=  x86${PLATFORM_64}
@@ -111,14 +108,19 @@ BUILD_BASE=./build
 DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
 BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-all: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller
+all: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
 
 #object files
 ${BUILD}/%.o : %.c
+	gcc ${CFLAGS} -Werror -o $@ $<
+
+# rfs_test_env can do with implicit function declarations
+${BUILD}/rfs_test_env.o : rfs_test_env.c
 	gcc ${CFLAGS} -o $@ $<
 
 PRELOAD_OBJFILES := ${BUILD}/rfs_preload.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 CONTROLLER_OBJFILES := ${BUILD}/rfs_controller.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_filedata.o
+TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
@@ -127,6 +129,10 @@ ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
 	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
+
+#test environment:
+${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
+	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
 
 clean:
 	rm -rf ${BUILD} ${DIST}
@@ -144,6 +150,8 @@ check:
 		exit 1; \
 	fi
 
+test_env: all
+	sh rfs_test_env.sh
 
 test: test_build
 	${BUILD}/test_rfs_filedata
