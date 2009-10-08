@@ -396,6 +396,14 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
             }
         }
 
+        private String makeNameLegal(String suggestedName) {
+            String newName = suggestedName;
+            newName = newName.replace("/", "_FSLASH_"); // NOI18N
+            newName = newName.replace("\\", "_BSLASH_"); // NOI18N
+            newName = newName.replace(".", "_DOT_"); // NOI18N
+            return newName;
+        }
+
         private DLightConfigurationUIWrapper findDLightConfigurationUIWrapper(String name) {
             for (DLightConfigurationUIWrapper dlightConfigurationUIWrapper : getListData()) {
                 if (dlightConfigurationUIWrapper.getDisplayName().equals(name)) {
@@ -408,8 +416,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         @Override
         public DLightConfigurationUIWrapper copyAction(DLightConfigurationUIWrapper o) {
             String newDisplayName = makeNameUnique(getString("CopyOf", o.getDisplayName()));
-            String newName = newDisplayName.replace("/", "_FSLASH_"); // No spaces // NOI18N
-            newName = newName.replace("\\", "_BSLASH_"); // No spaces // NOI18N
+            String newName = makeNameLegal(newDisplayName);
             DLightConfigurationUIWrapper copy = new DLightConfigurationUIWrapper(newName, newDisplayName, allDLightTools); // NOI18N
             List<DLightToolUIWrapper> tools = o.getTools();
             List<DLightToolUIWrapper> copyTools = copy.getTools();
@@ -425,18 +432,19 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         @Override
         public void editAction(DLightConfigurationUIWrapper o) {
-            String s = o.getDisplayName();
-
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-            notifyDescriptor.setInputText(s);
+            notifyDescriptor.setInputText(o.getDisplayName());
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
             String newDisplayName = notifyDescriptor.getInputText();
+            if (newDisplayName.length() == 0) {
+                newDisplayName = o.getDisplayName();
+            }
+            newDisplayName = makeNameUnique(newDisplayName);
             o.setDisplayName(newDisplayName);
-            String newName = newDisplayName.replace("/", "_FSLASH_"); // No spaces // NOI18N
-            newName = newName.replace("\\", "_BSLASH_"); // No spaces // NOI18N
+            String newName = makeNameLegal(newDisplayName);
             o.setName(newName);
         }
 
