@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -136,7 +135,10 @@ public final class NativeProcessInfo {
         }
 
         this.arguments.clear();
-        this.arguments.addAll(Arrays.asList(arguments));
+
+        for (String arg : arguments) {
+            this.arguments.add(arg.trim());
+        }
     }
 
     public List<String> getCommand() {
@@ -251,18 +253,14 @@ public final class NativeProcessInfo {
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
-        String result;
-
+        String result = workingDirectory;
         if (expandMacros && macroExpander != null) {
             try {
                 result = macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
-                result = workingDirectory;
+                // nothing
             }
         }
-
-        result = workingDirectory;
-
         return result;
     }
 

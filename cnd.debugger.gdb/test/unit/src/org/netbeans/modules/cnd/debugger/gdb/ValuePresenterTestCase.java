@@ -55,4 +55,10 @@ public class ValuePresenterTestCase extends TestCase {
         assertEquals("\"" + value + "\"", ValuePresenter.getValue("string", VariableInfo.getStDStringValue(value)));
     }
 
+    @Test
+    public void testStdStringMac() {
+        String value = "abc";
+        assertEquals("\"" + value + "\"", ValuePresenter.getValue("string &", VariableInfo.getStDStringValueMac(value)));
+    }
+
 }

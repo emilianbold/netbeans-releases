@@ -83,7 +83,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -642,16 +641,9 @@ public abstract class NbTopManager {
          * the case of success returns the instance, null otherwise.         
          */
         private HtmlBrowserComponent findOpenedBrowserComponent() {
-            for (Iterator it = WindowManager.getDefault().getModes().iterator(); it.hasNext(); ) {
-                Mode m = (Mode) it.next();
-                if ("editor".equals(m.getName())) { // NOI18N
-                    TopComponent[] tcs = m.getTopComponents();
-                    for (int i = 0; i < tcs.length; i++) {
-                        if (tcs[i] instanceof HtmlBrowserComponent) {
-                            return (HtmlBrowserComponent) tcs[i];
-                        }
-                    }
-                    break;
+            for (TopComponent tc : TopComponent.getRegistry().getOpened() ) {
+                if (tc instanceof HtmlBrowserComponent) {
+                    return (HtmlBrowserComponent) tc;
                 }
             }
             return null;

@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.indicators.graph;
 
 import java.util.List;
+import org.netbeans.modules.dlight.indicators.Aggregation;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
@@ -87,4 +88,10 @@ public abstract class TimeSeriesIndicatorConfigurationAccessor {
     public abstract DataRowToTimeSeries getDataRowHandler(TimeSeriesIndicatorConfiguration conf);
 
     public abstract ValueFormatter getLabelRenderer(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract long getGranularity(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract Aggregation getAggregation(TimeSeriesIndicatorConfiguration conf);
+
+    public abstract boolean getLastNonNull(TimeSeriesIndicatorConfiguration conf);
 }

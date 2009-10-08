@@ -311,12 +311,19 @@ public class ImportClassPanel extends javax.swing.JPanel {
                     
                     TreeUtilities tu = wc.getTreeUtilities();
                     TreePath tp = tu.pathFor(position);
+                    TreePath tpPlusOne = tu.pathFor(position + 1); // on the beginning of desired import
                     TreeMaker tm = wc.getTreeMaker();
-                    
+
                     if ( tp.getLeaf().getKind() == Tree.Kind.IDENTIFIER) {
                         wc.rewrite(tp.getLeaf(), tm.Identifier(fqn));
                         return true;
                     }
+
+                    if (tp.getLeaf().getKind() != Tree.Kind.IDENTIFIER && tpPlusOne.getLeaf().getKind() == Tree.Kind.IDENTIFIER) {
+                        wc.rewrite(tpPlusOne.getLeaf(), tm.Identifier(fqn));
+                        return true;
+                    }
+
                     return false;
                 }
                 

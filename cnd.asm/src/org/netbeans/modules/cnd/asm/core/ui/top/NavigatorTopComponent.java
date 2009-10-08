@@ -69,7 +69,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     
     private static NavigatorTopComponent instance;
 
-    static final String ICON_PATH = "org/netbeans/modules/asm/core/resources/asm_icon.png"; // NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/cnd/asm/core/resources/asm_icon.png"; // NOI18N
     
     private static final String PREFERRED_ID = "NavigatorTopComponent"; // NOI18N
     

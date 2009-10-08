@@ -306,9 +306,12 @@ public final class RubyIndexerHelper {
                 blockArgs = "";
             }
 
-            MethodDefNode method = (MethodDefNode)child.getNode();
-            //hashNames = getAttribute(file, fo, root, method);
-            hashNames = getAttribute(fo, root, method);
+            if (child.getNode() instanceof MethodDefNode) {
+                MethodDefNode method = (MethodDefNode) child.getNode();
+                //hashNames = getAttribute(file, fo, root, method);
+                hashNames = getAttribute(fo, root, method);
+            }
+            
             if (hashNames == null) {
                 hashNames = "";
             } else {

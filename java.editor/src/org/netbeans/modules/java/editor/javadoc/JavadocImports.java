@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -124,12 +125,15 @@ public final class JavadocImports {
                 if (ref != null && ref.fqn != null && ref.fqn.length() > 0) {
                     String fqn = ref.fqn.toString();
                     TypeMirror type = javac.getTreeUtilities().parseType(fqn, scope);
-                    if (type != null && type.getKind() == TypeKind.DECLARED) {
+                    if (type != null && (type.getKind() == TypeKind.DECLARED || type.getKind() == TypeKind.ERROR)) {
                         DeclaredType declaredType = (DeclaredType) type;
-                        if (result == null) {
-                            result = new HashSet<TypeElement>();
+                        TypeElement foundElement = (TypeElement) declaredType.asElement();
+                        if (SourceVersion.isIdentifier(foundElement.getSimpleName())) {
+                            if (result == null) {
+                                result = new HashSet<TypeElement>();
+                            }
+                            result.add(foundElement);
                         }
-                        result.add((TypeElement) declaredType.asElement());
                     }
                 }
             }
