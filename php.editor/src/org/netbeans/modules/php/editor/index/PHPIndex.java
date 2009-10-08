@@ -688,7 +688,7 @@ public class PHPIndex {
                 List<Parameter> parameters = ParameterImpl.toParameters(args);
                 int offset = sig.integer(1);
 
-                IndexedFunction func = new IndexedFunction(funcName, funcName,sig.string(6),
+                IndexedFunction func = new IndexedFunction(funcName, funcName,sig.string(5),
                         this, pair.second.getUrl().toString(), parameters, offset, flags, ElementKind.METHOD);
 
                 String retType = sig.string(3);
