@@ -61,6 +61,8 @@
 static const char *my_dir = 0;
 static int my_dir_len;
 
+static int __thread inside_open = 0;
+
 #define get_real_addr(name) _get_real_addr(#name, name);
 
 static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
@@ -98,8 +100,6 @@ static inline void print_dlsym() {
     }
 }
 #endif
-
-static int __thread inside_open = 0;
 
 /**
  * Called upon opening a file; returns "boolean" success
