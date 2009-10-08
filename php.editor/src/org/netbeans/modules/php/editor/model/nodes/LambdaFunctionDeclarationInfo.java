@@ -37,19 +37,62 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.model;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 
 /**
+ *
  * @author Radek Matous
  */
-public interface FunctionScope extends Scope, VariableScope {
-    boolean isAnonymous();//lambda, closures
-    List<? extends String> getParameterNames();
-    List<? extends Parameter> getParameters();
-    Collection<? extends String> getReturnTypeNames();
-    Collection<? extends TypeScope> getReturnTypes();
-    Collection<? extends TypeScope> getReturnTypes(boolean resolve);
+public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDeclaration> {
+    Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+    protected LambdaFunctionDeclarationInfo(LambdaFunctionDeclaration node) {
+        super(node);
+    }
+
+    public static LambdaFunctionDeclarationInfo create(LambdaFunctionDeclaration fnc) {
+        return new LambdaFunctionDeclarationInfo(fnc);
+    }
+
+
+    @Override
+    public Kind getKind() {
+        return Kind.FUNCTION;
+    }
+
+    @Override
+    public String getName() {
+        LambdaFunctionDeclaration fnc = getOriginalNode();
+        return String.format("LambdaFunctionDeclaration:%d", fnc.getStartOffset());//NOI18N
+    }
+
+    @Override
+    public QualifiedName getQualifiedName() {
+        return QualifiedName.createUnqualifiedName(getName());
+    }
+
+    @Override
+    public OffsetRange getRange() {
+        LambdaFunctionDeclaration fnc = getOriginalNode();
+        return new OffsetRange(fnc.getStartOffset(), fnc.getEndOffset());
+    }
+
+    public List<? extends Parameter> getParameters() {
+        List<Parameter> retval = new ArrayList<Parameter>();
+        List<FormalParameter> formalParameters = getOriginalNode().getFormalParameters();
+        for (FormalParameter formalParameter : formalParameters) {
+            FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);
+            retval.add(parameterInfo.toParameter());
+        }
+        return retval;
+    }
 }
