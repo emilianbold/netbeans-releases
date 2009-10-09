@@ -177,6 +177,8 @@ public class ParameterInfoSupport {
                             leftBraces++;
                         } else if (isRightBracket(token)) {
                             rightBraces++;
+                        } else {
+                            state = State.PARAMS;
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -187,7 +189,7 @@ public class ParameterInfoSupport {
                         if (isString(token)) {
                             metaAll.insert(0, token.text().toString());
                             if (anchor == -1) {
-                                anchor = tokenSequence.offset();
+                                anchor = tokenSequence.offset()+token.text().toString().length();
                             }
                             state = State.METHOD;
                         }
@@ -236,7 +238,7 @@ public class ParameterInfoSupport {
             if (!elemenst.isEmpty()) {
                 ModelElement element = elemenst.peek();
                 if (element instanceof FunctionScope) {
-                    return new ParameterInfo(toParamNames((FunctionScope) element), commasCount, offset);
+                    return new ParameterInfo(toParamNames((FunctionScope) element), commasCount, anchor);
                 }
             }
         }
@@ -328,7 +330,7 @@ public class ParameterInfoSupport {
 
             @Override
             public void scan(ASTNode node) {
-                if (node != null && retval[0] == null) {
+                if (node != null) {
                     OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                     if (range.containsInclusive(caretOffset)) {
                         super.scan(node);
@@ -338,21 +340,17 @@ public class ParameterInfoSupport {
 
             @Override
             public void visit(ClassInstanceCreation node) {
-                if (retval[0] == null) {
-                    ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
-                    retval[0] = createParameterInfo(nodeInfo,node.ctorParams());
-                    super.visit(node);
-                }
+                ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
+                retval[0] = createParameterInfo(nodeInfo, node.ctorParams());
+                super.visit(node);
             }
 
 
             @Override
             public void visit(FunctionInvocation node) {
-                if (retval[0] == null) {
-                    ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
-                    retval[0] = createParameterInfo(nodeInfo,node.getParameters());
-                    super.visit(node);
-                }
+                ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
+                retval[0] = createParameterInfo(nodeInfo, node.getParameters());
+                super.visit(node);
             }
 
             private ParameterInfo createParameterInfo(ASTNodeInfo nodeInfo, List<Expression> parameters) {
