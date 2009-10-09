@@ -195,7 +195,7 @@ public class HtmlCompletionItem implements CompletionItem {
                         doc.insertString(substitutionOffset, substituteText, null);
                     } else {
                         c.setCaretPosition(c.getCaret().getDot() + substituteText.length() - len);
-                    }
+                        }
                 } catch (BadLocationException ex) {
                     result[0] = false;
                 }
@@ -332,8 +332,6 @@ public class HtmlCompletionItem implements CompletionItem {
         //end tag autocomplete handling
         @Override
         public void defaultAction(JTextComponent component) {
-            //force the completion not to hide when the item text is completed
-            super.shift = true;
             super.defaultAction(component);
         }
 

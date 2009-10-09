@@ -635,6 +635,10 @@ public class ELExpression {
         }
 
         public TypeElement getTypePreceedingCaret( CompilationController controller ) throws Exception {
+            return getTypePreceedingCaret(controller, false);
+        }
+
+        public TypeElement getTypePreceedingCaret( CompilationController controller, boolean fullExpression ) throws Exception {
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             return getTypePreceedingCaret(controller, getExpression(), new FailHandler() {
 
@@ -642,7 +646,7 @@ public class ELExpression {
                     myOffset = index;
                     myProperty = propertyName;
                 }
-            });
+            }, fullExpression);
         }
         
         public TypeMirror getTypePreceedingCaret( CompilationController controller ,
