@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -73,16 +74,9 @@ import org.openide.windows.OutputWriter;
  */
 public class LoopParallelizationAdvice implements Advice {
 
-    private final static int REPRESENTATION_TYPE_FULL = 0;
-    private final static int REPRESENTATION_TYPE_REDUCED = 1;
-    private final static int REPRESENTATION_TYPE_FOLDING = 2;
-    private final static int representationType = REPRESENTATION_TYPE_REDUCED;
     private final CsmFunction function;
     private final CsmLoopStatement loop;
     private final double processorUtilization;
-    private final static boolean MORE = true;
-    private final static boolean LESS = false;
-    private boolean moreOrLess = MORE;
 
     public LoopParallelizationAdvice(CsmFunction function, CsmLoopStatement loop, double processorUtilization) {
         this.function = function;
@@ -115,14 +109,6 @@ public class LoopParallelizationAdvice implements Advice {
                             if (e.getDescription().equals("loop")) { // NOI18N
                                 CsmUtilities.openSource(loop);
                             }
-                            if (e.getDescription().equals("more")) { // NOI18N
-                                moreOrLess = MORE;
-                                ParallelAdviserTopComponent.findInstance().updateTips();
-                            }
-                            if (e.getDescription().equals("less")) { // NOI18N
-                                moreOrLess = LESS;
-                                ParallelAdviserTopComponent.findInstance().updateTips();
-                            }
                         }
                     }
                 });
@@ -131,48 +117,41 @@ public class LoopParallelizationAdvice implements Advice {
     public String getHtml() {
         URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/ploop.png"); // NOI18N
 
-        String html = "There is <b><a href=\"loop\">loop</a></b> in function <b><a href=\"function\">" + function.getName() + "</a></b> that could be effectively parallelized.<br>" + // NOI18N
-                "Processor utilization is only <b>" + String.format("%1$.1f", processorUtilization) + "%</b> now."; // NOI18N
-        if (representationType == REPRESENTATION_TYPE_FULL) {
-            html += "<br><br>" + // NOI18N
-                    "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
-                    "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
-                    "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
-                    "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>."; // NOI18N
-        }
-        if (representationType == REPRESENTATION_TYPE_FOLDING) {
-            if (moreOrLess == MORE) {
-                html += "<br><br>" + // NOI18N
-                        "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
-                        "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
-                        "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
-                        "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>."; // NOI18N
-                html += "<br><a href=\"less\">Less...</a>"; // NOI18N
-            } else {
-                html += "<br><a href=\"more\">More...</a>"; // NOI18N
-            }
-        }
-        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Loop for parallelization has been found", // NOI18N
-                html, 800); // NOI18N
+        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                getString("PAT_LoopParallelization_Title"), // NOI18N
+                getString("PAT_LoopParallelization_Body", function.getName(), String.format("%1$.1f", processorUtilization)), // NOI18N
+                800);
     }
 
     public void addNotification(OutputWriter writer) {
         try {
-            writer.println("\"" + loop.getContainingFile().getName() + "\", line " + loop.getStartPosition().getLine() + ": There is loop in function " + function.getName() + " that could be effectively parallelized.", // NOI18N
+            writer.println(getString("PAT_LoopParallelization_Notification", loop.getContainingFile().getName(), loop.getStartPosition().getLine(), function.getName()), // NOI18N
                     new OutputListener() {
 
-                        public void outputLineSelected(OutputEvent ev) {
-                        }
+                public void outputLineSelected(OutputEvent ev) {
+                }
 
-                        public void outputLineAction(OutputEvent ev) {
-                            CsmUtilities.openSource(loop);
-                        }
+                public void outputLineAction(OutputEvent ev) {
+                    CsmUtilities.openSource(loop);
+                }
 
-                        public void outputLineCleared(OutputEvent ev) {
-                        }
-                    });
+                public void outputLineCleared(OutputEvent ev) {
+                }
+            });
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static String getString(String name) {
+        return NbBundle.getMessage(LoopParallelizationAdvice.class, name);
+    }
+
+    private static String getString(String name, Object param1, Object param2) {
+        return NbBundle.getMessage(LoopParallelizationAdvice.class, name, param1, param2);
+    }
+
+    private static String getString(String name, Object param1, Object param2, Object param3) {
+        return NbBundle.getMessage(LoopParallelizationAdvice.class, name, param1, param2, param3);
     }
 }

@@ -68,11 +68,6 @@ import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderL
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
 public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvider {
 
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS = 0;
-    private final static int REPRESENTATION_TYPE_ALL_TIPS_IN_ONE = 1;
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE = 2;
-    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE;
-
     private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
 
     private final static List<WeakReference<ParallelAdviserTipsProviderListener>> listeners = new ArrayList<WeakReference<ParallelAdviserTipsProviderListener>>();
@@ -93,22 +88,12 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
     }
 
     public Collection<Advice> getTips() {
-        if(representationType == REPRESENTATION_TYPE_SEPARATE_TIPS) {
-            return new ArrayList<Advice>(tips);
-        } else if (representationType == REPRESENTATION_TYPE_ALL_TIPS_IN_ONE) {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>();
-            if(!tips.isEmpty()) {
-                arrayList.add(new LoopsParallelizationAdvice(tips));
-            }
-            return arrayList;
-        } else {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
-            if(!arrayList.isEmpty()) {
-                arrayList.add(new LoopParallelizationCommonAdvice());
-                arrayList.add(new SunStudioCompilerXautoparAdvice());
-            }
-            return arrayList;
+        ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
+        if (!arrayList.isEmpty()) {
+            arrayList.add(new LoopParallelizationCommonAdvice());
+            arrayList.add(new SunStudioCompilerXautoparAdvice());
         }
+        return arrayList;
     }
 
     public void addListener(ParallelAdviserTipsProviderListener listener) {

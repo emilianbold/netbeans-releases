@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -67,7 +68,6 @@ public class UnnecessaryThreadsAdvice implements Advice {
     public UnnecessaryThreadsAdvice() {
     }
 
-
     public JComponent getComponent() {
         return ParallelAdviserAdviceUtils.createAdviceComponent(
                 getHtml(),
@@ -76,12 +76,18 @@ public class UnnecessaryThreadsAdvice implements Advice {
 
     public String getHtml() {
         URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
-        String html = "It seems that program uses too many threads."; // NOI18N
-        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Too many threads", // NOI18N
-                html, 800); // NOI18N
+
+        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                getString("PAT_UnnecessaryThreads_Title"), // NOI18N
+                getString("PAT_UnnecessaryThreads_Body"), // NOI18N
+                800);
     }
 
     public void addNotification(OutputWriter writer) {
-        writer.println("It seems that program uses too many threads."); // NOI18N
+        writer.println(getString("PAT_UnnecessaryThreads_Notification")); // NOI18N
+    }
+
+    private static String getString(String name) {
+        return NbBundle.getMessage(UnnecessaryThreadsAdvice.class, name);
     }
 }
