@@ -53,6 +53,9 @@ public class TimestampAndSharabilityFilter extends SharabilityFilter {
 
     public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         timeStamps = new FileTimeStamps(privProjectStorageDir, executionEnvironment);
+        if (Boolean.getBoolean("cnd.remote.timestamps.clear")) {
+            timeStamps.clear();
+        }
     }
 
     @Override
