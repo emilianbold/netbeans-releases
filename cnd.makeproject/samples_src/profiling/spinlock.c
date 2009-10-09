@@ -27,11 +27,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <malloc.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "common.h"
+
+#ifdef HAVE_PTHREAD_SPINLOCK
 
 static long mem_min(int threads, work_t* works) {
     int i;
@@ -118,3 +120,12 @@ void spinlock_demo(int threads, work_t* works, int seconds) {
     }
     free(t);
 }
+
+#else
+
+void spinlock_demo(int threads, work_t* works, int seconds) {
+    EXPLAIN("Spinlocks are not supported on this platform\n");
+    PAUSE("Press [Enter] to skip...\n");
+}
+
+#endif
