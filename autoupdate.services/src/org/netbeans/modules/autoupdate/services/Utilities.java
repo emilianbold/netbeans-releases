@@ -484,14 +484,13 @@ public class Utilities {
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
             Set<Dependency> newones;
             
-            int max_counter = el.getType().equals(UpdateManager.TYPE.KIT_MODULE) ? 1 : 0;
+            int max_counter = el.getType().equals(UpdateManager.TYPE.KIT_MODULE) ? 2 : 1;
             int counter = max_counter;
             boolean aggressive = topAggressive && counter > 0;
 
             while (! (newones = processDependencies (deps, retval, availableInfos, brokenDependencies, element, aggressive)).isEmpty ()) {
-                deps = newones;
-
-                aggressive = aggressive && (counter --) > 0;
+                deps = newones;                
+                aggressive = aggressive && (--counter) > 0;
             }
 
             Set<Dependency> moreBroken = new HashSet<Dependency> ();

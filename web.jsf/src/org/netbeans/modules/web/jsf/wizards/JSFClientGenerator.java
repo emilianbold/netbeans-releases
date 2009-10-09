@@ -480,11 +480,14 @@ public class JSFClientGenerator {
         else if(indexfl!=null)
         {
             String content = JSFFrameworkProvider.readResource(indexfl.getInputStream(), projectEncoding); //NO18N
-            String templateContent = JSFFrameworkProvider.readResource(templatefl.getInputStream(), projectEncoding); //NO18N
+            String templateContent = null;
+            if (templatefl != null) {
+                templateContent = JSFFrameworkProvider.readResource(templatefl.getInputStream(), projectEncoding); //NO18N
+            }
             String endLine = System.getProperty("line.separator"); //NOI18N
 
             //insert style and script tags in template if not already present
-            if (templateContent.indexOf(styleAndScriptTags) == -1) {
+            if (templateContent !=null && templateContent.indexOf(styleAndScriptTags) == -1) {
                 String justTitleEnd = "</title>"; //NOI18N
                 String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
                 templateContent = templateContent.replace(justTitleEnd, replaceHeadWith); //NOI18N

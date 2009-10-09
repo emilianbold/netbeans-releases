@@ -46,6 +46,7 @@ import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.dlight.toolsui.api.ToolsManagerPanel;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class GizmoIntNodeProp extends Node.Property {
 
@@ -64,6 +65,7 @@ public class GizmoIntNodeProp extends Node.Property {
         this.unused = unused;
         this.name = name;
         this.description = description;
+        setValue("title", NbBundle.getMessage(GizmoIntNodeProp.class, "DLG_TITLE_ConfigurationManager")); // NOI18N
     }
 
     @Override

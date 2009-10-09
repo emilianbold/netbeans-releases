@@ -50,7 +50,8 @@ int get_socket(int create);
 void release_socket();
 
 #if TRACE
-void trace_sd(const char* text);
+//void trace_sd(const char* text);
+#define trace_sd(...)
 #else
 #define trace_sd(...)
 #endif

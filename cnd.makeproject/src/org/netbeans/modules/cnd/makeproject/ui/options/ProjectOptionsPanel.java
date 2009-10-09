@@ -328,7 +328,7 @@ public class ProjectOptionsPanel extends JPanel {
         add(jSeparator1, gridBagConstraints);
 
         showProfilerCheckBox.setMnemonic('j');
-        showProfilerCheckBox.setText("Show profiler indicators during run (new projects only)");
+        showProfilerCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_PROFILER_CHECKBOX_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;

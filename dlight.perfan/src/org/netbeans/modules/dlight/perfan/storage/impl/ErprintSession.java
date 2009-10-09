@@ -97,7 +97,7 @@ public class ErprintSession {
                         return;
                     }
                     try {
-                        if (!HostInfoUtils.fileExists(execEnv, experimentDirectory + "/overview", false)) { // NOI18N
+                        if (!HostInfoUtils.fileExists(execEnv, experimentDirectory + "/overview")) { // NOI18N
                             Thread.sleep(200);
                         } else {
                             session.ready = true;

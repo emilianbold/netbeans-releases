@@ -173,4 +173,25 @@ public class TextUtils {
         return (ch == '\t') || Character.isSpaceChar(ch);
     }
 
+    /**
+     * Replaces problematic characters by escape sequences.
+     * This method is designed for text that should appear
+     * in HTML label.
+     *
+     * @param text text to process.
+     * @return text with correct escape sequences.
+     */
+    public static String escapeForHTMLLabel(String text) {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<text.length(); i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '<': sb.append("&lt;"); break; // NOI18N
+                case '>': sb.append("&gt;"); break; // NOI18N
+                default: sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
 }

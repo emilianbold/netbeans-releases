@@ -70,6 +70,8 @@ public final class ToolchainManager {
 
         String getUpdateCenterUrl();
 
+        String getUpdateCenterDisplayName();
+
         String getModuleID();
 
         String getDriveLetterPrefix();

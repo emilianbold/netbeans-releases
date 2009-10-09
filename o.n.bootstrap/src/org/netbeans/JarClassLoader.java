@@ -420,16 +420,15 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         JarFile getJarFile(final String forWhat) throws IOException {
-            boolean init = false;
+            FutureTask<JarFile> init = null;
             synchronized(sources) {
                 requests++;
                 used++;
                 if (fjar == null) {
                     fjar = sources.get(this);
                     if (fjar == null) {
-                        init = true;
-                        fjar = new FutureTask<JarFile>(new Callable<JarFile>() {
-                            public JarFile call() throws Exception {
+                        fjar = init = new FutureTask<JarFile>(new Callable<JarFile>() {
+                            public JarFile call() throws IOException {
                                 long now = System.currentTimeMillis();
                                 JarFile ret = new JarFile(file, false);
                                 long took = System.currentTimeMillis() - now;
@@ -444,7 +443,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     }
                 }
             }
-            if (init) ((FutureTask)fjar).run();
+            if (init != null) init.run();
             return callGet();
         }
         
@@ -591,7 +590,14 @@ public class JarClassLoader extends ProxyClassLoader {
             } catch (InterruptedException ex) {
                 throw (IOException)new IOException().initCause(ex);
             } catch (ExecutionException ex) {
-                throw (IOException)new IOException().initCause(ex);
+                Throwable cause = ex.getCause();
+                if (cause instanceof IOException) {
+                    // This is important for telling general IOException from ZipException
+                    // down the stack.
+                    throw (IOException)cause;
+                } else {
+                    throw (IOException)new IOException().initCause(cause);
+                }
             }            
         }
 

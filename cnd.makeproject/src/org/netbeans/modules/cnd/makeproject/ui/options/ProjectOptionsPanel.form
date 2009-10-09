@@ -180,7 +180,9 @@
     <Component class="javax.swing.JCheckBox" name="showProfilerCheckBox">
       <Properties>
         <Property name="mnemonic" type="int" value="106"/>
-        <Property name="text" type="java.lang.String" value="Show profiler indicators during run (new projects only)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="SHOW_PROFILER_CHECKBOX_TXT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

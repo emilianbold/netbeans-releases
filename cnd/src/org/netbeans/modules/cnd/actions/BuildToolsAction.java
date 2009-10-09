@@ -51,6 +51,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.ui.options.DownloadUtils;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
@@ -149,7 +150,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
             if (cs != null) {
                 if (cs.isUrlPointer()){
                     // Can be downloaded
-                    return ToolsPanel.showDownloadConfirmation(cs);
+                    return DownloadUtils.showDownloadConfirmation(cs);
                 }
             }
         }

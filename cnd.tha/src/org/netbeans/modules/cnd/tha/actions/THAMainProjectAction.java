@@ -76,13 +76,13 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     private final Action sensorMainAction;
 
     public THAMainProjectAction() {
-        super(loc("LBL_THAMainProjectAction")); // NOI18N
+        super(loc("LBL_THAMainProjectAction"), ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/deadlocks24.png", false)); // NOI18N
         sensorMainAction = MainProjectSensitiveActions.mainProjectSensitiveAction(new ProjectActionPerformerImpl(), null, null);
         sensorMainAction.addPropertyChangeListener(this);
         putValue("command", "THAProfile"); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAMainProjectAction")); // NOI18N
-        putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/bomb24.png"); // NOI18N
-        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/bomb16.png", false)); // NOI18N
+        putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/deadlocks.png"); // NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/deadlocks.png", false)); // NOI18N
         SwingUtilities.invokeLater(this);
     }
     
