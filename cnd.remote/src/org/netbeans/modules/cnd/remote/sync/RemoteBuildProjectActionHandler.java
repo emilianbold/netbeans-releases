@@ -49,7 +49,11 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
@@ -287,6 +291,19 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
     }
 
+    private static class FileInfo {
+        public final File file;
+        public final String relPath;
+        public FileInfo(File file, String relPath) {
+            this.file = file;
+            this.relPath = relPath;
+        }
+        @Override
+        public String toString() {
+            return relPath;
+        }
+    }
+
     /**
      * Feeds remote controller with the list of files and their lengths
      * @param rcOutputStream
@@ -294,30 +311,50 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private void feedFiles(OutputStream rcOutputStream) {
         PrintWriter writer = new PrintWriter(rcOutputStream);
         NonFlashingFilter filter = new NonFlashingFilter(privProjectStorageDir, execEnv);
+        List<FileInfo> files = new ArrayList<FileInfo>(512);
         File[] children = localDir.listFiles(filter);
         for (File child : children) {
-            feedFilesImpl(writer, child, null, filter);
+            feedFilesImpl(child, null, filter, files);
+        }
+        Collections.sort(files, new Comparator<FileInfo>() {
+            public int compare(FileInfo f1, FileInfo f2) {
+                if (f1.file.isDirectory() || f2.file.isDirectory()) {
+                    if (f1.file.isDirectory() && f2.file.isDirectory()) {
+                        return f1.relPath.compareTo(f2.relPath);
+                    } else {
+                        return f1.file.isDirectory() ? -1 : +1;
+                    }
+                } else {
+                    long delta = f1.file.lastModified() - f2.file.lastModified();
+                    return (delta == 0) ? 0 : ((delta < 0) ? -1 : +1); // signum(delta)
+                }
+            }
+        });
+        for (FileInfo info : files) {
+            if (info.file.isDirectory()) {
+                String text = String.format("D %s", info.relPath); // NOI18N
+                writer.println(text); // adds LF
+                writer.flush(); //TODO: remove?
+            } else {
+                String text = String.format("%d %s", info.file.length(), info.relPath); // NOI18N
+                writer.println(text); // adds LF
+                writer.flush(); //TODO: remove?
+            }
         }
         writer.printf("\n"); // NOI18N
         writer.flush();
     }
 
-    private static void feedFilesImpl(PrintWriter writer, File file, String base, FileFilter filter) {
+    private static void feedFilesImpl(File file, String base, FileFilter filter, List<FileInfo> files) {
         // it is assumed that the file itself was already filtered
         String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
+        files.add(new FileInfo(file, fileName));
         if (file.isDirectory()) {
-            String text = String.format("D %s", fileName); // NOI18N
-            writer.println(text); // adds LF
-            writer.flush(); //TODO: remove?
             File[] children = file.listFiles(filter);
             for (File child : children) {
                 String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
-                feedFilesImpl(writer, child, newBase, filter);
+                feedFilesImpl(child, newBase, filter, files);
             }
-        } else {
-            String text = String.format("%d %s", file.length(), fileName); // NOI18N
-            writer.println(text); // adds LF
-            writer.flush(); //TODO: remove?
         }
     }
 
