@@ -48,6 +48,6 @@ import javax.swing.Action;
  */
 public interface ThreadStackActionsProvider {
 
-    Action[] getStackNodeActions();    
+    public Action[] getStackNodeActions(int threadID);
 
 }

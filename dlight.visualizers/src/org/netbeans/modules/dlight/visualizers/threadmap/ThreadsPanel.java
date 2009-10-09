@@ -116,9 +116,9 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.awt.Mnemonics;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.actions.Presenter;
 
 /**
  * A panel to display TA threads and their state.
@@ -509,7 +509,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     if (selectedRow != -1) {
                         Rectangle cellRect = table.getCellRect(selectedRow, 0, false);
                         showLegend.setVisible(!isShowLegend);
-                        prepareStacksMenu();
                         popupMenu.show(e.getComponent(), ((cellRect.x + table.getSize().width) > 50) ? 50 : 5, cellRect.y);
                     }
                 }
@@ -540,7 +539,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (clickedLine != -1) {
                     if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
                         showLegend.setVisible(!isShowLegend);
-                        prepareStacksMenu();
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     } else if ((e.getModifiers() == InputEvent.BUTTON1_MASK)){
                         if (e.getClickCount() == 1){
@@ -1050,91 +1048,34 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         // call stack is shown by one click
     }
 
-    public Action[] getStackNodeActions() {
+    public Action[] getStackNodeActions(int threadID) {
         List<Action> result = new ArrayList<Action>();
         LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
-//        showAllStacks.removeAll();
         if (avaliableStates.size()==0) {
-  //          showAllStacks.setVisible(false);
             return new Action[0];
         }
-    //    showAllStacks.setVisible(true);
         List<Integer> showThreadsID = new ArrayList<Integer>();
         for(Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()){
             final ThreadState state = entry.getValue();
-            long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
-            String title = NbBundle.getMessage(ThreadsPanel.class, "ThreadsPanel_ThreadAtTime", // NOI18N
-                    manager.getThreadData(entry.getKey().intValue()).getName(),
-                    TimeLineUtils.getMillisValue(ms));
             showThreadsID.add(manager.getThreadData(entry.getKey().intValue()).getThreadID());
-//            JMenu current = new JMenu(title);
-            EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
-            ThreadStateColumnImpl.fillMap(this, state, aMap);
-            ThreadStateColumnImpl.roundMap(aMap);
-            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
-                Map.Entry<MSAState, AtomicInteger> e = it.next();
-                MSAState msa = e.getKey();
-                ThreadStateResources res = ThreadStateResources.forState(msa);
-                if (res != null) {
-                    final ThreadDumpQuery query = new ThreadDumpQuery(manager.getThreadData(entry.getKey().intValue()).getThreadID(), state,  showThreadsID, msa,
-                                                                 isMSAMode(), isFullMode(), manager.getStartTime());
-                    final Action action = new AbstractAction() {
-
-                        public void actionPerformed(ActionEvent e) {
-                            ThreadsPanel.this.queryChanged(query, state);
-                        }
-                    };
-                    action.putValue(Action.ACTION_COMMAND_KEY, QUERY_STATE_ACTION_COMMAND);//NOI18N
-                    action.putValue(Action.SHORT_DESCRIPTION, res.name);
-                    action.putValue(Action.NAME, res.name);
-                    action.putValue(Action.SMALL_ICON, new ThreadStateIcon(msa, 10, 10));
-                    result.add(action);
-//                    current.add(item);
+            if (threadID == manager.getThreadData(entry.getKey().intValue()).getThreadID()){
+                EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+                ThreadStateColumnImpl.fillMap(this, state, aMap);
+                ThreadStateColumnImpl.roundMap(aMap);
+                for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
+                    Map.Entry<MSAState, AtomicInteger> e = it.next();
+                    MSAState msa = e.getKey();
+                    ThreadStateResources res = ThreadStateResources.forState(msa);
+                    if (res != null) {
+                        final ThreadDumpQuery query = new ThreadDumpQuery(manager.getThreadData(entry.getKey().intValue()).getThreadID(), state,  showThreadsID, msa,
+                                                                     isMSAMode(), isFullMode(), manager.getStartTime());
+                        final Action action = new StackAction(state, msa, query);
+                        result.add(action);
+                    }
                 }
             }
-  //          showAllStacks.add(current);
         }
         return result.toArray(new Action[0]);
-    }
-
-    
-
-    private void prepareStacksMenu() {
-        LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
-        showAllStacks.removeAll();
-        if (avaliableStates.size()==0) {
-            showAllStacks.setVisible(false);
-            return;
-        }
-        showAllStacks.setVisible(true);
-        List<Integer> showThreadsID = new ArrayList<Integer>();
-        for(Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()){
-            ThreadState state = entry.getValue();
-            long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
-            String title = NbBundle.getMessage(ThreadsPanel.class, "ThreadsPanel_ThreadAtTime", // NOI18N
-                    manager.getThreadData(entry.getKey().intValue()).getName(),
-                    TimeLineUtils.getMillisValue(ms));
-            showThreadsID.add(manager.getThreadData(entry.getKey().intValue()).getThreadID());
-            JMenu current = new JMenu(title);
-            EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
-            ThreadStateColumnImpl.fillMap(this, state, aMap);
-            ThreadStateColumnImpl.roundMap(aMap);
-            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
-                Map.Entry<MSAState, AtomicInteger> e = it.next();
-                MSAState msa = e.getKey();
-                ThreadStateResources res = ThreadStateResources.forState(msa);
-                if (res != null) {
-                    JMenuItem item = new JMenuItem(res.name, new ThreadStateIcon(msa, 10, 10));
-                    ThreadDumpQuery query = new ThreadDumpQuery(manager.getThreadData(entry.getKey().intValue()).getThreadID(), state,  showThreadsID, msa,
-                                                                 isMSAMode(), isFullMode(), manager.getStartTime());
-                    item.putClientProperty("query", query); // NOI18N
-                    item.putClientProperty("state", state); // NOI18N
-                    item.addActionListener(this);
-                    current.add(item);
-                }
-            }
-            showAllStacks.add(current);
-        }
     }
 
     private LinkedHashMap<Integer, ThreadState> prepareAllStacks(){
@@ -1516,4 +1457,28 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         }
     }
 
+    private class StackAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        private final ThreadDumpQuery query;
+        private final ThreadState state;
+
+        public StackAction(ThreadState state, MSAState msa, ThreadDumpQuery query) {
+            putValue(Action.NAME, ThreadStateResources.forState(msa).name);
+            putValue(Action.SHORT_DESCRIPTION, ThreadStateResources.forState(msa).tooltip);
+            putValue(Action.SMALL_ICON, new ThreadStateIcon(msa, 10, 10));
+            putValue(Action.ACTION_COMMAND_KEY, QUERY_STATE_ACTION_COMMAND);
+            menuItem = new JMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+            this.query = query;
+            this.state = state;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ThreadsPanel.this.queryChanged(query, state);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
 }
