@@ -80,6 +80,7 @@ public class KenaiRepository extends BugzillaRepository {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
         this.host = host;
+        assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
     }
 
