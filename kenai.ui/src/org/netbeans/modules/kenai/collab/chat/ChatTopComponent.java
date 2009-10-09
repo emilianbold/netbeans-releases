@@ -70,7 +70,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Becicka
  */
 public class ChatTopComponent extends TopComponent {
-    private static final String KENAI_OPEN_CHATS_PREF = "kenai.open.chats.";
+    private static final String KENAI_OPEN_CHATS_PREF = ".open.chats.";
     private static ChatTopComponent instance;
 
     /** path to the icon used by the component and its open action */
@@ -395,7 +395,7 @@ public class ChatTopComponent extends TopComponent {
             ChatPanel chatPanel = new ChatPanel(next);
             addChat(chatPanel);
         } else if (chs.size()!=0) {
-            String s = prefs.get(KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
+            String s = prefs.get(Kenai.getDefault().getName()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
             if (s.length() > 1) {
                 ChatPanel chatPanel = null;
                 for (String chat : s.split(",")) { // NOI18N
@@ -699,7 +699,7 @@ public class ChatTopComponent extends TopComponent {
                 b.append(","); // NOI18N
             }
         }
-        prefs.put(KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
+        prefs.put(Kenai.getDefault().getName()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
     }
 
     final class KenaiL implements PropertyChangeListener {

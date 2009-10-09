@@ -591,6 +591,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             reinitialize(instProj, true);
+        } else if (Kenai.PROP_URL_CHANGED.equals(evt.getPropertyName())) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    close();
+                }
+            });
+
         }
     }
 }
