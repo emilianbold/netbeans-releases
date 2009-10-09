@@ -318,6 +318,16 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, "Java EE documentation not found when registering Java EE API library."); // NOI18N
         }
 
+        // additional jar for glassfish-samples support
+        f = ServerUtilities.getJarName(installRoot, "web-core" + ServerUtilities.GFV3_VERSION_MATCHER);
+        if (f != null && f.exists()) {
+            try {
+                libraryList.add(ServerUtilities.fileToUrl(f));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, "Problem while registering web-core into GlassFish API library."); // NOI18N
+            }
+        }
+
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }
 
