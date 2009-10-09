@@ -82,7 +82,7 @@ public class GetMultiTaskDataCommand extends BugzillaCommand {
         for (String string : ids) {
             sb.append(string);
             if(++i < ids.size()) {
-                sb.append(", ");
+                sb.append(", ");                                                // NOI18N
             }
         }
         return sb.toString();
