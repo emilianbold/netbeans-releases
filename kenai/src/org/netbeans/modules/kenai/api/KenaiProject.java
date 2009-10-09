@@ -251,8 +251,10 @@ public final class KenaiProject {
         fetchDetailsIfNotAvailable();
         return data.private_hidden;
     }
-
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    
+    private static Pattern getRepositoryPattern() {
+        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    }
     private static final int repositoryPatternProjectGroup = 4;
 
     /**
@@ -264,7 +266,7 @@ public final class KenaiProject {
      * @throws KenaiException if the project cannot be loaded
      */
     public static KenaiProject forRepository(String uri) throws KenaiException {
-        Matcher m = repositoryPattern.matcher(uri);
+        Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
@@ -280,7 +282,7 @@ public final class KenaiProject {
      * @return name of kenai project or null, if given uri is not from kenai
      */
     public static String getNameForRepository(String uri) {
-        Matcher m = repositoryPattern.matcher(uri);
+        Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return m.group(repositoryPatternProjectGroup);
         }

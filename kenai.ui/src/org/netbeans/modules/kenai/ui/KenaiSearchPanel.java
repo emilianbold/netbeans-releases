@@ -55,6 +55,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,6 +184,13 @@ public class KenaiSearchPanel extends JPanel {
         } else {
             setBrowsePanels();
         }
+        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                kenaiFeaturedProjectsList=null;
+                kenaiRecentProjectsList=null;
+            }
+        });
     }
 
     private void setOpenPanels() {
@@ -708,6 +717,7 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
         private JList kpList;
+        private static final int MAX_PROJECT_COUNT = 100;
 
         private boolean itemSelected = false;
 
@@ -722,8 +732,10 @@ public class KenaiSearchPanel extends JPanel {
 
         public void run() {
             if (projects != null) {
-                while(projects.hasNext()) {
+                int count=0;
+                while(projects.hasNext() && count<MAX_PROJECT_COUNT) {
                     KenaiProject project = projects.next();
+                    count++;
                     try {
                         project.getProjectIcon(); // a project image will be needed, prepare it in advance
                     } catch (KenaiException ex) { // problem with icon loading
