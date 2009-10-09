@@ -111,7 +111,7 @@ public abstract class ElContextChecker {
                 public void run(CompilationController controller) throws Exception {
                     //calling this will cause the associated error handler will be receiving
                     //potential expression errors
-                    getTypePreceedingCaret(controller, true);
+                    getTypePreceedingCaret(controller, true, true);
                 }
 
                 @Override
@@ -129,6 +129,16 @@ public abstract class ElContextChecker {
             inspectPropertiesTask.execute();
             int offset = inspectPropertiesTask.getOffset();
             String property = inspectPropertiesTask.getProperty();
+
+            //UGLY: should be an ability of EL Parser
+            //compute offset delta for source expression and resolve expression
+            //since the error offsets comes from resolved expression and need
+            //to be mapped back to the document offsets
+            String se = expression.getExpression();
+            String re = expression.getResolvedExpression();
+            int lenDiff = re.length() - se.length();
+            offset -= lenDiff; //adjust the offset
+
             if (offset == 0 && property != null) {
                 Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
                         NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_BEAN_CONTEXT", //NOI18N

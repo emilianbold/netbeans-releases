@@ -637,12 +637,12 @@ public class ELExpression {
         }
 
         public TypeElement getTypePreceedingCaret( CompilationController controller ) throws Exception {
-            return getTypePreceedingCaret(controller, false);
+            return getTypePreceedingCaret(controller, false, false);
         }
 
-        public TypeElement getTypePreceedingCaret( CompilationController controller, boolean fullExpression ) throws Exception {
+        public TypeElement getTypePreceedingCaret( CompilationController controller, boolean fullExpression, boolean resolvedExpression ) throws Exception {
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
-            return getTypePreceedingCaret(controller, getExpression(), new FailHandler() {
+            return getTypePreceedingCaret(controller, resolvedExpression ? getResolvedExpression() : getExpression(), new FailHandler() {
 
                 public void typeNotFound( int index, String propertyName ) {
                     myOffset = index;
@@ -826,6 +826,26 @@ public class ELExpression {
                             else if (returnType.getKind() == TypeKind.ARRAY) {
                                 continue parts;
                             }
+                        }
+
+                    }
+
+                    if (lastKnownType == null && (limit - i == 1)) {
+                        //the last item may be a method, not property
+                        String methodName = parts[i].getPart();
+                        for (ExecutableElement method : allMethods) {
+                            if (methodName.equals(method.getSimpleName().toString())) {
+                                TypeMirror returnType = method.getReturnType();
+                                lastReturnType = returnType;
+
+                                if (returnType.getKind() == TypeKind.ARRAY) {
+                                    continue parts;
+                                } else {
+                                    lastFoundType = lastKnownType = returnType;
+                                    break;
+                                }
+                            }
+
                         }
 
                     }
