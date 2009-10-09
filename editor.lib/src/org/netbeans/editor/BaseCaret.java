@@ -303,9 +303,16 @@ AtomicLockListener, FoldHierarchyListener {
 
             FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
             if (fcs != null) {
-                AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
-                if (attribs != null) {
-                    caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                if (overwriteMode) {
+                    AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_OVERWRITE_MODE); //NOI18N
+                    if (attribs != null) {
+                        caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                    }
+                } else {
+                    AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
+                    if (attribs != null) {
+                        caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                    }
                 }
             }
             
