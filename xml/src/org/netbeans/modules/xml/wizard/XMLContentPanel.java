@@ -6,8 +6,6 @@
 
 package org.netbeans.modules.xml.wizard;
 
-import org.netbeans.modules.xml.wizard.SchemaParser;
-import org.netbeans.modules.xml.wizard.XMLContentAttributes;
 import java.io.File;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
@@ -17,7 +15,6 @@ import org.netbeans.modules.xml.util.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -286,12 +283,16 @@ public class XMLContentPanel extends AbstractPanel {
             return schemaInfo;
         
         File f = new File(model.getPrimarySchema());
-        if(f == null )
-            return null;
-        //for http based xsd files
-        //this combo box in this panel is pnly visible for files
-        //on disk, so ignore http based xsd files
-       if( !f.exists() ) {
+        if (f == null ) return null;
+
+        // fix for issue #172121 - IllegalArgumentException: Parameter file was not normalized.
+        f = f.getAbsoluteFile();
+        
+        // a note for http based xsd files:
+        // this combo box in this panel is only visible
+        // for files on disk, so ignore http based xsd files
+
+        if (! f.exists() ) {
            return null;
         } 
         FileObject fobj = FileUtil.toFileObject(f);
