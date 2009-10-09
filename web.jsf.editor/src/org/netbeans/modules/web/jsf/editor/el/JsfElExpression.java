@@ -243,10 +243,22 @@ public class JsfElExpression extends ELExpression {
         }
         return null;
     }
-    
+
+    /** returns a type name of the resolved expression.
+     * So for example Company.product.name will cause
+     * name property class type being returned.
+     */
     @Override 
     public String getObjectClass(){
         return getTypeName( getResolvedExpression() );
+    }
+
+    /** returns a type name of the expression base bean.
+     * So for example Company.product.name will cause
+     * Company class type being returned.
+     */
+    public String getBaseObjectClass() {
+        return getTypeName( getBeanName() );
     }
 
     @Override
