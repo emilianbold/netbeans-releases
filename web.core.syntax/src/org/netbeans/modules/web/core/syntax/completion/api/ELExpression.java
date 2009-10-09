@@ -234,8 +234,10 @@ public class ELExpression {
     }
 
     protected String extractBeanName() {
-        String elExp = getExpression();
+        return extractBeanName(getExpression());
+    }
 
+    protected String extractBeanName(String elExp) {
         if (elExp != null && !elExp.equals("")) {
             int dotIndex =  elExp.indexOf('.');             // NOI18N
             int bracketIndex = elExp.indexOf('[');          // NOI18N

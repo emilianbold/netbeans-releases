@@ -258,7 +258,7 @@ public class JsfElExpression extends ELExpression {
      * Company class type being returned.
      */
     public String getBaseObjectClass() {
-        return getTypeName( getBeanName() );
+        return getTypeName(extractBeanName(getResolvedExpression()));
     }
 
     @Override
