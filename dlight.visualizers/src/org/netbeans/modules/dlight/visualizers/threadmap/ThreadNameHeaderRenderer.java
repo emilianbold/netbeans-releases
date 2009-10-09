@@ -66,7 +66,7 @@ public class ThreadNameHeaderRenderer extends JPanel implements TableCellRendere
     public ThreadNameHeaderRenderer(ThreadsPanel aViewManager) {
         viewManager = aViewManager;
         label = new JLabel(ThreadsPanel.THREAD_NAME_ID);
-        shift = new JLabel(" > ");
+        shift = new JLabel(" > "); //NOI18N
         setLayout(new BorderLayout());
         add(label, BorderLayout.CENTER);
         add(shift, BorderLayout.EAST);
