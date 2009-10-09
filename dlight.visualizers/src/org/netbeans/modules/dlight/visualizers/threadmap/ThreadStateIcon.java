@@ -40,7 +40,7 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.awt.Color;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 
 /**
