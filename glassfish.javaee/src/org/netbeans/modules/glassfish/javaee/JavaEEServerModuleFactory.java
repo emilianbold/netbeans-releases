@@ -432,6 +432,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
+            synchronized (lmgr) {
             if (null != name) {
                 Library l = lmgr.getLibrary(name);
                 final PropertyChangeListener pcl = this;
@@ -457,16 +458,19 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     removeFromListenerList(pcl);
                 }
             }
+            }
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
+                    synchronized (lmgr) {
                     if (null != lmgr) {
                         lmgr.removePropertyChangeListener(pcl);
                         content = null;
                         name = null;
+                    }
                     }
                 }
             });
