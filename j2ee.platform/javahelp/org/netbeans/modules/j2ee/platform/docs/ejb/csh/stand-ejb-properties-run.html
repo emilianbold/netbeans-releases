@@ -30,15 +30,11 @@
 <p>In the Run page, you can set the following properties:</p>
 <ul>
   <li><b>Server. </b>Specifies the server to which the EJB module is deployed. 
-    You can only deploy EJB modules to the Sun Java System Application Server. 
-    You can have multiple remote instances of the Sun Java System Application 
-    Server registered. To register servers, choose Tools &gt; Server 
+    You can only deploy EJB modules to EJB containers such as the GlassFish application server.
+    You can register multiple remote server instances. To register servers, choose Tools &gt; Server
     Manager.</li>
   <li><b>Java EE Version.</b> Specifies the level of the EJB specification that is 
-    used by the EJB. The IDE only supports J2EE 1.4 EJB modules and automatically 
-    updates the specification number in your module's <tt>ejb-jar.xml</tt> to 
-    1.4. J2EE 1.4 is fully backward-compatible, so upgrading the specification 
-    level does not change the behavior of your code.</li>
+    used by the EJB.</li>
   <li><b>Deploy on Save. </b> Specifies whether changed files are automatically
     redeployed. This option saves you time when you run or debug your application in the IDE.</li>
 

@@ -32,7 +32,7 @@
     Only servers that are <a href="../../server/server_register.html">registered</a> with the IDE 
     are available to be selected here. Any servers installed as part of the IDE installation are registered by default. 
     Note that you cannot deploy Java EE applications and JSR-109 web service clients to the Tomcat Web Server.</li>
-  <li><b>Copy Server JAR Files to Libraries Folder.</b> If you are using a dedicated folder for storing libraries,
+  <li><b>Use Dedicated Library Folder for Server JAR Files.</b> If you are using a dedicated folder for storing libraries,
   you can select this option to copy the server JAR files required for compilation into the dedicated libraries folder.
   If not selected, other users will need local copies of the server JAR files to build the project.</li>
 
@@ -53,11 +53,11 @@
    </ul>
    </li>
    <li><b>Create EJB Module.</b> Sets whether an EJB module is created as a submodule of the enterprise application,
-   and its name. By default, it is created and named <tt><i>project-name</i>-EJBModule</tt>. If you do
+   and its name. By default, it is created and named <tt><i>project-name</i>-ejb</tt>. If you do
    not let the IDE create the EJB module together with the enterprise application, you can 
    <a href="../../ejb/editing/create_ejb_project.html">Create an EJB Module Project</a> later.</li>
   <li><b>Create Web Application Module.</b> Sets whether a web application module is created as a submodule of the 
-  enterprise application, and its name. By default, it is created and named <tt><i>project-name</i>-WebModule</tt>.
+  enterprise application, and its name. By default, it is created and named <tt><i>project-name</i>-war</tt>.
   If you do not let the IDE create the EJB module together with the enterprise application, you can 
   create a Web Application project later.</li>
   <li><b>Create Application Client Module.</b> Sets whether an application client module is created as a submodule of the 
