@@ -154,7 +154,6 @@ public class OutlineView extends JScrollPane {
 
     /** Listener on keystroke to invoke default action */
     private ActionListener defaultTreeActionListener;
-    private final String nodesColumnLabel;
 
     /** Creates a new instance of TableView */
     public OutlineView() {
@@ -166,7 +165,6 @@ public class OutlineView extends JScrollPane {
         treeModel = new NodeTreeModel();
         rowModel = new PropertiesRowModel();
         model = createOutlineModel(treeModel, rowModel, nodesColumnLabel);
-        this.nodesColumnLabel = nodesColumnLabel;
         outline = new OutlineViewOutline(model, rowModel);
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
@@ -830,13 +828,6 @@ public class OutlineView extends JScrollPane {
             if (manager == null) return; // the tree view has been removed before the event got delivered
             if (evt.getPropertyName().equals(ExplorerManager.PROP_ROOT_CONTEXT)) {
                 synchronizeRootContext();
-                if (nodesColumnLabel == null && model instanceof NodeOutlineModel) {
-                    String oldLabel = ((NodeOutlineModel) model).getColumnName(0);
-                    String newLabel = manager.getRootContext().getDisplayName();
-                    if (oldLabel != null && ! oldLabel.equals(newLabel)) {
-                        ((NodeOutlineModel) model).setNodesColumnLabel(newLabel);
-                    }
-                }
             }
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
                 synchronizeSelectedNodes(true);

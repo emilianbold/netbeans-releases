@@ -71,6 +71,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
     };
     
     private static final String[] EJB_TYPES_4 = new String[] {
+                "ejb-deployment-descriptor",// NOI18N
                 "ejb-types",            // NOI18N
                 "ejb-types_2_1",        // NOI18N
                 "j2ee-14-types",        // NOI18N
@@ -80,6 +81,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
     };
     
     private static final String[] EJB_TYPES_5 = new String[] {
+                "ejb-deployment-descriptor",// NOI18N
                 "ejb-types",            // NOI18N
                 "ejb-types_3_0",        // NOI18N
                 "ejb-types-server",     // NOI18N
@@ -92,6 +94,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
      * Supported template categories for Java EE 6 projects (full?).
      */
     private static final String[] EJB_TYPES_6 = new String[] {
+        "ejb-deployment-descriptor",// NOI18N
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_1",        // NOI18N

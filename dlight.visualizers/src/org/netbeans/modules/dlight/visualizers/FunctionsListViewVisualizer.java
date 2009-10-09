@@ -57,6 +57,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -361,7 +362,16 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 public Boolean call() {
                     List<FunctionCallWithMetric> detailedCallsList =
                             dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
-                    asyncNotifyAnnotedSourceProviders(detailedCallsList);
+                    List<FunctionCallWithMetric> functionsList = Collections.<FunctionCallWithMetric>emptyList();
+                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)){
+                        functionsList =
+                                (explorerManager.getRootContext() != null &&
+                                explorerManager.getRootContext().getChildren() != null &&
+                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ?
+                                ((FunctionCallChildren)explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
+                    }
+
+                    asyncNotifyAnnotedSourceProviders(functionsList, detailedCallsList);
                     return Boolean.TRUE;
                 }
             }, "FunctionsListViewVisualizer Async Detailed data load for " + // NOI18N
@@ -370,7 +380,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private void asyncNotifyAnnotedSourceProviders(final List<FunctionCallWithMetric> list) {
+    private void asyncNotifyAnnotedSourceProviders(final List<FunctionCallWithMetric> functionsList, final List<FunctionCallWithMetric> list) {
         if (Thread.currentThread().isInterrupted()) {
             return;
         }
@@ -380,6 +390,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                 public void run() {
                     sourceSupport.updateSource(dataProvider, metrics, list);
+                    if (functionsList != null && !functionsList.isEmpty()){
+                        sourceSupport.updateSourceWithBlockAnnotations(dataProvider, metrics, functionsList);
+                    }
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }
@@ -411,7 +424,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 sourcePrefetchExecutor = Executors.newFixedThreadPool(2);
             }
         }
-        asyncNotifyAnnotedSourceProviders(detailedList);
+        asyncNotifyAnnotedSourceProviders(list, detailedList);
         UIThread.invoke(new Runnable() {
 
             public void run() {
@@ -599,6 +612,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
             }
         }
         return null;
+    }
+
+    public void updateVisualizerConfiguration(FunctionsListViewVisualizerConfiguration configuration) {
     }
 
     public class FunctionCallChildren extends Children.Keys<FunctionCallWithMetric> {

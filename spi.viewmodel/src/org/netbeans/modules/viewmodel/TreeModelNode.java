@@ -1204,6 +1204,7 @@ public class TreeModelNode extends AbstractNode {
     private class MyProperty extends PropertySupport implements Runnable { //LazyEvaluator.Evaluable {
         
         private String      id;
+        private String      propertyId;
         private ColumnModel columnModel;
         private boolean nodeColumn;
         private TreeModelRoot treeModelRoot;
@@ -1224,10 +1225,16 @@ public class TreeModelNode extends AbstractNode {
                 true,
                 true
             );
-            this.columnModel = columnModel;
             this.nodeColumn = columnModel.getType() == null;
             this.treeModelRoot = treeModelRoot;
-            id = columnModel.getID ();
+            if (columnModel instanceof HyperColumnModel) {
+                propertyId = columnModel.getID(); // main column ID
+                this.columnModel = ((HyperColumnModel) columnModel).getSpecific();
+                id = this.columnModel.getID ();   // specific column ID
+            } else {
+                id = propertyId = columnModel.getID ();
+                this.columnModel = columnModel;
+            }
         }
         
 
@@ -1288,7 +1295,7 @@ public class TreeModelNode extends AbstractNode {
                 }
                 //System.out.println("\nTreeModelNode.evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): value = "+value+", fire = "+fire);
                 if (fire) {
-                    firePropertyChange (id, null, value);
+                    firePropertyChange (propertyId, null, value);
                 }
                 
             }
@@ -1424,7 +1431,7 @@ public class TreeModelNode extends AbstractNode {
                 exec.execute(new Runnable() {
                     public void run() {
                         updateShortDescription();
-                        firePropertyChange(id, null, null);
+                        firePropertyChange(propertyId, null, null);
                     }
                 });
                 return null;
@@ -1482,7 +1489,7 @@ public class TreeModelNode extends AbstractNode {
                         properties.put (id, v);
                     }
                 }
-                firePropertyChange (id, null, null);
+                firePropertyChange (propertyId, null, null);
             } catch (UnknownTypeException e) {
                 Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Column id:" + columnModel.getID ()+"\nModel: "+model, e);
             }

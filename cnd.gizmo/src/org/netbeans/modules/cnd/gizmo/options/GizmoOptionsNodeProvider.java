@@ -103,7 +103,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, GizmoOptionsImpl.PROFILE_ON_RUN_PROP, getString("profileonrun_txt"), getString("profileonrun_help"))); // NOI18N
-        set.put(new IntNodeProp(gizmoOptions.getGizmoConfigurations(), true, GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help"))); // NOI18N
+        set.put(new GizmoIntNodeProp(gizmoOptions.getGizmoConfigurations(), true, GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help"))); // NOI18N
         sheet.put(set);
 
         set = new Sheet.Set();

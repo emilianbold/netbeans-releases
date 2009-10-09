@@ -56,6 +56,10 @@ public class ValuePresenter {
         return getValue(var.getType(), var.getValue());
     }
 
+    public static String getValue(String value) {
+        return getValue(null, value);
+    }
+
     public static String getValue(String type, String value) {
         for (Presenter vp : presenters) {
             if (vp.accepts(type, value)) {

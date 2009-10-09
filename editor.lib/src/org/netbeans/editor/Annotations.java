@@ -1228,13 +1228,10 @@ public class Annotations implements DocumentListener {
 
             //Order by priority
             Collections.sort(annosVisible);
-
+            
             // update the active annotation
-            if (annosVisible.indexOf(active) == -1) {
-                if (annosVisible.size() > 0)
+            if (annosVisible.size() > 0) {
                     active = annosVisible.get(0);
-                else
-                    active = null;
             }
         }
 

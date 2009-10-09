@@ -68,6 +68,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -112,15 +113,25 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
                     fillOpenedDebuggerComponents(componentsInitiallyOpened);
                 }
-                SwingUtilities.invokeLater (new Runnable () {
+                RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
+                if (rp == null) {
+                    rp = RequestProcessor.getDefault();
+                }
+                rp.post (new Runnable () {
                     public void run () {
                         List<Component> cs = new ArrayList<Component>(componentProxies.size());
                         try {
-                            for (BeanContextChildComponentProxy cp : componentProxies) {
-                                Component c;
+                            for (final BeanContextChildComponentProxy cp : componentProxies) {
+                                final Component[] c = new Component[] { null };
+                                final boolean[] doOpen = new boolean[] { false };
                                 try {
-                                    c = cp.getComponent();
-                                    if (c == null) {
+                                    SwingUtilities.invokeAndWait(new Runnable() {
+                                        public void run() {
+                                            c[0] = cp.getComponent();
+                                            doOpen[0] = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
+                                        }
+                                    });
+                                    if (c[0] == null) {
                                         //throw new NullPointerException("No component from "+cp);
                                         continue;
                                     }
@@ -128,20 +139,27 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                     Exceptions.printStackTrace(ex);
                                     continue;
                                 }
-                                cs.add(c);
-                                boolean doOpen = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
-                                if (c instanceof TopComponent) {
-                                    TopComponent tc = (TopComponent) c;
+                                cs.add(c[0]);
+                                if (c[0] instanceof TopComponent) {
+                                    final TopComponent tc = (TopComponent) c[0];
                                     boolean wasClosed = Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                             getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), false);
                                     boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
                                             getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
-                                    if (doOpen && !wasClosed || !doOpen && wasOpened) {
-                                        tc.open();
+                                    if (doOpen[0] && !wasClosed || !doOpen[0] && wasOpened) {
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                tc.open();
+                                            }
+                                        });
                                     }
                                 } else {
-                                    if (doOpen) {
-                                        c.setVisible(true);
+                                    if (doOpen[0]) {
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                c[0].setVisible(true);
+                                            }
+                                        });
                                     }
                                 }
                             }

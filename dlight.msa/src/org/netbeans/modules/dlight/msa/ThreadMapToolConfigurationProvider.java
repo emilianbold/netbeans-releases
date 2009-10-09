@@ -73,6 +73,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/msa/resources/thread_microstates_16.png");
 
         final List<Column> indicatorDataColumns = Arrays.asList(
                 MSASQLTables.prstat.P_SLEEP,

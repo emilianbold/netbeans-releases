@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -60,7 +61,11 @@ public class ParameterImpl implements Parameter {
     public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, OffsetRange range) {
         this.name = name;
         this.defaultValue = defaultValue;
-        this.types = types;
+        if (types == null) {
+            this.types = Collections.emptyList();
+        } else {
+            this.types = types;
+        }
         this.range = range;
     }
 
