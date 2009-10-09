@@ -531,9 +531,9 @@ public class ClassFile {
         Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants from constant pool
-        Collection<CPEntry> c = constantPool.getAllConstants(CPClassInfo.class);
-        for (Iterator<CPEntry> i = c.iterator(); i.hasNext();) {
-            CPClassInfo ci = (CPClassInfo)i.next();
+        Collection<? extends CPClassInfo> c = constantPool.getAllConstants(CPClassInfo.class);
+        for (Iterator<? extends CPClassInfo> i = c.iterator(); i.hasNext();) {
+            CPClassInfo ci = i.next();
             set.add(ci.getClassName());
         }
 

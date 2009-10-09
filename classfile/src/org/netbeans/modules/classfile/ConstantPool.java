@@ -128,18 +128,18 @@ public final class ConstantPool {
      *
      * @param type   the constant pool type to return.
      */
-    public final Collection<CPEntry> getAllConstants(Class<?> classType) {
+    public final <T extends CPEntry> Collection<? extends T> getAllConstants(Class<T> classType) {
         return Collections.unmodifiableCollection(
 		   getAllConstantsImpl(classType));
     }
 
-    private Collection<CPEntry> getAllConstantsImpl(Class<?> classType) {
+    private <T extends CPEntry> Collection<? extends T> getAllConstantsImpl(Class<T> classType) {
         int n = cpEntries.length;
-        Collection<CPEntry> c = new ArrayList<CPEntry>(n);
+        Collection<T> c = new ArrayList<T>(n);
         for (int i = CONSTANT_POOL_START; i < n; i++) {
             if (cpEntries[i] != null && 
                 cpEntries[i].getClass().equals(classType)) {
-                c.add(cpEntries[i]);
+                c.add(classType.cast(cpEntries[i]));
             }
         }
         return c;
@@ -157,8 +157,8 @@ public final class ConstantPool {
         Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants
-        Collection<CPEntry> c = getAllConstantsImpl(CPClassInfo.class);
-        for (Iterator<CPEntry> i = c.iterator(); i.hasNext();) {
+        Collection<? extends CPEntry> c = getAllConstantsImpl(CPClassInfo.class);
+        for (Iterator<? extends CPEntry> i = c.iterator(); i.hasNext();) {
             CPClassInfo ci = (CPClassInfo)i.next();
             set.add(ci.getClassName());
         }
