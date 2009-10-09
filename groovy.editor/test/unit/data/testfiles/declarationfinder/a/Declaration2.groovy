@@ -1,6 +1,6 @@
 package a
 
-class Declaration2 {
+class Declaration2 extends Declaration1 implements Interface1, Interface2 {
 
     private Declaration1 x
 

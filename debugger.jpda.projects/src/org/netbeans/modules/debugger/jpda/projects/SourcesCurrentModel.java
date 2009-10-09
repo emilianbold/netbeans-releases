@@ -273,9 +273,9 @@ NodeActionsProvider {
         Sources s = ProjectUtils.getSources(p);
         SourceGroup[] sgs = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup sg : sgs) {
-            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE);
+            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT);
             if (ecp != null) {
-                addSourceRoots(ecp, allSourceRoots, preferredRoots);
+                addSourceRoots(ecp, allSourceRoots, addedBinaryRoots, preferredRoots);
             }
         }
         for (SourceGroup sg : sgs) {
@@ -285,9 +285,9 @@ NodeActionsProvider {
             }
         }
         for (SourceGroup sg : sgs) {
-            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT);
+            ClassPath ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE);
             if (ecp != null) {
-                addSourceRoots(ecp, allSourceRoots, addedBinaryRoots, preferredRoots);
+                addSourceRoots(ecp, allSourceRoots, preferredRoots);
             }
         }
         

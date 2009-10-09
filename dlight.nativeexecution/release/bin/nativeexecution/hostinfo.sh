@@ -19,7 +19,7 @@ if [ "${OS}" = "SunOS" ]; then
    OSBUILD=`head -1 /etc/release | sed -e "s/^ *//"`
    CPUNUM=`/usr/sbin/psrinfo -v | grep "^Status of" | wc -l | sed 's/^ *//'`
 else
-   uname -a | grep x86_64 >/dev/null
+   uname -a | egrep "x86_64|WOW64" >/dev/null
    if [ $? -eq 0 ]; then
       BITNESS=64
    fi

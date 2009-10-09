@@ -99,7 +99,7 @@ public class WindowsFileSearcherImpl implements FileSearcher {
         if (fileSearchParams.isSearchInUserPaths()) {
             synchronized (envPaths) {
                 if (envPaths.isEmpty()) {
-                    String paths = WindowsSupport.getInstance().getEnv().getProperty("PATH"); // NOI18N
+                    String paths = WindowsSupport.getInstance().getEnv().get("PATH"); // NOI18N
                     envPaths.addAll(Arrays.asList(paths.split(";"))); // NOI18N
                 }
             }

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import java.util.logging.Logger;
@@ -97,7 +98,9 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.java.ElementDeclaration;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
     
 /**
@@ -321,93 +324,147 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         // TODO try to find it in Groovy
                     }
                 }
-            } else if (closest instanceof DeclarationExpression ||
-                closest instanceof ConstructorCallExpression ||
-                closest instanceof ClassExpression ||
-                closest instanceof PropertyNode ||
-                closest instanceof FieldNode ||
-                closest instanceof Parameter) {
+            } else if (closest instanceof DeclarationExpression
+                || closest instanceof ConstructorCallExpression
+                || closest instanceof ClassExpression
+                || closest instanceof PropertyNode
+                || closest instanceof FieldNode
+                || closest instanceof Parameter) {
 
                 String fqName = getFqNameForNode(closest);
-                
-                LOG.log(Level.FINEST, "Looking for type: {0}", fqName); // NOI18N
-                
-                if (doc != null && range != null) {
-                    String text = doc.getText(range.getStart(), range.getLength());
+                return findType(fqName, range, doc, info, index);
 
-                    if(!NbUtilities.stripPackage(fqName).equals(text)){
-                        LOG.log(Level.FINEST, "fqName != text");
-                        return DeclarationLocation.NONE;
-                    }
+            // we are in class node, for example
+            // Myclass extends OtherClass implements MyInterface
+            } else if (closest instanceof ClassNode) {
+                // move to first keyword by tokens and figure out extends, implements
+                ClassNode node = (ClassNode) closest;
 
-                    Set<IndexedClass> classes =
-                        index.getClasses(fqName, QuerySupport.Kind.EXACT, true, false, false);
-
-                    for (IndexedClass indexedClass : classes) {
-                        ASTNode node = AstUtilities.getForeignNode(indexedClass);
-                        if (node != null) {
-                            OffsetRange defRange = null;
-                            try {
-                                defRange = AstUtilities.getRange(node, (BaseDocument) indexedClass.getDocument());
-                            } catch (IOException ex) {
-                                LOG.log(Level.FINEST, "IOException while getting destination range : {0}", ex.getMessage()); // NOI18N
-                            }
-                            if (defRange != null) {
-                                LOG.log(Level.FINEST, "Found decl. for : {0}", text); // NOI18N
-                                LOG.log(Level.FINEST, "Foreign Node    : {0}", node); // NOI18N
-                                LOG.log(Level.FINEST, "Range start     : {0}", defRange.getStart()); // NOI18N
-                                
-                                return new DeclarationLocation(indexedClass.getFileObject(), defRange.getStart());
-                            }
-                        }
-                    }
-
-                    // so - we haven't found this class using the groovy index, 
-                    // then we have to search it as a pure java type.
-                    
-                    // simple sanity-check that the literal string in the source document
-                    // matches the last part of the full-qualified name of the type.
-                    // e.g. "String" means "java.lang.String"
-                    
-                    FileObject fileObject = info.getSnapshot().getSource().getFileObject();
-                    
-                    if (fileObject != null) {
-                        final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
-
-                        if (cpi != null) {
-                            JavaSource javaSource = JavaSource.create(cpi);
-
-                            if (javaSource != null) {
-                                
-                                try {
-                                    javaSource.runUserActionTask(new SourceLocator(fqName, cpi), false);
-                                } catch (IOException ex) {
-                                    LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-                                    return null;
-                                }
-
-                            } else {
-                                LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
-                            }
-                        } else {
-                            LOG.log(Level.FINEST, "classpathinfo == null"); // NOI18N
-                        }
-                    } else {
-                        LOG.log(Level.FINEST, "fileObject == null"); // NOI18N
-                    }
-
+                TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
+                if (ts == null) {
                     return DeclarationLocation.NONE;
-                    
                 }
 
+                ts.move(lexOffset);
+                while (ts.isValid() && ts.movePrevious()
+                        && ts.token().id() != GroovyTokenId.LITERAL_class
+                        && ts.token().id() != GroovyTokenId.LITERAL_extends
+                        && ts.token().id() != GroovyTokenId.LITERAL_implements);
+
+                if (!ts.isValid() || ts.token().id() == GroovyTokenId.LITERAL_class) {
+                    return DeclarationLocation.NONE;
+                }
+
+                String fqName = null;
+                String text = doc.getText(range.getStart(), range.getLength());
+                if (ts.token().id() == GroovyTokenId.LITERAL_extends) {
+                    ClassNode superClass = node.getSuperClass();
+                    // perhaps this check is redundant
+                    if (superClass.getName().endsWith(text)) {
+                        fqName = superClass.getName();
+                    }
+                } else if (ts.token().id() == GroovyTokenId.LITERAL_implements) {
+                    for (ClassNode ifNode : node.getInterfaces()) {
+                        // TODO this check won't work for interface with same name
+                        // but from different packages
+                        if (ifNode.getName().endsWith(text)) {
+                            fqName = ifNode.getName();
+                            break;
+                        }
+                    }
+                }
+                if (fqName != null) {
+                    return findType(fqName, range, doc, info, index);
+                }
+                return DeclarationLocation.NONE;
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
         return DeclarationLocation.NONE;
     }
-    
-    
+
+    private DeclarationLocation findType(String fqName, OffsetRange range,
+            BaseDocument doc, ParserResult info, GroovyIndex index) throws BadLocationException {
+
+        LOG.log(Level.FINEST, "Looking for type: {0}", fqName); // NOI18N
+
+        if (doc != null && range != null) {
+            String text = doc.getText(range.getStart(), range.getLength());
+
+            if(!NbUtilities.stripPackage(fqName).equals(text)){
+                LOG.log(Level.FINEST, "fqName != text");
+                return DeclarationLocation.NONE;
+            }
+
+            Set<IndexedClass> classes =
+                index.getClasses(fqName, QuerySupport.Kind.EXACT, true, false, false);
+
+            for (IndexedClass indexedClass : classes) {
+                ASTNode node = AstUtilities.getForeignNode(indexedClass);
+                if (node != null) {
+                    OffsetRange defRange = null;
+                    try {
+                        defRange = AstUtilities.getRange(node, (BaseDocument) indexedClass.getDocument());
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINEST, "IOException while getting destination range : {0}", ex.getMessage()); // NOI18N
+                    }
+                    if (defRange != null) {
+                        LOG.log(Level.FINEST, "Found decl. for : {0}", text); // NOI18N
+                        LOG.log(Level.FINEST, "Foreign Node    : {0}", node); // NOI18N
+                        LOG.log(Level.FINEST, "Range start     : {0}", defRange.getStart()); // NOI18N
+
+                        return new DeclarationLocation(indexedClass.getFileObject(), defRange.getStart());
+                    }
+                }
+            }
+
+            // so - we haven't found this class using the groovy index,
+            // then we have to search it as a pure java type.
+
+            // simple sanity-check that the literal string in the source document
+            // matches the last part of the full-qualified name of the type.
+            // e.g. "String" means "java.lang.String"
+
+            FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+
+            if (fileObject != null) {
+                final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
+
+                if (cpi != null) {
+                    JavaSource javaSource = JavaSource.create(cpi);
+
+                    if (javaSource != null) {
+                        CountDownLatch latch = new CountDownLatch(1);
+                        SourceLocator locator = new SourceLocator(fqName, cpi, latch);
+                        try {
+                            javaSource.runUserActionTask(locator, false);
+                        } catch (IOException ex) {
+                            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+                            return DeclarationLocation.NONE;
+                        }
+                        try {
+                            latch.await();
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            return DeclarationLocation.NONE;
+                        }
+                        return locator.getLocation();
+                    } else {
+                        LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
+                    }
+                } else {
+                    LOG.log(Level.FINEST, "classpathinfo == null"); // NOI18N
+                }
+            } else {
+                LOG.log(Level.FINEST, "fileObject == null"); // NOI18N
+            }
+
+            return DeclarationLocation.NONE;
+        }
+        return DeclarationLocation.NONE;
+    }
+
     private String getFqNameForNode(ASTNode node) {
         if (node instanceof DeclarationExpression) {
             return ((BinaryExpression) node).getLeftExpression().getType().getName();
@@ -428,49 +485,46 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
      * Locates and opens in Editor the Java Element given as Full-Qualified name in fqName.
      */
     private class SourceLocator implements Task<CompilationController> {
-        
-        String fqName;
-        ClasspathInfo cpi;
 
-        public SourceLocator(String fqName, ClasspathInfo cpi) {
+        private final String fqName;
+
+        private final ClasspathInfo cpi;
+
+        private final CountDownLatch latch;
+
+        private DeclarationLocation location;
+
+        public SourceLocator(String fqName, ClasspathInfo cpi, CountDownLatch latch) {
             this.fqName = fqName;
             this.cpi = cpi;
+            this.latch = latch;
         }
 
         public void run(CompilationController info) throws Exception {
-            
             Elements elements = info.getElements();
 
             if (elements != null) {
                 final javax.lang.model.element.TypeElement typeElement = elements.getTypeElement(fqName);
 
                 if (typeElement != null) {
-
-                    if (!SwingUtilities.isEventDispatchThread()) {
-
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            public void run() {
-                                ElementOpen.open(cpi, typeElement);
-                            }
-                        });
-
-                    } else {
-                        ElementOpen.open(cpi, typeElement);
+                    DeclarationLocation found = ElementDeclaration.getDeclarationLocation(cpi, typeElement);
+                    synchronized (this) {
+                        location = found;
                     }
-
                 } else {
                     LOG.log(Level.FINEST, "typeElement == null"); // NOI18N
                 }
             } else {
                 LOG.log(Level.FINEST, "elements == null"); // NOI18N
             }
-            
+            latch.countDown();
+        }
+
+        public synchronized DeclarationLocation getLocation() {
+            return location;
         }
     }
-    
-    
-    
+
     private OffsetRange getReferenceSpan(TokenSequence<?> ts, TokenHierarchy<Document> th, int lexOffset) {
         Token<?> token = ts.token();
         TokenId id = token.id();

@@ -41,7 +41,6 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
@@ -52,8 +51,10 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.LambdaFunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
@@ -69,6 +70,10 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         this.paremeters = info.getParameters();
         this.returnType = returnType;
+    }
+    FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
+        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        this.paremeters = info.getParameters();
     }
     protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType) {
         super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody());
@@ -92,6 +97,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.returnType =  element.getReturnType();
     }
 
+    public static FunctionScopeImpl createElement(Scope scope, LambdaFunctionDeclaration node) {
+        return new FunctionScopeImpl(scope, LambdaFunctionDeclarationInfo.create(node)) {
+            @Override
+            public boolean isAnonymous() {
+                return true;
+            }
+        };
+    }
 
     //old contructors
     
@@ -232,5 +245,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             return QualifiedName.create(indexedFunction.getNamespaceName());
         }
         return super.getNamespaceName();
+    }
+
+    public boolean isAnonymous() {
+        return false;
     }
 }

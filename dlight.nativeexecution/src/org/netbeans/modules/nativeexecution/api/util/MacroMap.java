@@ -70,7 +70,6 @@ public class MacroMap implements Cloneable {
 
         if (isWindows) {
             map = new TreeMap<String, String>(new CaseInsensitiveComparator());
-            map.putAll(System.getenv());
         } else {
             map = new TreeMap<String, String>();
         }

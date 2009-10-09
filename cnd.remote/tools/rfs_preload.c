@@ -61,6 +61,10 @@
 static const char *my_dir = 0;
 static int my_dir_len;
 
+static int test_env = 0;
+
+static int __thread inside_open = 0;
+
 #define get_real_addr(name) _get_real_addr(#name, name);
 
 static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
@@ -99,43 +103,6 @@ static inline void print_dlsym() {
 }
 #endif
 
-/* static int is_mine(const char *path) {
-    if (path[0] == '/') {
-        return (strncmp(my_dir, path, my_dir_len) == 0);
-    } else {
-        // TODO: make an honest comparison
-        if (strncmp(my_dir, curr_dir, my_dir_len) == 0) { // with trailing "/"
-            return true;
-        }
-        if (strncmp(my_dir, curr_dir, my_dir_len-1) == 0) { // w/o trailing "/"
-            return true;
-        }
-        return false;
-    }
-}*/
-
-/** 
- * Does the same as realpath, except for it
- * - does not resolve symlinks
- * - does not call getcwd each time
-static char * my_realpath(const char *file_name, char *resolved_name, int resolved_name_size) {
-    if (file_name == NULL || resolved_name == NULL || file_name[0] == 0 || resolved_name_size < 2) {
-        return NULL;
-    } else if (file_name[0] == '/') {
-        strncpy(resolved_name, file_name, resolved_name_size);
-        return resolved_name;
-    }
-    // TODO: write a honest implementation!
-    if (file_name[0] == '.' && file_name[0] == '/') {
-        file_name += 2;
-    }
-    ...
-
-    return resolved_name;
-}*/
-
-static int __thread inside_open = 0;
-
 /**
  * Called upon opening a file; returns "boolean" success
  * @return true means "ok" (either file is in already sync,
@@ -143,6 +110,10 @@ static int __thread inside_open = 0;
  * false means that the file is ourm, but can't be synched
  */
 static int on_open(const char *path, int flags) {
+    if (test_env) {
+        fprintf(stdout, "RFS_TEST_PRELOAD %s\n", path);
+        return true;
+    }
     if (inside_open != 1) {
         trace("%s inside_open == %d   returning\n", path, inside_open);
         return true; // recursive call to open
@@ -260,6 +231,10 @@ void
 __attribute__((constructor))
 on_startup(void) {
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
+
+    test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
+    trace("test_env %s\n", test_env ? "ON" : "OFF");
+    
 //#if TRACE
 //    print_dlsym();
 //#endif
@@ -348,24 +323,6 @@ int pthread_create(void *newthread,
     prev(newthread, attr, pthread_routine_wrapper, data);
 }
 
-/* int chdir(const char *dir) {
-    trace("chdir %s\n", dir);
-    static int (*prev) (const char*);
-    if (!prev) {
-        prev = (int (*) (const char*)) get_real_addr(chdir);
-    }
-    int res = prev(dir);
-    if (res == 0) {
-        int len = strlen(dir);
-        if (len >= curr_dir_len) {
-            free(curr_dir);
-            curr_dir = malloc(curr_dir_len = len * 2);
-        }
-        strcpy(curr_dir, dir);
-    }
-    return res;
-}*/
-
 #define real_open(function_name, path, flags) \
     inside_open++; \
     trace("%s %s %d\n", #function_name, path, flags); \
@@ -392,40 +349,69 @@ int pthread_create(void *newthread,
     inside_open--; \
     return result;
 
+#define real_fopen(function, path, mode) \
+    inside_open++; \
+    trace("%s %s %s\n", #function, path, mode); \
+    FILE* result = NULL; \
+    int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
+    if (on_open(path, int_mode)) { \
+        static FILE* (*prev)(const char *, const char *); \
+        if (!prev) { \
+            prev = (FILE* (*)(const char *, const char *)) get_real_addr(function); \
+        } \
+        if (prev) { \
+            result = prev(path, mode); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function); \
+            errno = EFAULT; \
+            result = NULL; \
+        } \
+    } \
+    trace("%s %s -> %d\n", #function, path, result); \
+    inside_open--; \
+    return result;
+    //result ? -12345 : fileno(result)
 
 int open(const char *path, int flags, ...) {
-    real_open(open, path, flags)
+    real_open(open, path, flags);
 }
 
 #if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
-    real_open(open64, path, flags)
+    real_open(open64, path, flags);
 }
 #endif
 
 int _open(const char *path, int flags, ...) {
-    real_open(_open, path, flags)
+    real_open(_open, path, flags);
 }
 
 int _open64(const char *path, int flags, ...) {
-    real_open(_open64, path, flags)
+    real_open(_open64, path, flags);
 }
 
-/* int lstat64(const char *_RESTRICT_KYWD path, struct stat64 *_RESTRICT_KYWD buf)
-{
-    trace("lstat64 %s\n", path);
-    static int (*prev)(const char *_RESTRICT_KYWD, struct stat64 *_RESTRICT_KYWD);
-    if (!prev) {
-        prev = (int (*)(const char *_RESTRICT_KYWD, struct stat64 *_RESTRICT_KYWD)) get_real_addr("lstat64");
-    }
-    return prev(path, buf);
+int __open(const char *path, int flags, ...) {
+    real_open(__open, path, flags);
 }
 
-int _lxstat(const int mode, const char *path, struct stat *buf) {
-    trace("_lxstat %d %s\n", mode, path);
-    static int (*prev)(const int, const char *, struct stat*);
-    if (!prev) {
-        prev = (int (*)(const int, const char *, struct stat*)) get_real_addr("_lxstat");
-    }
-    return prev(mode, path, buf);
-} */
+int __open64(const char *path, int flags, ...) {
+    real_open(__open64, path, flags);
+}
+
+
+//#ifdef __linux__
+FILE *fopen(const char * filename, const char * mode) {
+    real_fopen(fopen, filename, mode);
+}
+
+#if _FILE_OFFSET_BITS != 64
+FILE *fopen64(const char * filename, const char * mode) {
+    real_fopen(fopen64, filename, mode);
+}
+#endif
+//#endif
+
+// TODO: int openat(int fd, const char *path, int flags, ...);
+// TODO: int openat64(int fd, const char *path, int flags, ...);
+
+

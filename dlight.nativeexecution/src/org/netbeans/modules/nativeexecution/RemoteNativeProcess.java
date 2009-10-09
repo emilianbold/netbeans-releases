@@ -53,8 +53,8 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
             }
 
-            // Always prepend /bin and /usr/bin to PATH
-//            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+            // Always append /bin and /usr/bin to PATH
+            envVars.appendPathVariable("PATH", "/bin:/usr/bin"); // NOI18N
 
             if (isInterrupted()) {
                 throw new InterruptedException();

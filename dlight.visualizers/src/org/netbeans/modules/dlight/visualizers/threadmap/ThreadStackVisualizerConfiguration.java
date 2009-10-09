@@ -60,12 +60,14 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
     private long dumpTime;
     private StackNameProvider stackNameProvider;
     private long preferredSelection;
+    private ThreadStackActionsProvider actionsProvider;
 
-    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump, StackNameProvider stackNameProvider, long preferredSelection) {
+    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump, StackNameProvider stackNameProvider, long preferredSelection, ThreadStackActionsProvider actionsProvider) {
         this.dumpTime = dumpTime;
         this.threadDump = threadDump;
         this.stackNameProvider = stackNameProvider;
         this.preferredSelection = preferredSelection;
+        this.actionsProvider = actionsProvider;
     }
 
     void update(ThreadStackVisualizerConfiguration another){
@@ -73,24 +75,29 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
         this.threadDump = another.threadDump;
         this.stackNameProvider = another.stackNameProvider;
         this.preferredSelection = another.preferredSelection;
+        this.actionsProvider = another.actionsProvider;
     }
 
-    public ThreadDump getThreadDump() {
+    ThreadDump getThreadDump() {
         return threadDump;
     }
 
-    public long getDumpTime() {
+    long getDumpTime() {
         return dumpTime;
     }
 
-    public StackNameProvider getStackNameProvider() {
+    ThreadStackActionsProvider getStackNodeActionsProvider(){
+        return actionsProvider;
+    }
+
+    StackNameProvider getStackNameProvider() {
         if (stackNameProvider == null) {
             return defaultStackNameProvider;
         }
         return stackNameProvider;
     }
 
-    public long getPreferredSelection(){
+    long getPreferredSelection(){
         return preferredSelection;
     }
 

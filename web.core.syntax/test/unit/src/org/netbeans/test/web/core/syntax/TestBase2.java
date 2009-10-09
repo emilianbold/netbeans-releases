@@ -107,7 +107,16 @@ public class TestBase2 extends CslTestBase {
     }
 
     public final ClassPath createServletAPIClassPath() throws MalformedURLException, IOException {
+        return createClassPath("web.project.jars");
+    }
+    
+    public final ClassPath createClassPath(String property) 
+        throws MalformedURLException, IOException 
+    {
         String path = System.getProperty("web.project.jars");
+        if ( path == null ){
+            path = "";
+        }
         String[] st = PropertyUtils.tokenizePath(path);
         List<FileObject> fos = new ArrayList<FileObject>();
         for (int i=0; i<st.length; i++) {

@@ -55,6 +55,7 @@
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"
+#include "rfs_preload_socks.h"
 
 /** SOCKET_ERROR means that we failed to open a socket */
 #define SOCKET_ERROR -1
@@ -65,9 +66,9 @@
 /** Socked descriptor. */
 static __thread int _sd = SOCKET_UNINITIALIZED;
 
-void trace_sd(const char* text) {
-    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
-}
+//void trace_sd(const char* text) {
+//    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
+//}
 
 /**
  * as well as open syscall, returns

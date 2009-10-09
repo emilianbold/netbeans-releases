@@ -727,7 +727,7 @@ public final class OpenProjectList {
         
         try {
             LOAD.enter();
-
+            ProjectUtilities.WaitCursor.show();
         logProjects("close(): closing project: ", projects);
         boolean mainClosed = false;
         boolean someClosed = false;
@@ -806,6 +806,7 @@ public final class OpenProjectList {
         removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
         log(removedRec,"org.netbeans.ui.metrics.projects");
         } finally {
+            ProjectUtilities.WaitCursor.hide();
             LOAD.exit();
     }
     }
