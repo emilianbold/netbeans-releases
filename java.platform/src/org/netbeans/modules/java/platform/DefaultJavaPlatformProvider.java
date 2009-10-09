@@ -172,6 +172,7 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     }
 
     private final JavaPlatform getDefaultPlatformByHint() {
+        if (storage == null) return null;
         for (final FileObject defFile : storage.getChildren()) {
             if (defFile.getAttribute(DEFAULT_PLATFORM_ATTR) == Boolean.TRUE) {
                 try {
