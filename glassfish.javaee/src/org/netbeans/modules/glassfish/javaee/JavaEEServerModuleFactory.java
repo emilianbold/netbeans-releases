@@ -404,13 +404,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);
                 if (lib == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             } catch (IllegalArgumentException ex) {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);
                 if (lib == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         }
