@@ -41,6 +41,7 @@
 
 package org.openide.util.lookup;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,6 +51,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,6 +75,7 @@ import java.util.regex.Pattern;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -490,4 +494,42 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
         assertNull("Nothing found", loader.value);
     }
+
+    public void testInitializerRobustness() throws Exception { // #174055
+        check(Broken1.class.getName());
+        check(Broken2.class.getName());
+    }
+    private void check(final String n) {
+        assertNull(Lookups.metaInfServices(new ClassLoader() {
+            protected @Override Enumeration<URL> findResources(String name) throws IOException {
+                if (name.equals("META-INF/services/java.lang.Object")) {
+                    return Enumerations.singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
+                        protected URLConnection openConnection(URL u) throws IOException {
+                            return new URLConnection(u) {
+                                public void connect() throws IOException {}
+                                public @Override InputStream getInputStream() throws IOException {
+                                    return new ByteArrayInputStream(n.getBytes("UTF-8"));
+                                }
+                            };
+                        }
+                    }));
+                } else {
+                    return Enumerations.empty();
+                }
+            }
+        }).lookup(Object.class));
+    }
+    public static class Broken1 {
+        public Broken1() {
+            throw new NullPointerException("broken1");
+        }
+    }
+    public static class Broken2 {
+        static {
+            if (true) { // otherwise javac complains
+                throw new NullPointerException("broken2");
+            }
+        }
+    }
+
 }
