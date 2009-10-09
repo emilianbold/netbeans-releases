@@ -148,7 +148,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
     private static final String SHOW_LEGEND = messages.getString("ThreadsPanel_ShowLegend"); // NOI18N
-    private static final String SHOW_ALL_STACKS = messages.getString("ThreadsPanel_ShowAllStacks"); // NOI18N
     private static final String SELECT_THREAD_NAME = messages.getString("ThreadsPanel_SelectThreadName"); // NOI18N
     static final String THREAD_NAME_ID = messages.getString("ThreadsPanel_ThreadNameId"); // NOI18N
     static final String THREAD_NAME_CALLEE = messages.getString("ThreadsPanel_ThreadNameCallee"); // NOI18N
@@ -191,7 +190,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JPanel legendPanel;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showLegend;
-    private JMenu showAllStacks;
     private JMenu selectThreadName;
     private JRadioButtonMenuItem idThreadName;
     private JRadioButtonMenuItem calleeThreadName;
@@ -1011,7 +1009,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         showOnlySelectedThreads = new JMenuItem(SELECTED_THREADS_ITEM);
         showLegend = new JMenuItem(SHOW_LEGEND);
-        showAllStacks = new JMenu(SHOW_ALL_STACKS);
 
         selectThreadName = new JMenu(SELECT_THREAD_NAME);
         idThreadName = new JRadioButtonMenuItem(THREAD_NAME_ID);
@@ -1037,7 +1034,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         popup.add(showOnlySelectedThreads);
         popup.add(showLegend);
-        popup.add(showAllStacks);
         popup.add(selectThreadName);
 
         return popup;
