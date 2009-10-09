@@ -129,7 +129,7 @@ import org.openide.util.actions.Presenter;
  */
 public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionListener, TableColumnModelListener,
         DataManagerListener, ThreadStackActionsProvider {
-    private static final String QUERY_STATE_ACTION_COMMAND = "query_state";
+    private static final String QUERY_STATE_ACTION_COMMAND = "query_state"; // NOI18N
 
     // I18N String constants
     private static final ResourceBundle messages = NbBundle.getBundle(ThreadsPanel.class);
