@@ -155,7 +155,11 @@ public final class SourceRoots {
         if (readme != null) {
             plainFiles.add(readme);
         }
-        
+        FileObject capfile = fo.getFileObject("Capfile"); // NOI18N
+        if (capfile != null) {
+            plainFiles.add(capfile);
+        }
+
         // show app/metal for Rack applications, but only if the folder already exists
         boolean metal = fo.getFileObject("app/metal") != null;//NOI18N
 

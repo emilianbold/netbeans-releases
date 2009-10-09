@@ -100,6 +100,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
         // additional files
         addFile(project.getProjectDirectory(), "README", files); // NOI18N
         addFile(project.getProjectDirectory(), "Rakefile", files); // NOI18N
+        addFile(project.getProjectDirectory(), "Capfile", files); // NOI18N
         return new ArrayList<FileObject>(files);
     }
     
