@@ -112,22 +112,24 @@ public class ReconfigureProject {
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){
             DataObject dao = item.getDataObject();
-            String mime = dao.getPrimaryFile().getMIMEType();
-            if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                if ("configure".equals(dao.getPrimaryFile().getName())){ // NOI18N
-                    configure = dao;
-                }
-            } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                cmake = dao;
-            } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                qmake = dao;
-            } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
-                if (dao.getPrimaryFile().hasExt("mk")) { // NOI18N
-                    if (make == null) {
+            if (dao != null) {
+                String mime = dao.getPrimaryFile().getMIMEType();
+                if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
+                    if ("configure".equals(dao.getPrimaryFile().getName())){ // NOI18N
+                        configure = dao;
+                    }
+                } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
+                    cmake = dao;
+                } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
+                    qmake = dao;
+                } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
+                    if (dao.getPrimaryFile().hasExt("mk")) { // NOI18N
+                        if (make == null) {
+                            make = dao;
+                        }
+                    } else {
                         make = dao;
                     }
-                } else {
-                    make = dao;
                 }
             }
         }
