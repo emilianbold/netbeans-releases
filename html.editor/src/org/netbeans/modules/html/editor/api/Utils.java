@@ -151,8 +151,8 @@ public class Utils {
     }
 
     /** returns top most joined html token seuence for the document. */
-    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc) {
-        return LexUtilities.getTokenSequence((BaseDocument) doc, 0, HTMLTokenId.language());
+    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, int offset) {
+        return LexUtilities.getTokenSequence((BaseDocument) doc, offset, HTMLTokenId.language());
     }
 
 }

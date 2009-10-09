@@ -135,27 +135,8 @@ public class JsfElCompletionProvider implements CompletionProvider{
                             }
                         }
 
-                        // look through declared jsf variables
-                        Source source = Source.create(doc);
-                        try {
-                            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                                @Override
-                                public void run(ResultIterator resultIterator) throws Exception {
-                                    Result result = resultIterator.getParserResult(offset);
-                                    if (result instanceof HtmlParserResult) {
-                                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
-                                        List<JsfVariableContext> contexts = model.getAllAvailableVariables(offset, false);
-                                        for(JsfVariableContext var : contexts) {
-                                            if(var.getVariableName().startsWith(replace)) {
-                                              complItems.add(new ElCompletionItem.ELProperty(var.getVariableName(), anchor, var.getResolvedType()));
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        } catch (ParseException e) {
-                            Exceptions.printStackTrace(e);
-                        }
+                        //add all declared local variables
+                        complItems.addAll(elExpr.getAvailableDeclaredVariables(replace));
 
                         break;
                     case JsfElExpression.EL_JSF_BEAN:

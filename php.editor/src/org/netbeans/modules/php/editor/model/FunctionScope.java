@@ -46,6 +46,7 @@ import java.util.List;
  * @author Radek Matous
  */
 public interface FunctionScope extends Scope, VariableScope {
+    boolean isAnonymous();//lambda, closures
     List<? extends String> getParameterNames();
     List<? extends Parameter> getParameters();
     Collection<? extends String> getReturnTypeNames();

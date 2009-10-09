@@ -476,21 +476,30 @@ public abstract class Properties {
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task task;
+        private final boolean[] scheduledLock = new boolean[] { false };
 
-        private synchronized void save () {
-            if (task == null) {
-                task = new RequestProcessor("Debugger Properties Save RP", 1).create(  // NOI18N
-                        new Runnable() {
-                            public void run () {
-                                saveIn ();
+        private void save () {
+            synchronized (scheduledLock) {
+                if (task == null) {
+                    task = new RequestProcessor("Debugger Properties Save RP", 1).create(  // NOI18N
+                            new Runnable() {
+                                public void run () {
+                                    saveIn ();
+                                }
                             }
-                        }
-                );
+                    );
+                }
+                if (!scheduledLock[0]) {    // Do such hacks because task.schedule() is very slow when RP$SlowItem is used.
+                    task.schedule(1000);
+                    scheduledLock[0] = true;
+                }
             }
-            task.schedule(1000);
         }
 
-        private synchronized void saveIn () {
+        private void saveIn () {
+            synchronized (scheduledLock) {
+                scheduledLock[0] = false;
+            }
             PrintWriter pw = null;
             FileLock lock = null;
             try {
@@ -499,13 +508,17 @@ public abstract class Properties {
                 OutputStream os = fo.getOutputStream (lock);
                 pw = new PrintWriter (os);
 
-                Set s = properties.keySet ();
+                HashMap props;
+                synchronized (this) {
+                    props = new HashMap(properties);
+                }
+                Set s = props.keySet ();
                 ArrayList l = new ArrayList (s);
                 Collections.sort (l);
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     String key = (String) l.get (i);
-                    Object value = properties.get (key);
+                    Object value = props.get (key);
                     if (value != null) {
                         // Do not write null values
                         value = translateMultiLineStringToSingleLine(value.toString());

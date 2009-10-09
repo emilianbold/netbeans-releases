@@ -54,10 +54,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -287,44 +290,32 @@ public final class HighlightingManager {
                     final HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
                     final HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
 
-                    final CountDownLatch latch = new CountDownLatch(all.size());
-                    
                     Cursor wait = org.openide.util.Utilities.createProgressCursor(pane);
                     Cursor original = pane.getCursor();
                     pane.setCursor(wait);
-
-                    for (final HighlightsLayerFactory factory : all) {
-                        WORKER.post(new Runnable() {
-
-                            public void run() {
-                                HighlightsLayer[] factoryLayers = factory.createLayers(context);
-                                if (factoryLayers == null) {
-                                    latch.countDown();
-                                    return;
-                                }
-
-                                for (HighlightsLayer layer : factoryLayers) {
-                                    HighlightsLayerAccessor layerAccessor =
-                                            HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
-
-                                    String layerTypeId = layerAccessor.getLayerTypeId();
-                                    if (!layers.containsKey(layerTypeId)) {
-                                        layers.put(layerTypeId, layer);
-                                    }
-                                }
-                                latch.countDown();
-                            }
-                        });
-                    }
-                    
                     try {
-                        latch.await(); // wait for all layers updated
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                        for (final HighlightsLayerFactory factory : all) {
+                            HighlightsLayer[] factoryLayers = factory.createLayers(context);
+                            if (factoryLayers == null) {
+                                continue;
+                            }
+
+                            for (HighlightsLayer layer : factoryLayers) {
+                                HighlightsLayerAccessor layerAccessor =
+                                        HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+
+                                String layerTypeId = layerAccessor.getLayerTypeId();
+                                if (!layers.containsKey(layerTypeId)) {
+                                    layers.put(layerTypeId, layer);
+                                }
+                            }
+
+                        }
                     } finally {
                         pane.setCursor(original);
                     }
 
+                    
                     // Sort the layers by their z-order
                     List<? extends HighlightsLayer> sortedLayers;
                     try {

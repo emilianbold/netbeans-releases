@@ -33,8 +33,8 @@ fi
 work_dir=$1
 prefix=$2
 buildnumber=$3
-ml_build=$4
-fx_build=$5
+fx_build=$4
+ml_build=$5
 if [ -n "$6" ] ; then
   nb_locales="$6"
 fi

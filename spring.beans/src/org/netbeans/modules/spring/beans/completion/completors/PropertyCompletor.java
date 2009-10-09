@@ -93,6 +93,9 @@ public class PropertyCompletor extends Completor {
 
             public void run(CompilationController cc) throws Exception {
                 Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
+                if (beanTag == null) {
+                    return;
+                }
                 String className = new BeanClassFinder(
                         SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
                         context.getFileObject()).findImplementationClass();

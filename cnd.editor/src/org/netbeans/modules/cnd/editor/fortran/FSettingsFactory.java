@@ -49,7 +49,7 @@ import org.netbeans.editor.AcceptorFactory;
  */
 public class FSettingsFactory {
 
-    public static final int MAXIMUM_TEXT_WIDTH = 72;
+    public static final int MAXIMUM_TEXT_WIDTH = 132;
 
     public static Acceptor getDefaultAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;

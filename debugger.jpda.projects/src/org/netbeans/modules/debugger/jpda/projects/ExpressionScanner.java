@@ -106,6 +106,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import javax.tools.Diagnostic;
 
 /**
  * A tree scanner, which collects expressions on a given line.
@@ -148,7 +149,9 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
     
     private boolean isCurrentTree(Tree aTree) {
         int startLine = (int) lineMap.getLineNumber(positions.getStartPosition(tree, aTree));
+        if (startLine == Diagnostic.NOPOS) return false;
         int endLine = (int) lineMap.getLineNumber(positions.getEndPosition(tree, aTree));
+        if (endLine == Diagnostic.NOPOS) return false;
         return startLine <= lineNumber && lineNumber <= endLine;
     }
 

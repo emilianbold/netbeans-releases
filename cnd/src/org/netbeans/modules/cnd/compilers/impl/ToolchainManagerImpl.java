@@ -547,6 +547,7 @@ public final class ToolchainManagerImpl {
                             element = doc.createElement("download"); // NOI18N
                             element.setAttribute("uc_url", descriptor.getUpdateCenterUrl()); // NOI18N
                             element.setAttribute("module_id", descriptor.getModuleID()); // NOI18N
+                            element.setAttribute("uc_display", descriptor.getUpdateCenterDisplayName()); // NOI18N
                             root.appendChild(element);
                         }
 
@@ -1161,6 +1162,7 @@ public final class ToolchainManagerImpl {
         String family;
         String platforms;
         String uc;
+        String ucName;
         String module;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
@@ -1581,6 +1583,7 @@ public final class ToolchainManagerImpl {
                 return;
             } else if (path.endsWith(".download")) { // NOI18N
                 v.uc = getValue(attributes, "uc_url"); // NOI18N
+                v.ucName = getValue(attributes, "uc_display"); // NOI18N
                 v.module = getValue(attributes, "module_id"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
@@ -2065,6 +2068,10 @@ public final class ToolchainManagerImpl {
 
         public String getUpdateCenterUrl() {
             return v.uc;
+        }
+
+        public String getUpdateCenterDisplayName() {
+            return v.ucName;
         }
 
         public String getModuleID() {

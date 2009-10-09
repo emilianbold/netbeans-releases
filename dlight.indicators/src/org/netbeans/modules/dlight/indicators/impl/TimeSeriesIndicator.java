@@ -68,7 +68,6 @@ import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesDataContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
@@ -184,9 +183,8 @@ public final class TimeSeriesIndicator
 
     @Override
     protected void tick() {
-        this.data.grow(tickCounter);
         ++tickCounter;
-        graph.getViewportModel().setLimits(new Range<Long>(null, 1000L * tickCounter));
+        this.data.grow(tickCounter);
         refresh();
     }
 

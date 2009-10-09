@@ -188,5 +188,11 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
 
         return new KenaiRepository(kenaiProject, displayName, url, host, productParamUrl, product);
     }
+
+    @Override
+    public Query getAllIssuesQuery(Repository repository) {
+        assert repository instanceof KenaiRepository;
+        return ((KenaiRepository)repository).getAllIssuesQuery();
+    }
 }
 

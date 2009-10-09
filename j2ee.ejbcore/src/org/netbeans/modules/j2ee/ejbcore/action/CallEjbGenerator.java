@@ -119,11 +119,11 @@ public class CallEjbGenerator {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        this.ejbReferenceName = ejbReferenceName;
         this.isDefaultRefName = isDefaultRefName;
         this.isSimplified = result[1] == null ? true : (((BigDecimal)result[1]).doubleValue() > 2.1);
         this.isSession = (Boolean)result[0];
         this.ejbName = (String)result[2];
+        this.ejbReferenceName = ejbReferenceName != null ? ejbReferenceName : ejbName;
     }
     
     /**

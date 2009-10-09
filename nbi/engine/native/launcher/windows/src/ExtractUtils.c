@@ -489,12 +489,15 @@ void loadI18NStrings(LauncherProperties * props) {
     
     for(i=0; isOK(props) && i<numberOfProperties;i++) {
         // read property name as ASCII
-        char * propName = newpChar(20);
-        
+        char * propName = NULL;
+        char * number = DWORDtoCHARN(i,2);
         props->i18nMessages->properties[i] = NULL;
         props->i18nMessages->strings[i] = NULL;
+        propName = appendString(NULL, "property name ");
         
-        sprintf(propName, "property name %2ld", i);
+        propName = appendString(propName, number);
+        FREE(number);
+        
         readStringWithDebugA(props, & (props->i18nMessages->properties[i]), propName);
         FREE(propName);
     }

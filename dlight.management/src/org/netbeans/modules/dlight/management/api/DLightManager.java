@@ -288,6 +288,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         if (dlightSession.hasVisualizer(toolID, visualizerConfiguration.getID())) {
             visualizer = dlightSession.getVisualizer(toolID, visualizerConfiguration.getID());
+            @SuppressWarnings("unchecked")
+            Visualizer<VisualizerConfiguration> v = (Visualizer<VisualizerConfiguration>) visualizer;
+            v.updateVisualizerConfiguration(visualizerConfiguration);
             if (visualizer instanceof SessionStateListener) {
                 dlightSession.addSessionStateListener((SessionStateListener) visualizer);
                 ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());

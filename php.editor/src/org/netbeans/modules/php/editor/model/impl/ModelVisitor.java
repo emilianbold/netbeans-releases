@@ -732,8 +732,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         scan(node.getBody());
     }
 
+    @Override
     public void visit(LambdaFunctionDeclaration node) {
-        //TODO: add in model
+        ScopeImpl scope = modelBuilder.getCurrentScope();
+        FunctionScopeImpl fncScope = FunctionScopeImpl.createElement(scope, node);
+        modelBuilder.setCurrentScope(scope = fncScope);
+        scope.setBlockRange(node.getBody());
+        scan(node.getFormalParameters());
+        scan(node.getBody());
+        modelBuilder.reset();
     }
 
     @Override
