@@ -75,7 +75,7 @@ public class DebugTreeView extends BeanTreeView {
     private int thickness = 0;
     private Color highlightColor = new Color(233, 239, 248);
     private Color currentThreadColor = new Color(233, 255, 230);
-    private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.background"); // NOI18N
+    private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.textBackground"); // NOI18N
     
     private JPDAThread focusedThread;
     
@@ -87,7 +87,7 @@ public class DebugTreeView extends BeanTreeView {
         ((JComponent)tree.getParent()).setOpaque(false);
         ((JComponent)tree.getParent()).setBackground(whiteColor);
         setWheelScrollingEnabled(false);
-    }
+        }
 
     public JTree getTree() {
         return tree;
