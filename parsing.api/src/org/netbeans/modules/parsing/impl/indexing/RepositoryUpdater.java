@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -98,6 +99,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -1622,6 +1624,23 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     }
                 }
         }
+
+        protected final void invalidateSources (final Iterable<? extends IndexableImpl> toInvalidate) {
+            final long st = System.currentTimeMillis();
+            for (IndexableImpl indexable : toInvalidate) {
+                final FileObject cheapFo = indexable instanceof FileObjectProvider ?
+                    ((FileObjectProvider)indexable).getFileObject() :
+                    URLMapper.findFileObject(indexable.getURL());
+                if (cheapFo != null) {
+                    final Source src = SourceAccessor.getINSTANCE().get(cheapFo);
+                    if (src != null) {
+                        SourceAccessor.getINSTANCE().setFlags(src, EnumSet.of(SourceFlags.INVALID));    //Only invalidate not reschedule                        
+                    }
+                }
+            }
+            final long et = System.currentTimeMillis();
+            LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
+        }
        
         protected final void indexBinary(URL root) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
@@ -1956,6 +1975,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 if (!scannedRoots2Depencencies.containsKey(root)) {
                                     scannedRoots2Depencencies.put(root, EMPTY_DEPS);
                                 }
+                                invalidateSources(resources);
                             }
                         } finally {
                             scanFinished(ctxToFinish);
@@ -2825,6 +2845,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                         SFEC_LOGGER.log(r);
                                     }
                                 }
+                                invalidateSources(resources);
                                 return true;
                             }
                         } finally {
