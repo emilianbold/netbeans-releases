@@ -459,7 +459,7 @@ public class BinaryAnalyser {
 
             //2. Add filed usages 
             final ConstantPool constantPool = classFile.getConstantPool();
-            Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);            
+            Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);
             for (CPFieldInfo field : fields) {
                 ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
                 if (name != null) {
