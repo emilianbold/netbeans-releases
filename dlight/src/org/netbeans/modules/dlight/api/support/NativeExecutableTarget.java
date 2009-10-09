@@ -66,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -106,13 +107,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         ExternalTerminal term = configuration.getExternalTerminal();
 
         if (term != null) {
-            StringBuilder title = new StringBuilder(cmd);
-
-            for (String arg : args) {
-                title.append(" \"" + arg + '"'); // NOI18N
-            }
-
-            term = term.setTitle(title.toString());
+            term = term.setTitle(cmd + ' ' + Utilities.escapeParameters(args));
         }
 
         this.externalTerminal = term;
@@ -129,15 +124,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             putToInfo(name, info.get(name));
         }
 
-        String[] argsCopy = null;
-        if (args != null) {
-            argsCopy = new String[args.length];
-            for (int i = 0; i < args.length; i++) {
-                argsCopy[i] = args[i];
-            }
-        }
-
-        this.templateArgs = argsCopy;
+        this.templateArgs = args.clone();
         this.io = configuration.getIO();
         this.x11forwarding = configuration.getX11Forwarding();
     }
@@ -243,17 +230,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     public void substitute(String cmd, String[] args) {
         //  isSubstituted = true;
-        String extendedCMD = cmd;
-        String[] extendedCMDArgs = args;
-        String targetCMD = this.templateCMD;
-        String[] targetArgs = this.templateArgs;
-        this.cmd = extendedCMD;
-        List<String> allArgs = new ArrayList<String>();
-        allArgs.addAll(Arrays.asList(extendedCMDArgs));
-        allArgs.add(targetCMD);
+        this.cmd = cmd;
+        List<String> allArgs = new ArrayList<String>(Arrays.asList(args));
+        allArgs.add(templateCMD);
 
-        if (targetArgs != null) {
-            allArgs.addAll(Arrays.asList(targetArgs));
+        if (templateArgs != null) {
+            allArgs.addAll(Arrays.asList(templateArgs));
         }
 
         this.args = allArgs.toArray(new String[0]);
