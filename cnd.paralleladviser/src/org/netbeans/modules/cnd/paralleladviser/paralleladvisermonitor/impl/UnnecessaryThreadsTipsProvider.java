@@ -80,6 +80,7 @@ public class UnnecessaryThreadsTipsProvider implements ParallelAdviserTipsProvid
             }
         }
         tips.add(tip);
+        notifyListeners();
     }
 
     public static void clearTips() {
@@ -105,7 +106,12 @@ public class UnnecessaryThreadsTipsProvider implements ParallelAdviserTipsProvid
 
     private static void notifyListeners() {
         for (WeakReference<ParallelAdviserTipsProviderListener> ref : listeners) {
-            ref.get().tipsChanged();
+            ParallelAdviserTipsProviderListener provider = ref.get();
+            if(provider != null) {
+                provider.tipsChanged();
+            } else {
+                listeners.remove(ref);
+            }
         }
     }
 }

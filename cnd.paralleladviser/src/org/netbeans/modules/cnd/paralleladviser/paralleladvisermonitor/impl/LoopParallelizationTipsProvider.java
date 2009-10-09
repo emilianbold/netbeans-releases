@@ -111,7 +111,12 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
 
     private static void notifyListeners() {
         for (WeakReference<ParallelAdviserTipsProviderListener> ref : listeners) {
-            ref.get().tipsChanged();
+            ParallelAdviserTipsProviderListener provider = ref.get();
+            if(provider != null) {
+                provider.tipsChanged();
+            } else {
+                listeners.remove(ref);
+            }
         }
     }
 }
