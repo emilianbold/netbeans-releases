@@ -95,12 +95,14 @@ public class LazyTypeCompletionItem extends SpringXMLConfigCompletionItem implem
                 javaSource.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                        TypeElement e = eh.resolve(cc);
-                        if (e != null && isAccessibleClass(e)) {
-                            delegate = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        e, eh, cc.getElements().isDeprecated(e), true);
+                        if (eh != null) {
+                            TypeElement e = eh.resolve(cc);
+                            if (e != null && isAccessibleClass(e)) {
+                                delegate = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
+                                            e, eh, cc.getElements().isDeprecated(e), true);
+                            }
+                            eh = null;
                         }
-                        eh = null;
                     }
                 }, true);
             } catch (IOException ioe) {

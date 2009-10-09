@@ -64,7 +64,7 @@ import org.netbeans.modules.csl.api.Modifier;
  * This was copied from org.netbeans.modules.editor.java.Utilities.
  * see http://www.netbeans.org/issues/show_bug.cgi?id=149168
  *
- * @author Dusan Balek
+ * @author Dusan Balek, Petr Hejl
  */
 public final class Utilities {
 

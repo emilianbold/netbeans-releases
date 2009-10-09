@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.project.connections.sftp;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -74,9 +77,10 @@ public class MessagePanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         messageLabel = new JLabel();
         doNotShowAgainCheckBox = new JCheckBox();
+
+        messageLabel.setLabelFor(this);
 
         Mnemonics.setLocalizedText(messageLabel, "DUMMY"); // NOI18N
         doNotShowAgainCheckBox.setSelected(true);
@@ -84,6 +88,7 @@ public class MessagePanel extends JPanel {
         Mnemonics.setLocalizedText(doNotShowAgainCheckBox, NbBundle.getMessage(MessagePanel.class, "MessagePanel.doNotShowAgainCheckBox.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -102,6 +107,12 @@ public class MessagePanel extends JPanel {
                 .add(doNotShowAgainCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        messageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MessagePanel.class, "MessagePanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MessagePanel.class, "MessagePanel.messageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        doNotShowAgainCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MessagePanel.class, "MessagePanel.doNotShowAgainCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        doNotShowAgainCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MessagePanel.class, "MessagePanel.doNotShowAgainCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MessagePanel.class, "MessagePanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
