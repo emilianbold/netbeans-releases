@@ -173,7 +173,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                                     if (res != null) {
                                         final List<FunctionCall> functionCalls = stacks.get(i);
                                         if (functionCalls != null) {
-                                            stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                            stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls, configuration.getStackNodeActionsProvider().getStackNodeActions()); // NOI18N
                                             if (configuration.getPreferredSelection() == snapshot.getThreadInfo().getThreadId()) {
                                                 prefferedSelection = i;
                                             }

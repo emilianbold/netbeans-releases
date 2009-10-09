@@ -109,6 +109,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/dlight/tha/Bundle.properties" key="THAIndicatorPanel.deadlocksDetails.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="name" type="java.lang.String" value="deadlocksDetails" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="racesDetails">
@@ -116,6 +117,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/dlight/tha/Bundle.properties" key="THAIndicatorPanel.racesDetails.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="name" type="java.lang.String" value="racesDetails" noResource="true"/>
       </Properties>
     </Component>
   </SubComponents>
