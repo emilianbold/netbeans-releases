@@ -101,27 +101,44 @@ public class ControllerTest extends NbTestCase implements TestConstants {
         assertTrue(params.startsWith("&"));
         params = params.substring(1, params.length() - 1);
         String[] parametersReturned = params.split("&");
-        assertEquals(parametersGiven.length, parametersReturned.length);
+//        assertEquals(parametersGiven.length, parametersReturned.length);
 
         Set<String> s = new HashSet<String>(parametersReturned.length);
         for (String string : parametersReturned) {
             s.add(string);
         }
         for (int i = 1; i < parametersGiven.length; i++) { // skip the first elemenent - its = ""
+            String p = parametersGiven[i];
+            if(!s.contains(p)) {
+                fail("missing given parameter [" + p + "] between returned");
+            }
+        }
+
+        s.clear();
+        for (String string : parametersGiven) {
+            s.add(string);
+        }
+        for (int i = 1; i < parametersReturned.length; i++) { // skip the first elemenent - its = ""
             String p = parametersReturned[i];
             if(!s.contains(p)) {
-                fail("missing parameter [" + p + "]");
+                fail("missing returned parameter [" + p + "] between given");
             }
         }
     }
 
     private String getParametersUrl() {
-        return  "&short_desc_type=allwordssubstr&short_desc=xxx" +
+        return  "&short_desc_type=allwordssubstr" +
+                "&status_whiteboard_type=allwordssubstr" +
+                "&status_whiteboard=xxx" +
+                "&short_desc=xxx" +
                 "&product=TestProduct" +
                 "&component=TestComponent" +
                 "&version=unspecified" +
-                "&long_desc_type=substring&long_desc=xxx" +
-                "&keywords_type=allwords&keywords=xxx" +
+                "&long_desc_type=substring" +
+                "&long_desc=xxx" +
+                "&bug_severity=blocker" +
+                "&keywords_type=allwords" +
+                "&keywords=xxx" +
                 "&bug_status=NEW" +
                 "&resolution=FIXED" +
                 "&priority=P1" +

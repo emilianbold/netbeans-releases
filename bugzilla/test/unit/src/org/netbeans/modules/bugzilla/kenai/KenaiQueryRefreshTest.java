@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import org.netbeans.modules.bugzilla.query.*;
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -51,7 +54,8 @@ import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 
 /**
  *
@@ -71,6 +75,14 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+
+        System.setProperty("kenai.com.url","https://testkenai.com");
+        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+        String username = br.readLine();
+        String password = br.readLine();
+        br.close();
+        Kenai.getDefault().login(username, password.toCharArray());
+
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
@@ -136,13 +148,13 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         assertEquals(1, issues.length);
     }
 
-
     private BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
-    private KenaiRepository getKenaiRepository() {
-        return new KenaiRepository(null, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+    private KenaiRepository getKenaiRepository() throws KenaiException {
+        // using kenai project 'koliba' - even if the actually used repository is different, it should have no effect on the result
+        return new KenaiRepository(Kenai.getDefault().getProject("koliba"), REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
 
