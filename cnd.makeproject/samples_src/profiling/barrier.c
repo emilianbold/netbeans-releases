@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include "barrier.h"
 
+#ifdef HAVE_PTHREAD_BARRIER
+
 static void barrier_demo_header(int threads, work_t* works) {
     char buf[64];
     int usrcpu = usrcpu_usage(threads, works);
@@ -72,3 +74,12 @@ void barrier_demo(int threads, work_t* works) {
     printf("Cleaning up...\n\n");
     sleep(3);
 }
+
+#else
+
+void barrier_demo(int threads, work_t* works) {
+    EXPLAIN("Barriers are not supported on this platform\n");
+    PAUSE("Press [Enter] to skip...\n");
+}
+
+#endif

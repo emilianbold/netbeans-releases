@@ -40,9 +40,12 @@ package org.netbeans.modules.dlight.util.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIManager;
+import org.openide.util.NbBundle;
 
 /**
  * Common place for fonts, colors and sizes used in DLight.
@@ -120,15 +123,19 @@ public final class DLightUIPrefs {
         this.prefs = new HashMap<String, Object>();
 
         Font font = UIManager.getFont("Panel.font").deriveFont(10f); // NOI18N
+        FontMetrics fontMetrics = getFontMetrics(font);
         Color fontColor = new Color(0x31, 0x4E, 0x72);
+
+        int graphWidth = 20 + font.getSize() + fontMetrics.stringWidth(getMessage("indicator.legend.longest_text")); // NOI18N
+        int graphHeight = 5 * fontMetrics.getHeight();
 
         prefs.put(INDICATOR_BORDER_COLOR, new Color(0x72, 0x8A, 0x84));
         prefs.put(INDICATOR_PADDING, 12);
         prefs.put(INDICATOR_TITLE_FONT, UIManager.getFont("Label.font").deriveFont(Font.BOLD)); // NOI18N
         prefs.put(INDICATOR_TITLE_FONT_COLOR, fontColor);
 
-        prefs.put(INDICATOR_GRAPH_WIDTH, 80);
-        prefs.put(INDICATOR_GRAPH_HEIGHT, 80);
+        prefs.put(INDICATOR_GRAPH_WIDTH, graphWidth);
+        prefs.put(INDICATOR_GRAPH_HEIGHT, graphHeight);
         prefs.put(INDICATOR_GRAPH_BGCOLOR_TOP, Color.WHITE);
         prefs.put(INDICATOR_GRAPH_BGCOLOR_BOTTOM, new Color(0xD6, 0xE3, 0xF3));
         prefs.put(INDICATOR_GRAPH_FILTER_COLOR, new Color(0xB4, 0xB4, 0xB4, 0x80));
@@ -136,19 +143,19 @@ public final class DLightUIPrefs {
         prefs.put(INDICATOR_BALL_SIZE, 5);
         prefs.put(INDICATOR_GRID_COLOR, new Color(0xD7, 0xE0, 0xE3));
 
-        prefs.put(INDICATOR_LEGEND_WIDTH, 80);
-        prefs.put(INDICATOR_LEGEND_HEIGHT, 80);
+        prefs.put(INDICATOR_LEGEND_WIDTH, graphWidth);
+        prefs.put(INDICATOR_LEGEND_HEIGHT, graphHeight);
         prefs.put(INDICATOR_LEGEND_BGCOLOR, Color.WHITE);
         prefs.put(INDICATOR_LEGEND_FONT, font);
         prefs.put(INDICATOR_LEGEND_FONT_COLOR, fontColor);
 
-        prefs.put(INDICATOR_X_AXIS_WIDTH, 80);
-        prefs.put(INDICATOR_X_AXIS_HEIGHT, 20);
+        prefs.put(INDICATOR_X_AXIS_WIDTH, graphWidth);
+        prefs.put(INDICATOR_X_AXIS_HEIGHT, 2 * font.getSize());
         prefs.put(INDICATOR_X_AXIS_FONT, font);
         prefs.put(INDICATOR_X_AXIS_FONT_COLOR, fontColor);
 
-        prefs.put(INDICATOR_Y_AXIS_WIDTH, 30);
-        prefs.put(INDICATOR_Y_AXIS_HEIGHT, 80);
+        prefs.put(INDICATOR_Y_AXIS_WIDTH, font.getSize() / 2 + fontMetrics.stringWidth(getMessage("indicator.y_axis.longest_text"))); // NOI18N
+        prefs.put(INDICATOR_Y_AXIS_HEIGHT, graphHeight);
         prefs.put(INDICATOR_Y_AXIS_FONT, font);
         prefs.put(INDICATOR_Y_AXIS_FONT_COLOR, fontColor);
     }
@@ -189,6 +196,11 @@ public final class DLightUIPrefs {
         }
     }
 
+    private FontMetrics getFontMetrics(Font font) {
+        BufferedImage img = new BufferedImage(10, 10, BufferedImage.TYPE_4BYTE_ABGR);
+        return img.getGraphics().getFontMetrics(font);
+    }
+
     private static DLightUIPrefs instance;
 
     private static synchronized DLightUIPrefs getInstance() {
@@ -196,5 +208,9 @@ public final class DLightUIPrefs {
             instance = new DLightUIPrefs();
         }
         return instance;
+    }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(DLightUIPrefs.class, key);
     }
 }
