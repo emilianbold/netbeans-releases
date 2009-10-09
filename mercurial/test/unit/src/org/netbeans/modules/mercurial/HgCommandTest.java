@@ -108,8 +108,9 @@ public class HgCommandTest extends AbstractHgTest {
         handler.assertResults(1);
 
         handler.reset();
-        fol = createFolder("folder2");
-        commit(file = createFile(fol, "file2"));
+        File mainFol = createFolder("folder2");
+        File mainFile;
+        commit(mainFile = createFile(mainFol, "file2"));
         revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
         handler.assertResults(0);
         handler.reset("pull", repoAsList);
@@ -121,8 +122,8 @@ public class HgCommandTest extends AbstractHgTest {
         HgCommand.doCommit(newRepo, Collections.EMPTY_LIST, "after merge", NULL_LOGGER);
         handler.assertResults(1);
 
-        write(file, "import diff test");
-        commit(file);
+        write(mainFile, "import diff test");
+        commit(mainFile);
         revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
         File diffFile = new File(getTempDir(), "export.patch");
         HgCommand.doExport(getWorkDir(), revision, diffFile.getAbsolutePath(), NULL_LOGGER);
@@ -130,6 +131,15 @@ public class HgCommandTest extends AbstractHgTest {
 
         handler.reset("import", repoAsList);
         HgCommand.doImport(newRepo, diffFile, NULL_LOGGER);
+        handler.assertResults(1);
+
+        handler.reset("backout", repoAsList);
+        write(file, "backout test");
+        revision = HgCommand.doTip(newRepo, NULL_LOGGER).getCSetShortID();
+        HgCommand.doCommit(newRepo, Collections.singletonList(file), "backout test", NULL_LOGGER);
+        String message = "Backout";
+        HgCommand.doBackout(newRepo, "tip", false, message, NULL_LOGGER);
+        assertEquals(message, HgCommand.doTip(newRepo, NULL_LOGGER).getMessage());
         handler.assertResults(1);
     }
 
