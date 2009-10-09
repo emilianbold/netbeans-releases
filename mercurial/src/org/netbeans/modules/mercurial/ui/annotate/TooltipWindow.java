@@ -233,7 +233,14 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 if(master.isKenai()) {
                     KenaiUser kenaiUser = master.getKenaiUser(author);
                     if(kenaiUser != null) {
-                        l = new AuthorLinker(kenaiUser, authorStyle, doc, author);
+                        l = new AuthorLinker(
+                                kenaiUser, 
+                                authorStyle,
+                                doc,
+                                author,
+                                kenaiUser.getChatLink(
+                                    master.getDocument(),
+                                    annotateLine.getLineNum()));
                         linkerSupport.add(l, 0);
                     }
                 }

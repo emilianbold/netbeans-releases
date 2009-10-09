@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -213,6 +214,11 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         @Override
         public void startChat() {
             delegate.startChat();
+        }
+
+        @Override
+        public void startChat(String msg) {
+            delegate.startChat(msg);
         }
 
         @Override
