@@ -182,7 +182,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     }
 
     private void updateProperties(Column column) {
-        PropertySupport ps = new PropertySupport.Name(this);
+        PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
 
         assert column != null : "Column " + this + " cannot be null.";
@@ -227,13 +227,16 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     public int getPosition() {
         MetadataModel metaDataModel = connection.getMetadataModel();
         final int[] array = new int[1];
+        array[0] = 1;
 
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
                     public void run(Metadata metaData) {
                         Column column = columnHandle.resolve(metaData);
-                        array[0] = column.getPosition();
+                        if (column != null) {
+                            array[0] = column.getPosition();
+                        }
                     }
                 }
             );

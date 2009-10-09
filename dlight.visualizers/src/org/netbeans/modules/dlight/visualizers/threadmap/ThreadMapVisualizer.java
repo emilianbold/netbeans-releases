@@ -144,7 +144,7 @@ public class ThreadMapVisualizer extends JPanel implements
                                                 name, dataManager.findThreadName(snapshot.getThreadInfo().getThreadId()), at);
                                     }
                                 };
-                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider));
+                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider, query.getThreadID()));
                             }
                         });
                         session.cleanAllDataFilter(ThreadDumpFilter.class);
@@ -378,5 +378,8 @@ public class ThreadMapVisualizer extends JPanel implements
                 timerSupport.start();
                 break;
         }
+    }
+
+    public void updateVisualizerConfiguration(ThreadMapVisualizerConfiguration configuration) {
     }
 }

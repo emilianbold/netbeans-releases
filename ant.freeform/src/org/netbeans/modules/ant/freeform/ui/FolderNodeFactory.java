@@ -337,7 +337,16 @@ public class FolderNodeFactory implements NodeFactory {
                 return super.getDisplayName();
             }
         }
-        
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (displayName != null) {
+                return null;
+            } else {
+                return getOriginal().getHtmlDisplayName();
+            }
+        }
+
         @Override
         public boolean canRename() {
             return false;

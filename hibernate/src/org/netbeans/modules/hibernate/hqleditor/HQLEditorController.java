@@ -653,8 +653,8 @@ public class HQLEditorController {
     private Class processMatchingClass(String className, ClassLoader customClassLoader, Project project) {
         FileObject clazzFO = HibernateUtil.findJavaFileObjectInProject(className, project);
         FileObject buildFolderFO = HibernateUtil.getBuildFO(project);
-        if (buildFolderFO == null) {
-            return null; // Unable to find the build folder.
+        if (clazzFO == null || buildFolderFO == null) {
+            return null; // Unable to find the class or the build folder.
         }
         return checkAndCompile(className, clazzFO, buildFolderFO, customClassLoader, project);
     }

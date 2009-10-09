@@ -335,14 +335,27 @@ char * getJavaVersionFormatted(const JavaProperties * javaProps) {
     if(javaProps!=NULL) {
         JavaVersion * version = javaProps->version;
         if(version!=NULL) {
-            result = newpChar(256);
-            sprintf(result, "%ld.%ld.%ld",  version->major, version->minor, version->micro);
+            char * majorStr = long2char(version->major);
+            char * minorStr = long2char(version->minor);
+            char * microStr = long2char(version->micro);
+            result = appendString(result, majorStr);
+            result = appendString(result, ".");
+            result = appendString(result, minorStr);
+            result = appendString(result, ".");
+            result = appendString(result, microStr);
+            FREE(majorStr);
+            FREE(minorStr);
+            FREE(microStr);
             
             if(version->update!=0) {
-                sprintf(result, "%s_%02ld", result, version->update);
+                char * updateStr = long2charN(version->update, 2);
+                result = appendString(result, "_");
+                result = appendString(result, updateStr);
+                FREE(updateStr);
             }
             if(strncmp(version->build, "", 127)!=0) {
-                sprintf(result, "%s-%s", result, version->build);
+                result = appendString(result, "-");
+                result = appendString(result, version->build);
             }
         }
     }

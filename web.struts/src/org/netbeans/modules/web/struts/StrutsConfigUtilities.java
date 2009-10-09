@@ -155,7 +155,10 @@ public class StrutsConfigUtilities {
     }
 
     private static void addActions(List list, StrutsConfig sConfig) {
-        ActionMappings mappings = sConfig.getActionMappings();
+        ActionMappings mappings = null;
+        if (sConfig != null) {
+            mappings = sConfig.getActionMappings();
+        }
         if (mappings==null) return;
         Action [] actions = mappings.getAction();
         for (int j = 0; j < actions.length; j++)

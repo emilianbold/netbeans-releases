@@ -30,7 +30,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <package>org.netbeans.modules.dlight.toolsui.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

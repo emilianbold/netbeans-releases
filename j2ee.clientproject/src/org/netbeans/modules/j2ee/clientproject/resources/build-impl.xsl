@@ -280,6 +280,10 @@ made subject to such option by the copyright holder.
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
             
             <target name="-post-init">
@@ -402,6 +406,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
@@ -453,6 +458,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                         </junit>
                     </sequential>
@@ -477,6 +483,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                             <classpath>
@@ -606,6 +613,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
@@ -652,6 +660,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                         <path path="${{platform.bootcp}}"/>
                                     </bootclasspath>
                                 </xsl:if>
+                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                                 <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
@@ -1067,6 +1076,7 @@ exists or setup the property manually. For example like this:
                     <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                         <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                     </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                     <jvmarg line="${{run.jvmargs.param}}"/>
                     <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->
@@ -1094,6 +1104,7 @@ exists or setup the property manually. For example like this:
                     <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                         <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                     </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}}"/>
                     <jvmarg line="${{run.jvmargs.param}}"/>
                     <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->

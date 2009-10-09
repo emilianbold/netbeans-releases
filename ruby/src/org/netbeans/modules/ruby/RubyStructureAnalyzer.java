@@ -728,7 +728,9 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     co.setIn(in);
                     co.setModifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC));
                     // the return type of named scopes is a proxy
-                    co.setType(new RubyType( ACTIVE_RECORD_NAMED_SCOPE, in)); //NOI18N
+                    if (in != null && in.length() > 0 && Character.isUpperCase(in.charAt(0))) {
+                        co.setType(new RubyType(ACTIVE_RECORD_NAMED_SCOPE, in)); //NOI18N
+                    }
                     co.setHidden(true);
                     if (parent != null) {
                         parent.addChild(co);

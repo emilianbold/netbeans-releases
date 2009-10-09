@@ -42,7 +42,6 @@ import java.io.PrintStream;
 import org.netbeans.modules.nativeexecution.support.*;
 import java.text.ParseException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -71,6 +70,7 @@ public class MacroMap implements Cloneable {
 
         if (isWindows) {
             map = new TreeMap<String, String>(new CaseInsensitiveComparator());
+            map.putAll(System.getenv());
         } else {
             map = new TreeMap<String, String>();
         }
@@ -119,11 +119,8 @@ public class MacroMap implements Cloneable {
 
         String result = value;
         
-        if (isWindows) {
-            key = key.toUpperCase();
-        }
+        TreeMap<String, String> oneElementMap = isWindows ? new TreeMap<String, String>(new CaseInsensitiveComparator()) : new TreeMap<String, String>();
 
-        Map<String, String> oneElementMap = new HashMap<String, String>();
         String val = map.get(key);
 
         if (val != null) {

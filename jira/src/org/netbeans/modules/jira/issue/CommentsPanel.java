@@ -72,6 +72,7 @@ import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
@@ -161,7 +162,8 @@ public class CommentsPanel extends JPanel {
         String leftTxt;
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
-            leftTxt = MessageFormat.format(leftFormat, issue.getSummary());
+            String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
+            leftTxt = MessageFormat.format(leftFormat, summary);
         } else {
             leftTxt = bundle.getString("CommentsPanel.leftLabel.text"); // NOI18N
         }

@@ -9,11 +9,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -36,8 +33,6 @@ public final class HostInfoUtils {
     public static final String LOCALHOST = "127.0.0.1"; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final List<String> myIPAdresses = new ArrayList<String>();
-    private static final Map<String, Boolean> filesExistenceHash =
-            Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
 
@@ -84,10 +79,6 @@ public final class HostInfoUtils {
 
     /**
      * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
-     * Calling this method equals to calling
-     * <pre>
-     * fileExists(execEnv, fname, true)
-     * </pre>
      * If execEnv referes to remote host that is not connected yet, a
      * <tt>ConnectException</tt> is thrown.
      *
@@ -95,39 +86,12 @@ public final class HostInfoUtils {
      *        in.
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     *
      * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname) throws IOException {
-        return fileExists(execEnv, fname, true);
-    }
-
-    /**
-     * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
-     * If execEnv referes to remote host that is not connected yet, a
-     * <tt>ConnectException</tt> is thrown.
-     *
-     * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
-     *        in.
-     * @param fname name of file to check for
-     * @param useCache if <tt>true</tt> then subsequent tests for same files
-     * in the same environment will not be actually performed, but result from
-     * hash will be returned.
-     * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws ConnectException if host, identified by this execution
-     * environment is not connected.
-     */
-    public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname, final boolean useCache)
+            final String fname)
             throws IOException {
-        String key = execEnv.toString() + fname;
-
-        if (useCache && filesExistenceHash.containsKey(key)) {
-            return filesExistenceHash.get(key);
-        }
-
         boolean fileExists = false;
 
         if (execEnv.isLocal()) {
@@ -146,8 +110,6 @@ public final class HostInfoUtils {
                 throw new IOException(ex.getMessage());
             }
         }
-
-        filesExistenceHash.put(key, fileExists);
 
         return fileExists;
     }

@@ -48,8 +48,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Set;
 
-import org.netbeans.modules.mercurial.FileInformation;
-import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -96,6 +94,7 @@ public class DiffAction extends ContextAction {
         diff(context, Setup.DIFFTYPE_LOCAL, contextName);
     }
     
+    @Override
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)

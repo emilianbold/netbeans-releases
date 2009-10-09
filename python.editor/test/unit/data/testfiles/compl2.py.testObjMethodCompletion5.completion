@@ -6,15 +6,13 @@ METHOD     r_eval(code)
 METHOD     r_exec(code)                               
 METHOD     r_execfile(filename)                       
 METHOD     r_import(modulename, globals,              
-METHOD     r_long()                                   
-METHOD     r_long64()                                 
 METHOD     r_open(filename, mode, bufsize             
 METHOD     r_reload(module)                           
-METHOD     r_short()                                  
 METHOD     r_unload(module)                           
 METHOD     radiogroup(name, x, y, width,              
 METHOD     radix()                                    
 METHOD     radix()                                    
+METHOD     raise_exc(exc_class, message)              
 METHOD     raise_stmt(nodelist)                       
 METHOD     randint(a, b)                              
 METHOD     random()                                   
@@ -136,6 +134,7 @@ METHOD     release()
 METHOD     release()                                  
 METHOD     release()                                  
 METHOD     release()                                  
+METHOD     release_poll_object(pobj)                  
 METHOD     reload(module)                             
 METHOD     reload(module, path)                       
 METHOD     remainder(a, b)                            
@@ -150,7 +149,6 @@ METHOD     remove(key)
 METHOD     remove(key)                                
 METHOD     remove(key)                                
 METHOD     remove(key)                                
-METHOD     remove(subelement)                         
 METHOD     remove(x)                                  
 METHOD     removeAttribute(name)                      
 METHOD     removeAttributeNS(namespaceURI             
@@ -472,6 +470,7 @@ VARIABLE   rolloverAt
 VARIABLE   root                                       
 VARIABLE   root                                       
 VARIABLE   root                                       
+VARIABLE   root                                       
 VARIABLE   roots                                      
 VARIABLE   rounding                                   
 VARIABLE   row                                        
@@ -489,6 +488,5 @@ VARIABLE   rx
 ATTRIBUTE  real                                       
 ATTRIBUTE  real                                       
 ATTRIBUTE  restype                                    
-ATTRIBUTE  returns_unicode                            
 ATTRIBUTE  row_factory                                
 ATTRIBUTE  rowcount                                   

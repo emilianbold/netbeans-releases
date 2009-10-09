@@ -78,8 +78,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -405,15 +403,45 @@ public class JsfElExpression extends ELExpression {
         return items;
     }
 
+    public List<CompletionItem> getAvailableDeclaredVariables(final String prefix) {
+        final List<CompletionItem> items = new ArrayList<CompletionItem>();
+        // look through declared jsf variables
+        Source source = Source.create(getDocument());
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result result = resultIterator.getParserResult(getContextOffset());
+                    if (result instanceof HtmlParserResult) {
+                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
+                        List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
+                        for (JsfVariableContext var : contexts) {
+                            if (var.getVariableName().startsWith(prefix)) {
+                                int anchor = getContextOffset() - getReplace().length();
+                                String type = getTypeName(var.getResolvedType());
+                                items.add(new ElCompletionItem.ELProperty(var.getVariableName(), anchor, type));
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            Exceptions.printStackTrace(e);
+        }
+
+        return items;
+    }
+
     //generic properties completion
     private void resolvePropertiesCompletion(List<String> path, Map properties, 
             List<CompletionItem> items,  int anchor) 
     {
-        String expression = getExpression();
-        boolean endsWithDot = expression.length() >0 && 
-            expression.charAt(expression.length() - 1) == '.' ; 
-        boolean startsWithBracket = expression.length() >0 && 
-            expression.charAt(expression.length() - 1) == '[' ; 
+        String expr = getExpression();
+        boolean endsWithDot = expr.length() >0 &&
+            expr.charAt(expr.length() - 1) == '.' ;
+        boolean startsWithBracket = expr.length() >0 &&
+            expr.charAt(expr.length() - 1) == '[' ;
         
         Map m = properties;
         Iterator<String> pathItr = path.iterator();

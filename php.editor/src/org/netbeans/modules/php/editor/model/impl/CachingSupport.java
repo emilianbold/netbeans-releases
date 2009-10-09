@@ -241,7 +241,10 @@ class CachingSupport {
     private List<? extends MethodScope> getInheritedMergedMethods(TypeScopeImpl typeScope, String methodName) {
         List<? extends MethodScope> methods = getCachedMethods(typeScope, methodName);
         if (methods.isEmpty()) {
-            methods = (typeScope != null ? typeScope.findInheritedMethods(methodName) : Collections.<MethodScopeImpl>emptyList());
+            methods = ModelUtils.filter(typeScope.getDeclaredMethods(), methodName);
+            if (methods.isEmpty()) {
+                methods = (typeScope != null ? typeScope.findInheritedMethods(methodName) : Collections.<MethodScopeImpl>emptyList());
+            }
             if (methods.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 methods = (typeScope != null ? indexScope.findInheritedMethods(typeScope,methodName) : Collections.<MethodScopeImpl>emptyList());
