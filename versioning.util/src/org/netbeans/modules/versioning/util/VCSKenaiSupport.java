@@ -229,19 +229,22 @@ public abstract class VCSKenaiSupport {
         public static String getChatLink(Document document, int line) {
             FileObject fo = NbEditorUtilities.getFileObject(document);
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            String ret = "";
+            String ret = "";       // NOI18N
             if (cp != null) {
                 ret = cp.getResourceName(fo);
             } else {
                 Project p = FileOwnerQuery.getOwner(fo);
                 if (p != null) {
-                    ret = "{$" + ProjectUtils.getInformation(p).getName() + "}/" + FileUtil.getRelativePath(p.getProjectDirectory(), fo); //NOI18N
+                    ret = "{$" +   // NOI18N
+                            ProjectUtils.getInformation(p).getName() +
+                           "}/" +  // NOI18N 
+                           FileUtil.getRelativePath(p.getProjectDirectory(), fo);
                     } else {
                     ret = fo.getPath();
                 }
             }
-            ret += ":" + line; //NOI18N
-            ret =  "FILE:" + ret;
+            ret += ":" + line;      // NOI18N
+            ret =  "FILE:" + ret;   // NOI18N
             return ret;
         }
     }
