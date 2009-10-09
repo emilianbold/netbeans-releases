@@ -150,6 +150,11 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         rootNode.setDisplayName(rootName);
     }
 
+    public final void add(String rootName, Icon icon, List<FunctionCall> stack, Action[] actions) {
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions));
+    }
+
+
     public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
         rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack));
     }
