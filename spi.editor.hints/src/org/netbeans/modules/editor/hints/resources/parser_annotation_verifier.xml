@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
              visible="true"
              glyph="nbresloc:/org/netbeans/modules/editor/hints/resources/verifier-glyph.gif"
 	     severity="warning"
+             priority="50"
 	     browseable="true"
              type="linepart"
              use_custom_sidebar_color="true"

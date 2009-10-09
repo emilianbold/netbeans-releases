@@ -49,7 +49,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public final class FileObjectIndexable implements IndexableImpl {
+public final class FileObjectIndexable implements IndexableImpl, FileObjectProvider {
 
     private final FileObject root;
     private final String relativePath;
@@ -70,22 +70,6 @@ public final class FileObjectIndexable implements IndexableImpl {
         this.relativePath = relativePath;
     }
 
-//    public long getLastModified() {
-//        return this.getFile().lastModified().getTime();
-//    }
-//
-//    public String getName() {
-//        if (name == null) {
-//            int idx = relativePath.lastIndexOf('/'); //NOI18N
-//            if (idx != -1) {
-//                name = relativePath.substring(idx + 1);
-//            } else {
-//                name = relativePath;
-//            }
-//        }
-//        return name;
-//    }
-
     public String getRelativePath() {
         return relativePath;
     }
@@ -93,7 +77,7 @@ public final class FileObjectIndexable implements IndexableImpl {
     public URL getURL() {
         if (url == null) {
             try {
-                FileObject f = getFile();
+                FileObject f = getFileObject();
                 if (f != null) {
                     url = f.getURL();
                 }
@@ -112,7 +96,7 @@ public final class FileObjectIndexable implements IndexableImpl {
     public boolean isTypeOf(String mimeType) {
         Parameters.notNull("mimeType", mimeType); //NOI18N
         if (this.mimeType == null) {
-            FileObject f = getFile();
+            FileObject f = getFileObject();
             if (f != null) {
                 String mt = FileUtil.getMIMEType(f, mimeType);
                 if (mt != null && !mt.equals("content/unknown")) {
@@ -122,11 +106,7 @@ public final class FileObjectIndexable implements IndexableImpl {
         }
         return this.mimeType == null ? false : this.mimeType.equals(mimeType);
     }
-
-//    public InputStream openInputStream() throws IOException {
-//        return this.getFile().getInputStream();
-//    }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -158,7 +138,7 @@ public final class FileObjectIndexable implements IndexableImpl {
         return "FileObjectIndexable@" + Integer.toHexString(System.identityHashCode(this)) + " [" + toURL(root) + "/" + getRelativePath() + "]"; //NOI18N
     }
 
-    private FileObject getFile() {
+    public FileObject getFileObject() {
         if (file == null) {
             file = root.getFileObject(relativePath);
         }

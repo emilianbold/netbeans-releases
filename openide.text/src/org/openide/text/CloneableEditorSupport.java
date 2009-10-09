@@ -98,6 +98,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.UserCancelException;
+import org.openide.util.WeakSet;
 
 
 /** Support for associating an editor and a Swing {@link Document}.
@@ -232,6 +233,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private Map<Line,Reference<Line>> lineSetWHM;
     private boolean annotationsLoaded;
+
+    /** Classes that have been warned about overriding asynchronousOpen() */
+    private static final Set<Class> warnedClasses = new WeakSet<Class>();
 
     /** Creates new CloneableEditorSupport attached to given environment.
     *
@@ -413,7 +417,33 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
     }
-
+    
+    /**
+     * Controls behavior of method open.
+     * If it returns false method open will load document synchronously
+     * and process UserQuestionException.
+     * If it returns true document will be loaded in CloneableEditor creation ie. asynchronously
+     * and UserQuestionException will be processed there. Asynchronous loading is added to avoid
+     * blocking AWT thread when method open is called in AWT thread - issue #171713
+     *
+     * Subclasses should override this method. Warning is logged if subclass does not override this method.
+     *
+     * @return default implementation returns false to keep original behavior
+     * of <code>CloneableEditorSupport.open()</code>
+     *
+     * @since 6.26
+     */
+    protected boolean asynchronousOpen() {
+        Class clazz = getClass();
+        
+        if (warnedClasses.add(clazz)) {
+            ERR.warning(clazz.getName() + " should override asynchronousOpen()."  //NOI18N
+            + " See http://bits.netbeans.org/dev/javadoc/org-openide-text/apichanges.html#CloneableEditorSupport.asynchronousOpen" //NOI18N
+            );
+        }
+        return false;
+    }
+    
     /** Overrides superclass method, first processes document preparation.
      * @see #prepareDocument */
     @Override
@@ -424,40 +454,44 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return;
         }
         
-        try {
-            if (getListener().loadExc instanceof UserQuestionException) {
-                getListener().loadExc = null;
-                prepareTask = null;
-                documentStatus = DOCUMENT_NO;
-            }
-            
-            //Assign reference to local variable to avoid gc before return
-            StyledDocument doc = openDocument();
+        if (getListener().loadExc instanceof UserQuestionException) {
+            getListener().loadExc = null;
+            prepareTask = null;
+            documentStatus = DOCUMENT_NO;
+        }
+        
+        if (asynchronousOpen()) {
             super.open();
-        } catch (final UserQuestionException e) {
-            class Query implements Runnable, Callable<Void> {
+        } else {
+            try {
+                //Assign reference to local variable to avoid gc before return
+                StyledDocument doc = openDocument();
+                super.open();
+            } catch (final UserQuestionException e) {
+                class Query implements Runnable, Callable<Void> {
 
-                public void run() {
-                    askUserAndDoOpen(e, this);
+                    public void run() {
+                        askUserAndDoOpen(e, this);
+                    }
+
+                    public Void call() throws IOException {
+                        getListener().loadExc = null;
+                        prepareTask = null;
+                        documentStatus = DOCUMENT_NO;
+                        //Assign reference to local variable to avoid gc before return
+                        StyledDocument doc = openDocument();
+
+                        CloneableEditorSupport.super.open();
+                        return null;
+                    }
+
                 }
 
-                public Void call() throws IOException {
-                    getListener().loadExc = null;
-                    prepareTask = null;
-                    documentStatus = DOCUMENT_NO;
-                    //Assign reference to local variable to avoid gc before return
-                    StyledDocument doc = openDocument();
-
-                    CloneableEditorSupport.super.open();
-                    return null;
-                }
-
+                Query query = new Query();
+                Mutex.EVENT.readAccess(query);
+            } catch (IOException e) {
+                ERR.log(Level.INFO, null, e);
             }
-
-            Query query = new Query();
-            Mutex.EVENT.readAccess(query);
-        } catch (IOException e) {
-            ERR.log(Level.INFO, null, e);
         }
     }
 
@@ -567,11 +601,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      *                       to clear before (used for reloading) */
     private Task prepareDocument(final boolean notUsed) {
         assert Thread.holdsLock(getLock());
-
+        
         if (prepareTask != null) {
             return prepareTask;
         }
-
+        
         boolean failed = true;
 	
         //#144722: Help variable to make sure we always return non null task from prepareDocument
