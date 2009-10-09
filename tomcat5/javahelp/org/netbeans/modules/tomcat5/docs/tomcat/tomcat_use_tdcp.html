@@ -27,7 +27,7 @@ way is to access your JDBC resource directly from a JSP file using the JSTL 1.1 
  testing purposes and in small web applications only.</p>
 <p><b>To set up a JSP file to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
-	<li> Set up a <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server connection pool</a>, a <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server connection pool</a>, or a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>.</li>
+	<li> Set up a <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">GlassFish application server connection pool</a>, a <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server connection pool</a>, or a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>.</li>
 	<li>Right-click the web application project's Libraries node, click Add Library, and choose JSTL 1.1.
 <li>Expand the project node and the Web Pages node 
 and double-click the default index.jsp node. (Instead of using the
@@ -70,10 +70,7 @@ To do so, paste or type code similar to the following below the taglib directive
  For example, for the Tomcat Web Server, copy the database driver's JAR file
 into the Tomcat Web Server's <tt>common/lib</tt> folder, within
 the IDE's installation folder. For the JBoss Application Server, move the driver JAR file to the
-domain's <tt>lib</tt> directory. So, for PointBase, copy <tt>pbclient.jar</tt> (or <tt>pbembedded.jar</tt>)
- to  the Tomcat Web Server's <tt>common/lib</tt> folder. For the JBoss Application Server,
- copy <tt>pbclient.jar</tt> (or <tt>pbembedded.jar</tt>) to the <tt>server/default/lib</tt> folder,
-  if you are using the <tt>default</tt> domain.
+domain's <tt>server/default/lib</tt> directory, if you are using the <tt>default</tt> domain.
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top">
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
@@ -83,20 +80,20 @@ driver's JAR file, so that the server can load the JAR file.
       </td>
    </tr>
 </table></li>
-<li>Start the database server.
+<li>Start the database server.</li>
 <li><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/create/jsp/jsp_run.html">Run the JSP file</a> or the application
  that contains it.</li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the Sun Java System Application Server</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the GlassFish Application Server</a></dd>
 <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/jboss/about_jboss.html">About the JBoss Application Server</a></dd>
 <dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
 </dl>
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
+<small><a href="../credits.html">Legal Notices</a> </small>
 <table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
-</small></body></html>
+</body></html>
