@@ -150,6 +150,11 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
         InputOutput io = session.getInputOutput();
         if (newState == SessionState.ANALYZE) {
+            CsmProject project = getProject();
+            if (project != null) {
+                LoopParallelizationTipsProvider.clearTipsForProject(project);
+                UnnecessaryThreadsTipsProvider.clearTipsForProject(project);
+            }
 
             analyzeDataCollectors();
 
@@ -259,7 +264,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
 
         if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
             UnnecessaryThreadsTipsProvider.clearTips();
-            UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice();
+            UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice(getProject());
             UnnecessaryThreadsTipsProvider.addTip(tip);
             addNotificationTip(tip);
         }

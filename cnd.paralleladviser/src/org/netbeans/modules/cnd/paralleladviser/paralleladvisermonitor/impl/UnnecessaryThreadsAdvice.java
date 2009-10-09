@@ -51,9 +51,11 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
@@ -65,7 +67,14 @@ import org.openide.windows.OutputWriter;
  */
 public class UnnecessaryThreadsAdvice implements Advice {
 
-    public UnnecessaryThreadsAdvice() {
+    private final WeakReference<CsmProject> projectRef;
+
+    public UnnecessaryThreadsAdvice(CsmProject project) {
+        projectRef = new WeakReference<CsmProject>(project);
+    }
+
+    public CsmProject getProject() {
+        return projectRef.get();
     }
 
     public JComponent getComponent() {

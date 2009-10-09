@@ -52,12 +52,15 @@
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
@@ -74,22 +77,39 @@ import org.openide.windows.OutputWriter;
  */
 public class LoopParallelizationAdvice implements Advice {
 
-    private final CsmFunction function;
-    private final CsmLoopStatement loop;
+    private final WeakReference<CsmFunction> functionRef;
+    private final WeakReference<CsmLoopStatement> loopRef;
     private final double processorUtilization;
+    private final String functionName;
+    private final String fileName;
+    private final int lineInFile;
 
     public LoopParallelizationAdvice(CsmFunction function, CsmLoopStatement loop, double processorUtilization) {
-        this.function = function;
-        this.loop = loop;
+        this.functionRef = new WeakReference<CsmFunction>(function);
+        this.loopRef = new WeakReference<CsmLoopStatement>(loop);
         this.processorUtilization = processorUtilization;
+        this.functionName = function.getName().toString();
+        this.fileName = loop.getContainingFile().getName().toString();
+        this.lineInFile = loop.getStartPosition().getLine();
+    }
+
+    public CsmProject getProject() {
+        CsmFunction function = functionRef.get();
+        if (function != null) {
+            CsmFile file = function.getContainingFile();
+            if (file != null) {
+                return file.getProject();
+            }
+        }
+        return null;
     }
 
     public CsmFunction getFunction() {
-        return function;
+        return functionRef.get();
     }
 
     public CsmLoopStatement getLoop() {
-        return loop;
+        return loopRef.get();
     }
 
     public double getProcessorUtilization() {
@@ -104,10 +124,16 @@ public class LoopParallelizationAdvice implements Advice {
                     public void hyperlinkUpdate(HyperlinkEvent e) {
                         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                             if (e.getDescription().equals("function")) { // NOI18N
-                                CsmUtilities.openSource(function);
+                                CsmFunction function = functionRef.get();
+                                if (function != null) {
+                                    CsmUtilities.openSource(function);
+                                }
                             }
                             if (e.getDescription().equals("loop")) { // NOI18N
-                                CsmUtilities.openSource(loop);
+                                CsmLoopStatement loop = loopRef.get();
+                                if (loop != null) {
+                                    CsmUtilities.openSource(loop);
+                                }
                             }
                         }
                     }
@@ -119,20 +145,23 @@ public class LoopParallelizationAdvice implements Advice {
 
         return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
                 getString("PAT_LoopParallelization_Title"), // NOI18N
-                getString("PAT_LoopParallelization_Body", function.getName(), String.format("%1$.1f", processorUtilization)), // NOI18N
+                getString("PAT_LoopParallelization_Body", functionName, String.format("%1$.1f", processorUtilization)), // NOI18N
                 800);
     }
 
     public void addNotification(OutputWriter writer) {
         try {
-            writer.println(getString("PAT_LoopParallelization_Notification", loop.getContainingFile().getName(), loop.getStartPosition().getLine(), function.getName()), // NOI18N
+            writer.println(getString("PAT_LoopParallelization_Notification", fileName, lineInFile, functionName), // NOI18N
                     new OutputListener() {
 
                 public void outputLineSelected(OutputEvent ev) {
                 }
 
                 public void outputLineAction(OutputEvent ev) {
-                    CsmUtilities.openSource(loop);
+                    CsmLoopStatement loop = loopRef.get();
+                    if (loop != null) {
+                        CsmUtilities.openSource(loop);
+                    }
                 }
 
                 public void outputLineCleared(OutputEvent ev) {
