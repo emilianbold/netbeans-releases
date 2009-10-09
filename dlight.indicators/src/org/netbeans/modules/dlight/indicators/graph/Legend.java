@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -69,6 +68,8 @@ public class Legend extends JPanel {
     public Legend(List<TimeSeriesDescriptor> graphs, List<DetailDescriptor> details) {
         super(new GridBagLayout());
 
+        Font font = DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_LEGEND_FONT);
+
         setBackground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_BGCOLOR));
         setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
         Dimension size = new Dimension(
@@ -81,8 +82,8 @@ public class Legend extends JPanel {
         GridBagConstraints c;
 
         for (TimeSeriesDescriptor graph : graphs) {
-            JLabel label = new JLabel(graph.getDisplayName(), new ColorIcon(graph.getColor()), SwingConstants.LEADING);
-            label.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_LEGEND_FONT));
+            JLabel label = new JLabel(graph.getDisplayName(), new ColorIcon(font.getSize(), graph.getColor()), SwingConstants.LEADING);
+            label.setFont(font);
             label.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             c = new GridBagConstraints();
             c.anchor = GridBagConstraints.WEST;
@@ -103,7 +104,7 @@ public class Legend extends JPanel {
         if (details != null) {
             for (DetailDescriptor detail : details) {
                 JLabel name = new JLabel(detail.getDisplayName());
-                name.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_LEGEND_FONT));
+                name.setFont(font);
                 name.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
                 c = new GridBagConstraints();
                 c.anchor = GridBagConstraints.WEST;
@@ -113,7 +114,7 @@ public class Legend extends JPanel {
                 JLabel value = new JLabel(detail.getDefaultValue());
                 value.setName(detail.getName());
                 value.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
-                value.setFont(value.getFont().deriveFont(Font.BOLD, 10f));
+                value.setFont(font.deriveFont(Font.BOLD));
                 c = new GridBagConstraints();
                 c.anchor = GridBagConstraints.WEST;
                 c.fill = GridBagConstraints.HORIZONTAL;
@@ -167,28 +168,27 @@ public class Legend extends JPanel {
 
     private static class ColorIcon implements Icon {
 
-        private static final int WIDTH = 10;
-        private static final int HEIGHT = 10;
+        private final int size;
         private final Color color;
 
-        public ColorIcon(Color color) {
+        public ColorIcon(int size, Color color) {
+            this.size = size;
             this.color = color;
         }
 
         public int getIconWidth() {
-            return WIDTH;
+            return size;
         }
 
         public int getIconHeight() {
-            return HEIGHT;
+            return size;
         }
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setPaint(color);
-            g2.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
-            g2.setPaint(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR));
-            g2.drawRect(x, y, WIDTH - 1, HEIGHT - 1);
+            g.setColor(color);
+            g.fillRect(x, y, size - 1, size - 1);
+            g.setColor(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR));
+            g.drawRect(x, y, size - 1, size - 1);
         }
     }
 }

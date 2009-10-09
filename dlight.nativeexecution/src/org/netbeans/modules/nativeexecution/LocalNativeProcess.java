@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -96,6 +97,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
 
+        env.appendPathVariable("PATH", "/bin:/usr/bin:" + hostInfo.getPath()); // NOI18N
+
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
         if (isInterrupted()) {
@@ -122,6 +125,52 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
             processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
             processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
+        }
+
+        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
+        processInput.flush();
+
+        creation_ts = System.nanoTime();
+
+        readPID(processOutput);
+    }
+
+    private void createWinUsingShell() throws IOException, InterruptedException {
+        // Get working directory ....
+        String workingDirectory = info.getWorkingDirectory(true);
+
+        if (workingDirectory != null) {
+            workingDirectory = new File(workingDirectory).getAbsolutePath();
+        }
+
+        final MacroMap env = info.getEnvironment().clone();
+
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
+
+        env.put("PATH", "/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
+
+        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        process = pb.start();
+
+        processInput = process.getOutputStream();
+        processError = process.getErrorStream();
+        processOutput = process.getInputStream();
+
+        processInput.write("echo $$\n".getBytes()); // NOI18N
+        processInput.flush();
+
+        EnvWriter ew = new EnvWriter(processInput);
+        ew.write(env);
+
+        if (workingDirectory != null) {
+            processInput.write(("cd \"" + WindowsSupport.getInstance().convertToShellPath(workingDirectory) + "\"\n").getBytes()); // NOI18N
         }
 
         processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N

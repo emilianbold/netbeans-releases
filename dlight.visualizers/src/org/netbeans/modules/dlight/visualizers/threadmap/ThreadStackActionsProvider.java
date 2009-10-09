@@ -37,61 +37,17 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.ui;
+package org.netbeans.modules.dlight.visualizers.threadmap;
 
-import java.awt.Image;
-import java.util.List;
 import javax.swing.Action;
-import javax.swing.Icon;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
 
 /**
- *
+ * This interface is created to provide actions to be displayed
+ * at the stack nodes of the ThreadStackVisualizer
  * @author mt154047
  */
-final class StackRootNode extends AbstractNode{
-    private final String stackName;
-    private final Image icon;
-    private final Action[] actions;
+public interface ThreadStackActionsProvider {
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack, Action[] actions) {
-        super(stack == null || stack.size() == 0 ? Children.LEAF : new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack));
-        this.stackName = stackName;
-        this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;
-        this.actions = actions;
-    }
+    public Action[] getStackNodeActions(int threadID);
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
-     //   super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
-        this(sourceFileInfoDataProvider, icon, stackName, stack, null);
-
-    }
-    
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
-        this(sourceFileInfoDataProvider, null, stackName, stack);
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return actions;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return stackName;
-    }
-
-    @Override
-    public Image getIcon(int type) {
-      return icon == null ? super.getIcon(type) : icon;
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
-    }
 }

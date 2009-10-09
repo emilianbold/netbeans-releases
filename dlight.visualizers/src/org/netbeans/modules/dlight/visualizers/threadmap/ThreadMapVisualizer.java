@@ -144,7 +144,7 @@ public class ThreadMapVisualizer extends JPanel implements
                                                 name, dataManager.findThreadName(snapshot.getThreadInfo().getThreadId()), at);
                                     }
                                 };
-                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider, query.getThreadID()));
+                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider, query.getThreadID(), threadsPanel));
                             }
                         });
                         session.cleanAllDataFilter(ThreadDumpFilter.class);

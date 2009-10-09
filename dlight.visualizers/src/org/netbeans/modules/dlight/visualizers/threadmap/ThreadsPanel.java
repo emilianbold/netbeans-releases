@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
 import java.util.Collection;
+import javax.swing.Action;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import java.awt.AWTKeyStroke;
@@ -117,6 +118,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.actions.Presenter;
 
 /**
  * A panel to display TA threads and their state.
@@ -126,7 +128,8 @@ import org.openide.util.NbPreferences;
  * @author Alexander Simon (adapted for CND)
  */
 public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionListener, TableColumnModelListener,
-        DataManagerListener {
+        DataManagerListener, ThreadStackActionsProvider {
+    private static final String QUERY_STATE_ACTION_COMMAND = "query_state"; // NOI18N
 
     // I18N String constants
     private static final ResourceBundle messages = NbBundle.getBundle(ThreadsPanel.class);
@@ -145,7 +148,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
     private static final String SHOW_LEGEND = messages.getString("ThreadsPanel_ShowLegend"); // NOI18N
-    private static final String SHOW_ALL_STACKS = messages.getString("ThreadsPanel_ShowAllStacks"); // NOI18N
     private static final String SELECT_THREAD_NAME = messages.getString("ThreadsPanel_SelectThreadName"); // NOI18N
     static final String THREAD_NAME_ID = messages.getString("ThreadsPanel_ThreadNameId"); // NOI18N
     static final String THREAD_NAME_CALLEE = messages.getString("ThreadsPanel_ThreadNameCallee"); // NOI18N
@@ -188,7 +190,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JPanel legendPanel;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showLegend;
-    private JMenu showAllStacks;
     private JMenu selectThreadName;
     private JRadioButtonMenuItem idThreadName;
     private JRadioButtonMenuItem calleeThreadName;
@@ -506,7 +507,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     if (selectedRow != -1) {
                         Rectangle cellRect = table.getCellRect(selectedRow, 0, false);
                         showLegend.setVisible(!isShowLegend);
-                        prepareStacksMenu();
                         popupMenu.show(e.getComponent(), ((cellRect.x + table.getSize().width) > 50) ? 50 : 5, cellRect.y);
                     }
                 }
@@ -537,7 +537,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (clickedLine != -1) {
                     if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
                         showLegend.setVisible(!isShowLegend);
-                        prepareStacksMenu();
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     } else if ((e.getModifiers() == InputEvent.BUTTON1_MASK)){
                         if (e.getClickCount() == 1){
@@ -754,6 +753,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return timeLine;
     }
 
+    private void queryChanged(final ThreadDumpQuery query, final ThreadState state){
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                         detailsCallback.showStack(state.getTimeStamp(), query);
+                    }
+                });
+    }
+
     /**
      * Invoked when one of the buttons is pressed
      */
@@ -839,13 +846,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             if (o instanceof ThreadDumpQuery) {
                 final ThreadDumpQuery query = (ThreadDumpQuery) o;
                 final ThreadState state = (ThreadState) item.getClientProperty("state"); // NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        //ThreadStackVisualizer v =
-                                detailsCallback.showStack(state.getTimeStamp(), query);
-                        //v.selectRootNode();
-                    }
-                });
+                queryChanged(query, state);
             }
         }
     }
@@ -1008,7 +1009,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         showOnlySelectedThreads = new JMenuItem(SELECTED_THREADS_ITEM);
         showLegend = new JMenuItem(SHOW_LEGEND);
-        showAllStacks = new JMenu(SHOW_ALL_STACKS);
 
         selectThreadName = new JMenu(SELECT_THREAD_NAME);
         idThreadName = new JRadioButtonMenuItem(THREAD_NAME_ID);
@@ -1034,7 +1034,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         popup.add(showOnlySelectedThreads);
         popup.add(showLegend);
-        popup.add(showAllStacks);
         popup.add(selectThreadName);
 
         return popup;
@@ -1045,42 +1044,34 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         // call stack is shown by one click
     }
 
-    private void prepareStacksMenu() {
+    public Action[] getStackNodeActions(int threadID) {
+        List<Action> result = new ArrayList<Action>();
         LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
-        showAllStacks.removeAll();
         if (avaliableStates.size()==0) {
-            showAllStacks.setVisible(false);
-            return;
+            return new Action[0];
         }
-        showAllStacks.setVisible(true);
         List<Integer> showThreadsID = new ArrayList<Integer>();
         for(Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()){
-            ThreadState state = entry.getValue();
-            long ms = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
-            String title = NbBundle.getMessage(ThreadsPanel.class, "ThreadsPanel_ThreadAtTime", // NOI18N
-                    manager.getThreadData(entry.getKey().intValue()).getName(),
-                    TimeLineUtils.getMillisValue(ms));
+            final ThreadState state = entry.getValue();
             showThreadsID.add(manager.getThreadData(entry.getKey().intValue()).getThreadID());
-            JMenu current = new JMenu(title);
-            EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
-            ThreadStateColumnImpl.fillMap(this, state, aMap);
-            ThreadStateColumnImpl.roundMap(aMap);
-            for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
-                Map.Entry<MSAState, AtomicInteger> e = it.next();
-                MSAState msa = e.getKey();
-                ThreadStateResources res = ThreadStateResources.forState(msa);
-                if (res != null) {
-                    JMenuItem item = new JMenuItem(res.name, new ThreadStateIcon(msa, 10, 10));
-                    ThreadDumpQuery query = new ThreadDumpQuery(manager.getThreadData(entry.getKey().intValue()).getThreadID(), state,  showThreadsID, msa,
-                                                                 isMSAMode(), isFullMode(), manager.getStartTime());
-                    item.putClientProperty("query", query); // NOI18N
-                    item.putClientProperty("state", state); // NOI18N
-                    item.addActionListener(this);
-                    current.add(item);
+            if (threadID == manager.getThreadData(entry.getKey().intValue()).getThreadID()){
+                EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+                ThreadStateColumnImpl.fillMap(this, state, aMap);
+                ThreadStateColumnImpl.roundMap(aMap);
+                for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
+                    Map.Entry<MSAState, AtomicInteger> e = it.next();
+                    MSAState msa = e.getKey();
+                    ThreadStateResources res = ThreadStateResources.forState(msa);
+                    if (res != null) {
+                        final ThreadDumpQuery query = new ThreadDumpQuery(manager.getThreadData(entry.getKey().intValue()).getThreadID(), state,  showThreadsID, msa,
+                                                                     isMSAMode(), isFullMode(), manager.getStartTime());
+                        final Action action = new StackAction(state, msa, query);
+                        result.add(action);
+                    }
                 }
             }
-            showAllStacks.add(current);
         }
+        return result.toArray(new Action[0]);
     }
 
     private LinkedHashMap<Integer, ThreadState> prepareAllStacks(){
@@ -1462,4 +1453,28 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         }
     }
 
+    private class StackAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        private final ThreadDumpQuery query;
+        private final ThreadState state;
+
+        public StackAction(ThreadState state, MSAState msa, ThreadDumpQuery query) {
+            putValue(Action.NAME, ThreadStateResources.forState(msa).name);
+            putValue(Action.SHORT_DESCRIPTION, ThreadStateResources.forState(msa).tooltip);
+            putValue(Action.SMALL_ICON, new ThreadStateIcon(msa, 10, 10));
+            putValue(Action.ACTION_COMMAND_KEY, QUERY_STATE_ACTION_COMMAND);
+            menuItem = new JMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+            this.query = query;
+            this.state = state;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ThreadsPanel.this.queryChanged(query, state);
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
 }
