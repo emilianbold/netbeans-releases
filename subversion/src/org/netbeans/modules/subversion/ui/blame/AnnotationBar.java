@@ -212,6 +212,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return file;
     }
 
+    Document getdDocument() {
+        return doc;
+    }
+    
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
@@ -503,7 +507,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        ku.chatFileLink(getFile(), lineNr);
+                        ku.startChat(ku.getChatLink(doc, lineNr));
                     }
                 });
                 popupMenu.add(chatMenu);
