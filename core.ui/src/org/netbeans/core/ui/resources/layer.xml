@@ -425,6 +425,7 @@ made subject to such option by the copyright holder.
 
         <!-- specify toolbar configuration for platform ui. -->
         <file name="Standard.xml" url="Standard.xml">
+            <attr name="position" intvalue="800"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         </file>
     </folder> <!-- Toolbars -->

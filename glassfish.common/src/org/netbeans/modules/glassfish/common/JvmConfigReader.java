@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -183,7 +184,7 @@ public class JvmConfigReader extends TreeParser.NodeReader {
                     if (replacement == null) {
                         replacement = System.getProperty(key);
                         if (replacement != null) {
-                            replacement = Util.escapePath(replacement);
+                            replacement = Utils.escapePath(replacement);
                         } else {
                             replacement = "\\$\\{" + key + "\\}"; // NOI18N
                         }

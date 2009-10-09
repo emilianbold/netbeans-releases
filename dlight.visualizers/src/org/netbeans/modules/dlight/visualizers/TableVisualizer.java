@@ -298,4 +298,7 @@ final class TableVisualizer extends JPanel implements
     public void componentHidden(ComponentEvent e) {
         isShown = false;
     }
+
+    public void updateVisualizerConfiguration(TableVisualizerConfiguration configuration) {
+    }
 }

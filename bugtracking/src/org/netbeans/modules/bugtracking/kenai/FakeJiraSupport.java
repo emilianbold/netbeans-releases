@@ -164,6 +164,10 @@ public class FakeJiraSupport {
         return queryHandles;
     }
 
+    QueryResultHandle getUnseenResult() {
+        return new FakeJiraQueryResultHandle("0"); // NOI18N
+    }
+
     private List<QueryHandle> createQueryHandles() {
         List<QueryHandle> l = new ArrayList<QueryHandle>(2);
         l.add(new FakeJiraQueryHandle(NbBundle.getMessage(FakeJiraSupport.class, "LBL_MyIssues")));  // NOI18N
@@ -208,17 +212,25 @@ public class FakeJiraSupport {
         List<QueryResultHandle> getQueryResults() {
             if(results == null) {
                 List<QueryResultHandle> r = new ArrayList<QueryResultHandle>(1);
-                r.add(new FakeJiraQueryResultHandle());
+                r.add(new FakeJiraQueryResultHandle(
+                            NbBundle.getMessage(
+                                FakeJiraSupport.class,
+                                "LBL_QueryResultTotal",  // NOI18N
+                                new Object[] {0})));
                 results = r;
             }
             return results; 
-        }
+        }        
     }
 
     static class FakeJiraQueryResultHandle extends QueryResultHandle implements ActionListener {
+        private final String label;
+        public FakeJiraQueryResultHandle(String label) {
+            this.label = label;
+        }
         @Override
         public String getText() {
-            return NbBundle.getMessage(FakeJiraSupport.class, "LBL_QueryResultTotal", new Object[] {0}); // NOI18N
+            return label;
         }
         public void actionPerformed(ActionEvent e) {
             FakeJiraSupport.notifyJiraSupport();

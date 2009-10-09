@@ -1,4 +1,47 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
 #include <stdlib.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -12,13 +55,15 @@
 #include <unistd.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include <sys/fcntl.h>
 
-#define RFS_CONTROLLER 1 // rfs_utils.h needs this
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
 
-#include "rfs_controller.h"
+#include "rfs_protocol.h"
 #include "rfs_util.h"
 #include "rfs_filedata.h"
+
+ 
 
 #if TRACE
 static int emulate = false;
@@ -34,42 +79,58 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
-    const int bufsize = 512;
-    char request[bufsize];
-    char response[bufsize];
-    int size;
+
+    const int maxsize = PATH_MAX + 32;
+    char buffer[maxsize];
+    struct package *pkg = (struct package *) &buffer;
+
+    int first = true;
+    char requestor_id[32];
+
     while (1) {
-        trace("Waiting for a data to arrive, sd=%d...\n", conn_data->sd);
-        memset(request, 0, sizeof (request));
+        trace("Waiting for a data to arrive from %s, sd=%d...\n", requestor_id, conn_data->sd);
         errno = 0;
-        size = recv(conn_data->sd, request, sizeof (request), 0);
-        if (size == -1 || size == 0) { // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
-            if (errno == ECONNRESET) {
-                trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
-            } else if (errno != 0) {
+        enum sr_result recv_res = pkg_recv(conn_data->sd, pkg, maxsize);
+        if (recv_res == sr_reset) {
+            trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
+            break;
+        } else if (recv_res == sr_failure) {
+            if (errno != 0) {
                 perror("error getting message");
             }
-            break; 
+            break;
         }
 
-        file_data *fd = find_file_data(request, true);
-        
-        trace("Request=%s size=%d sd=%d\n", request, size, conn_data->sd);
-        if (fd != NULL && fd->state == file_state_pending) {
+        trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
+        enum pkg_kind expected_kind = first ? pkg_handshake : pkg_request;
+        if (pkg->kind != expected_kind) {
+            fprintf(stderr, "prodocol error: got %s instead of %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg_kind_to_string(expected_kind), requestor_id, conn_data->sd);
+            break;
+        }
 
+        if (first) {
+            first = false;
+            strncpy(requestor_id, pkg->data, sizeof requestor_id);
+            continue;
+        }
+
+        char response[64];
+        file_data *fd = find_file_data(pkg->data, true);
+
+        if (fd != NULL && fd->state == file_state_pending) {
             /* TODO: this is a very primitive sync!  */
             pthread_mutex_lock(&mutex);
 
-            fprintf(stdout, "%s\n", request);
+            fprintf(stdout, "%s\n", pkg->data);
             fflush(stdout);
 
-            memset(response, 0, sizeof (response));
             #if TRACE
-            if (emulate)
-                response[0] = response_ok;
-            else
+                if (emulate) {
+                    response[0] = response_ok;
+                    response[1] = 0;
+                } else
             #endif
-            gets(response);
+            fgets(response, sizeof response, stdin);
             fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
             pthread_mutex_unlock(&mutex);
             trace("Got reply=%s from sd=%d set %X->state to %d\n", response, conn_data->sd, fd, fd->state);
@@ -83,15 +144,17 @@ static void serve_connection(void* data) {
             trace("Already known; filled reply: %s\n", response);
         }
 
-        if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
+        enum sr_result send_res = pkg_send(conn_data->sd, pkg_reply, response);
+        if (send_res == sr_failure) {
             perror("send");
-        } else {
-            trace("%d bytes sent sd=%d\n", size, conn_data->sd);
-        }
-        
+        } else if (send_res == sr_reset) {
+            perror("send");
+        } else { // success
+            trace("reply for %s sent to %s sd=%d\n", pkg->data, requestor_id, conn_data->sd);
+        }        
     }
     close(conn_data->sd);
-    trace("Connection to %s:%d closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
+    trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
 }
 
 static void create_dir(const char* path) {
@@ -168,7 +231,7 @@ static void init_files() {
 }
 
 int main(int argc, char* argv[]) {
-    trace_startup("RFS_CONTROLLER_LOG");
+    trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);

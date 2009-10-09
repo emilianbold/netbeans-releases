@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
@@ -55,6 +56,10 @@ public abstract class ServerListUI {
 
     public static boolean showServerListDialog() {
         return getDefault().showServerListDialogImpl();
+    }
+
+    public static boolean showServerListDialog(AtomicReference<ExecutionEnvironment> selectedEnv) {
+        return getDefault().showServerListDialogImpl(selectedEnv);
     }
 
     /**
@@ -95,6 +100,8 @@ public abstract class ServerListUI {
      */
     protected abstract boolean showServerListDialogImpl();
 
+    protected abstract boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv);
+
     protected abstract boolean ensureRecordOnlineImpl(ExecutionEnvironment env, String message);
 
     protected abstract boolean ensureRecordOnlineImpl(ExecutionEnvironment env);
@@ -108,6 +115,12 @@ public abstract class ServerListUI {
 
         @Override
         protected boolean showServerListDialogImpl() {
+            warning();
+            return false;
+        }
+
+        @Override
+        protected boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv) {
             warning();
             return false;
         }

@@ -60,6 +60,7 @@ public final class DataraceImpl implements Datarace {
 
     private final int id;
     private final long address;
+    private String stringAddress;
     private final List<ThreadDump> dumps;
 
     public DataraceImpl(int id, long address, List<ThreadDump> dumps) {
@@ -68,9 +69,20 @@ public final class DataraceImpl implements Datarace {
         this.dumps = dumps;
     }
 
+    void setStringAddress(String address){
+        this.stringAddress = address;
+    }
+
     public long getAddress() {
         return address;
     }
+
+    public String stringAddress() {
+        return stringAddress;
+    }
+
+    
+    
 
     public List<ThreadDump> getThreadDumps() {
         return dumps;
@@ -82,7 +94,7 @@ public final class DataraceImpl implements Datarace {
     }
 
 
-    private static final Pattern RACE_PATTERN = Pattern.compile("Race\\s+#(\\d+),\\s+Vaddr:\\s+(?:0x(.+)|Multiple\\s+addresses)"); // NOI18N
+    private static final Pattern RACE_PATTERN = Pattern.compile("Race\\s+#(\\d+),\\s+Vaddr:\\s+(0x(.+)|\\(Multiple\\s+Addresses\\)|Multiple\\s+addresses)"); // NOI18N
     private static final Pattern DUMP_PATTERN = Pattern.compile("\\s+Trace\\s+\\d+"); // NOI18N
     private static final Pattern SNAPSHOT_PATTERN = Pattern.compile(" *Access +\\d+: +(Read|Write) *"); // NOI18N
 
@@ -106,10 +118,11 @@ public final class DataraceImpl implements Datarace {
         }
 
         long vaddr = -1;
-        if (firstLineMatch.group(2) != null) {
+        String stringAddress = firstLineMatch.group(2);
+        if (firstLineMatch.group(3) != null) {
             try {
-                vaddr = Long.parseLong(firstLineMatch.group(2), 16);
-            } catch (NumberFormatException ex) {
+                vaddr = Long.parseLong(firstLineMatch.group(3), 16);
+            } catch (NumberFormatException ex) {                
             }
         }
 
@@ -123,7 +136,9 @@ public final class DataraceImpl implements Datarace {
                 break;
             }
         }
-        return new DataraceImpl(id, vaddr, dumps);
+        DataraceImpl dataRace = new DataraceImpl(id, vaddr, dumps);
+        dataRace.setStringAddress(stringAddress);
+        return dataRace;
     }
 
     private static ThreadDump parseThreadDump(ListIterator<String> it, Matcher firstLineMatch) {

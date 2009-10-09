@@ -129,6 +129,8 @@ public final class DashboardImpl extends Dashboard {
 
     private final CategoryNode openProjectsNode;
     private final CategoryNode myProjectsNode;
+    private final EmptyNode noOpenProjects = new EmptyNode(this, org.openide.util.NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"), null);
+    private final EmptyNode noMyProjects = new EmptyNode(this, org.openide.util.NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), null);
 
     private final Object LOCK = new Object();
 
@@ -169,11 +171,13 @@ public final class DashboardImpl extends Dashboard {
         model.addRoot(-1, userNode);
         openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
+        model.addRoot(-1, noOpenProjects);
 
         myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
             model.addRoot(-1, myProjectsNode);
+            model.addRoot(-1, noMyProjects);
         }
 
         memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new AbstractAction() {
@@ -286,8 +290,10 @@ public final class DashboardImpl extends Dashboard {
                 memberProjects.clear();
 
                 model.removeRoot(myProjectsNode);
+                model.removeRoot(noMyProjects);
             } else {
                 model.addRoot(-1, myProjectsNode);
+                model.addRoot(-1, noMyProjects);
             }
 //            removeMemberProjectsFromModel(memberProjects);
 //            memberProjects.clear();
@@ -445,8 +451,10 @@ public final class DashboardImpl extends Dashboard {
             if( !model.getRootNodes().contains(userNode) ) {
                 model.addRoot(0, userNode);
                 model.addRoot(1, openProjectsNode);
-                if (login!=null&& !model.getRootNodes().contains(myProjectsNode))
+                if (login!=null&& !model.getRootNodes().contains(myProjectsNode)) {
                     model.addRoot(-1, myProjectsNode);
+                    model.addRoot(-1, noMyProjects);
+                }
             }
             if(login!=null?model.getSize() > 3:model.getSize()>2 )
                 return;
@@ -557,6 +565,9 @@ public final class DashboardImpl extends Dashboard {
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {
         synchronized( LOCK ) {
             removeProjectsFromModel( openProjects );
+            if (!projects.isEmpty()) {
+                model.removeRoot(noOpenProjects);
+            }
             openProjects.clear();
             for( ProjectHandle p : projects ) {
                 if( !openProjects.contains( p ) )
@@ -611,9 +622,14 @@ public final class DashboardImpl extends Dashboard {
                 if( isOpened() ) {
                     switchContent();
                 }
-            }
+            } 
 
             removeMemberProjectsFromModel(memberProjects );
+
+            if(!projects.isEmpty() ) {
+                model.removeRoot(noMyProjects);
+            }
+            
             memberProjects.clear();
             memberProjects.addAll(projects);
             memberProjectsLoaded = true;
@@ -650,10 +666,11 @@ public final class DashboardImpl extends Dashboard {
 
     private void removeProjectsFromModel( List<ProjectHandle> projects ) {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
             if( root instanceof ProjectNode ) {
                 ProjectNode pn = (ProjectNode) root;
-
+                i++;
                 if( projects.contains( pn.getProject() ) ) {
                     nodesToRemove.add(root);
                 }
@@ -661,15 +678,20 @@ public final class DashboardImpl extends Dashboard {
         }
         for( TreeListNode node : nodesToRemove ) {
             model.removeRoot(node);
+        }
+        if (i==projects.size()) {
+            if (!model.getRootNodes().contains(noOpenProjects))
+                model.addRoot(2, noOpenProjects);
         }
     }
 
     private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
+        int i=0;
         for( TreeListNode root : model.getRootNodes() ) {
             if( root instanceof MyProjectNode ) {
                 MyProjectNode pn = (MyProjectNode) root;
-
+                i++;
                 if( projects.contains( pn.getProject() ) ) {
                     nodesToRemove.add(root);
                 }
@@ -677,6 +699,10 @@ public final class DashboardImpl extends Dashboard {
         }
         for( TreeListNode node : nodesToRemove ) {
             model.removeRoot(node);
+        }
+        if (i==projects.size()) {
+            if (!model.getRootNodes().contains(noMyProjects))
+                model.addRoot(-1, noMyProjects);
         }
     }
 

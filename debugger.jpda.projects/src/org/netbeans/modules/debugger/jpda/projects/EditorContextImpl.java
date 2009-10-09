@@ -93,6 +93,7 @@ import javax.lang.model.util.Elements;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.tools.Diagnostic;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -703,6 +704,11 @@ public class EditorContextImpl extends EditorContext {
                         SourcePositions positions =  ci.getTrees().getSourcePositions();
                         Tree tree = ci.getTrees().getTree(classElement);
                         int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                        if (pos == Diagnostic.NOPOS) {
+                            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                    "No position for tree "+tree+" in "+className);
+                            return;
+                        }
                         EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
                         StyledDocument doc = editor.openDocument();
                         int l = doc.getLength();
@@ -721,6 +727,11 @@ public class EditorContextImpl extends EditorContext {
                                 SourcePositions positions =  ci.getTrees().getSourcePositions();
                                 Tree tree = ci.getTrees().getTree(elm);
                                 int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                if (pos == Diagnostic.NOPOS) {
+                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                            "No position for tree "+tree+" of element "+elm+" in "+className);
+                                    continue;
+                                }
                                 EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
                                 result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
                                 //return elms.getSourcePosition(elm).getLine();
@@ -842,7 +853,13 @@ public class EditorContextImpl extends EditorContext {
                                         continue;
                                     }
                                     int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                    if (pos == Diagnostic.NOPOS) {
+                                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                                "No position for tree "+tree+" of element "+elm+" in "+className);
+                                        continue;
+                                    }
                                     { // Find the method name
+                                        int origPos = pos;
                                         if (tree.getKind() == Tree.Kind.METHOD) {
                                             MethodTree mt = (MethodTree) tree;
                                             ModifiersTree modt = mt.getModifiers();
@@ -850,6 +867,11 @@ public class EditorContextImpl extends EditorContext {
                                                 List<? extends AnnotationTree> annotations = modt.getAnnotations();
                                                 if (annotations != null && annotations.size() > 0) {
                                                     pos = (int) positions.getEndPosition(ci.getCompilationUnit(), annotations.get(annotations.size() - 1));
+                                                    if (pos == Diagnostic.NOPOS) {
+                                                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                                                "No position for tree "+annotations.get(annotations.size() - 1)+" in "+className);
+                                                        continue;
+                                                    }
                                                 }
                                             }
                                         }
@@ -860,7 +882,7 @@ public class EditorContextImpl extends EditorContext {
                                         if (pos >= l) {
                                             // We went somewhere wrong. Re-initialize original values
                                             c = 0;
-                                            pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                            pos = origPos;
                                         }
                                         if (c == '(') {
                                             pos--;
@@ -1226,6 +1248,9 @@ public class EditorContextImpl extends EditorContext {
                         (int) cu.getLineMap().getLineNumber(
                             sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
 
+                if (treeStartLine == Diagnostic.NOPOS || treeEndLine == Diagnostic.NOPOS) {
+                    return null;
+                }
                 //t3 = System.nanoTime();
                 int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
                 if (indexes == null) {
@@ -1281,6 +1306,9 @@ public class EditorContextImpl extends EditorContext {
                             int treeStartLine =
                                     (int) cu.getLineMap().getLineNumber(
                                         sp.getStartPosition(cu, t));
+                            if (treeStartLine == Diagnostic.NOPOS) {
+                                continue;
+                            }
                             ExpressionScanner scanner = new ExpressionScanner(treeStartLine, cu, ci.getTrees().getSourcePositions());
                             ExpressionScanner.ExpressionsInfo newInfo = new ExpressionScanner.ExpressionsInfo();
                             List<Tree> newExpTrees = methodTree.accept(scanner, newInfo);
@@ -1294,6 +1322,9 @@ public class EditorContextImpl extends EditorContext {
                                     (int) cu.getLineMap().getLineNumber(
                                         sp.getEndPosition(cu, newExpTrees.get(newExpTrees.size() - 1)));
 
+                            if (treeStartLine == Diagnostic.NOPOS || treeEndLine == Diagnostic.NOPOS) {
+                                continue;
+                            }
                             int[] indexes = bytecodeProvider.indexAtLines(treeStartLine, treeEndLine);
                             Map<Tree, Operation> newNodeOperations = new HashMap<Tree, Operation>();
                             Operation[] newOps = AST2Bytecode.matchSourceTree2Bytecode(

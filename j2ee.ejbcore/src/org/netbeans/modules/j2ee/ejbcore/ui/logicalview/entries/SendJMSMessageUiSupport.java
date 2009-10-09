@@ -137,7 +137,8 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
     private static void populateMdbTextField(final JComboBox comboBox, final JTextField textField) {
         MdbHolder selectedItem = (MdbHolder) comboBox.getSelectedItem();
         if (selectedItem != null) {
-            textField.setText(selectedItem.getMessageDestination().getName());
+            MessageDestination md = selectedItem.getMessageDestination();
+            textField.setText(md != null ? md.getName() : "");
         }
     }
     
@@ -226,7 +227,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         /** Constructor with all properties. */
         public MdbHolder(String mdbEjbName, final MessageDestination messageDestination, final Project project) {
             assert mdbEjbName != null;
-            assert messageDestination != null;
+//            assert messageDestination != null;
             assert project != null;
             
             this.mdbEjbName = mdbEjbName;
@@ -257,7 +258,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             sb.append(" [");
             sb.append(getMdbEjbName());
             sb.append(" (");
-            sb.append(getMessageDestination().getType().toString());
+            sb.append(messageDestination != null ? messageDestination.getType().toString() : "");
             sb.append("), ");
             sb.append(getProjectName());
             sb.append("]");

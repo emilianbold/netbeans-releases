@@ -35,6 +35,7 @@
     <mapID target="org.netbeans.modules.mercurial.ui.update.RevertModifications" url="csh/mercurial-revert-mods.html" />
     
     <mapID target="org.netbeans.modules.mercurial.ui.update.Update" url="csh/mercurial-update.html" />
+    <mapID target="org.netbeans.modules.mercurial.FileSelector" url="csh/mercurial_select_dialog.html" />
 </map>
 
 

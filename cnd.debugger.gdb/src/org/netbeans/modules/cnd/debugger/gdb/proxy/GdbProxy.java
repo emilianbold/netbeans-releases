@@ -137,15 +137,11 @@ public class GdbProxy {
      * @param program - a name of an external program to debug
      */
     public void file_exec_and_symbols(String programName) {
-        StringBuilder cmd = new StringBuilder("-file-exec-and-symbols"); // NOI18N
-        cmd.append(" \""); // NOI18N
-        cmd.append(programName);
-        cmd.append("\""); // NOI18N
-        engine.sendCommand(cmd.toString());
+        engine.sendCommand("-file-exec-and-symbols \"" + programName + '"'); // NOI18N
     }
     
     public void addSymbolFile(String path, String addr) {
-        engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
+        engine.sendCommand("add-symbol-file \"" + path + "\" " + addr); // NOI18N
     }
 
     public CommandBuffer core(String core) {
@@ -177,7 +173,7 @@ public class GdbProxy {
      * @param program - a name of an external program to debug
      */
     public void file_symbol_file(String path) {
-        engine.sendCommand("-file-symbol-file " + path); // NOI18N
+        engine.sendCommand("-file-symbol-file \"" + path + '"'); // NOI18N
     }
 
     /** Ask gdb for its version */
@@ -198,15 +194,8 @@ public class GdbProxy {
      * @param path The directory we want to run from
      */
     public void environment_cd(String dir) {
-        StringBuilder cmd = new StringBuilder();
-
-        cmd.append(debugger.getVersionPeculiarity().environmentCdCommand());
-
-        cmd.append(" \""); // NOI18N
-        cmd.append(dir);
-        cmd.append("\""); // NOI18N
-        
-        engine.sendCommand(cmd.toString());
+        engine.sendCommand(debugger.getVersionPeculiarity().environmentCdCommand() +
+                " \"" + dir + '"'); // NOI18N
     }
 
     /**

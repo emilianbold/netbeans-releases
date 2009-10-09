@@ -45,9 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
@@ -371,10 +369,9 @@ public class ProjectActionSupport {
                 }
                 // Make sure 1st level subprojects are visible remotely
                 // First, remembr all subproject locations
-                Set<File> subprojectDirs = new HashSet<File>();
                 for (String subprojectDir : conf.getSubProjectLocations()) {
                     subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-                    subprojectDirs.add(new File(subprojectDir));
+                    extraSourceRoots.add(new File(subprojectDir));
                 }
                 // Then go trough open subprojects and add their external source roots
                 for (Project subProject : conf.getSubProjects()) {

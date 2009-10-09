@@ -71,6 +71,7 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
@@ -654,6 +655,9 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     refreshReader();
                 }
             }
+        } catch (final LockObtainFailedException e) {
+            final String msg = "Valid: " + valid + " Locks: " + getOrphanLock();    //NOI18N
+            throw Exceptions.attachMessage(e, msg);
         } finally {
             LOGGER.log(Level.FINE, "Index flushed: {0}", indexFolder); //NOI18N
         }

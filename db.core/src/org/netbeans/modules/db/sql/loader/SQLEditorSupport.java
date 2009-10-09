@@ -63,6 +63,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.core.SQLCoreUILogger;
+import org.netbeans.modules.db.dataview.api.DataViewPageContext;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -514,10 +515,20 @@ public class SQLEditorSupport extends DataEditorSupport
                     if (LOG) {
                         LOGGER.log(Level.FINE, "Closing the old execution result"); // NOI18N
                     }
+                    int pageSize = -1;
+                    if (parent.executionResults != null && parent.executionResults.size() > 0) {
+                        for (SQLExecutionResult res : parent.executionResults.getResults()) {
+                            int ps = DataViewPageContext.getPageSize(res.getDataView());
+                            pageSize = (pageSize < ps ? ps : pageSize);
+                        }
+                    }
+                    if (pageSize == -1) {
+                        pageSize = SQLExecuteHelper.DEFAULT_PAGE_SIZE;
+                    }
                     parent.closeExecutionResult();
 
                     SQLExecutionLoggerImpl logger = parent.createLogger();
-                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, dbconn, logger);
+                    SQLExecutionResults executionResults = SQLExecuteHelper.execute(sql, startOffset, endOffset, dbconn, logger, pageSize);
                     handleExecutionResults(executionResults, logger);
                 } finally {
                     handle.finish();

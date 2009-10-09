@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.rmi.CORBA.Util;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -157,6 +158,10 @@ class RDocFormatter {
             text = text.substring(2);
         } else if (text.equals("#")) { // empty comment line
             text = "";
+        // rdoc starting w/o space, e.g. #Something - stripping of # so that the lexer doesn't
+        // confuse it for a link (but #\n etc should be processed normally).
+        } else if (text.startsWith("#") && Character.isLetter(text.charAt(1))) {
+            text = text.substring(1);
         }
 
         process(text);

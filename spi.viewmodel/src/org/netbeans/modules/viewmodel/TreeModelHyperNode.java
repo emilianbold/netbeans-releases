@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
+import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
@@ -249,12 +250,21 @@ public class TreeModelHyperNode extends TreeModelNode {
             }
             TreeModelNode tmn = new TreeModelNode (
                 m,
-                model.getColumns(),
+                createHyperColumns(model.getColumns(), m.getColumns()),
                 treeModelRoot,
                 object
             );
             objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
+        }
+
+        private static ColumnModel[] createHyperColumns(ColumnModel[] mainColumns, ColumnModel[] columns) {
+            int n = Math.min(mainColumns.length, columns.length);
+            ColumnModel[] hColumns = new ColumnModel[n];
+            for (int i = 0; i < n; i++) {
+                hColumns[i] = new HyperColumnModel(mainColumns[i], columns[i]);
+            }
+            return hColumns;
         }
 
         public class HyperRefreshingInfo extends RefreshingInfo {

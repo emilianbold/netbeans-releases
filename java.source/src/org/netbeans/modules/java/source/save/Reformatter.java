@@ -2315,12 +2315,13 @@ public class Reformatter implements ReformatTask {
             spaces(count, false);
         }
         
-        private void spaces(int count, boolean preserveNewline) {
+        private boolean spaces(int count, boolean preserveNewline) {
             Token<JavaTokenId> lastWSToken = null;
+            boolean containedNewLine = false;
             int after = 0;
             do {
                 if (tokens.offset() >= endPos)
-                    return;
+                    return containedNewLine;
                 switch(tokens.token().id()) {
                     case WHITESPACE:
                         lastWSToken = tokens.token();
@@ -2332,10 +2333,11 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : SPACE;
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                int idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            int idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     lastBlankLines = 1;
                                     lastBlankLinesTokenIndex = tokens.index();
@@ -2364,10 +2366,11 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : SPACE;
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                int idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            int idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
                                     lastBlankLines = 1;
@@ -2408,10 +2411,11 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : SPACE;
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
                                     lastBlankLines = 1;
@@ -2452,10 +2456,11 @@ public class Reformatter implements ReformatTask {
                                 ? getNewlines(1) + getIndent()
                                 : getSpaces(count);
                         if (lastWSToken != null) {
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
                                     lastBlankLines = 1;
@@ -2472,9 +2477,10 @@ public class Reformatter implements ReformatTask {
                             col = indent;
                         else
                             col += count;
-                        return;
+                        return containedNewLine;
                 }
             } while(tokens.moveNext());
+            return containedNewLine;
         }
 
         private void newline() {
@@ -2834,6 +2840,9 @@ public class Reformatter implements ReformatTask {
                     }
                     break;
                 case WRAP_NEVER:
+                    index = tokens.index();
+                    c = col;
+                    d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
                     if (alignIndent >= 0)
                         indent = alignIndent;
@@ -2846,7 +2855,22 @@ public class Reformatter implements ReformatTask {
                         lastBlankLinesTokenIndex = -1;
                         tokens.moveNext();
                     }
-                    spaces(spacesCnt);
+                    if (spaces(spacesCnt, false)) {
+                        rollback(index, c, d);
+                        old = indent;
+                        if (alignIndent >= 0)
+                            indent = alignIndent;
+                        newline();
+                        indent = old;
+                        ret = col;
+                        if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                            col += tokens.token().length();
+                            lastBlankLines = -1;
+                            lastBlankLinesTokenIndex = -1;
+                            tokens.moveNext();
+                        }
+                        spaces(spacesCnt);
+                    }
                     scan(tree, null);
                     break;
             }

@@ -428,7 +428,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     }
         
     public String getProjectDistDir() {
-        File distDir = new File(FileUtil.toFile(j2seProject.getProjectDirectory()), evaluator.getProperty("dist.dir"));
+        String dD = evaluator.getProperty("dist.dir"); // NOI18N
+        File distDir = new File(FileUtil.toFile(j2seProject.getProjectDirectory()), dD != null ? dD : ""); // NOI18N
         return distDir.toURI().toString();
     }
     

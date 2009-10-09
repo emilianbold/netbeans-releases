@@ -56,6 +56,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -722,7 +724,11 @@ public class KenaiSearchPanel extends JPanel {
             if (projects != null) {
                 while(projects.hasNext()) {
                     KenaiProject project = projects.next();
-                    project.fetchProjectImage(false); // a project image will be needed, prepare it in advance
+                    try {
+                        project.getProjectIcon(); // a project image will be needed, prepare it in advance
+                    } catch (KenaiException ex) { // problem with icon loading
+                        Logger.getLogger(KenaiSearchPanel.class.getName()).log(Level.INFO, "There are problems with getting a project icon - maybe see http://www.netbeans.org/issues/show_bug.cgi?id=172649", ex); //NOI18N
+                    }
                     if (PanelType.OPEN.equals(panelType)) {
                         addElementLater(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {

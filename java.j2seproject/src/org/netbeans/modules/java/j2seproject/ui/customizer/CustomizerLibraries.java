@@ -216,6 +216,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             uiProperties.JAVAC_CLASSPATH_MODEL,
             uiProperties.JAVAC_TEST_CLASSPATH_MODEL,
             uiProperties.RUN_CLASSPATH_MODEL,
+            uiProperties.ENDORSED_CLASSPATH_MODEL,
             uiProperties.RUN_TEST_CLASSPATH_MODEL
            };
         for (int i = 0; i < models.length; i++) {
@@ -237,6 +238,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             uiProperties.JAVAC_CLASSPATH_MODEL,
             uiProperties.JAVAC_TEST_CLASSPATH_MODEL,
             uiProperties.RUN_CLASSPATH_MODEL,
+            uiProperties.ENDORSED_CLASSPATH_MODEL,
             uiProperties.RUN_TEST_CLASSPATH_MODEL,
         };
         
@@ -911,6 +913,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
                 updateJars(uiProperties.RUN_CLASSPATH_MODEL);
                 updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
+                updateJars(uiProperties.ENDORSED_CLASSPATH_MODEL);
                 switchLibrary();
             }
         } else {

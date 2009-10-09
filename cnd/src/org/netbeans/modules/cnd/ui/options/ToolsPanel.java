@@ -124,6 +124,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     private static ToolsPanel instance = null;
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
+    private boolean isUrl = false;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final ToolsCacheManager cacheManager = new ToolsCacheManager();
 
@@ -160,7 +161,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         this();
         this.model = model;
     }
-
 
     private void initializeLong() {
         csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
@@ -588,8 +588,22 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
-            tfBaseDirectory.setText(cs.getDirectory());
-            btBaseDirectory.setEnabled(!isRemoteHostSelected());
+            if (cs.isUrlPointer()) {
+                lbBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbBaseDirectory.text.uc"));
+                tfBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterTextField",
+                        cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterDisplayName(),
+                        cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl()));
+                tfBaseDirectory.setCaretPosition(0);
+                btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.UpdateCenterInstallButton"));
+                btBaseDirectory.setEnabled(true);
+                isUrl = true;
+            } else {
+                lbBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbBaseDirectory.text"));
+                tfBaseDirectory.setText(cs.getDirectory());
+                btBaseDirectory.setEnabled(!isRemoteHostSelected());
+                btBaseDirectory.setText(NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.text")); // NOI18N
+                isUrl = false;
+            }
             lbFamilyValue.setText(cs.getCompilerFlavor().toString());
         } else {
             lbFamilyValue.setText(""); // NOI18N
@@ -815,7 +829,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 repaint();
             }
 
-            boolean baseDirValid = new File(tfBaseDirectory.getText()).exists();
+            boolean baseDirValid = !isUrl && new File(tfBaseDirectory.getText()).exists();
             boolean enableText = baseDirValid || (isRemoteHostSelected() && isHostValidForEditing());
             boolean enableBrowse = baseDirValid && !isRemoteHostSelected();
             boolean enableVersions = (baseDirValid || isRemoteHostSelected()) && isHostValidForEditing();
@@ -1046,7 +1060,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (ServerListUIEx.showServerListDialog(cacheManager)) {
+        if (ServerListUIEx.showServerListDialog(cacheManager, null)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -1819,6 +1833,11 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_btVersionsActionPerformed
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
+    if (isUrl) {
+        CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
+        DownloadUtils.showDownloadConfirmation(cs);
+        return;
+    }
     String seed = null;
     if (tfBaseDirectory.getText().length() > 0) {
         seed = tfBaseDirectory.getText();
@@ -2045,13 +2064,22 @@ private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     selectTool(tfCMakePath);
 }//GEN-LAST:event_btCMakeBrowseActionPerformed
 
-    private static String getString(String key) {
+    static String getString(String key) {
         return NbBundle.getMessage(ToolsPanel.class, key);
     }
 
-    private static String getString(String key, Object param) {
+    static String getString(String key, Object param) {
         return NbBundle.getMessage(ToolsPanel.class, key, param);
     }
+
+    static String getString(String key, Object param1, Object param2) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param1, param2);
+    }
+
+    static String getString(String key, Object param1, Object param2, Object param3) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param1, param2, param3);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;

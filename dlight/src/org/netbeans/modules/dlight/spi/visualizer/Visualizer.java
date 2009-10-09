@@ -55,6 +55,9 @@ public interface Visualizer<T extends VisualizerConfiguration> {
    * @return {@link org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration}
    */
   T getVisualizerConfiguration();
+
+  void updateVisualizerConfiguration(T configuration);
+
   /**
    * Components which is displaying Visualizer
    * @return component

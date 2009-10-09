@@ -387,6 +387,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         isShown = false;
     }
 
+    public void updateVisualizerConfiguration(AdvancedTableViewVisualizerConfiguration configuration) {
+    }
+
     public class DataChildren extends Children.Keys<DataRow> {
 
         private final List<DataRow> list;

@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -76,6 +77,13 @@ import org.openide.util.Parameters;
  * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class ClassPathSupport {
+
+    /**
+     * Classpath for endorsed libraries. See {@link ClassPath} for other classpath
+     * types.
+     * @since org.netbeans.modules.java.api.common/0 1.11
+     */
+    public static final String ENDORSED = "classpath/endorsed";
                 
     // Prefixes and suffixes of classpath
     private static final String LIBRARY_PREFIX = "${libs."; // NOI18N

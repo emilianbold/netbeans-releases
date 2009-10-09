@@ -147,9 +147,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String SHOW_LEGEND = messages.getString("ThreadsPanel_ShowLegend"); // NOI18N
     private static final String SHOW_ALL_STACKS = messages.getString("ThreadsPanel_ShowAllStacks"); // NOI18N
     private static final String SELECT_THREAD_NAME = messages.getString("ThreadsPanel_SelectThreadName"); // NOI18N
-    private static final String THREAD_NAME_ID = messages.getString("ThreadsPanel_ThreadNameId"); // NOI18N
-    private static final String THREAD_NAME_CALLEE = messages.getString("ThreadsPanel_ThreadNameCallee"); // NOI18N
-    private static final String THREAD_NAME_CALLEE_CALLEE = messages.getString("ThreadsPanel_ThreadNameCalleeCallee"); // NOI18N
+    static final String THREAD_NAME_ID = messages.getString("ThreadsPanel_ThreadNameId"); // NOI18N
+    static final String THREAD_NAME_CALLEE = messages.getString("ThreadsPanel_ThreadNameCallee"); // NOI18N
+    static final String THREAD_NAME_CALLEE_CALLEE = messages.getString("ThreadsPanel_ThreadNameCalleeCallee"); // NOI18N
+    static final String THREAD_NAME_FORMAT_TOOL_TIP = messages.getString("ThreadsPanel_ChangeThreadNameFormatToolTip"); // NOI18N
     private static final String CLOSE_LEGEND_TOOLTIP = messages.getString("ThreadsPanel_CloseLegendToolTip"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
     private static final String TABLE_ACCESS_DESCR = messages.getString("ThreadsPanel_TableAccessDescr"); // NOI18N
@@ -338,7 +339,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     if (component instanceof JLabel) {
                         if (column == sortedColum && sortedOrder != 0) {
                             ((JLabel) component).setIcon(getProperIcon(sortedOrder == -1));
-                            ((JLabel) component).setHorizontalTextPosition(SwingConstants.LEFT);
+                            //((JLabel) component).setHorizontalTextPosition(SwingConstants.LEFT);
                         } else {
                             ((JLabel) component).setIcon(null);
                         }
@@ -360,7 +361,10 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         table.getTableHeader().setReorderingAllowed(false);
 
         // fix the first column's width, and make the display column resize
+        ThreadNameHeaderRenderer nameHeaderRenderer = new ThreadNameHeaderRenderer(this);
+        nameHeaderRenderer.setBackground(Color.WHITE);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
+        table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setHeaderRenderer(nameHeaderRenderer);
         table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setMinWidth(MIN_NAME_COLUMN_WIDTH);
         table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setMaxWidth(1000); // this is for some reason needed for the width to actually work
         table.getColumnModel().getColumn(NAME_COLUMN_INDEX).setPreferredWidth(NAME_COLUMN_WIDTH);
@@ -551,8 +555,18 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 TableColumnModel columnModel = table.getColumnModel();
                 int viewColumn = columnModel.getColumnIndexAtX(e.getX());
                 int column = table.convertColumnIndexToModel(viewColumn);
-                if (e.getClickCount() == 1 && column != -1) {
-                    sortByColumn(column);
+                if ((e.getModifiers() == InputEvent.BUTTON1_MASK)){
+                    if (column == NAME_COLUMN_INDEX) {
+                        ThreadNameHeaderRenderer renderer = (ThreadNameHeaderRenderer) table.getColumnModel().getColumn(NAME_COLUMN_INDEX).getHeaderRenderer();
+                        Rectangle rect = renderer.getFormatRectangle();
+                        if (rect.getX() <= e.getX() && e.getX() <= rect.getX()+rect.getWidth()) {
+                            setThreadNameFormat(getThreadNameFormat() + 1);
+                            return;
+                        }
+                    }
+                    if (e.getClickCount() == 1 && column != -1) {
+                        sortByColumn(column);
+                    }
                 }
             }
         });
@@ -713,6 +727,13 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         return manager.getThreadSummary(index);
     }
 
+    public int getSortedColumn(){
+        return sortedColum;
+    }
+    public int getSortedOrder(){
+        return sortedOrder;
+    }
+
     // ---------------------------------------------------------------------------------------
     // Thread data
     public String getThreadName(int index) {
@@ -807,23 +828,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             refreshUI();
             viewPort.repaint();
         }else if (e.getSource() == idThreadName){
-            NbPreferences.forModule(getClass()).putInt("ThreadName", 0); // NOI18N
-            manager.setThreadNameFormat(0, false);
-            idThreadName.setSelected(true);
-            calleeThreadName.setSelected(false);
-            calleeCalleeThreadName.setSelected(false);
+            setThreadNameFormat(0);
         }else if (e.getSource() == calleeThreadName){
-            NbPreferences.forModule(getClass()).putInt("ThreadName", 1); // NOI18N
-            manager.setThreadNameFormat(1, false);
-            idThreadName.setSelected(false);
-            calleeThreadName.setSelected(true);
-            calleeCalleeThreadName.setSelected(false);
+            setThreadNameFormat(1);
         }else if (e.getSource() == calleeCalleeThreadName){
-            NbPreferences.forModule(getClass()).putInt("ThreadName", 2); // NOI18N
-            manager.setThreadNameFormat(2, false);
-            idThreadName.setSelected(false);
-            calleeThreadName.setSelected(false);
-            calleeCalleeThreadName.setSelected(true);
+            setThreadNameFormat(2);
         } else if (e.getSource() instanceof JMenuItem) {
             JMenuItem item = (JMenuItem) e.getSource();
             Object o = item.getClientProperty("query"); // NOI18N
@@ -838,6 +847,35 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     }
                 });
             }
+        }
+    }
+
+    public int getThreadNameFormat(){
+        return manager.getThreadNameFormat();
+    }
+
+    public void setThreadNameFormat(int i){
+        switch (i){
+            case 1:
+                NbPreferences.forModule(getClass()).putInt("ThreadName", 1); // NOI18N
+                manager.setThreadNameFormat(1, false);
+                idThreadName.setSelected(false);
+                calleeThreadName.setSelected(true);
+                calleeCalleeThreadName.setSelected(false);
+                break;
+            case 2:
+                NbPreferences.forModule(getClass()).putInt("ThreadName", 2); // NOI18N
+                manager.setThreadNameFormat(2, false);
+                idThreadName.setSelected(false);
+                calleeThreadName.setSelected(false);
+                calleeCalleeThreadName.setSelected(true);
+                break;
+            default: 
+                NbPreferences.forModule(getClass()).putInt("ThreadName", 0); // NOI18N
+                manager.setThreadNameFormat(0, false);
+                idThreadName.setSelected(true);
+                calleeThreadName.setSelected(false);
+                calleeCalleeThreadName.setSelected(false);
         }
     }
 
@@ -988,7 +1026,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 calleeCalleeThreadName.setSelected(true);
                 manager.setThreadNameFormat(2, true);
                 break;
-            case 0:
             default:
                 idThreadName.setSelected(true);
                 manager.setThreadNameFormat(0, true);
@@ -1055,13 +1092,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 ThreadState found = null;
                 for (int j = 0; j < row.size(); j++) {
                     ThreadState state = row.getThreadStateAt(j);
+		    long timeStamp = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
                     if (j < row.size()-1) {
-                        if (state.getTimeStamp() <= t && t <= row.getThreadStateAt(j+1).getTimeStamp()) {
+                        if (timeStamp <= t && t <= ThreadStateColumnImpl.timeStampToMilliSeconds(row.getThreadStateAt(j+1).getTimeStamp())) {
                             found = state;
                             break;
                         }
                     } else {
-                        if (state.getTimeStamp() <= t && t <= state.getTimeStamp()+ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod())) {
+                        if (timeStamp <= t && t <= timeStamp+ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod())) {
                             found = state;
                             break;
                         }
@@ -1091,15 +1129,15 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     final MSAState prefferedState = ThreadStateColumnImpl.point2MSA(this, threadData.getThreadStateAt(index), point);
                     if (prefferedState != null) {
                         final ThreadState state = threadData.getThreadStateAt(index);
-                        int interval = ThreadStateColumnImpl.timeInervalToMilliSeconds(state.getMSASamplePeriod());
+                        int interval = (int) state.getMSASamplePeriod();
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), interval);
                         LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
                         final List<Integer> showThreadsID = new ArrayList<Integer>();
-                        showThreadsID.add(manager.getThreadData(row).getThreadID());
+                        //showThreadsID.add(manager.getThreadData(row).getThreadID());
                         for(Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()){
-                            if (entry.getKey().intValue() != row) {
+                            //if (entry.getKey().intValue() != row) {
                                 showThreadsID.add(manager.getThreadData(entry.getKey().intValue()).getThreadID());
-                            }
+                            //}
                         }
                         //if (true) {
                         //    System.err.println("Prepare Stack Query:");
