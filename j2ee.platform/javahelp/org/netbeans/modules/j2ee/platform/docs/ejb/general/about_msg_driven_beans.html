@@ -15,11 +15,11 @@
 <body>
 <h2>About Message-Driven Beans</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>A message-driven bean is an enterprise bean that enables J2EE applications 
+<p>A message-driven bean is an enterprise session bean that enables Java EE applications
   to process messages asynchronously. The bean acts as a Java Message Service 
   (JMS) message listener, which is similar to an event listener except that the 
   message-driven bean receives messages instead of events. The messages can be 
-  sent by any J2EE component: an application client, another enterprise 
+  sent by any Java EE component: an application client, another enterprise
   bean, or a web component. </p>
 <h3>Why Use Message-Driven Beans?</h3>
 <p>Message-Driven Beans are the solution to build asynchronous enterprise
@@ -27,8 +27,8 @@ applications where processing starts up when a message comes in. This
 approach enables a loose coupling between your enterprise
 application modules. A sender (aka producer) sends a message to a JMS
 managed object (topic or queue) to initiate a process.</p>
-<h3>Comparison to Session Beans and Entity Beans</h3>
-<p>Unlike session beans and entity beans, clients of message-driven beans do not access 
+<h3>Comparison to Session Beans</h3>
+<p>Unlike session beans, clients of message-driven beans do not access 
   them directly. A message-driven bean has only a bean class. </p>
 <p>In several respects, a message-driven bean resembles a stateless session bean:</p>
 <ul>
