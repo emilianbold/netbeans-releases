@@ -96,17 +96,17 @@ public final class WindowsSupport {
 
     public void init() {
         String reg_exe = "reg.exe"; // NOI18N
-        
+
         try {
             String windir = System.getenv("WINDIR"); // NOI18N
             File sys32 = new File(windir, "System32"); // NOI18N
             reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
-        } catch  (Throwable th) {
+        } catch (Throwable th) {
             System.out.println(th);
         }
 
         REG_EXE = reg_exe;
-        
+
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
                 "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
@@ -142,6 +142,13 @@ public final class WindowsSupport {
                 "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
                 "Inno Setup: App Path", // NOI18N
                 ".*REG_SZ(.*)"); // NOI18N
+
+        if (msysRoot == null) {
+            msysRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+                    "Inno Setup: App Path", // NOI18N
+                    ".*REG_SZ(.*)"); // NOI18N
+        }
 
         if (msysRoot != null) {
             File sh = new File(msysRoot + "/bin/sh.exe"); // NOI18N
