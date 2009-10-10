@@ -294,7 +294,7 @@ public abstract class OperationWizardModel {
                     invisible.add(el);
                 }
             }
-            if (OperationType.UPDATE == operationType) {
+            if (OperationType.UPDATE == operationType && checkInternalUpdates) {
                 //filter out eager invisible modules, which are covered by visible
                 List<UpdateElement> realInvisible = new ArrayList<UpdateElement>(invisible);
                 for (UpdateElement v : visible) {
@@ -327,7 +327,7 @@ public abstract class OperationWizardModel {
                 }
 
 
-                if (!realInvisible.isEmpty() && checkInternalUpdates) {
+                if (!realInvisible.isEmpty()) {
                     HashMap<UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
                     //HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(visibleUnits);
                     for (UpdateElement el : realInvisible) {
