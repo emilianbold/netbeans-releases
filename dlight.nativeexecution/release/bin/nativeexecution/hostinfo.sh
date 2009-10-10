@@ -4,7 +4,8 @@ HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
 BITNESS=32
-SH=`/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null`
+LS=/bin/ls
+SH=`$LS /bin/bash 2>/dev/null || $LS /usr/bin/bash 2>/dev/null || $LS /bin/sh 2>/dev/null || $LS /usr/bin/sh 2>/dev/null`
 OSFAMILY=
 DATETIME=`date -u +'%Y-%m-%d %H:%M:%S'`
 
