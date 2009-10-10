@@ -582,7 +582,7 @@ public abstract class GlassfishConfiguration implements
                 RootInterface rootDD = getSunDDRoot(false);
                 if (rootDD instanceof SunWebApp) {
                     contextRoot = ((SunWebApp) rootDD).getContextRoot();
-                    if(contextRoot.equals("/")) { //NOI18N
+                    if((contextRoot != null) && (contextRoot.equals("/"))) { //NOI18N
                         contextRoot = ""; //NOI18N
                     }
                 }

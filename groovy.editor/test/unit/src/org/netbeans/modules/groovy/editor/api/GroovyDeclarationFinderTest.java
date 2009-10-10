@@ -146,4 +146,25 @@ public class GroovyDeclarationFinderTest extends GroovyTestBase {
         checkDeclaration(TEST_BASE + "a/Declaration2.groovy",
                 "class Declaration2 extends Declaration1 implements Interface1, Int^erface2 {", "Interface2.java", 12);
     }
+
+    public void testInnerClasses1() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration3.groovy",
+                "        return Inner^Classes.Type.DUMMY_1;", "InnerClasses.java", 12);
+    }
+
+    public void testInnerClasses2() throws Exception {
+        checkDeclaration(TEST_BASE + "a/Declaration3.groovy",
+                "        return InnerClasses.Ty^pe.DUMMY_1;", "InnerClasses.java", 45);
+    }
+
+// this does not work in tests for some reason
+//    public void testInnerClasses3() throws Exception {
+//        checkDeclaration(TEST_BASE + "a/Declaration3.groovy",
+//                "        InnerClasses.Type.ca^ll()", "InnerClasses.java", 45);
+//    }
+//
+//    public void testInnerClasses4() throws Exception {
+//        checkDeclaration(TEST_BASE + "a/Declaration3.groovy",
+//                "        return InnerClasses.Type.DU^MMY_1;", "InnerClasses.java", 80);
+//    }
 }

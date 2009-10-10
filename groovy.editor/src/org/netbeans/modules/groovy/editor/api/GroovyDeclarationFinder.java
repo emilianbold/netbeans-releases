@@ -50,13 +50,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -93,14 +93,13 @@ import org.netbeans.modules.groovy.editor.api.lexer.Call;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.java.ElementDeclaration;
+import org.netbeans.modules.groovy.editor.java.ElementSearch;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
     
 /**
@@ -245,9 +244,10 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
                 MethodCallExpression methodCall = (MethodCallExpression) parent;
                 Expression objectExpression = methodCall.getObjectExpression();
-                if (objectExpression instanceof VariableExpression) {
-                    VariableExpression variableExpression = (VariableExpression) objectExpression;
-                    String typeName = variableExpression.getType().getName();
+                if (objectExpression instanceof ClassExpression || objectExpression instanceof VariableExpression) {
+                    // TODO this and super magic ?
+                    
+                    String typeName = objectExpression.getType().getName();
 
                     // try to find it in Java
                     FileObject fo = gpr.getSnapshot().getSource().getFileObject();
@@ -287,13 +287,17 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         return new DeclarationLocation(info.getSnapshot().getSource().getFileObject(), offset);
                     }
                 }
+            // find a field ?
             } else if (closest instanceof ConstantExpression && parent instanceof PropertyExpression) {
                 PropertyExpression propertyExpression = (PropertyExpression) parent;
                 Expression objectExpression = propertyExpression.getObjectExpression();
                 Expression property = propertyExpression.getProperty();
-                if (objectExpression instanceof VariableExpression && property instanceof ConstantExpression) {
-                    VariableExpression variableExpression = (VariableExpression) objectExpression;
-                    if ("this".equals(variableExpression.getName())) { // NOI18N
+                // VariableExpression - normal field access
+                // ClassExpression - static field access
+                if ((objectExpression instanceof ClassExpression || objectExpression instanceof VariableExpression)
+                        && property instanceof ConstantExpression) {
+
+                    if (objectExpression instanceof VariableExpression && "this".equals(((VariableExpression) objectExpression).getName())) { // NOI18N
                         ASTNode scope = AstUtilities.getOwningClass(path);
                         if (scope == null) {
                             // we are in script?
@@ -307,8 +311,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                         }
                     } else {
                         // find variable type
-                        ClassNode type = variableExpression.getType();
-                        String typeName = type.getName();
+                        String typeName = objectExpression.getType().getName();
                         String fieldName = ((ConstantExpression) closest).getText();
 
                         // try to find it in Java
@@ -393,8 +396,35 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             String text = doc.getText(range.getStart(), range.getLength());
 
             if(!NbUtilities.stripPackage(fqName).equals(text)){
-                LOG.log(Level.FINEST, "fqName != text");
-                return DeclarationLocation.NONE;
+                // check for inner classes
+                String[] parts = fqName.split(Pattern.quote("$")); // NOI18N
+                if (parts.length < 2) {
+                    return DeclarationLocation.NONE;
+                }
+
+                boolean found = false;
+                StringBuilder builder = new StringBuilder();
+                for (String part : parts) {
+                    builder.append(part).append("$");
+                    if (NbUtilities.stripPackage(part).equals(text)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    return DeclarationLocation.NONE;
+                }
+
+                builder.setLength(builder.length() - 1);
+                fqName = builder.toString();
+
+//                int sepIndex = fqName.indexOf("$"); // NOI18N
+//                if (sepIndex <= 0 || !NbUtilities.stripPackage(fqName.substring(0, sepIndex)).equals(text)) {
+//                    LOG.log(Level.FINEST, "fqName != text");
+//                    return DeclarationLocation.NONE;
+//                } else {
+//                    fqName = fqName.substring(0, sepIndex);
+//                }
             }
 
             Set<IndexedClass> classes =
@@ -492,7 +522,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
         private final CountDownLatch latch;
 
-        private DeclarationLocation location;
+        private DeclarationLocation location = DeclarationLocation.NONE;
 
         public SourceLocator(String fqName, ClasspathInfo cpi, CountDownLatch latch) {
             this.fqName = fqName;
@@ -504,7 +534,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             Elements elements = info.getElements();
 
             if (elements != null) {
-                final javax.lang.model.element.TypeElement typeElement = elements.getTypeElement(fqName);
+                final javax.lang.model.element.TypeElement typeElement = ElementSearch.getClass(elements, fqName);
 
                 if (typeElement != null) {
                     DeclarationLocation found = ElementDeclaration.getDeclarationLocation(cpi, typeElement);
@@ -806,7 +836,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    TypeElement typeElement = ElementSearch.getClass(controller.getElements(), fqn);
                     if (typeElement != null) {
                         for (VariableElement variable : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
                             if (variable.getSimpleName().contentEquals(fieldName)) {
@@ -847,7 +877,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
             javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    TypeElement typeElement = ElementSearch.getClass(controller.getElements(), fqn);
                     if (typeElement != null) {
                         for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                             if (Methods.isSameMethod(javaMethod, methodCall)) {

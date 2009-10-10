@@ -73,6 +73,7 @@ import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.openide.filesystems.FileUtil;
@@ -233,7 +234,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie, Recogn
                     Map<String,String> m = new HashMap<String,String>();
                     String jrubyHome = commonModule.getInstanceProperties().get(GlassfishModule.JRUBY_HOME);
                    if (null != jrubyHome && jrubyHome.length() > 0) {
-                        m.put("jruby.home", jrubyHome);
+                        m.put("jruby.home", Utils.escapePath(jrubyHome).replace(":", "\\:"));
                     } else {
                         throw new RuntimeException();
                     }

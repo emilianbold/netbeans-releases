@@ -70,6 +70,9 @@ public class BeansRefHyperlinkProcessor extends HyperlinkProcessor {
             return;
         }
         SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
+        if (model == null) {
+            return;
+        }
         final String beanName = getBeanName(env);
         final GoToBeanAction[] action = {null};
         try {
