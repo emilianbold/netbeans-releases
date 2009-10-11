@@ -22,7 +22,7 @@
 	<mapID target="org.netbeans.modules.javacard.JavaPlatformManagerDialogBox" url="help/JavaPlatformManagerDialogBox.html"/>
 	<mapID target="org.netbeans.modules.javacard.JavaCard3DeviceManagerDialogBox" url="help/JavaCard3DeviceManagerDialogBox.html"/>
 	<mapID target="org.netbeans.modules.javacard.JavaCard3ProjectPropertiesDialogBox" url="help/JavaCard3ProjectPropertiesDialogBox.html"/>
-	<mapID target="org.netbeans.modules.javacard.gentextid-212" url="help/SourcesPanel.html.html"/>
+	<mapID target="org.netbeans.modules.javacard.SourcesPanel" url="help/SourcesPanel.html"/>
 	<mapID target="org.netbeans.modules.javacard.AddExistingSources" url="help/AddExistingSources.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveSourcePackages" url="help/RemoveSourcePackages.html"/>
 	<mapID target="org.netbeans.modules.javacard.DependenciesPanel" url="help/DependenciesPanel.html"/>
