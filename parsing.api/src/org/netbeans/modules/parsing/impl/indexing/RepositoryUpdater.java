@@ -1763,7 +1763,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
-                        if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot)) {
+                        if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, Indexers.load(false))) {
                             crawler.storeTimestamps();
                             return true;
                         }
@@ -2848,7 +2848,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
-        private boolean scanSource (URL root, boolean sourceForBinaryRoot, Indexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
+        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, Indexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             if (noRootsScan && !fullRescan && TimeStamps.existForRoot(root)) {
