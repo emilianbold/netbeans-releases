@@ -219,7 +219,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         pb.command(info.getCommand());
 
         if (LOG.isLoggable(Level.FINEST)) {
-            LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
+            LOG.finest(String.format("Command: %s", info.getCommand())); // NOI18N
         }
 
         String wdir = info.getWorkingDirectory(true);
@@ -228,7 +228,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             if (wd.exists()) {
                 pb.directory(wd);
                 if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.log(Level.FINEST, "Working directory: {0}", wdir);
+                    LOG.finest(String.format("Working directory: %s", wdir)); // NOI18N
                 }
             }
         }
