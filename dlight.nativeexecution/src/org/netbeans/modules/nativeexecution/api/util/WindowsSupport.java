@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -490,7 +491,7 @@ public final class WindowsSupport {
         UNKNOWN
     }
 
-    private static class CaseInsensitiveComparator implements Comparator<String> {
+    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
 
         public CaseInsensitiveComparator() {
         }
