@@ -361,8 +361,14 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public Future<OperationState> deploy(final OperationStateListener stateListener, 
             final File application, final String name, final String contextRoot) {
+        return deploy(stateListener, application, name, contextRoot, null);
+    }
+
+    public Future<OperationState> deploy(final OperationStateListener stateListener,
+            final File application, final String name, final String contextRoot, Map properties) {
         CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
-        return mgr.deploy(application, name, contextRoot);
+        
+        return mgr.deploy(application, name, contextRoot, properties);
     }
     
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 

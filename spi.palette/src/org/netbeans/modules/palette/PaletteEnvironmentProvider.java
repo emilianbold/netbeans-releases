@@ -166,14 +166,19 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 InputSource is = new InputSource(fo.getInputStream());
                 is.setSystemId(urlString);
                 reader.setContentHandler(handler);
+                reader.setErrorHandler(handler);
                 reader.parse(is);
             }
             catch (SAXException saxe) {
                 Logger.getLogger( getClass().getName() ).log( Level.INFO, null, saxe );
+                return null;
             } 
             catch (IOException ioe) {
                 Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ioe );
+                return null;
             }
+            if( handler.isError() )
+                return null;
 
             node = createPaletteItemNode(handler);
             refNode = new WeakReference<PaletteItemNode>(node);

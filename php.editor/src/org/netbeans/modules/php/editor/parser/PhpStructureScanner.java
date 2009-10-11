@@ -118,6 +118,7 @@ public class PhpStructureScanner implements StructureScanner {
 
             Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
             for (FunctionScope fnc : declaredFunctions) {
+                if (fnc.isAnonymous()) continue;
                 List<StructureItem> variables = new ArrayList<StructureItem>();
                 namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
                 //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default

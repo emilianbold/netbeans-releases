@@ -196,6 +196,10 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
+    public void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+        //TODO: implement
+    }
+
     class Annotate implements Runnable {
         JTextComponent jEditorPane;
         FileAnnotationInfo fileAnnotationInfo;

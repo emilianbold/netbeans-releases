@@ -304,6 +304,10 @@ is divided into following sections:
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
             
             <target name="-post-init">
@@ -422,6 +426,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
@@ -533,6 +538,7 @@ is divided into following sections:
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                         </junit>
                     </sequential>
@@ -638,6 +644,7 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
@@ -678,6 +685,7 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>

@@ -99,10 +99,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public boolean canWrite(File file) {
-        if (file.canWrite()) {
+        if (Utils.canWrite(file)) {
             return true;
         }
-        if (!file.exists()) {
+        if (!Utils.exists(file)) {
             return false;
         }
         // can be optimized by taking out local history from the search
@@ -473,7 +473,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
                             }
                         }
                     }
-                    if (file.exists()) {
+                    if (Utils.exists(file)) {
                         deletedFiles.add(file);
                     } else {
                         deletedFiles.remove(file);

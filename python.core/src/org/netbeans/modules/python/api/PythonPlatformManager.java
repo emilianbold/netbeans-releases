@@ -67,7 +67,7 @@ public class PythonPlatformManager implements Serializable{
     private PythonPlatform getBundledPlatform() {
         PythonPlatform platform = new PythonPlatform(PLATFORM_ID_DEFAULT);
 
-        File jythonInstall = InstalledFileLocator.getDefault().locate("jython-2.5", "org.jython", false); // NOI18N
+        File jythonInstall = InstalledFileLocator.getDefault().locate("jython-2.5.1", "org.jython", false); // NOI18N
         if (!jythonInstall.exists()) {
             return null;
         }
@@ -85,9 +85,9 @@ public class PythonPlatformManager implements Serializable{
 
         // From running
         // % cd o.jython && ant
-        // % ./release/jython-2.5/bin/jython ../python.core/release/platform_info.py
+        // % ./release/jython-2.5.1/bin/jython ../python.core/release/platform_info.py
         // and then updating properties below
-        platform.setName("Jython 2.5"); // NOI18N
+        platform.setName("Jython 2.5.1"); // NOI18N
         String jythonInstallDir = jythonInstall.getPath();
         platform.addPythonPath(new String[] { jythonInstallDir + File.separator + "Lib",
            jythonInstallDir + File.separator + "Lib" + File.separator + "site-packages" });
@@ -445,7 +445,7 @@ public class PythonPlatformManager implements Serializable{
 
     // We don't need to introspect the bundled Jython - we know everything about it
     //    private void findBundledJython() throws PythonException {
-    //        String cmd = "jython-2.5" + File.separator + "bin"; // NOI18N
+    //        String cmd = "jython-2.5.1" + File.separator + "bin"; // NOI18N
     //        File info = InstalledFileLocator.getDefault().locate(cmd, "org.jython", false);
     //        cmd = info.getAbsolutePath() + File.separator + "jython";
     //        String cp = PythonPlatform.buildPath(discoverJythonClasspath(cmd));

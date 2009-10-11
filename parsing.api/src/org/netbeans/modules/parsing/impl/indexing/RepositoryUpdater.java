@@ -1473,7 +1473,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Collection<IndexableImpl> allResources, // all files
                 final URL root,
 //                final boolean allFiles,
-                final boolean sourceForBinaryRoot
+                final boolean sourceForBinaryRoot,
+                Indexers indexers
         ) throws IOException {
             LinkedList<Context> transactionContexts = new LinkedList<Context>();
             final Map<SourceIndexerFactory,Context> ctxToFinish = new IdentityHashMap<SourceIndexerFactory, Context>();
@@ -1482,12 +1483,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     final ClusteredIndexables ci = new ClusteredIndexables(resources);
                     ClusteredIndexables allCi = null;
-                    Set<IndexerCache.IndexerInfo<CustomIndexerFactory>> changedCifs = allResources != null ? new HashSet<IndexerCache.IndexerInfo<CustomIndexerFactory>>() : null;
-
-                    // process custom indexers first
-                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexers(changedCifs);
-                    for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
-
+                    for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : indexers.cifInfos) {
                         Set<String> rootMimeTypes = PathRegistry.getDefault().getMimeTypesFor(root);
                         if (rootMimeTypes != null && !cifInfo.isAllMimeTypesIndexer() && !Util.containsAny(rootMimeTypes, cifInfo.getMimeTypes())) {
                             // ignore roots that are not marked to be scanned by the cifInfo indexer
@@ -1505,7 +1501,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
                         final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
                         transactionContexts.add(ctx);
-                        boolean cifIsChanged = changedCifs != null && changedCifs.contains(cifInfo);
+                        boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
                         boolean forceReindex = !factory.scanStarted(ctx) && allResources != null;
                         boolean allFiles = cifIsChanged || forceReindex || resources == allResources;
                         SPIAccessor.getInstance().setAllFilesJob(ctx, allFiles);
@@ -1551,12 +1547,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     // now process embedding indexers
                     boolean containsNewIndexers = false;
                     boolean forceReindex = false;
-                    Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> changedEifs = allResources != null ? new HashSet<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>() : null;
-                    Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = IndexerCache.getEifCache().getIndexersMap(changedEifs);
                     if (allResources != null) {
-                        for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : eifInfosMap.values()) {
+                        for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
-                                if (changedEifs.contains(eifInfo)) {
+                                if (indexers.changedEifs != null && indexers.changedEifs.contains(eifInfo)) {
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
@@ -1590,7 +1584,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         Iterable<Indexable> indexables = useAllCi ? allCi.getIndexablesFor(mimeType) : ci.getIndexablesFor(mimeType);
 
                         long tm1 = System.currentTimeMillis();
-                        boolean f = indexEmbedding(eifInfosMap, cacheRoot, root, indexables, transactionContexts, sourceForBinaryRoot);
+                        boolean f = indexEmbedding(indexers.eifInfosMap, cacheRoot, root, indexables, transactionContexts, sourceForBinaryRoot);
                         long tm2 = System.currentTimeMillis();
 
                         if (!f) {
@@ -1769,7 +1763,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
-                        if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot)) {
+                        if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, Indexers.load(false))) {
                             crawler.storeTimestamps();
                             return true;
                         }
@@ -2163,11 +2157,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public @Override String toString() {
             StringBuilder sb = new StringBuilder();
-            for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
-                sb.append("indexer=").append(cifInfo.getIndexerName()).append("/").append(cifInfo.getIndexerVersion()); //NOI18N
+            for(Iterator<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> it = cifInfos.iterator(); it.hasNext(); ) {
+                IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo = it.next();
+                sb.append(" indexer=").append(cifInfo.getIndexerName()).append('/').append(cifInfo.getIndexerVersion()); //NOI18N
                 sb.append(" ("); //NOI18N
                 printMimeTypes(cifInfo.getMimeTypes(), sb);
-                sb.append("), "); //NOI18N
+                sb.append(')'); //NOI18N
+                if (it.hasNext()) {
+                    sb.append(','); //NOI18N
+                }
             }
             return super.toString() + sb.toString();
         }
@@ -2269,11 +2267,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public @Override String toString() {
             StringBuilder sb = new StringBuilder();
-            for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
-                sb.append("indexer=").append(eifInfo.getIndexerName()).append("/").append(eifInfo.getIndexerVersion()); //NOI18N
+            for(Iterator<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> it = eifInfos.iterator(); it.hasNext(); ) {
+                IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo = it.next();
+                sb.append(" indexer=").append(eifInfo.getIndexerName()).append('/').append(eifInfo.getIndexerVersion()); //NOI18N
                 sb.append(" ("); //NOI18N
                 printMimeTypes(eifInfo.getMimeTypes(), sb);
-                sb.append("), "); //NOI18N
+                sb.append(')'); //NOI18N
+                if (it.hasNext()) {
+                    sb.append(','); //NOI18N
+                }
             }
             return super.toString() + sb.toString();
         }
@@ -2467,7 +2469,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             boolean finished = scanBinaries(depCtx);
             if (finished) {
-                finished = scanSources(depCtx);
+                finished = scanSources(depCtx, null);
                 if (finished) {
                     finished = scanRootFiles(fullRescanFiles);
                     if (finished) {
@@ -2534,6 +2536,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         private boolean useInitialState;
 
         private DependenciesContext depCtx;
+        protected Indexers indexers = null; // is only ever filled by InitialRootsWork
 
         public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Set<URL> scannedBinaries, Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
             super(false, false, true, false);
@@ -2645,7 +2648,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
             boolean finished = scanBinaries(depCtx);
             if (finished) {
-                finished = scanSources(depCtx);
+                finished = scanSources(depCtx, indexers);
             }
 
             for(URL root : depCtx.scannedRoots) {
@@ -2789,13 +2792,17 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
-        protected final boolean scanSources(final DependenciesContext ctx) {
+        protected final boolean scanSources(DependenciesContext ctx, Indexers indexers) {
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
             int totalOutOfDateFiles = 0;
             int totalDeletedFiles = 0;
             boolean finished = true;
+
+            if (indexers == null) {
+                indexers = Indexers.load(false);
+            }
 
             for (URL source : ctx.newRootsToScan) {
                 if (isCancelled()) {
@@ -2808,7 +2815,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final int [] deletedFiles = new int [] { 0 };
                 try {
                     updateProgress(source);
-                    if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), outOfDateFiles, deletedFiles)) {
+                    if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles)) {
                         ctx.scannedRoots.add(source);
                     } else {
                         finished = false;
@@ -2841,7 +2848,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
-        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
+        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, Indexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             if (noRootsScan && !fullRescan && TimeStamps.existForRoot(root)) {
@@ -2856,8 +2863,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 LinkedList<Context> transactionContexts = new LinkedList<Context>();
                 try {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                    Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> infos = IndexerCache.getCifCache().getIndexers(null);
-                    for (IndexerCache.IndexerInfo<CustomIndexerFactory> info : infos) {
+                    for (IndexerCache.IndexerInfo<CustomIndexerFactory> info : indexers.cifInfos) {
                         CustomIndexerFactory factory = info.getIndexerFactory();
                         final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, isFollowUpJob(), hasToCheckEditor(), sourceForBinaryRoot, null);
                         CustomIndexer indexer = factory.createIndexer();
@@ -2893,7 +2899,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
                         delete(deleted, root);
-                        if (index(resources, allResources, root, sourceForBinaryRoot)) {
+                        if (index(resources, allResources, root, sourceForBinaryRoot, indexers)) {
                             crawler.storeTimestamps();
                             outOfDateFiles[0] = resources.size();
                             deletedFiles[0] = deleted.size();
@@ -2941,6 +2947,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         
         public @Override boolean getDone() {
             try {
+                if (indexers == null) {
+                    indexers = Indexers.load(true);
+                }
+
                 if (waitForProjects) {
                     boolean retry = true;
                     while (retry) {
@@ -3366,6 +3376,30 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
     } // End of DependenciesContext class
+
+    private static final class Indexers {
+
+        public static Indexers load(boolean detectChanges) {
+            return new Indexers(detectChanges);
+        }
+
+        public final Set<IndexerCache.IndexerInfo<CustomIndexerFactory>> changedCifs;
+        public final Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos;
+        public final Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> changedEifs;
+        public final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap;
+
+        private Indexers(boolean detectChanges) {
+            if (detectChanges) {
+                changedCifs = new HashSet<IndexerCache.IndexerInfo<CustomIndexerFactory>>();
+                changedEifs = new HashSet<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>();
+            } else {
+                changedCifs = null;
+                changedEifs = null;
+            }
+            cifInfos = IndexerCache.getCifCache().getIndexers(changedCifs);
+            eifInfosMap = IndexerCache.getEifCache().getIndexersMap(changedEifs);
+        }
+    }
 
     private final class Controller extends IndexingController {
 

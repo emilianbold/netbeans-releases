@@ -59,6 +59,12 @@ public interface AnnotatedSourceSupport {
      * @param functionCallsthe list of function calls with the metrics
      */
     void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
-
+    /**
+     * This method is invoked in non UI thread
+     * @param sourceFileInfoProvider source file info provider which can be used to get the source file info for the function call
+     * @param metrics metrics list which were displayed
+     * @param functionCallsthe list of function calls with the metrics
+     */
+    void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
 
 }
