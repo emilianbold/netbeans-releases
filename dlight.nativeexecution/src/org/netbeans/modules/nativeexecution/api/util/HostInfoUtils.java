@@ -17,7 +17,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
-import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchTask;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchSupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
@@ -35,6 +35,7 @@ public final class HostInfoUtils {
     private static final List<String> myIPAdresses = new ArrayList<String>();
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
+
 
     static {
         NetworkInterface iface = null;
@@ -116,14 +117,11 @@ public final class HostInfoUtils {
 
     public static String searchFile(ExecutionEnvironment execEnv,
             List<String> searchPaths, String file, boolean searchInUserPaths) {
-
-        FileSearchParams fileSearchParams = new FileSearchParams(execEnv,
-                searchPaths, file, searchInUserPaths);
-
         String result = null;
 
         try {
-            result = new FileSearchTask().compute(fileSearchParams);
+            result = new FileSearchSupport().searchFile(new FileSearchParams(execEnv,
+                    searchPaths, file, searchInUserPaths));
         } catch (InterruptedException ex) {
         }
 

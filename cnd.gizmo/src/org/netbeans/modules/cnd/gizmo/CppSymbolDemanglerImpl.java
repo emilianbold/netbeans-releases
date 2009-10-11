@@ -151,7 +151,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     public String demangle(String symbolName) {
         String mangledName = stripModuleAndOffset(symbolName);
 
-        if (!isMangled(mangledName)) {
+        if (!isToolAvailable() || !isMangled(mangledName)) {
             return mangledName;
         }
 
@@ -177,6 +177,10 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         List<String> result = new ArrayList<String>(symbolNames.size());
         for (String name : symbolNames) {
             result.add(stripModuleAndOffset(name));
+        }
+
+        if (!isToolAvailable()) {
+            return result;
         }
 
         List<String> missedNames = new ArrayList<String>();
