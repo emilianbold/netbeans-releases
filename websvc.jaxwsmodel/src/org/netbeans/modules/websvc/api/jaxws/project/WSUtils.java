@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -50,22 +50,29 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -383,6 +390,50 @@ public class WSUtils {
             return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
         }
         return null;
+    }
+
+
+    public static void addJaxWsApiEndorsed(Project project, FileObject srcRoot) throws IOException {
+        ClassPath classPath = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+        if (classPath == null || classPath.findResource("javax/xml/ws/Service.class") == null) { //NOI18N
+            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary("JAX-WS-ENDORSED"); //NOI18N
+            if (jaxWsApiLib == null) {
+                jaxWsApiLib = createJaxWsApiLibrary();
+            }
+            ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ClassPath.COMPILE);
+        }
+    }
+
+    private static Library createJaxWsApiLibrary() throws IOException {
+        List<URL> apiJars = getJaxWsApiJars();
+        if (apiJars.size() > 0) {
+            Map<String, List<URL>> map = Collections.<String, List<URL>>singletonMap("classpath", apiJars); //NOI18N
+            return LibraryManager.getDefault().createLibrary("j2se", "JAX-WS-ENDORSED", map); //NOI18N
+        }
+        return null;
+    }
+
+    private static List<URL> getJaxWsApiJars() throws IOException {
+        List<URL> urls = new ArrayList<URL>();
+        File jaxwsApiDir = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api", null, false); // NOI18N
+        File jaxbApiDir =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api", null, false); // NOI18N
+        if (jaxwsApiDir != null && jaxbApiDir != null) {
+            File[] jars = jaxwsApiDir.listFiles();
+            for (File jar: jars) {
+                URL url = jar.toURI().toURL();
+                if (FileUtil.isArchiveFile(url)) {
+                    urls.add(FileUtil.getArchiveRoot(url));
+                }
+            }
+            jars = jaxbApiDir.listFiles();
+            for (File jar: jars) {
+                URL url = jar.toURI().toURL();
+                if (FileUtil.isArchiveFile(url)) {
+                    urls.add(FileUtil.getArchiveRoot(url));
+                }
+            }
+        }
+        return urls;
     }
     
     public static FileObject findJaxWsFileObject(Project project) {
