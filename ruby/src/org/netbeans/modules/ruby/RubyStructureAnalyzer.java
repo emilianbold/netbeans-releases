@@ -738,6 +738,22 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         structure.add(co);
                     }
                 }
+            } else if (AstUtilities.isActiveRecordAssociation(node)) {
+                SymbolNode[] symbols = AstUtilities.getSymbols(node);
+                if (symbols.length > 0) {
+                    SymbolNode method = symbols[0];
+                    method.getName();
+                    AstDynamicMethodElement co = new AstDynamicMethodElement(result, method);
+                    co.setIn(in);
+                    co.setModifiers(EnumSet.of(Modifier.PUBLIC));
+                    co.setType(new RubyType(ActiveRecordAssociationFinder.getClassNameFor(node, method))); //NOI18N
+                    co.setHidden(true);
+                    if (parent != null) {
+                        parent.addChild(co);
+                    } else {
+                        structure.add(co);
+                    }
+                }
             } else if ((includes != null) && name.equals("include")) {
                 Node argsNode = ((FCallNode)node).getArgsNode();
 
