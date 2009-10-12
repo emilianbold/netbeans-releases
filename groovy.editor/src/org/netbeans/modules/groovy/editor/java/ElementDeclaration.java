@@ -80,7 +80,7 @@ public final class ElementDeclaration {
             return new DeclarationLocation(fo, offset);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
-            return null;
+            return DeclarationLocation.NONE;
         }
     }
 

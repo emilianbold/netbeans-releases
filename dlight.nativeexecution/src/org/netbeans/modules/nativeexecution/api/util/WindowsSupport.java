@@ -45,8 +45,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -70,7 +73,7 @@ public final class WindowsSupport {
     private ShellType type = ShellType.NO_SHELL;
     private String shell = null;
     private String bin = null;
-    private Properties env = null;
+    private Map<String, String> env = null;
     private String REG_EXE;
 
     private WindowsSupport() {
@@ -399,16 +402,16 @@ public final class WindowsSupport {
         return sb.toString();
     }
 
-    public synchronized Properties getEnv() {
+    public synchronized Map<String, String> getEnv() {
         if (env == null) {
-            env = readEnv();
+            env = Collections.unmodifiableMap(readEnv());
         }
 
         return env;
     }
 
-    private static Properties readEnv() {
-        Properties result = new Properties();
+    private static Map<String, String> readEnv() {
+        Map<String, String> result = new TreeMap<String, String>(new CaseInsensitiveComparator());
 
         try {
             String os = System.getProperty("os.name").toLowerCase(); // NOI18N
@@ -425,9 +428,9 @@ public final class WindowsSupport {
 
             for (String line : out) {
                 int idx = line.indexOf('=');
-                String key = line.substring(0, idx).trim().toUpperCase();
+                String key = line.substring(0, idx).trim();
                 String value = line.substring(idx + 1);
-                result.setProperty(key, value);
+                result.put(key, value);
             }
 
             int exitStatus = -1;
@@ -478,5 +481,27 @@ public final class WindowsSupport {
         CYGWIN,
         MSYS,
         UNKNOWN
+    }
+
+    private static class CaseInsensitiveComparator implements Comparator<String> {
+
+        public CaseInsensitiveComparator() {
+        }
+
+        public int compare(String s1, String s2) {
+            if (s1 == null && s2 == null) {
+                return 0;
+            }
+
+            if (s1 == null) {
+                return 1;
+            }
+
+            if (s2 == null) {
+                return -1;
+            }
+
+            return s1.toUpperCase().compareTo(s2.toUpperCase());
+        }
     }
 }

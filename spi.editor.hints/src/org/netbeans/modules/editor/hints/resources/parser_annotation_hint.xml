@@ -51,5 +51,6 @@ made subject to such option by the copyright holder.
              glyph="nbresloc:/org/netbeans/modules/editor/hints/resources/warning-glyph.gif"
 
              severity="ok"
+             priority="50"
 	     browseable="true"
              type="linepart"/>

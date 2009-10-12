@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
     <folder name="Libraries">
       <file name="javaee-api-6.0.xml" url="javaee-api-6.0.xml"/>
       <file name="javaee-web-api-6.0.xml" url="javaee-web-api-6.0.xml"/>
+      <file name="javaee-endorsed-api-6.0.xml" url="javaee-endorsed-api-6.0.xml"/>
     </folder>
   </folder>
 </filesystem>

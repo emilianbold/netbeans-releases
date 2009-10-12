@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
 
 /** To simulate issue 42244.
  */
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class SimpleProxyLookupIssue42244Test extends AbstractLookupBaseHid implements AbstractLookupBaseHid.Impl {
     public SimpleProxyLookupIssue42244Test (java.lang.String testName) {
         super(testName, null);

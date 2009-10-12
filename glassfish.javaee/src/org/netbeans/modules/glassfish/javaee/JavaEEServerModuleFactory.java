@@ -318,6 +318,16 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, "Java EE documentation not found when registering Java EE API library."); // NOI18N
         }
 
+        // additional jar for glassfish-samples support
+        f = ServerUtilities.getJarName(installRoot, "web-core" + ServerUtilities.GFV3_VERSION_MATCHER);
+        if (f != null && f.exists()) {
+            try {
+                libraryList.add(ServerUtilities.fileToUrl(f));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, "Problem while registering web-core into GlassFish API library."); // NOI18N
+            }
+        }
+
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }
 
@@ -394,13 +404,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);
                 if (lib == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             } catch (IllegalArgumentException ex) {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);
                 if (lib == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         }
@@ -422,6 +432,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
+            synchronized (lmgr) {
             if (null != name) {
                 Library l = lmgr.getLibrary(name);
                 final PropertyChangeListener pcl = this;
@@ -447,16 +458,19 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     removeFromListenerList(pcl);
                 }
             }
+            }
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
+                    synchronized (lmgr) {
                     if (null != lmgr) {
                         lmgr.removePropertyChangeListener(pcl);
                         content = null;
                         name = null;
+                    }
                     }
                 }
             });

@@ -135,7 +135,7 @@ Current java platform setup is:
 
     <target name="test-coverage" depends="cobertura-init, cobertura-instrument, test-with-cobertura"/>
 
-    <target name="coverage-report" depends="netbeans, test-coverage" description="Creates test coverage report for this module">
+    <target name="coverage-report" depends="netbeans, test-coverage" description="Creates unit test coverage report for this module">
       <coverage-report test.type="unit" />
     </target>
 

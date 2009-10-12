@@ -133,7 +133,10 @@ abstract class BaseTestMethodNodeAction extends TestNodeAction {
             return;
         }
         Project owner = FileOwnerQuery.getOwner(testFile);
-        assert project.equals(owner) : "Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed." + "Got " + owner + ", expected " + project;
+        if (!project.equals(owner)) {
+            LOGGER.fine("Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed."
+                    + "Got " + owner + ", expected " + project);
+        }
         doRspecRun(testFile, location);
     }
 

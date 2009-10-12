@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.versioning.util;
 
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -49,6 +50,18 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -165,7 +178,7 @@ public abstract class VCSKenaiSupport {
     /**
      * Repesents a Kenai user
      */
-    public abstract class KenaiUser {
+    public static abstract class KenaiUser {
 
         /**
          * Determines wheter the {@link KenaiUser} is online or not
@@ -207,12 +220,39 @@ public abstract class VCSKenaiSupport {
          * Start a chat session with this user
          */
         public abstract void startChat();
+
+        /**
+         * Start a chat session with this user and inserts the given message
+         */
+        public abstract void startChat(String msg);
+
+        public static String getChatLink(Document document, int line) {
+            FileObject fo = NbEditorUtilities.getFileObject(document);
+            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            String ret = "";       // NOI18N
+            if (cp != null) {
+                ret = cp.getResourceName(fo);
+            } else {
+                Project p = FileOwnerQuery.getOwner(fo);
+                if (p != null) {
+                    ret = "{$" +   // NOI18N
+                            ProjectUtils.getInformation(p).getName() +
+                           "}/" +  // NOI18N 
+                           FileUtil.getRelativePath(p.getProjectDirectory(), fo);
+                    } else {
+                    ret = fo.getPath();
+                }
+            }
+            ret += ":" + line;      // NOI18N
+            ret =  "FILE:" + ret;   // NOI18N
+            return ret;
+        }
     }
 
     /**
      * Represents a change in a kenai VCS repository
      */
-    public abstract class VCSKenaiNotification {
+    public static abstract class VCSKenaiNotification {
 
         /**
          * The repository uri

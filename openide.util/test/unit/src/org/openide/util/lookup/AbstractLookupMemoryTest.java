@@ -77,7 +77,7 @@ public class AbstractLookupMemoryTest extends NbTestCase {
     }
     
     public void testLookupWithPairs () {
-        Lookup.Template t = new Lookup.Template (Object.class);
+        Lookup.Template<Object> t = new Lookup.Template<Object>(Object.class);
         class L implements org.openide.util.LookupListener {
             public int cnt;
             public void resultChanged (org.openide.util.LookupEvent ev) {
@@ -86,12 +86,18 @@ public class AbstractLookupMemoryTest extends NbTestCase {
         }
         L listener = new L ();
         L listener2 = new L ();
-        
+
+        EmptyPair[] pairs = {
+            new EmptyPair(),
+            new EmptyPair(),
+            new EmptyPair(),
+            new EmptyPair(),
+        };
         Object[] ignore = {
-            new EmptyPair (),
-            new EmptyPair (),
-            new EmptyPair (),
-            new EmptyPair (),
+            pairs[0],
+            pairs[1],
+            pairs[2],
+            pairs[3],
             t,
             ActiveQueue.queue(),
             listener,
@@ -108,10 +114,10 @@ public class AbstractLookupMemoryTest extends NbTestCase {
         c.addPair ((EmptyPair)ignore[1]);
         assertSize ("Is bigger I guess (not counting the pair sizes)", Collections.singleton (l), 56, ignore);
         
-        c.setPairs((Collection)Arrays.asList (ignore).subList (0, 3));
+        c.setPairs(Arrays.asList(pairs).subList(0, 3));
         assertSize ("Even bigger (not counting the pair sizes)", Collections.singleton (l), 64, ignore);
         
-        c.setPairs((Collection)Arrays.asList (ignore).subList (0, 4));
+        c.setPairs(Arrays.asList(pairs).subList(0, 4));
         assertSize ("Now not that much(not counting the pair sizes)", Collections.singleton (l), 64, ignore);
         
         Lookup.Result res = l.lookup (t);

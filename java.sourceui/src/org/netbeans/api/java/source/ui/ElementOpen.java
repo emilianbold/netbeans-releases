@@ -29,6 +29,9 @@ package org.netbeans.api.java.source.ui;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -38,7 +41,11 @@ import org.openide.util.Lookup;
 
 import javax.lang.model.element.Element;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /** Utility class for opening elements in editor.
  *
@@ -138,25 +145,23 @@ public final class ElementOpen {
     private static boolean doOpen(FileObject fo, int offset) {
         return UiUtils.open(fo, offset);
     }
-    
-    private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
-        if (IndexingManager.getDefault().isIndexing()) {
-            log.info("Skipping location of element offset within file, Scannig in progress");
-            return 0; //we are opening @ 0 position. Fix #160478
-        }
 
+    private static final int AWT_TIMEOUT = 1000;
+    private static final int NON_AWT_TIMEOUT = 2000;
+
+    private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         final int[]  result = new int[] {-1};
         
         JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
-            js.runUserActionTask(new Task<CompilationController>() {
+            Task<CompilationController> t = new Task<CompilationController>() {
                 public void run(CompilationController info) {
                     try {
                         info.toPhase(JavaSource.Phase.RESOLVED);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }
-                    Element el = handle.resolve(info);                
+                    Element el = handle.resolve(info);
                     if (el == null) {
                         log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
                         return;
@@ -166,13 +171,40 @@ public final class ElementOpen {
 
                     CompilationUnitTree cu = info.getCompilationUnit();
 
-                    v.scan(cu, null);                
+                    v.scan(cu, null);
                     Tree elTree = v.declTree;
 
                     if (elTree != null)
                         result[0] = (int)info.getTrees().getSourcePositions().getStartPosition(cu, elTree);
                 }
-            },true);
+            };
+
+            if (IndexingManager.getDefault().isIndexing()) {
+                int timeout = SwingUtilities.isEventDispatchThread() ? AWT_TIMEOUT : NON_AWT_TIMEOUT;
+                Future<Void> f = js.runWhenScanFinished(t, true);
+
+                try {
+                    f.get(timeout, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    log.log(Level.INFO, null, ex);
+                    return 0;
+                } catch (ExecutionException ex) {
+                    log.log(Level.INFO, null, ex);
+                    return 0;
+                } catch (TimeoutException ex) {
+                    f.cancel(true);
+                    log.info("Skipping location of element offset within file, Scannig in progress");
+                    return 0; //we are opening @ 0 position. Fix #160478
+                }
+
+                if (!f.isDone()) {
+                    f.cancel(true);
+                    log.info("Skipping location of element offset within file, Scannig in progress");
+                    return 0; //we are opening @ 0 position. Fix #160478
+                }
+            } else {
+                js.runUserActionTask(t, true);
+            }
         }
         return result[0];
     }

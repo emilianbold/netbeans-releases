@@ -101,8 +101,10 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         racesLabel.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive16.png"))); // NOI18N
 
         deadlocksDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksDetails.text")); // NOI18N
+        deadlocksDetails.setName("deadlocksDetails"); // NOI18N
 
         racesDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.racesDetails.text")); // NOI18N
+        racesDetails.setName("racesDetails"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

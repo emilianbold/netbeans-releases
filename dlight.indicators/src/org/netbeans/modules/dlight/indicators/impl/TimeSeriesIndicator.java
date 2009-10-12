@@ -101,7 +101,6 @@ public final class TimeSeriesIndicator
         this.graph = createGraph(configuration, data);
         this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
         this.button = new JButton(getDefaultAction());
-        button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph, legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
     }
 

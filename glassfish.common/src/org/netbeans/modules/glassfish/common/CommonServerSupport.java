@@ -119,7 +119,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip,GlassfishModule.DRIVER_DEPLOY_FLAG, "true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
+            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, adminPort);
             ip.put(URL_ATTR, deployerUrl);
         }
 
@@ -134,9 +134,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
         
-        if(isRunning(hostName, adminPort)) {
             refresh();
-        }
     }
     
 //<<<<<<< local
