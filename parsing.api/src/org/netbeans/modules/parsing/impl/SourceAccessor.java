@@ -48,6 +48,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -184,4 +185,12 @@ public abstract class SourceAccessor {
      * @return number of still registered tasks
      */
     public abstract int taskRemoved (Source source);
+
+    /**
+     * Returns a Source for given {@link FileObject} iff it exists
+     * otherwise returns null
+     * @param file for which the {@link Source} should be returned.
+     * @return the Source or null
+     */
+    public abstract Source get (final FileObject file);
 }

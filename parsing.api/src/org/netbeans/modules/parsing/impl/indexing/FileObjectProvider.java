@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,25 +34,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.net.URL;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface IndexableImpl {
-
-    public String getRelativePath();
-
-    public URL getURL();
-
-    public String getMimeType();
-
-    public boolean isTypeOf(String mimeType);
-
+public interface FileObjectProvider {
+    public FileObject getFileObject();
 }

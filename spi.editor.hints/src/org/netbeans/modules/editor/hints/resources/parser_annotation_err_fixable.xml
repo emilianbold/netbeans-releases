@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
              visible="true"
              glyph="nbresloc:/org/netbeans/modules/editor/hints/resources/error-sg.gif"
 	     severity="error"
+             priority="50"
              actions="hints-fixable"
 	     browseable="true"
              type="linepart"

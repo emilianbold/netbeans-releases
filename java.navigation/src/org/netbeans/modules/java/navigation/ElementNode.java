@@ -53,8 +53,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
-import javax.swing.text.StyledDocument;
-
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -63,23 +61,16 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-
 
 /** Node representing an Element
  *
@@ -88,17 +79,15 @@ import org.openide.util.lookup.InstanceContent;
 public class ElementNode extends AbstractNode {
 
     
-    private static Node         WAIT_NODE;
+    private static Node WAIT_NODE;
     
-    private Description         description;
-    private Line.Part           linePart;
-    
+    private OpenAction openAction;
+    private Description description;
            
     /** Creates a new instance of TreeNode */
-    ElementNode (Description description) {
+    public ElementNode( Description description ) {
         super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null ? null : prepareLookup(description));
         this.description = description;
-        linePart = getLinePart ();
         setDisplayName( description.name ); 
     }
     
@@ -190,35 +179,11 @@ public class ElementNode extends AbstractNode {
     }
         
     private synchronized Action getOpenAction() {
-        return new OpenAction (
-            description.elementHandle,
-            description.name,
-            linePart
-        );
-    }
-
-    private Line.Part getLinePart () {
-        FileObject fileObject = description.getFileObject ();
-        if (fileObject == null) return null;
-        try {
-            DataObject dataObject = DataObject.find (fileObject);
-            EditorCookie editorCookie = dataObject.getLookup ().lookup (EditorCookie.class);
-            LineCookie lineCookie = dataObject.getLookup ().lookup (LineCookie.class);
-            if (editorCookie != null && lineCookie != null && description.pos != -1) {
-                StyledDocument document = editorCookie.openDocument ();
-                if (document != null) {
-                    int line = NbDocument.findLineNumber (document, (int) description.pos);
-                    int lineOffset = NbDocument.findLineOffset (document, line);
-                    int column = (int) description.pos - lineOffset;
-                    if (line != -1)
-                        return lineCookie.getLineSet ().getCurrent (line).
-                            createPart (column, 0);
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace (ex);
+        if ( openAction == null ) {
+            FileObject fo = description.getFileObject();
+            openAction = new OpenAction(description.elementHandle, fo, description.name);
         }
-        return null;
+        return openAction;
     }
     
     static synchronized Node getWaitNode() {
@@ -262,7 +227,7 @@ public class ElementNode extends AbstractNode {
         return null;
     }
     
-    void updateRecursively (Description newDescription) {
+    public void updateRecursively( Description newDescription ) {
         Children ch = getChildren();
         if ( ch instanceof ElementChilren ) {           
            HashSet<Description> oldSubs = new HashSet<Description>( description.subs );
@@ -283,7 +248,7 @@ public class ElementNode extends AbstractNode {
            
            // Reread nodes
            nodes = ch.getNodes( true );
-            
+           
            for( Description newSub : newDescription.subs ) {
                 ElementNode node = oldD2node.get(newSub);
                 if ( node != null ) { // filtered out
@@ -297,7 +262,6 @@ public class ElementNode extends AbstractNode {
                         
         Description oldDescription = description; // Remember old description        
         description = newDescription; // set new descrioption to the new node
-        linePart = getLinePart ();
         if ( oldDescription.htmlHeader != null && !oldDescription.htmlHeader.equals(description.htmlHeader)) {
             // Different headers => we need to fire displayname change
             fireDisplayNameChange(oldDescription.htmlHeader, description.htmlHeader);
@@ -308,7 +272,7 @@ public class ElementNode extends AbstractNode {
         }
     }
     
-    Description getDescritption() {
+    public Description getDescritption() {
         return description;
     }
 
@@ -446,7 +410,6 @@ public class ElementNode extends AbstractNode {
         }
         
         
-        @Override
         public int hashCode() {
             int hash = 7;
 

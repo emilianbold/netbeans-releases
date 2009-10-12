@@ -48,6 +48,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
@@ -221,7 +222,8 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
                 if (!ch[i].getPrimaryFile().isFolder()) {
                     ch[i].delete();
                 }
-                else {
+                else if (empty && VisibilityQuery.getDefault().isVisible(ch[i].getPrimaryFile())) {
+                    // 156529: hidden folders should be considered as empty content
                     empty = false;
                 }
             }
