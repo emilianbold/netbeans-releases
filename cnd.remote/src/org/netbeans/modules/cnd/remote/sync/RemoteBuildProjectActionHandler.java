@@ -93,6 +93,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private String remoteDir;
 
     private NativeProcess remoteControllerProcess = null;
+    private TimestampAndSharabilityFilter filter;
     
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -157,13 +158,18 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
+        filter = new TimestampAndSharabilityFilter(privProjectStorageDir, execEnv);
+
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
         RfsLocalController localController = new RfsLocalController(
                 execEnv, localDir,  remoteDir, rcInputStream,
-                rcOutputStream, err, privProjectStorageDir);
+                rcOutputStream, err, filter);
 
+        filter.setMode(FileTimeStamps.Mode.CREATION);
         feedFiles(rcOutputStream);
+        filter.flush();
+        filter.setMode(FileTimeStamps.Mode.COPYING);
         //try { rcOutputStream.flush(); Thread.sleep(10000); } catch (InterruptedException e) {}
 
         // read port
@@ -310,7 +316,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
      */
     private void feedFiles(OutputStream rcOutputStream) {
         PrintWriter writer = new PrintWriter(rcOutputStream);
-        NonFlashingFilter filter = new NonFlashingFilter(privProjectStorageDir, execEnv);
         List<FileInfo> files = new ArrayList<FileInfo>(512);
         File[] children = localDir.listFiles(filter);
         for (File child : children) {
@@ -357,24 +362,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             }
         }
     }
-
-    private static class NonFlashingFilter extends TimestampAndSharabilityFilter {
-
-        public NonFlashingFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-            super(privProjectStorageDir, executionEnvironment);
-        }
-
-        @Override
-        public boolean acceptImpl(File file) {
-            return super.acceptImpl(file);
-        }
-
-        @Override
-        public void flush() {
-            // do nothing, since fake (empty) fies were sent!
-        }
-    }
-
 
     private static boolean isEmpty(String s) {
         return s == null || s.length() == 0;

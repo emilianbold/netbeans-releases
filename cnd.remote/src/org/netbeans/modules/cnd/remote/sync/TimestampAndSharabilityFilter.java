@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
-import java.io.IOException;
+import org.netbeans.modules.cnd.remote.sync.FileTimeStamps.Mode;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -49,22 +49,32 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class TimestampAndSharabilityFilter extends SharabilityFilter {
 
-    final FileTimeStamps timeStamps;
+    private final FileTimeStamps timeStamps;
+    private FileTimeStamps.Mode mode;
 
     public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         timeStamps = new FileTimeStamps(privProjectStorageDir, executionEnvironment);
+        mode = FileTimeStamps.Mode.COPYING;
         if (Boolean.getBoolean("cnd.remote.timestamps.clear")) {
             timeStamps.clear();
         }
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     @Override
     public boolean acceptImpl(File file) {
         boolean accept = super.acceptImpl(file);
         if (accept && ! file.isDirectory()) {
-            if (timeStamps.isChanged(file)) {
-                //System.out.printf("FILE %s CHANGED\n", file.getAbsolutePath());
-                timeStamps.rememberTimeStamp(file);
+            accept = (mode == Mode.CREATION) ? timeStamps.needsCreating(file) : timeStamps.needsCopying(file);
+            if (accept) {
+                if (mode == Mode.CREATION) {
+                    timeStamps.rememberCreationTimestamp(file);
+                } else { // mode == Mode.COPYING
+                    timeStamps.rememberCopyTimestamp(file);
+                }
             } else {
                 //System.out.printf("FILE %s UNCHANGED\n", file.getAbsolutePath());
                 accept = false;
@@ -78,6 +88,6 @@ public class TimestampAndSharabilityFilter extends SharabilityFilter {
     }
 
     public void dropTimestamp(File file) {
-        timeStamps.dropTimeStamp(file);
+        timeStamps.dropTimestamp(file);
     }
 }
