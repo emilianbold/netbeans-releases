@@ -680,6 +680,10 @@ public class ChatTopComponent extends TopComponent {
         });
     }
 
+    void switchToContactList() {
+        chats.setSelectedIndex(0);
+    }
+
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
