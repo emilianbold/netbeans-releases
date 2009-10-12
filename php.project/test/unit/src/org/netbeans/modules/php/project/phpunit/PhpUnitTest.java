@@ -37,12 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.phpunit;
 
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import java.io.File;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.project.util.TestUtils;
 import static org.junit.Assert.*;
 
 /**

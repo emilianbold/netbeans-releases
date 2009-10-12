@@ -59,7 +59,7 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

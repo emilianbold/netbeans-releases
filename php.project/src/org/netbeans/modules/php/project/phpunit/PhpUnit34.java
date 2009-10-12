@@ -37,39 +37,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.testrunner;
+package org.netbeans.modules.php.project.phpunit;
 
-import java.awt.event.ActionEvent;
-import java.util.regex.Matcher;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
-import org.openide.util.NbBundle;
+/**
+ * @author Tomas Mysik
+ */
+class PhpUnit34 extends PhpUnit {
+    private static final String PARAM_JUNIT_LOG = "--log-junit"; // NOI18N
 
-public class JumpToCallStackAction extends AbstractAction {
-    private static final long serialVersionUID = -14558324203007090L;
-
-    private final String callstackFrameInfo;
-
-    public JumpToCallStackAction(String callstackFrameInfo) {
-        assert callstackFrameInfo != null;
-        this.callstackFrameInfo = callstackFrameInfo;
+    PhpUnit34(String command) {
+        super(command);
     }
 
     @Override
-    public Object getValue(String key) {
-        if (NAME.equals(key)) {
-            return NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
-        }
-        return super.getValue(key);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(callstackFrameInfo);
-        if (matcher.matches()) {
-            String path = matcher.group(1);
-            String line = matcher.group(2);
-            PhpProjectUtils.openFile(path, Integer.valueOf(line));
-        }
+    public String getXmlLogParam() {
+        return PARAM_JUNIT_LOG;
     }
 }
