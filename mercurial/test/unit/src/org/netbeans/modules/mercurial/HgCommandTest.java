@@ -48,6 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -75,11 +77,16 @@ public class HgCommandTest extends AbstractHgTest {
         getCache().refreshAll(newRepo);
         handler.assertResults(0);
 
+        FileObject fileFO;
         handler.reset();
         File fol = new File(newRepo, "folder1");
         fol.mkdirs();
         File file = new File(fol, "file1");
         file.createNewFile();
+        fileFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        FileObject folderFO = fileFO.getParent();
+        FileObject repoFO = folderFO.getParent();
+        
         HgCommand.doAdd(newRepo, file, NULL_LOGGER);
         HgCommand.doCommit(newRepo, Collections.singletonList(file), "blabla", NULL_LOGGER);
         String revision = HgCommand.doTip(newRepo, NULL_LOGGER).getCSetShortID();
@@ -87,40 +94,110 @@ public class HgCommandTest extends AbstractHgTest {
         HgCommand.doCommit(newRepo, Collections.singletonList(file), "blabla", NULL_LOGGER);
         handler.assertResults(0);
 
+        // *************** REVERT *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
+
+        RefreshProbe refreshProbe = new RefreshProbe(fileFO);
         handler.reset("revert", Collections.singletonList(fol));
+        refreshProbe.reset();
         HgCommand.doRevert(newRepo, Collections.singletonList(fol), revision, false, NULL_LOGGER);
+        refreshProbe.checkRefresh(true);
         handler.assertResults(1);
+
+        // *************** REVERT *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
         
         handler.reset("revert", Collections.singletonList(fol));
+        refreshProbe.reset();
         HgCommand.doRevert(newRepo, Collections.singletonList(fol), null, false, NULL_LOGGER);
+        refreshProbe.checkRefresh(true);
         handler.assertResults(1);
+
+        // *************** UPDATE *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
 
         handler.reset("update", repoAsList);
-        HgCommand.doUpdateAll(newRepo, true, null);
+        refreshProbe.reset();
+        HgCommand.doUpdateAll(newRepo, true, revision);
+        refreshProbe.checkRefresh(true);
         handler.assertResults(1);
 
-        handler.reset("revert", Collections.singletonList(fol));
-        HgCommand.doRevert(newRepo, Collections.singletonList(fol), null, false, NULL_LOGGER);
+        // *************** UPDATE *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
+
+        handler.reset("update", repoAsList);
+        refreshProbe.reset();
+        HgCommand.doUpdateAll(newRepo, true, "tip");
+        refreshProbe.checkRefresh(true);
         handler.assertResults(1);
 
+        // *************** BACKOUT *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
+
+        handler.reset("backout", repoAsList);
+        write(file, "backout test");
+        revision = HgCommand.doTip(newRepo, NULL_LOGGER).getCSetShortID();
+        HgCommand.doCommit(newRepo, Collections.singletonList(file), "backout test", NULL_LOGGER);
+        Thread.sleep(2000); // give some time so modification timestamps differ
+        String message = "Backout";
+        refreshProbe.reset();
+        HgCommand.doBackout(newRepo, "tip", false, message, NULL_LOGGER);
+        refreshProbe.checkRefresh(true);
+        assertEquals(message, HgCommand.doTip(newRepo, NULL_LOGGER).getMessage());
+        handler.assertResults(1);
+
+        // *************** INTER-REPOSITORY-COMMANDS *************** //
+
+        // create a file in original repo
+        File mainFol = createFolder("folder2");
+        File mainFile;
+        commit(mainFile = createFile(mainFol, "file2"));
+        // fetch the changes to the clone
         handler.reset("fetch", repoAsList);
         HgCommand.doFetch(newRepo, new HgURL(getWorkDir()), NULL_LOGGER);
         handler.assertResults(1);
 
+        Thread.sleep(2000); // give some time so modification timestamps differ
+        folderFO = repoFO.getFileObject(mainFol.getName());
+        fileFO = folderFO.getFileObject(mainFile.getName());
+
+        // *************** FETCH *************** //
+        // do changes in the default repo
+        write(mainFile, "fetch test");
+        commit(mainFile);
+        // fetch
+        handler.reset("fetch", repoAsList);
+        refreshProbe = new HgCommandTest.RefreshProbe(fileFO);
+        refreshProbe.reset();
+        HgCommand.doFetch(newRepo, new HgURL(getWorkDir()), NULL_LOGGER);
+        refreshProbe.checkRefresh(true);
+        handler.assertResults(1);
+
+        Thread.sleep(2000); // give some time so modification timestamps differ
+
+        // *************** PULL *************** //
+        // pull without update - no refresh, refreshed in merge
         handler.reset();
-        File mainFol = createFolder("folder2");
-        File mainFile;
-        commit(mainFile = createFile(mainFol, "file2"));
+        write(mainFile, "pull test");
+        commit(mainFile);
         revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
         handler.assertResults(0);
         handler.reset("pull", repoAsList);
         HgCommand.doPull(newRepo, NULL_LOGGER);
         handler.assertResults(1);
 
+        // *************** MERGE *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
+
         handler.reset("merge", repoAsList);
+        refreshProbe.reset();
         HgCommand.doMerge(newRepo, revision);
+        refreshProbe.checkRefresh(true);
         HgCommand.doCommit(newRepo, Collections.EMPTY_LIST, "after merge", NULL_LOGGER);
         handler.assertResults(1);
+
+        // *************** IMPORT DIFF *************** //
+        Thread.sleep(2000); // give some time so modification timestamps differ
 
         write(mainFile, "import diff test");
         commit(mainFile);
@@ -130,16 +207,25 @@ public class HgCommandTest extends AbstractHgTest {
         assertTrue(diffFile.exists());
 
         handler.reset("import", repoAsList);
+        refreshProbe.reset();
         HgCommand.doImport(newRepo, diffFile, NULL_LOGGER);
+        refreshProbe.checkRefresh(true);
         handler.assertResults(1);
 
-        handler.reset("backout", repoAsList);
-        write(file, "backout test");
-        revision = HgCommand.doTip(newRepo, NULL_LOGGER).getCSetShortID();
-        HgCommand.doCommit(newRepo, Collections.singletonList(file), "backout test", NULL_LOGGER);
-        String message = "Backout";
-        HgCommand.doBackout(newRepo, "tip", false, message, NULL_LOGGER);
-        assertEquals(message, HgCommand.doTip(newRepo, NULL_LOGGER).getMessage());
+        // *************** PULL *************** //
+        // prepare - sync changes
+        HgCommand.doFetch(newRepo, new HgURL(getWorkDir()), NULL_LOGGER);
+        HgCommand.doPush(newRepo, new HgURL(getWorkDir()), NULL_LOGGER, false);
+        HgCommand.doUpdateAll(getWorkDir(), false, null);
+        Thread.sleep(2000); // give some time so modification timestamps differ
+        // pull without update - no refresh, refreshed in merge
+        write(mainFile, "pull test with refresh");
+        commit(mainFile);
+        handler.reset("pull", repoAsList);
+        refreshProbe.reset();
+        revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
+        HgCommand.doPull(newRepo, NULL_LOGGER);
+        refreshProbe.checkRefresh(true);
         handler.assertResults(1);
     }
 
@@ -201,5 +287,30 @@ public class HgCommandTest extends AbstractHgTest {
             tmp.deleteOnExit();
         }
         return tmp;
+    }
+
+    private class RefreshProbe {
+        private final FileObject fo;
+        private long lastModified;
+
+        public RefreshProbe(FileObject fo) {
+            this.fo = fo;
+        }
+
+        void reset () {
+            lastModified = fo.lastModified().getTime();
+        }
+
+        void checkRefresh (boolean refreshAllowed) throws Exception {
+            boolean refreshed = false;
+            for (int i = 0; i < 5; ++i) {
+                Thread.sleep(1000);
+                if (fo.lastModified().getTime() > lastModified) {
+                    refreshed = true;
+                    break;
+                }
+            }
+            assert refreshed == refreshAllowed;
+        }
     }
 }
