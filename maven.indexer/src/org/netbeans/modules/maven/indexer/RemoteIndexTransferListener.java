@@ -62,6 +62,7 @@ public class RemoteIndexTransferListener implements TransferListener {
     private boolean debug;
     private InputOutput io;
     private OutputWriter writer;
+    private int units;
 
     public RemoteIndexTransferListener(RepositoryInfo info) {
 
@@ -83,7 +84,8 @@ public class RemoteIndexTransferListener implements TransferListener {
         long contentLength = arg0.getResource().getContentLength();
         this.handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteIndexTransferListener.class, "LBL_Transfer_TAG")//NII18N
                 + info.getName());
-        handle.start((int) contentLength / 1024);
+        this.units = (int) contentLength / 1024;
+        handle.start(units);
         if (debug) {
             writer.println("File Size :" + (int) contentLength / 1024);//NII18N
 
@@ -93,7 +95,7 @@ public class RemoteIndexTransferListener implements TransferListener {
     public void transferProgress(TransferEvent arg0, byte[] arg1, int arg2) {
         int work = arg2 / 1024;
         if (handle != null) {
-            handle.progress(lastunit += work);
+            handle.progress(Math.min(units, lastunit += work));
         }
         if (debug) {
             writer.println("Units completed :" + lastunit);//NII18N
