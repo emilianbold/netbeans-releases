@@ -43,7 +43,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -52,10 +51,10 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 
 /**
  *

@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.indexer;
 
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
 import org.codehaus.plexus.classworlds.realm.DuplicateRealmException;
@@ -74,7 +74,6 @@ import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.InvalidProjectModelException;
 import org.apache.maven.project.MavenProject;
@@ -98,6 +97,7 @@ import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
