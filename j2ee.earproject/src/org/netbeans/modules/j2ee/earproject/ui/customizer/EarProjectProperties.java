@@ -1018,7 +1018,7 @@ public final class EarProjectProperties {
         // Create a set of old and new artifacts.
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll(cs.itemsList(projectProperties.get(DEBUG_CLASSPATH), null));
+        oldArtifacts.addAll(cs.itemsList(projectProperties.get(RUN_CLASSPATH), null));
         oldArtifacts.addAll(cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL), null));
         oldArtifacts.addAll(cs.itemsList(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null));
 
