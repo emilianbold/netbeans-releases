@@ -468,7 +468,7 @@ public final class ConnectionManager {
             try {
                 result = doConnect();
             } catch (ExecutionException ex) {
-                if (ex.getCause() != null && ex instanceof Exception) {
+                if (ex.getCause() != null && ex.getCause() instanceof Exception) {
                     throw (Exception) ex.getCause();
                 }
             }
@@ -481,7 +481,7 @@ public final class ConnectionManager {
                 }
             }
 
-            return session;
+            return result;
         }
 
         public Session doConnect() throws Exception {

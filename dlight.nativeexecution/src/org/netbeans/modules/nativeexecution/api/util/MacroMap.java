@@ -39,6 +39,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 import org.netbeans.modules.nativeexecution.support.*;
 import java.text.ParseException;
 import java.util.Comparator;
@@ -199,7 +200,7 @@ public class MacroMap implements Cloneable {
         }
     }
 
-    private static class CaseInsensitiveComparator implements Comparator<String> {
+    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
 
         public CaseInsensitiveComparator() {
         }
