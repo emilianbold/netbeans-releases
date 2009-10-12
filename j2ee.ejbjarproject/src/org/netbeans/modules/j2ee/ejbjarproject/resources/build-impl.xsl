@@ -832,6 +832,9 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="-copy-meta-inf">
+                <copy todir="${{classes.dir}}">
+                    <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
+                </copy>
                 <copy todir="${{classes.dir}}/META-INF">
                     <fileset dir="${{meta.inf}}" excludes="**/*.dbschema **/xml-resources/** ${{meta.inf.excludes}}"/>
                 </copy>
