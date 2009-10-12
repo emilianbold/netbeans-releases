@@ -206,35 +206,21 @@ public class UnitDetails extends DetailsPanel {
 
             container.add(u.updateUnit, uu.getRelevantElement());
             Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
-            Map<UpdateElement, Set<UpdateElement>> requiredMap = new HashMap<UpdateElement, Set<UpdateElement>>();
-
             List <OperationInfo<InstallSupport>> infos = container.listAll();
 
             for (OperationInfo<InstallSupport> info : infos) {
-                Set<UpdateElement> reqs = requiredMap.get(uu.getRelevantElement());
-                if (reqs == null) {
-                    reqs = info.getRequiredElements();
-                    requiredMap.put(uu.getRelevantElement(), reqs);
-                }
-
+                Set<UpdateElement> reqs  = info.getRequiredElements();
+                
                 for (UpdateElement req : reqs) {
                     if (req.getUpdateUnit().getInstalled() != null && !req.getUpdateUnit().isPending()) {
-                        required.add(req);
-                        Set<UpdateElement> requiredElements = requiredMap.get(req);
-                        if (requiredElements == null) {
-                            requiredElements = OperationContainer.createForUpdate().add(req).getRequiredElements();
-                            requiredMap.put(req, requiredElements);
-                        }
-                        for (UpdateElement e : requiredElements) {
-                            required.add(e);
-                        }
+                        required.add(req);                        
                     } else {
                         //OperationContainer.createForInstall().
                     }
                 }                
             }
             for (OperationInfo<InstallSupport> i : infos) {
-                if (!i.getUpdateUnit().equals(u.updateUnit)) {
+                if (!i.getUpdateUnit().equals(u.updateUnit) && !i.getUpdateUnit().isPending()) {
                     required.add(i.getUpdateElement());
                 }
             }
