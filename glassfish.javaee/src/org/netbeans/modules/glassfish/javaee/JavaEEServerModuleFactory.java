@@ -331,12 +331,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static synchronized boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
+    private static boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
         return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static synchronized boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
+    private static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
+        synchronized (lmgr) {
 
         int size = 0;
 
@@ -357,7 +358,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     try {
                         lmgr.removeLibrary(lib);
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException ex) {
                         // Already removed somehow, ignore.
                         }
@@ -374,7 +375,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 lmgr.removeLibrary(lib);
             } catch (IOException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             } catch (IllegalArgumentException ex) {
                 // Already removed somehow, ignore.
             }
@@ -415,6 +416,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
         return lib != null;
+        }
     }
 
     static class InitializeLibrary implements PropertyChangeListener {
@@ -446,11 +448,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         }
                     } catch (IOException ex) {
                         l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
                                 ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException iae) {
                         l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
                                 iae.getLocalizedMessage(), iae);
                     }
                 } else {
