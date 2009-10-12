@@ -39,36 +39,35 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.rest.RestUtils;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 
 /**
  *
- * @author PeterLiu
+ * @author Milan Kuchtiak
  */
-public class EntityResourcesGeneratorFactory {
-    
-    public static EntityResourcesGenerator newInstance(Project project) {
-
-        if (RestUtils.hasSpringSupport(project)) {
-            return new SpringEntityResourcesGenerator();
-        } else if (isJavaEE6(project)) {
-            return new JavaEE6EntityResourcesGenerator();
-        } else {
-            return new J2eeEntityResourcesGenerator();
-        }
+public class JavaEE6EntityResourcesGenerator extends EntityResourcesGenerator {
+     /** Creates a new instance of EntityRESTServicesCodeGenerator */
+    public JavaEE6EntityResourcesGenerator() {
+        injectEntityManager = true;
     }
 
-    private static boolean isJavaEE6(Project project) {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if (webModule != null) {
-            Profile profile = webModule.getJ2eeProfile();
-            if (Profile.JAVA_EE_6_WEB == profile || Profile.JAVA_EE_6_FULL == profile) {
-                return true;
-            }
-        }
-        return false;
+    @Override
+    protected String[] getAdditionalContainerResourceAnnotations() {
+        return new String[] {RestConstants.STATELESS_ANNOTATION};
+    }
+
+    @Override
+    protected Object[] getAdditionalContainerResourceAnnotationAttrs() {
+        return new Object[] {null, null};
+    }
+
+    @Override
+    protected List<String> getAdditionalContainerResourceImports(EntityResourceBean bean) {
+        List<String> imports = new ArrayList<String>();
+        imports.add(RestConstants.STATELESS);
+        return imports;
     }
 }
