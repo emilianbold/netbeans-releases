@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.commands;
 
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
@@ -60,7 +61,7 @@ public class PerformQueryCommand extends BugzillaCommand {
     private final BugzillaRepository repository;
     private final String queryUrl;
     private final TaskDataCollector collector;
-
+    private IStatus status;
     public PerformQueryCommand(BugzillaRepository repository, String queryUrl, TaskDataCollector collector) {
         this.repository = repository;
         this.queryUrl = queryUrl;
@@ -74,7 +75,21 @@ public class PerformQueryCommand extends BugzillaCommand {
         query.setUrl(queryUrl);
         BugzillaRepositoryConnector rc = Bugzilla.getInstance().getRepositoryConnector();
         Bugzilla.LOG.log(Level.FINE, "executing query on repository {0} with parameters \n\t{1}", new Object[] {repository.getUrl(), queryUrl});
-        rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
+        status = rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
+
+    public IStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("PerformQueryCommand [");
+        sb.append(queryUrl);
+        sb.append("]");
+        return super.toString();
+    }
+
 
 }

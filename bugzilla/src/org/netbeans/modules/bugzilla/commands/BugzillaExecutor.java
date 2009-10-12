@@ -95,6 +95,16 @@ public class BugzillaExecutor {
 
             cmd.execute();
 
+            if(cmd instanceof PerformQueryCommand) {
+                PerformQueryCommand pqc = (PerformQueryCommand) cmd;
+                IStatus status = pqc.getStatus();
+                if(status != null && !status.isOK()) {
+                    Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
+                    handleKOStatus(status);
+                    return;
+                }
+            }
+            
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
 
@@ -137,6 +147,25 @@ public class BugzillaExecutor {
                 Bugzilla.LOG.log(Level.SEVERE, null, re);
             }
         }
+    }
+
+    private void handleKOStatus(IStatus status) throws CoreException {
+        if (status.getException() instanceof CoreException) {
+            throw (CoreException) status.getException();
+        }
+        notifyErrorMessage(status.getMessage());
+    }
+
+    static void notifyErrorMessage(String msg) {
+        NotifyDescriptor nd =
+                new NotifyDescriptor(
+                    msg,
+                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
     }
 
     public boolean handleIOException(IOException io) {
@@ -293,19 +322,7 @@ public class BugzillaExecutor {
             html = html.replaceAll("Please press \\<b\\>Back\\</b\\> and try again.", ""); // NOI18N
 
             return html;
-        }
-
-        static void notifyErrorMessage(String msg) {
-            NotifyDescriptor nd =
-                    new NotifyDescriptor(
-                        msg,
-                        NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        new Object[] {NotifyDescriptor.OK_OPTION},
-                        NotifyDescriptor.OK_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
-        }
+        }        
 
         private static class LoginHandler extends ExceptionHandler {
             public LoginHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
