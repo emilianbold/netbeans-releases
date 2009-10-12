@@ -25,11 +25,12 @@ class RfsLocalController implements Runnable {
     private final File localDir;
     private final ExecutionEnvironment execEnv;
     private final PrintWriter err;
-    private final File privProjectStorageDir;
     private final TimestampAndSharabilityFilter filter;
     private final Set<String> processedFiles = new HashSet<String>();
 
-    public RfsLocalController(ExecutionEnvironment executionEnvironment, File localDir, String remoteDir, InputStream requestStream, OutputStream responseStream, PrintWriter err, File privProjectStorageDir) {
+    public RfsLocalController(ExecutionEnvironment executionEnvironment, File localDir, String remoteDir,
+            InputStream requestStream, OutputStream responseStream, PrintWriter err,
+            TimestampAndSharabilityFilter filter) {
         super();
         this.execEnv = executionEnvironment;
         this.localDir = localDir;
@@ -37,8 +38,7 @@ class RfsLocalController implements Runnable {
         this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
         this.responseStream = new PrintStream(responseStream);
         this.err = err;
-        this.privProjectStorageDir = privProjectStorageDir;
-        this.filter = new TimestampAndSharabilityFilter(privProjectStorageDir, execEnv);
+        this.filter = filter;
     }
 
     private void respond_ok() {

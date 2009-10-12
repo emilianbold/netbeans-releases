@@ -171,7 +171,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     protected void changeProjectHost(File projectDir) throws Exception {
         File nbproject = new File(projectDir, "nbproject");
-        assertTrue("file does not exist: " + projectDir.getAbsolutePath(), nbproject.exists());
+        assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
         File confFile = new File(nbproject, "configurations.xml");
         assertTrue(confFile.exists());
         String text = readFile(confFile);
