@@ -86,11 +86,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
-        if (dorunScriptFile != null && !Utilities.isWindows()) {
+        if (dorunScriptFile == null) {
+            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
+        } else if (!Utilities.isWindows()) {
             CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
                     dorunScriptFile.getAbsolutePath(), 0755, null);
-        } else {
-            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }
 
         dorunScript = dorunScriptFile;
@@ -189,7 +189,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             }
 
             env.appendPathVariable("PATH", hostInfo.getPath()); // NOI18N
-            
+
             if (!env.isEmpty()) {
                 // TODO: FIXME (?)
                 // Do PATH normalization on Windows....
@@ -214,7 +214,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             Process terminalProcess = pb.start();
 
             creation_ts = System.nanoTime();
-            
+
             waitPID(terminalProcess, pidFileFile);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
@@ -265,7 +265,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     log.log(Level.FINEST, "", ex); // NOI18N
                     rc = -1;
                 }
-                
+
                 Thread.sleep(300);
             }
         } else {
