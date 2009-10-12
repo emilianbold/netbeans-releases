@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -72,7 +73,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private final Index index;
     private final URL root;
     private final boolean isSource;
-    private WeakReference<JavaSource> dirty;
+    private URL dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
     
@@ -188,14 +189,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     public synchronized void setDirty (final URL url) {
-        final FileObject fo = url != null ? URLMapper.findFileObject(url) : null;
-        final JavaSource js = fo != null ? JavaSource.forFileObject(fo) : null;
-        if (js == null) {
-            this.dirty = null;
-        }
-        else if (this.dirty == null || this.dirty.get() != js) {
-            this.dirty = new WeakReference (js);
-        }
+        this.dirty = url;
     }
     
     public @Override String toString () {
@@ -216,12 +210,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
     // Private methods ---------------------------------------------------------                          
     
     private void updateDirty () {
-        WeakReference<JavaSource> jsRef;        
+        final URL url;
         synchronized (this) {
-            jsRef = this.dirty;
+            url = this.dirty;
         }
-        if (jsRef != null) {
-            final JavaSource js = jsRef.get();
+        if (url != null) {
+            final FileObject file = url != null ? URLMapper.findFileObject(url) : null;
+            final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
             if (js != null) {
                 final long startTime = System.currentTimeMillis();
                 Iterator<FileObject> files = js.getFileObjects().iterator();
