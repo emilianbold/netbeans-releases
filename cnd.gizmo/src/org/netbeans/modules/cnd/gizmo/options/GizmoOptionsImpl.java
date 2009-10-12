@@ -93,6 +93,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
     public DLightConfiguration getDLightConfiguration() {
         List<DLightConfiguration> list = getValidConfigurations();
+        if (list == null) {
+            return null;
+        }
         DLightConfiguration conf = getConfigurationByDisplayName(list, dlightConfigurationName.getValue());
         if (conf == null) {
             setInitialized(false);
@@ -155,6 +158,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public List<DLightConfiguration> getValidConfigurations() {
+        if (getMakeConfiguration() == null || getMakeConfiguration().getDevelopmentHost() == null) {
+            return null;
+        }
         String platform = getMakeConfiguration().getDevelopmentHost().getBuildPlatformDisplayName();
 
         List<DLightConfiguration> confs = new ArrayList<DLightConfiguration>();
