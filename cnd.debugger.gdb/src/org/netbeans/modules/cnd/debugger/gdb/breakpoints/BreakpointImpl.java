@@ -97,6 +97,7 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
                 // path to a possiby non-unique relative path and another project has a similar
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
+                fullname = debugger.getOSPath(fullname);
                 // fix for IZ 157752, we need to resolve sym links
                 // TODO: what about remote?
                 if (debugger.getHostExecutionEnvironment().isLocal()) {
