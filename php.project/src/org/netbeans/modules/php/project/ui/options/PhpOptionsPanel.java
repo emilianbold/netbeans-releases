@@ -305,6 +305,7 @@ public class PhpOptionsPanel extends JPanel {
         phpUnitLabel.setLabelFor(phpUnitTextField);
 
 
+
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(phpUnitBrowseButton, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitBrowseButton.text"));
         phpUnitBrowseButton.addActionListener(new ActionListener() {
@@ -319,10 +320,7 @@ public class PhpOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(phpUnitInfoLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitIncludePathInfo"));
-        phpUnitInfoLabel.setEnabled(false);
-
-
-        Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath")); // NOI18N
+        Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath"));
         useTheFollowingPathByDefaultLabel.setLabelFor(includePathList);
 
         Mnemonics.setLocalizedText(useTheFollowingPathByDefaultLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault")); // NOI18N

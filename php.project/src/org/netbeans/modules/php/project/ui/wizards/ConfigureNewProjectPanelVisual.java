@@ -130,14 +130,13 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
         localServerComboBox.setEditable(true);
 
+
+
+
         Mnemonics.setLocalizedText(localServerButton, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
         Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
-        localServerInfoLabel.setEnabled(false);
-
-        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text"));
         Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text"));
-        phpVersionInfoLabel.setEnabled(false);
-
         encodingLabel.setLabelFor(encodingComboBox);
 
         Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Encoding"));

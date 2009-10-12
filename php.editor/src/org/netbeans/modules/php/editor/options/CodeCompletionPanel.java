@@ -237,23 +237,20 @@ public class CodeCompletionPanel extends JPanel {
 
         smartRadioButton.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartRadioButton.text")); // NOI18N
         smartInfoLabel.setLabelFor(smartRadioButton);
-        smartInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartInfoLabel.text")); // NOI18N
-        smartInfoLabel.setEnabled(false);
 
+        smartInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.smartInfoLabel.text")); // NOI18N
         codeCompletionButtonGroup.add(fullyQualifiedRadioButton);
 
         fullyQualifiedRadioButton.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedRadioButton.text")); // NOI18N
         fullyQualifiedInfoLabel.setLabelFor(fullyQualifiedRadioButton);
-        fullyQualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedInfoLabel.text")); // NOI18N
-        fullyQualifiedInfoLabel.setEnabled(false);
 
+        fullyQualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.fullyQualifiedInfoLabel.text")); // NOI18N
         codeCompletionButtonGroup.add(unqualifiedRadioButton);
 
         unqualifiedRadioButton.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedRadioButton.text")); // NOI18N
         unqualifiedInfoLabel.setLabelFor(unqualifiedRadioButton);
-        unqualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.text")); // NOI18N
-        unqualifiedInfoLabel.setEnabled(false);
 
+        unqualifiedInfoLabel.setText(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.text")); // NOI18N
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -262,38 +259,25 @@ public class CodeCompletionPanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(methodCodeCompletionLabel)
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(codeCompletionNonStaticMethodsCheckBox)
-                            .add(codeCompletionStaticMethodsCheckBox))))
-                .addContainerGap(332, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(codeCompletionNonStaticMethodsCheckBox)
+                    .add(codeCompletionStaticMethodsCheckBox)
                     .add(codeCompletionTypeLabel)
                     .add(layout.createSequentialGroup()
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(smartInfoLabel))
-                            .add(smartRadioButton)
-                            .add(fullyQualifiedRadioButton)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(fullyQualifiedInfoLabel))
-                            .add(unqualifiedRadioButton)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(unqualifiedInfoLabel))))
-                    .add(enableAutocompletionLabel)
+                        .add(21, 21, 21)
+                        .add(smartInfoLabel))
+                    .add(smartRadioButton)
+                    .add(fullyQualifiedRadioButton)
                     .add(layout.createSequentialGroup()
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(autoCompletionTypesCheckBox)
-                            .add(autoCompletionVariablesCheckBox)
-                            .add(autoCompletionNamespacesCheckBox))))
+                        .add(21, 21, 21)
+                        .add(fullyQualifiedInfoLabel))
+                    .add(unqualifiedRadioButton)
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(unqualifiedInfoLabel))
+                    .add(enableAutocompletionLabel)
+                    .add(autoCompletionTypesCheckBox)
+                    .add(autoCompletionVariablesCheckBox)
+                    .add(autoCompletionNamespacesCheckBox))
                 .addContainerGap(109, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
