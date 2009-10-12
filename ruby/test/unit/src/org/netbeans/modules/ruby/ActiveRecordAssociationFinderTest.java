@@ -65,6 +65,14 @@ public class ActiveRecordAssociationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/ar-associations/project.rb", ":us^er", "user.rb", 0);
     }
 
+    public void testHasManyPolymorphs() throws Exception {
+        checkDeclaration("testfiles/ar-associations/user.rb", "[:pro^jects", "project.rb", 0);
+    }
+
+    public void testHasManyPolymorphs2() throws Exception {
+        checkDeclaration("testfiles/ar-associations/user.rb", ":us^er_details]", "user_detail.rb", 0);
+    }
+
     public void testHasManyWithClassName() throws Exception {
         checkDeclaration("testfiles/ar-associations/user.rb", ":det^ails", "user_detail.rb", 0);
     }
