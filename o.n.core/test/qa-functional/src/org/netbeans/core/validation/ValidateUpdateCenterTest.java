@@ -132,6 +132,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         permittedDisabledAutoloads.add("org.netbeans.modules.visualweb.gravy");
         // just has to be present, not enabled
         permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.harness");
+        permittedDisabledAutoloads.add("org.netbeans.modules.apisupport.tc.cobertura");
         // really unused, yet kept in build for tutorials
         permittedDisabledAutoloads.add("org.netbeans.modules.lexer.editorbridge");
         // for compatibility
