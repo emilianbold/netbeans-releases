@@ -80,12 +80,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         AnnotationSupport.getInstance().addPropertyChangeListener(new ProfilerPropertyChangeListener());
     }
 
-    public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        log(sourceFileInfoProvider, metrics, functionCalls);
+    private void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls, boolean lineAnnotation) {
+        log(sourceFileInfoProvider, metrics, functionCalls, lineAnnotation);
         if (activeAnnotations != null) {
             // un-annotate sources // FIXUP
         }
-        activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+        if (lineAnnotation) {
+            activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+        }
         for (FunctionCallWithMetric functionCall : functionCalls) {
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {
@@ -103,11 +105,15 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
                     lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
                     lineAnnotationInfo.setColumns(new String[metrics.size()]);
+                    boolean below = true;
                     int col = 0;
                     for (Column column : metrics) {
                         String metricId = column.getColumnName();
                         Object metricVal = functionCall.getMetricValue(metricId);
                         String metricValString = FunctionMetricFormatter.getFormattedValue(functionCall, metricId);
+                        if (!metricValString.equals("0.0")) { // NOI18N
+                            below = false;
+                        }
                         lineAnnotationInfo.getColumns()[col] = metricValString;
                         int metricValLength = metricValString.length();
                         if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
@@ -119,7 +125,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
                         col++;
                     }
-                    fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
+                    if (lineAnnotation) {
+                        if (!below ) {
+                            fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
+                        }
+                    }
+                    else {
+                        fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
+                    }
                 }
             }
         }
@@ -141,6 +154,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 }
             }
         }
+    }
+    
+    public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+        updateSource(sourceFileInfoProvider, metrics, functionCalls, true);
+    }
+
+    public void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+        updateSource(sourceFileInfoProvider, metrics, functionCalls, false);
     }
 
     private File activatedFile(Node node) {
@@ -196,10 +217,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    public void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        //TODO: implement
-    }
-
     class Annotate implements Runnable {
         JTextComponent jEditorPane;
         FileAnnotationInfo fileAnnotationInfo;
@@ -252,7 +269,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    private void log(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+    private void log(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls, boolean lineAnnotations) {
         if (!logginIsOn) {
             return;
         }
@@ -277,6 +294,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 if (sourceFileInfo.isSourceKnown()) {
                     log.finer(sourceFileInfo.getFileName() + "\n"); // NOI18N
                 }
+                log.finer("  type=" + (lineAnnotations ? "Line" : "Block") + "\n"); // NOI18N);
                 log.finer("  line=" + sourceFileInfo.getLine() + "\n"); // NOI18N);
                 log.finer("  column=" + sourceFileInfo.getColumn() + "\n"); // NOI18N););
                 log.finer("  offset=" + sourceFileInfo.getOffset() + "\n"); // NOI18N););
