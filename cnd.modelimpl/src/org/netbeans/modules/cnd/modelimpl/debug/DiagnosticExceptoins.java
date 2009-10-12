@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 public class DiagnosticExceptoins {
 
+    public static final int LimitMultiplyDiagnosticExceptions = 3;
+
     private DiagnosticExceptoins() {
     }
 
