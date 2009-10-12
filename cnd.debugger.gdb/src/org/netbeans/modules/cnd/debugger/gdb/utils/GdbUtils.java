@@ -49,10 +49,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Various miscelaneous static methods.
@@ -235,7 +234,6 @@ public class GdbUtils {
     private static void processString(String info, PairProcessor processor) {
         int len = info.length();
         int i = 0;
-        boolean isWindows = Utilities.isWindows();
         
         mainLoop: while (i < len) {
             int tstart = i++;
@@ -272,9 +270,6 @@ public class GdbUtils {
 
             // put the value in the map and prepare for the next property
             String value = info.substring(i, tend);
-            if (isWindows && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.toUpperCase().charAt(10) + ":" + value.substring(11); // NOI18N
-            }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
                 value = gdbToUserEncoding(value); // possibly convert multi-byte fields
             }
@@ -836,11 +831,28 @@ public class GdbUtils {
     public static boolean comparePaths(int platform, String path1, String path2) {
         path1 = path1.trim();
         path2 = path2.trim();
-        // we need to convert paths to unix-like style, so that normalization works correctly
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            path1 = WinPath.win2cyg(path1).toLowerCase();
-            path2 = WinPath.win2cyg(path2).toLowerCase();
+
+        if (path1.equals(path2)) {
+            return true;
         }
+        
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            path1 = path1.toLowerCase();
+            path2 = path2.toLowerCase();
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+
+            // we need to convert paths to unix-like style, so that normalization works correctly
+            path1 = WindowsSupport.getInstance().convertToCygwinPath(path1).toLowerCase();
+            path2 = WindowsSupport.getInstance().convertToCygwinPath(path2).toLowerCase();
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+        }
+        
         // see isssue 152489, normalization is required to correctly compare paths with ..
         try {
             String norPath1 = new URI(path1).normalize().getPath();
