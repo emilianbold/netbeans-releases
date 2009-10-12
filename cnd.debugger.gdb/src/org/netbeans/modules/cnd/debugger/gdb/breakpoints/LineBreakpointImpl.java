@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
@@ -63,6 +64,9 @@ public class LineBreakpointImpl extends BreakpointImpl<LineBreakpoint> {
     protected String getBreakpointCommand() {
         int lineNumber = getBreakpoint().getLineNumber();
 	String bppath = getBreakpoint().getPath();
+        if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+            bppath = debugger.win2UnixPath(bppath);
+        }
 	String path = null;
 
 	if (lastPath == null && bppath.indexOf(' ') == -1) {

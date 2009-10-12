@@ -596,7 +596,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return System.getProperty("gdb.testsuite") != null; // NOI18N
     }
 
-    private String win2UnixPath(String path) {
+    public String win2UnixPath(String path) {
         if (isCygwin()) {
             return WindowsSupport.getInstance().convertToCygwinPath(path);
         } else if (isMinGW()) {
