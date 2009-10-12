@@ -1932,11 +1932,12 @@ public class Installer extends ModuleInstall implements Runnable {
                     panel.setText(panelContent.toString());
                     panel.getExplorerManager().setRootContext(root);
                 } else {
+                    List<LogRecord> displayedRecords = new ArrayList<LogRecord>(recs);
                     LinkedList<Node> nodes = new LinkedList<Node>();
                     root.setName("root"); // NOI18N
-                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size() + 1, new Date()));
+                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", displayedRecords.size() + 1, new Date()));
                     root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-                    for (LogRecord r : recs) {
+                    for (LogRecord r : displayedRecords) {
                         procesLog(r, nodes, panelContent);
                     }
                     procesLog(getUserData(false, reportPanel), nodes, panelContent);
