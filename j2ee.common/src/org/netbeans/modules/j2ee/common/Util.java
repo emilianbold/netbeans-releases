@@ -76,6 +76,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 public class Util {
+
+    public static final String ENDORSED_LIBRARY_NAME = "javaee-endorsed-api-6.0"; // NOI18N
+    public static final String ENDORSED_LIBRARY_CLASSPATH = "${libs."+ENDORSED_LIBRARY_NAME+".classpath}"; // NOI18N
     
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
