@@ -52,7 +52,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
 
-public class GizmoStringNodeProp extends Node.Property {
+public class GizmoStringNodeProp extends Node.Property<String> {
 
     private GizmoStringConfiguration stringConfiguration;
     private String def = null;
@@ -107,10 +107,6 @@ public class GizmoStringNodeProp extends Node.Property {
 
     public String getValue() {
         return getStringConfiguration().getValueDef(def);
-    }
-
-    public void setValue(Object v) {
-        getStringConfiguration().setValue((String)v);
     }
 
     public void setValue(String v) {
