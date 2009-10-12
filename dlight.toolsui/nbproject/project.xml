@@ -32,6 +32,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.dlight.indicators</friend>
                 <package>org.netbeans.modules.dlight.toolsui.api</package>
             </friend-packages>
         </data>
