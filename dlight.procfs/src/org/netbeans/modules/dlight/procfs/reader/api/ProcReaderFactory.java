@@ -42,6 +42,8 @@ import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
 import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
 import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 public final class ProcReaderFactory {
 
@@ -49,17 +51,19 @@ public final class ProcReaderFactory {
     }
 
     public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
-        final ProcReaderImpl reader;
+        ProcReaderImpl reader = null;
 
-        if (execEnv.isLocal()) {
-            reader = new LocalProcReader(pid);
-        } else {
-            reader = new RemoteProcReader(execEnv, pid);
+        try {
+            HostInfo info = HostInfoUtils.getHostInfo(execEnv);
+            boolean bigendian = info.getCpuFamily() == HostInfo.CpuFamily.SPARC;
+
+            if (execEnv.isLocal()) {
+                reader = new LocalProcReader(pid, bigendian);
+            } else {
+                reader = new RemoteProcReader(execEnv, pid, bigendian);
+            }
+        } catch (Throwable th) {
         }
-
-        // TODO: fixme (this is to switch endian if required... but now bad
-        // method is used)
-        reader.init(pid);
 
         return reader;
     }
