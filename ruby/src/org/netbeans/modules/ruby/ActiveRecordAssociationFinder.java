@@ -92,7 +92,7 @@ final class ActiveRecordAssociationFinder {
         return null;
     }
 
-    private String getExplicitySpecifiedClassName(Node associationNode) {
+    private static String getExplicitySpecifiedClassName(Node associationNode) {
         if (associationNode.childNodes().isEmpty()) {
             return null;
         }
@@ -124,7 +124,17 @@ final class ActiveRecordAssociationFinder {
         return null;
     }
 
-    private String getClassNameFor(Node associationNode) {
+    /**
+     * Gets the class name specified in the given <code>associationNode</code>, e.g. 
+     * returns <code>Project</code> for <code>has_many :projects</code> or
+     * <code>User</code>belongs_to :owner, class_name => "User"</code>.
+     * 
+     * @param associationNode the call node, e.g. the node for <code>has_many</code>.
+     * @param closest the closest symbol node for the call node.
+     * 
+     * @return the class name.
+     */
+    static String getClassNameFor(Node associationNode, SymbolNode closest) {
         // first check whether class_name is explicitly specified,
         // e.g. has_many :details, class_name => "UserDetail"
         String className = getExplicitySpecifiedClassName(associationNode);
@@ -148,7 +158,7 @@ final class ActiveRecordAssociationFinder {
             return DeclarationLocation.NONE;
         }
 
-        String className = getClassNameFor(associationNode);
+        String className = getClassNameFor(associationNode, closest);
         if (className.length() == 0) {
             return DeclarationLocation.NONE;
         }

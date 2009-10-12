@@ -1052,7 +1052,7 @@ public class AstUtilities {
             break;
 
         case FCALLNODE:
-            if (isAttr(node) || isNamedScope(node)) {
+            if (isAttr(node) || isNamedScope(node) || isActiveRecordAssociation(node)) {
                 SymbolNode[] symbols = getSymbols(node);
                 for (SymbolNode sym : symbols) {
                     if (name.equals(sym.getName())) {
