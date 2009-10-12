@@ -76,7 +76,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.common.utils.IOProxy;
-import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -106,6 +105,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -598,9 +598,9 @@ public class GdbDebugger implements PropertyChangeListener {
 
     private String win2UnixPath(String path) {
         if (isCygwin()) {
-            return WinPath.win2cyg(path);
+            return WindowsSupport.getInstance().convertToCygwinPath(path);
         } else if (isMinGW()) {
-            return WinPath.win2ming(path);
+            return WindowsSupport.getInstance().convertToMSysPath(path);
         }
         return path.replace('\\', '/');
     }
@@ -1610,11 +1610,7 @@ public class GdbDebugger implements PropertyChangeListener {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
                 map = GdbUtils.createMapFromString(frame);
-                String fullname = map.get("fullname"); // NOI18N
-                String line = map.get("line"); // NOI18N
-                if (fullname != null && line != null) {
-                    lastStop = fullname + ":" + line; // NOI18N
-                }
+                updateLastStop(map);
             }
             setLoading();
             return;
@@ -1695,11 +1691,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
-                    String fullname = map.get("fullname"); // NOI18N
-                    String line = map.get("line"); // NOI18N
-                    if (fullname != null && line != null) {
-                        lastStop = fullname + ":" + line; // NOI18N
-                    }
+                    updateLastStop(map);
                 }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
@@ -1712,12 +1704,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
-                    String fullname = map.get("fullname"); // NOI18N
-                    fullname = checkCygwinLibs(fullname);
-                    String line = map.get("line"); // NOI18N
-                    if (fullname != null && line != null) {
-                        lastStop = fullname + ":" + line; // NOI18N
-                    }
+                    updateLastStop(map);
                 }
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
                     GdbTimer.getTimer("Step").stop("Step1");// NOI18N
@@ -1749,15 +1736,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    public String checkCygwinLibs(String path) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && path != null && path.charAt(0) == '/') {
-            if (path.length() >= 5 && path.startsWith("/usr/")) { // NOI18N
-                return CompilerSetManager.getCygwinBase() + path.substring(4);
-            } else {
-                return CompilerSetManager.getCygwinBase() + path;
-            }
+    private void updateLastStop(Map<String, String> map) {
+        String fullname = map.get("fullname"); // NOI18N
+        String line = map.get("line"); // NOI18N
+        if (fullname != null && line != null) {
+            lastStop = fullname + ":" + line; // NOI18N
         }
-        return path;
     }
 
     private void signalReceived(Map<String, String> map) {
@@ -1964,12 +1948,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private String getOSPath(String path) {
+    public String getOSPath(String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin()) { // NOI18N
-                return WinPath.cyg2win(path);
+                return WindowsSupport.getInstance().convertFromCygwinPath(path);
             } else if (isMinGW()) {
-                return WinPath.ming2win(path); // NOI18N
+                return WindowsSupport.getInstance().convertFromMSysPath(path);
             }
         } 
         return path;

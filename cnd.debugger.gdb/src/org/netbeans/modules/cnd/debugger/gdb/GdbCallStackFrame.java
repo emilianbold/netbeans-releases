@@ -160,7 +160,11 @@ public class GdbCallStackFrame extends CallStackFrame {
      */
     public String getFullname() {
         // PathMap.getLocalPath throws NPE when argument is null
-        return fullname == null? null : debugger.getPathMap().getLocalPath(debugger.checkCygwinLibs(fullname));
+        if (fullname == null) {
+            return null;
+        }
+        String res = debugger.getOSPath(fullname);
+        return debugger.getPathMap().getLocalPath(res);
     }
 
     public String getOriginalFullName() {
