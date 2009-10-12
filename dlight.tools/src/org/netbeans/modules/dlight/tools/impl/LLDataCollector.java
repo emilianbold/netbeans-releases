@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +81,7 @@ import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.NbBundle;
 
 /**
@@ -149,6 +149,13 @@ public class LLDataCollector
             }
         }
 
+        if (!NativeToolsUtil.isMacOSX(env)) {
+            // Hack!
+            // We are collecting CPU usage with LL tool only on Mac OSX.
+            // /proc serves this purpose on other platforms.
+            collectedData.remove(LLDataCollectorConfiguration.CollectedData.CPU);
+        }
+
         synchronized (lock) {
             this.target = target;
         }
@@ -180,29 +187,26 @@ public class LLDataCollector
         return null;
     }
 
-    public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
-        ExecutionEnvironment env = target.getExecEnv();
-        Map<String, File> agentLibrariesLocal = locateProfAgents(env);
+    @Override
+    public void setupEnvironment(DLightTarget target, MacroMap env) throws ConnectException {
+        ExecutionEnvironment execEnv = target.getExecEnv();
+        boolean isMac = NativeToolsUtil.isMacOSX(execEnv);
+        Map<String, File> agentLibrariesLocal = locateProfAgents(execEnv);
         if (!agentLibrariesLocal.isEmpty()) {
-            Map<String, String> vars = new HashMap<String, String>();
-            StringBuilder paths = new StringBuilder();
-            String agentFilename = null;
-            for (Map.Entry<String, File> entry : agentLibrariesLocal.entrySet()) {
-                if (agentFilename == null) {
-                    agentFilename = entry.getValue().getName();
+            if (isMac) {
+                Map.Entry<String, File> entry = agentLibrariesLocal.entrySet().iterator().next();
+                env.appendPathVariable("DYLD_INSERT_LIBRARIES", getRemoteDir(execEnv, entry.getValue(), entry.getKey()) + '/' + entry.getValue().getName()); // NOI18N
+                //env.put("DYLD_FORCE_FLAT_NAMESPACE", "yes"); // causes segfaults! // NOI18N
+            } else {
+                String agentFilename = null;
+                for (Map.Entry<String, File> entry : agentLibrariesLocal.entrySet()) {
+                    if (agentFilename == null) {
+                        agentFilename = entry.getValue().getName();
+                    }
+                    env.appendPathVariable("LD_LIBRARY_PATH", getRemoteDir(execEnv, entry.getValue(), entry.getKey())); // NOI18N
                 }
-                if (0 < paths.length()) {
-                    paths.append(':'); // NOI18N
-                }
-                paths.append(getRemoteDir(env, entry.getValue(), entry.getKey()));
+                env.appendPathVariable("LD_PRELOAD", agentFilename); // NOI18N
             }
-            String ldPathName = NativeToolsUtil.getLdPathName(env);
-            vars.put(ldPathName, "${" + ldPathName + "}:" + paths.toString()); // NOI18N
-            String ldPreloadName = NativeToolsUtil.getLdPreloadName(env);
-            vars.put(ldPreloadName, "${" + ldPreloadName + "}:" + agentFilename); // NOI18N
-            return vars;
-        } else {
-            return Collections.emptyMap();
         }
     }
 
@@ -329,7 +333,7 @@ public class LLDataCollector
 
     private class MonitorOutputProcessor implements LineProcessor {
 
-        private float syncPrev;
+        private float syncPrev = Float.NaN;
 
         @Override
         public void processLine(String line) {
@@ -342,7 +346,7 @@ public class LLDataCollector
             } else if (line.startsWith("sync:")) { // NOI18N
                 String[] fields = line.substring(6).split("\t"); // NOI18N
                 float syncCurr = Float.parseFloat(fields[0]);
-                if (0f < syncPrev) {
+                if (!Float.isNaN(syncPrev)) {
                     int threads = Integer.parseInt(fields[1]);
                     row = new DataRow(LLDataCollectorConfiguration.SYNC_TABLE.getColumnNames(), Arrays.asList(Float.valueOf((syncCurr - syncPrev) * 100 / threads), Integer.valueOf(threads)));
                 }
@@ -417,7 +421,7 @@ public class LLDataCollector
         } catch (CancellationException ex) {
         }
 
-        if (osFamily != OSFamily.LINUX) {
+        if (osFamily != OSFamily.LINUX && osFamily != OSFamily.MACOSX) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProfAgent.OSNotSupported")); // NOI18N
         }
 

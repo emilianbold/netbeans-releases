@@ -64,6 +64,7 @@ import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -144,12 +145,16 @@ public final class DLightCPUToolConfigurationProvider
 //            true);
         VisualizerConfiguration detailsVisualizerConfigDtrace = createDTraceBasedVisualizerConfiguration(CpuSamplingSupport.CPU_SAMPLE_TABLE);
 
-        ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
-        toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
+        toolConfiguration.addIndicatorDataProviderConfiguration(
+                new ProcDataProviderConfiguration());
+
+        toolConfiguration.addIndicatorDataProviderConfiguration(
+                new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.CPU));
 
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
+        resultColumns.addAll(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);

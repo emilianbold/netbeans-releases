@@ -15,12 +15,12 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=gfortran
+FC=
 AS=as
 
 # Macros
 CND_PLATFORM=GNU-Linux-x86
-CND_CONF=Release
+CND_CONF=GNU_Linux
 CND_DISTDIR=dist
 
 # Include project Makefile
@@ -47,11 +47,11 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lpthread -ldl -lrt
+LDLIBSOPTIONS=-pthread -ldl -lrt
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-Release.mk prof_agent.so
+	${MAKE}  -f nbproject/Makefile-GNU_Linux.mk prof_agent.so
 
 prof_agent.so: ${OBJECTFILES}
 	${LINK.c} ldscript.txt -shared -o prof_agent.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
@@ -59,14 +59,14 @@ prof_agent.so: ${OBJECTFILES}
 ${OBJECTDIR}/prof_agent.o: nbproject/Makefile-${CND_CONF}.mk prof_agent.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/prof_agent.o prof_agent.c
+	$(COMPILE.c) -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/prof_agent.o prof_agent.c
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
-.clean-conf:
-	${RM} -r build/Release
+.clean-conf: ${CLEAN_SUBPROJECTS}
+	${RM} -r build/GNU_Linux
 	${RM} prof_agent.so
 
 # Subprojects
