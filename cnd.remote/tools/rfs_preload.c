@@ -138,12 +138,14 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            fprintf(stderr, "Can not resolve path %s : %s\n", path, strerror(errno));
-            //if (errno == ENOENT) {
-            //    char pwd[PATH_MAX];
-            //    getcwd(pwd, sizeof pwd);
-            //    fprintf(stderr, "\t(current directory: %s)\n", pwd);
-            //}
+            report_error("Can not resolve path %s : %s\n", path, strerror(errno));
+            //#if TRACE
+            {
+                char pwd[PATH_MAX];
+                getcwd(pwd, sizeof pwd);
+                trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
+            }
+            //#endif
             inside = 0;
             return false;
         }

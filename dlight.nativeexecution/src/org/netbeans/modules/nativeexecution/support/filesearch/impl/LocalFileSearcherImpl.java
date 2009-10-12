@@ -43,71 +43,60 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearcher;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.filesearch.FileSearcher.class, position = 70)
+/**
+ * In case of Windows use WINDOWS paths (c:\\mypath)... Also it requires exact
+ * names (programm.exe and not just programm)
+ */
 public final class LocalFileSearcherImpl implements FileSearcher {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private static final List<String> envPaths = new ArrayList<String>();
 
     public final String searchFile(FileSearchParams fileSearchParams) {
         final ExecutionEnvironment execEnv = fileSearchParams.getExecEnv();
 
-        if (!execEnv.isLocal() || Utilities.isWindows()) {
+        if (!execEnv.isLocal()) {
             return null;
         }
 
-        try {
-            List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
+        log.fine("File Searching Task: " + fileSearchParams.toString() + "..."); // NOI18N
 
-            if (fileSearchParams.isSearchInUserPaths()) {
-                synchronized (envPaths) {
-                    if (envPaths.isEmpty()) {
-                        envPaths.addAll(getPaths());
-                    }
-                }
+        List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
 
-                sp.addAll(envPaths);
+        if (fileSearchParams.isSearchInUserPaths()) {
+            try {
+                HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
+                sp.addAll(Arrays.asList(hi.getPath().split(File.pathSeparator)));
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
             }
+        }
 
-            String file = fileSearchParams.getFilename();
+        String file = fileSearchParams.getFilename();
 
-            for (String path : sp) {
+        for (String path : sp) {
+            try {
                 File f = new File(path, file);
+                log.fine("   Test '" + f.toString() + "'"); // NOI18N
                 if (f.canRead()) {
+                    log.fine("   FOUND '" + f.toString() + "'"); // NOI18N
                     return f.getCanonicalPath();
                 }
+            } catch (Throwable th) {
+                log.log(Level.FINE, "Execption in LocalFileSearcherImpl:", th); // NOI18N
             }
-
-        } catch (Throwable th) {
-            log.log(Level.FINE, "Execption in LocalFileSearcherImpl:", th); // NOI18N
         }
 
         return null;
-    }
-
-    private List<String> getPaths() {
-        List<String> result = new ArrayList<String>();
-
-        try {
-            ProcessBuilder pb = new ProcessBuilder("sh", "-c", "echo $PATH"); // NOI18N
-            Process p = pb.start();
-            result.addAll(Arrays.asList(ProcessUtils.readProcessOutputLine(p).split(":"))); // NOI18N
-            p.waitFor();
-        } catch (InterruptedException ex) {
-            log.log(Level.FINE, "Execption in LocalFileSearcherImpl.getPaths():", ex); // NOI18N
-        } catch (IOException ex) {
-            log.log(Level.FINE, "Execption in LocalFileSearcherImpl.getPaths():", ex); // NOI18N
-        }
-
-        return result;
     }
 }

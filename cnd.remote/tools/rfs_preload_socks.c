@@ -135,7 +135,7 @@ int get_socket(int create) {
         trace("Sending handshake package (%s) to sd=%d\n", buf, _sd);
         enum sr_result res = pkg_send(_sd, pkg_handshake, buf);
         if (res == sr_reset) {
-            fprintf(stderr, "Connection reset by peer when sending a handshake package\n");
+            report_error("Connection reset by peer when sending a handshake package\n");
         } else if (res == sr_failure) {
             perror("Error sending a handshake package");
         }

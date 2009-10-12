@@ -181,7 +181,7 @@ static void create_file(const char* path, int size) {
             trace("\t\terror closing %s (fd=%d)\n", path, fd);
         }
     } else {
-        trace("\t\terror opening %s\n", path);
+        report_error("Error opening %s: %s\n", path, strerror(errno));
     }
 }
 

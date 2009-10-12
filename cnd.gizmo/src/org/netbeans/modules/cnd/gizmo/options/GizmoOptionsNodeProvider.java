@@ -47,10 +47,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
-import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -103,7 +99,8 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
         set.put(new BooleanNodeProp(gizmoOptions.getProfileOnRun(), true, GizmoOptionsImpl.PROFILE_ON_RUN_PROP, getString("profileonrun_txt"), getString("profileonrun_help"))); // NOI18N
-        set.put(new GizmoIntNodeProp(gizmoOptions.getGizmoConfigurations(), true, GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help"))); // NOI18N
+//        set.put(new GizmoIntNodeProp(gizmoOptions.getGizmoConfigurations(), true, GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help"))); // NOI18N
+        set.put(new GizmoStringNodeProp(gizmoOptions.getDlightConfigurationName(), GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help")));
         sheet.put(set);
 
         set = new Sheet.Set();

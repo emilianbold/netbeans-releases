@@ -63,28 +63,15 @@ import org.openide.util.Exceptions;
     }
     public static final String _64 = "_64"; // NOI18N
 
-    public static String getLdPathName(ExecutionEnvironment execEnv) {
+    public static boolean isMacOSX(ExecutionEnvironment execEnv) {
         try {
             HostInfo info = HostInfoUtils.getHostInfo(execEnv);
-            return info.getOSFamily() == HostInfo.OSFamily.MACOSX
-                    ? "DYLD_LIBRARY_PATH" : "LD_LIBRARY_PATH"; // NOI18N
+            return info.getOSFamily() == HostInfo.OSFamily.MACOSX;
         } catch (IOException ex) {
         } catch (CancellationException ex) {
         }
 
-        return "LD_LIBRARY_PATH"; // NOI18N
-    }
-
-    public static String getLdPreloadName(ExecutionEnvironment execEnv) {
-        try {
-            HostInfo info = HostInfoUtils.getHostInfo(execEnv);
-            return info.getOSFamily() == HostInfo.OSFamily.MACOSX
-                    ? "DYLD_INSERT_LIBRARIES" : "LD_PRELOAD"; // NOI18N
-        } catch (IOException ex) {
-        } catch (CancellationException ex) {
-        }
-
-        return "LD_PRELOAD"; // NOI18N
+        return false;
     }
 
     public static Map<String, File> getCompatibleBinaries(ExecutionEnvironment execEnv, String name) {

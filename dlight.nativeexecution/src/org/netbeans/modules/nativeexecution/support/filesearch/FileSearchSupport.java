@@ -36,70 +36,43 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.support.filesearch;
 
-package org.netbeans.modules.cnd.debugger.common.utils;
+import org.netbeans.modules.nativeexecution.support.*;
+import java.util.Collection;
+import java.util.logging.Level;
+import org.openide.util.Lookup;
 
-/**
- * Utilities to work with paths on Windows (cygwin, mingw)
- * @author Egor Ushakov
- */
-public class WinPath {
-    public static final String CYGDRIVE_PREFIX = "/cygdrive/"; // NOI18N
+public final class FileSearchSupport {
 
-    private WinPath() {
+    private final static java.util.logging.Logger log = Logger.getInstance();
+    private final static TasksCachedProcessor<FileSearchParams, String> processor =
+            new TasksCachedProcessor<FileSearchParams, String>(
+            new Searcher(), false);
+
+    public final String searchFile(final FileSearchParams fileSearchParams) throws InterruptedException {
+        // TODO: should we check for file presence if result is taken from the cache?
+        return processor.compute(fileSearchParams);
     }
 
-    /**
-     * Converts path from cygwin type into regular window (/cygdrive/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String cyg2win(String path) {
-        if (path.startsWith(CYGDRIVE_PREFIX)) {
-            return path.charAt(CYGDRIVE_PREFIX.length())
-                    + ":" // NOI18N
-                    + path.substring(CYGDRIVE_PREFIX.length()+1).replace('/', '\\');
+    private final static class Searcher implements Computable<FileSearchParams, String> {
+
+        public String compute(FileSearchParams fileSearchParams) throws InterruptedException {
+            final Collection<? extends FileSearcher> searchers = Lookup.getDefault().lookupAll(FileSearcher.class);
+            String result = null;
+
+            for (FileSearcher searcher : searchers) {
+                result = searcher.searchFile(fileSearchParams);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "File '" + fileSearchParams.getFilename() + "' not found. {" + fileSearchParams.toString() + "}"); // NOI18N
+            }
+
+            return null;
         }
-        return path;
-    }
-
-    /**
-     * * Converts path from regular windows type into cygwin type (c:\... -> /cygdrive/c/...)
-     * @param path
-     * @return
-     */
-    public static String win2cyg(String path) {
-        if (isWinPath(path)) {
-            return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
-    }
-
-    /**
-     * Converts path from mingw type into regular window (/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String ming2win(String path) {
-        if (path.charAt(0) == '/' && path.charAt(2) == '/') {
-            return path.charAt(1) + ":" + path.substring(2).replace('/', '\\'); // NOI18N
-        }
-        return path;
-    }
-
-    /**
-      * Converts path from regular windows type into mingw type (c:\... -> /c/...)
-     * @param path
-     * @return
-     */
-    public static String win2ming(String path) {
-        if (isWinPath(path)) {
-            return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
-    }
-
-    public static boolean isWinPath(String path) {
-        return path.length() >= 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
     }
 }

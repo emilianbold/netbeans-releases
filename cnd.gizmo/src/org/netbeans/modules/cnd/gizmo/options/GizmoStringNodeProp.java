@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,31 +46,43 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import java.util.List;
 import org.netbeans.modules.dlight.toolsui.api.ToolsManagerPanel;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
-public class GizmoIntNodeProp extends Node.Property {
+public class GizmoStringNodeProp extends Node.Property<String> {
 
-    private final IntConfiguration intConfiguration;
-    private final String unused;
+    private GizmoStringConfiguration stringConfiguration;
+    private String def = null;
+    private boolean canWrite = true;
     private final String name;
     private final String description;
-    private boolean canWrite;
     IntEditor intEditor = null;
 
-    @SuppressWarnings("unchecked")
-    public GizmoIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
-        super(Integer.class);
-        this.intConfiguration = intConfiguration;
-        this.canWrite = canWrite;
-        this.unused = unused;
+    public GizmoStringNodeProp(GizmoStringConfiguration stringConfiguration, String txt1, String name, String description) {
+        super(String.class);
         this.name = name;
         this.description = description;
-        setValue("title", NbBundle.getMessage(GizmoIntNodeProp.class, "DLG_TITLE_ConfigurationManager")); // NOI18N
+        this.stringConfiguration = stringConfiguration;
+    }
+
+    public GizmoStringNodeProp(GizmoStringConfiguration stringConfiguration, String def, String txt1, String name, String description) {
+        super(String.class);
+        this.name = name;
+        this.description = description;
+        this.stringConfiguration = stringConfiguration;
+        this.def = def;
+    }
+
+    public GizmoStringNodeProp(GizmoStringConfiguration stringConfiguration, String def, boolean canWrite, String txt1, String name, String description) {
+        super(String.class);
+        this.name = name;
+        this.description = description;
+        this.stringConfiguration = stringConfiguration;
+        this.canWrite = canWrite;
+        this.def = def;
     }
 
     @Override
@@ -82,27 +94,37 @@ public class GizmoIntNodeProp extends Node.Property {
     public String getShortDescription() {
         return description;
     }
-
+    
     @Override
     public String getHtmlDisplayName() {
-        if (intConfiguration.getModified()) {
+        if (getStringConfiguration().getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        } else {
+        }
+        else {
             return null;
         }
     }
 
-    public Object getValue() {
-        return Integer.valueOf(intConfiguration.getValue());
+    public String getValue() {
+        return getStringConfiguration().getValueDef(def);
     }
 
-    public void setValue(Object v) {
-        intConfiguration.setValue((String) v);
+    public void setValue(String v) {
+        getStringConfiguration().setValue(v);
+    }
+
+    public boolean canWrite() {
+        return canWrite;
+    }
+
+
+    public boolean canRead() {
+        return true;
     }
 
     @Override
     public void restoreDefaultValue() {
-        intConfiguration.reset();
+        getStringConfiguration().reset();
     }
 
     @Override
@@ -112,19 +134,16 @@ public class GizmoIntNodeProp extends Node.Property {
 
     @Override
     public boolean isDefaultValue() {
-        return !intConfiguration.getModified();
+        return !stringConfiguration.getModified();
+    }
+    
+    public void setDefaultValue(String def) {
+        this.def = def;
+        getStringConfiguration().setDefaultValue(def);
     }
 
-    public boolean canWrite() {
-        return canWrite;
-    }
-
-    public void setCanWrite(boolean canWrite) {
-        this.canWrite = canWrite;
-    }
-
-    public boolean canRead() {
-        return true;
+    public void setCanWrite(boolean v) {
+        canWrite = v;
     }
 
     @Override
@@ -133,6 +152,20 @@ public class GizmoIntNodeProp extends Node.Property {
             intEditor = new IntEditor();
         }
         return intEditor;
+    }
+
+    /**
+     * @return the stringConfiguration
+     */
+    public GizmoStringConfiguration getStringConfiguration() {
+        return stringConfiguration;
+    }
+
+    /**
+     * @param stringConfiguration the stringConfiguration to set
+     */
+    public void setStringConfiguration(GizmoStringConfiguration stringConfiguration) {
+        this.stringConfiguration = stringConfiguration;
     }
 
     private class IntEditor extends PropertyEditorSupport implements ExPropertyEditor, VetoableChangeListener {
@@ -146,7 +179,7 @@ public class GizmoIntNodeProp extends Node.Property {
 
         @Override
         public String getAsText() {
-            return intConfiguration.getName();
+            return getStringConfiguration().getValue();
         }
 
         @Override
@@ -156,8 +189,10 @@ public class GizmoIntNodeProp extends Node.Property {
 
         @Override
         public String[] getTags() {
-            return intConfiguration.getNames();
+            List<String> list = getStringConfiguration().getGizmoOptionsImpl().getValidConfigurationDisplayNames();
+            return list.toArray(new String[list.size()]);
         }
+        
         @Override
         public boolean supportsCustomEditor() {
             return true;

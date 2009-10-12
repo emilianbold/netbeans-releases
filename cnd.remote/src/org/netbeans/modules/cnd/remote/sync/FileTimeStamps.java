@@ -61,6 +61,24 @@ public class FileTimeStamps {
     private final File dataFile;
     private final ExecutionEnvironment executionEnvironment;
 
+    private static char prefixEmpty = 'e';
+    private static char prefixCopied = 'c';
+
+    public static enum Mode {
+        CREATION,
+        COPYING
+    }
+
+    private static class FileInfo {
+        public final long timestamp;
+        public final Mode mode;
+
+        public FileInfo(Mode mode, long timestamp) {
+            this.mode = mode;
+            this.timestamp = timestamp;
+        }
+    }
+
     public FileTimeStamps(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         this.executionEnvironment = executionEnvironment;
         data = new Properties();
@@ -85,24 +103,63 @@ public class FileTimeStamps {
         }
     }
 
-    public boolean isChanged(File file) {
-        String strValue = data.getProperty(getFileKey(file), "-1");
-        long lastTimeStamp;
-        try {
-            lastTimeStamp = Long.parseLong(strValue);
-        } catch (NumberFormatException nfe) {
-            lastTimeStamp = -1;
+    public void clear() {
+        data.clear();
+    }
+
+
+    private FileInfo getFileInfo(File file) {
+        String strValue = data.getProperty(getFileKey(file), null);
+        if (strValue != null && strValue.length() > 0) {
+            char first = strValue.charAt(0);
+            if (Character.isDigit(first)) { // old style: just a timestamp
+                first = prefixCopied;
+            } else {
+                strValue = strValue.substring(1);
+            }
+            if (first == prefixEmpty || first == prefixCopied) {
+                Mode mode = (first == prefixEmpty) ? Mode.CREATION : Mode.COPYING;
+                try {
+                    long timeStamp = Long.parseLong(strValue);
+                    return new FileInfo(mode, timeStamp);
+                } catch (NumberFormatException nfe) {
+                    RemoteUtil.LOGGER.warning(String.format("Incorrect status/timestamp format \"%s\" for %s", strValue, file.getAbsolutePath())); //NOI18N
+                }
+            }
         }
-        long currTimeStamp = file.lastModified();
-        return currTimeStamp != lastTimeStamp;
+        return null;
     }
 
-    public void rememberTimeStamp(File file) {
-        data.put(getFileKey(file), Long.toString(file.lastModified()));
+    public boolean needsCopying(File file) {
+        FileInfo info = getFileInfo(file);
+        if (info == null) {
+            return true;
+        } else if(info.mode == Mode.CREATION) {
+            return true;
+        } else { // info.status == FileStatus.COPIED
+            return file.lastModified() != info.timestamp;
+        }
     }
 
-    public void dropTimeStamp(File file) {
-        data.put(getFileKey(file), Long.MIN_VALUE);
+    public boolean needsCreating(File file) {
+        FileInfo info = getFileInfo(file);
+        if (info == null) {
+            return true;
+        } else { // both FileStatus.EMPTY and FileStatus.COPIED
+            return file.lastModified() != info.timestamp;
+        }
+    }
+
+    public void rememberCopyTimestamp(File file) {
+        data.put(getFileKey(file), String.format("%c%d", prefixCopied, file.lastModified()));
+    }
+
+    public void rememberCreationTimestamp(File file) {
+        data.put(getFileKey(file), String.format("%c%d", prefixEmpty, file.lastModified()));
+    }
+
+    public void dropTimestamp(File file) {
+        data.remove(getFileKey(file));
     }
 
     private String getFileKey(File file) {
