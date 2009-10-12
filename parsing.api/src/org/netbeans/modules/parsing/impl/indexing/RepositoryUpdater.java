@@ -744,7 +744,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
-    private static final boolean noRootsScan = Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
     private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
@@ -2775,10 +2774,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             return finished;
         }
 
+
+        private static boolean isNoRootsScan() {
+            return Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
+        }
+
         private boolean scanSource (URL root, boolean sourceForBinaryRoot, Indexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
-            if (noRootsScan && !fullRescan && TimeStamps.existForRoot(root)) {
+            if (isNoRootsScan() && !fullRescan && TimeStamps.existForRoot(root)) {
                 // We've already seen the root at least once and roots scanning is forcibly turned off
                 // so just call indexers with no files to let them know about the root, but perform
                 // no indexing.
