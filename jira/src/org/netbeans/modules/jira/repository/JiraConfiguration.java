@@ -214,14 +214,14 @@ public class JiraConfiguration extends JiraClientCache {
 
     public IssueType[] getIssueTypes(String projectId) {
         if(!supportsProjectIssueTypes(data.serverInfo.getVersion())) {
-            return new IssueType[0];
+            return data.issueTypes;
         }
         return getProjectById(projectId).getIssueTypes();
     }
 
     public IssueType[] getIssueTypes(final Project project) {
         if(!supportsProjectIssueTypes(data.serverInfo.getVersion())) {
-            return new IssueType[0];
+            return data.issueTypes;
         }
         synchronized(PROJECT_LOCK) {
             ensureProjectLoaded(project);
