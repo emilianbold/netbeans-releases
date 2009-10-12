@@ -262,15 +262,11 @@ public class UnitDetails extends DetailsPanel {
             }
         } else {
             Unit.InternalUpdate iu = (Unit.InternalUpdate) u;
-
+            
             OperationContainer<InstallSupport> updContainer = OperationContainer.createForUpdate();
             for (UpdateUnit inv : iu.getUpdateUnits()) {
                 updContainer.add(inv.getAvailableUpdates().get(0));
             }
-
-            OperationContainer<InstallSupport> reiContainer = OperationContainer.createForInternalUpdate();
-            reiContainer.add(iu.getRelevantElement());
-            
             for (OperationInfo<InstallSupport> info : updContainer.listAll()) {
                 internalUpdates.add(info.getUpdateElement());
                 for (UpdateElement r : info.getRequiredElements()) {
@@ -280,6 +276,11 @@ public class UnitDetails extends DetailsPanel {
 
                 }
             }
+            /*
+             *
+            OperationContainer<InstallSupport> reiContainer = OperationContainer.createForInternalUpdate();
+            reiContainer.add(iu.getRelevantElement());
+
             for (OperationInfo<InstallSupport> info : reiContainer.listAll()) {
                 if (!info.getUpdateElement().equals(iu.updateUnit.getInstalled())) {
                     internalUpdates.add(info.getUpdateElement());
@@ -290,6 +291,8 @@ public class UnitDetails extends DetailsPanel {
                     }
                 }
             }
+             * 
+             */
         }
         StringBuilder desc = new StringBuilder();
         try {
