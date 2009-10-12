@@ -139,13 +139,13 @@ static int on_open(const char *path, int flags) {
             path = real_path;
         } else {
             report_error("Can not resolve path %s : %s\n", path, strerror(errno));
-            #if TRACE
+            //#if TRACE
             {
                 char pwd[PATH_MAX];
                 getcwd(pwd, sizeof pwd);
-                trace("path: %s  pwd: %s)\n", path, pwd);
+                trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
             }
-            #endif
+            //#endif
             inside = 0;
             return false;
         }
