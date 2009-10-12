@@ -498,8 +498,6 @@ public final class LiveResultsWindow extends TopComponent
         memoryTabPanel = new JPanel(new java.awt.BorderLayout());
         memoryTabPanel.setOpaque(false);
         tabs = new JTabbedPane();
-        tabs.setOpaque(true);
- 	    tabs.setBackground(new HTMLTextArea().getBackground());
         
         // Fix for Issue 115062 (CTRL-PageUp/PageDown should move between snapshot tabs)
         tabs.getActionMap().getParent().remove("navigatePageUp"); // NOI18N
@@ -524,6 +522,9 @@ public final class LiveResultsWindow extends TopComponent
                             toolBar.remove(b);
                         graphButtonsSeparator.setVisible(false);
                     }
+                    toolBar.invalidate();
+                    toolBar.validate();
+                    toolBar.repaint();
                 }
             }
         });
@@ -901,7 +902,7 @@ public final class LiveResultsWindow extends TopComponent
     }
 
     private JToolBar createToolBar() {
-        JToolBar toolBar = new FlatToolBar() {
+        JToolBar toolBar = new JToolBar() {
             public Component add(Component comp) {
                 if (comp instanceof JButton) {
                     UIUtils.fixButtonUI((JButton) comp);
