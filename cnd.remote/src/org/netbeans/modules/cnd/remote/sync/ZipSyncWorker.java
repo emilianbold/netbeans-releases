@@ -77,10 +77,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return tmpFile.exists() ? tmpFile : null;
     }
 
-    protected TimestampAndSharabilityFilter createFilter() {
-        return new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
-    }
-
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
 
@@ -92,7 +88,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             System.out.printf("Uploading %s to %s ...\n", topLocalDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
-        filter = createFilter();
+        filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
         filter.setStatisticsCallback(new SharabilityFilter.StatisticsCallback() {
             public void onAccept(File file, boolean accepted) {
                 totalCount++;

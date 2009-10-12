@@ -85,6 +85,10 @@ public class FileTimeStamps {
         }
     }
 
+    public void clear() {
+        data.clear();
+    }
+
     public boolean isChanged(File file) {
         String strValue = data.getProperty(getFileKey(file), "-1");
         long lastTimeStamp;
