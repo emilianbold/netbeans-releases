@@ -481,6 +481,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                                     "]";
                             }
                         }
+                        map.remove(el.getUpdateUnit());
                     }
                 } else {
                     updatename += getBundle ("OperationDescriptionStep_PluginVersionFormat",  // NOI18N
