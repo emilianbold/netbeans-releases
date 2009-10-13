@@ -90,7 +90,7 @@ public abstract class DocumentLine extends Line {
     private transient DocumentListener docL;
 
     /** List of Line.Part which exist for this line*/
-    private List<Part> lineParts = new ArrayList<Part>(3);
+    private final List<Part> lineParts = Collections.synchronizedList(new ArrayList<Part>(3));
 
     /** Constructor.
     * @param obj context we belong to
@@ -309,7 +309,7 @@ public abstract class DocumentLine extends Line {
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         pos = (PositionRef) ois.readObject();
         setBreakpoint(ois.readBoolean());
-        lineParts = new ArrayList<Part>(3);
+        lineParts.clear();
     }
 
     /** Register line.
@@ -407,8 +407,10 @@ public abstract class DocumentLine extends Line {
         }
 
         // notify also all Line.Part attached to this Line
-        for (Part p : lineParts) {
-            p.attachDetachAnnotations(doc, closing);
+        synchronized (lineParts) {
+            for (Part p : lineParts) {
+                p.attachDetachAnnotations(doc, closing);
+            }
         }
     }
 
@@ -470,18 +472,20 @@ public abstract class DocumentLine extends Line {
     void notifyChange(DocumentEvent p0, DocumentLine.Set set, StyledDocument doc) {
         DocumentLine.Part part;
 
-        for (int i = 0; i < lineParts.size();) {
-            part = lineParts.get(i);
+        synchronized (lineParts) {
+            for (int i = 0; i < lineParts.size();) {
+                part = lineParts.get(i);
 
-            // notify Line.Part about the change
-            part.handleDocumentChange(p0);
+                // notify Line.Part about the change
+                part.handleDocumentChange(p0);
 
-            // if necessary move Line.Part to new Line
-            if (NbDocument.findLineNumber(doc, part.getOffset()) != part.getLine().getLineNumber()) {
-                DocumentLine line = (DocumentLine) set.getCurrent(NbDocument.findLineNumber(doc, part.getOffset()));
-                moveLinePart(part, line);
-            } else {
-                i++;
+                // if necessary move Line.Part to new Line
+                if (NbDocument.findLineNumber(doc, part.getOffset()) != part.getLine().getLineNumber()) {
+                    DocumentLine line = (DocumentLine) set.getCurrent(NbDocument.findLineNumber(doc, part.getOffset()));
+                    moveLinePart(part, line);
+                } else {
+                    i++;
+                }
             }
         }
 
@@ -537,8 +541,10 @@ public abstract class DocumentLine extends Line {
     void notifyMove() {
         updatePositionRef();
 
-        for (Part p : lineParts) {
-            p.firePropertyChange(Line.Part.PROP_LINE, null, null);
+        synchronized (lineParts) {
+            for (Part p : lineParts) {
+                p.firePropertyChange(Line.Part.PROP_LINE, null, null);
+            }
         }
     }
 
