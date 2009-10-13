@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
 
    private final ModelImpl model;
    private final NativeProject nativeProject;
@@ -124,7 +124,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filePropertiesChanged(NativeFileItem fileItem) {
         if (TRACE) {
-            System.err.println("Native event filesPropertiesChanged:"); // NOI18N
+            System.err.println("Native event filePropertiesChanged:"); // NOI18N
             System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
         }
 	onProjectItemChanged(fileItem);
