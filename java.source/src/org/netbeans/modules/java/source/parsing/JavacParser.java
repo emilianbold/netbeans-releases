@@ -394,8 +394,6 @@ public class JavacParser extends Parser {
                 reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
-            } catch (CancelAbort ca) {
-                reachedPhase = Phase.MODIFIED;
             } finally {
                 mayCancel.set(false);
             }
