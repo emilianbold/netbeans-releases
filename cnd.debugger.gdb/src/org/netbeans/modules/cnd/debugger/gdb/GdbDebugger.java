@@ -802,7 +802,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (line.contains("Reading symbols from ") || // NOI18N
                     (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
                 line = line.substring(21, line.length() - 8);
-                if (GdbUtils.compareExePaths(platform, line, exepath)) {
+                if (compareExePaths(line, exepath)) {
                     return true;
                 }
             } else if (line.contains("Loaded symbols for ") && comparePaths(exepath, line.substring(19))) { // NOI18N
@@ -813,13 +813,59 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public boolean comparePaths(String path1, String path2) {
-        return GdbUtils.comparePaths(platform, path1, path2);
+        path1 = path1.trim();
+        path2 = path2.trim();
+
+        if (path1.equals(path2)) {
+            return true;
+        }
+        
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            path1 = path1.toLowerCase();
+            path2 = path2.toLowerCase();
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+
+            // we need to convert paths to unix-like style, so that normalization works correctly
+            if (cygwin) {
+                path1 = WindowsSupport.getInstance().convertToCygwinPath(path1).toLowerCase();
+                path2 = WindowsSupport.getInstance().convertToCygwinPath(path2).toLowerCase();
+            } else if (mingw) {
+                path1 = WindowsSupport.getInstance().convertToMSysPath(path1).toLowerCase();
+                path2 = WindowsSupport.getInstance().convertToMSysPath(path2).toLowerCase();
+            }
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+        }
+        return GdbUtils.compareUnixPaths(path1, path2);
+    }
+
+    private boolean compareExePaths(String exe1, String exe2) {
+        exe1 = exe1.trim();
+        exe2 = exe2.trim();
+
+        if (exe1.equals(exe2)) {
+            return true;
+        }
+
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            exe1 = GdbUtils.removeExe(exe1);
+            exe2 = GdbUtils.removeExe(exe2);
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            exe1 = exe1.toLowerCase();
+            exe2 = exe2.toLowerCase();
+        }
+        return comparePaths(exe1, exe2);
     }
 
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
-                return GdbUtils.compareExePaths(platform, line.substring(15, line.length() - 3), exepath);
+                return compareExePaths(line.substring(15, line.length() - 3), exepath);
             }
         }
         return false;
