@@ -46,10 +46,12 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -152,6 +154,20 @@ public class BugzillaExecutor {
     private void handleKOStatus(IStatus status) throws CoreException {
         if (status.getException() instanceof CoreException) {
             throw (CoreException) status.getException();
+        }
+
+        BugzillaConfiguration conf = repository.getConfiguration();
+        if(conf.isValid()) {
+            BugzillaVersion version = conf.getInstalledVersion();
+            BugzillaVersion v34 = new BugzillaVersion("3.4");
+            if(version.compareTo(v34) >= 0) {
+                notifyErrorMessage(
+                        NbBundle.getMessage(
+                            BugzillaExecutor.class,
+                            "MSG_BUGZILLA_VERSION_WARNING",                     // NOI18N
+                            new Object[] {version, status.getMessage()}));
+                return;
+            }
         }
         notifyErrorMessage(status.getMessage());
     }
