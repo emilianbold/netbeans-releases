@@ -66,6 +66,7 @@ import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -215,6 +216,8 @@ public class ElementNode extends AbstractNode {
                             createPart (column, 0);
                 }
             }
+        } catch (FileStateInvalidException fsie) {
+            //Deleted file, pass to return null
         } catch (IOException ex) {
             Exceptions.printStackTrace (ex);
         }
