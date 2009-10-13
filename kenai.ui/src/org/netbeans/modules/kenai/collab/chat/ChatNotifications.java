@@ -50,6 +50,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -160,6 +161,11 @@ public class ChatNotifications {
         }, Priority.NORMAL);
         privateNotifications.put(name, n);
         ChatTopComponent.refreshContactList();
+        DashboardImpl.getInstance().getComponent().repaint();
+    }
+
+    public synchronized boolean hasNewPrivateMessages(String name) {
+        return privateNotifications.get(name)!=null;
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
@@ -167,7 +173,6 @@ public class ChatNotifications {
         if (handle==null) {
             handle =new MessagingHandleImpl(id);
             groupMessages.put(id, handle);
-            handle.setMessageCount(0);
         }
         return handle;
     }
