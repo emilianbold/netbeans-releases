@@ -41,6 +41,7 @@
 
 package org.netbeans.test.ide;
 
+import java.util.logging.Level;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.junit.NbModuleSuite;
@@ -74,7 +75,9 @@ public class MemoryValidationTest extends IDEValidation {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             MemoryValidationTest.class
         ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").
-        honorAutoloadEager(true);
+        honorAutoloadEager(true).
+        failOnException(Level.INFO).
+        failOnMessage(Level.SEVERE);
 
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
