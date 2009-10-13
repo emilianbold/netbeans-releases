@@ -56,6 +56,7 @@ import java.util.Properties;
 import org.netbeans.modules.javacard.constants.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.constants.JCConstants;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -77,6 +78,7 @@ public class PlatformPanel extends javax.swing.JPanel implements FocusListener, 
         displayNameField.setEnabled(false);
         displayNameField.getDocument().addDocumentListener(this);
         locationField.setText(baseDir == null ? "" : baseDir.getPath()); //NOI18N
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.SettingUpJavaCardPlatform"); //NOI18N
     }
 
     @Override

@@ -131,6 +131,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }            
         });
         initTableVisualProperties(sourceRoots);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.SourcesPanel"); //NOI18N
     }
     
     private class TableColumnSizeComponentAdapter extends ComponentAdapter {

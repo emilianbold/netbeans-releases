@@ -49,7 +49,6 @@ import org.netbeans.modules.javacard.api.ProjectKind;
 import org.netbeans.modules.javacard.constants.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
-import org.netbeans.modules.javacard.platform.JavacardPlatformImpl;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -121,7 +120,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         platformRes.addLookupListener(this);
         serverRes.allInstances();
         platformRes.allInstances();
-
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CreateProject"); //NOI18N
     }
 
     public String getProjectName() {
