@@ -57,6 +57,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
@@ -192,6 +194,11 @@ public class PresenceIndicator {
          */
         public void processPacket(Packet packet) {
             PresenceIndicator.getDefault().label.setText(String.valueOf(KenaiUser.getOnlineUserCount()));
+            for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
+                String chatName = StringUtils.parseName(muc.getRoom());
+                assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N
+                ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
+            }
         }
     }
 }
