@@ -37,6 +37,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
+LINKER=cc
 DEBUG := -g
 
 CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
@@ -124,15 +125,15 @@ TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
-	cc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
+	${LINKER} ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
-	cc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
+	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
 
 #test environment:
 ${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
-	cc ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
+	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
 
 clean:
 	rm -rf ${BUILD} ${DIST}
@@ -157,10 +158,10 @@ test: test_build
 	${BUILD}/test_rfs_filedata
 
 test_build: all
-	#cc ${CFLAGS} -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
-	#cc ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
-	cc ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
-	cc ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
+	#${LINKER} ${CFLAGS} -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
+	#${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
+	${LINKER} ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
+	${LINKER} ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 
 test_platform:
 	@echo "UNAME_S = [${UNAME_S}]"
