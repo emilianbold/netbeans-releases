@@ -386,6 +386,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     final FileEventLog eventQueue = new FileEventLog();
 
     public void fileFolderCreated(FileEvent fe) {
+        FileObject fo = fe.getFile();
+        if (isCacheFile(fo)) {
+            return;
+        }
+
         if (!authorize(fe)) {
             return;
         }
@@ -394,10 +399,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         //but in Netbeans newlly created folder may
         //already contain files
         boolean processed = false;
-        FileObject fo = fe.getFile();
         Pair<URL, FileObject> root = null;
         
-        if (fo != null && fo.isValid() && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot(fo);
             if (root != null) {
                 boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
@@ -428,15 +432,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileChanged(FileEvent fe) {
+        FileObject fo = fe.getFile();
+        if (isCacheFile(fo)) {
+            return;
+        }
+
         if (!authorize(fe)) {
             return;
         }
 
         boolean processed = false;
-        FileObject fo = fe.getFile();
         Pair<URL, FileObject> root = null;
 
-        if (fo != null && fo.isValid() && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && fo.isValid() && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
                 boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
@@ -463,15 +471,19 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileDeleted(FileEvent fe) {
+        FileObject fo = fe.getFile();
+        if (isCacheFile(fo)) {
+            return;
+        }
+
         if (!authorize(fe)) {
             return;
         }
 
         boolean processed = false;
-        final FileObject fo = fe.getFile();
         Pair<URL, FileObject> root = null;
 
-        if (fo != null && !isCacheFile(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+        if (fo != null && VisibilityQuery.getDefault().isVisible(fo)) {
             root = getOwningSourceRoot (fo);
             if (root != null) {
                 if (fo.isData() /*&& FileUtil.getMIMEType(fo, recognizers.getMimeTypes())!=null*/) {
@@ -498,6 +510,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        FileObject fo = fe.getFile();
+        if (isCacheFile(fo)) {
+            return;
+        }
+
         if (!authorize(fe)) {
             return;
         }
@@ -507,7 +524,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         Pair<URL, FileObject> root = null;
         boolean processed = false;
 
-        if (newFile != null && newFile.isValid() && !isCacheFile(newFile)) {
+        if (newFile != null && newFile.isValid()) {
             root = getOwningSourceRoot(newFile);
             if (root != null) {
                 FileObject rootFo = root.second;
