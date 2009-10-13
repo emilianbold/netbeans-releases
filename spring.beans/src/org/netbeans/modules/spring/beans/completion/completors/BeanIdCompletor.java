@@ -102,7 +102,9 @@ public final class BeanIdCompletor extends Completor {
                 if (beanClassName == null) {
                     return;
                 }
-
+                if (beanClassName == null) {
+                    return;
+                }
                 TypeElement beanType = JavaUtils.findClassElementByBinaryName(beanClassName, cc);
                 if (beanType == null) {
                     return;
