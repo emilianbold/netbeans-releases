@@ -4,6 +4,7 @@ HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
 BITNESS=32
+
 LS=/bin/ls
 SH=`$LS /bin/bash 2>/dev/null || $LS /usr/bin/bash 2>/dev/null || $LS /bin/sh 2>/dev/null || $LS /usr/bin/sh 2>/dev/null`
 OSFAMILY=
@@ -79,6 +80,16 @@ echo USER=${USER}
 echo SH=${SH}
 echo TMPDIRBASE=${TMPDIRBASE}
 echo DATETIME=${DATETIME}
+
+if [ "$OSFAMILY" != "MACOSX" -a "$OSFAMILY" != "WINDOWS" ]; then
+   TMPFILE=`mktemp -q env.XXXXXX`
+   if [ ! -z "$TMPFILE" ]; then
+      /bin/bash -l -c "echo \$PATH>$TMPFILE" > /dev/null 2>&1
+      PATH=${PATH}:`cat $TMPFILE`
+   fi
+   rm -f $TMPFILE
+fi
+
 echo PATH=${PATH}
 
 exit 0
