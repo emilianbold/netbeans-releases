@@ -104,12 +104,19 @@ endif
 testit :sh= uname -s
 
 DIST_BASE=../release/bin
-BUILD_BASE=./build
+BUILD_BASE="./build"
 
 DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
 BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-all: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
+INSTALLDIR=../../nbbuild/netbeans/cnd?/bin
+
+all: build_impl install
+
+install: build_impl
+	cp -r ${DIST} ${INSTALLDIR}
+
+build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
 
 #object files
 ${BUILD}/%.o : %.c
