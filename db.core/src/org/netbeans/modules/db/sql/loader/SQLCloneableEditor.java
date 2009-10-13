@@ -613,7 +613,6 @@ public class SQLCloneableEditor extends CloneableEditor {
             getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    Dialog dlg = null;
                     try {
                         SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
                         Object[] options = new Object[]{
@@ -621,11 +620,8 @@ public class SQLCloneableEditor extends CloneableEditor {
                         };
                         final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), false, options,
                                 DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("sql_history"), null);  // NOI18N
-                        dlg = DialogDisplayer.getDefault().createDialog(desc);
+                        Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
                         dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLCloneableEditor.class, "ACSD_DLG"));
-                        panel.setSize(panel.getPreferredSize());
-                        dlg.pack();
-                        dlg.setAlwaysOnTop(true);
                         dlg.setVisible(true);
                     } finally {
                         getComponent().setCursor(null);
