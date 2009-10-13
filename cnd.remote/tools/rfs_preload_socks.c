@@ -106,6 +106,16 @@ static int open_socket() {
         perror("connect");
         return -1;
     }
+    // configure script contains a weird command: exec 7<&0 </dev/null 6>&1
+    // so using descriptor 6 or 7 can get us into trouble
+    if (sd == 6 || sd == 7) {
+        int new_sd = fcntl(sd, F_DUPFD, 10);
+        trace("configure workaround: duplicating descriptor %d to %d\n", sd, new_sd);
+        if (new_sd != -1) {
+            close(sd);
+            sd = new_sd;
+        }
+    }
     return sd;
 }
 
