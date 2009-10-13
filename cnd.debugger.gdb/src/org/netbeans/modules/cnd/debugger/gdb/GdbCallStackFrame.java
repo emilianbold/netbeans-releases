@@ -184,7 +184,7 @@ public class GdbCallStackFrame extends CallStackFrame {
     }
 
     public boolean isValid() {
-        return getFileName() != null && getFullname() != null && getFunctionName() != null;
+        return getFileName() != null && getOriginalFullName() != null && getFunctionName() != null;
     }
     
     /** UNCOMMENT WHEN THIS METHOD IS NEEDED. IT'S ALREADY IMPLEMENTED IN THE IMPL. CLASS.
