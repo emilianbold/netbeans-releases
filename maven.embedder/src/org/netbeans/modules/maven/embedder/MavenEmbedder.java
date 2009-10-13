@@ -56,6 +56,8 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.model.io.ModelWriter;
 import org.apache.maven.plugin.BuildPluginManager;
+import org.apache.maven.project.DefaultProjectBuilder;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -66,6 +68,7 @@ import org.apache.maven.settings.MavenSettingsBuilder;
 import org.apache.maven.settings.validation.SettingsValidationResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -219,7 +222,17 @@ public final class MavenEmbedder {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-
+    //TODO possibly rename.. build sounds like something else..
+    public ProjectBuildingResult buildProject(Artifact art, ProjectBuildingRequest req) throws ProjectBuildingException {
+        try {
+            DefaultProjectBuilder bldr = getPlexusContainer().lookup(DefaultProjectBuilder.class);
+            //TODO some default population of request?
+            return bldr.build(art, req);
+        } catch (ComponentLookupException ex) {
+//            Exceptions.printStackTrace(ex);
+            throw new ProjectBuildingException(art.getId(), "Component lookup failed", ex);
+        }
+    }
     
 
 }

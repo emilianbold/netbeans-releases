@@ -75,10 +75,10 @@ import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.project.InvalidProjectModelException;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -1107,18 +1107,19 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private MavenProject load(ArtifactInfo ai, ArtifactRepository repository) {
             try {
-                ArtifactFactory artifactFactory = (ArtifactFactory) online.getPlexusContainer().lookup(ArtifactFactory.class);
+                ArtifactFactory artifactFactory = online.getPlexusContainer().lookup(ArtifactFactory.class);
                 Artifact projectArtifact = artifactFactory.createProjectArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
                         null);
-
-                MavenProjectBuilder builder = (MavenProjectBuilder) online.getPlexusContainer().lookup(MavenProjectBuilder.class);
-                return builder.buildFromRepository(projectArtifact, new ArrayList(), repository);
-            } catch (InvalidProjectModelException ex) {
-                //ignore nexus is falling ???
-                LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
+                DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
+                dpbr.setLocalRepository(online.getLocalRepository());
+                dpbr.setRemoteRepositories(Collections.<ArtifactRepository>emptyList());
+                ProjectBuildingResult res =  online.buildProject(projectArtifact, dpbr);
+                if (res.getProject() != null) {
+                    return res.getProject();
+                }
             } catch (ProjectBuildingException ex) {
                 LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
             } catch (Exception exception) {
