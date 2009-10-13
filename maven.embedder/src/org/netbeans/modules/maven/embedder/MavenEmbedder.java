@@ -41,8 +41,11 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.util.List;
 import org.apache.maven.Maven;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulationException;
@@ -53,6 +56,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.model.io.ModelWriter;
 import org.apache.maven.plugin.BuildPluginManager;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -67,7 +71,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
  *
  * @author mkleint
  */
-public class MavenEmbedder {
+public final class MavenEmbedder {
     public static final String userHome = System.getProperty( "user.home" );
     public static final File userMavenConfigurationHome = new File( userHome, ".m2" );
     public static final File defaultUserLocalRepository = new File( userMavenConfigurationHome, "repository" );
@@ -192,4 +196,30 @@ public class MavenEmbedder {
 
         return result;
     }
+
+    public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    //TODO maybe remove in favour of the Request one
+    public MavenProject readProject(File fallback) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Artifact createArtifactWithClassifier(String groupId, String artifactId, String version, String type, String classifier) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void resolve(Artifact sources, List<ArtifactRepository> remoteArtifactRepositories, ArtifactRepository localRepository) throws ArtifactResolutionException, ArtifactNotFoundException{
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public Artifact createArtifact(String groupId, String artifactId, String version, Object object, String string) {
+        //what is the object?
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+
+    
+
 }
