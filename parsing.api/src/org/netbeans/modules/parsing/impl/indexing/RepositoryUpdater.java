@@ -1976,16 +1976,6 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
             return false;
         }
-
-        public @Override boolean isCancelledBy(Work work) {
-            if (work instanceof RefreshWork) {
-                ((RefreshWork) work).addSuspects(files, forceRefresh);
-                return true;
-            } else {
-                return false;
-            }
-        }
-
     } // End of FileListWork class
 
 
@@ -2452,13 +2442,16 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         FileUtil.refreshAll();
                     }
                 };
-                interceptor.setActiveAtomicAction(aa);
+// XXX: nested FS.AA don't seem to work, so just ignore evrything
+//                interceptor.setActiveAtomicAction(aa);
+                interceptor.setIgnoreFsEvents(true);
                 try {
                     FileUtil.runAtomicAction(aa);
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 } finally {
-                    interceptor.setActiveAtomicAction(null);
+//                    interceptor.setActiveAtomicAction(null);
+                    interceptor.setIgnoreFsEvents(false);
                 }
             } else {
                 depCtx.newRootsToScan.removeAll(depCtx.scannedRoots);
@@ -2503,6 +2496,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 } else {
                     addSuspects(flw.files, flw.forceRefresh);
                 }
+                return true;
+            } else if (newWork instanceof DeleteWork) {
+                suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(((DeleteWork) newWork).root), false));
                 return true;
             }
             return false;
@@ -3491,8 +3487,11 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public Authorization authorizeFileSystemEvent(FileEvent event) {
             synchronized (this) {
                 if (activeAA != null) {
-                    return event.firedFrom(activeAA) ? Authorization.IGNORE : Authorization.PROCESS;
+                    boolean firedFrom = event.firedFrom(activeAA);
+                    LOGGER.log(Level.FINE, "{0} fired from {1}: {2}", new Object[] { event, activeAA, firedFrom }); //NOI18N
+                    return firedFrom ? Authorization.IGNORE : Authorization.PROCESS;
                 } else {
+                    LOGGER.log(Level.FINE, "Set to ignore {0}: {1}", new Object[] { event, ignoreFsEvents }); //NOI18N
                     return ignoreFsEvents ? Authorization.IGNORE : Authorization.PROCESS;
                 }
             }
@@ -3500,6 +3499,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public void setActiveAtomicAction(FileSystem.AtomicAction aa) {
             synchronized (this) {
+                LOGGER.log(Level.FINE, "setActiveAtomicAction({0})", aa); //NOI18N
                 if (aa != null) {
                     assert activeAA == null : "Expecting no activeAA: " + activeAA; //NOI18N
                     activeAA = aa;
@@ -3512,7 +3512,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
         public void setIgnoreFsEvents(boolean ignore) {
             synchronized (this) {
+                LOGGER.log(Level.FINE, "setIgnoreFsEvents({0})", ignore); //NOI18N
                 assert activeAA == null : "Expecting no activeAA: " + activeAA; //NOI18N
+                ignoreFsEvents = ignore;
             }
         }
     } // End of FSRefreshInterceptor class
