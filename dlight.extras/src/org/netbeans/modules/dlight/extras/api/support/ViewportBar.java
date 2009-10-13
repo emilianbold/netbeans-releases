@@ -73,6 +73,7 @@ import org.netbeans.modules.dlight.util.DLightMath;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -134,6 +135,11 @@ import org.openide.util.ImageUtilities;
             }
 
             @Override
+            public String getTooltip() {
+                return getMessage("viewport.start.tooltip"); // NOI18N
+            }
+
+            @Override
             public void paint(Graphics g) {
                 int pos = getPosition();
                 g.setColor(VIEWPORT_HANDLE_COLOR);
@@ -170,6 +176,11 @@ import org.openide.util.ImageUtilities;
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("viewport.end.tooltip"); // NOI18N
             }
 
             @Override
@@ -222,6 +233,11 @@ import org.openide.util.ImageUtilities;
             }
 
             @Override
+            public String getTooltip() {
+                return getMessage("filter.start.tooltip"); // NOI18N
+            }
+
+            @Override
             public void paint(Graphics g) {
                 int pos = getPosition();
                 g.drawImage(FILTER_HANDLE, pos - FILTER_HANDLE_WIDTH / 2,
@@ -268,6 +284,11 @@ import org.openide.util.ImageUtilities;
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("filter.end.tooltip"); // NOI18N
             }
 
             @Override
@@ -410,5 +431,9 @@ import org.openide.util.ImageUtilities;
         public Range<Long> getViewport() {
             return viewport;
         }
+    }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(ViewportBar.class, key);
     }
 }

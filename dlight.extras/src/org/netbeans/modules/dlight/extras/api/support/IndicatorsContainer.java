@@ -109,6 +109,7 @@ public final class IndicatorsContainer extends JPanel
         viewportBar = new ViewportBar(viewportModel, filterManager, scrollBarButtonSize, scrollBarButtonSize);
 
         hScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
+        hScrollBar.setToolTipText(getMessage("IndicatorsContainer.hScrollBar.tooltip")); // NOI18N
         adjust();
         hScrollBar.addAdjustmentListener(this);
 
