@@ -71,6 +71,7 @@ public class ChatNotifications {
 
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
     private HashMap<String, Notification> privateNotifications = new HashMap();
+    private HashMap<String, Integer> privateMessagesCounter = new HashMap();
     private Preferences preferences = NbPreferences.forModule(ChatNotifications.class);
 
     
@@ -104,6 +105,7 @@ public class ChatNotifications {
         if (n != null) {
             n.clear();
             privateNotifications.remove(name);
+            privateMessagesCounter.remove(name);
         }
     }
 
@@ -119,7 +121,13 @@ public class ChatNotifications {
         r.notifyMessageReceived(msg);
         String title = null;
         try {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getMessageCount()});
+        int count = r.getMessageCount();
+        if (count==1) {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+        } else {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+
+        }
             final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
 
             final ActionListener l = new ActionListener() {
@@ -149,8 +157,15 @@ public class ChatNotifications {
             n.clear();
             privateNotifications.remove(name);
         }
-        String title = NbBundle.getMessage(ChatTopComponent.class, "LBL_PrivateNotificationTitle"); // NOI18N
-        String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_PrivateNotificationDescription", new Object[] { name }); // NOI18N
+        increasePrivateMessagesCount(name);
+        String title;
+        int count = getPrivateMessagesCount(name);
+        if (count==1) {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{name, count}); // NOI18N
+        } else {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{name, count}); // NOI18N
+        }
+        String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt"); // NOI18N
         n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -198,6 +213,18 @@ public class ChatNotifications {
     
     private Icon getIcon() {
         return NEWMSG;
+    }
+
+    private void increasePrivateMessagesCount(String name) {
+        privateMessagesCounter.put(name, getPrivateMessagesCount(name)+1);
+    }
+
+    private int getPrivateMessagesCount(String name) {
+        Integer count = privateMessagesCounter.get(name);
+        if (count==null) {
+            return 0;
+        }
+        return count;
     }
 }
 
