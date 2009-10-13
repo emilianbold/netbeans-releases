@@ -192,7 +192,13 @@ is the proper place.
               to have methods <code>filesDeleted(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>
               and <code>filesDirty(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>.
           </p>
+          <p>
+              These two methods supersede thier older version, which accepted <code>Collection</code> rather
+              than <code>Iterable</code>. The new methods allow the infrastructure to optimize files crawling
+              and improve the overall performance of scanning.
+          </p>
       </description>
+      <issue number="166340"/>
   </change>
 
   <change id="adding-context-isSourceForBinaryRootIndexing">
