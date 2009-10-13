@@ -170,7 +170,7 @@ is the proper place.
       <version major="1" minor="19"/>
       <date day="12" month="8" year="2009"/>
       <author login="tzezula"/>
-      <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
       <description>
           <p>
               Modified <code>CustomIndexerFactory</code>, <code>EmbeddingIndexerFactory</code> and <code>BinaryIndexerFactory</code>
