@@ -93,14 +93,7 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
     public Notification notify(String title, Icon icon, String detailsText, ActionListener detailsAction, Priority priority) {
         if( null == detailsText )
             throw new NullPointerException("detailsText cannot be null."); //NOI18N
-        if( null == detailsAction )
-            throw new NullPointerException("detailsAction cannot be null."); //NOI18N
 
-        try {
-            detailsText = XMLUtil.toElementContent(detailsText);
-        } catch( CharConversionException ex ) {
-            throw new IllegalArgumentException(ex);
-        }
         JComponent detailsComp1 = createDetails( detailsText, detailsAction );
         JComponent detailsComp2 = createDetails( detailsText, detailsAction );
 
@@ -242,7 +235,14 @@ public final class NotificationDisplayerImpl extends NotificationDisplayer {
     }
 
     private JComponent createDetails( String text, ActionListener action ) {
-        text = "<html><u>" + text; //NOI18N
+        if( null == action ) {
+            return new JLabel(text);
+        }
+        try {
+            text = "<html><u>" + XMLUtil.toElementContent(text); //NOI18N
+        } catch( CharConversionException ex ) {
+            throw new IllegalArgumentException(ex);
+        }
         JButton btn = new JButton(text);
         btn.setFocusable(false);
         btn.setBorder(BorderFactory.createEmptyBorder());

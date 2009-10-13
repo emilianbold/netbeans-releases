@@ -1749,17 +1749,26 @@ public abstract class TreeView extends JScrollPane {
             setDragEnabled( true );
         }
 
+        /** removeNotify() call count sometimes does not match addNotify(), use special flag */
+        private boolean registered = false;
+
         @Override
         public void addNotify() {
             super.addNotify();
-            ViewTooltips.register(this);
+            if (!registered) {
+                ViewTooltips.register(this);
+                registered = true;
+            }
             ViewUtil.adjustBackground( this );
         }
         
         @Override
         public void removeNotify() {
             super.removeNotify();
-            ViewTooltips.unregister(this);
+            if (registered) {
+                ViewTooltips.unregister(this);
+                registered = false;
+            }
         }
 
         @Override
