@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=ProfilerMonitor
 
 # Active Configuration
-DEFAULTCONF=Release
+DEFAULTCONF=GNU_Linux
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Release 
+ALLCONFS=GNU_Linux GNU_MacOS 
 
 
 # build

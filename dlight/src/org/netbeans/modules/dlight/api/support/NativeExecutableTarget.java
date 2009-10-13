@@ -288,12 +288,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             // Setup additional environment variables from executionEnvProvider
             if (executionEnvProvider != null) {
                 try {
-                    Map<String, String> env = executionEnvProvider.getExecutionEnv(this);
-                    if (env != null && !env.isEmpty()) {
-                        // TODO: not very accurate - could override previously
-                        // installed variables
-                        pb.getEnvironment().putAll(env);
-                    }
+                    executionEnvProvider.setupEnvironment(this, pb.getEnvironment());
                 } catch (ConnectException ex) {
                     // TODO: can it happen here?
                     log.severe(ex.getMessage());

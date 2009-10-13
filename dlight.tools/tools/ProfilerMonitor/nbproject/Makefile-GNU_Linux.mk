@@ -16,15 +16,18 @@ CC=gcc
 CCC=g++
 CXX=g++
 FC=gfortran
+AS=as
 
 # Macros
-PLATFORM=GNU-Linux-x86
+CND_PLATFORM=GNU-Linux-x86
+CND_CONF=GNU_Linux
+CND_DISTDIR=dist
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/Release/${PLATFORM}
+OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
@@ -40,17 +43,20 @@ CXXFLAGS=
 # Fortran Compiler Flags
 FFLAGS=
 
+# Assembler Flags
+ASFLAGS=
+
 # Link Libraries and Options
 LDLIBSOPTIONS=-lrt
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	${MAKE}  -f nbproject/Makefile-Release.mk prof_monitor
+	${MAKE}  -f nbproject/Makefile-GNU_Linux.mk prof_monitor
 
 prof_monitor: ${OBJECTFILES}
 	${LINK.c} -o prof_monitor -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/prof_monitor.o: prof_monitor.c 
+${OBJECTDIR}/prof_monitor.o: nbproject/Makefile-${CND_CONF}.mk prof_monitor.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.c) -O2 -s -I../ProfilerAgent -MMD -MP -MF $@.d -o ${OBJECTDIR}/prof_monitor.o prof_monitor.c
@@ -59,8 +65,8 @@ ${OBJECTDIR}/prof_monitor.o: prof_monitor.c
 .build-subprojects:
 
 # Clean Targets
-.clean-conf:
-	${RM} -r build/Release
+.clean-conf: ${CLEAN_SUBPROJECTS}
+	${RM} -r build/GNU_Linux
 	${RM} prof_monitor
 
 # Subprojects

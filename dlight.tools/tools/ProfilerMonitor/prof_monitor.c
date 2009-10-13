@@ -97,11 +97,13 @@ int main(int argc, char** argv) {
         return -2;
     }
 
-    struct timespec res;
+    struct timespec res = {0, 0};
     long resolution = DEF_RES;
+#ifdef CLOCK_REALTIME
     if (clock_getres(CLOCK_REALTIME, &res) == 0) {
         resolution = (resolution > res.tv_nsec) ? resolution : res.tv_nsec;
     }
+#endif
     long per_sec = 1000000000L / (GRANULARITY * resolution);
 
     signal(SIGINT, terminate);
