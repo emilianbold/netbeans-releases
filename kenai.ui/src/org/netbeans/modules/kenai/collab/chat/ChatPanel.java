@@ -657,7 +657,7 @@ public class ChatPanel extends javax.swing.JPanel {
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
                 .add(sendLinkButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 154, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
@@ -667,8 +667,6 @@ public class ChatPanel extends javax.swing.JPanel {
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
-
-        outboxScrollPane.setBorder(null);
 
         outbox.setMaximumSize(new java.awt.Dimension(0, 16));
         outbox.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -689,6 +687,7 @@ public class ChatPanel extends javax.swing.JPanel {
         inboxPanel.setLayout(new java.awt.BorderLayout());
 
         inboxScrollPane.setBorder(null);
+        inboxScrollPane.setViewportBorder(null);
 
         inbox.setBorder(null);
         inbox.setContentType("text/html"); // NOI18N
