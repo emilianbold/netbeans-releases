@@ -1223,8 +1223,9 @@ public class FileStatusCache {
                             LABELS_CACHE_LOG.fine("Too old item in cache for : " + file.getAbsolutePath()); //NOI18N
                         }
                     }
-                    fileLabels.remove(file);
-                    labelInfo = FAKE_LABEL_INFO;
+                    if (labelInfo == null) {
+                        labelInfo = FAKE_LABEL_INFO;
+                    }
                     refreshInfo = true;
                 }
             }
@@ -1297,8 +1298,11 @@ public class FileStatusCache {
                         synchronized (fileLabels) {
                             for (Map.Entry<File, FileLabelInfo> e : labels.entrySet()) {
                                 e.getValue().updateTimestamp(); // after a possible slow initialization for many files update all timestamps, so they remain in cache longer
-                                fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
+                                FileLabelInfo oldInfo = fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
                                 fileLabels.put(e.getKey(), e.getValue());
+                                if (e.getValue().equals(oldInfo)) {
+                                    filesToRefresh.remove(e.getKey());
+                                }
                             }
                         }
                     } catch (SVNClientException ex) {
@@ -1313,7 +1317,7 @@ public class FileStatusCache {
                             LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                         }
                     }
-                    Subversion.getInstance().refreshAnnotations(files);
+                    Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new File[filesToRefresh.size()]));
                     synchronized (fileLabels) {
                         if (fileLabels.size() > 50) {
                             if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
@@ -1410,6 +1414,26 @@ public class FileStatusCache {
              */
             String getStickyString() {
                 return stickyString != null ? stickyString : "";            //NOI18N
+            }
+
+            @Override
+            public boolean equals (Object obj) {
+                if (obj instanceof FileLabelInfo) {
+                    FileLabelInfo other = (FileLabelInfo) obj;
+                    return getRevisionString().equals(other.getRevisionString())
+                            && getBinaryString().equals(other.getBinaryString())
+                            && getStickyString().equals(other.getStickyString());
+                }
+                return super.equals(obj);
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                hash = 53 * hash + (this.revisionString != null ? this.revisionString.hashCode() : 0);
+                hash = 53 * hash + (this.binaryString != null ? this.binaryString.hashCode() : 0);
+                hash = 53 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
+                return hash;
             }
         }
     }
