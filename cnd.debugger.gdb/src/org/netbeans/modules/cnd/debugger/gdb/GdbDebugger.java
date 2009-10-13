@@ -2633,7 +2633,7 @@ public class GdbDebugger implements PropertyChangeListener {
         pcs.firePropertyChange(name, o, n);
     }
 
-    private boolean isCygwin() {
+    public boolean isCygwin() {
         return cygwin;
     }
 
