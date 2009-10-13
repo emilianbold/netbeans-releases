@@ -66,10 +66,17 @@ typedef struct file_data {
 
 /**
  * Finds file_data for the given file name;
- * if it does not exist, creates one, inserts it into the tree and
+ */
+file_data *find_file_data(const char* filename);
+
+/**
+ * Inserts file_data for the given file name;
  * returns a reference to the newly inserted one
  */
-file_data *find_file_data(const char* filename, int create);
+file_data *insert_file_data(const char* filename);
+
+// temporary FIXUP: should be static
+file_data *find_or_insert_file_data(const char* filename, int create);
 
 /**
  * Visits all file_data elements - calls function passed as a 1-st parameter
