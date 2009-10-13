@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
 
    private final ModelImpl model;
    private final NativeProject nativeProject;
