@@ -226,7 +226,12 @@ public final class MavenEmbedder {
     public ProjectBuildingResult buildProject(Artifact art, ProjectBuildingRequest req) throws ProjectBuildingException {
         try {
             DefaultProjectBuilder bldr = getPlexusContainer().lookup(DefaultProjectBuilder.class);
+            if (req.getLocalRepository() == null) {
+                req.setLocalRepository(getLocalRepository());
+            }
             //TODO some default population of request?
+            req.setProcessPlugins(false);
+            
             return bldr.build(art, req);
         } catch (ComponentLookupException ex) {
 //            Exceptions.printStackTrace(ex);
