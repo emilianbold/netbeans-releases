@@ -158,7 +158,7 @@ public class Installer extends ModuleInstall implements Runnable {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
-    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data"); // NOI18N
+    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data", 2); // NOI18N
     public static RequestProcessor RP_OPT = null;
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
@@ -1574,6 +1574,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
+                reportPanel.showCheckingPassword();
                 RP_SUBMIT.post(new Runnable() {
 
                     public void run() {
