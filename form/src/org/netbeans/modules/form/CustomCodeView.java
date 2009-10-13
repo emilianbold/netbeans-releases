@@ -54,6 +54,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -1002,8 +1004,21 @@ class CustomCodeView extends javax.swing.JPanel {
 
         private int lineHeight() {
             if (lineHeight < 0) {
-                int lines = getLineCount(editor.getDocument());
-                lineHeight = editor.getPreferredSize().height / lines;
+                Element root = editor.getDocument().getDefaultRootElement();
+                if (root.getElementCount()>0) {
+                    Element elem = root.getElement(0);
+                    try {
+                        int y1 = editor.modelToView(elem.getStartOffset()).y;
+                        int y2 = editor.modelToView(elem.getEndOffset()).y;
+                        lineHeight = y2-y1;
+                    } catch (BadLocationException blex) {
+                        Logger.getLogger(CustomCodeView.class.getName()).log(Level.INFO, blex.getMessage(), blex);
+                    }
+                }
+                if (lineHeight <= 0) {
+                    // fallback
+                    lineHeight = editor.getFontMetrics(editor.getFont()).getHeight();
+                }
             }
             return lineHeight;
         }
