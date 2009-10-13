@@ -171,6 +171,8 @@ public class JavacParser extends Parser {
     
     //Listener support
     private final ChangeSupport listeners = new ChangeSupport(this);
+    //May be the parser canceled inside javac?
+    private final AtomicBoolean mayCancel = new AtomicBoolean();
     //Cancelling of parser & index
     private final AtomicBoolean canceled = new AtomicBoolean();
     //When true the parser is a private copy not used by the parsing API, see JavaSourceAccessor.createCompilationController
@@ -388,9 +390,14 @@ public class JavacParser extends Parser {
             }
             Phase reachedPhase;
             try {
-                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
+                mayCancel.set(true);
+                reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
+            } catch (CancelAbort ca) {
+                reachedPhase = Phase.MODIFIED;
+            } finally {
+                mayCancel.set(false);
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
@@ -621,7 +628,7 @@ public class JavacParser extends Parser {
         }
         JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new CancelService() {
             public @Override boolean isCanceled() {
-                return parser.canceled.get();
+                return parser.mayCancel.get() && parser.canceled.get();
             }
         });
         Context context = javacTask.getContext();
