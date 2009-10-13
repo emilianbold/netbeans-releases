@@ -48,9 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -828,29 +826,15 @@ public class GdbUtils {
         return cur.getName() + ':' + Long.toString(cur.getId());
     }
 
-    public static boolean comparePaths(int platform, String path1, String path2) {
-        path1 = path1.trim();
-        path2 = path2.trim();
+    public static boolean compareUnixPaths(String path1, String path2) {
+        assert path1.equals(path1.trim()) : "Only trimmed paths allowed"; //NOI18N
+        assert path2.equals(path2.trim()) : "Only trimmed paths allowed"; //NOI18N
+
+        assert path1.charAt(0) == '/' : "Only unix paths supported"; //NOI18N
+        assert path2.charAt(0) == '/' : "Only unix paths supported"; //NOI18N
 
         if (path1.equals(path2)) {
             return true;
-        }
-        
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            path1 = path1.toLowerCase();
-            path2 = path2.toLowerCase();
-
-            if (path1.equals(path2)) {
-                return true;
-            }
-
-            // we need to convert paths to unix-like style, so that normalization works correctly
-            path1 = WindowsSupport.getInstance().convertToCygwinPath(path1).toLowerCase();
-            path2 = WindowsSupport.getInstance().convertToCygwinPath(path2).toLowerCase();
-
-            if (path1.equals(path2)) {
-                return true;
-            }
         }
         
         // see isssue 152489, normalization is required to correctly compare paths with ..
@@ -866,29 +850,7 @@ public class GdbUtils {
         return path1.equals(path2);
     }
 
-    /**
-     * Compare the executable path from gdb (via the <i>info files</i> command to the executable path
-     * from the project data. This comparison is <b>very</b> system dependent. For MacOS, all compares
-     * are done in lower case. For Unix, they're done as-is. The most difficult platform is Windows,
-     * where, depending on the gdb provider, I can see a Cygwin name, either forward or backward slashes,
-     * either single or double backslashes (MinGW). The ".exe" may also be missing in some cases.
-     *
-     * @param exe1 The first path
-     * @param exe2 The second path
-     * @return True if exe1 and exe2 resolve to the same executable
-     */
-    public static boolean compareExePaths(int platform, String exe1, String exe2) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            exe1 = removeExe(exe1);
-            exe2 = removeExe(exe2);
-        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
-            exe1 = exe1.toLowerCase();
-            exe2 = exe2.toLowerCase();
-        }
-        return comparePaths(platform, exe1, exe2);
-    }
-
-    private static String removeExe(String exe) {
+    public static String removeExe(String exe) {
         if (exe.endsWith(".exe")) { // NOI18N
             return exe.substring(0, exe.length() - 4);
         }
