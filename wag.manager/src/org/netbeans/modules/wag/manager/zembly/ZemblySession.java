@@ -54,6 +54,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.wag.manager.util.WagPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -261,25 +262,67 @@ public class ZemblySession implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            final PasswordAuthentication newValue = (PasswordAuthentication) evt.getNewValue();
+        String propName = evt.getPropertyName();
 
+        if (propName.equals(Kenai.PROP_LOGIN_STARTED)) {
+            String kenaiEmail = (String) evt.getNewValue();
+
+            if (kenaiEmail.contains("@")) {
+                WagPreferences.getInstance().setKenaiEmail(kenaiEmail);
+                
+                // Need to remove previous saved kenai username
+                WagPreferences.getInstance().setKenaiUsername(null);
+            }
+        } else if (propName.equals(Kenai.PROP_LOGIN)) {
+            final PasswordAuthentication newValue = (PasswordAuthentication) evt.getNewValue();
             // If new value is not null, that means login, otherwise, logout
             if (newValue != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            login(newValue.getUserName(), newValue.getPassword());
-                        } catch (Exception ex) {
-                            // Ignore - fail silently
-                            //Utilities.handleException(ex);
+                final String email = lookupEmail(newValue.getUserName(), true);
+
+                //System.out.println("username = " + newValue.getUserName() + " email = " + email);
+                if (email != null) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        public void run() {
+                            try {
+                                login(email, newValue.getPassword());
+                            } catch (Exception ex) {
+                                // Ignore - fail silently
+                                //Utilities.handleException(ex);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } else {
-                logout();
+                /*
+                PasswordAuthentication oldValue = (PasswordAuthentication) evt.getOldValue();
+                String email = lookupEmail(oldValue.getUserName(), false);
+
+                if (email != null) {
+                    if (userInfo != null && userInfo.getUsername().equals(email)) {
+                        logout();
+                    }
+                }
+                 */
             }
 
+        }
+    }
+
+    private String lookupEmail(String kenaiUsername, boolean updateCache) {
+        String savedKenaiUsername = WagPreferences.getInstance().getKenaiUsername();
+        String savedKenaiEmail = WagPreferences.getInstance().getKenaiEmail();
+
+        if (savedKenaiUsername == null) {
+            if (updateCache) {
+                WagPreferences.getInstance().setKenaiUsername(kenaiUsername);
+            }
+
+            return savedKenaiEmail;
+        } else if (savedKenaiUsername.equals(kenaiUsername)) {
+            return savedKenaiEmail;
+        } else {
+            return null;
         }
     }
 }
