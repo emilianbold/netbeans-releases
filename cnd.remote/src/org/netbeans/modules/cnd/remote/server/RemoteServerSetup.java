@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
@@ -278,7 +279,7 @@ public class RemoteServerSetup {
     
     private List<String> getBinaryUpdates(List<String> list) {
 
-        if (Boolean.getBoolean("cnd.remote.force.setup")) {
+        if (CndUtils.getBoolean("cnd.remote.force.setup", true)) {
             RemoteUtil.LOGGER.info("Forcing remote host setup for " + executionEnvironment);
             list.add(REMOTE_LIB_DIR);
             for (String path : binarySetupMap.keySet()) {
