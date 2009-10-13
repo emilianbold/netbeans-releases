@@ -214,11 +214,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 embedder = new DefaultPlexusContainer(config);
 
                 repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-                indexer = (NexusIndexer) embedder.lookup(NexusIndexer.class);
-                searcher = (SearchEngine) embedder.lookup(SearchEngine.class);
-                remoteIndexUpdater = (IndexUpdater) embedder.lookup(IndexUpdater.class);
-                wagonManager = (WagonManager) embedder.lookup( WagonManager.class );
-                contextProducer = (ArtifactContextProducer) embedder.lookup(ArtifactContextProducer.class);
+                indexer = embedder.lookup(NexusIndexer.class);
+                searcher = embedder.lookup(SearchEngine.class);
+                remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
+                wagonManager = embedder.lookup( WagonManager.class );
+                contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
                 Exceptions.printStackTrace(ex);
