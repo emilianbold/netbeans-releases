@@ -75,6 +75,7 @@ public class GdbCallStackFrame extends CallStackFrame {
     private final String func;
     private final String file;
     private final String fullname;
+    private final String resolvedName;
     private final int frameNumber;
     private final String address;
     private final String from;
@@ -93,6 +94,12 @@ public class GdbCallStackFrame extends CallStackFrame {
         this.func = func;
         this.file = file;
         this.fullname = fullname;
+        if (fullname != null) {
+            resolvedName = debugger.getPathMap().getLocalPath(debugger.getOSPath(fullname));
+        } else {
+            resolvedName = null;
+        }
+
         this.address = address;
         this.frameNumber = frameNumber;
         this.from = from;
@@ -159,12 +166,7 @@ public class GdbCallStackFrame extends CallStackFrame {
      * @return name of file this stack frame is stopped in
      */
     public String getFullname() {
-        // PathMap.getLocalPath throws NPE when argument is null
-        if (fullname == null) {
-            return null;
-        }
-        String res = debugger.getOSPath(fullname);
-        return debugger.getPathMap().getLocalPath(res);
+        return resolvedName;
     }
 
     public String getOriginalFullName() {
@@ -184,7 +186,7 @@ public class GdbCallStackFrame extends CallStackFrame {
     }
 
     public boolean isValid() {
-        return getFileName() != null && getFullname() != null && getFunctionName() != null;
+        return getFileName() != null && getOriginalFullName() != null && getFunctionName() != null;
     }
     
     /** UNCOMMENT WHEN THIS METHOD IS NEEDED. IT'S ALREADY IMPLEMENTED IN THE IMPL. CLASS.

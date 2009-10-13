@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
 * Implementation of breakpoint on method.
@@ -64,9 +64,6 @@ public class LineBreakpointImpl extends BreakpointImpl<LineBreakpoint> {
     protected String getBreakpointCommand() {
         int lineNumber = getBreakpoint().getLineNumber();
 	String bppath = getBreakpoint().getPath();
-        if (debugger.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            bppath = debugger.win2UnixPath(bppath);
-        }
 	String path = null;
 
 	if (lastPath == null && bppath.indexOf(' ') == -1) {
@@ -87,6 +84,10 @@ public class LineBreakpointImpl extends BreakpointImpl<LineBreakpoint> {
 	if (path == null) {
 	    return null;
 	} else {
+            // IZs 169200 & 174479 (send internal path for cygwin)
+            if (debugger.isCygwin()) {
+                path = WindowsSupport.getInstance().convertToCygwinPath(path);
+            }
 	    return path + ':' + lineNumber;
 	}
     }

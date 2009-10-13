@@ -115,42 +115,50 @@ static void serve_connection(void* data) {
         }
 
         char response[64];
-        file_data *fd = find_file_data(pkg->data, true);
+        const char* filename = pkg->data;
+        file_data *fd = find_or_insert_file_data(filename, true); // temporary FIXUP: should be find_file_data
 
-        if (fd != NULL && fd->state == file_state_pending) {
-            /* TODO: this is a very primitive sync!  */
-            pthread_mutex_lock(&mutex);
+        if (fd != NULL) {
+            if (fd->state == file_state_pending) {
+                /* TODO: this is a very primitive sync!  */
+                pthread_mutex_lock(&mutex);
 
-            fprintf(stdout, "%s\n", pkg->data);
-            fflush(stdout);
+                fprintf(stdout, "%s\n", filename);
+                fflush(stdout);
 
-            #if TRACE
-                if (emulate) {
-                    response[0] = response_ok;
-                    response[1] = 0;
-                } else
-            #endif
-            fgets(response, sizeof response, stdin);
-            fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
-            pthread_mutex_unlock(&mutex);
-            trace("Got reply=%s from sd=%d set %X->state to %d\n", response, conn_data->sd, fd, fd->state);
-        } else {
-            if (fd != NULL && fd->state == file_state_ok) {
+                #if TRACE
+                    if (emulate) {
+                        response[0] = response_ok;
+                    } else
+                #endif
+                fgets(response, sizeof response, stdin);
+                fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
+                pthread_mutex_unlock(&mutex);
+                trace("Got reply=%s for %s from sd=%d set %X->state to %d\n", response, filename, conn_data->sd, fd, fd->state);
+            }
+            else if (fd->state == file_state_ok) {
                 response[0] = response_ok;
-            } else { // either fd == NULL or fd->state == file_state_error
+                trace("Already known: %s; filled reply: %s\n", filename, response);
+            } else if(fd->state == file_state_error) {
+                response[0] = response_failure;
+                trace("Old error: %s; filled reply: %s\n", filename, response);
+            } else { // this can never happen, unless we have a bug in logic
+                report_error("Unexpected fd->state fir %s: %d\n", filename, fd->state);
                 response[0] = response_failure;
             }
-            response[1] = 0;
-            trace("Already known; filled reply: %s\n", response);
+        } else {
+            response[0] = response_ok;
+            trace("Not mine: %s; filled reply: %s\n", filename, response);
         }
 
+        response[1] = 0;
         enum sr_result send_res = pkg_send(conn_data->sd, pkg_reply, response);
         if (send_res == sr_failure) {
             perror("send");
         } else if (send_res == sr_reset) {
             perror("send");
         } else { // success
-            trace("reply for %s sent to %s sd=%d\n", pkg->data, requestor_id, conn_data->sd);
+            trace("reply for %s sent to %s sd=%d\n", filename, requestor_id, conn_data->sd);
         }        
     }
     close(conn_data->sd);
@@ -165,8 +173,16 @@ static void create_dir(const char* path) {
     }
 }
 
-static void create_file(const char* path, int size) {
+static int create_file(const char* path, int size) {
     trace("\tcreating file %s %d\n", path, size);
+
+    char real_path[PATH_MAX];
+    if ( realpath(path, real_path)) {
+        insert_file_data(path);
+    } else {
+        return false;
+    }
+
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
     if (fd > 0) { // // TODO: error processing
         if (size > 0) {
@@ -174,28 +190,34 @@ static void create_file(const char* path, int size) {
             char space = '\n';
             int written = write(fd, &space, 1);
             if (written != 1) {
-                trace("\t\terror writing %s: %d bytes written\n", path, written);
+                report_error("Error writing %s: %d bytes written\n", path, written);
+                return false;
             }
         }
         if (close(fd) != 0) {
-            trace("\t\terror closing %s (fd=%d)\n", path, fd);
+            report_error("error closing %s (fd=%d)\n", path, fd);
+            return false;
         }
     } else {
         report_error("Error opening %s: %s\n", path, strerror(errno));
+        return false;
     }
+    return true;
 }
 
 /**
  * Reads the list of files from the host IDE runs on,
  * creates files, fills internal file table
  */
-static void init_files() {
+static int init_files() {
     trace("Files list initialization\n");
     int bufsize = PATH_MAX + 32;
     char buffer[bufsize];
+    int success = false;
     while (1) {
         fgets(buffer, bufsize, stdin);
         if (buffer[0] == '\n') {
+            success = true;
             break;
         }
         // remove trailing LF
@@ -212,7 +234,7 @@ static void init_files() {
             while (path < buffer + bufsize - 1 && *path && *path != ' ') {
                 if (!isdigit(*path)) {
                     fprintf(stderr, "prodocol error: %s\n", buffer);
-                    return;
+                    break;
                 }
                 path++;
             }
@@ -221,13 +243,16 @@ static void init_files() {
                 path++; // skip space after size
             } else {
                 fprintf(stderr, "prodocol error: %s\n", buffer);
-                return;
+                break;
             }
             int size = atoi(buffer);
-            create_file(path, size);
+            if (!create_file(path, size)) {
+                break;
+            }
         }
     }
     trace("Files list initialization done\n");
+    return success;
 }
 
 int main(int argc, char* argv[]) {
@@ -278,7 +303,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    init_files();
+    if (!init_files()) {
+        report_error("Error when initializing files\n");
+        exit(8);
+    }
 
     // print port later, when we're done with initializing files
     fprintf(stdout, "PORT %d\n", port);
