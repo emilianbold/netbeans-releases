@@ -54,7 +54,6 @@ import java.awt.RenderingHints;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -306,21 +305,15 @@ import org.openide.util.ImageUtilities;
     private Range<Long> getTimeSelection() {
         Collection<TimeIntervalDataFilter> timeFilters = filterManager == null ? null : filterManager.getDataFilter(TimeIntervalDataFilter.class);
         if (timeFilters != null && !timeFilters.isEmpty()) {
-            Range<Long> selection = timeFilters.iterator().next().getInterval();
-            return new Range<Long>(
-                    TimeUnit.NANOSECONDS.toMillis(selection.getStart()),
-                    TimeUnit.NANOSECONDS.toMillis(selection.getEnd()));
+            return timeFilters.iterator().next().getInterval();
         } else {
             return null;
         }
     }
 
-    private void setTimeSelection(Range<Long> selection, boolean isAdjusting) {
+    private void setTimeSelection(Range<Long> range, boolean isAdjusting) {
         if (filterManager != null) {
-            Long start = TimeUnit.MILLISECONDS.toNanos(selection.getStart());
-            Long end = TimeUnit.MILLISECONDS.toNanos(selection.getEnd());
-            filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(
-                    new Range<Long>(start, end)), isAdjusting);
+            filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(range), isAdjusting);
         }
     }
 

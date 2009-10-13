@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
 public final class IndicatorsContainer extends JPanel
         implements AdjustmentListener, ChangeListener {
 
-    private static final long EXTENT = 20000L; // 20 seconds
+    private static final long EXTENT = 20000000000L; // 20 seconds
     private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
     private final JScrollPane indicatorsScrollPane;
@@ -87,7 +87,7 @@ public final class IndicatorsContainer extends JPanel
 
     public IndicatorsContainer(DataFilterManager filterManager, List<Indicator<?>> indicators) {
         viewportModel = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
-        viewportModel.setMinViewportSize(1000L); // 1 second
+        viewportModel.setMinViewportSize(1000000000L); // 1 second
         viewportModel.addChangeListener(this);
 
         indicatorsScrollPane = packIndicatorsIntoScrollPane(indicators, viewportModel);
@@ -200,7 +200,7 @@ public final class IndicatorsContainer extends JPanel
 
     private void adjust() {
         Range<Long> limits = viewportModel.getLimits();
-        timeLabel.setText(TIME_FORMATTER.format(Math.max(0, limits.getEnd() - 1000)));
+        timeLabel.setText(TIME_FORMATTER.format(Math.max(0L, limits.getEnd() - 1000000000L)));
 
         Range<Long> viewport = viewportModel.getViewport();
         limits = limits.extend(viewport);

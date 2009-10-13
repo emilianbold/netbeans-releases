@@ -162,7 +162,7 @@ public final class TimeSeriesDataContainer {
             list.ensureCapacity(size);
             list.addAll(Collections.<Bucket>nCopies(size - list.size(), null));
             if (plot != null) {
-                plot.getViewportModel().setLimits(new Range<Long>(Long.valueOf(0), Long.valueOf(1000 * size)));
+                plot.getViewportModel().setLimits(new Range<Long>(0L, 1000000000L * size));
             }
         }
     }

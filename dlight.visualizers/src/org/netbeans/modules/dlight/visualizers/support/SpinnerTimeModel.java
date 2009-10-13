@@ -36,72 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.extras.api;
+package org.netbeans.modules.dlight.visualizers.support;
 
-import org.netbeans.modules.dlight.util.Range;
-import javax.swing.event.ChangeListener;
+import javax.swing.AbstractSpinnerModel;
 
 /**
- * Model for components that have viewport or are otherwise
- * involved in viewport management.
- *
  * @author Alexey Vladykin
  */
-public interface ViewportModel {
+public class SpinnerTimeModel extends AbstractSpinnerModel {
 
-    /**
-     * Returns limits. Limits is the available data range,
-     * which can be viewed through this viewport.
-     * Same as <code>getState().getLimits()</code>.
-     *
-     * @return current limits
-     */
-    Range<Long> getLimits();
+    private static final long NANOS_PER_SECOND = 1000000000L;
+    private long nanos;
 
-    /**
-     * Sets limits.
-     *
-     * @param limits  new limits
-     */
-    void setLimits(Range<Long> limits);
+    public Object getValue() {
+        return Math.max(0, nanos);
+    }
 
-    /**
-     * Returns viewport. Viewport's start and
-     * end are in nanoseconds since session start.
-     * Same as <code>getState().getViewport()</code>.
-     *
-     * @return current viewport
-     */
-    Range<Long> getViewport();
+    public void setValue(Object value) {
+        if (value instanceof Long) {
+            nanos = ((Long) value).longValue();
+            fireStateChanged();
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
 
-    /**
-     * Sets viewport. Start and/or end can be <code>null</code>
-     * to keep current values.
-     *
-     * @param viewport  new viewport
-     */
-    void setViewport(Range<Long> viewport);
+    public Object getNextValue() {
+        if (nanos == Long.MAX_VALUE) {
+            return null;
+        } else if (Long.MAX_VALUE - NANOS_PER_SECOND <= nanos) {
+            return Long.MAX_VALUE;
+        } else {
+            return nanos + NANOS_PER_SECOND;
+        }
+    }
 
-    /**
-     * Returns model state consisting of current limits and viewport.
-     * This is a way to get limits and viewport atomically.
-     *
-     * @return model state
-     */
-    ViewportModelState getState();
-
-    /**
-     * Adds change listener. <code>ChangeEvent</code>s are sent
-     * when limits or viewport are modified.
-     *
-     * @param listener  listener to add
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes change listener.
-     *
-     * @param listener  listener to remove
-     */
-    void removeChangeListener(ChangeListener listener);
+    public Object getPreviousValue() {
+        if (nanos <= 0) {
+            return null;
+        } else if (nanos <= NANOS_PER_SECOND) {
+            return 0L;
+        } else {
+            return nanos - NANOS_PER_SECOND;
+        }
+    }
 }

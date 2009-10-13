@@ -36,72 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.extras.api;
+package org.netbeans.modules.dlight.visualizers.support;
 
-import org.netbeans.modules.dlight.util.Range;
-import javax.swing.event.ChangeListener;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.JSpinner;
+import org.netbeans.modules.dlight.util.TimeFormatter;
 
 /**
- * Model for components that have viewport or are otherwise
- * involved in viewport management.
  *
  * @author Alexey Vladykin
  */
-public interface ViewportModel {
+public class SpinnerTimeEditor extends JSpinner.DefaultEditor {
 
-    /**
-     * Returns limits. Limits is the available data range,
-     * which can be viewed through this viewport.
-     * Same as <code>getState().getLimits()</code>.
-     *
-     * @return current limits
-     */
-    Range<Long> getLimits();
+    public SpinnerTimeEditor(JSpinner spinner) {
+        super(spinner);
+        getTextField().setFormatterFactory(new TimeFormatterFactory());
+        getTextField().setEditable(true);
+    }
 
-    /**
-     * Sets limits.
-     *
-     * @param limits  new limits
-     */
-    void setLimits(Range<Long> limits);
+    private static class TimeFormatterFactory extends AbstractFormatterFactory {
 
-    /**
-     * Returns viewport. Viewport's start and
-     * end are in nanoseconds since session start.
-     * Same as <code>getState().getViewport()</code>.
-     *
-     * @return current viewport
-     */
-    Range<Long> getViewport();
+        private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
-    /**
-     * Sets viewport. Start and/or end can be <code>null</code>
-     * to keep current values.
-     *
-     * @param viewport  new viewport
-     */
-    void setViewport(Range<Long> viewport);
-
-    /**
-     * Returns model state consisting of current limits and viewport.
-     * This is a way to get limits and viewport atomically.
-     *
-     * @return model state
-     */
-    ViewportModelState getState();
-
-    /**
-     * Adds change listener. <code>ChangeEvent</code>s are sent
-     * when limits or viewport are modified.
-     *
-     * @param listener  listener to add
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes change listener.
-     *
-     * @param listener  listener to remove
-     */
-    void removeChangeListener(ChangeListener listener);
+        @Override
+        public AbstractFormatter getFormatter(JFormattedTextField tf) {
+            return TIME_FORMATTER;
+        }
+    }
 }
