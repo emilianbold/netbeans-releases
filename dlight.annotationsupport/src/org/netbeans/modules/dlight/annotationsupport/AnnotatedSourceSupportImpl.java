@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -233,7 +235,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
     class EditorFileChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            annotateCurrentSourceFiles();
+            if (evt.getPropertyName().equals("currentNodes")) { // NOI18N
+                annotateCurrentSourceFiles();
+            }
         }
     }
 
