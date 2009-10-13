@@ -38,6 +38,8 @@
 # made subject to such option by the copyright holder.
 
 LINKER=cc
+CC=gcc
+
 DEBUG := -g
 
 CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
@@ -120,11 +122,11 @@ build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs
 
 #object files
 ${BUILD}/%.o : %.c
-	gcc ${CFLAGS} -Werror -o $@ $<
+	${CC} ${CFLAGS} -Werror -o $@ $<
 
 # rfs_test_env can do with implicit function declarations
 ${BUILD}/rfs_test_env.o : rfs_test_env.c
-	gcc ${CFLAGS} -o $@ $<
+	${CC} ${CFLAGS} -o $@ $<
 
 PRELOAD_OBJFILES := ${BUILD}/rfs_preload.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 CONTROLLER_OBJFILES := ${BUILD}/rfs_controller.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_filedata.o
@@ -165,9 +167,9 @@ test: test_build
 	${BUILD}/test_rfs_filedata
 
 test_build: all
-	#${LINKER} ${CFLAGS} -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
+	#${CC} ${CFLAGS} -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
 	#${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
-	${LINKER} ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
+	${CC} ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
 	${LINKER} ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 
 test_platform:
