@@ -76,10 +76,10 @@ public class GeneralTipsProvider implements ParallelAdviserTipsProvider {
         String os = System.getProperty("os.name"); // NOI18N
         if(os.contains("SunOS")) { // NOI18N
             tips.add(new SunStudioCompilersAdvice());
-//            tips.add(new SunStudioCompilersInstallationAdvice());
+            tips.add(new SunStudioCompilersInstallationAdvice("SunOS")); // NOI18N
         } else if(os.contains("Linux")) { // NOI18N
             tips.add(new SunStudioCompilersAdvice());
-            tips.add(new SunStudioCompilersInstallationAdvice());
+            tips.add(new SunStudioCompilersInstallationAdvice("Linux")); // NOI18N
         } else {
             tips.add(new SunStudioCompilersAdvice());
         }
