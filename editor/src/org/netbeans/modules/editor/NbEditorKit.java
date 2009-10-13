@@ -61,6 +61,7 @@ import java.util.prefs.Preferences;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -95,6 +96,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.MimeTypeInitializer;
@@ -937,7 +939,19 @@ public class NbEditorKit extends ExtKit implements Callable {
 
         // initialize HighlightsLayers (#172381)
         Document doc = createDefaultDocument();
-        JEditorPane pane = new JEditorPane();
+        JEditorPane pane = new JEditorPane() {
+            public @Override void updateUI() {
+                // use fake UI, which will not attempt to install anything - see issue #174408
+                setUI(new BaseTextUI() {
+                    public @Override void installUI(JComponent c) {
+                        // ignore
+                    }
+                    public @Override void uninstallUI(JComponent c) {
+                        // ignore
+                    }
+                });
+            }
+        };
         pane.setDocument(doc);
         HighlightingManager.getInstance().getHighlights(pane, HighlightsLayerFilter.IDENTITY);
 
