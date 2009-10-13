@@ -51,6 +51,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -77,6 +78,7 @@ public class DevicesForm extends javax.swing.JPanel implements ExplorerManager.P
         initComponents();
         Mnemonics.setLocalizedText(jButton1, jButton1.getText());
         ((ListView) jScrollPane1).setPopupAllowed(false);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.JavaCard3DeviceManagerDialogBox"); //NOI18N
     }
 
     /** This method is called from within the constructor to

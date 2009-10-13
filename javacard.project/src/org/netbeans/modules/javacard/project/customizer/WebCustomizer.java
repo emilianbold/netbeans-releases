@@ -74,7 +74,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.layout.GroupLayout;
+import org.openide.util.HelpCtx;
 
 /**
  * Customizer for servlets
@@ -114,6 +114,7 @@ public class WebCustomizer extends AllClassesOfTypeExplorerPanel implements Docu
         displayNameField.getDocument().addDocumentListener(this);
         unlockPanel1.setVisible(false);
         unlockPanel1.addActionListener(l);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.WebPanel"); //NOI18N
     }
 
     private void change(Document document) {

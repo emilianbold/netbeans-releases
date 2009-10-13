@@ -54,6 +54,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import org.openide.util.HelpCtx;
 
 public class JCCustomizerProvider implements CustomizerProvider {
 
@@ -62,7 +65,7 @@ public class JCCustomizerProvider implements CustomizerProvider {
     private final PropertyEvaluator evaluator;
     private final AntProjectHelper antHelper;
 
-    private Dialog dialog;
+    private Reference<Dialog> dialog;
 
     public JCCustomizerProvider(JCProject project, PropertyEvaluator evaluator,
             GeneratedFilesHelper genFileHelper, AntProjectHelper antHelper) {
@@ -71,8 +74,13 @@ public class JCCustomizerProvider implements CustomizerProvider {
         this.antHelper = antHelper;
     }
 
+    private Dialog getDialog() {
+        return dialog == null ? null : dialog.get();
+    }
+
     public void showCustomizer() {
-        if (dialog == null) {
+        Dialog dlg = getDialog();
+        if (dlg == null) {
             JCProject realProject = project.getLookup().lookup(JCProject.class);
             assert realProject != null;
             ProjectKind kind = realProject.kind();
@@ -82,12 +90,15 @@ public class JCCustomizerProvider implements CustomizerProvider {
                     evaluator, antHelper);
             Lookup context = Lookups.fixed(project, uiProperties);
             OptionsListener listener = new OptionsListener();
-            dialog = ProjectCustomizer.createCustomizerDialog(
+            dlg = ProjectCustomizer.createCustomizerDialog(
                     project.kind().customizerPath(), context, null,
-                    listener, null);
-            dialog.addWindowListener(listener);
+                    listener, new HelpCtx(
+                    "org.netbeans.modules.javacard." + //NOI18N
+                    "JavaCard3ProjectPropertiesDialogBox")); //NOI18N
+            dlg.addWindowListener(listener);
+            this.dialog = new SoftReference<Dialog>(dlg);
         }
-        dialog.setVisible(true);
+        dlg.setVisible(true);
     }
     
     /** 
@@ -101,11 +112,11 @@ public class JCCustomizerProvider implements CustomizerProvider {
          */
         public void actionPerformed(ActionEvent e) {
             uiProperties.storeProperties();
-            
+            Dialog dlg = getDialog();
             // Close & dispose the the dialog
-            if ( dialog != null ) {
-                dialog.setVisible(false);
-                dialog.dispose();
+            if ( dlg != null ) {
+                dlg.setVisible(false);
+                dlg.dispose();
             }
         }        
         
@@ -119,11 +130,11 @@ public class JCCustomizerProvider implements CustomizerProvider {
         
         @Override
         public void windowClosing(WindowEvent e) {
-            if ( dialog != null ) {
-                dialog.setVisible(false);
-                dialog.dispose();
+            Dialog dlg = getDialog();
+            if ( dlg != null ) {
+                dlg.setVisible(false);
+                dlg.dispose();
             }
         }
     }
-
 }

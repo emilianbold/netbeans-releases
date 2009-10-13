@@ -65,6 +65,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.javacard.project.ui.ClassicPackageWizardPanel;
 import org.netbeans.modules.projecttemplates.ProjectCreator;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -87,92 +88,6 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         this.template = template;
         kind = ProjectKind.kindForTemplate(template);
     }
-
-//    public Set instantiate(ProgressHandle h) throws IOException {
-//        Set<Object> results = new HashSet<Object>();
-//        FileObject dest = Templates.getTargetFolder(wiz);
-//        String name = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_PROJECT_NAME);
-//        String pkg = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_BASE_PACKAGE_NAME);
-//        String mainClassName = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_MAIN_CLASS_NAME);
-//        String appletAid = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_APPLET_AID);
-//        String webContextPath = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_WEB_CONTEXT_PATH);
-//        String activePlatform = (String) wiz.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
-//        String activeDevice = (String) wiz.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
-//
-//        String nameSpaces = unbicapitalize(name);
-//
-//        //XXX fix in ProjectDefinitionPanel
-//        File file = (File) wiz.getProperty("projdir");
-//
-//        dest = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
-//
-//        JavacardProjectGenerator gen = new JavacardProjectGenerator(dest);
-//
-//        Map<String, String> templateProperties = new HashMap<String, String>();
-//
-//        Map<String, Object> propsFromWizard = wiz.getProperties();
-//        for (Map.Entry<String, Object> e : propsFromWizard.entrySet()) {
-//            if (e.getValue() instanceof String) {
-//                propsFromWizard.put(e.getKey(), e.getValue());
-//            }
-//        }
-//
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROJECT_NAME_SPACES, nameSpaces);
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_PACKAGE, pkg);
-//        String pkgSlashes = pkg.replace('.', '/'); //NOI18N
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_PACKAGE_PATH, pkgSlashes);
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_CLASSNAME, mainClassName);
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_CLASSNAME_LOWERCASE, mainClassName.toLowerCase());
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_PROJECT_NAME, name);
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_CLASSPATH, ""); //NOI18N
-//        templateProperties.put(ProjectWizardKeys.WIZARD_PROP_APPLET_AID, appletAid);
-//        if (appletAid != null) {
-//            String aidAsHex = Utils.getAIDStringForScript(appletAid);
-//            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_APPLET_AID_HEX, aidAsHex.toUpperCase());
-//        }
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_FILE_SEPARATOR, File.separator);
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_APPLET_MANIFEST_TYPE, kind.getManifestApplicationType());
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_KIND, kind.name());
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_ACTIVE_DEVICE, activeDevice);
-//        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_ACTIVE_PLATFORM, activePlatform);
-//
-//        if (kind == ProjectKind.CLASSIC_APPLET || kind == ProjectKind.CLASSIC_LIBRARY) {
-//            String specifiedPkgAid = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_CLASSIC_PACKAGE_AID);
-//            AID packageAid = null;
-//            if (specifiedPkgAid != null) {
-//                packageAid = AID.parse(specifiedPkgAid);
-//            } else if (pkg != null) {
-//                packageAid = Utils.generatePackageAid(pkg);
-//            } else {
-//                packageAid = Utils.generateRandomPackageAid();
-//            }
-//            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_CLASSIC_PACKAGE_AID,
-//                    packageAid.toString());
-//        }
-//
-//        if (appletAid != null) {
-//            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_APPLET_AID, (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_APPLET_AID));
-//            AID instanceAid = AID.parse(appletAid).increment();
-//            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_INSTANCE_AID, instanceAid.toString());
-//            String aidAsHexWithLength = Utils.getAIDStringWithLengthForScript(instanceAid.toString());
-//            templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_APPLET_AID_HEX_WITH_LENGTH, aidAsHexWithLength.toUpperCase());
-//        }
-//        if (webContextPath != null) {
-//            templateProperties.put(ProjectPropertyNames.PROJECT_PROP_WEB_CONTEXT_PATH,
-//                    webContextPath);
-//        }
-//        String servletMapping = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_SERVLET_MAPPING);
-//        if (servletMapping != null) {
-//            templateProperties.put(ProjectWizardKeys.WIZARD_PROP_SERVLET_MAPPING, servletMapping);
-//        }
-//
-//        GeneratedProject proj = gen.createProject(h, name, template, templateProperties);
-//
-//        results.add(proj.projectDir);
-//        results.addAll(proj.filesToOpen);
-//
-//        return results;
-//    }
 
     public Set instantiate(ProgressHandle h) throws IOException {
         Set<Object> results = new HashSet<Object>();
@@ -284,6 +199,7 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
 
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
+        wiz.setHelpCtx(new HelpCtx("org.netbeans.modules.javacard.CreateProject"));
         current();
         firstPanel.readSettings(wiz);
     }
