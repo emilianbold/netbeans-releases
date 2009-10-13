@@ -97,7 +97,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
     }
     
     public void performAction() {
-        initBuildTools(new LocalToolsPanelModel(), new ArrayList<String>());
+        initBuildTools(new LocalToolsPanelModel(), new ArrayList<String>(), null);
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
@@ -116,14 +116,14 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
      *
      * @returns true if the user pressed OK, false if Cancel
      */
-    public boolean initBuildTools(ToolsPanelModel model, ArrayList<String> errs) {
+    public boolean initBuildTools(ToolsPanelModel model, ArrayList<String> errs, CompilerSet cs) {
         if (Boolean.getBoolean("netbeans.cnd.bta_debug")) { // NOI18N
             // The following should be shown in the TP, but did not get implemented for CND 5.5.1
             for (String err : errs) { // GRP - FIXME
                 System.err.println(err);
             }
         }
-        if (downloadIfNeed(model)){
+        if (downloadIfNeed(model, cs)){
             return true;
         }
         tp = new ToolsPanel(model);
@@ -143,10 +143,12 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         return false;
     }
 
-    private boolean downloadIfNeed(ToolsPanelModel model){
+    private boolean downloadIfNeed(ToolsPanelModel model, CompilerSet cs){
         ExecutionEnvironment env = model.getSelectedDevelopmentHost();
         if (env.isLocal()){
-            CompilerSet cs = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            if (cs == null) {
+                cs = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            }
             if (cs != null) {
                 if (cs.isUrlPointer()){
                     // Can be downloaded

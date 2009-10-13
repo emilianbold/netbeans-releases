@@ -36,64 +36,33 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.visualizers.support;
 
-#ifndef _RFS_FILEDATA_H
-#define	_RFS_FILEDATA_H
-
-#include <pthread.h>
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
-
-typedef enum file_state {
-    file_state_pending = 0,
-    file_state_ok = 1,
-    file_state_error = -1
-} file_state;
-
-typedef struct file_data {
-    volatile file_state state;
-    pthread_mutex_t cond_mutex;
-    pthread_cond_t cond;
-    struct file_data *left;
-    struct file_data *right;
-    #if TRACE
-    int cnt;
-    #endif
-    char filename[];
-} file_data;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.JSpinner;
+import org.netbeans.modules.dlight.util.TimeFormatter;
 
 /**
- * Finds file_data for the given file name;
+ *
+ * @author Alexey Vladykin
  */
-file_data *find_file_data(const char* filename);
+public class SpinnerTimeEditor extends JSpinner.DefaultEditor {
 
-/**
- * Inserts file_data for the given file name;
- * returns a reference to the newly inserted one
- */
-file_data *insert_file_data(const char* filename);
+    public SpinnerTimeEditor(JSpinner spinner) {
+        super(spinner);
+        getTextField().setFormatterFactory(new TimeFormatterFactory());
+        getTextField().setEditable(true);
+    }
 
-// temporary FIXUP: should be static
-file_data *find_or_insert_file_data(const char* filename, int create);
+    private static class TimeFormatterFactory extends AbstractFormatterFactory {
 
-/**
- * Visits all file_data elements - calls function passed as a 1-st parameter
- * for each file_data element.
- * Two parameters are passed to the function on each call:
- * 1) current file_data
- * 2) pointer that is passed as 2-nd visit_file_data parameter
- * In the case function returns 0, the tree traversal is stopped
- */
-void visit_file_data(int (*) (file_data*, void*), void*);
+        private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
-void wait_on_file_data(file_data *fd);
-void signal_on_file_data(file_data *fd);
-
-#ifdef	__cplusplus
+        @Override
+        public AbstractFormatter getFormatter(JFormattedTextField tf) {
+            return TIME_FORMATTER;
+        }
+    }
 }
-#endif
-
-#endif	/* _RFS_FILEDATA_H */
-

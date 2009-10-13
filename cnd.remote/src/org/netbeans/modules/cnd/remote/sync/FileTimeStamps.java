@@ -151,11 +151,11 @@ public class FileTimeStamps {
     }
 
     public void rememberCopyTimestamp(File file) {
-        data.put(getFileKey(file), String.format("%c%d", prefixCopied, file.lastModified()));
+        data.put(getFileKey(file), String.format("%c%d", prefixCopied, file.lastModified())); // NOI18N
     }
 
     public void rememberCreationTimestamp(File file) {
-        data.put(getFileKey(file), String.format("%c%d", prefixEmpty, file.lastModified()));
+        data.put(getFileKey(file), String.format("%c%d", prefixEmpty, file.lastModified())); // NOI18N
     }
 
     public void dropTimestamp(File file) {

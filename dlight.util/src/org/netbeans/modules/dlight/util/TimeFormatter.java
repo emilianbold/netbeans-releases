@@ -38,29 +38,105 @@
  */
 package org.netbeans.modules.dlight.util;
 
+import java.text.ParseException;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 /**
  *
  * @author Alexey Vladykin
  */
-public final class TimeFormatter implements ValueFormatter {
+public final class TimeFormatter extends AbstractFormatter implements ValueFormatter {
 
-    private static final String NORMAL_FORMAT = "%d:%02d"; // NOI18N
-    private static final String MILLIS_FORMAT = "%d:%02d.%d"; // NOI18N
-    private static final int SECONDS_PER_MINUTE = 60;
-    private static final int MILLIS_PER_SECOND = 1000;
+    private static final String MAX = "max"; // NOI18N
 
-    public String format(long value) {
-        long seconds = value / MILLIS_PER_SECOND;
-        long millis = value % MILLIS_PER_SECOND;
-        if (millis == 0) {
-            return String.format(NORMAL_FORMAT,
-                    seconds / SECONDS_PER_MINUTE,
-                    seconds % SECONDS_PER_MINUTE);
-        } else {
-            return String.format(MILLIS_FORMAT,
-                    seconds / SECONDS_PER_MINUTE,
-                    seconds % SECONDS_PER_MINUTE,
-                    millis / 100);
+    @Override
+    public Object stringToValue(String text) throws ParseException {
+
+        if (MAX.equalsIgnoreCase(text)) {
+            return Long.MAX_VALUE;
         }
+
+        long minutes = 0;
+        int colonPos = text.indexOf(':');
+        if (0 <= colonPos) {
+            try {
+                minutes = Long.parseLong(text.substring(0, colonPos));
+                text = text.substring(colonPos + 1);
+            } catch (NumberFormatException ex) {
+                throw new ParseException(text, 0);
+            }
+        }
+
+        long nanos = 0;
+        int dotPos = text.indexOf('.');
+        if (0 <= dotPos) {
+            nanos = parseNanos(text.substring(dotPos + 1));
+            text = text.substring(0, dotPos);
+        }
+
+        long seconds = 0;
+        try {
+            seconds = Long.parseLong(text);
+        } catch (NumberFormatException ex) {
+            throw new ParseException(text, 0);
+        }
+
+        return minutesToNanos(minutes) + SECONDS.toNanos(seconds) + nanos;
+    }
+
+    @Override
+    public String valueToString(Object value) {
+        return format(((Long) value).longValue());
+    }
+
+    @Override
+    public String format(long value) {
+        if (value == Long.MAX_VALUE) {
+            return MAX;
+        }
+
+        long minutes = nanosToMinutes(value);
+        long seconds = NANOSECONDS.toSeconds(value - minutesToNanos(minutes));
+        long nanos = value - minutesToNanos(minutes) - SECONDS.toNanos(seconds);
+
+        StringBuilder buf = new StringBuilder();
+        buf.append(String.format("%d:%02d", minutes, seconds)); // NOI18N
+
+        if (1000000 <= nanos) {
+            buf.append('.');
+            buf.append(nanos / 100000000);
+            nanos %= 100000000;
+            if (0 < nanos) {
+                buf.append(nanos /  10000000);
+                nanos %= 10000000;
+                if (0 < nanos) {
+                    buf.append(nanos / 1000000);
+                }
+            }
+        }
+
+        return buf.toString();
+    }
+
+    private static long parseNanos(String frac) throws ParseException {
+        long result = 0;
+        for (int i = 0; i < 9; ++i) {
+            char c = i < frac.length() ? frac.charAt(i) : '0';
+            if (c < '0' || '9' < c) {
+                throw new ParseException(frac, i);
+            }
+            result = 10 * result + (c - '0');
+        }
+        return result;
+    }
+
+    private static long minutesToNanos(long m) {
+        return SECONDS.toNanos(60 * m);
+    }
+
+    private static long nanosToMinutes(long m) {
+        return NANOSECONDS.toSeconds(m) / 60;
     }
 }

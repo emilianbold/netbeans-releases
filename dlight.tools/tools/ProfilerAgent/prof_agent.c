@@ -178,20 +178,20 @@ int func##suffix param { \
 
 #define INIT(func) \
     if(!ORIG(func)) { \
-        ORIG(func) = dlsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func)); \
+        ORIG(func) = dlsym(RTLD_NEXT, QUOTE(func)); \
         if(ORIG(func) && ORIG(func)==func) \
-            ORIG(func) = dlsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func)); \
+            ORIG(func) = dlsym(RTLD_NEXT, QUOTE(func)); \
         if(!ORIG(func)) \
-            ORIG(func) = dlsym((void*)0 /*RTLD_DEFAULT*/, QUOTE(func)); \
+            ORIG(func) = dlsym(RTLD_DEFAULT, QUOTE(func)); \
     }
 
 #define INIT2(func, suffix, version) \
     if(!ORIG(func)) { \
-        ORIG(func) = dlvsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func), version); \
+        ORIG(func) = dlvsym(RTLD_NEXT, QUOTE(func), version); \
         if(ORIG(func) && ORIG(func)==func ## suffix) \
-            ORIG(func) = dlvsym((void*)-1 /*RTLD_NEXT*/, QUOTE(func), version); \
+            ORIG(func) = dlvsym(RTLD_NEXT, QUOTE(func), version); \
         if(!ORIG(func)) \
-            ORIG(func) = dlvsym((void*)0 /*RTLD_DEFAULT*/, QUOTE(func), version); \
+            ORIG(func) = dlvsym(RTLD_DEFAULT, QUOTE(func), version); \
     }
 
 #ifndef __APPLE__
