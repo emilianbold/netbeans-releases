@@ -114,6 +114,7 @@ import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
@@ -298,52 +299,56 @@ public class JavacParser extends Parser {
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
     @Override
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
+        try {
+            parseImpl(snapshot, task, event);
+        } catch (IOException ioe) {
+            throw new ParseException ("JavacParser failure", ioe); //NOI18N
+        }
+    }
+
+    private void parseImpl(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws IOException {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
-        canceled.set(false);
-        try {            
-            LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
-            switch (this.sourceCount) {
-                case 0:
-                    ClasspathInfo _tmpInfo = null;
-                    if (task instanceof ClasspathInfoProvider &&
-                        (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                        cpInfo = _tmpInfo;
-                        ciImpl = new CompilationInfoImpl(cpInfo);
+        canceled.set(false);        
+        LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
+        switch (this.sourceCount) {
+            case 0:
+                ClasspathInfo _tmpInfo = null;
+                if (task instanceof ClasspathInfoProvider &&
+                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                    cpInfo = _tmpInfo;
+                    ciImpl = new CompilationInfoImpl(cpInfo);
+                }
+                else {
+                    throw new IllegalArgumentException("No classpath provided by task: " + task);
+                }
+                break;
+            case 1:
+                init (snapshot, task, true);
+                boolean needsFullReparse = true;
+                if (supportsReparse) {
+                    Pair<DocPositionRegion,MethodTree> _changedMethod;
+                    synchronized (this) {
+                        _changedMethod = this.changedMethod;
+                        this.changedMethod = null;
                     }
-                    else {
-                        throw new IllegalArgumentException("No classpath provided by task: " + task);
+                    if (_changedMethod != null && ciImpl != null) {
+                        LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
+                        needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
                     }
-                    break;
-                case 1:
-                    init (snapshot, task, true);
-                    boolean needsFullReparse = true;
-                    if (supportsReparse) {
-                        Pair<DocPositionRegion,MethodTree> _changedMethod;
-                        synchronized (this) {
-                            _changedMethod = this.changedMethod;
-                            this.changedMethod = null;
-                        }
-                        if (_changedMethod != null && ciImpl != null) {
-                            LOGGER.fine("\t:trying partial reparse:\n" + _changedMethod.first.getText());                           //NOI18N
-                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
-                        }
-                    }
-                    if (needsFullReparse) {
-                        ciImpl = createCurrentInfo (this, file, root,snapshot, null);
-                        LOGGER.fine("\t:created new javac");                                    //NOI18N
-                    }
-                    break;
-                default:
-                    init (snapshot, task, false);
-                    ciImpl = createCurrentInfo(this, file, root, snapshot,
-                        ciImpl == null ? null : ciImpl.getJavacTask());
-            }            
-            cachedSnapShot = snapshot;
-        } catch (IOException ioe) {
-            throw new ParseException ("JavacParser failure", ioe);            //NOI18N
+                }
+                if (needsFullReparse) {
+                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                    LOGGER.fine("\t:created new javac");                                    //NOI18N
+                }
+                break;
+            default:
+                init (snapshot, task, false);
+                ciImpl = createCurrentInfo(this, file, root, snapshot,
+                    ciImpl == null ? null : ciImpl.getJavacTask());
         }
+        cachedSnapShot = snapshot;
     }
 
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)
@@ -357,7 +362,15 @@ public class JavacParser extends Parser {
             LOGGER.fine ("\t:invalid, reparse");                                //NOI18N
             invalid = false;
             if (cachedSnapShot != null) {
-                parse (cachedSnapShot, task, null);
+                try {
+                    parseImpl(cachedSnapShot, task, null);
+                } catch (FileObjects.InvalidFileException ife) {
+                    //Deleted file
+                    LOGGER.warning(ife.getMessage());
+                    return null;
+                } catch (IOException ioe) {
+                    throw new ParseException ("JavacParser failure", ioe); //NOI18N
+                }
             }            
         }
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
@@ -375,7 +388,15 @@ public class JavacParser extends Parser {
                 }
                 assert cachedSnapShot != null;
                 initialized = false;        //Reset initialized, world has changed.
-                parse (cachedSnapShot, task, null);
+                try {
+                    parseImpl(cachedSnapShot, task, null);
+                } catch (FileObjects.InvalidFileException ife) {
+                    //Deleted file
+                    LOGGER.warning(ife.getMessage());
+                    return null;
+                } catch (IOException ioe) {
+                    throw new ParseException ("JavacParser failure", ioe); //NOI18N
+                }
             }
         }
         JavacParserResult result = null;
