@@ -439,7 +439,7 @@ public class CommitAction extends ContextAction {
                     commitCmd.handle();
                     return null;
                 }
-            }, commitCandidates.entrySet().toArray(new File[commitCandidates.entrySet().size()]));
+            }, commitCandidates.keySet().toArray(new File[commitCandidates.keySet().size()]));
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
