@@ -138,7 +138,6 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            report_error("Can not resolve path %s : %s\n", path, strerror(errno));
             trace_unresolved_path(path);
             inside = 0;
             return false;

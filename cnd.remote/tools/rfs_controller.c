@@ -195,7 +195,7 @@ static int create_file(const char* path, int size) {
         if ( realpath(path, real_path)) {
             insert_file_data(real_path);
         } else {
-            trace_unresolved_path(path);
+            report_unresolved_path(path);
             return false;
         }
     } else {
