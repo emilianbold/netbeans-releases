@@ -5,6 +5,7 @@
 package org.netbeans.modules.cnd.gizmo.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
@@ -128,30 +129,30 @@ public final class GizmoIndicatorDelegator implements IndicatorComponentDelegato
     public void sessionRemoved(DLightSession removedSession) {
     }
 
+    @Override
     public Action[] getActions(GizmoIndicatorsTopComponent source) {
         GizmoIndicatorTopComponentRegsitry registry = GizmoIndicatorTopComponentRegsitry.getRegistry();
-        if (registry.getOpened() == null || registry.getOpened().size() == 0){
-            return null;
+        Set<GizmoIndicatorsTopComponent> topComponents = registry.getOpened();
+
+        if (topComponents != null) {
+            topComponents.remove(source);
+
+            if (!topComponents.isEmpty()) {
+                Action[] result = new Action[topComponents.size()];
+                int i = 0;
+                for (final GizmoIndicatorsTopComponent tc : topComponents) {
+                    result[i] = new AbstractAction(tc.getDisplayName()) {
+                        public void actionPerformed(ActionEvent e) {
+                            tc.requestActive();
+                        }
+                    };
+                    ++i;
+                }
+                return result;
+            }
         }
 
-        if (registry.getOpened().size() == 1 && registry.getOpened().contains(source)){
-            return null;
-        }
-        Action[] result = new Action[registry.getOpened().size() -1 ];
-        int i = 0;
-        for (final GizmoIndicatorsTopComponent tc : registry.getOpened()){
-            if (tc == source){
-                i++;
-                continue;
-            }
-            result[i] = new AbstractAction(tc.getDisplayName()) {
-                public void actionPerformed(ActionEvent e) {
-                    tc.requestActive();
-                }
-            };
-             i++;
-        }
-        return result;
+        return null;
     }
 
     private boolean needToHandle(DLightSession session){

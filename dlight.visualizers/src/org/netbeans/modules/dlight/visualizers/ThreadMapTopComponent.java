@@ -147,6 +147,14 @@ public final class ThreadMapTopComponent extends TopComponent implements Visuali
         }
     }
 
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        if (viewComponent instanceof ThreadMapVisualizer) {
+            viewComponent.requestFocus();
+        }
+    }
+
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles

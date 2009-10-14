@@ -79,12 +79,10 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         EditorRegistry.addPropertyChangeListener(new EditorFileChangeListener());
     }
 
-    private synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls, boolean lineAnnotation) {
-        log(sourceFileInfoProvider, metrics, functionCalls, lineAnnotation);
-        if (lineAnnotation) {
-            activeAnnotations = new HashMap<String, FileAnnotationInfo>();
-        }
-        for (FunctionCallWithMetric functionCall : functionCalls) {
+    public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
+        //   log(sourceFileInfoProvider, metrics, list, functionCalls);
+        activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+        for (FunctionCallWithMetric functionCall : list) {
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
@@ -121,13 +119,51 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
                         col++;
                     }
-                    if (lineAnnotation) {
-                        if (!below ) {
-                            fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
-                        }
+                    if (!below) {
+                        fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                     }
-                    else {
-                        fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
+                }
+            }
+        }
+        if (functionCalls != null){
+            for (FunctionCallWithMetric functionCall : functionCalls) {
+                SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
+                if (sourceFileInfo != null) {
+                    if (sourceFileInfo.isSourceKnown()) {
+                        String filePath = sourceFileInfo.getFileName();
+                        FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
+                        if (fileAnnotationInfo == null) {
+                            fileAnnotationInfo = new FileAnnotationInfo();
+                            fileAnnotationInfo.setFilePath(filePath);
+                            fileAnnotationInfo.setColumnNames(new String[metrics.size()]);
+                            fileAnnotationInfo.setMaxColumnWidth(new int[metrics.size()]);
+                            activeAnnotations.put(filePath, fileAnnotationInfo);
+                        }
+                        LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo(fileAnnotationInfo);
+                        lineAnnotationInfo.setLine(sourceFileInfo.getLine());
+                        lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
+                        lineAnnotationInfo.setColumns(new String[metrics.size()]);
+                        boolean below = true;
+                        int col = 0;
+                        for (Column column : metrics) {
+                            String metricId = column.getColumnName();
+                            Object metricVal = functionCall.getMetricValue(metricId);
+                            String metricValString = FunctionMetricFormatter.getFormattedValue(functionCall, metricId);
+                            if (!metricValString.equals("0.0")) { // NOI18N
+                                below = false;
+                            }
+                            lineAnnotationInfo.getColumns()[col] = metricValString;
+                            int metricValLength = metricValString.length();
+                            if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
+                                fileAnnotationInfo.getMaxColumnWidth()[col] = metricValLength;
+                            }
+
+                            String metricUName = column.getColumnUName();
+                            fileAnnotationInfo.getColumnNames()[col] = metricUName;
+
+                            col++;
+                        }
+                            fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
                     }
                 }
             }
@@ -147,15 +183,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
         return ret;
     }
-    
-    public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        updateSource(sourceFileInfoProvider, metrics, functionCalls, true);
-    }
 
-    public void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        updateSource(sourceFileInfoProvider, metrics, functionCalls, false);
-    }
-
+//    public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+//        updateSource(sourceFileInfoProvider, metrics, functionCalls, true);
+//    }
+//
+//    public void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
+//        updateSource(sourceFileInfoProvider, metrics, functionCalls, false);
+//    }
 //    private File activatedFile(Node node) {
 //        DataObject dobj = node.getCookie(DataObject.class);
 //        if (dobj != null) {
@@ -183,7 +218,6 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 //        JEditorPane currentPane = panes[0];
 //        return currentPane;
 //    }
-
     private synchronized void annotateCurrentFocusedFile() {
         if (activeAnnotations.size() == 0) {
             return;
@@ -199,7 +233,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
                     if (!fileAnnotationInfo.isAnnotated()) {
-                        fileAnnotationInfo.setEditorPane((JEditorPane)jEditorPane);
+                        fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
                         fileAnnotationInfo.setAnnotated(true);
                     }
                     SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
@@ -209,6 +243,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     class Annotate implements Runnable {
+
         JTextComponent jEditorPane;
         FileAnnotationInfo fileAnnotationInfo;
 
@@ -223,9 +258,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     class EditorFileChangeListener implements PropertyChangeListener {
+
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
                 DLightExecutorService.submit(new Runnable() {
+
                     public void run() {
                         annotateCurrentFocusedFile();
                     }
@@ -237,27 +274,28 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     class ProfilerPropertyChangeListener implements PropertyChangeListener {
 
         public synchronized void propertyChange(PropertyChangeEvent evt) {
-            final HashMap<String, FileAnnotationInfo> activeAnnotationsClone = (HashMap<String, FileAnnotationInfo>)activeAnnotations.clone();
+            final HashMap<String, FileAnnotationInfo> activeAnnotationsClone = (HashMap<String, FileAnnotationInfo>) activeAnnotations.clone();
             String prop = evt.getPropertyName();
             if (prop.equals(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE)) {
                 boolean annotate = AnnotationSupport.getInstance().getTextAnnotationVisible();
                 if (annotate) {
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             for (FileAnnotationInfo fileAnnotationInfo : activeAnnotationsClone.values()) {
                                 if (fileAnnotationInfo.isAnnotated()) {
-                                    AnnotationBarManager.showAnnotationBar((JTextComponent)fileAnnotationInfo.getEditorPane(), fileAnnotationInfo);
+                                    AnnotationBarManager.showAnnotationBar((JTextComponent) fileAnnotationInfo.getEditorPane(), fileAnnotationInfo);
                                 }
                             }
                         }
                     });
-                }
-                else {
+                } else {
                     SwingUtilities.invokeLater(new Runnable() {
+
                         public void run() {
                             for (FileAnnotationInfo fileAnnotationInfo : activeAnnotationsClone.values()) {
                                 if (fileAnnotationInfo.isAnnotated()) {
-                                    AnnotationBarManager.hideAnnotationBar((JTextComponent)fileAnnotationInfo.getEditorPane());
+                                    AnnotationBarManager.hideAnnotationBar((JTextComponent) fileAnnotationInfo.getEditorPane());
                                 }
                             }
                         }

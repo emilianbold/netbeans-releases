@@ -558,7 +558,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     if (column == NAME_COLUMN_INDEX) {
                         ThreadNameHeaderRenderer renderer = (ThreadNameHeaderRenderer) table.getColumnModel().getColumn(NAME_COLUMN_INDEX).getHeaderRenderer();
                         Rectangle rect = renderer.getFormatRectangle();
-                        if (rect.getX() <= e.getX() && e.getX() <= rect.getX()+rect.getWidth()) {
+                        if (rect != null && rect.getX() <= e.getX() && e.getX() <= rect.getX()+rect.getWidth()) {
                             setThreadNameFormat(getThreadNameFormat() + 1);
                             return;
                         }

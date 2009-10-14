@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.gizmo;
 
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -56,6 +57,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -66,12 +68,11 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
-
-
 
 /**
  *
@@ -183,7 +184,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                     Throwable t = ErrorManager.getDefault().annotate(e, loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, t);
                     StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
-                //Exceptions.printStackTrace(e);
+                    //Exceptions.printStackTrace(e);
                 }
             }
 
@@ -192,7 +193,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                 return;
             }
 
-           final  DataObject dob = DataObject.find(fo);
+            final DataObject dob = DataObject.find(fo);
 
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
@@ -230,12 +231,15 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
 //                            jumpToLine(panes[0], lineInfo, !opened);
 //                        }
                         boolean opened = true;
-                        if (pane == null){
+                        if (pane == null) {
                             ec.open();
                             opened = false;
-                            pane = NbDocument.findRecentEditorPane(ec);
+                            JEditorPane[] panes = ec.getOpenedPanes();
+                            pane = panes != null && panes.length > 0? panes[0] : null ;
                         }
-                         jumpToLine(pane, ec, lineInfo, !opened);
+                        if (pane != null){
+                            jumpToLine(NbDocument.findRecentEditorPane(ec), lineInfo, !opened);
+                        }
 //                        JEditorPane[] panes = ec.getOpenedPanes();
 //                        if (panes == null || panes.length <= 0) {
 //                            ec.open();
@@ -263,24 +267,25 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
     }
 
-    private static void jumpToLine(final JEditorPane pane, final EditorCookie ec, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
- // immediate processing
-            RequestProcessor.getDefault().post(new Runnable() {
+    private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
+        // immediate processing
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    jumpToLine(pane == null ? NbDocument.findRecentEditorPane(ec)  : pane, sourceFileInfo);
-                }
-            });
-            // try to activate outer TopComponent
-            Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
-                temp = temp.getParent();
+            public void run() {
+                jumpToLine(pane, sourceFileInfo);
             }
-            if (temp instanceof TopComponent) {
-                ((TopComponent) temp).open();
-                ((TopComponent) temp).requestActive();
-                ((TopComponent) temp).requestVisible();
-            }
+        });
+
+        // try to activate outer TopComponent
+        Container temp = pane;
+        while (temp != null && !(temp instanceof TopComponent)) {
+            temp = temp.getParent();
+        }
+        if (temp instanceof TopComponent) {
+            ((TopComponent) temp).open();
+            ((TopComponent) temp).requestActive();
+            ((TopComponent) temp).requestVisible();
+        }
 
     }
 
@@ -301,6 +306,4 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
     }
-
-
 }
