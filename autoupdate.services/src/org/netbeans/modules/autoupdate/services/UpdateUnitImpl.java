@@ -195,7 +195,7 @@ public abstract class UpdateUnitImpl extends Object {
 
         if (res == null) {
             res = Collections.emptyList();
-        }
+        } else if (res.size() > 1) {
         Collections.sort(res,new Comparator<UpdateElement>(){
             public int compare(UpdateElement o1, UpdateElement o2) {
                 String sv1 = o1.getSpecificationVersion ();
@@ -212,6 +212,7 @@ public abstract class UpdateUnitImpl extends Object {
                 return new SpecificationVersion (sv2).compareTo (new SpecificationVersion (sv1));
             }
         });
+        }
         return res; 
     }
 
