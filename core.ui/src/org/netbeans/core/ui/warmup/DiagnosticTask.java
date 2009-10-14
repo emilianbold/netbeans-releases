@@ -78,7 +78,7 @@ public final class DiagnosticTask implements Runnable {
         LOG.info(diagInfo);
         logEnv();
         if (Boolean.getBoolean("netbeans.full.hack")) {
-            LOG.warning("Using netbeans.full.hack=true; see http://wiki.netbeans.org/DevFaqNetBeansFullHack");
+            LOG.info("Using netbeans.full.hack=true; see http://wiki.netbeans.org/DevFaqNetBeansFullHack");
         }
         executed = true;
     }
