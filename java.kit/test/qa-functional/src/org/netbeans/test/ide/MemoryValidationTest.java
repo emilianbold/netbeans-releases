@@ -66,7 +66,9 @@ public class MemoryValidationTest extends IDEValidation {
         super.run(result);
     }
 
-
+    protected @Override int timeOut() {
+        return 500000;
+    }
     
     public static Test suite() {
         // XXX: supresses warning about jpda debugger using parsing API from AWT thread
