@@ -96,10 +96,10 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         assert activatedNode != null : "activatedNode must be not null";
         EditorCookie cookie = activatedNode.getCookie(EditorCookie.class);
         if (cookie != null) {
-            JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);
-            if (panes != null && panes.length>0) {
+            JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(cookie);
+            if (pane != null) {
                 //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());
-                int offset = panes[0].getSelectionStart();
+                int offset = pane.getSelectionStart();
                 StyledDocument doc = null;
                 try {
                     try {

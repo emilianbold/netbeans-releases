@@ -93,10 +93,10 @@ public abstract class CsmReferenceResolver {
         assert activatedNode != null : "activatedNode must be not null";
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {
-            JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(c);
-            if (panes != null && panes.length>0) {
+            JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
+            if (pane != null) {
                 //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());                
-                int offset = panes[0].getSelectionStart();
+                int offset = pane.getSelectionStart();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 if (file != null){
                     return findReference(file, offset);

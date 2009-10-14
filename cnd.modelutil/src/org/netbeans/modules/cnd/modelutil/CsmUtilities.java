@@ -102,6 +102,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.windows.WindowManager;
@@ -249,17 +250,17 @@ public class CsmUtilities {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing);
     }
 
-    public static JEditorPane[] getOpenedPanesInEQ(final EditorCookie ec) {
+    public static JEditorPane findRecentEditorPaneInEQ(final EditorCookie ec) {
         assert ec != null;
-        final JEditorPane[][] panes = {null};
+        final JEditorPane[] panes = {null};
         if (SwingUtilities.isEventDispatchThread()) {
-            panes[0] = ec.getOpenedPanes();
+            panes[0] = NbDocument.findRecentEditorPane(ec);
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 
                     public void run() {
-                        panes[0] = ec.getOpenedPanes();
+                        panes[0] = NbDocument.findRecentEditorPane(ec);
                     }
                 });
             } catch (InterruptedException ex) {
