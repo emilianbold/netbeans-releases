@@ -14,9 +14,22 @@ package org.netbeans.modules.kenai.ui.spi;
  */
 public abstract class QueryResultHandle {
 
+    public enum ResultType {
+        ALL_CHANGES_RESULT,
+        NAMED_RESULT
+    }
+
     /**
      * 
      * @return The text of the link (e.g. '25 total')
      */
     public abstract String getText();
+
+    /**
+     * Determines the result type
+     *
+     * @return the result type
+     */
+    public abstract ResultType getResultType();
+
 }
