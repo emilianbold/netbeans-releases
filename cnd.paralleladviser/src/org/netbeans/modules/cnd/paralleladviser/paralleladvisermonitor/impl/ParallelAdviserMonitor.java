@@ -447,8 +447,11 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     private class UnnecessaryThreadsIntervalFinder {
 
         private static final int INTERVAL_BOUND = 10;
+        private static final int SUN_STUDIO_DATA_PROVIDER = 0;
+        private static final int DTRACE_DATA_PROVIDER = 1;
         private int interval;
         private boolean found;
+        private int dataProvider = SUN_STUDIO_DATA_PROVIDER;
 
         public UnnecessaryThreadsIntervalFinder() {
             interval = 0;
@@ -461,16 +464,41 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         public void update(DataRow dataRow) {
-            Column threadsCol = new Column("threads", Integer.class); // NOI18N
-            Object threadsObj = dataRow.getData(threadsCol.getColumnName());
-            if (threadsObj != null) {
-                if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj))) {
-                    interval++;
-                    if (interval > INTERVAL_BOUND) {
-                        found = true;
-                    }
-                } else {
+            if (dataProvider == SUN_STUDIO_DATA_PROVIDER) {
+                Column lwps_lcountCol = new Column("lwps_lcount", Integer.class); // NOI18N
+                Object lwps_lcountObj = dataRow.getData(lwps_lcountCol.getColumnName());
+                if (lwps_lcountObj != null) {
+                    dataProvider = DTRACE_DATA_PROVIDER;
                     interval = 0;
+                    found = false;
+                }
+                Column threadsCol = new Column("threads", Integer.class); // NOI18N
+                Object threadsObj = dataRow.getData(threadsCol.getColumnName());
+                if (threadsObj != null) {
+                    if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj)) && isHighLoaded(dataRow)) {
+                        interval++;
+                        if (interval > INTERVAL_BOUND) {
+                            found = true;
+                        }
+                    } else {
+                        interval = 0;
+                    }
+                }
+            }
+            if (dataProvider == DTRACE_DATA_PROVIDER) {
+                Column lwps_lcountCol = new Column("lwps_lcount", Integer.class); // NOI18N
+                Object lwps_lcountObj = dataRow.getData(lwps_lcountCol.getColumnName());
+                Column p_waitCol = new Column("p_wait", Float.class); // NOI18N
+                Object p_waitObj = dataRow.getData(p_waitCol.getColumnName());
+                if (lwps_lcountObj != null && p_waitObj != null) {
+                    if (areUnnecessaryThreadsUsed(DataUtil.toInt(lwps_lcountObj), DataUtil.toFloat(p_waitObj))) {
+                        interval++;
+                        if (interval > INTERVAL_BOUND) {
+                            found = true;
+                        }
+                    } else {
+                        interval = 0;
+                    }
                 }
             }
         }
@@ -481,6 +509,25 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
             return false;
         }
+
+        private boolean areUnnecessaryThreadsUsed(int threads, double waiting) {
+            if (areUnnecessaryThreadsUsed(threads) && (waiting > 1)) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean isHighLoaded(DataRow dataRow) {
+            Object usrTimeObj = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+            if (usrTimeObj != null) {
+                float utime = DataUtil.toFloat(usrTimeObj);
+                if (80 < utime) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 
     private class CpuHighLoadIntervalFinder {
