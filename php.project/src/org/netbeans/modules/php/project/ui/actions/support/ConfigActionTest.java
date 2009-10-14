@@ -65,8 +65,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -130,10 +129,7 @@ class ConfigActionTest extends ConfigAction {
             return;
         }
         PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        if (phpUnit == null || !phpUnit.supportedVersionFound()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)),
-                    NotifyDescriptor.WARNING_MESSAGE));
+        if (!Utils.validatePhpUnitForProject(phpUnit, project)) {
             return;
         }
 
@@ -147,11 +143,19 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(Lookup context) {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        if (!Utils.validatePhpUnitForProject(phpUnit, project)) {
+            return;
+        }
         run(getPhpUnitInfo(context));
     }
 
     @Override
     public void debugFile(Lookup context) {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        if (!Utils.validatePhpUnitForProject(phpUnit, project)) {
+            return;
+        }
         debug(getPhpUnitInfo(context));
     }
 
@@ -235,12 +239,13 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
+            boolean phpUnitValid = PhpUnit.hasValidVersion(phpUnit);
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
                     .optionsPath(UiUtils.OPTIONS_PATH)
-                    .frontWindow(!phpUnit.supportedVersionFound())
+                    .frontWindow(!phpUnitValid)
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .inputVisible(false);
-            if (phpUnit.supportedVersionFound()) {
+            if (phpUnitValid) {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
                             public void run() {

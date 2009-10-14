@@ -183,9 +183,9 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
             return true;
         }
         assert phpUnit != null;
-        if (!phpUnit.supportedVersionFound()) {
-            phpOptionsPanel.setWarning(NbBundle.getMessage(
-                    PhpOptionsPanelController.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)));
+        String error = PhpUnit.validateVersion(phpUnit);
+        if (error != null) {
+            phpOptionsPanel.setWarning(error);
             return true;
         }
 

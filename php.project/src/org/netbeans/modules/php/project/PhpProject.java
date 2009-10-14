@@ -672,10 +672,7 @@ public class PhpProject implements Project {
             getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-            if (phpUnit != null) {
-                phpUnit.supportedVersionFound();
-            }
+            PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
         }
 
         protected void projectClosed() {

@@ -71,6 +71,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -133,6 +134,10 @@ public final class CreateTestsAction extends NodeAction {
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
+            return;
+        }
+
+        if (!Utils.validatePhpUnitForProject(phpUnit, phpProject)) {
             return;
         }
 
@@ -268,7 +273,7 @@ public final class CreateTestsAction extends NodeAction {
         proceeded.add(sourceFo);
 
         final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
-        final String paramSkeleton = phpUnit.supportedVersionFound() ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
+        final String paramSkeleton = PhpUnit.hasValidVersion(phpUnit) ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
         final File sourceFile = FileUtil.toFile(sourceFo);
         final File parent = FileUtil.toFile(sourceFo.getParent());
         final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
