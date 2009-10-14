@@ -62,6 +62,8 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

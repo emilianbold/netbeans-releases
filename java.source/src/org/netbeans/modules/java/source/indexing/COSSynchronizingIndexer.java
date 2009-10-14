@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -75,7 +76,14 @@ public class COSSynchronizingIndexer extends CustomIndexer {
                 continue;
             
             try {
-                updated.add(new File(i.getURL().toURI()));
+                URL url = i.getURL();
+
+                if (url == null) {
+                    //#174026: presumably a deleted file:
+                    continue;
+                }
+                
+                updated.add(new File(url.toURI()));
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
