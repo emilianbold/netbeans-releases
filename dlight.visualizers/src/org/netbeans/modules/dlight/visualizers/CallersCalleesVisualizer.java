@@ -334,7 +334,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                    sourceSupport.updateSource(dataProvider, metricsList, list, null);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }
@@ -347,7 +347,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                    sourceSupport.updateSource(dataProvider, metricsList, list, null);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }
