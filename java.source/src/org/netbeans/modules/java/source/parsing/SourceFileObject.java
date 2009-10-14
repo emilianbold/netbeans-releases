@@ -66,7 +66,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
