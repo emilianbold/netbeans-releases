@@ -163,15 +163,20 @@ public final class NativeProcessInfo {
 
             result.add(cmd);
 
-            if (!arguments.isEmpty()) {
-                result.addAll(arguments);
+            for (String arg : arguments) {
+                arg = Utilities.escapeParameters(new String[]{arg});
+                if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
+                        (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
+                    arg = arg.substring(1, arg.length() - 1);
+                }
+                result.add('"' + arg + '"'); // NOI18N
             }
         }
 
         return result;
     }
 
-    private String quoteExecutable(String orig) {
+    private String quoteSpecialChars(String orig) {
         StringBuilder sb = new StringBuilder();
         String escapeChars = (isWindows) ? " \"'()" : " \"'()!"; // NOI18N
 
@@ -186,6 +191,13 @@ public final class NativeProcessInfo {
     }
 
     public String getCommandLineForShell() {
+        /**
+         * See IZ#168186 - Wrongly interpreted "$" symbol in arguments
+         *
+         * The magic below is all about making run/debug act identically in case
+         * of ExternalTerminal
+         */
+
         if (commandLine != null) {
             return commandLine;
         }
@@ -196,32 +208,44 @@ public final class NativeProcessInfo {
 
         String exec = cmd.get(0);
 
-        sb.append(quoteExecutable(exec)).append(' ');
         if (isWindows) {
-            /**
-             * See IZ#168186 - Wrongly interpreted "$" symbol in arguments
-             *
-             * The only case when we use bash/sh to start process on Windows
-             * is a case of execution in ExternalTerminal.
-             *
-             * In this case $'s in arguments will be interpreted by the shell.
-             * But from the other hand this will not happen in debugger (gdb).
-             *
-             * To make output (Arguments sample) consistent between run and
-             * debug session FORCE ESCAPE arguments (but them in ')
-             */
-
             exec = WindowsSupport.getInstance().convertToShellPath(exec);
-            
-            for (String arg : arguments) {
-                if (!arg.startsWith("'")) { // NOI18N
-                    sb.append('\'').append(arg).append("' "); // NOI18N
-                } else {
-                    sb.append(arg).append(' ');
-                }
+        }
+
+        sb.append(quoteSpecialChars(exec)).append(' ');
+
+        String[] sarg = new String[1];
+
+        boolean escape;
+
+        for (String arg : arguments) {
+            escape = false;
+            sarg[0] = arg;
+            arg = Utilities.escapeParameters(sarg);
+
+            sb.append('"');
+
+            if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
+                    (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
+                arg = arg.substring(1, arg.length() - 1);
+                escape = true;
             }
-        } else {
-            sb.append(Utilities.escapeParameters(arguments.toArray(new String[0])));
+
+            if (isWindows || escape) {
+                char pc = 'x';
+
+                for (char c : arg.toCharArray()) {
+                    if (c == '$' && pc != '\\') {
+                        sb.append('\\');
+                    }
+                    sb.append(c);
+                    pc = c;
+                }
+            } else {
+                sb.append(arg);
+            }
+
+            sb.append("\" "); // NOI18N
         }
 
         if (redirectError) {
