@@ -36,7 +36,7 @@ public abstract class QueryAccessor {
     /**
      * Retrieve the handle for all new or changed issues in the given query
      *
-     * @param project
+     * @param query
      * @return a QueryResultHandle or null if not available
      */
     public abstract QueryResultHandle getAllChangesResult( QueryHandle query );
