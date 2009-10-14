@@ -884,8 +884,8 @@ public class CsmUtilities {
         StringBuilder sb = new StringBuilder(CsmKindUtilities.isTemplate(fun) ? ((CsmTemplate) fun).getDisplayName() : fun.getName());
         sb.append('(');
         boolean addComma = false;
-        for (Iterator iter = fun.getParameters().iterator(); iter.hasNext();) {
-            CsmParameter par = (CsmParameter) iter.next();
+        for (Iterator<CsmParameter> iter = fun.getParameters().iterator(); iter.hasNext();) {
+            CsmParameter par = iter.next();
             if (addComma) {
                 sb.append(", "); // NOI18N
 
