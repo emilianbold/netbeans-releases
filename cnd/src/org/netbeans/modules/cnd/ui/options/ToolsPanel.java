@@ -77,6 +77,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -88,13 +89,19 @@ import org.openide.windows.WindowManager;
 public final class ToolsPanel extends JPanel implements ActionListener,
         ListSelectionListener, ItemListener {
 
+    private static enum ValidState {
+        VALID,
+        INVALID,
+        UNKNOWN
+    }
+
     // The following are constants so I can do == rather than "equals"
     public static final String PROP_VALID = "valid"; // NOI18N
     private boolean initialized = false;
     private boolean changed;
     private boolean changingCompilerSet;
     private boolean updating;
-    private boolean valid;
+    private ValidState valid = ValidState.UNKNOWN;
     private ToolsPanelModel model = null;
     private boolean customizeDebugger;
     private ExecutionEnvironment execEnv;
@@ -461,9 +468,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
      */
     public boolean dataValid() {
         if (csm.getCompilerSets().size() == 0) {
-            if (valid) {
-                valid = false;
-                firePropertyChange(PROP_VALID, !valid, valid);
+            if (valid != ValidState.INVALID) {
+                valid = ValidState.INVALID;
+                firePropertyChange(PROP_VALID, true, false);
             }
             return false;
         }
@@ -472,21 +479,23 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         } else {
             boolean csmValid = csm.getCompilerSets().size() > 0;
             boolean isToolsValid = getToolCollectionPanel().isToolsValid();
-
             boolean devhostValid = cacheManager.isDevHostValid(execEnv);
 
-            if (!initialized) {
-                valid = !(csmValid && isToolsValid && devhostValid);
-            }
-
-            if (valid != (csmValid && isToolsValid && devhostValid)) {
-                valid = !valid;
-                firePropertyChange(PROP_VALID, !valid, valid);
+            if (csmValid && isToolsValid && devhostValid) {
+                if (valid != ValidState.VALID) {
+                    valid = ValidState.VALID;
+                    firePropertyChange(PROP_VALID, false, true);
+                }
+            } else {
+                if (valid != ValidState.INVALID) {
+                    valid = ValidState.INVALID;
+                    firePropertyChange(PROP_VALID, true, false);
+                }
             }
 
             // post errors in error text area
             lblErrors.setText("<html>"); // NOI18N
-            if (!valid) {
+            if (valid == ValidState.INVALID) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (!devhostValid) {
                     errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString()));
@@ -511,7 +520,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             boolean enableVersions = (baseDirValid || isRemoteHostSelected()) && isHostValidForEditing();
             updateToolsControls(enableText, enableBrowse, enableVersions, false);
 
-            return valid;
+            return valid == ValidState.VALID;
         }
     }
 
