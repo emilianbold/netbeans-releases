@@ -172,10 +172,11 @@ public class SourcePath {
      * Sets array of source roots.
      *
      * @param sourceRoots a new array of sourceRoots
-     */
+     *
     public void setSourceRoots (String[] sourceRoots) {
         getContext ().setSourceRoots (sourceRoots);
     }
+     */
     
     /**
      * Returns set of original source roots.
@@ -196,6 +197,24 @@ public class SourcePath {
             return new String[] {};
         }
 
+    }
+
+    public void setSourceRoots (String[] sourceRoots, String[] additionalRoots) {
+        try {
+            java.lang.reflect.Method setSourceRootsMethod = getContext().getClass().getMethod("setSourceRoots", String[].class, String[].class); // NOI18N
+            setSourceRootsMethod.invoke(getContext(), new Object[] { sourceRoots, additionalRoots });
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public void reorderOriginalSourceRoots(int[] permutation) {
+        try {
+            java.lang.reflect.Method reorderOriginalSourceRootsMethod = getContext().getClass().getMethod("reorderOriginalSourceRoots", int[].class); // NOI18N
+            reorderOriginalSourceRootsMethod.invoke(getContext(), new Object[] { permutation });
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     /**
@@ -693,6 +712,35 @@ public class SourcePath {
             return additionalSourceRoots;
         }
 
+        public void setSourceRoots (String[] sourceRoots, String[] additionalRoots) {
+            try {
+                java.lang.reflect.Method setSourceRootsMethod = cp1.getClass().getMethod("setSourceRoots", String[].class, String[].class); // NOI18N
+                setSourceRootsMethod.invoke(cp1, new Object[] { sourceRoots, additionalRoots });
+            } catch (Exception ex) {
+                cp1.setSourceRoots(sourceRoots);
+            }
+            try {
+                java.lang.reflect.Method setSourceRootsMethod = cp2.getClass().getMethod("setSourceRoots", String[].class, String[].class); // NOI18N
+                setSourceRootsMethod.invoke(cp2, new Object[] { sourceRoots, additionalRoots });
+            } catch (Exception ex) {
+                cp2.setSourceRoots(sourceRoots);
+            }
+        }
+
+        public void reorderOriginalSourceRoots(int[] permutation) {
+            try {
+                java.lang.reflect.Method reorderOriginalSourceRootsMethod = cp1.getClass().getMethod("reorderOriginalSourceRoots", int[].class); // NOI18N
+                reorderOriginalSourceRootsMethod.invoke(cp1, new Object[] { permutation });
+            } catch (Exception ex) {
+
+            }
+            try {
+                java.lang.reflect.Method reorderOriginalSourceRootsMethod = cp2.getClass().getMethod("reorderOriginalSourceRoots", int[].class); // NOI18N
+                reorderOriginalSourceRootsMethod.invoke(cp2, new Object[] { permutation });
+            } catch (Exception ex) {
+
+            }
+        }
 
         public void addPropertyChangeListener (PropertyChangeListener l) {
             cp1.addPropertyChangeListener (l);

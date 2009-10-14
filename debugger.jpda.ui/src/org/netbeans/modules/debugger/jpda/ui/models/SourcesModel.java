@@ -61,6 +61,7 @@ import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -204,6 +205,14 @@ NodeActionsProvider {
             ((ModelListener) v.get (i)).modelChanged (null);
     }
 
+    private void fireSelectedNodes(Object[] nodes) {
+        ModelEvent event = new ModelEvent.SelectionChanged(this, nodes);
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (event);
+    }
+
 
     // CheckNodeModelFilter
 
@@ -251,11 +260,21 @@ NodeActionsProvider {
             if (additionalSourceRoots.contains(node)) {
                 return new Action[] {
                     NEW_SOURCE_ROOT_ACTION,
-                    DELETE_ACTION
+                    DELETE_ACTION,
+                    null,
+                    MOVE_UP_ACTION,
+                    MOVE_DOWN_ACTION,
+                    null,
+                    RESET_ORDER_ACTION,
                 };
             } else {
                 return new Action[] {
-                    NEW_SOURCE_ROOT_ACTION
+                    NEW_SOURCE_ROOT_ACTION,
+                    null,
+                    MOVE_UP_ACTION,
+                    MOVE_DOWN_ACTION,
+                    null,
+                    RESET_ORDER_ACTION,
                 };
             }
         } else
@@ -279,22 +298,16 @@ NodeActionsProvider {
     }
 
     private void setEnabled (String root, boolean enabled) {
-        List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
+        String[] ss;
         synchronized (this) {
             if (enabled) {
-                //enabledSourceRoots.add (root);
-                //disabledSourceRoots.remove (root);
-                sourceRoots.add (root);
+                sourceRootsSet.add(root);
             } else {
-                //disabledSourceRoots.add (root);
-                //enabledSourceRoots.remove (root);
-                sourceRoots.remove (root);
+                sourceRootsSet.remove(root);
             }
+            ss = sourceRootsSet.toArray(new String[]{});
         }
-        String[] ss = new String [sourceRoots.size ()];
-        sourcePath.setSourceRoots (sourceRoots.toArray (ss));
-
-        //saveFilters ();
+        sourcePath.setSourceRoots (ss, additionalSourceRoots.toArray(new String[]{}));
     }
 
     /*
@@ -431,7 +444,7 @@ NodeActionsProvider {
                     String[] newSourceRoots = new String[l + 1];
                     System.arraycopy(sourceRoots, 0, newSourceRoots, 0, l);
                     newSourceRoots[l] = d;
-                    sourcePath.setSourceRoots(newSourceRoots);
+                    sourcePath.setSourceRoots(newSourceRoots, additionalSourceRoots.toArray(new String[]{}));
 
                     //saveFilters();
                     fireTreeChanged ();
@@ -472,9 +485,109 @@ NodeActionsProvider {
                     if (index >= 0) {
                         System.arraycopy(sourceRoots, 0, newSourceRoots, 0, index);
                         System.arraycopy(sourceRoots, index + 1, newSourceRoots, index, l - (index + 1));
-                        sourcePath.setSourceRoots(newSourceRoots);
+                        sourcePath.setSourceRoots(newSourceRoots, additionalSourceRoots.toArray(new String[]{}));
                     }
                 }
+                //saveFilters ();
+                fireTreeChanged ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
+    private final Action MOVE_UP_ACTION = Models.createAction (
+        NbBundle.getBundle (SourcesModel.class).getString
+            ("CTL_SourcesModel_MoveUpSrc"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (ROOT.equals(node)) return false;
+                String[] roots = sourcePath.getOriginalSourceRoots();
+                return roots.length > 0 && !roots[0].equals(node);
+            }
+            public void perform (Object[] nodes) {
+                int k = nodes.length;
+                synchronized (SourcesModel.this) {
+                    String[] roots = sourcePath.getOriginalSourceRoots();
+                    int n = roots.length;
+                    int[] permutation = new int[n];
+                    for (int i = 0; i < n; i++) {
+                        int j;
+                        for (j = 0; j < k; j++) {
+                            if (roots[i].equals(nodes[j])) {
+                                break;
+                            }
+                        }
+                        if (j < k) {
+                            // Move up the node
+                            if (i > 0) {
+                                permutation[i] = permutation[i-1];
+                                permutation[i-1] = i;
+                            }
+                        } else {
+                            permutation[i] = i;
+                        }
+                    }
+                    sourcePath.reorderOriginalSourceRoots(permutation);
+                }
+                //saveFilters ();
+                fireTreeChanged ();
+                fireSelectedNodes(nodes);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
+    private final Action MOVE_DOWN_ACTION = Models.createAction (
+        NbBundle.getBundle (SourcesModel.class).getString
+            ("CTL_SourcesModel_MoveDownSrc"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (ROOT.equals(node)) return false;
+                String[] roots = sourcePath.getOriginalSourceRoots();
+                return roots.length > 0 && !roots[roots.length - 1].equals(node);
+            }
+            public void perform (Object[] nodes) {
+                int k = nodes.length;
+                synchronized (SourcesModel.this) {
+                    String[] roots = sourcePath.getOriginalSourceRoots();
+                    int n = roots.length;
+                    int[] permutation = new int[n];
+                    for (int i = n - 1; i >= 0; i--) {
+                        int j;
+                        for (j = 0; j < k; j++) {
+                            if (roots[i].equals(nodes[j])) {
+                                break;
+                            }
+                        }
+                        if (j < k) {
+                            // Move down the node
+                            if (i < (n - 1)) {
+                                permutation[i] = permutation[i+1];
+                                permutation[i+1] = i;
+                            }
+                        } else {
+                            permutation[i] = i;
+                        }
+                    }
+                    sourcePath.reorderOriginalSourceRoots(permutation);
+                }
+                //saveFilters ();
+                fireTreeChanged ();
+                fireSelectedNodes(nodes);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
+    private final Action RESET_ORDER_ACTION = Models.createAction (
+        NbBundle.getBundle (SourcesModel.class).getString
+            ("CTL_SourcesModel_ResetOrderSrc"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                sourcePath.reorderOriginalSourceRoots(null);
                 //saveFilters ();
                 fireTreeChanged ();
             }
