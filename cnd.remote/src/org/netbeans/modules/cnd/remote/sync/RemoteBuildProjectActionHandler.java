@@ -337,12 +337,14 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         });
         for (FileInfo info : files) {
             if (info.file.isDirectory()) {
-                String text = String.format("D %s", info.relPath); // NOI18N
-                writer.println(text); // adds LF
+                // adds LF
+                String text = String.format("D %s\n", info.relPath); // NOI18N
+                writer.printf(text); 
                 writer.flush(); //TODO: remove?
             } else {
-                String text = String.format("%d %s", info.file.length(), info.relPath); // NOI18N
-                writer.println(text); // adds LF
+                // adds LF!
+                String text = String.format("%d %s\n", info.file.length(), info.relPath); // NOI18N
+                writer.printf(text); 
                 writer.flush(); //TODO: remove?
             }
         }
