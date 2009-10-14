@@ -636,8 +636,12 @@ public abstract class Properties {
                 this.clazz = clazz;
             }
 
+            protected void initServices() {
+            }
+
             private final void init() {
                 register = new HashMap<String, T>();
+                initServices();
                 final List<? extends T> list = DebuggerManager.getDebuggerManager().lookup(null, clazz);
                 servicesList = list;
                 synchronized (list) {
@@ -684,6 +688,11 @@ public abstract class Properties {
 
             public ReaderHolder() {
                 super(Reader.class);
+            }
+
+            @Override
+            protected void initServices() {
+                registerService(new DefaultReader());
             }
 
             @Override
@@ -1258,6 +1267,70 @@ public abstract class Properties {
                     getDefault ().lookup (ClassLoader.class);
             return classLoader;
         }
+
+
+        private static class DefaultReader implements Reader {
+
+            private static final String[] classNames =
+                new String[] {
+                    Boolean.class.getName(),
+                    Byte.class.getName(),
+                    Character.class.getName(),
+                    Short.class.getName(),
+                    Integer.class.getName(),
+                    Long.class.getName(),
+                    Float.class.getName(),
+                    Double.class.getName()
+                };
+            private static final String propertyName = "primitiveWrapper"; // NOI18N
+            
+            public String[] getSupportedClassNames() {
+                return classNames;
+            }
+
+            public Object read(String className, Properties properties) {
+                if (classNames[0].equals(className)) {
+                    return Boolean.valueOf(properties.getBoolean(propertyName, false));
+                } else if (classNames[1].equals(className)) {
+                    return new Byte(properties.getByte(propertyName, (byte) 0));
+                } else if (classNames[2].equals(className)) {
+                    return new Character(properties.getChar(propertyName, (char) 0));
+                } else if (classNames[3].equals(className)) {
+                    return new Short(properties.getShort(propertyName, (short) 0));
+                } else if (classNames[4].equals(className)) {
+                    return new Integer(properties.getInt(propertyName, 0));
+                } else if (classNames[5].equals(className)) {
+                    return new Long(properties.getLong(propertyName, 0l));
+                } else if (classNames[6].equals(className)) {
+                    return new Float(properties.getFloat(propertyName, 0f));
+                } else if (classNames[7].equals(className)) {
+                    return new Double(properties.getDouble(propertyName, 0d));
+                }
+                throw new IllegalArgumentException("Class = '"+className+"'.");
+            }
+
+            public void write(Object object, Properties properties) {
+                if (object instanceof Boolean) {
+                    properties.setBoolean(propertyName, ((Boolean) object).booleanValue());
+                } else if (object instanceof Byte) {
+                    properties.setByte(propertyName, ((Byte) object).byteValue());
+                } else if (object instanceof Character) {
+                    properties.setChar(propertyName, ((Character) object).charValue());
+                } else if (object instanceof Short) {
+                    properties.setShort(propertyName, ((Short) object).shortValue());
+                } else if (object instanceof Integer) {
+                    properties.setInt(propertyName, ((Integer) object).intValue());
+                } else if (object instanceof Long) {
+                    properties.setLong(propertyName, ((Long) object).longValue());
+                } else if (object instanceof Float) {
+                    properties.setFloat(propertyName, ((Float) object).floatValue());
+                } else if (object instanceof Double) {
+                    properties.setDouble(propertyName, ((Double) object).doubleValue());
+                }
+            }
+            
+        }
+
     }
 
     private static class DelegatingProperties extends Properties {
