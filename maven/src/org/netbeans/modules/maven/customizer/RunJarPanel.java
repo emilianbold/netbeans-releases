@@ -252,20 +252,18 @@ public class RunJarPanel extends javax.swing.JPanel {
         run = null;
         debug = null;
         profile = null;
-        if (handle.isConfigurationsEnabled()) {
-            ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
-            @SuppressWarnings("unchecked")
-            List<NetbeansActionMapping> lst = mapp.getActions();
-            for (NetbeansActionMapping m : lst) {
-                if (ActionProvider.COMMAND_RUN.equals(m.getActionName())) {
-                    run = m;
-                }
-                if (ActionProvider.COMMAND_DEBUG.equals(m.getActionName())) {
-                    debug = m;
-                }
-                if (PROFILE_CMD.equals(m.getActionName())) {
-                    profile = m;
-                }
+        ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
+        @SuppressWarnings("unchecked")
+        List<NetbeansActionMapping> lst = mapp.getActions();
+        for (NetbeansActionMapping m : lst) {
+            if (ActionProvider.COMMAND_RUN.equals(m.getActionName())) {
+                run = m;
+            }
+            if (ActionProvider.COMMAND_DEBUG.equals(m.getActionName())) {
+                debug = m;
+            }
+            if (PROFILE_CMD.equals(m.getActionName())) {
+                profile = m;
             }
         }
         if (run == null) {
@@ -539,12 +537,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         String newParams = txtArguments.getText().trim();
         String newVMParams = txtVMOptions.getText().trim();
         String newWorkDir = txtWorkDir.getText().trim();
-        ActionToGoalMapping a2gm; 
-        if (handle.isConfigurationsEnabled()) {
-            a2gm = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
-        } else {
-            a2gm = handle.getActionMappings();
-        }
+        ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
         if (isCurrentRun || isCurrentDebug || isCurrentProfile) {
             String newAllParams = newVMParams + " -classpath %classpath "; //NOI18N
             if (newMainClass.trim().length() > 0) {
@@ -864,21 +857,14 @@ public class RunJarPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void setupConfigurations() {
-        if (handle.isConfigurationsEnabled()) {
-            lblConfiguration.setVisible(true);
-            comConfiguration.setVisible(true);
-            DefaultComboBoxModel comModel = new DefaultComboBoxModel();
-            for (ModelHandle.Configuration conf : handle.getConfigurations()) {
-                comModel.addElement(conf);
-            }
-            comConfiguration.setModel(comModel);
-            comConfiguration.setSelectedItem(handle.getActiveConfiguration());
-        } else {
-            lblConfiguration.setVisible(false);
-            comConfiguration.setVisible(false);
-            DefaultComboBoxModel comModel = new DefaultComboBoxModel();
-            comConfiguration.setModel(comModel);
+        lblConfiguration.setVisible(true);
+        comConfiguration.setVisible(true);
+        DefaultComboBoxModel comModel = new DefaultComboBoxModel();
+        for (ModelHandle.Configuration conf : handle.getConfigurations()) {
+            comModel.addElement(conf);
         }
+        comConfiguration.setModel(comModel);
+        comConfiguration.setSelectedItem(handle.getActiveConfiguration());
     }
     // End of variables declaration
 

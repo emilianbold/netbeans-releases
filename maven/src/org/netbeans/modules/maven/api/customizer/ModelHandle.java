@@ -357,6 +357,8 @@ public final class ModelHandle {
         return active;
     }
     public void setActiveConfiguration(Configuration conf) {
+        assert conf != null;
+        assert configurations.contains(conf);
         active = conf;
     }
     
