@@ -55,7 +55,7 @@ import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;

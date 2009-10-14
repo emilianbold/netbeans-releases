@@ -381,99 +381,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return urlHintLabel;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return urlHintLabel;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return advancedButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  urlHintLabel){
-                    return remoteConnectionComboBox;
-                }
-                if(aComponent ==  runAsComboBox){
-                    return urlTextField;
-                }
-                if(aComponent ==  remoteConnectionComboBox){
-                    return manageRemoteConnectionButton;
-                }
-                if(aComponent ==  manageRemoteConnectionButton){
-                    return uploadDirectoryTextField;
-                }
-                if(aComponent ==  uploadDirectoryTextField){
-                    return uploadFilesComboBox;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  urlTextField){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  uploadDirectlyCheckBox){
-                    return advancedButton;
-                }
-                if(aComponent ==  preservePermissionsCheckBox){
-                    return uploadDirectlyCheckBox;
-                }
-                if(aComponent ==  uploadFilesComboBox){
-                    return preservePermissionsCheckBox;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return urlHintLabel;
-                }
-                return urlHintLabel;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  remoteConnectionComboBox){
-                    return urlHintLabel;
-                }
-                if(aComponent ==  urlTextField){
-                    return runAsComboBox;
-                }
-                if(aComponent ==  manageRemoteConnectionButton){
-                    return remoteConnectionComboBox;
-                }
-                if(aComponent ==  uploadDirectoryTextField){
-                    return manageRemoteConnectionButton;
-                }
-                if(aComponent ==  uploadFilesComboBox){
-                    return uploadDirectoryTextField;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return urlTextField;
-                }
-                if(aComponent ==  advancedButton){
-                    return uploadDirectlyCheckBox;
-                }
-                if(aComponent ==  uploadDirectlyCheckBox){
-                    return preservePermissionsCheckBox;
-                }
-                if(aComponent ==  preservePermissionsCheckBox){
-                    return uploadFilesComboBox;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  urlHintLabel){
-                    return argsTextField;
-                }
-                return advancedButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsComboBox);
 
@@ -499,8 +407,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlHintLabel.setRows(2);
         urlHintLabel.setWrapStyleWord(true);
         urlHintLabel.setBorder(null);
-        urlHintLabel.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
-        urlHintLabel.setEnabled(false);
         urlHintLabel.setOpaque(false);
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
@@ -515,27 +421,24 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
 
-        Mnemonics.setLocalizedText(uploadDirectoryLabel,NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
-        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
-        remoteConnectionHintLabel.setEnabled(false);
 
+        Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
+        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
 
-        Mnemonics.setLocalizedText(uploadFilesLabel,NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
+
+
+        Mnemonics.setLocalizedText(uploadFilesLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
         Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy");
-        uploadFilesHintLabel.setEnabled(false);
-
-
-        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text"));
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
+
+
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
-        preservePermissionsLabel.setEnabled(false);
-
-
-        Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text"));
         uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
-        Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text")); // NOI18N
-        uploadDirectlyLabel.setEnabled(false);
+
+        Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text"));
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text"));
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
