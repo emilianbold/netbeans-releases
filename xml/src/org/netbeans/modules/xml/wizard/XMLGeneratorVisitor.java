@@ -40,10 +40,8 @@
  */
 package org.netbeans.modules.xml.wizard;
 
-import org.netbeans.modules.xml.wizard.XMLContentAttributes;
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +50,6 @@ import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
-import org.netbeans.modules.xml.axi.AnyElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.Compositor;
@@ -92,7 +89,12 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     public XMLGeneratorVisitor(String schemaFileName, XMLContentAttributes attr, StringBuffer writer) {
         super();
         this.contentAttr=attr;
-        this.defaultPrefix = contentAttr.getPrefix() + ":";
+
+        //this.defaultPrefix = contentAttr.getPrefix() + ":";
+        this.defaultPrefix = contentAttr.getPrefix();
+        if (defaultPrefix == null) defaultPrefix = "";
+        this.defaultPrefix += (defaultPrefix.trim().length() < 1 ? "" : ":");
+
         this.schemaFileName = schemaFileName;
         this.writer = writer;
         this.namespaceToPrefix = contentAttr.getNamespaceToPrefixMap();
@@ -144,7 +146,8 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             this.visit(element);
         }
     }
-    
+
+    @Override
     public void visit(Element element) { 
        int occurs = getOccurence(element.getMinOccurs(), element.getMaxOccurs());
        
@@ -158,6 +161,7 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         }
     }
     
+    @Override
     protected void visitChildren(AXIComponent component) {
         try {            
            printModel(component);        
