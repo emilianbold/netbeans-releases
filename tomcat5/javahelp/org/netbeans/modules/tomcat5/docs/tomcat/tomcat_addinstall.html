@@ -9,66 +9,55 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 
-<title>Registering an External Tomcat Web Server</title>
+<title>Registering a Tomcat Web Server</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Registering an External Tomcat Web Server</h2>
+<h2>Registering a Tomcat Web Server</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>When you download and install the Java EE version of the IDE, you can  choose to install and register the Tomcat Web Server. You can also configure the IDE to deploy web applications to other 
+<p>When you download and install a version of the IDE that includes Java EE technologies, you can choose to install and register the Tomcat Web Server
+during the installation process.
+You can also configure the IDE to deploy web applications to other
 installations of supported versions of the Tomcat Web Server. These Tomcat Web Server
 installations must first be registered. Unsupported versions of the Tomcat Web Server
 cannot be registered with the IDE. Instead, you can <a href="tomcat_setup_unsupported.html">create Ant targets</a> that
 you can run from the IDE to deploy an application, JSP page, or servlet to an unsupported version of the Tomcat Web Server.</p>
 
-<p><b>To register an external Tomcat Web Server:</b></p>
+<p><b>To register an instance of the Apache Tomcat web server:</b></p>
 <ol>
   <li>Make sure the server is not running. If the server is running and there 
   is a port number conflict with other installed servers, the IDE will not
   be able to resolve the conflict.</li>
-  <li>Choose Tools > Servers.</li>
+  <li>Choose Tools &gt; Servers.
+      <p>Alternatively, right-click the Servers node in the Services window and choose Add Server.</p></li>
   <li>Click Add Server to display the Add Server Instance wizard.</li>
-  <li>Select the Tomcat Web Server from the combo box.</li>
-  <li>Click Next.</li>
-  <li>In the Catalina Home text box, type or browse to the Tomcat installation 
-    directory on your local system. Note that the system verifies that you have 
-    specified a valid Tomcat home directory.</li>
-  <li>(Optional) If you expect to use Tomcat in a multi-user configuration, select 
-  the Use Private Configuration Folder checkbox. In the Cataline Base text box, type 
-    or browse to the base directory. Typically, a base directory is placed under 
-    a user's directory. If you associate a base directory with the server, the 
-    base directory must have the following subdirectories. If the base directory is
-    empty, the IDE creates the subdirectories by copying them from Tomcat's
-    home directory. In addition, the <tt>conf</tt> 
-    directory must have a <tt>server.xml</tt> file.</li>
-   <ul>
-    <li><b><tt>conf.</tt></b> Directory for server configuration files</li>
-    <li><b><tt>logs.</tt></b> Directory for log and output files</li>
-    <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
-    <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
-  </ul>
-   <li>Type a user name and password. The user must be a Tomcat user who has a 
-   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.
-<ul class="note"><li><b>Note:</b> If the username does not exist, you can check the box to create it.</li></ul></li>
-<li>Click Finish and Close to exit the Server Manager.<br> 
-The IDE displays the server's port number in the server node's 
-    tooltip. If another server instance is using this port, you must change one of 
-    the servers' port numbers. To change a port number, right-click the server's 
-    node, choose Stop from the contextual menu. 
-    Next, right-click the server node and choose Properties from the contextual 
-    menu. Change the server port number and restart the server.</li>
+  <li>Select the version of the Tomcat web server that you want to register. Click Next.</li>
+  <li>Specify the server installation location and login properties in the Add Server Instance wizard.
+      Click Finish.</li>
 </ol>
-<p>If you want to change any setting that you entered in the New Server dialog box,
-right-click the server's node in the Services window and choose Properties
-from the contextual menu.</p>
+  <p>When you click Finsih, the IDE adds a node for the server instance
+    under the Servers node in the Services window.
+    You can place the cursor over the server's node to display a tooltip that
+  contains the server's port number. </p>
+  <ul class="note">
+    <li>If another server instance is using this port, you must change
+    the port number for one of the servers. </li>
+  </ul>
+  <p>To change a port number or any other server settings, stop the server and then choose
+  Properties from the server node's popup menu.
+  After you modify the server settings, close the Servers window and restart the server.</p>
+
+
 <b>To remove an instance of the Tomcat Web Server:</b>
-<ol><li>Choose Tools > Server Manager.</li>
-	<li>In the Server Manager, select the Tomcat Web Server from the list of servers in the left pane.</li>
-	<li>Click Remove Server.</li>
-	<li>Click Close.</li></ol>
+<ol>
+    <li>Choose Tools &gt; Servers from the main menu.</li>
+    <li>In the Servers manager, select the Tomcat Web Server from the list of servers in the left pane.</li>
+    <li>Click Remove Server.</li>
+    <li>Click Close.</li>
+</ol>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
@@ -76,12 +65,13 @@ from the contextual menu.</p>
 <dd><a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a></dd>
 <dd><a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a></dd>
 <dd><a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a></dd>
+<dd><a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a></dd>
 </dl>
 
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
+<small><a href="../credits.html">Legal Notices</a> </small>
 <table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
-</small></body></html>
+</body></html>

@@ -26,19 +26,19 @@ When an application closes a connection, the connection is returned to the pool.
 Connection pool properties may vary with different database vendors. Some common 
 properties are the URL for the database name, user name, and password.</p>
 <p> For detailed information
- on Tomcat's database connection pooling functionality, see:
+ on Tomcat's database connection pooling functionality, see:</p>
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://jakarta.apache.org/commons/dbcp/">
         <param name="text" value="<html><u>http://jakarta.apache.org/commons/dbcp/</u></html>">
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
 </object></p>
-The first step in creating a Tomcat database connection pool is to create JDBC resource (also called a data source). 
+<p>The first step in creating a Tomcat database connection pool is to create JDBC resource (also called a data source).
 A JDBC resource provides applications with a connection to a database. Typically, there is at least one
 JDBC resource for each database accessed by an application deployed in a domain. It is possible to
 have more than one JDBC resource for a database. You
 can create a JDBC resource manually in your <tt>server.xml</tt> or you can use Tomcat's Administration Tool to do so.</p>
-<p><b>To add a JDBC resource using the Tomcat Web Server Administration Tool:</b>
+<p><b>To add a JDBC resource using the Tomcat Web Server Administration Tool:</b></p>
 <ol><li><a href="tomcat_admin_access.html">Access the Tomcat Web Server Administration Tool</a>.</li>
 	<li>In the Administration Tool, click Data Sources.</li>
 <li>Choose Create New Data Source from the Data Source Actions drop down on the right.</li>
@@ -54,27 +54,29 @@ can create a JDBC resource manually in your <tt>server.xml</tt> or you can use T
 <li>Click Save. Then click Commit Changes. Then click Log Out.</li>
 <li>Reference the JDBC resource from your web application as described below.</li>
 </ol>
-<p><b>To add a JDBC resource manually in the server.xml file:</b>
+<p><b>To add a JDBC resource manually in the server.xml file:</b></p>
 <table>
   <tr> 
     <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
     <td valign="top" align="left">Be aware that you hand-edit the <code>server.xml
       </code> file at your own risk; the IDE cannot repair a damaged <code>server.xml</code> 
       file. You are strongly encouraged to create a backup version of your working 
-      <code>server.xml</code> file before beginning to edit by hand.</td></tr></table>
+      <code>server.xml</code> file before beginning to edit by hand.</td>
+  </tr>
+</table>
 <ol>
   <li>In the Services window, expand the Servers node and the Tomcat Servers node.</li>
   <li>Stop the server by right-clicking the Tomcat instance node and choosing Stop.</li>
 <li>Right-click the Tomcat instance node and 
 choose Edit server.xml from the contextual menu to open the <tt>server.xml</tt>
-
 file in the Source Editor.</li>
 <li>Make your changes.</li>
 <li>Reference the JDBC resource from your web application as described below.</li>
-
 </ol>	
+
 <p><b>To reference a JDBC resource from a web application:</b></p>
-<ol><li>Expand the project node in the Projects window. Then expand the
+<ol>
+    <li>Expand the project node in the Projects window. Then expand the
 Web Pages node and the WEB-INF node. Double-click the web.xml node and use the
 Source Editor to add your resource reference to the <tt>web.xml</tt> file as follows:
 <blockquote>
@@ -120,9 +122,9 @@ if the <tt>context.xml</tt> file is opened in the Context Editor. <p>Your web ap
 <dd><a href="tomcat_use_tdcp.html">Defining a Tomcat Database Connection Pool in a JSP File</a></dd>
 </dl>
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
+<small><a href="../credits.html">Legal Notices</a> </small>
 <table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
-</small></body></html>
+</body></html>
