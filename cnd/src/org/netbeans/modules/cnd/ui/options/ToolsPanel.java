@@ -142,11 +142,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     private void initializeLong() {
         csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
-        try {
-            Thread.sleep(5 * 1000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     ToolsPanelModel getModel(){
