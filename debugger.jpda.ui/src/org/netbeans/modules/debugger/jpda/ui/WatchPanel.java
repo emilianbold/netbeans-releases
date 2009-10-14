@@ -114,7 +114,13 @@ public class WatchPanel {
                         final Context c = retrieveContext(den);
                         if (c != null) {
                             setupContext(editorPane, c.url, c.line);
-                            if (contextSetUp != null) contextSetUp.actionPerformed(null);
+                            if (contextSetUp != null) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        contextSetUp.actionPerformed(null);
+                                    }
+                                });
+                            }
                         }
                     }
                 });
@@ -132,7 +138,13 @@ public class WatchPanel {
         } else {
             setupUI(editorPane);
         }
-        if (contextSetUp != null) contextSetUp.actionPerformed(null);
+        if (contextSetUp != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    contextSetUp.actionPerformed(null);
+                }
+            });
+        }
     }
 
     private static Context retrieveContext(DebuggerEngine en) {
