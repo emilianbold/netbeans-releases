@@ -16,6 +16,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.javacard.GuiUtils;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -28,6 +29,7 @@ public abstract class DependencyPanel extends javax.swing.JPanel implements Mous
         initComponents();
         GuiUtils.prepareContainer(this);
         jComboBox1.setModel(new DefaultComboBoxModel(DeploymentStrategy.values()));
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ChangeLibraryDeploymentStrategy"); //NOI18N
     }
 
     public void setSelected (boolean val) {

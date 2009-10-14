@@ -108,7 +108,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             String tmpDirBase = tmpDirFile.getCanonicalPath();
 
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
-            pb.environment().put("PATH", "/bin:/usr/bin"); // NOI18N
+            pb.environment().put("PATH", pb.environment().get("PATH") + File.pathSeparator + "/bin:/usr/bin"); // NOI18N
 
             Process hostinfoProcess = pb.start();
 

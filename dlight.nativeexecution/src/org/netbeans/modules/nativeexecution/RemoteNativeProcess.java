@@ -54,7 +54,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
 
             // Always append /bin and /usr/bin to PATH
-            envVars.appendPathVariable("PATH", "/bin:/usr/bin"); // NOI18N
+            envVars.appendPathVariable("PATH", hostInfo.getPath() + ":/bin:/usr/bin"); // NOI18N
 
             if (isInterrupted()) {
                 throw new InterruptedException();

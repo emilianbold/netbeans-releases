@@ -76,6 +76,8 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
+    private String address;
+
     protected BreakpointImpl(B breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
         this.breakpoint = breakpoint;
@@ -97,6 +99,7 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
                 // path to a possiby non-unique relative path and another project has a similar
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
+                fullname = debugger.getOSPath(fullname);
                 // fix for IZ 157752, we need to resolve sym links
                 // TODO: what about remote?
                 if (debugger.getHostExecutionEnvironment().isLocal()) {
@@ -167,6 +170,11 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
      * Update implementation with the real breakpoint values if needed
      */
     protected void validationUpdate(Map<String, String> map) {
+        address = map.get("addr"); //NOI18N
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     private static String canonicalPath(String path) {

@@ -44,6 +44,13 @@
 
 #include "rfs_util.h"
 
+void report_error(const char *format, ...) {
+    va_list args;
+    va_start (args, format);
+    vfprintf(stderr, format, args);
+    va_end (args);
+}
+
 #if TRACE
 
 static const char* pattern = "%u #%s[%d]: ";
@@ -60,7 +67,7 @@ void trace(const char *format, ...) {
     if (!trace_file) {
         trace_file = stderr;
     }
-    fprintf(trace_file, pattern, 0/*get_timestamp()*/, prefix, 0/*getpid()*/);
+    fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
     va_list args;
     va_start (args, format);
     vfprintf(trace_file, format, args);

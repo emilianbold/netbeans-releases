@@ -50,38 +50,38 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
  */
 public class PathComparisonTestCase extends TestCase {
 
-    @Test
+    /*@Test
     public void testPathComparisonCase() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\a", "c:\\A");
+        assert GdbUtils.compareUnixPaths("C:\\a", "c:\\A");
     }
 
     @Test
     public void testWinPathComparisonTrim() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "   /cygdrive/c/a   ", " /cygdrive/c/a      ");
+        assert GdbUtils.compareUnixPaths("   /cygdrive/c/a   ", " /cygdrive/c/a      ");
     }
 
     @Test
     public void testWinPathComparisonNormal() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/./a", "c:\\a");
+        assert GdbUtils.compareUnixPaths("/cygdrive/c/./a", "c:\\a");
     }
 
     @Test
     public void testWinPathComparisonNormal2() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "/cygdrive/c/../c/a", "c:\\temp\\..\\a");
+        assert GdbUtils.compareUnixPaths("/cygdrive/c/../c/a", "c:\\temp\\..\\a");
     }
 
     @Test
     public void testWinPathComparisonSpace() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:\\dir space\\a", "/cygdrive/c/dir space/a");
+        assert GdbUtils.compareUnixPaths("C:\\dir space\\a", "/cygdrive/c/dir space/a");
     }
 
     @Test
     public void testWinPathComparisonSeparators() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_WINDOWS, "C:/temp/test/SubProjects/hello3lib/hello3.cc", "c:\\temp\\test\\SubProjects\\hello3lib/hello3.cc");
-    }
+        assert GdbUtils.compareUnixPaths("C:/temp/test/SubProjects/hello3lib/hello3.cc", "c:\\temp\\test\\SubProjects\\hello3lib/hello3.cc");
+    }*/
 
     @Test
     public void testUnixPathComparisonNormal() {
-        assert GdbUtils.comparePaths(PlatformTypes.PLATFORM_SOLARIS_INTEL, "/tmp/./a", "/tmp/../tmp/a");
+        assert GdbUtils.compareUnixPaths("/tmp/./a", "/tmp/../tmp/a");
     }
 }

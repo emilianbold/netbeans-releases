@@ -51,6 +51,7 @@ import org.netbeans.modules.javacard.GuiUtils;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -71,6 +72,7 @@ final class EditOneDependencyPanel extends javax.swing.JPanel {
         GuiUtils.prepareContainer(this);
         deploymentStrategyBox.setModel(mdl);
         pathField.setText (dep.getPath(ArtifactKind.ORIGIN));
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ChangeLibraryDeploymentStrategy"); //NOI18N
     }
 
     /** This method is called from within the constructor to

@@ -36,70 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.visualizers.support;
 
-package org.netbeans.modules.cnd.debugger.common.utils;
+import javax.swing.AbstractSpinnerModel;
 
 /**
- * Utilities to work with paths on Windows (cygwin, mingw)
- * @author Egor Ushakov
+ * @author Alexey Vladykin
  */
-public class WinPath {
-    public static final String CYGDRIVE_PREFIX = "/cygdrive/"; // NOI18N
+public class SpinnerTimeModel extends AbstractSpinnerModel {
 
-    private WinPath() {
+    private static final long NANOS_PER_SECOND = 1000000000L;
+    private long nanos;
+
+    public Object getValue() {
+        return Math.max(0, nanos);
     }
 
-    /**
-     * Converts path from cygwin type into regular window (/cygdrive/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String cyg2win(String path) {
-        if (path.startsWith(CYGDRIVE_PREFIX)) {
-            return path.charAt(CYGDRIVE_PREFIX.length())
-                    + ":" // NOI18N
-                    + path.substring(CYGDRIVE_PREFIX.length()+1).replace('/', '\\');
+    public void setValue(Object value) {
+        if (value instanceof Long) {
+            nanos = ((Long) value).longValue();
+            fireStateChanged();
+        } else {
+            throw new IllegalArgumentException();
         }
-        return path;
     }
 
-    /**
-     * * Converts path from regular windows type into cygwin type (c:\... -> /cygdrive/c/...)
-     * @param path
-     * @return
-     */
-    public static String win2cyg(String path) {
-        if (isWinPath(path)) {
-            return CYGDRIVE_PREFIX + path.charAt(0) + path.substring(2).replace('\\', '/'); // NOI18N
+    public Object getNextValue() {
+        if (nanos == Long.MAX_VALUE) {
+            return null;
+        } else if (Long.MAX_VALUE - NANOS_PER_SECOND <= nanos) {
+            return Long.MAX_VALUE;
+        } else {
+            return nanos + NANOS_PER_SECOND;
         }
-        return path;
     }
 
-    /**
-     * Converts path from mingw type into regular window (/c/... -> c:\...)
-     * @param path
-     * @return
-     */
-    public static String ming2win(String path) {
-        if (path.charAt(0) == '/' && path.charAt(2) == '/') {
-            return path.charAt(1) + ":" + path.substring(2).replace('/', '\\'); // NOI18N
+    public Object getPreviousValue() {
+        if (nanos <= 0) {
+            return null;
+        } else if (nanos <= NANOS_PER_SECOND) {
+            return 0L;
+        } else {
+            return nanos - NANOS_PER_SECOND;
         }
-        return path;
-    }
-
-    /**
-      * Converts path from regular windows type into mingw type (c:\... -> /c/...)
-     * @param path
-     * @return
-     */
-    public static String win2ming(String path) {
-        if (isWinPath(path)) {
-            return "/" + path.charAt(0) + "/" + path.substring(2).replace('\\', '/'); // NOI18N
-        }
-        return path;
-    }
-
-    public static boolean isWinPath(String path) {
-        return path.length() >= 2 && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':';
     }
 }

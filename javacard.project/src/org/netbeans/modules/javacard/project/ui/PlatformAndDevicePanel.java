@@ -41,27 +41,22 @@
 package org.netbeans.modules.javacard.project.ui;
 
 import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import org.netbeans.modules.javacard.Utils;
 import org.netbeans.modules.javacard.project.JCProjectProperties;
 import org.netbeans.swing.layouts.SharedLayoutParentPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.beans.PropertyVetoException;
-import org.openide.nodes.FilterNode;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -81,6 +76,7 @@ public class PlatformAndDevicePanel extends SharedLayoutParentPanel implements E
         if (props != null) {
             setProperties(props);
         }
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
     }
 
     public PlatformAndDevicePanel() {

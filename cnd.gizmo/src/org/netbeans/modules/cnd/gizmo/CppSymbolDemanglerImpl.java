@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -76,6 +75,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private static final int MAX_CMDLINE_LENGTH = 2000;
     private final static Map<String, String> demangledCache = new HashMap<String, String>();
+    private final static List<String> searchPaths = new ArrayList<String>();
     private final ExecutionEnvironment env;
     private final CPPCompiler cppCompiler;
     private String demanglerTool;
@@ -86,19 +86,24 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     private static final String EQUALS_EQUALS = " == "; //NOI18N
 
     /*package*/ CppSymbolDemanglerImpl(Map<String, String> serviceInfo) {
+        if (serviceInfo == null ||
+                serviceInfo.get(GizmoServiceInfo.CPP_COMPILER) == null ||
+                serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH) == null) {
 
-
-        ///Here we are
-        if (serviceInfo == null || serviceInfo.get(GizmoServiceInfo.CPP_COMPILER) == null || serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH) == null) {
             Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
+
             if (project == null) {
                 Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
                 if (projects.length == 1) {
                     project = projects[0];
                 }
             }
-            NativeProject nPrj = (project == null) ? null : project.getLookup().lookup(NativeProject.class);
+
+            NativeProject nPrj = (project == null) ? null
+                    : project.getLookup().lookup(NativeProject.class);
+
             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+
             if (nPrj == null || conf == null) {
                 cppCompiler = CPPCompiler.GNU;
                 demanglerTool = GNU_DEMANGLER_1;
@@ -106,8 +111,10 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
                 env = ExecutionEnvironmentFactory.getLocal();
                 return;
             }
+
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             String demangle_utility = SS_DEMANGLER;
+
             if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
                 cppCompiler = CPPCompiler.GNU;
                 demangle_utility = GNU_DEMANGLER_1;
@@ -115,26 +122,30 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
             } else {
                 cppCompiler = CPPCompiler.SS;
             }
+
             String binDir = compilerSet.getDirectory();
-            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-            if (execEnv.isRemote()) {
-                env = ExecutionEnvironmentFactory.createNew(execEnv.getUser(), execEnv.getHost());
-            } else {
-                env = ExecutionEnvironmentFactory.getLocal();
+            if (!searchPaths.contains(binDir)) {
+                searchPaths.add(binDir);
             }
-            demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
+            
+            env = conf.getDevelopmentHost().getExecutionEnvironment();
+            demanglerTool = demangle_utility;
         } else {
             env = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
             cppCompiler = CppSymbolDemanglerFactory.CPPCompiler.valueOf(serviceInfo.get(GizmoServiceInfo.CPP_COMPILER));
+
             String binDir = serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH);
+            if (!searchPaths.contains(binDir)) {
+                searchPaths.add(binDir);
+            }
+
             String demangle_utility = SS_DEMANGLER;
             if (cppCompiler == CPPCompiler.GNU) {
                 demangle_utility = GNU_DEMANGLER_1;
                 checkGnuDemangler = true;
             }
-            demanglerTool = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
+            demanglerTool = demangle_utility;
         }
-
     }
 
     /*package*/ CppSymbolDemanglerImpl(CPPCompiler cppCompiler) {
@@ -151,7 +162,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     public String demangle(String symbolName) {
         String mangledName = stripModuleAndOffset(symbolName);
 
-        if (!isMangled(mangledName)) {
+        if (!isToolAvailable() || !isMangled(mangledName)) {
             return mangledName;
         }
 
@@ -175,8 +186,13 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     public List<String> demangle(List<String> symbolNames) {
         List<String> result = new ArrayList<String>(symbolNames.size());
+
         for (String name : symbolNames) {
             result.add(stripModuleAndOffset(name));
+        }
+
+        if (!isToolAvailable()) {
+            return result;
         }
 
         List<String> missedNames = new ArrayList<String>();
@@ -255,7 +271,6 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     }
 
     private void demangleImpl(List<String> mangledNames) {
-
         if (cppCompiler == CPPCompiler.GNU) {
             checkGnuDemangler();
         }
@@ -305,9 +320,9 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
     private synchronized void checkGnuDemangler() {
         if (checkGnuDemangler) {
-            if (HostInfoUtils.searchFile(env, Collections.<String>emptyList(), demanglerTool, true) == null) {
+            if (HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true) == null) {
                 String demanglerTool2 = demanglerTool.replace(GNU_DEMANGLER_1, GNU_DEMANGLER_2);
-                if (HostInfoUtils.searchFile(env, Collections.<String>emptyList(), demanglerTool2, true) != null) {
+                if (HostInfoUtils.searchFile(env, searchPaths, demanglerTool2, true) != null) {
                     demanglerTool = demanglerTool2;
                 }
             }
@@ -335,6 +350,6 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         if (cppCompiler == CPPCompiler.GNU) {
             checkGnuDemangler();
         }
-        return HostInfoUtils.searchFile(env, Collections.<String>emptyList(), demanglerTool, true) != null;
+        return HostInfoUtils.searchFile(env, searchPaths, demanglerTool, true) != null;
     }
 }

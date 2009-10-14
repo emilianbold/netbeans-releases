@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +177,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         
     private static final String PERSISTENCE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
     
-    private static synchronized boolean ensureEclipseLinkSupport(String installRoot) {
+    private static boolean ensureEclipseLinkSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         List<URL> docList = new ArrayList<URL>();
         try {
@@ -227,7 +226,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String COMET_JAR_2_MATCHER = "grizzly-comet" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String GRIZZLY_OPTIONAL_JAR_MATCHER = "grizzly-optional" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
 
-    private static synchronized boolean ensureCometSupport(String installRoot) {
+    private static boolean ensureCometSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         String name = COMET_LIB;
         File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_MATCHER);
@@ -255,7 +254,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
     private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
 
-    private static synchronized boolean ensureRestLibSupport(String installRoot) {
+    private static  boolean ensureRestLibSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         String name = PRELUDE_RESTLIB;
         for (String entry : JAXRS_LIBRARIES) {
@@ -296,7 +295,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static final String JAVA_EE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
 
-    private static synchronized boolean ensureGlassFishApiSupport(String installRoot) {
+    private static boolean ensureGlassFishApiSupport(String installRoot) {
         List<URL> libraryList = Hk2PluginProperties.getClasses(new File(installRoot));
         List<URL> docList = new ArrayList<URL>();
         String name = JAVA_EE_5_LIB;
@@ -331,12 +330,13 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static synchronized boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
+    private static boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
         return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static synchronized boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
+    private static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
+        synchronized (lmgr) {
 
         int size = 0;
 
@@ -357,7 +357,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     try {
                         lmgr.removeLibrary(lib);
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException ex) {
                         // Already removed somehow, ignore.
                         }
@@ -374,7 +374,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 lmgr.removeLibrary(lib);
             } catch (IOException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             } catch (IllegalArgumentException ex) {
                 // Already removed somehow, ignore.
             }
@@ -415,6 +415,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
         return lib != null;
+        }
     }
 
     static class InitializeLibrary implements PropertyChangeListener {
@@ -446,11 +447,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         }
                     } catch (IOException ex) {
                         l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
                                 ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException iae) {
                         l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
                                 iae.getLocalizedMessage(), iae);
                     }
                 } else {

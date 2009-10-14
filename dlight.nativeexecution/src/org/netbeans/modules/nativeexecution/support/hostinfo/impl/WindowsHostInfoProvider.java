@@ -109,6 +109,10 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
 
             _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
+
+            // create the directory if absent (IZ#174327)
+            _tmpDirFile.mkdirs();
+
             _tmpDir = _tmpDirFile.getAbsolutePath();
 
             try {

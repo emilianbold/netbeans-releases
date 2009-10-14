@@ -52,6 +52,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import java.util.List;
@@ -77,6 +78,11 @@ public final class ServicesNode extends AbstractNode {
             FileObject fld = Utils.sfsFolderForDeviceConfigsForPlatformNamed(key.getName(), true);
             return Children.create (new ServersChildren(fld), true);
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.javacard.UsingRuntimeNodeCustomizer"); //NOI18N
     }
 
     @Override
@@ -126,7 +132,7 @@ public final class ServicesNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(DataObject key) {
-            return new FilterNode (key.getNodeDelegate());
+            return new HelpFN (key.getNodeDelegate());
         }
 
         public void fileFolderCreated(FileEvent arg0) {
@@ -151,6 +157,17 @@ public final class ServicesNode extends AbstractNode {
 
         public void fileAttributeChanged(FileAttributeEvent arg0) {
             //do nothing
+        }
+    }
+
+    private static final class HelpFN extends FilterNode {
+        private HelpFN (Node orig) {
+            super (orig);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
         }
     }
 }

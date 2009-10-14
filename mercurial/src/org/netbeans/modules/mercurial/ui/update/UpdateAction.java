@@ -56,8 +56,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Update action for mercurial: 
@@ -142,12 +140,6 @@ public class UpdateAction extends ContextAction {
                         //logger.clearOutput();
                         logger.output(list);
                         logger.output(""); // NOI18N
-                    }  
-                    // refresh filesystem to take account of changes
-                    FileObject rootObj = FileUtil.toFileObject(root);
-                    try {
-                        rootObj.getFileSystem().refresh(true);
-                    } catch (Exception ex) {
                     }
 
                 } catch (HgException ex) {

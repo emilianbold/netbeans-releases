@@ -174,7 +174,8 @@ public class UserNode extends LeafNode {
 
     private class ChangeInstanceAction extends AbstractAction {
         final JRadioButtonMenuItem ke = new JRadioButtonMenuItem("kenai.com");
-        final JRadioButtonMenuItem nb = new JRadioButtonMenuItem("netbeans.org");
+        final JRadioButtonMenuItem nb = new JRadioButtonMenuItem("netbeans.org (stg)");
+        final JRadioButtonMenuItem nb2 = new JRadioButtonMenuItem("netbeans.org (test)");
         final JRadioButtonMenuItem oo = new JRadioButtonMenuItem("odftoolkit.org");
         final JRadioButtonMenuItem tk = new JRadioButtonMenuItem("testkenai.com");
         final ButtonGroup gr = new ButtonGroup();
@@ -185,13 +186,16 @@ public class UserNode extends LeafNode {
             gr.add(nb);
             gr.add(oo);
             gr.add(tk);
+            gr.add(nb2);
             menu.add(ke);
             menu.add(nb);
+            menu.add(nb2);
             menu.add(oo);
             menu.add(tk);
             gr.setSelected(ke.getModel(), true);
             ke.addActionListener(new ActionL(ke.getModel(), "https://kenai.com"));
             nb.addActionListener(new ActionL(nb.getModel(), "https://stg.network.org"));
+            nb2.addActionListener(new ActionL(nb2.getModel(), "https://test.netbeans.org"));
             oo.addActionListener(new ActionL(oo.getModel(), "https://odftoolkit.org"));
             tk.addActionListener(new ActionL(tk.getModel(), "https://testkenai.com"));
         }

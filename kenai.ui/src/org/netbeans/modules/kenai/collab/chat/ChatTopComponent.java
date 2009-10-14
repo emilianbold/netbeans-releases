@@ -162,8 +162,14 @@ public class ChatTopComponent extends TopComponent {
                 int index = chats.getSelectedIndex();
                 if (index>=0) {
                     chats.setForegroundAt(index, Color.BLACK);
-                    if (!initInProgress)
-                        ChatNotifications.getDefault().removeGroup(chats.getComponentAt(index).getName());
+                    if (!initInProgress) {
+                        String name = chats.getComponentAt(index).getName();
+                        if (name!=null) {
+                            ChatNotifications.getDefault().removeGroup(name);
+                            name = name.substring(name.indexOf('.') + 1);
+                            ChatNotifications.getDefault().removePrivate(name);
+                        }
+                    }
                     chats.getComponentAt(index).requestFocus();
                 }
             }
@@ -678,6 +684,10 @@ public class ChatTopComponent extends TopComponent {
                 instance.repaint();
             }
         });
+    }
+
+    void switchToContactList() {
+        chats.setSelectedIndex(0);
     }
 
     final static class ResolvableHelper implements Serializable {

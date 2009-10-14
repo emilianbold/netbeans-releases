@@ -93,7 +93,8 @@ void visit_file_data(int (*visitor) (file_data*, void*), void *data) {
     visit_file_data_impl(root, visitor, data);
 }
 
-file_data *find_file_data(const char* filename, int create) {
+// temporary FIXUP: should be static
+file_data *find_or_insert_file_data(const char* filename, int create) {
     file_data *result = NULL;
     pthread_mutex_lock(&file_data_tree_mutex);
     if (root) {
@@ -119,9 +120,14 @@ file_data *find_file_data(const char* filename, int create) {
                         break;
                     } else {
                         result = NULL;
+                        break;
                     }
                 } else {
-                    curr->left = result = new_file_data(filename, file_state_pending);
+                    if (create) {
+                        curr->left = result = new_file_data(filename, file_state_pending);
+                    } else {
+                        result = NULL;
+                    }
                     break;
                 }
             } else { // cmp > 0
@@ -131,22 +137,44 @@ file_data *find_file_data(const char* filename, int create) {
                         result = curr->right;
                         break;
                     } else if(cmp < 0) {
-                        result = new_file_data(filename, file_state_pending);
-                        result->right = curr->right;
-                        curr->right = result;
+                        if (create) {
+                            result = new_file_data(filename, file_state_pending);
+                            result->right = curr->right;
+                            curr->right = result;
+                        } else {
+                            result = NULL;
+                        }
                         break;
                     } else { // cmp > 0
                         curr = curr->right;
                     }
                 } else {
-                    curr->right = result = new_file_data(filename, file_state_pending);
+                    if (create) {
+                        curr->right = result = new_file_data(filename, file_state_pending);
+                    } else {
+                        result = NULL;
+                    }
                     break;
                 }
             }
         }
     } else {
-        result = root = new_file_data(filename, file_state_pending);
+        if (create) {
+            result = root = new_file_data(filename, file_state_pending);
+        } else {
+            return NULL;
+        }
     }
     pthread_mutex_unlock(&file_data_tree_mutex);
     return result;
 }
+
+file_data *insert_file_data(const char* filename) {
+    return find_or_insert_file_data(filename, 1);
+}
+
+file_data *find_file_data(const char* filename) {
+    return find_or_insert_file_data(filename, 0);
+}
+
+

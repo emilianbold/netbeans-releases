@@ -44,13 +44,20 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerAction;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Convenient base class for indicator components.
@@ -139,7 +146,26 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             graphPanel.add(hAxis, c);
         }
 
+        graphPanel.addMouseListener(new PopupMenuListener());
+
         return graphPanel;
+    }
+
+    private static class PopupMenuListener extends MouseAdapter implements MouseListener {
+        private JPopupMenu pm;
+
+        public PopupMenuListener() {
+            SystemAction action = SystemAction.get(ToolsCustomizerAction.class);
+            pm = new JPopupMenu();
+            pm.add(new JMenuItem(action));
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                pm.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
     }
 
     protected final G getGraph() {
