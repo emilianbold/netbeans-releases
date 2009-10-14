@@ -356,6 +356,55 @@ public class Actions extends Object {
         return AlwaysEnabledAction.create(map);
     }
 
+    /** Creates action which represents a boolean value in {@link java.util.prefs.Preferences}.
+     * When added to a menu the action is presented as a JCheckBox.
+     * This method can also be used from
+     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">XML Layer</a>
+     * directly by following XML definition:
+     * <pre>
+     * &lt;file name="your-pkg-action-id.instance"&gt;
+     *   &lt;attr name="preferencesNode" methodvalue="method-returning-Preferences-instance" or
+     *                                   methodvalue="method-returning-Lookup-that-contains-Preferences-instance" or
+     *                                   stringvalue="see below for the preferencesNode parameter description"
+     * /&gt;
+     *   &lt;attr name="preferencesKey" stringvalue="preferences-key-name"/&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
+     * &lt;/file&gt;
+     * </pre>
+     *
+     * @param preferencesNode It's one of:
+     * <ul>
+     *   <li>Absolute path to preferences node under <code>NbPreferences.root()</code>.</li>
+     *   <li>"system:" followed by absolute path to preferences node under <code>Preferences.systemRoot()</code>.</li>
+     *   <li>"user:" followed by absolute path to preferences node under <code>Preferences.userRoot()</code>.</li>
+     * </ul>
+     * @param preferencesKey name of the preferences key.
+     * @param displayName the name of the action
+     * @param iconBase the location to the actions icon
+     * @param noIconInMenu true if this icon shall not have an item in menu
+     * @since 7.17
+     */
+    public static Action checkbox(
+        String preferencesNode, String preferencesKey,
+        String displayName, String iconBase, boolean noIconInMenu
+    ) {
+        HashMap<String,Object> map = new HashMap<String,Object>();
+        map.put("preferencesNode", preferencesNode); // NOI18N
+        map.put("preferencesKey", preferencesKey); // NOI18N
+        map.put("displayName", displayName); // NOI18N
+        map.put("iconBase", iconBase); // NOI18N
+        map.put("noIconInMenu", noIconInMenu); // NOI18N
+        return checkbox(map);
+    }
+    // for use from layers
+    static Action checkbox(Map map) {
+        return AlwaysEnabledAction.create(map);
+    }
+
     /** Creates new "callback" action. Such action has an assigned key
      * which is used to find proper delegate in {@link ActionMap} of currently
      * active component.
