@@ -202,7 +202,7 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         public Component getCustomEditor() {
             env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             env.addVetoableChangeListener(this);
-            toolsManagerPanel = new ToolsManagerPanel();
+            toolsManagerPanel = new ToolsManagerPanel(getAsText());
             return toolsManagerPanel;
         }
 

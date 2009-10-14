@@ -78,23 +78,42 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
     /** Creates new form ToolsManagerPanel */
     public ToolsManagerPanel() {
+//        initComponents();
+//        DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
+//        DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
+//        allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
+//        initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers(), null);
+//        setPreferredSize(new Dimension(700, 400));
+        this(null);
+    }
+
+    public ToolsManagerPanel(String preferredConfigurationName) {
         initComponents();
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
         DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
         allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
-        initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers());
+        initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers(), preferredConfigurationName);
         setPreferredSize(new Dimension(700, 400));
     }
 
-    private void initDialog(List<DLightConfigurationUIWrapper> list) {
+    private void initDialog(List<DLightConfigurationUIWrapper> list, String preferredConfigurationName) {
         // profile configuration combobox
         profileConfigurationComboBox.removeAllItems();
         dLightConfigurations = list;
+        DLightConfigurationUIWrapper preferredConfiguration = null;
         for (DLightConfigurationUIWrapper dlightConfigurationWrapper : dLightConfigurations) {
             profileConfigurationComboBox.addItem(dlightConfigurationWrapper);
+            if (preferredConfiguration != null && dlightConfigurationWrapper.getDisplayName().equals(preferredConfigurationName)) {
+                preferredConfiguration = dlightConfigurationWrapper;
+            }
         }
         profileConfigurationComboBox.addItem(manageConfigurations);
-        profileConfigurationComboBox.setSelectedIndex(0);
+        if (preferredConfiguration != null) {
+            profileConfigurationComboBox.setSelectedItem(preferredConfiguration);
+        }
+        else {
+            profileConfigurationComboBox.setSelectedIndex(0);
+        }
     }
 
     private void initConfigurationPanel(DLightConfigurationUIWrapper dlightConfigurationUIWrapper) {
@@ -348,7 +367,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                     List<DLightConfigurationUIWrapper> oldList = DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers();
                     oldList.clear();
                     oldList.addAll(newList);
-                    initDialog(newList);
+                    initDialog(newList, null);
                 } else {
                     profileConfigurationComboBox.setSelectedIndex(lastSelectedIndex);
                 }
