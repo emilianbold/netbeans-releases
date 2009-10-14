@@ -170,7 +170,7 @@ is the proper place.
       <version major="1" minor="19"/>
       <date day="12" month="8" year="2009"/>
       <author login="tzezula"/>
-      <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
       <description>
           <p>
               Modified <code>CustomIndexerFactory</code>, <code>EmbeddingIndexerFactory</code> and <code>BinaryIndexerFactory</code>
@@ -192,7 +192,13 @@ is the proper place.
               to have methods <code>filesDeleted(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>
               and <code>filesDirty(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>.
           </p>
+          <p>
+              These two methods supersede thier older version, which accepted <code>Collection</code> rather
+              than <code>Iterable</code>. The new methods allow the infrastructure to optimize files crawling
+              and improve the overall performance of scanning.
+          </p>
       </description>
+      <issue number="166340"/>
   </change>
 
   <change id="adding-context-isSourceForBinaryRootIndexing">

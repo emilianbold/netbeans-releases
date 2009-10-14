@@ -639,6 +639,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             prepareTask = RP.create(new Runnable() {
                                                    private boolean runningInAtomicLock;
                                                    private boolean fireEvent;
+                                                   private StyledDocument d;
 
                                                    public void run() {
                                                        doRun();
@@ -653,7 +654,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                            runningInAtomicLock = true;
                                                            NbDocument.runAtomic(docToLoad[0], this);
                                                            if (fireEvent) {
-                                                               fireDocumentChange(getDoc(), false);
+                                                               fireDocumentChange(d, false);
+                                                               d = null;
                                                            }
                                                            return;
                                                        }
@@ -683,6 +685,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
                                                                getDoc().addUndoableEditListener(getUndoRedo());
+                                                               d = getDoc();
                                                            } catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
                                                                prepareTask = null;

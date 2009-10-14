@@ -104,8 +104,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
 
-    private JavaMembersModel javaMembersModel;
-    private JavaMembersModel.FilterModel javaMembersFilterModel;
+    private volatile JavaMembersModel javaMembersModel;
+    private volatile JavaMembersModel.FilterModel javaMembersFilterModel;
 
     /**
      *
@@ -617,8 +617,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         if (structural) {
             enterBusy();
         }
-        
-        javaMembersFilterModel.setPattern(filterTextField.getText());
+
+        final String pattern  = filterTextField.getText();
         
         JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
         JavaMembersAndHierarchyOptions.setShowInherited(showInheritedToggleButton.isSelected());
@@ -637,6 +637,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         RP.post(
             new Runnable() {
             public void run() {
+                    javaMembersFilterModel.setPattern(pattern);
                     try {    
                         if (structural) {
                             javaMembersModel.update();
