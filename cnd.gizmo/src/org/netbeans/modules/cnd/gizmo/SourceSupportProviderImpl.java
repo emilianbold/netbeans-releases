@@ -238,7 +238,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                             pane = panes != null && panes.length > 0? panes[0] : null ;
                         }
                         if (pane != null){
-                            jumpToLine(NbDocument.findRecentEditorPane(ec), lineInfo, !opened);
+                            jumpToLine(pane, lineInfo, !opened);
                         }
 //                        JEditorPane[] panes = ec.getOpenedPanes();
 //                        if (panes == null || panes.length <= 0) {
