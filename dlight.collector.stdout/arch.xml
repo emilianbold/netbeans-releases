@@ -30,7 +30,7 @@
     <answer id="arch-overall">
         <p>
    The module provides implementation of <tt>DataCollectorConfiguration</tt>
-   (<tt>CLIODCConfiguration</tt>) that can be used by D-Light clients to create
+   (<tt>CLIODCConfiguration</tt>) that can be used by DLight clients to create
    DataCollectors based on 'command-line utilities' that put information to the
    standard output stream. See use case section for more details.
    This module provides <api name="StdoutCollectorAPI" group="java" type="export"
@@ -147,10 +147,10 @@
                 for a command "<b>/bin/prstat</b>" that should be started with
                 parameters "<b>-mv -p <i>@PID</i> -c 1</b>", where
                 <b><i>@PID</i></b> has a special meaning and will be substituted
-                with the PID of process that is tracked by D-Light. Also a
+                with the PID of process that is tracked by DLight. Also a
                 parser <b>PrstatOutputParser</b> is created to deal with prstat
                 output.
-                For more documentation about D-Light Toolkit Design refer to
+                For more documentation about DLight Toolkit Design refer to
                 <a href="http://wiki.netbeans.org/DLightToolkitDesign">http://wiki.netbeans.org/DLightToolkitDesign</a>.
             </usecase>
         </p>
@@ -175,7 +175,7 @@
             information in a simple, parseable format into the Standard Output
             Stream. The example of such tools is prstat(1M), snoop(1M), etc..
             This module provides API that can be used to "integrate"
-            such tools to the D-Light Infrastructure. 
+            such tools to the DLight Infrastructure. 
         </p>
     </answer>
 
@@ -801,7 +801,7 @@ Yes.
     <answer id="lookup-register">
         <p>
    The module provides implementations of <tt>DataCollectorFactory</tt> and
-   <tt>IndicatorDataProviderFactory</tt> (from D-Light Toolkit) that it
+   <tt>IndicatorDataProviderFactory</tt> (from DLight Toolkit) that it
    registers in the Global Lookup.
         </p>
     </answer>

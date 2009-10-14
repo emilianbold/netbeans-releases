@@ -54,6 +54,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
@@ -98,6 +99,11 @@ class DocRenderer {
 
         if (element instanceof IndexedElement) {
             return documentIndexedElement(info, (IndexedElement) element);
+        }
+
+        if (element instanceof IndexedClassMember) {
+            IndexedClassMember indexedClassMember = (IndexedClassMember) element;
+            return documentIndexedElement(info, indexedClassMember.getMember());
         }
 
         return null;

@@ -104,4 +104,15 @@ public class Utils {
         }
     }
 
+    /**
+     * Add escape characters for backslash and dollar sign characters in
+     * path field.
+     *
+     * @param path file path in string form.
+     * @return adjusted path with backslashes and dollar signs escaped with
+     *   backslash character.
+     */
+    public static final String escapePath(String path) {
+        return path.replace("\\", "\\\\").replace("$", "\\$"); // NOI18N
+    }
 }

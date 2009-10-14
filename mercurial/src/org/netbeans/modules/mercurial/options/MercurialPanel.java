@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -292,7 +292,7 @@ final class MercurialPanel extends javax.swing.JPanel {
             }
         }
         HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
-	Mercurial.getInstance().checkVersion();
+	Mercurial.getInstance().asyncInit();
         HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
         HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
         HgModuleConfig.getDefault().setBackupOnRevertModifications(backupOnRevertModifications.isSelected());

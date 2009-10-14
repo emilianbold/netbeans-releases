@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -572,7 +572,7 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null) {
+            if (obj == null || !(obj instanceof ClientModuleItem)) {
                 return false;
             }
             return uri.equals(((ClientModuleItem)obj).uri);
@@ -584,6 +584,9 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
         }
 
         public int compareTo(Object obj) {
+            if (obj == null || !(obj instanceof ClientModuleItem)) {
+                return -1;
+            }
             return uri.compareTo(((ClientModuleItem)obj).uri);
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -503,24 +503,20 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             updatePackagesTask.cancel();
         }
         
-        updatePackagesTask = new RequestProcessor( "ComboUpdatePackages" ).post(
-            new Runnable() {
-            
-                private ComboBoxModel model;
-            
-                public void run() {
-                    if ( !SwingUtilities.isEventDispatchThread() ) {
-                        model = PackageView.createListView((SourceGroup) rootComboBox.getSelectedItem());                        
-                        SwingUtilities.invokeLater( this );
+        updatePackagesTask = new RequestProcessor( "ComboUpdatePackages" ).post(new Runnable() {                               
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run () {
+                        Object  item = rootComboBox.getSelectedItem();
+                        if (item instanceof SourceGroup) {
+                            ComboBoxModel model = PackageView.createListView((SourceGroup)item);
+                            model.setSelectedItem(packageComboBox.getEditor().getItem());
+                            packageComboBox.setModel( model );
+                        }
                     }
-                    else {
-                        model.setSelectedItem(packageComboBox.getEditor().getItem());
-                        packageComboBox.setModel( model );
-                    }
-                }
+                });
             }
-        );
-                
+        });                
     }
         
     private void updateText() {

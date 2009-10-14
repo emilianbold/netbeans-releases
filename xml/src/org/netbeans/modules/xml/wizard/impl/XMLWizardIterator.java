@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -564,26 +564,27 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         }
     }
     
-     private void modifyRootElementAttrs(StringBuffer xmlBuffer) {
-         Map<String, String> nsAttrs = model.getXMLContentAttributes().getNamespaceToPrefixMap();
-           
-         if (nsAttrs == null || nsAttrs.size() == 0) {
-             return;
-         }
-         int firstOccur = xmlBuffer.indexOf("xmlns");
-         int insertLoc = xmlBuffer.indexOf("xmlns", firstOccur + 1);
+    private void modifyRootElementAttrs(StringBuffer xmlBuffer) {
+        Map<String, String> nsAttrs = model.getXMLContentAttributes().getNamespaceToPrefixMap();
 
-         StringBuffer sb = new StringBuffer();
-         for (String ns : nsAttrs.keySet()) {
-             String xmlnsString = "xmlns:" + nsAttrs.get(ns) + "='" + ns + "'";
-             if (xmlBuffer.indexOf(xmlnsString) == -1) {
-                 xmlBuffer.insert(insertLoc, xmlnsString + "\n   ");
-             }
+        if (nsAttrs == null || nsAttrs.size() == 0) {
+         return;
+        }
+        int firstOccur = xmlBuffer.indexOf("xmlns");
+        int insertLoc = xmlBuffer.indexOf("xmlns", firstOccur + 1);
 
-         }
-            xmlBuffer.insert(insertLoc, sb.toString());            
-            
-     }
+        StringBuffer sb = new StringBuffer();
+        for (String ns : nsAttrs.keySet()) {
+            String nsPrefix = nsAttrs.get(ns);
+            if ((nsPrefix != null) && (nsPrefix.trim().length() > 0)) {
+                String xmlnsString = "xmlns:" + nsPrefix + "='" + ns + "'";
+                if (xmlBuffer.indexOf(xmlnsString) == -1) {
+                    xmlBuffer.insert(insertLoc, xmlnsString + "\n   ");
+                }
+            }
+        }
+        xmlBuffer.insert(insertLoc, sb.toString());
+    }
 
      
     private void writeXMLFile(StringBuffer writer) throws IOException {

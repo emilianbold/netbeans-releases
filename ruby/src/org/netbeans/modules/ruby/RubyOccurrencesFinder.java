@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -93,7 +93,6 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * Walk through the JRuby AST and find occurrences of symbols related to the symbol under the cursor
@@ -247,7 +246,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                     }
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             } finally {
                 doc.readUnlock();
             }
@@ -546,7 +545,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                         }
                     }
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    // do nothing - see #154991
                 }
                 highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
             }
@@ -591,7 +590,7 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
                     }
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
     }

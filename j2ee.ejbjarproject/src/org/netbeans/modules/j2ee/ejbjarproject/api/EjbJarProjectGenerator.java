@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
@@ -422,6 +423,12 @@ public class EjbJarProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
+        Profile j2eeProfile = data.getJavaEEProfile();
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
+            }
+        }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
     
@@ -603,6 +610,10 @@ public class EjbJarProjectGenerator {
         // use the default encoding
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(EjbJarProjectProperties.SOURCE_ENCODING, enc.name());
+        
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
+        }
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         

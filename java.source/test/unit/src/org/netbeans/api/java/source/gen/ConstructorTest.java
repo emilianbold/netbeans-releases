@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -81,7 +81,7 @@ public class ConstructorTest extends GeneratorTest {
 
     public void testAddConstructor() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ConstructorTest.java");
-        
+
         JavaSource src = getJavaSource(testFile);
         Task task = new Task<WorkingCopy>() {
 
@@ -94,21 +94,21 @@ public class ConstructorTest extends GeneratorTest {
                 for (Tree member : topLevel.getMembers()) {
                     // for the first inner class in top level
                     if (CLASS == member.getKind()) {
-                        
+
                         ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
-                        
+
                         List<VariableTree> arguments = new ArrayList<VariableTree>();
                         arguments.add(make.Variable(
                                 make.Modifiers(EnumSet.noneOf(Modifier.class)),
                                 "a",
                                 make.PrimitiveType(TypeKind.BOOLEAN), null)
                         );
-                        
+
                         MethodTree newConstructor = make.Constructor(
-                                mods, 
-                                Collections.<TypeParameterTree>emptyList(), 
-                                arguments, 
-                                Collections.<ExpressionTree>emptyList(), 
+                                mods,
+                                Collections.<TypeParameterTree>emptyList(),
+                                arguments,
+                                Collections.<ExpressionTree>emptyList(),
                                 make.Block(Collections.<StatementTree>emptyList(), false)
                         );
                         ClassTree newInner = make.addClassMember((ClassTree) member, newConstructor);
@@ -116,17 +116,17 @@ public class ConstructorTest extends GeneratorTest {
                     }
                 }
             }
-                
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertFiles("testAddConstructor.pass");
     }
-        
+
     public void testAddConstructor2() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ConstructorTest2.java");
-        
+
         JavaSource src = getJavaSource(testFile);
         Task task = new Task<WorkingCopy>() {
 
@@ -136,36 +136,36 @@ public class ConstructorTest extends GeneratorTest {
                 TreeMaker make = workingCopy.getTreeMaker();
                 // exactly one class in compilation unit
                 ClassTree topLevel = (ClassTree) cut.getTypeDecls().iterator().next();
-                
+
                 ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
                 List<VariableTree> arguments = new ArrayList<VariableTree>();
                 arguments.add(make.Variable(
                         make.Modifiers(EnumSet.noneOf(Modifier.class)),
-                        "a", 
+                        "a",
                         make.PrimitiveType(TypeKind.BOOLEAN), null)
                 );
                 MethodTree newConstructor = make.Constructor(
-                        mods, 
-                        Collections.<TypeParameterTree>emptyList(), 
-                        arguments, 
-                        Collections.<ExpressionTree>emptyList(), 
+                        mods,
+                        Collections.<TypeParameterTree>emptyList(),
+                        arguments,
+                        Collections.<ExpressionTree>emptyList(),
                         make.Block(Collections.<StatementTree>emptyList(), false)
                 );
 
                 ClassTree newClass = make.addClassMember(topLevel, newConstructor);
                 workingCopy.rewrite(topLevel, newClass);
             }
-                
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertFiles("testAddConstructor2.pass");
     }
-    
+
     public void testRemovingReturnType134403() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
@@ -173,7 +173,7 @@ public class ConstructorTest extends GeneratorTest {
             "    }\n" +
             "}\n"
             );
-        String golden = 
+        String golden =
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
@@ -186,13 +186,13 @@ public class ConstructorTest extends GeneratorTest {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                
+
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 MethodTree nueMethod = make.Method(method.getModifiers(), method.getName(), null, method.getTypeParameters(), method.getParameters(), method.getThrows(), method.getBody(), (ExpressionTree) method.getDefaultValue());
                 workingCopy.rewrite(method, nueMethod);
             }
-            
+
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -200,6 +200,86 @@ public class ConstructorTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
+    public void testConstructorWithSuper153561a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test extends java.util.ArrayList {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test extends java.util.ArrayList {\n\n" +
+            "    public Test(int a) {\n" +
+            "        super(a);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mt = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                VariableTree param = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "a", make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.INT)), null);
+                MethodTree nueConstr = make.Constructor(mt, Collections.<TypeParameterTree>emptyList(), Collections.singletonList(param), Collections.<ExpressionTree>emptyList(), "{ super(a); }");
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, nueConstr));
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testConstructorWithSuper153561b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test extends java.util.ArrayList {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test extends java.util.ArrayList {\n" +
+            "    public Test() {\n" +
+            "    }\n\n" +
+            "    public Test(int a) {\n" +
+            "        super(a);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mt = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                VariableTree param = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "a", make.Type(workingCopy.getTypes().getPrimitiveType(TypeKind.INT)), null);
+                MethodTree origConstr = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = make.createMethodBody(origConstr, "{ super(a); }");
+                MethodTree nueConstr = make.Constructor(mt, Collections.<TypeParameterTree>emptyList(), Collections.singletonList(param), Collections.<ExpressionTree>emptyList(), body);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, nueConstr));
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     /**
      * @param args the command line arguments

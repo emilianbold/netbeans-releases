@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,6 +69,7 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
@@ -296,10 +297,11 @@ public class StartTask extends BasicTask<OperationState> {
         
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
-        Logger.getLogger("glassfish").log(Level.FINE, "V3 Failed to start, killing process: " + serverProcess); // NOI18N
+        Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: " + serverProcess+" after "+  // NOI18N
+                (System.currentTimeMillis() - start));
         serverProcess.destroy();
         return fireOperationStateChanged(OperationState.FAILED,
-                "MSG_START_SERVER_FAILED", instanceName); // NOI18N
+                "MSG_START_SERVER_FAILED2", instanceName); // NOI18N
     }
 
     private String[] createEnvironment() {
@@ -602,9 +604,9 @@ public class StartTask extends BasicTask<OperationState> {
             Map<String, String> argMap, Map<String, String> propMap) {
         Map<String, String> varMap = new HashMap<String, String>();
 
-        varMap.put("com.sun.aas.installRoot", Util.escapePath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
-        varMap.put("com.sun.aas.instanceRoot", Util.escapePath(domainRoot.getAbsolutePath())); // NOI18N
-        varMap.put("com.sun.aas.javaRoot", Util.escapePath(jdkHome.getPath())); // NOI18N
+        varMap.put("com.sun.aas.installRoot", Utils.escapePath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
+        varMap.put("com.sun.aas.instanceRoot", Utils.escapePath(domainRoot.getAbsolutePath())); // NOI18N
+        varMap.put("com.sun.aas.javaRoot", Utils.escapePath(jdkHome.getPath())); // NOI18N
         varMap.put("com.sun.aas.derbyRoot", getJavaDBLocation()); // NOI18N
 
         File domainXml = new File(domainRoot, "config/domain.xml"); // NOI18N
@@ -624,10 +626,10 @@ public class StartTask extends BasicTask<OperationState> {
         String javadb = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"; // NOI18N
         if (new File(javadb).exists()) {
             // V3 Prelude includes javadb as it can run on JDK 5
-            javadb = Util.escapePath(javadb);
+            javadb = Utils.escapePath(javadb);
         } else {
             // V3 uses javadb from JDK 6
-            javadb = Util.escapePath(jdkHome.getPath() + File.separatorChar + "javadb"); // NOI18N
+            javadb = Utils.escapePath(jdkHome.getPath() + File.separatorChar + "javadb"); // NOI18N
         }
         return javadb;
     }

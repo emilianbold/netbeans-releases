@@ -43,11 +43,11 @@ package org.netbeans.modules.javacard.project.ui;
 import com.sun.javacard.AID;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.javacard.Utils;
 import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -60,6 +60,7 @@ public class PackageAIDPanel extends javax.swing.JPanel implements ChangeListene
     public PackageAIDPanel() {
         initComponents();
         aIDPanel1.addChangeListener(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ClassicAppletEditAppletAID"); //NOI18N
     }
 
     public void read (WizardDescriptor wiz) {

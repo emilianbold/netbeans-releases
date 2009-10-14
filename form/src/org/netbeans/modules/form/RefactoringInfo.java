@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,8 +44,11 @@ package org.netbeans.modules.form;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -129,28 +132,52 @@ public class RefactoringInfo {
         } else if (refactoring instanceof MoveRefactoring
                    && file != null && containsOriginalFile(file)) {
             // return full class name of the java file on its new location
-            FileObject targetFolder = getTargetFolder((MoveRefactoring)refactoring);
-            if (targetFolder != null) {
-                String pkg = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE)
-                    .getResourceName(targetFolder, '.', false);
-                return (pkg != null && pkg.length() > 0)
-                       ? pkg + "." + file.getName() // NOI18N
-                       : file.getName();
-            }
+            return getTargetName((MoveRefactoring)refactoring, file.getName());
         }
         return null;
     }
 
-    FileObject getTargetFolder(MoveRefactoring refactoring) {
+    private String getTargetName(MoveRefactoring refactoring, String fileName) {
         URL targetURL = refactoring.getTarget().lookup(URL.class);
-        FileObject targetFolder = null;
+        File f = null;
         try {
-            File f = FileUtil.normalizeFile(new File(targetURL.toURI()));
-            targetFolder = FileUtil.toFileObject(f);
+            if (targetURL != null) {
+                f = FileUtil.normalizeFile(new File(targetURL.toURI()));
+            }
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return targetFolder != null && targetFolder.isFolder() ? targetFolder : null;
+        LinkedList<String> nonExisting = null; // the path to target folder may not exist yet
+        while (f != null && !f.exists()) {
+            if (nonExisting == null) {
+                nonExisting = new LinkedList<String>();
+            }
+            nonExisting.addFirst(f.getName());
+            f = f.getParentFile();
+        }
+        FileObject targetFolder = (f != null) ? FileUtil.toFileObject(f) : null;
+        if (targetFolder != null && targetFolder.isFolder()) {
+            ClassPath cp = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
+            if (cp != null) {
+                String pkg = cp.getResourceName(targetFolder, '.', false);
+                StringBuilder buf = new StringBuilder();
+                if (pkg != null) {
+                    buf.append(pkg);
+                    if (buf.length() > 0) {
+                        buf.append('.');
+                    }
+                }
+                if (nonExisting != null && !nonExisting.isEmpty()) {
+                    for (String s : nonExisting) {
+                        buf.append(s);
+                        buf.append('.');
+                    }
+                }
+                buf.append(fileName);
+                return buf.toString();
+            }
+        }
+        return null;
     }
 
     public FormRefactoringUpdate getUpdateForFile(FileObject fo) {

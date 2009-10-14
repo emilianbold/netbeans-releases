@@ -43,9 +43,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 
 /**
@@ -67,16 +69,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalSimple() {
-        String name = "test";
-        String type = "type";
-        String value = "value";
-        ((MockGdbDebugger)debugger).addVar(name, type, value);
-        
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "type", "value", "ptype");
     }
 
     @Test
@@ -95,16 +88,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalInt() {
-        String name = "test";
-        String type = "int";
-        String value = "5";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "int", "5", "int");
 
         // Should have no fields
         assertEquals(0, var.getFieldsCount());
@@ -112,16 +96,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalString() {
-        String name = "test";
-        String type = "char *";
-        String value = "\"abcd\"";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "char *", "\"abcd\"", "char *");
 
         // Should have no fields
         assertEquals(0, var.getFieldsCount());
@@ -129,34 +104,40 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalStringSTD() {
-        String name = "test";
-        String type = "string";
-        String value = VariableInfo.getStDStringValue("abc");
-        ((MockGdbDebugger)debugger).addVar(name, type, value, VariableInfo.STD_STRING_PTYPE);
+        AbstractVariable var = createLocalVariable(
+                "test",
+                "string",
+                VariableInfo.getStDStringValue("abc"),
+                VariableInfo.STD_STRING_PTYPE);
 
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
+        // Should have 2 fields
+        assertTrue(var.getFieldsCount() > 0);
+        assertEquals(2, var.getFields().length);
+    }
 
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+    @Test
+    public void testLocalStringSTDMac() {
+        ((MockGdbDebugger)debugger).setPlatform(PlatformTypes.PLATFORM_MACOSX);
 
-        // Should have no fields
+        String value = VariableInfo.getStDStringValueMac("abc");
+
+        AbstractVariable var = createLocalVariable(
+                "test",
+                "string &",
+                value,
+                VariableInfo.STD_STRING_PTYPE_MAC,
+                true);
+
+        assertEquals("Incorrect value,", GdbUtils.mackHack(value), var.getValue());
+
+        // Should have 2 fields
         assertTrue(var.getFieldsCount() > 0);
         assertEquals(2, var.getFields().length);
     }
 
     @Test
     public void testLocalIntArray() {
-        String name = "test";
-        String type = "int[2]";
-        String value = "{5, 4}";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "int[2]", "{5, 4}", "int[2]");
 
         // Should have 2 fields
         assertEquals(2, var.getFields().length);
@@ -168,16 +149,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalIntRepeatingArray() {
-        String name = "test";
-        String type = "int[3]";
-        String value = "{5, 4 <repeats 2 times>}";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "int[3]", "{5, 4 <repeats 2 times>}", "int[3]");
 
         // Should have 3 fields
         assertEquals(3, var.getFields().length);
@@ -191,16 +163,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalCharArray() {
-        String name = "test";
-        String type = "char[2]";
-        String value = "\"a\", \"b\"";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "char[2]", "\"a\", \"b\"", "char[2]");
 
         // Should have 2 fields
         assertEquals(2, var.getFields().length);
@@ -212,15 +175,8 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalCharRepeatingArray() {
-        String name = "test";
-        String type = "char[3]";
-        String value = "\\\"a\\\", 'b' <repeats 2 times>";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
+        AbstractVariable var = createLocalVariable("test", "char[3]", "\\\"a\\\", 'b' <repeats 2 times>", "char[3]", true);
 
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
         // FIXME: Value changes in reality - not good
         //assertEquals("Incorrect value,", value, var.getValue());
 
@@ -236,16 +192,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalIntArray2() {
-        String name = "test";
-        String type = "int[2][3]";
-        String value = "{{5, 4, 3},{2, 1, 0}}";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "int[2][3]", "{{5, 4, 3},{2, 1, 0}}", "int[2][3]");
 
         // Should have 2 fields
         assertEquals(2, var.getFields().length);
@@ -257,16 +204,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalCharArray2() {
-        String name = "test";
-        String type = "char[2][3]";
-        String value = "{\"abc\", \"xyz\"}";
-        ((MockGdbDebugger)debugger).addVar(name, type, value, type);
-
-        AbstractVariable var = new GdbLocalVariable(debugger, name);
-
-        assertEquals("Incorrect name,", name, var.getName());
-        assertEquals("Incorrect type,", type, var.getType());
-        assertEquals("Incorrect value,", value, var.getValue());
+        AbstractVariable var = createLocalVariable("test", "char[2][3]", "{\"abc\", \"xyz\"}", "char[2][3]");
 
         // Should have 2 fields
         assertEquals(2, var.getFields().length);
@@ -276,14 +214,54 @@ public class VariablesTestCase extends GdbTestCase {
         assertEquals("\"xyz\"", var.getFields()[1].getValue());
     }
 
+    @Test
+    public void testUnnamedUnion() { // IZ 131429
+        AbstractVariable var = createLocalVariable(
+                "test",
+                "A",
+                "{{a = 12, b = 23}}",
+                "class A {\\n  public:\\n    union {\\n        int a;\\n        int b;\\n    };\\n}\\n");
+
+        // Should have 1 field
+        assertEquals(1, var.getFields().length);
+        assertEquals("union", var.getFields()[0].getType());
+        assertEquals("{a = 12, b = 23}", var.getFields()[0].getValue());
+    }
+
+    private AbstractVariable createLocalVariable(String name, String type, String value, String ptype) {
+        return createLocalVariable(name, type, value, ptype, false);
+    }
+
+    private AbstractVariable createLocalVariable(String name, String type, String value, String ptype, boolean noValueCheck) {
+        ((MockGdbDebugger)debugger).addVar(name, type, value, ptype);
+        AbstractVariable res = new GdbLocalVariable(debugger, new GdbVariable(name, value));
+        assertEquals("Incorrect name,", name, res.getName());
+        assertEquals("Incorrect type,", type, res.getType());
+        if (!noValueCheck) {
+            assertEquals("Incorrect value,", value, res.getValue());
+        }
+        return res;
+    }
+
     private static class MockGdbDebugger extends GdbDebugger {
         private final Map<String, String> values = new HashMap<String, String>();
         private final Map<String, String> types = new HashMap<String, String>();
         private final Map<String, String> ptypes = new HashMap<String, String>();
 
+        private int platform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+
         public MockGdbDebugger(ContextProvider lookupProvider) {
             super(lookupProvider);
             state = State.STOPPED;
+        }
+
+        @Override
+        public int getPlatform() {
+            return platform;
+        }
+
+        public void setPlatform(int platform) {
+            this.platform = platform;
         }
         
         private void addVar(String name, String type, String value) {

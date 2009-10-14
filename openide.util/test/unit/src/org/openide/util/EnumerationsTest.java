@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,19 +41,17 @@
 
 package org.openide.util;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /** This is the base test for new and old enumerations. It contains
  * factory methods for various kinds of enumerations and set of tests
@@ -72,54 +70,50 @@ public class EnumerationsTest extends NbTestCase {
     // Factory methods
     //
     
-    protected Enumeration singleton(Object obj) {
+    protected <T> Enumeration<T> singleton(T obj) {
         return Enumerations.singleton(obj);
     }
-    protected Enumeration concat(Enumeration en1, Enumeration en2) {
+    protected <T> Enumeration<T> concat(Enumeration<T> en1, Enumeration<T> en2) {
         return Enumerations.concat(en1, en2);
     }
-    protected Enumeration concat(Enumeration enumOfEnums) {
+    protected <T> Enumeration<T> concat(Enumeration<Enumeration<T>> enumOfEnums) {
         return Enumerations.concat(enumOfEnums);
     }
-    protected Enumeration removeDuplicates(Enumeration en) {
+    protected <T> Enumeration<T> removeDuplicates(Enumeration<T> en) {
         return Enumerations.removeDuplicates(en);
     }
-    protected Enumeration empty() {
+    protected <T> Enumeration<T> empty() {
         return Enumerations.empty();
     }
-    protected Enumeration array(Object[] arr) {
+    protected <T> Enumeration<T> array(T[] arr) {
         return Enumerations.array(arr);
     }
-    protected Enumeration convert(Enumeration en, final Map map) {
-        class P implements Enumerations.Processor {
-            public Object process(Object obj, Collection nothing) {
+    protected <T,R> Enumeration<R> convert(Enumeration<T> en, final Map<T,R> map) {
+        class P implements Enumerations.Processor<T,R> {
+            public R process(T obj, Collection<T> nothing) {
                 return map.get(obj);
             }
         }
-        
-        
         return Enumerations.convert(en, new P());
     }
-    protected Enumeration removeNulls(Enumeration en) {
+    protected <T> Enumeration<T> removeNulls(Enumeration<T> en) {
         return Enumerations.removeNulls(en);
     }
-    protected Enumeration filter(Enumeration en, final Set filter) {
-        class P implements Enumerations.Processor {
-            public Object process(Object obj, Collection nothing) {
+    protected <T> Enumeration<T> filter(Enumeration<T> en, final Set<T> filter) {
+        class P implements Enumerations.Processor<T,T> {
+            public T process(T obj, Collection<T> nothing) {
                 return filter.contains(obj) ? obj : null;
             }
         }
-        
         return Enumerations.filter(en, new P());
     }
     
-    protected Enumeration filter(Enumeration en, final QueueProcess filter) {
-        class P implements Enumerations.Processor {
-            public Object process(Object obj, Collection nothing) {
+    protected <T,R> Enumeration<R> filter(Enumeration<T> en, final QueueProcess<T,R> filter) {
+        class P implements Enumerations.Processor<T,R> {
+            public R process(T obj, Collection<T> nothing) {
                 return filter.process(obj, nothing);
             }
         }
-        
         return Enumerations.filter(en, new P());
     }
     
@@ -127,9 +121,9 @@ public class EnumerationsTest extends NbTestCase {
      * @param filter the set.contains (...) is called before each object is produced
      * @return Enumeration
      */
-    protected Enumeration queue(Collection initContent, final QueueProcess process) {
-        class C implements Enumerations.Processor {
-            public Object process(Object object, Collection toAdd) {
+    protected <T,R> Enumeration<R> queue(Collection<T> initContent, final QueueProcess<T,R> process) {
+        class C implements Enumerations.Processor<T,R> {
+            public R process(T object, Collection<T> toAdd) {
                 return process.process(object, toAdd);
             }
         }
@@ -141,8 +135,8 @@ public class EnumerationsTest extends NbTestCase {
     
     /** Processor interface.
      */
-    public static interface QueueProcess {
-        public Object process(Object object, Collection toAdd);
+    public static interface QueueProcess<T,R> {
+        public R process(T object, Collection<T> toAdd);
     }
     
     //
@@ -174,10 +168,10 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     public void testConcatTwoAndArray() {
-        Object[] one = { new Integer(1), new Integer(2), new Integer(3) };
+        Object[] one = { 1, 2, 3 };
         Object[] two = { "1", "2", "3" };
         
-        ArrayList list = new ArrayList(Arrays.asList(one));
+        List<Object> list = new ArrayList<Object>(Arrays.asList(one));
         list.addAll(Arrays.asList(two));
         
         assertEnums(
@@ -187,15 +181,16 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     public void testConcatTwoAndArrayAndTakeOnlyStrings() {
-        Object[] one = { new Integer(1), new Integer(2), new Integer(3) };
+        Object[] one = { 1, 2, 3 };
         Object[] two = { "1", "2", "3" };
-        Object[] three = { new Long(1) };
+        Object[] three = { 1L };
         Object[] four = { "Kuk" };
         
-        ArrayList list = new ArrayList(Arrays.asList(two));
+        List<Object> list = new ArrayList<Object>(Arrays.asList(two));
         list.addAll(Arrays.asList(four));
         
-        Enumeration[] alls = {
+        @SuppressWarnings("unchecked")
+        Enumeration<Object>[] alls = (Enumeration<Object>[]) new Enumeration<?>[] {
             array(one), array(two), array(three), array(four)
         };
         
@@ -206,18 +201,19 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     public void testRemoveDuplicates() {
-        Object[] one = { new Integer(1), new Integer(2), new Integer(3) };
+        Object[] one = { 1, 2, 3 };
         Object[] two = { "1", "2", "3" };
-        Object[] three = { new Integer(1) };
+        Object[] three = { 1 };
         Object[] four = { "2", "3", "4" };
         
-        Enumeration[] alls = {
+        @SuppressWarnings("unchecked")
+        Enumeration<Object>[] alls = (Enumeration<Object>[]) new Enumeration<?>[] {
             array(one), array(two), array(three), array(four)
         };
         
         assertEnums(
                 removeDuplicates(concat(array(alls))),
-                array(new Object[] { new Integer(1), new Integer(2), new Integer(3), "1", "2", "3", "4" })
+                array(new Object[] { 1, 2, 3, "1", "2", "3", "4" })
                 );
         
     }
@@ -225,7 +221,7 @@ public class EnumerationsTest extends NbTestCase {
     public void testRemoveDuplicatesAndGCWorks() {
         
         /*** Return { i1, "", "", "", i2 } */
-        class WeakEnum implements Enumeration {
+        class WeakEnum implements Enumeration<Object> {
             public Object i1 = new Integer(1);
             public Object i2 = new Integer(1);
             
@@ -249,15 +245,19 @@ public class EnumerationsTest extends NbTestCase {
         
         assertTrue("Has some elements", en.hasMoreElements());
         assertEquals("And the first one is get", weak.i1, en.nextElement());
-        
+
+        /*
         try {
-            WeakReference ref = new WeakReference(weak.i1);
+            Reference<?> ref = new WeakReference<Object>(weak.i1);
+         */
             weak.i1 = null;
+        /*
             assertGC("Try hard to GC the first integer", ref);
             // does not matter whether it GCs or not
         } catch (Throwable tw) {
             // not GCed, but does not matter
         }
+         */
         assertTrue("Next object will be string", en.hasMoreElements());
         assertEquals("is empty string", "", en.nextElement());
         
@@ -266,12 +266,11 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     public void testQueueEnum() {
-        class Pr implements QueueProcess {
-            public Object process(Object o, Collection c) {
-                Integer i = (Integer)o;
-                int plus = i.intValue() + 1;
+        class Pr implements QueueProcess<Integer,Integer> {
+            public Integer process(Integer i, Collection<Integer> c) {
+                int plus = i + 1;
                 if (plus < 10) {
-                    c.add(new Integer(plus));
+                    c.add(plus);
                 }
                 return i;
             }
@@ -279,7 +278,7 @@ public class EnumerationsTest extends NbTestCase {
         Pr p = new Pr();
         
         Enumeration en = queue(
-                Collections.nCopies(1, new Integer(0)), p
+                Collections.nCopies(1, 0), p
                 );
         
         for (int i = 0; i < 10; i++) {
@@ -291,17 +290,15 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     public void testFilteringAlsoDoesConvertions() throws Exception {
-        class Pr implements QueueProcess {
-            public Object process(Object o, Collection ignore) {
-                Integer i = (Integer)o;
-                int plus = i.intValue() + 1;
-                return new Integer(plus);
+        class Pr implements QueueProcess<Integer,Integer> {
+            public Integer process(Integer i, Collection<Integer> ignore) {
+                return i + 1;
             }
         }
         Pr p = new Pr();
         
-        Enumeration onetwo = array(new Object[] { new Integer(1), new Integer(2) });
-        Enumeration twothree = array(new Object[] { new Integer(2), new Integer(3) });
+        Enumeration<Integer> onetwo = array(new Integer[] { 1, 2 });
+        Enumeration<Integer> twothree = array(new Integer[] { 2, 3 });
         
         assertEnums(
                 filter(onetwo, p), twothree
@@ -309,11 +306,11 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     
-    private static void assertEnums(Enumeration e1, Enumeration e2) {
+    private static <T> void assertEnums(Enumeration<T> e1, Enumeration<T> e2) {
         int indx = 0;
         while (e1.hasMoreElements() && e2.hasMoreElements()) {
-            Object i1 = e1.nextElement();
-            Object i2 = e2.nextElement();
+            T i1 = e1.nextElement();
+            T i2 = e2.nextElement();
             assertEquals(indx++ + "th: ", i1, i2);
         }
         
@@ -340,7 +337,7 @@ public class EnumerationsTest extends NbTestCase {
     }
     
     public void testConvertIntegersToStringRemoveNulls() {
-        Object[] garbage = { new Integer(1), "kuk", "hle", new Integer(5) };
+        Object[] garbage = { 1, "kuk", "hle", 5 };
         
         assertEnums(
                 removeNulls(convert(array(garbage), new MapIntegers())),
@@ -351,8 +348,8 @@ public class EnumerationsTest extends NbTestCase {
     public void testQueueEnumerationCanReturnNulls() {
         Object[] nuls = { null, "NULL" };
         
-        class P implements QueueProcess {
-            public Object process(Object toRet, Collection toAdd) {
+        class P implements QueueProcess<Object,Object> {
+            public Object process(Object toRet, Collection<Object> toAdd) {
                 if (toRet == null) return null;
                 
                 if ("NULL".equals(toRet)) {
@@ -372,7 +369,7 @@ public class EnumerationsTest extends NbTestCase {
     
     /** Filters only strings.
      */
-    private static final class OnlyStrings implements Set {
+    private static final class OnlyStrings implements Set<Object> {
         public boolean add(Object o) {
             fail("Should not be every called");
             return false;
@@ -401,7 +398,7 @@ public class EnumerationsTest extends NbTestCase {
             return false;
         }
         
-        public Iterator iterator() {
+        public Iterator<Object> iterator() {
             fail("Should not be every called");
             return null;
         }
@@ -431,7 +428,7 @@ public class EnumerationsTest extends NbTestCase {
             return null;
         }
         
-        public Object[] toArray(Object[] a) {
+        public <T> T[] toArray(T[] a) {
             fail("Should not be every called");
             return null;
         }
@@ -439,7 +436,7 @@ public class EnumerationsTest extends NbTestCase {
     
     /** Filters only strings.
      */
-    private static final class MapIntegers implements Map {
+    private static final class MapIntegers implements Map<Object,Object> {
         public boolean containsKey(Object key) {
             fail("Should not be every called");
             return false;
@@ -450,7 +447,7 @@ public class EnumerationsTest extends NbTestCase {
             return false;
         }
         
-        public Set entrySet() {
+        public Set<Map.Entry<Object,Object>> entrySet() {
             fail("Should not be every called");
             return null;
         }
@@ -462,7 +459,7 @@ public class EnumerationsTest extends NbTestCase {
             return null;
         }
         
-        public Set keySet() {
+        public Set<Object> keySet() {
             fail("Should not be every called");
             return null;
         }
@@ -476,7 +473,7 @@ public class EnumerationsTest extends NbTestCase {
             fail("Should not be every called");
         }
         
-        public Collection values() {
+        public Collection<Object> values() {
             fail("Should not be every called");
             return null;
         }

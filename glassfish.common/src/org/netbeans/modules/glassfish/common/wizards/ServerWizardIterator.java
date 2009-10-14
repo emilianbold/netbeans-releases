@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -301,9 +301,13 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
 
     boolean isValidInstall(File installDir, File glassfishDir, WizardDescriptor wizard) {
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "ERR_PreludeInstallationInvalid",
-                            FileUtil.normalizeFile(installDir).getPath())); // getSanitizedPath(installDir)));
+        String errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_InstallationInvalid",   //NOI18N
+                FileUtil.normalizeFile(installDir).getPath());
+        if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.PRELUDE_DEFAULT_NAME)) {
+            errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_PreludeInstallationInvalid",  //NOI18N
+                FileUtil.normalizeFile(installDir).getPath());
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); // getSanitizedPath(installDir)));
         File jar = ServerUtilities.getJarName(glassfishDir.getAbsolutePath(), ServerUtilities.GFV3_JAR_MATCHER);
         if(jar == null || !jar.exists()) {
             return false;

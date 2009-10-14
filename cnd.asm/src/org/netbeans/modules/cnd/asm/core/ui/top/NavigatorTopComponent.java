@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,7 +69,7 @@ final class NavigatorTopComponent extends TopComponent implements LookupListener
     
     private static NavigatorTopComponent instance;
 
-    static final String ICON_PATH = "org/netbeans/modules/asm/core/resources/asm_icon.png"; // NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/cnd/asm/core/resources/asm_icon.png"; // NOI18N
     
     private static final String PREFERRED_ID = "NavigatorTopComponent"; // NOI18N
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,17 +69,17 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
 
     @Override
     public UpdateElement getInstalled () {
-        if (! initialized) {
-            initializeFeature ();
+        synchronized(this) {
+            initializeFeature ();                
         }
         return installedElement;
     }
     
     @Override
     public List<UpdateElement> getAvailableUpdates () {
-        if (! initialized) {
-            initializeFeature ();
-        }
+         synchronized(this) {
+            initializeFeature ();            
+         }
         
         if (updateElement == null) {
             return Collections.emptyList ();
@@ -98,6 +98,9 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     }
     
     private void initializeFeature () {
+        if(initialized) {
+            return;
+        }
         List<UpdateElement> featureElements = getUpdates ();
         
         installedElement = null;
@@ -184,12 +187,16 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
 
     @Override
     public void setAsUninstalled () {
-        initialized = false;
+        synchronized (this) {
+            initialized = false;
+        }
     }
     
     @Override
     public void updateInstalled (UpdateElement installed) {
-        initialized = false;
+        synchronized (this) {
+            initialized = false;
+        }
     }
     
     private static String getDisplayNames (Set<ModuleUpdateElementImpl> moduleImpls) {

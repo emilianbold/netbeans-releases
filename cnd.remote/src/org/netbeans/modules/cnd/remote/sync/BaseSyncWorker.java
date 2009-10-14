@@ -158,9 +158,9 @@ import org.openide.util.NbBundle;
                     out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
                             remoteDir, ServerList.get(executionEnvironment).toString()));
                 }
-                synchronizeImpl(remoteDir);
                 RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
                 mapper.addMapping(topLocalDir.getParentFile().getAbsolutePath(), remoteParent);
+                synchronizeImpl(remoteDir);
             }
             success = true;
         } catch (InterruptedException ex) {

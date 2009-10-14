@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,7 @@ import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -60,7 +61,13 @@ public class JavaTypeSearchProvider implements SearchProvider {
         worker.run();
         
         for (TypeDescriptor td : worker.getTypes()) {
-            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getFileObject().getPath(), null)) {
+            FileObject fo = td.getFileObject();
+            String displayHint = fo == null ? null : fo.getPath(); // #150654
+            String htmlDisplayName = td.getSimpleName() + td.getContextName();
+            if (!response.addResult(new GoToTypeCommand(td),
+                                    htmlDisplayName,
+                                    displayHint,
+                                    null)) {
                 break;
             }
         }

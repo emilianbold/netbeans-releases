@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -99,7 +99,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public boolean isCurrent () {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                synchronized (this) {
+                synchronized (UpdateProjectImpl.this) {
                     if (isCurrent == null) {
                         if ((cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) != null) ||
                         (cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true) != null)) {

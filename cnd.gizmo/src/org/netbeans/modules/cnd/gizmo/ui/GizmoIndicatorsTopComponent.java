@@ -46,6 +46,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -55,20 +56,15 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
-import org.netbeans.modules.dlight.extras.api.ViewportAware;
-import org.netbeans.modules.dlight.extras.api.support.ViewportManager;
+import org.netbeans.modules.dlight.extras.api.support.IndicatorsContainer;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorComponentEmptyContentProvider;
@@ -186,22 +182,20 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
             DLightManager.getDefault().closeSessionOnExit(this.session);//should close session which was opened here before
         }
         this.session = session;
-        List<Indicator<?>> indicators = null;
+        List<Indicator<?>> indicators = new ArrayList<Indicator<?>>();
         if (session != null) {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent.withSession", session.getDisplayName())); // NOI18N
-            indicators = session.getIndicators();
+            indicators.addAll(session.getIndicators());
         } else {
             setDisplayName(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             setToolTipText(getMessage("CTL_DLightIndicatorsTopComponent")); // NOI18N
             IndicatorComponentEmptyContentProvider emptyContent = Lookup.getDefault().lookup(IndicatorComponentEmptyContentProvider.class);
             if (emptyContent != null) {
-                indicators = emptyContent.getEmptyContent();
+                indicators.addAll(emptyContent.getEmptyContent());
             }
-
         }
         Collections.sort(indicators, new Comparator<Indicator<?>>() {
-
             public int compare(Indicator<?> o1, Indicator<?> o2) {
                 if (o1.getPosition() < o2.getPosition()) {
                     return -1;
@@ -216,69 +210,14 @@ final class GizmoIndicatorsTopComponent extends TopComponent implements Explorer
     }
 
     private void setContent(DLightSession session, List<Indicator<?>> indicators) {
-        ViewportManager viewportManager = null;
-        JComponent componentToAdd = null;
-        if (indicators != null) {
-            JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setBorder(BorderFactory.createEmptyBorder());
-            JSplitPane prevSplit = null;
-            indicatorPanels = new Vector<JComponent>(indicators.size());
-            indicatorPanels.setSize(indicators.size());
-            // We will resize only components without MaximumSize.
-            // Implemented for Parallel Adviser indicator.
-            int freeSizeComponentsNumber = 0;
-            for (int i = 0; i < indicators.size(); ++i) {
-                JComponent component = indicators.get(i).getComponent();
-                if(!component.isMaximumSizeSet()) {
-                    freeSizeComponentsNumber++;
-                }
-            }
-            for (int i = 0; i < indicators.size(); ++i) {
-                Indicator<?> indicator = indicators.get(i);
-                JComponent component = indicators.get(i).getComponent();
-                if (indicator instanceof ViewportAware) {
-                    if (viewportManager == null) {
-                        viewportManager = new ViewportManager((DataFilterManager) session);
-                    }
-                    viewportManager.addManagedComponent((ViewportAware)indicator);
-                }
-
-                indicatorPanels.set(i, component);
-                if (i + 1 < indicators.size()) {
-                    JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-                    splitPane.setBorder(BorderFactory.createEmptyBorder());
-                    splitPane.setContinuousLayout(true);
-                    splitPane.setDividerSize(5);
-                    if(!component.isMaximumSizeSet()) {
-                        splitPane.setResizeWeight(1.0 / (freeSizeComponentsNumber - i));
-                    }
-                    splitPane.setTopComponent(component);
-                    component = splitPane;
-                }
-                if (prevSplit == null) {
-                    scrollPane.setViewportView(component);
-                } else {
-                    prevSplit.setBottomComponent(component);
-                }
-                if (component instanceof JSplitPane) {
-                    prevSplit = (JSplitPane) component;
-                }
-            }
-//            add(scrollPane);
-            componentToAdd = scrollPane;
-        } else {
-            indicatorPanels = null;
-            JLabel emptyLabel = new JLabel(NbBundle.getMessage(GizmoIndicatorsTopComponent.class, "IndicatorsTopCompinent.EmptyContent")); // NOI18N
-            emptyLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-            componentToAdd = emptyLabel;
-//            add(emptyLabel);
-        }
         JPanel panel = getNextPanel();
         panel.removeAll();
         panel.setLayout(new BorderLayout());
-        panel.add(componentToAdd, BorderLayout.CENTER);
-        if (viewportManager != null) {
-            panel.add(viewportManager, BorderLayout.SOUTH);
+        panel.add(new IndicatorsContainer((DataFilterManager) session, indicators), BorderLayout.CENTER);
+        indicatorPanels = new Vector<JComponent>(indicators.size());
+        indicatorPanels.setSize(indicators.size());
+        for (int i = 0; i < indicators.size(); ++i) {
+            indicatorPanels.set(i, indicators.get(i).getComponent());
         }
         setActive();
         repaint();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,6 +49,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -426,6 +429,17 @@ class J2SEActionProvider implements ActionProvider {
 
                     execProperties.put(JavaRunner.PROP_PLATFORM, J2SEProjectUtil.getActivePlatform(evaluator.getProperty("platform.active")));
                     execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
+                    String runtimeEnc = evaluator.getProperty(J2SEProjectProperties.RUNTIME_ENCODING);
+                    if (runtimeEnc != null) {
+                        try {
+                            Charset runtimeChs = Charset.forName(runtimeEnc);
+                            execProperties.put("runtime.encoding", runtimeChs); //NOI18N
+                        } catch (IllegalCharsetNameException ichsn) {
+                            LOG.warning("Illegal charset name: " + runtimeEnc); //NOI18N
+                        } catch (UnsupportedCharsetException uchs) {
+                            LOG.warning("Unsupported charset : " + runtimeEnc); //NOI18N
+                        }
+                    }
 
                     if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
                         try {
@@ -699,6 +713,10 @@ class J2SEActionProvider implements ActionProvider {
                 isTest = false;
                 files = findSources(context);
                 rootz = project.getSourceRoots().getRoots();
+            }
+            if (files == null) {
+                //The file was not found under the source roots
+                return null;
             }
             FileObject file = files[0];
             String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);

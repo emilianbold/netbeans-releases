@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,8 +47,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -156,7 +156,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         if (defs.isEmpty()) {
             CsmObject owner = findOwner(parent);
             if(owner == null) {
-                owner = getClassByQualifiedName();
+                owner = CsmBaseUtilities.getFunctionClassByQualifiedName(this);
             }
             if (owner instanceof CsmClass) {
                 Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass) owner,
@@ -174,19 +174,6 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             def = findByName(defs.iterator(), getName());
         }
         return (CsmFunction) def;
-    }
-
-    private CsmClass getClassByQualifiedName() {
-        String className = getQualifiedName().toString().replaceAll("(.*)::.*", "$1"); // NOI18N
-        CsmObject obj = CsmClassifierResolver.getDefault().findClassifierUsedInFile(className, getContainingFile(), false);
-        if (CsmKindUtilities.isClassifier(obj)) {
-            CsmClassifier cls = (CsmClassifier) obj;
-            cls = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, getContainingFile());
-            if (CsmKindUtilities.isClass(cls)) {
-                return (CsmClass) cls;
-            }
-        }
-        return null;
     }
 
     private static CsmFunction findByName(Iterator declarations, CharSequence name) {

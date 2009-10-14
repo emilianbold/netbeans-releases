@@ -37,15 +37,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * TimeIntervalPanel.java
- *
- * Created on Sep 2, 2009, 2:52:08 PM
- */
 package org.netbeans.modules.dlight.visualizers.support;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -56,6 +49,7 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilterManager;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.util.Range;
+import org.netbeans.modules.dlight.util.UIThread;
 
 /**
  *
@@ -63,10 +57,10 @@ import org.netbeans.modules.dlight.util.Range;
  */
 public final class TimeIntervalPanel extends javax.swing.JPanel implements DataFilterListener {
 
-    private static final long NANOSECONDS_PER_SECOND = 1000000000;
     private DataFilterManager manager;
     private final ChangeListener startTimeChangeListener = new StartTimeSpinnerListener();
     private final ChangeListener endTimeChangeListener = new EndTimeSpinnerListener();
+    private final Object uiLock = new String("TimeIntervalPanel.uiLock"); // NOI18N
 
     /** Creates new form TimeIntervalPanel */
     public TimeIntervalPanel(DataFilterManager manager) {
@@ -76,26 +70,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
             this.manager.addDataFilterListener(this);
             update(manager.getDataFilter(TimeIntervalDataFilter.class));
         }
-        applyButton.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
-                if (TimeIntervalPanel.this.manager == null) {
-                    applyButton.setEnabled(false);
-                    return;
-                }
-                TimeIntervalPanel.this.manager.addDataFilter(TimeIntervalDataFilterFactory.create(getSelectedInterval()), false);
-
-            }
-        });
-        removeFilterButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (TimeIntervalPanel.this.manager == null) {
-                    return;
-                }
-                TimeIntervalPanel.this.manager.cleanAllDataFilter(TimeIntervalDataFilter.class);
-            }
-        });
         startTimeSpinner.addChangeListener(startTimeChangeListener);
         endTimeSpinner.addChangeListener(endTimeChangeListener);
     }
@@ -107,15 +82,10 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
 
         this.manager = manager;
 
-
-
-        applyButton.setEnabled(manager != null);
-
         if (this.manager != null) {
             this.manager.addDataFilterListener(this);
             update(manager.getDataFilter(TimeIntervalDataFilter.class));
         }
-
     }
 
     /** This method is called from within the constructor to
@@ -131,21 +101,19 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         startTimeSpinner = new javax.swing.JSpinner();
         endTimeSpinner = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
-        applyButton = new javax.swing.JButton();
-        removeFilterButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
 
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.jLabel1.text")); // NOI18N
 
-        startTimeSpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), null, Long.valueOf(1L)));
+        startTimeSpinner.setModel(new SpinnerTimeModel());
+        startTimeSpinner.setEditor(new SpinnerTimeEditor(startTimeSpinner));
 
-        endTimeSpinner.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(1L), Long.valueOf(1L), null, Long.valueOf(1L)));
+        endTimeSpinner.setModel(new SpinnerTimeModel());
+        endTimeSpinner.setEditor(new SpinnerTimeEditor(endTimeSpinner));
+        endTimeSpinner.setValue(Long.MAX_VALUE);
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.jLabel2.text")); // NOI18N
-
-        applyButton.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.applyButton.text")); // NOI18N
-
-        removeFilterButton.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.removeFilterButton.text")); // NOI18N
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(TimeIntervalPanel.class, "TimeIntervalPanel.jLabel3.text")); // NOI18N
 
@@ -156,51 +124,47 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .add(1, 1, 1)
-                .add(endTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(4, 4, 4)
+                .add(18, 18, 18)
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(applyButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(removeFilterButton)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(endTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(13, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(endTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2)
                     .add(jLabel3)
-                    .add(applyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(removeFilterButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel2)
+                    .add(endTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton applyButton;
     private javax.swing.JSpinner endTimeSpinner;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JButton removeFilterButton;
     private javax.swing.JSpinner startTimeSpinner;
     // End of variables declaration//GEN-END:variables
 
     public Range<Long> getSelectedInterval() {
-        return new Range<Long>((Long) startTimeSpinner.getValue() * NANOSECONDS_PER_SECOND, (Long) endTimeSpinner.getValue() * NANOSECONDS_PER_SECOND);
+        return new Range<Long>((Long) startTimeSpinner.getValue(), (Long) endTimeSpinner.getValue());
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
-        update(manager.getDataFilter(TimeIntervalDataFilter.class));
+            UIThread.invoke(new Runnable() {
+            public void run() {
+                update(manager.getDataFilter(TimeIntervalDataFilter.class));
+            }
+        });
     }
 
     private final void update(Collection<TimeIntervalDataFilter> filters) {
@@ -214,35 +178,42 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
                 break;
             }
         }
-        if (filter == null) {
-            return;
+        synchronized (uiLock) {
+            startTimeSpinner.removeChangeListener(startTimeChangeListener);
+            endTimeSpinner.removeChangeListener(endTimeChangeListener);
+            startTimeSpinner.setValue(filter == null? 0L : filter.getInterval().getStart());
+            endTimeSpinner.setValue(filter == null? Long.MAX_VALUE : filter.getInterval().getEnd());
+            startTimeSpinner.addChangeListener(startTimeChangeListener);
+            endTimeSpinner.addChangeListener(endTimeChangeListener);
         }
-        startTimeSpinner.removeChangeListener(startTimeChangeListener);
-        endTimeSpinner.removeChangeListener(endTimeChangeListener);
-        endTimeSpinner.setValue((filter.getInterval().getEnd() / NANOSECONDS_PER_SECOND));
-        startTimeSpinner.setValue((long) filter.getInterval().getStart() / NANOSECONDS_PER_SECOND);
-        startTimeSpinner.addChangeListener(startTimeChangeListener);
-        endTimeSpinner.addChangeListener(endTimeChangeListener);
+    }
 
+    private void applyFilter() {
+        if (manager != null) {
+            manager.addDataFilter(TimeIntervalDataFilterFactory.create(
+                    new Range<Long>((Long) startTimeSpinner.getValue(), (Long) endTimeSpinner.getValue())), false);
+        }
     }
 
     private final class StartTimeSpinnerListener implements ChangeListener {
 
         public void stateChanged(ChangeEvent e) {
-            //if end time more then start re-set end
+            //if start time after end, then re-set end
             if (((Long) startTimeSpinner.getValue()) >= (Long) endTimeSpinner.getValue()) {
                 endTimeSpinner.setValue((Long) startTimeSpinner.getValue() + 1);
             }
+            applyFilter();
         }
     }
 
     private final class EndTimeSpinnerListener implements ChangeListener {
 
         public void stateChanged(ChangeEvent e) {
-            //if end time more then start re-set end
+            //if end time before start, then start re-set start
             if (((Long) startTimeSpinner.getValue()) >= (Long) endTimeSpinner.getValue()) {
                 startTimeSpinner.setValue((Long) endTimeSpinner.getValue() - 1);
             }
+            applyFilter();
         }
     }
 }

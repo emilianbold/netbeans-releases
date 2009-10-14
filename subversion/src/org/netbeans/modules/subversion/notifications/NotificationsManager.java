@@ -39,9 +39,8 @@
 
 package org.netbeans.modules.subversion.notifications;
 
-import java.awt.Color;
 import java.io.File;
-import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +51,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextPane;
-import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.subversion.FileInformation;
@@ -61,10 +59,11 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.ui.diff.Setup;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.versioning.util.VCSNotificationDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -82,9 +81,7 @@ public class NotificationsManager {
     private static NotificationsManager instance;
     private static final Logger LOG = Logger.getLogger(NotificationsManager.class.getName());
     private static final Set<File> alreadySeen = Collections.synchronizedSet(new WeakSet<File>());
-    private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/subversion/resources/icons/info.png"; //NOI18N
-    private static final String NOTIFICATION_DIFF_LINK = "{0}<br><a href=\"\">{1}</a>"; //NOI18N
-    private static final String NOTIFICATION_REVISION_LINK = "<br><a href=\"{0}\">{1}</a>"; //NOI18N
+    private static final String CMD_DIFF = "cmd.diff";                  //NOI18N
 
     private final HashSet<File> files;
     private final RequestProcessor rp;
@@ -92,6 +89,8 @@ public class NotificationsManager {
     private final FileStatusCache cache;
     private final SvnKenaiSupport supp;
     private Boolean enabled;
+
+    private Map<File, Long> notifiedFiles = Collections.synchronizedMap(new HashMap<File, Long>());
 
     private NotificationsManager () {
         files = new HashSet<File>();
@@ -119,7 +118,7 @@ public class NotificationsManager {
      * @param file file to scan
      */
     public void scheduleFor(File file) {
-        if (!isEnabled() || !isUpToDate(file)) {
+        if (!isEnabled() || isSeen(file) || !isUpToDate(file)) {
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer("File " + file.getAbsolutePath() + " is " + (isUpToDate(file) ? "" : "not ") + " up to date, notifications enabled: " + isEnabled()); //NOI18N
             }
@@ -135,6 +134,41 @@ public class NotificationsManager {
         if (refresh) {
             notificationTask.schedule(100);
         }
+    }
+
+    public void notfied(File[] files, Long revision) {
+        for (File file : files) {
+            notifiedFiles.put(file, revision);
+        }
+    }
+
+    public void setupPane(JTextPane pane, final File[] files, String fileNames, final File projectDir, final String url, final String revision) {
+         String msg =
+            NbBundle.getMessage(
+                NotificationsManager.class,
+                "MSG_NotificationBubble_Description",                           // NOI18N
+                fileNames,
+                url,
+                CMD_DIFF
+            );
+        pane.setText(msg);
+
+        pane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                    if(CMD_DIFF.equals(e.getDescription())) {
+                        Context ctx = new Context(files);
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
+                    } else {
+                        try {
+                            SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));
+                        } catch (MalformedURLException ex) {
+                            LOG.log(Level.WARNING, null, ex);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -158,7 +192,11 @@ public class NotificationsManager {
         return upToDate;
     }
 
-    private class NotificationTask implements Runnable {
+    private boolean isSeen(File file) {
+        return alreadySeen.contains(file) || notifiedFiles.containsKey(file);
+    }
+
+    private class NotificationTask extends VCSNotificationDisplayer implements Runnable {
 
         public void run() {
             HashSet<File> filesToScan;
@@ -166,16 +204,30 @@ public class NotificationsManager {
                 filesToScan = new HashSet<File>(files);
                 files.clear();
             }
+            removeDirectories(filesToScan);
             removeSeenFiles(filesToScan);
             if (filesToScan.size() != 0) {
                 scanFiles(filesToScan);
             }
         }
 
+        protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {
+            NotificationsManager.this.setupPane(pane, files, getFileNames(files), projectDir, url, revision);
+        }
+
+        private void removeDirectories (Collection<File> filesToScan) {
+            for (Iterator<File> it = filesToScan.iterator(); it.hasNext();) {
+                File file = it.next();
+                if (!file.isFile()) {
+                    it.remove();
+                }
+            }
+        }
+
         private void removeSeenFiles (Collection<File> filesToScan) {
             for (Iterator<File> it = filesToScan.iterator(); it.hasNext();) {
                 File file = it.next();
-                if (alreadySeen.contains(file)) {
+                if (isSeen(file)) {
                     it.remove();
                 }
             }
@@ -185,6 +237,7 @@ public class NotificationsManager {
             HashMap<SVNUrl, HashSet<File>> filesPerRepository = sortByRepository(filesToScan);
             for (Map.Entry<SVNUrl, HashSet<File>> entry : filesPerRepository.entrySet()) {
                 SVNUrl repositoryUrl = entry.getKey();
+                HashMap<Long, Notification> notifications = new HashMap<Long, Notification>();
                 try {
                     SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
                     if (client != null) {
@@ -200,17 +253,56 @@ public class NotificationsManager {
                                     || repositoryTextStatus.equals(SVNStatusKind.DELETED)
                                     || repositoryTextStatus.equals(SVNStatusKind.ADDED)))
                                 {
+                                    addToMap(notifications, file, status);
                                     // this will refresh versioning view as well
                                     cache.refresh(file, status);
-                                    // notify in a bubble
-                                    notifyFileChange(file, status, repositoryUrl);
                                 }
                             }
+                            alreadySeen.add(file);
                         }
                     }
                 } catch (SVNClientException ex) {
                     LOG.log(Level.FINE, null, ex);
                 }
+                notifyChanges(notifications, repositoryUrl);
+            }
+        }
+
+        /**
+         * Adds new notification or adds file to already existing notification
+         * @param notifications sorted by revision number
+         * @param file file to add to a notification
+         * @param status remote status of the file
+         */
+        private void addToMap(HashMap<Long, Notification> notifications, File file, ISVNStatus status) {
+            Long revision = Long.valueOf(status.getLastChangedRevision().getNumber());
+            Notification revisionNotification = notifications.get(revision);
+            if (revisionNotification == null) {
+                revisionNotification = new Notification(revision);
+                notifications.put(revision, revisionNotification);
+            }
+            revisionNotification.addFile(file);
+        }
+
+        private class Notification {
+            private final Set<File> files;
+            private final Long revision;
+
+            Notification(Long revision) {
+                files = new HashSet<File>();
+                this.revision = revision;
+            }
+
+            void addFile(File file) {
+                files.add(file);
+            }
+
+            File[] getFiles () {
+                return files.toArray(new File[files.size()]);
+            }
+
+            Long getRevision() {
+                return revision;
             }
         }
 
@@ -230,63 +322,12 @@ public class NotificationsManager {
             return filesByRepository;
         }
 
-        private void notifyFileChange(File file, ISVNStatus status, SVNUrl repositoryUrl) {
-            NotificationDisplayer.getDefault().notify(
-                    NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_Title"), //NOI18N
-                    ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
-                    getSimplePane(file), getDetailsPane(file, status, repositoryUrl), NotificationDisplayer.Priority.NORMAL);
-            alreadySeen.add(file);
-        }
-
-        private JTextPane getSimplePane (File file) {
-            JTextPane bubble = new JTextPane();
-            String text = NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_Description", file.getName()); //NOI18N
-            bubble.setText(text);
-            bubble.setOpaque(false);
-            bubble.setEditable(false);
-
-            if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {  //NOI18N
-                //#134837
-                //http://forums.java.net/jive/thread.jspa?messageID=283882
-                bubble.setBackground(new Color(0, 0, 0, 0));
+        private void notifyChanges (HashMap<Long, Notification> notifications, SVNUrl repositoryUrl) {
+            for (Map.Entry<Long, Notification> e : notifications.entrySet()) {
+                Notification notification = e.getValue();
+                File[] files = notification.getFiles();
+                notifyFileChange(files, files[0].getParentFile(), repositoryUrl.toString(), notification.getRevision().toString());
             }
-            return bubble;
-        }
-
-        private JTextPane getDetailsPane (final File file, final ISVNStatus status, SVNUrl repositoryUrl) {
-            JTextPane bubble = getSimplePane(file);
-            bubble.setContentType("text/html");                        //NOI18N
-            String text = java.text.MessageFormat.format(NOTIFICATION_DIFF_LINK,
-                    NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_Description", file.getName()),  //NOI18N
-                    NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_DescriptionDiff")); //NOI18N
-            String url = repositoryUrl == null ? null : getRevisionLink(status, repositoryUrl);
-            if (url != null) {
-                text += java.text.MessageFormat.format(NOTIFICATION_REVISION_LINK, url,
-                        NbBundle.getMessage(NotificationsManager.class, "MSG_NotificationBubble_DescriptionRevision"));
-            }
-            bubble.setText(text);
-
-            bubble.addHyperlinkListener(new HyperlinkListener() {
-                public void hyperlinkUpdate(HyperlinkEvent e) {
-                    if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                        URL url = e.getURL();
-                        if (url != null) {
-                            // open a browser
-                            URLDisplayer.getDefault().showURL(e.getURL());
-                        } else {
-                            // show diff
-                            DiffAction.diff(file, status);
-                        }
-                    }
-                }
-            });
-            return bubble;
-        }
-
-        private String getRevisionLink(ISVNStatus status, SVNUrl repositoryRoot) {
-            String revisionLink = null;
-            revisionLink = supp.getRevisionUrl(repositoryRoot.toString(), status.getRevision().toString());
-            return revisionLink;
         }
 
         /**
@@ -309,11 +350,11 @@ public class NotificationsManager {
             try {
                 url = SvnUtils.getRepositoryRootUrl(file);
             } catch (SVNClientException ex) {
-                LOG.log(Level.WARNING, "getRepositoryUrl: No repository root url found for managed file : [" + file + "]", ex); //NOI18N
+                LOG.log(Level.FINE, "getRepositoryUrl: No repository root url found for managed file : [" + file + "]", ex); //NOI18N
                 try {
                     url = SvnUtils.getRepositoryUrl(file); // try to falback
                 } catch (SVNClientException ex1) {
-                    LOG.log(Level.WARNING, "getRepositoryUrl: No repository url found for managed file : [" + file + "]", ex1); //NOI18N
+                    LOG.log(Level.FINE, "getRepositoryUrl: No repository url found for managed file : [" + file + "]", ex1); //NOI18N
                 }
             }
             return url;

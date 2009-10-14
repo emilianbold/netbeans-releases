@@ -78,6 +78,7 @@ import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
@@ -167,7 +168,7 @@ public class ActionProviderImpl implements ActionProvider {
         }
 
         if (COMMAND_RENAME.equals(action)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            Operations.renameProject(project);
             return;
         }
 

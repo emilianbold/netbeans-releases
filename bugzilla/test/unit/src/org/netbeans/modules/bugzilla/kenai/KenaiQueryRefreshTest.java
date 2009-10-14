@@ -39,18 +39,23 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import org.netbeans.modules.bugzilla.query.*;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
 
 /**
  *
@@ -70,6 +75,14 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+
+        System.setProperty("kenai.com.url","https://testkenai.com");
+        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+        String username = br.readLine();
+        String password = br.readLine();
+        br.close();
+        Kenai.getDefault().login(username, password.toCharArray());
+
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
             bcp.start(null);
@@ -106,16 +119,15 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         BugzillaConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
         BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, true);
 
-        LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 120);
-        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
+        LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 12000);
+        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 12000);
 
         // create issue
         KenaiRepository repo = getKenaiRepository();
-//        BugzillaRepository repo = getRepository();
         String id = TestUtil.createIssue(repo, summary);
         assertNotNull(id);
 
-           // create query
+        // create query
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
         final BugzillaQuery q = new KenaiQuery(QUERY_NAME, repo, p, TEST_PROJECT, true, false);
@@ -124,7 +136,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         refreshHandler.reset();
 
         // kenai queries are auto refreshed no matter if they are open or not, so
-        // we don't have to do anythink with the query - just wait until it gets refreshed.
+        // we don't have to do anything with the query - just wait until it gets refreshed.
 
         schedulingHandler.waitUntilDone();
         refreshHandler.waitUntilDone();
@@ -132,17 +144,17 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         assertTrue(schedulingHandler.isDone());
         assertTrue(refreshHandler.isDone());
 
-        Issue[] issues = q.getIssues();
+        Issue[] issues = q.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, issues.length);
     }
-
 
     private BugzillaRepository getRepository() {
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
-    private KenaiRepository getKenaiRepository() {
-        return new KenaiRepository(null, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+    private KenaiRepository getKenaiRepository() throws KenaiException {
+        // using kenai project 'koliba' - even if the actually used repository is different, it should have no effect on the result
+        return new KenaiRepository(Kenai.getDefault().getProject("koliba"), REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
 

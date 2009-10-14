@@ -13,13 +13,13 @@
 <h2>New Session Bean Wizard</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>This wizard creates a new <a href="../general/about_session_beans.html">session 
-  bean</a> in an EJB module project. You open the wizard by right-clicking the 
-  project node or Enterprise Beans node for any EJB module project and choosing 
-New &gt; Session Bean.</p>
+  bean</a> in an EJB module. You open the wizard by right-clicking the 
+  project node and choosing New &gt; Session Bean.
+  You can also use the wizard to create session beans in Java EE 6 web projects.</p>
 <p>You set the following information in the wizard:</p>
 <ul>
-  <li><b>EJB Name.</b> Set the name of the session bean in the deployment descriptors 
-    and is the basis for the session bean's class and interface names.</li>
+  <li><b>EJB Name.</b> Set the name of the session bean.
+    The name is used as the basis for the session bean's class and interface names.</li>
   <li><b>Location.</b> Select the source folder where you want to create the session 
     bean files.</li>
   <li><b>Package.</b> Select an existing package or type the name of a new package.</li>
@@ -62,10 +62,14 @@ New &gt; Session Bean.</p>
         using remote method calls. This usually means clients that are not running 
         on the session bean's application server.</li>
       <li><b>Local.</b> Allow your session bean to be accessed from clients that 
-        are running in the same Java virtual machine.</li>
+        are running in the same Java Virtual Machine.</li>
     </ul>
   </li>
 </ul>
+<ul class="note"><li>
+        An interface is optional in Java EE 6 applications when the client accessing the
+        bean is a local client.
+    </li></ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../general/about_session_beans.html">About Session Beans</a></dd>

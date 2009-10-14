@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -98,6 +98,25 @@ public class AstNodeUtils {
         } while (n != null);
         
         return matching;
+    }
+
+    public static List<AstNode> getChildrenRecursivelly(AstNode node, AstNode.NodeFilter filter, boolean recurseOnlyMatching) {
+         List<AstNode> matching = new ArrayList<AstNode>();
+         getChildrenRecursivelly(matching, node, filter, recurseOnlyMatching);
+         return matching;
+    }
+
+    private static void getChildrenRecursivelly(List<AstNode> found, AstNode node, AstNode.NodeFilter filter, boolean recurseOnlyMatching) {
+        for(AstNode child : node.children()) {
+            if(filter.accepts(child)) {
+                found.add(child);
+                getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
+            } else {
+                if(!recurseOnlyMatching) {
+                    getChildrenRecursivelly(found, child, filter, recurseOnlyMatching);
+                }
+            }
+        }
     }
 
     public static AstNode findDescendant(AstNode node, int astOffset) {

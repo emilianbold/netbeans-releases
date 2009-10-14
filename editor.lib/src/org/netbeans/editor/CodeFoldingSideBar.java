@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -514,6 +514,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
+        AbstractDocument adoc = (AbstractDocument)component.getDocument();
+        adoc.readLock();
         try {
             List<? extends PaintInfo> ps = getPaintInfo(clip);
             Font defFont = coloring.getFont();
@@ -584,6 +586,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
         } catch (BadLocationException ble) {
             LOG.log(Level.WARNING, null, ble);
+        } finally {
+            adoc.readUnlock();
         }
     }
 

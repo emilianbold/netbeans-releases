@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -383,11 +383,11 @@ public class GuardedDocument extends BaseDocument
 
         Style style =  styles.addStyle(styleName, parent);
         if (findLayer(layerName) == null) { // not created by default
+            readLock();
             try {
-                extWriteLock();
                 addStyledLayer(layerName, style);
             } finally {
-                extWriteUnlock();
+                readUnlock();
             }
         }
         return style;
@@ -437,8 +437,8 @@ public class GuardedDocument extends BaseDocument
      * @param s the style to set
      */
     public void setLogicalStyle(int pos, Style s) {
+        readLock();
         try {
-            extWriteLock();
             pos = Utilities.getRowStart(this, pos);
             String layerName = (String)stylesToLayers.get(s.getName());
             // remove all applied styles
@@ -459,7 +459,7 @@ public class GuardedDocument extends BaseDocument
         } catch (BadLocationException e) {
             // do nothing for invalid positions
         } finally {
-            extWriteUnlock();
+            readUnlock();
         }
     }
 

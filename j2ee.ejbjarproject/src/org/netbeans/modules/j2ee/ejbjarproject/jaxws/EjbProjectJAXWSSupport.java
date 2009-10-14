@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -138,6 +139,8 @@ public String addService(String name, String serviceImpl, String wsdlUrl, String
         if (fo==null) {
             try {
                 WSUtils.createJaxWsFileObject(project);
+                // logging first service creation
+                logWsDetected();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -152,6 +155,8 @@ public String addService(String name, String serviceImpl, String wsdlUrl, String
         if (fo==null) {
             try {
                 WSUtils.createJaxWsFileObject(project);
+                // logging first service creation
+                logWsDetected();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -161,6 +166,15 @@ public String addService(String name, String serviceImpl, String wsdlUrl, String
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         return project.getEjbModule().getWebservicesMetadataModel();
+    }
+
+    private void logWsDetected() {
+        // logging jax-ws.xml creation (web service is detected first time in project)
+        Object[] params = new Object[3];
+        params[0] = LogUtils.WS_STACK_JAXWS;
+        params[1] = project.getClass().getName();
+        params[2] = "SERVICE"; // NOI18N
+        LogUtils.logWsDetect(params);
     }
     
 }

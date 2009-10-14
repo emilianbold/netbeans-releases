@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,7 @@ package org.netbeans.junit;
 import java.util.logging.Level;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestFailure;
 import junit.framework.TestResult;
 import test.pkg.not.in.junit.NbModuleSuiteException;
 
@@ -78,6 +79,8 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("One failure", 1, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());
+        TestFailure f = r.failures().nextElement();
+        assertEquals("Failure name", "testGenerateMsgOrException", ((TestCase)f.failedTest()).getName());
     }
 
     public void testFailOnException() {
@@ -92,5 +95,7 @@ public class NbModuleSuiteExceptionTest extends TestCase {
         TestResult r = junit.textui.TestRunner.run(instance);
         assertEquals("One failure", 1, r.failureCount());
         assertEquals("No errors", 0, r.errorCount());
+        TestFailure f = r.failures().nextElement();
+        assertEquals("Failure name", "testGenerateMsgOrException", ((TestCase)f.failedTest()).getName());
     }
 }

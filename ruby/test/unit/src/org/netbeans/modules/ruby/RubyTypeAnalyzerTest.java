@@ -151,6 +151,15 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         assertTypes(instance.inferType("loc2"), "Hash");
     }
 
+    public void testMultipleAssigments() throws Exception {
+        RubyTypeInferencer instance = getInferencer("types.rb", " # d^one", false);
+        assertTypes(instance.inferType("q"), "Fixnum");
+        assertTypes(instance.inferType("w"), "Fixnum");
+        assertTypes(instance.inferType("e"), "String");
+        assertTypes(instance.inferType("@r"), "String");
+        assertTypes(instance.inferType("@t"), "Fixnum");
+    }
+
     public void testTypeAssertions() throws Exception {
         RubyTypeInferencer instance = getInferencer("types.rb", " l^oc = {", true);
         assertTypes(instance.inferType("param1"), "String");

@@ -41,13 +41,23 @@ package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.net.PasswordAuthentication;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.Kenai.Status;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
+import org.netbeans.modules.kenai.ui.Utilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -60,6 +70,7 @@ public final class KenaiUserUI {
     private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/user_online.png"));
     private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/user_offline.png"));
     private Icon icon;
+    private String chatMessage;
 
     public KenaiUserUI(String userName) {
         this.user=KenaiUser.forName(userName);
@@ -104,13 +115,62 @@ public final class KenaiUserUI {
         return user.getUserName();
     }
 
+    public void setMessage(String message) {
+        chatMessage = message;
+    }
+
     public void startChat() {
+        startChat(chatMessage);
+    }
+
+    public void startChat(final String message) {
         Runnable run = new Runnable() {
+
             public void run() {
+
+                final Kenai kenai = Kenai.getDefault();
+                if (kenai.getStatus() != Status.ONLINE) {
+                    if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE"), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            public void run() {
+                                final PasswordAuthentication pass = kenai.getPasswordAuthentication();
+                                if (pass != null) {
+                                    try {
+                                        kenai.login(pass.getUserName(), pass.getPassword(), true);
+                                        startChat();
+                                    } catch (KenaiException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                } else {
+                                    if (UIUtils.tryLogin(true)) {
+                                        startChat();
+                                    } else {
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                if (UIUtils.showLogin()) {
+                                                    startChat();
+                                                }
+                                            }
+                                        });
+                                    }
+
+                                }
+                            }
+                        });
+                        return;
+                    } else {
+                        return;
+                    }
+                }
+
+
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
                 tc.requestActive();
                 tc.setActivePrivate(user.getUserName());
+                tc.insertToActiveChat(message);
+                tc.requestFocus();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {

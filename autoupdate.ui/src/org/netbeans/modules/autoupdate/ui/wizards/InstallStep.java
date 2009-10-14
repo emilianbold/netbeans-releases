@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -332,7 +332,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                         // try again
                         return false;
                     } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
-                        handleCancel ();
+                        model.getCancelButton(wd).doClick();
                     }
                 }
             } else {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
@@ -60,13 +59,10 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -121,6 +117,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         
         DefaultListModel[] models = new DefaultListModel[] {
             uiProperties.DEBUG_CLASSPATH_MODEL,
+            uiProperties.ENDORSED_CLASSPATH_MODEL,
         };
         
         boolean broken = false;
@@ -179,6 +176,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         
         DefaultListModel[] models = new DefaultListModel[]{
             uiProperties.DEBUG_CLASSPATH_MODEL,
+            uiProperties.ENDORSED_CLASSPATH_MODEL,
            };
         for (int i = 0; i < models.length; i++) {
             for (Iterator it = ClassPathUiSupport.getIterator(models[i]); it.hasNext();) {
@@ -317,6 +315,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
                 updateJars(uiProperties.DEBUG_CLASSPATH_MODEL);
+                updateJars(uiProperties.ENDORSED_CLASSPATH_MODEL);
                 switchLibrary();
             }
         } else {
@@ -336,6 +335,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         List<String> jars = new ArrayList<String>();
         collectLibs(uiProperties.DEBUG_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
+        collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         libs.add("CopyLibs"); // NOI18N
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
         if (res) {

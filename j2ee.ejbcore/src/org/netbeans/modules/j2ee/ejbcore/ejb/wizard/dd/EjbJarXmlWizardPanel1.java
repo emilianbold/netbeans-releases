@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,6 +47,8 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -70,6 +72,7 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
      */
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     private final EjbJarXmlVisualPanel1 component = new EjbJarXmlVisualPanel1();
+    private final InfoPanel infoPanel = new InfoPanel();
     private WizardDescriptor wizardDescriptor;
     private Project project;
     
@@ -90,7 +93,12 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
     }
     
     public Component getComponent() {
-        return component;
+        if (component.getSelectedLocation() == null) {
+            infoPanel.setText(NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation"));
+            return infoPanel;
+        } else {
+            return component;
+        }
     }
     
     public HelpCtx getHelp() {
@@ -99,7 +107,6 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
     
     public boolean isValid() {
         if (component.getSelectedLocation() == null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbJarXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
             return false;
         }
         return true;
@@ -134,9 +141,24 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
             project = Templates.getProject(wizardDescriptor);
             component.setProject(project);
         }
+        String displayName = NbBundle.getMessage(EjbJarXmlWizardPanel1.class, "LBL_DDWizardTitle"); //NOI18N
+        wizardDescriptor.putProperty ("NewFileWizard_Title", displayName); // NOI18N
     }
     
     public void storeSettings(Object settings) {}
-    
+
+    private class InfoPanel extends JPanel{
+        private JLabel infoText;
+
+        public InfoPanel() {
+            infoText = new JLabel();
+            add(infoText);
+        }
+
+        public void setText(String text){
+            infoText.setText(text);
+//            revalidate();
+        }
+    }
 }
 

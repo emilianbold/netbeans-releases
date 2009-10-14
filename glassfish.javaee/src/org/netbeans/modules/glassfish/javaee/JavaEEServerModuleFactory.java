@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +177,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         
     private static final String PERSISTENCE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
     
-    private static synchronized boolean ensureEclipseLinkSupport(String installRoot) {
+    private static boolean ensureEclipseLinkSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         List<URL> docList = new ArrayList<URL>();
         try {
@@ -227,7 +226,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String COMET_JAR_2_MATCHER = "grizzly-comet" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
     private static final String GRIZZLY_OPTIONAL_JAR_MATCHER = "grizzly-optional" + ServerUtilities.GFV3_VERSION_MATCHER; // NOI18N
 
-    private static synchronized boolean ensureCometSupport(String installRoot) {
+    private static boolean ensureCometSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         String name = COMET_LIB;
         File f = ServerUtilities.getJarName(installRoot, GRIZZLY_OPTIONAL_JAR_MATCHER);
@@ -255,7 +254,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String PRELUDE_RESTLIB = "restlib_gfv3"; // NOI18N
     private static final String V3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
 
-    private static synchronized boolean ensureRestLibSupport(String installRoot) {
+    private static  boolean ensureRestLibSupport(String installRoot) {
         List<URL> libraryList = new ArrayList<URL>();
         String name = PRELUDE_RESTLIB;
         for (String entry : JAXRS_LIBRARIES) {
@@ -296,7 +295,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static final String JAVA_EE_JAVADOC = "javaee6-doc-api.zip"; // NOI18N
 
-    private static synchronized boolean ensureGlassFishApiSupport(String installRoot) {
+    private static boolean ensureGlassFishApiSupport(String installRoot) {
         List<URL> libraryList = Hk2PluginProperties.getClasses(new File(installRoot));
         List<URL> docList = new ArrayList<URL>();
         String name = JAVA_EE_5_LIB;
@@ -318,15 +317,26 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, "Java EE documentation not found when registering Java EE API library."); // NOI18N
         }
 
+        // additional jar for glassfish-samples support
+        f = ServerUtilities.getJarName(installRoot, "web-core" + ServerUtilities.GFV3_VERSION_MATCHER);
+        if (f != null && f.exists()) {
+            try {
+                libraryList.add(ServerUtilities.fileToUrl(f));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, "Problem while registering web-core into GlassFish API library."); // NOI18N
+            }
+        }
+
         return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static synchronized boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
+    private static boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
         return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList);
     }
 
-    private static synchronized boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
+    private static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
+        synchronized (lmgr) {
 
         int size = 0;
 
@@ -347,7 +357,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     try {
                         lmgr.removeLibrary(lib);
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException ex) {
                         // Already removed somehow, ignore.
                         }
@@ -364,7 +374,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             try {
                 lmgr.removeLibrary(lib);
             } catch (IOException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             } catch (IllegalArgumentException ex) {
                 // Already removed somehow, ignore.
             }
@@ -394,17 +404,18 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);
                 if (lib == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             } catch (IllegalArgumentException ex) {
                 // Someone must have created the library in a parallel thread, try again otherwise fail.
                 lib = lmgr.getLibrary(name);
                 if (lib == null) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         }
         return lib != null;
+        }
     }
 
     static class InitializeLibrary implements PropertyChangeListener {
@@ -422,6 +433,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
+            synchronized (lmgr) {
             if (null != name) {
                 Library l = lmgr.getLibrary(name);
                 final PropertyChangeListener pcl = this;
@@ -435,11 +447,11 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         }
                     } catch (IOException ex) {
                         l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
                                 ex.getLocalizedMessage(), ex);
                     } catch (IllegalArgumentException iae) {
                         l = lmgr.getLibrary(name);
-                        Logger.getLogger("glassfish-javaee").log(l == null ? Level.WARNING : Level.INFO,
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO,
                                 iae.getLocalizedMessage(), iae);
                     }
                 } else {
@@ -447,16 +459,19 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     removeFromListenerList(pcl);
                 }
             }
+            }
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
+                    synchronized (lmgr) {
                     if (null != lmgr) {
                         lmgr.removePropertyChangeListener(pcl);
                         content = null;
                         name = null;
+                    }
                     }
                 }
             });

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -95,12 +95,14 @@ public class LazyTypeCompletionItem extends SpringXMLConfigCompletionItem implem
                 javaSource.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                        TypeElement e = eh.resolve(cc);
-                        if (e != null && isAccessibleClass(e)) {
-                            delegate = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        e, eh, cc.getElements().isDeprecated(e), true);
+                        if (eh != null) {
+                            TypeElement e = eh.resolve(cc);
+                            if (e != null && isAccessibleClass(e)) {
+                                delegate = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
+                                            e, eh, cc.getElements().isDeprecated(e), true);
+                            }
+                            eh = null;
                         }
-                        eh = null;
                     }
                 }, true);
             } catch (IOException ioe) {

@@ -42,9 +42,12 @@ import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
-import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
+import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,20 +56,49 @@ import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 public final class ThreadStackVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
     public static final String ID = "ThreadStackVisualizerConfiguration.id";//NOI18N
-    private final ThreadDump threadDump;
-    private final long dumpTime;
+    private ThreadDump threadDump;
+    private long dumpTime;
+    private StackNameProvider stackNameProvider;
+    private long preferredSelection;
+    private ThreadStackActionsProvider actionsProvider;
 
-    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump) {
+    public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump, StackNameProvider stackNameProvider, long preferredSelection, ThreadStackActionsProvider actionsProvider) {
         this.dumpTime = dumpTime;
         this.threadDump = threadDump;
+        this.stackNameProvider = stackNameProvider;
+        this.preferredSelection = preferredSelection;
+        this.actionsProvider = actionsProvider;
     }
 
-    public ThreadDump getThreadDump() {
+    void update(ThreadStackVisualizerConfiguration another){
+        this.dumpTime = another.dumpTime;
+        this.threadDump = another.threadDump;
+        this.stackNameProvider = another.stackNameProvider;
+        this.preferredSelection = another.preferredSelection;
+        this.actionsProvider = another.actionsProvider;
+    }
+
+    ThreadDump getThreadDump() {
         return threadDump;
     }
 
-    public long getDumpTime() {
+    long getDumpTime() {
         return dumpTime;
+    }
+
+    ThreadStackActionsProvider getStackNodeActionsProvider(){
+        return actionsProvider;
+    }
+
+    StackNameProvider getStackNameProvider() {
+        if (stackNameProvider == null) {
+            return defaultStackNameProvider;
+        }
+        return stackNameProvider;
+    }
+
+    long getPreferredSelection(){
+        return preferredSelection;
     }
 
     public DataModelScheme getSupportedDataScheme() {
@@ -80,4 +112,24 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
     public DataTableMetadata getMetadata() {
         return CpuSamplingSupport.CPU_SAMPLE_TABLE;
     }
+
+    private StackNameProvider defaultStackNameProvider = new StackNameProvider(){
+        public String getStackName(ThreadSnapshot snapshot) {
+            String name = "";
+            MSAState msa = snapshot.getState();
+            ThreadStateResources res = ThreadStateResources.forState(msa);
+            if (res != null) {
+                name = res.name;
+            }
+            long time = ThreadStateColumnImpl.timeInervalToMilliSeconds(snapshot.getTimestamp());
+            String at = TimeLineUtils.getMillisValue(time);
+            return NbBundle.getMessage(ThreadStackVisualizerConfiguration.class, "ThreadStackVisualizerStackAt1",  //NOI18N
+                    name, snapshot.getThreadInfo().getThreadName(), at);
+        }
+    };
+
+    public interface StackNameProvider {
+        String getStackName(ThreadSnapshot snapshot);
+    }
+
 }

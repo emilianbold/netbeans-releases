@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,10 +49,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.EditableProperties;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,6 +63,8 @@ import org.openide.util.NbBundle;
 public class RailsProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private final RailsProject project;
+    // see RubyProjectOperations#origPrivateProperties
+    private static EditableProperties origPrivateProperties;
     
     public RailsProjectOperations(RailsProject project) {
         this.project = project;
@@ -96,6 +100,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
         // additional files
         addFile(project.getProjectDirectory(), "README", files); // NOI18N
         addFile(project.getProjectDirectory(), "Rakefile", files); // NOI18N
+        addFile(project.getProjectDirectory(), "Capfile", files); // NOI18N
         return new ArrayList<FileObject>(files);
     }
     
@@ -108,7 +113,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     }
     
     public void notifyCopying() {
-        // nothing needed in the meantime
+        origPrivateProperties = project.getRakeProjectHelper().getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -119,9 +124,11 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
         
         project.getReferenceHelper().fixReferences(originalPath);
         project.setName(nueName);
+        copyPrivateProps();
     }
     
     public void notifyMoving() throws IOException {
+        origPrivateProperties = project.getRakeProjectHelper().getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
         if (!this.project.getUpdateHelper().requestSave()) {
             throw new IOException (NbBundle.getMessage(RailsProjectOperations.class,
                 "MSG_OldProjectMetadata"));
@@ -137,6 +144,12 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
         
         project.setName(nueName);        
         project.getReferenceHelper().fixReferences(originalPath);
+        copyPrivateProps();
+    }
+
+    private void copyPrivateProps() {
+        project.getReferenceHelper().copyToPrivateProperties(origPrivateProperties);
+        origPrivateProperties = null;
     }
     
 }

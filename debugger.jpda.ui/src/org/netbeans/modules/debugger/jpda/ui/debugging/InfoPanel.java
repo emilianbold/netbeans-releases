@@ -42,6 +42,7 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
@@ -454,6 +455,7 @@ public class InfoPanel extends javax.swing.JPanel {
         button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setFocusable(false);
+        button.setOpaque(false);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (arrowMenu.getComponentCount() > 0) {
@@ -472,10 +474,12 @@ public class InfoPanel extends javax.swing.JPanel {
     private JToolBar createFilterToolBar() {
         final FiltersDescriptor filtersDesc = FiltersDescriptor.getInstance();
         // configure toolbar
-        JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
+        JToolBar toolbar = new NoBorderToolBar();
+        toolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         toolbar.setFloatable(false);
-        toolbar.setRollover(true);
+        //toolbar.setRollover(true);
         toolbar.setBorderPainted(false);
+        toolbar.setOpaque(false);
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
@@ -490,13 +494,12 @@ public class InfoPanel extends javax.swing.JPanel {
         }
 
         // add toggle buttons
-        Dimension space = new Dimension(3, 0);
         for (int i = 0; i < toggles.size(); i++) {
             JToggleButton curToggle = toggles.get(i);
             curToggle.addActionListener(new ToggleButtonActionListener(i));
             toolbar.add(curToggle);
             if (i != toggles.size() - 1) {
-                toolbar.addSeparator(space);
+                toolbar.addSeparator(new Dimension(3, 0));
             }
         }
         return toolbar;
@@ -521,9 +524,9 @@ public class InfoPanel extends javax.swing.JPanel {
         Icon icon = filtersDesc.getSelectedIcon(index);
         // ensure small size, just for the icon
         JToggleButton toggleButton = new JToggleButton(icon, isSelected);
-        Dimension size = new Dimension(icon.getIconWidth(), icon.getIconHeight());
-        toggleButton.setPreferredSize(size);
-        toggleButton.setMargin(new Insets(2,3,2,3));
+//        Dimension size = new Dimension(icon.getIconWidth(), icon.getIconHeight());
+//        toggleButton.setPreferredSize(size);
+        toggleButton.setMargin(new Insets(2, 2, 2, 2));
         toggleButton.setToolTipText(filtersDesc.getTooltip(index));
         toggleButton.setFocusable(false);
         filtersDesc.connectToggleButton(index, toggleButton);
@@ -945,6 +948,23 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         }
 
+    }
+
+    private static class NoBorderToolBar extends JToolBar {
+
+        public NoBorderToolBar() {
+        }
+
+        /** Creates a new instance of NoBorderToolbar
+         * @param layout
+         */
+        public NoBorderToolBar( int layout ) {
+            super( layout );
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+        }
     }
 
 }

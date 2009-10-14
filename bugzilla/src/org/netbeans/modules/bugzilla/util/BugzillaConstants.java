@@ -68,4 +68,14 @@ public interface BugzillaConstants {
             "&bug_status=ASSIGNED" +                                            // NOI18N
             "&bug_status=REOPENED";                                             // NOI18N
 
+    public static final String DEFAULT_STATUS_PARAMETERS =
+            "&bug_status=NEW" +                                                 // NOI18N
+            "&bug_status=ASSIGNED" +                                            // NOI18N
+            "&bug_status=REOPENED";                                             // NOI18N
+
+    public static final String DEFAULT_NB_STATUS_PARAMETERS =
+            "&bug_status=NEW" +                                                 // NOI18N
+            "&bug_status=STARTED" +                                             // NOI18N
+            "&bug_status=REOPENED";                                             // NOI18N
+
 }

@@ -63,6 +63,8 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
@@ -547,7 +549,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         List<Variable> variables = node.getVariables();
         for (Variable var : variables) {
             String varName = CodeUtils.extractVariableName(var);
-            //TODO: ugly
             if (varName == null) {
                 continue;
             }
@@ -594,6 +595,24 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //super.visit(node);
     }
 
+    private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
+        Map<String, AssignmentImpl> allAssignments = new HashMap<String, AssignmentImpl>();
+        if (scope instanceof VariableScope) {
+            VariableScope variableScope = (VariableScope) scope;
+            Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
+            for (VariableName variableName : declaredVariables) {
+                if (variableName instanceof VariableNameImpl) {
+                    VariableNameImpl vni = (VariableNameImpl) variableName;
+                    AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
+                    if (ai != null) {
+                        allAssignments.put(vni.getName(), ai);
+                    }
+                }
+            }
+        }
+        return allAssignments;
+    }
+
     @Override
     public void visit(Assignment node) {
         //Scope scope = currentScope.peek();
@@ -606,10 +625,26 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             //TODO: global variables or vars from other files
             //assert varN != null : CodeUtils.extractVariableName((Variable)leftHandSide);
             if (varN != null) {
-                //Map<String, VariableNameImpl> allAssignments = vars.get(scope);
+                Map<String, AssignmentImpl> allAssignments = getAssignmentMap(scope, leftHandSide);
                 Variable var = ((Variable) leftHandSide);
-                varN.createElement(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
-                        Collections.<String, AssignmentImpl>emptyMap());
+                if (rightHandSide instanceof ArrayCreation) {
+                    ArrayCreation arrayCreation = (ArrayCreation) rightHandSide;
+                    List<ArrayElement> elements = arrayCreation.getElements();
+                    if (!elements.isEmpty()) {
+                        for (ArrayElement arrayElement : elements) {
+                            Expression value = arrayElement.getValue();
+                            String typeName = VariousUtils.extractVariableTypeFromExpression(value, allAssignments);
+                            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varN, scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            vAssignment.setAsArrayAccess(true);
+                        }
+                    } else {
+                        String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, allAssignments);
+                        VarAssignmentImpl vAssignment = new VarAssignmentImpl(varN, scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                    }
+                } else {
+                    varN.createAssignment(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
+                            allAssignments);
+                }
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
             }
         } else if (leftHandSide instanceof FieldAccess) {
@@ -627,6 +662,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
         super.scan(rightHandSide);
     }
+
+    @Override
+    public void visit(ForEachStatement node) {
+        Scope scope = modelBuilder.getCurrentScope();
+        super.visit(node);
+        Expression expression = node.getExpression();
+        Expression value = node.getValue();
+        if ((expression instanceof Variable) && (value instanceof Variable)) {
+            VariableNameImpl varArray = findVariable(scope, (Variable)expression);
+            VariableNameImpl varValue = findVariable(scope, (Variable)value);
+            if (varArray != null && varValue != null) {
+                varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
+                Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
+                for (String tpName : typeNames) {
+                    new VarAssignmentImpl(varValue, scope, getBlockRange(scope),
+                            new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                }
+            }
+        }
+    }
+
 
     @Override
     public void visit(FormalParameter node) {
@@ -680,8 +736,24 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         scan(node.getBody());
     }
 
+    @Override
     public void visit(LambdaFunctionDeclaration node) {
-        //TODO: add in model
+        ScopeImpl scope = modelBuilder.getCurrentScope();
+        FunctionScopeImpl fncScope = FunctionScopeImpl.createElement(scope, node);
+        modelBuilder.setCurrentScope(scope = fncScope);
+        List<Expression> lexicalVariables = node.getLexicalVariables();
+        for (Expression expression : lexicalVariables) {
+            if (expression instanceof Variable) {
+                Variable variable = (Variable) expression;
+                VariableNameImpl varNameImpl= createVariable((VariableNameFactory) scope, variable);
+                varNameImpl.setGloballyVisible(true);
+            }
+        }
+        scan(lexicalVariables);
+        scope.setBlockRange(node.getBody());
+        scan(node.getFormalParameters());
+        scan(node.getBody());
+        modelBuilder.reset();
     }
 
     @Override
@@ -1050,7 +1122,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (varScope instanceof VariableScope) {
                             FileObject fileObject = varScope.getFileObject();
                             if (fileObject == scope.getFileObject()) {
-                                atOffset = (VariableScope) varScope;
+                                VariableScope variableScope = (VariableScope) varScope;
+                                OffsetRange blockRange = variableScope.getBlockRange();
+                                if (blockRange == null || blockRange.containsInclusive(offset)) {
+                                    atOffset = variableScope;
+                                }
                             }
                         }
                     }
@@ -1062,7 +1138,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             while (scope != null && !(scope instanceof VariableScope)) {
                 scope = scope.getInScope();
             }
-            atOffset = (VariableScope) scope;
+            if (scope != null) {
+                OffsetRange blockRange = scope.getBlockRange();
+                if (blockRange == null || blockRange.containsInclusive(offset)) {
+                    atOffset = (VariableScope) scope;
+                }
+            }
         }
         return atOffset;
     }

@@ -39,12 +39,8 @@
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.acl.NotOwnerException;
@@ -77,17 +73,18 @@ import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.NativeProcessExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -123,7 +120,7 @@ public final class DtraceDataCollector
     private URL localScriptUrl;
     private String extraArgs;
     private String scriptPath;
-    private Future<Integer> dtraceTask = null;
+    private CollectorRunner dtraceRunner = null;
     private DTDCConfiguration configuration;
     private ValidationStatus validationStatus =
             ValidationStatus.initialStatus();
@@ -136,7 +133,7 @@ public final class DtraceDataCollector
     private DtraceParser parser;
     private final List<DataRow> indicatorDataBuffer = new ArrayList<DataRow>();
     private int indicatorFiringFactor;
-    private LineProcessor outputProcessor = new DefaultOutputProcessor();
+    private LineProcessor outputProcessor = new DefaultLineProcessor();
     private boolean isSlave;
     private final boolean multiScriptMode;
     private DtraceDataCollector parentCollector;
@@ -157,7 +154,7 @@ public final class DtraceDataCollector
             this.tableMetaData = null;
             this.slaveCollectors = new HashMap<String, DtraceDataCollector>();
             this.requiredPrivilegesSet = new HashSet<String>();
-            setOutputProcessor(new MergedProcessLineCallbackImpl());
+            setOutputProcessor(new DemultiplexingLineProcessor());
             addSlaveConfiguration(configuration);
         } else {
             this.dataTablesMetadata = cfgInfo.getDatatableMetadata(configuration);
@@ -293,12 +290,22 @@ public final class DtraceDataCollector
             return;
         }
 
+        File scriptFile;
+        try {
+            scriptFile = Util.copyToTempDir(localScriptUrl);
+            DTraceScriptUtils.insertEOFMarker(scriptFile);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            scriptPath = null;
+            return;
+        }
+
         ExecutionEnvironment execEnv = target.getExecEnv();
 
         if (execEnv.isLocal()) {
             // No need to copy file on localhost -
-            // just esnure execution permissions...
-            scriptPath = Util.copyResource(localScriptUrl);
+            // just ensure execution permissions...
+            scriptPath = scriptFile.getAbsolutePath();
             Util.setExecutionPermissions(Arrays.asList(scriptPath));
         } else {
             String briefName = Util.getBriefName(localScriptUrl);
@@ -306,7 +313,7 @@ public final class DtraceDataCollector
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
                 scriptPath = hostInfo.getTempDir() + "/" + briefName; // NOI18N
                 Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        Util.copyResource(localScriptUrl), execEnv, scriptPath, 0777, null);
+                        scriptFile.getAbsolutePath(), execEnv, scriptPath, 0777, null);
                 copyResult.get();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -344,17 +351,20 @@ public final class DtraceDataCollector
         return extraArgs;
     }
 
+    /*package*/ void packageVisibleSuggestIndicatorsRepaint() {
+        super.suggestIndicatorsRepaint();
+    }
+
     private void targetFinished(DLightTarget target) {
         if (!isSlave) {
-            if (dtraceTask != null && !dtraceTask.isDone()) {
+            if (dtraceRunner != null) {
                 // It could be already done here, because tracked process is
                 // finished and, depending on command-line utility, it may exit
                 // as well... But, if not - terminate it.
                 log.fine("Stopping DtraceDataCollector: " + // NOI18N
-                        dtraceTask.toString());
+                        dtraceRunner.toString());
 
-                dtraceTask.cancel(true);
-                dtraceTask = null;
+                dtraceRunner.shutdown();
             }
         }
 
@@ -502,7 +512,7 @@ public final class DtraceDataCollector
     }
 
     private void targetStarted(DLightTarget target) {
-        if (isSlave) {
+        if (isSlave || scriptPath == null) {
             return;
         }
 
@@ -522,10 +532,9 @@ public final class DtraceDataCollector
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
         npb.setCommandLine(taskCommand);
 
-        dtraceTask = NativeProcessExecutionService.newService(
-                npb, getOutputProcessor(), null, "DTrace output processor").start(); // NOI18N
+        this.dtraceRunner = new CollectorRunner(new FakeIndicatorNotificationListener(), npb, getOutputProcessor(), DTraceScriptUtils.EOF_MARKER, "DTrace"); // NOI18N
 
-        log.fine("DtraceDataCollector (" + dtraceTask.toString() + // NOI18N
+        log.fine("DtraceDataCollector (" + dtraceRunner.toString() + // NOI18N
                 ") for " + taskCommand + " STARTED"); // NOI18N
     }
 
@@ -587,7 +596,7 @@ public final class DtraceDataCollector
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
-    private final class DefaultOutputProcessor implements LineProcessor {
+    private final class DefaultLineProcessor implements LineProcessor {
 
         @Override
         public void processLine(String line) {
@@ -616,16 +625,19 @@ public final class DtraceDataCollector
             }
         }
 
+        @Override
         public void reset() {
         }
 
+        @Override
         public void close() {
             DataRow dataRow = parser.processClose();
             addDataRow(dataRow);
+            suggestIndicatorsRepaint();
         }
     }
 
-    private class MergedProcessLineCallbackImpl implements LineProcessor {
+    private class DemultiplexingLineProcessor implements LineProcessor {
 
         @Override
         public void processLine(String line) {
@@ -644,74 +656,47 @@ public final class DtraceDataCollector
             lastSlaveCollector = target;
         }
 
+        @Override
         public void reset() {
+            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+                entry.getValue().getOutputProcessor().reset();
+            }
         }
 
+        @Override
         public void close() {
             for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
                 entry.getValue().getOutputProcessor().close();
             }
+            suggestIndicatorsRepaint();
         }
     }
 
-//    private class DtraceInputProcessorFactory implements InputProcessorFactory {
-//
-//        public InputProcessor newInputProcessor(InputProcessor p) {
-//            return InputProcessors.bridge(new LineProcessor() {
-//
-//                @Override
-//                public void processLine(String line) {
-//                    callback.processLine(line);
-//                }
-//
-//                public void reset() {
-//                }
-//
-//                public void close() {
-//                    callback.processClose();
-//                }
-//            });
-//        }
-//    }
-//
-//    private static class StdErrRedirectorFactory
-//            implements InputProcessorFactory {
-//
-//        public InputProcessor newInputProcessor(InputProcessor p) {
-//            return InputProcessors.copying(new OutputStreamWriter(System.err) {
-//
-//                @Override
-//                public void close() throws IOException {
-//                    //Do not close System.err
-//                }
-//            });
-//        }
-//    }
+    private class FakeIndicatorNotificationListener implements IndicatorNotificationsListener {
+
+        @Override
+        public void reset() {
+            resetIndicators();
+        }
+
+        @Override
+        public void suggestRepaint() {
+            suggestIndicatorsRepaint();
+        }
+
+        @Override
+        public void updated(List<DataRow> data) {
+            notifyIndicators(data);
+        }
+    }
+
     private File mergeScripts() {
         try {
-            File output = File.createTempFile("dlight", ".d"); // NOI18N
-            BufferedWriter w = new BufferedWriter(new FileWriter(output));
-            try {
-                w.write("#!/usr/sbin/dtrace -ZCqs\n"); // NOI18N
-                for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
-                    DtraceDataCollector ddc = entry.getValue();
-                    BufferedReader r = new BufferedReader(new InputStreamReader(ddc.getLocalScriptUrl().openStream()));
-                    try {
-                        for (String line = r.readLine(); line != null; line = r.readLine()) {
-                            if (!line.startsWith("#!")) { // NOI18N
-                                w.write(line.replaceAll("(print[af]\\(\")", "$1" + entry.getKey())); // NOI18N
-                                w.write('\n'); // NOI18N
-                            }
-                        }
-                        w.write('\n'); // NOI18N
-                    } finally {
-                        r.close();
-                    }
-                }
-            } finally {
-                w.close();
+            Map<String, URL> scriptsMap = new HashMap<String, URL>();
+            for (Map.Entry<String, DtraceDataCollector> entry : slaveCollectors.entrySet()) {
+                scriptsMap.put(entry.getKey(), entry.getValue().getLocalScriptUrl());
             }
-            return output;
+            return DTraceScriptUtils.mergeScripts(scriptsMap);
         } catch (IOException ex) {
             DLightLogger.getLogger(DtraceDataCollector.class).log(Level.SEVERE, null, ex);
             return null;

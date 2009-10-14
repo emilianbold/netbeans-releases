@@ -385,16 +385,14 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
 
-        Mnemonics.setLocalizedText(uploadDirectoryLabel,NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
-        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
-        remoteConnectionHintLabel.setEnabled(false);
 
+        Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
+        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
 
-        Mnemonics.setLocalizedText(uploadFilesLabel,NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
-        Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy");
-        uploadFilesHintLabel.setEnabled(false);
 
+        Mnemonics.setLocalizedText(uploadFilesLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
+        Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy");
         indexFileLabel.setLabelFor(indexFileTextField);
 
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile"));

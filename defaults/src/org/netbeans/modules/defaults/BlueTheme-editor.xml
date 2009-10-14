@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -67,6 +67,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="status-bar"/>
     <fontcolor name="status-bar-bold" foreColor="red"/>
     <fontcolor name="caret-color-insert-mode" foreColor="yellow" />
+    <fontcolor name="caret-color-overwrite-mode" foreColor="yellow" />
     <fontcolor name="text-limit-line-color" foreColor="253E5A"/>
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
     <fontcolor name="synchronized-text-blocks-ext" foreColor="ffcc0099"/>

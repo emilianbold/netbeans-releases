@@ -129,4 +129,8 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
         }
         //and now we should 
     }
+
+    public boolean hasTheSameDetails(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        return true;
+    }
 }

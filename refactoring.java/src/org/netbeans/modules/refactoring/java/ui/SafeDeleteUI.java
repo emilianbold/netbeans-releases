@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,8 +47,8 @@ import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
@@ -56,8 +56,9 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -192,13 +193,18 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     }
 
     public void doRefactoringBypass() throws IOException {
-        for (FileObject file:getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
-            DataObject.find(file).delete();
-        }
-        NonRecursiveFolder f = (NonRecursiveFolder) getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
-        if (f!=null) {
-            deletePackage(f.getFolder());
-        }
+        // #172199
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                for (FileObject file:getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
+                    DataObject.find(file).delete();
+                }
+                NonRecursiveFolder f = (NonRecursiveFolder) getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+                if (f!=null) {
+                    deletePackage(f.getFolder());
+                }
+            }
+        });
     }
     
     private void deletePackage(FileObject source) {
@@ -216,7 +222,8 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
                 if (!ch[i].getPrimaryFile().isFolder()) {
                     ch[i].delete();
                 }
-                else {
+                else if (empty && VisibilityQuery.getDefault().isVisible(ch[i].getPrimaryFile())) {
+                    // 156529: hidden folders should be considered as empty content
                     empty = false;
                 }
             }

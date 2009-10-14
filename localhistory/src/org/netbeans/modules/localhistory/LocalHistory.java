@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,9 +43,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,8 +66,11 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** 
  * 
@@ -95,7 +101,14 @@ public class LocalHistory {
         
     /** default logger for whole module */
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.localhistory"); // NOI18N
+
+    /** holds all files which are actually opened */
+    private final Set<File> openedFiles = new HashSet<File>();
+    /** holds all files which where opened at some time during this nb session and changed */
+    private final Set<File> touchedFiles = new HashSet<File>();
     
+    private LocalHistoryVCS lhvcs;
+
     public LocalHistory() {
         String include = System.getProperty("netbeans.localhistory.includeFiles");
         if(include != null && !include.trim().equals("")) {
@@ -115,8 +128,17 @@ public class LocalHistory {
             for(String root : paths) {
                 addRootFile(userDefinedRoots, new File(root));   
             }            
-        }    
-    }    
+        }
+
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new OpenedFilesListener());
+    }
+
+    private synchronized LocalHistoryVCS getLocalHistoryVCS() {
+        if (lhvcs == null) {
+            lhvcs = org.openide.util.Lookup.getDefault().lookup(LocalHistoryVCS.class);
+        }
+        return lhvcs;
+    }
 
     void init() {
         LocalHistoryStore s = getLocalHistoryStore(false);
@@ -225,6 +247,33 @@ public class LocalHistory {
         return parent;    
     }
     
+    void touch(File file) {
+        if(!isOpened(file)) {
+            return;
+        }
+        synchronized(touchedFiles) {
+            touchedFiles.add(file);
+        }
+        synchronized(openedFiles) {
+            openedFiles.remove(file);
+        }
+    }
+
+    boolean isOpened(File file) {
+        synchronized(openedFiles) {
+            return openedFiles.contains(file);
+        }
+    }
+
+    boolean isOpenedOrTouched(File file) {
+        if(isOpened(file)) {
+            return true;
+        }
+        synchronized(touchedFiles) {
+            return touchedFiles.contains(file);
+        }
+    }
+
     boolean isManaged(File file) {
         log("isManaged() " + file);
 
@@ -344,6 +393,69 @@ public class LocalHistory {
         sb.append('\t');
         sb.append(Thread.currentThread().getName());            
         LocalHistory.LOG.fine(sb.toString()); // NOI18N
-    }       
+    }
+
+    private class OpenedFilesListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (WindowManager.getDefault().getRegistry().PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                List<File> files = getFiles(evt);
+                synchronized (openedFiles) {
+                    for (File file : files) {
+                        LOG.log(Level.FINE, " adding to opened files : ", new Object[]{file});
+                        openedFiles.add(file);
+                    }
+                    for (File file : files) {
+                        if (handleManaged(file)) {
+                            break;
+                        }
+                    }
+                }
+            } else if (WindowManager.getDefault().getRegistry().PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                List<File> files = getFiles(evt);
+                synchronized (openedFiles) {
+                    for (File file : files) {
+                        LOG.log(Level.FINE, " removing from opened files {0} ", new Object[]{file});
+                        openedFiles.remove(file);
+                    }
+                }
+            }
+        }
+        private List<File> getFiles(PropertyChangeEvent evt) {
+            Object obj = evt.getNewValue();
+            if (obj instanceof TopComponent) {
+                List<File> ret = new ArrayList<File>();
+                TopComponent tc = (TopComponent) obj;
+                LOG.log(Level.FINER, " getting nodes from tc ", new Object[]{tc});
+                Node[] nodes = tc.getActivatedNodes();
+                if (nodes != null) {
+                    for (Node node : nodes) {
+                        LOG.log(Level.FINER, " getting files from node ", new Object[]{node});
+                        Collection<? extends FileObject> fos = node.getLookup().lookupAll(FileObject.class);
+                        if(fos != null) {
+                            for (FileObject fo : fos) {
+                                File f = FileUtil.toFile(fo);
+                                if (f != null) {
+                                    ret.add(f);
+                                }
+                            }
+                        }
+                    }
+                }
+                return ret;
+            }
+            return Collections.EMPTY_LIST;
+        }
+        private boolean handleManaged(File file) {
+            if (isManagedByParent(file) != null) {
+                return false;
+            }
+            LocalHistoryVCS lh = getLocalHistoryVCS();
+            if(lh == null) {
+                return false;
+            }
+            lh.managedFilesChanged();
+            return true;
+        }
+    }
     
 }

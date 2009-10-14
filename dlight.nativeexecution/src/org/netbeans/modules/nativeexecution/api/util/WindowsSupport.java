@@ -43,10 +43,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -70,7 +74,8 @@ public final class WindowsSupport {
     private ShellType type = ShellType.NO_SHELL;
     private String shell = null;
     private String bin = null;
-    private Properties env = null;
+    private Map<String, String> env = null;
+    private String REG_EXE;
 
     private WindowsSupport() {
         init();
@@ -91,6 +96,18 @@ public final class WindowsSupport {
     }
 
     public void init() {
+        String reg_exe = "reg.exe"; // NOI18N
+
+        try {
+            String windir = System.getenv("WINDIR"); // NOI18N
+            File sys32 = new File(windir, "System32"); // NOI18N
+            reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
+        } catch (Throwable th) {
+            System.out.println(th);
+        }
+
+        REG_EXE = reg_exe;
+
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
                 "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
@@ -102,6 +119,13 @@ public final class WindowsSupport {
                     "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
                     "rootdir", // NOI18N
                     ".*rootdir.*REG_SZ(.*)"); // NOI18N
+        }
+
+        if (cygwinRoot == null) {
+            cygwinRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
+                    "native", // NOI18N
+                    ".*native.*REG_SZ(.*)"); // NOI18N
         }
 
         if (cygwinRoot != null) {
@@ -119,6 +143,13 @@ public final class WindowsSupport {
                 "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
                 "Inno Setup: App Path", // NOI18N
                 ".*REG_SZ(.*)"); // NOI18N
+
+        if (msysRoot == null) {
+            msysRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+                    "Inno Setup: App Path", // NOI18N
+                    ".*REG_SZ(.*)"); // NOI18N
+        }
 
         if (msysRoot != null) {
             File sh = new File(msysRoot + "/bin/sh.exe"); // NOI18N
@@ -183,11 +214,10 @@ public final class WindowsSupport {
         }
     }
 
-    private static String queryWindowsRegistry(String key, String param, String regExpr) {
+    private String queryWindowsRegistry(String key, String param, String regExpr) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
-                    "c:\\windows\\system32\\reg.exe", // NOI18N
-                    "query", key, "/v", param); // NOI18N
+                    REG_EXE, "query", key, "/v", param); // NOI18N
             Process p = pb.start();
             Pattern pattern = Pattern.compile(regExpr);
 
@@ -215,18 +245,38 @@ public final class WindowsSupport {
         return null;
     }
 
+    public String convertToCygwinPath(String winPath) {
+        return convertToShellPath(winPath, ShellType.CYGWIN);
+    }
+
+    public String convertFromCygwinPath(String cygwinPath) {
+        return convertToWindowsPath(cygwinPath, ShellType.CYGWIN);
+    }
+
+    public String convertToMSysPath(String winPath) {
+        return convertToShellPath(winPath, ShellType.MSYS);
+    }
+
+    public String convertFromMSysPath(String msysPath) {
+        return convertToWindowsPath(msysPath, ShellType.MSYS);
+    }
+
     /**
      * Cygwin is preferrable shell (over msys). So it cygwin is
      * installed we will always use it's for shell
      */
     public String convertToShellPath(String path) {
+        return convertToShellPath(path, type);
+    }
+
+    private String convertToShellPath(String path, ShellType shellType) {
         String result = ""; // NOI18N
 
         if (path == null || path.length() == 0) {
             return result;
         }
 
-        switch (type) {
+        switch (shellType) {
             case CYGWIN:
                 List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
 
@@ -301,9 +351,13 @@ public final class WindowsSupport {
     }
 
     public String convertToWindowsPath(String path) {
+        return convertToWindowsPath(path, type);
+    }
+
+    private String convertToWindowsPath(String path, ShellType shellType) {
         String result = ""; // NOI18N
 
-        switch (type) {
+        switch (shellType) {
             case CYGWIN:
                 List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
 
@@ -320,6 +374,7 @@ public final class WindowsSupport {
                 result = (result + path).replaceAll("/", "\\\\"); // NOI18N
                 break;
             default:
+                result = path;
         }
 
         return result;
@@ -355,16 +410,16 @@ public final class WindowsSupport {
         return sb.toString();
     }
 
-    public synchronized Properties getEnv() {
+    public synchronized Map<String, String> getEnv() {
         if (env == null) {
-            env = readEnv();
+            env = Collections.unmodifiableMap(readEnv());
         }
 
         return env;
     }
 
-    private static Properties readEnv() {
-        Properties result = new Properties();
+    private static Map<String, String> readEnv() {
+        Map<String, String> result = new TreeMap<String, String>(new CaseInsensitiveComparator());
 
         try {
             String os = System.getProperty("os.name").toLowerCase(); // NOI18N
@@ -381,9 +436,9 @@ public final class WindowsSupport {
 
             for (String line : out) {
                 int idx = line.indexOf('=');
-                String key = line.substring(0, idx).trim().toUpperCase();
+                String key = line.substring(0, idx).trim();
                 String value = line.substring(idx + 1);
-                result.setProperty(key, value);
+                result.put(key, value);
             }
 
             int exitStatus = -1;
@@ -434,5 +489,27 @@ public final class WindowsSupport {
         CYGWIN,
         MSYS,
         UNKNOWN
+    }
+
+    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
+
+        public CaseInsensitiveComparator() {
+        }
+
+        public int compare(String s1, String s2) {
+            if (s1 == null && s2 == null) {
+                return 0;
+            }
+
+            if (s1 == null) {
+                return 1;
+            }
+
+            if (s2 == null) {
+                return -1;
+            }
+
+            return s1.toUpperCase().compareTo(s2.toUpperCase());
+        }
     }
 }

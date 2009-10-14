@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,21 +45,27 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-
-import java.lang.ref.WeakReference;
-import java.util.*;
-import org.netbeans.junit.*;
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class AbstractLookupBaseHid extends NbTestCase {
     private static AbstractLookupBaseHid running;
 
@@ -72,7 +78,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** implementation of methods that can influence the behaviour */
     Impl impl;
     
-    protected AbstractLookupBaseHid(java.lang.String testName, Impl impl) {
+    protected AbstractLookupBaseHid(String testName, Impl impl) {
         super(testName);
         if (impl == null && (this instanceof Impl)) {
             impl = (Impl)this;
@@ -80,7 +86,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         this.impl = impl;
     }
     
-    protected void setUp () {
+    protected @Override void setUp() {
         this.ic = new InstanceContent ();
         
         beforeActualTest(getName());
@@ -90,7 +96,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         running = this;
     }        
     
-    protected void tearDown () {
+    protected @Override void tearDown() {
         running = null;
     }
     
@@ -129,18 +135,18 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** Test if first is really first.
      */
     public void testFirst () {
-        Object i1 = new Integer (1);
-        Object i2 = new Integer (2);
+        Integer i1 = 1;
+        Integer i2 = 2;
         
         ic.add (i1);
         ic.add (i2);
         
-        Object found = lookup.lookup (Integer.class);
+        Integer found = lookup.lookup(Integer.class);
         if (found != i1) {
             fail ("First object is not first: " + found + " != " + i1);
         }
         
-        ArrayList list = new ArrayList ();
+        List<Integer> list = new ArrayList<Integer>();
         list.add (i2);
         list.add (i1);
         ic.set (list, null);
@@ -168,7 +174,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
             fail ("First object in intances not found");
         }
 
-        Iterator all = lookup.lookup (new Lookup.Template (Object.class)).allInstances ().iterator ();
+        Iterator<?> all = lookup.lookupAll(Object.class).iterator();
         checkIterator ("Difference between instances added and found", all, Arrays.asList (INSTANCES));
     }
     
@@ -185,7 +191,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         Runnable r2 = new Runnable () {
             public void run () {}
         };
-        ArrayList l = new ArrayList ();
+        List<Object> l = new ArrayList<Object>();
 
         l.add (s1);
         l.add (s2);
@@ -210,16 +216,16 @@ public class AbstractLookupBaseHid extends NbTestCase {
         ic.add ("A serializable string");
         lookup.lookup (Serializable.class);
         
-        ic.set (Collections.EMPTY_LIST, null);
+        ic.set (Collections.emptyList(), null);
     }
     
     /** Tests a more complex reorder on nodes.
      */
     public void testComplexReorder () {
-        Integer i1 = new Integer (1);
-        Long i2 = new Long (2);
+        Integer i1 = 1;
+        Long i2 = 2L;
         
-        ArrayList l = new ArrayList ();
+        List<Object> l = new ArrayList<Object>();
         l.add (i1);
         l.add (i2);
         ic.set (l, null);
@@ -241,12 +247,12 @@ public class AbstractLookupBaseHid extends NbTestCase {
      */
     public void testSetPairs () {
         // test setPairs method
-        ArrayList li = new ArrayList();
+        List<Object> li = new ArrayList<Object>();
         li.addAll (Arrays.asList (INSTANCES));
         ic.set (li, null);
         
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Object.class));
-        Iterator all = res.allInstances ().iterator ();
+        Lookup.Result<Object> res = lookup.lookupResult(Object.class);
+        Iterator<?> all = res.allInstances().iterator();
         checkIterator ("Original order not kept", all, li);
         
         // reverse the order
@@ -268,23 +274,23 @@ public class AbstractLookupBaseHid extends NbTestCase {
      */
     public void testSetPairsFire () {
         // test setPairs method
-        ArrayList li = new ArrayList();
+        List<Object> li = new ArrayList<Object>();
         li.addAll (Arrays.asList (INSTANCES));
         ic.set (li, null);
         
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Integer.class));
-        Iterator all = res.allInstances ().iterator ();
+        Lookup.Result<Integer> res = lookup.lookupResult(Integer.class);
+        Iterator<?> all = res.allInstances().iterator();
         checkIterator ("Integer is not there", all, Collections.nCopies (1, INSTANCES[0]));
         
         // change the pairs
         LL listener = new LL (res);
         res.addLookupListener (listener);
 
-        ArrayList l2 = new ArrayList (li);
+        List<Object> l2 = new ArrayList<Object>(li);
         l2.remove (INSTANCES[0]);
         ic.set (l2, null);
 
-        all = lookup.lookup (new Lookup.Template (Object.class)).allInstances ().iterator ();
+        all = lookup.lookupAll(Object.class).iterator();
         checkIterator ("The removed integer is not noticed", all, l2);
 
         if (listener.getCount () != 1) {
@@ -297,24 +303,24 @@ public class AbstractLookupBaseHid extends NbTestCase {
     public void testSetPairsDoesNotFire () {
         Object tmp = new Object ();
 
-        ArrayList li = new ArrayList();
+        List<Object> li = new ArrayList<Object>();
         li.add (tmp);
         li.addAll (Arrays.asList (INSTANCES));
         ic.set (li, null);
         
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Integer.class));
-        Iterator all = res.allInstances ().iterator ();
+        Lookup.Result<Integer> res = lookup.lookupResult(Integer.class);
+        Iterator<?> all = res.allInstances ().iterator ();
         checkIterator ("Integer is not there", all, Collections.nCopies (1, INSTANCES[0]));
         
         // change the pairs
         LL listener = new LL (res);
         res.addLookupListener (listener);
 
-        ArrayList l2 = new ArrayList (li);
+        List<Object> l2 = new ArrayList<Object>(li);
         l2.remove (tmp);
         ic.set (l2, null);
 
-        all = lookup.lookup (new Lookup.Template (Object.class)).allInstances ().iterator ();
+        all = lookup.lookupAll(Object.class).iterator();
         checkIterator ("The removed integer is not noticed", all, l2);
 
         if (listener.getCount () != 0) {
@@ -336,7 +342,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
 
     /** Tries to find all classes and superclasses in the lookup.
     */
-    private void findAll (Lookup lookup, Class clazz, boolean shouldBeThere) {
+    private void findAll(Lookup lookup, Class<?> clazz, boolean shouldBeThere) {
         if (clazz == null) return;
 
         Object found = lookup.lookup (clazz);
@@ -354,8 +360,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
             }
         }
 
-        Lookup.Result res = lookup.lookup (new Lookup.Template (clazz));
-        Collection collection = res.allInstances ();
+        Lookup.Result<?> res = lookup.lookupResult(clazz);
+        Collection<?> collection = res.allInstances();
 
         for (int i = 0; i < INSTANCES.length; i++) {
             boolean isSubclass = clazz.isInstance (INSTANCES[i]);
@@ -398,8 +404,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
     }
     
     public void testCanReturnReallyStrangeResults () throws Exception {
-        class QueryingPair extends org.openide.util.lookup.AbstractLookup.Pair {
-            private Integer i = new Integer (434);
+        class QueryingPair extends AbstractLookup.Pair<Object> {
+            private Integer i = 434;
             
             //
             // do the test
@@ -418,28 +424,28 @@ public class AbstractLookupBaseHid extends NbTestCase {
             // Implementation of pair
             // 
         
-            public java.lang.String getId() {
+            public String getId() {
                 return getType ().toString();
             }
 
-            public java.lang.String getDisplayName() {
+            public String getDisplayName() {
                 return getId ();
             }
 
-            public java.lang.Class getType() {
+            public Class<?> getType() {
                 return getClass ();
             }
 
-            protected boolean creatorOf(java.lang.Object obj) {
+            protected boolean creatorOf(Object obj) {
                 return obj == this;
             }
 
-            protected boolean instanceOf(java.lang.Class c) {
+            protected boolean instanceOf(Class<?> c) {
                 assertEquals ("Integer found or exception is thrown", i, lookup.lookup (Integer.class));
                 return c.isAssignableFrom(getType ());
             }
 
-            public java.lang.Object getInstance() {
+            public Object getInstance() {
                 return this;
             }
             
@@ -453,8 +459,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
     
     /** Test of firing events. */
     public void testLookupListener() {
-        Integer inst = new Integer(10);
-        Lookup.Result res = lookup.lookup(new Lookup.Template(inst.getClass()));
+        Object inst = 10;
+        Lookup.Result<?> res = lookup.lookupResult(inst.getClass());
         res.allInstances ();
         
         LL listener = new LL(res);
@@ -484,48 +490,48 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** Testing identity of the lookup.
      */
     public void testId () {
-        AbstractLookup.Template templ;
+        Lookup.Template<?> templ;
         int cnt;
         
         addInstances (INSTANCES);
         
-        AbstractLookup.Result res = lookup.lookup (new AbstractLookup.Template ());
-        Iterator it;
-        it = res.allItems ().iterator ();
-        while (it.hasNext ()) {
-            AbstractLookup.Item item = (AbstractLookup.Item)it.next ();
+        Lookup.Result<?> res = lookup.lookupResult(Object.class);
+        for (AbstractLookup.Item<?> item : res.allItems()) {
             
-            templ = new AbstractLookup.Template (null, item.getId (), null);
+            templ = new Lookup.Template<Object>(null, item.getId(), null);
             cnt = lookup.lookup (templ).allInstances ().size ();
             if (cnt != 1) {
                 fail ("Identity lookup failed. Instances = " + cnt);
             }
 
-            templ = new AbstractLookup.Template (item.getType (), item.getId (), null);
+            templ = makeTemplate(item.getType(), item.getId());
             cnt = lookup.lookup (templ).allInstances ().size ();
             if (cnt != 1) {
                 fail ("Identity lookup with type failed. Instances = " + cnt);
             }
             
-            templ = new AbstractLookup.Template (this.getClass (), item.getId (), null);
+            templ = makeTemplate(this.getClass(), item.getId());
             cnt = lookup.lookup (templ).allInstances ().size ();
             if (cnt != 0) {
                 fail ("Identity lookup with wrong type failed. Instances = " + cnt);
             }
             
-            templ = new AbstractLookup.Template (null, null, item.getInstance ());
+            templ = new Lookup.Template<Object>(null, null, item.getInstance());
             cnt = lookup.lookup (templ).allInstances ().size ();
             if (cnt != 1) {
                 fail ("Instance lookup failed. Instances = " + cnt);
             }
 
-            templ = new AbstractLookup.Template (null, item.getId (), item.getInstance ());
+            templ = new Lookup.Template<Object>(null, item.getId(), item.getInstance());
             cnt = lookup.lookup (templ).allInstances ().size ();
             if (cnt != 1) {
                 fail ("Instance & identity lookup failed. Instances = " + cnt);
             }
             
         }
+    }
+    private static <T> Lookup.Template<T> makeTemplate(Class<T> clazz, String id) { // captures type parameter
+        return new Lookup.Template<T>(clazz, id, null);
     }
     
     /** Tests adding and removing.
@@ -534,7 +540,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         Object map = new javax.swing.ActionMap ();
         LL ll = new LL ();
         
-        Lookup.Result res = lookup.lookup (new Lookup.Template (map.getClass ()));
+        Lookup.Result<?> res = lookup.lookupResult(map.getClass());
         res.allItems();
         res.addLookupListener (ll);
         ll.source = res;
@@ -561,8 +567,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
      */
     public void testGarbageCollect () throws Exception {
         ClassLoader l = new CL ();
-        Class c = l.loadClass (Garbage.class.getName ());
-        WeakReference ref = new WeakReference (c);
+        Class<?> c = l.loadClass(Garbage.class.getName());
+        Reference<?> ref = new WeakReference<Object>(c);
 
         lookup.lookup (c);
         
@@ -578,18 +584,15 @@ public class AbstractLookupBaseHid extends NbTestCase {
     public void testItemsAndIntances () {
         addInstances (INSTANCES);
         
-        Lookup.Template t = new Lookup.Template (Object.class);
-        Lookup.Result r = lookup.lookup (t);
-        Collection items = r.allItems ();
-        Collection insts = r.allInstances ();
+        Lookup.Result<Object> r = lookup.lookupResult(Object.class);
+        Collection<? extends Lookup.Item<?>> items = r.allItems();
+        Collection<?> insts = r.allInstances();
         
         if (items.size () != insts.size ()) {
             fail ("Different size of sets");
         }
-        
-        Iterator it = items.iterator ();
-        while (it.hasNext ()) {
-            Lookup.Item item = (Lookup.Item)it.next ();
+
+        for (Lookup.Item<?> item : items) {
             if (!insts.contains (item.getInstance ())) {
                 fail ("Intance " + item.getInstance () + " is missing in " + insts);
             }
@@ -599,7 +602,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** Checks search for interface.
      */
     public void testSearchForInterface () {
-        Lookup.Template t = new Lookup.Template (Serializable.class, null, null);
+        Lookup.Template<Serializable> t = new Lookup.Template<Serializable>(Serializable.class, null, null);
         
         assertNull("Nothing to find", lookup.lookupItem (t));
         
@@ -615,7 +618,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     public void testIncorectInstanceOf40364 () {
         final Long sharedLong = new Long (0);
         
-        class P extends AbstractLookup.Pair {
+        class P extends AbstractLookup.Pair<Object> {
             public boolean isLong;
             
             P (boolean b) {
@@ -638,19 +641,19 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 return sharedLong;
             }
             
-            public Class getType () {
+            public Class<?> getType() {
                 return isLong ? Long.class : Number.class;
             }
             
-            protected boolean instanceOf (Class c) {
+            protected boolean instanceOf(Class<?> c) {
                 return c.isAssignableFrom (getType ());
             }
     
-            public int hashCode () {
+            public @Override int hashCode() {
                 return getClass ().hashCode ();
             }    
 
-            public boolean equals (Object obj) {
+            public @Override boolean equals(Object obj) {
                 return obj != null && getClass ().equals (obj.getClass ());
             }
         }
@@ -666,16 +669,16 @@ public class AbstractLookupBaseHid extends NbTestCase {
         P lng2 = new P (false);
         ic.setPairs (Collections.singleton (lng2));
         
-        Collection res = lookup.lookup (new Lookup.Template (Object.class)).allItems ();
+        Collection<? extends Lookup.Item<?>> res = lookup.lookupResult(Object.class).allItems();
         assertEquals ("Just one pair", 1, res.size ());
     }
 
     public void testAbsolutelyCrazyWayToSimulateIssue48590ByChangingTheBehaviourOfEqualOnTheFly () throws Exception {
-        class X implements testInterfaceInheritanceA, testInterfaceInheritanceB {
+        class X implements TestInterfaceInheritanceA, TestInterfaceInheritanceB {
         }
         final X shared = new X ();
         
-        class P extends AbstractLookup.Pair {
+        class P extends AbstractLookup.Pair<Object> {
             public int howLong;
             
             P (int b) {
@@ -698,19 +701,19 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 return shared;
             }
             
-            public Class getType () {
-                return howLong == 0 ? testInterfaceInheritanceB.class : testInterfaceInheritanceA.class;
+            public Class<?> getType() {
+                return howLong == 0 ? TestInterfaceInheritanceB.class : TestInterfaceInheritanceA.class;
             }
             
-            protected boolean instanceOf (Class c) {
+            protected boolean instanceOf(Class<?> c) {
                 return c.isAssignableFrom (getType ());
             }
     
-            public int hashCode () {
+            public @Override int hashCode() {
                 return getClass ().hashCode ();
             }    
 
-            public boolean equals (Object obj) {
+            public @Override boolean equals(Object obj) {
                 if (obj instanceof P) {
                     P p = (P)obj;
                     if (this.howLong > 0) {
@@ -728,8 +731,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
         
         // to create the right structure in the lookup
-        Lookup.Result a = lookup.lookup (new Lookup.Template (testInterfaceInheritanceA.class));
-        Lookup.Result b = lookup.lookup (new Lookup.Template (testInterfaceInheritanceB.class));
+        Lookup.Result<?> a = lookup.lookupResult(TestInterfaceInheritanceA.class);
+        Lookup.Result<?> b = lookup.lookupResult(TestInterfaceInheritanceB.class);
         
         P lng1 = new P (0);
         ic.addPair (lng1);
@@ -769,15 +772,15 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 
             }
             
-            public void assertOnlyMe (String msg, Lookup.Result res) {
-                Collection col = res.allInstances ();
+            public void assertOnlyMe (String msg, Lookup.Result<?> res) {
+                Collection<?> col = res.allInstances();
                 assertEquals (msg + " just one", 1, col.size ());
                 assertSame (msg + " and it is me", this, col.iterator ().next ());
             }
         }
         
-        Lookup.Result runnable = lookup.lookup (new Lookup.Template (Runnable.class));
-        Lookup.Result serial = lookup.lookup (new Lookup.Template (Serializable.class));
+        Lookup.Result<?> runnable = lookup.lookupResult(Runnable.class);
+        Lookup.Result<?> serial = lookup.lookupResult(Serializable.class);
         
         
         X x = new X ();
@@ -814,13 +817,13 @@ public class AbstractLookupBaseHid extends NbTestCase {
         int size1, size2;
         
         //interface query
-        size1 = lookup.lookup(new Lookup.Template(java.rmi.Remote.class)).allInstances().size();
+        size1 = lookup.lookupAll(java.rmi.Remote.class).size();
         size2 = countInstances(types, java.rmi.Remote.class);
         
         if (size1 != size2) fail("Lookup with interface failed: " + size1 + " != " + size2);
         
         // superclass query
-        size1 = lookup.lookup(new Lookup.Template(A.class)).allInstances().size();
+        size1 = lookup.lookupAll(A.class).size();
         size2 = countInstances(types, A.class);
         
         if (size1 != size2) fail("Lookup with superclass failed: " + size1 + " != " + size2);
@@ -829,11 +832,11 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** Test interface inheritance.
      */
     public void testInterfaceInheritance() {
-        testInterfaceInheritanceA[] types = {
-            new testInterfaceInheritanceB() {}, 
-            new testInterfaceInheritanceBB() {}, 
-            new testInterfaceInheritanceC() {}, 
-            new testInterfaceInheritanceD() {}
+        TestInterfaceInheritanceA[] types = {
+            new TestInterfaceInheritanceB() {},
+            new TestInterfaceInheritanceBB() {},
+            new TestInterfaceInheritanceC() {},
+            new TestInterfaceInheritanceD() {}
         };
         
         for (int i = 0; i < types.length; i++) {
@@ -848,7 +851,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         
         //interface query
         LL l = new LL ();
-        Lookup.Result res = lookup.lookup(new Lookup.Template(java.rmi.Remote.class));
+        Lookup.Result<?> res = lookup.lookupResult(java.rmi.Remote.class);
         l.source = res;
         size1 = res.allInstances().size();
         size2 = countInstances(types, java.rmi.Remote.class);
@@ -856,8 +859,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
         if (size1 != size2) fail("Lookup with interface failed: " + size1 + " != " + size2);
         
         // superclass query
-        size1 = lookup.lookup(new Lookup.Template(testInterfaceInheritanceA.class)).allInstances().size();
-        size2 = countInstances(types, testInterfaceInheritanceA.class);
+        size1 = lookup.lookupAll(TestInterfaceInheritanceA.class).size();
+        size2 = countInstances(types, TestInterfaceInheritanceA.class);
         
         if (size1 != size2) fail("Lookup with superclass failed: " + size1 + " != " + size2);
         
@@ -876,8 +879,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
         BrokenPair broken = new BrokenPair (true, false);
         ic.addPair (broken);
         
-        Lookup.Template templ = new Lookup.Template (BrokenPair.class);
-        Object item = lookup.lookupItem (templ);
+        Lookup.Template<BrokenPair> templ = new Lookup.Template<BrokenPair>(BrokenPair.class);
+        Lookup.Item<BrokenPair> item = lookup.lookupItem (templ);
         assertEquals ("Broken is found", broken, item);
     }
     
@@ -885,9 +888,9 @@ public class AbstractLookupBaseHid extends NbTestCase {
         BrokenPair broken = new BrokenPair (false, true);
         ic.addPair (broken);
         
-        Lookup.Template templ = new Lookup.Template (BrokenPair.class);
+        Lookup.Template<BrokenPair> templ = new Lookup.Template<BrokenPair>(BrokenPair.class);
         
-        Collection c = lookup.lookup (templ).allInstances();
+        Collection<? extends BrokenPair> c = lookup.lookup (templ).allInstances();
         assertEquals ("One item", 1, c.size ());
         assertEquals ("Broken is found again", broken, c.iterator().next ());
     }
@@ -896,11 +899,11 @@ public class AbstractLookupBaseHid extends NbTestCase {
         BrokenPair broken = new BrokenPair (false, true);
         ic.addPair (broken);
         
-        Lookup.Template templ = new Lookup.Template (BrokenPair.class);
-        Object item = lookup.lookupItem (templ);
+        Lookup.Template<BrokenPair> templ = new Lookup.Template<BrokenPair>(BrokenPair.class);
+        Lookup.Item<BrokenPair> item = lookup.lookupItem (templ);
         assertEquals ("Broken is found", broken, item);
         
-        Collection c = lookup.lookup (templ).allInstances();
+        Collection<? extends BrokenPair> c = lookup.lookup(templ).allInstances();
         assertEquals ("One item", 1, c.size ());
         assertEquals ("Broken is found again", broken, c.iterator().next ());
     }
@@ -909,8 +912,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
         BrokenPair broken = new BrokenPair (false, true);
         ic.addPair (broken);
         
-        Lookup.Template templ = new Lookup.Template (BrokenPair.class);
-        Collection c = lookup.lookup (templ).allInstances();
+        Lookup.Template<BrokenPair> templ = new Lookup.Template<BrokenPair>(BrokenPair.class);
+        Collection<? extends BrokenPair> c = lookup.lookup(templ).allInstances();
         assertEquals ("One item", 1, c.size ());
         assertEquals ("Broken is found again", broken, c.iterator().next ());
         
@@ -919,9 +922,9 @@ public class AbstractLookupBaseHid extends NbTestCase {
     }
     
     public void testAddALotOfPairsIntoTheLookupOneByOne () throws Exception {
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Integer.class));
+        Lookup.Result<Integer> res = lookup.lookupResult(Integer.class);
         for (int i = 0; i < 1000; i++) {
-            ic.add (new Integer (i));
+            ic.add(i);
         }
         assertEquals (
             "there is the right count", 
@@ -931,31 +934,30 @@ public class AbstractLookupBaseHid extends NbTestCase {
     }
     
     public void testAddALotOfPairsIntoTheLookup () throws Exception {
-        ArrayList arr = new ArrayList ();
+        List<Integer> arr = new ArrayList<Integer>();
         for (int i = 0; i < 1000; i++) {
-            arr.add (new Integer (i));
+            arr.add(i);
         }
         ic.set (arr, null);
         
         assertEquals (
             "there is the right count", 
             1000, 
-            lookup.lookup (new Lookup.Template (Integer.class)).allItems().size ()
+            lookup.lookupResult(Integer.class).allItems().size()
         );
     }
 
     
     public void testDoubleAddIssue35274 () throws Exception {
-        class P extends AbstractLookup.Pair {
+        class P extends AbstractLookup.Pair<Object> {
             protected boolean creatorOf(Object obj) { return false; }
             public String getDisplayName() { return ""; }
             public String getId() { return ""; }
             public Object getInstance() { return null; }
-            public Class getType() { return Object.class; }
-            protected boolean instanceOf(Class c) { return c.isAssignableFrom(getType ()); }
-            
-            public int hashCode () { return getClass ().hashCode(); };
-            public boolean equals (Object obj) { return getClass () == obj.getClass (); };
+            public Class<?> getType() { return Object.class; }
+            protected boolean instanceOf(Class<?> c) { return c.isAssignableFrom(getType ()); }
+            public @Override int hashCode() {return getClass().hashCode();}
+            public @Override boolean equals(Object obj) {return getClass() == obj.getClass();}
         }
         
         P p = new P ();
@@ -963,7 +965,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         ic.addPair (p);
         ic.addPair (p);
         
-        Lookup.Result result = lookup.lookup (new Lookup.Template (Object.class));
+        Lookup.Result<Object> result = lookup.lookupResult(Object.class);
         Collection res = result.allItems ();
         assertEquals ("One item there", 1, res.size ());
         assertTrue ("It is the p", p == res.iterator ().next ());
@@ -971,13 +973,13 @@ public class AbstractLookupBaseHid extends NbTestCase {
         P p2 = new P ();
         ic.addPair (p2);
         
-        WeakReference ref = new WeakReference (result);
+        Reference<?> ref = new WeakReference<Object>(result);
         result = null;
         assertGC ("The result can disappear", ref);
         
         impl.clearCaches ();
         
-        result = lookup.lookup (new Lookup.Template (Object.class));
+        result = lookup.lookupResult(Object.class);
         res = result.allItems ();
         assertEquals ("One item is still there", 1, res.size ());
         assertTrue ("But the p2 replaced p", p2 == res.iterator ().next ());
@@ -1178,7 +1180,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         synchronized (pair) {
             class BlockInInstanceOf implements Runnable {
                 public void run () {
-                    Integer i = (Integer)my.lookup (Integer.class);
+                    Integer i = my.lookup(Integer.class);
                     assertEquals (new Integer (10), i);
                 }
             }
@@ -1249,12 +1251,12 @@ public class AbstractLookupBaseHid extends NbTestCase {
     }
     
     /** Checks the iterator */
-    private void checkIterator (String msg, Iterator it1, List list) {
+    private <T> void checkIterator(String msg, Iterator<? extends T> it1, List<? extends T> list) {
         int cnt = 0;
-        Iterator it2 = list.iterator ();
+        Iterator<? extends T> it2 = list.iterator();
         while (it1.hasNext () && it2.hasNext ()) {
-            Object n1 = it1.next ();
-            Object n2 = it2.next ();
+            T n1 = it1.next();
+            T n2 = it2.next();
             
             if (n1 != n2) {
                 fail (msg + " iterator[" + cnt + "] = " + n1 + " but list[" + cnt + "] = " + n2);
@@ -1413,7 +1415,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 this.ic = ic;
             }
 
-            protected void beforeLookup(Template template) {
+            protected @Override void beforeLookup(Template template) {
                 if (ic != null) {
                     ic.add(am);
                     ic = null;
@@ -1447,7 +1449,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 return delegate;
             }
             
-            public void setLookups(Lookup[] arr) {
+            public void setLookups(Lookup... arr) {
                 if (wrapBySimple) {
                     delegate = new ProxyLookup(arr);                    
                 } else {
@@ -1479,10 +1481,10 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertEquals("No change in ActionMap 2", 0, ll.getCount());
         ic.add(m2);
         assertEquals("No change in ActionMap 3", 0, ll.getCount());
-        p.setLookups(new Lookup[]{ lookup, actionMapLookup, Lookup.EMPTY });
+        p.setLookups(lookup, actionMapLookup, Lookup.EMPTY);
         assertEquals("No change in ActionMap 4", 0, ll.getCount());
         
-        ActionMap am2 = (ActionMap)p.query.lookup(ActionMap.class);
+        ActionMap am2 = p.query.lookup(ActionMap.class);
         assertEquals("Still the same action map", am, am2);
         
         
@@ -1497,7 +1499,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 this.ic = ic;
             }
 
-            protected void beforeLookup(Template template) {
+            protected @Override void beforeLookup(Template template) {
                 if (ic != null) {
                     ic.add(am);
                     ic = null;
@@ -1826,11 +1828,11 @@ public class AbstractLookupBaseHid extends NbTestCase {
 
     /** A set of interfaces for testInterfaceInheritance
      */
-    interface testInterfaceInheritanceA {}
-    interface testInterfaceInheritanceB extends testInterfaceInheritanceA, java.rmi.Remote {}
-    interface testInterfaceInheritanceBB extends testInterfaceInheritanceB {}
-    interface testInterfaceInheritanceC extends testInterfaceInheritanceA, java.rmi.Remote {}
-    interface testInterfaceInheritanceD extends testInterfaceInheritanceA {}
+    interface TestInterfaceInheritanceA {}
+    interface TestInterfaceInheritanceB extends TestInterfaceInheritanceA, java.rmi.Remote {}
+    interface TestInterfaceInheritanceBB extends TestInterfaceInheritanceB {}
+    interface TestInterfaceInheritanceC extends TestInterfaceInheritanceA, java.rmi.Remote {}
+    interface TestInterfaceInheritanceD extends TestInterfaceInheritanceA {}
     
     /** A special class for garbage test */
     public static final class Garbage extends Object implements Serializable {
@@ -1844,7 +1846,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
             super (null);
         }
 
-        public Class findClass (String name) throws ClassNotFoundException {
+        public @Override Class findClass(String name) throws ClassNotFoundException {
             if (name.equals (Garbage.class.getName ())) {
                 String n = name.replace ('.', '/');
                 java.io.InputStream is = getClass ().getResourceAsStream ("/" + n + ".class");

@@ -305,6 +305,9 @@ public final class JavaUtils {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         boolean opened = false;
+                        if (classBinaryName == null) {
+                            return;
+                        }
                         TypeElement element = JavaUtils.findClassElementByBinaryName(classBinaryName, cc);
                         if (element != null) {
                             opened = ElementOpen.open(js.getClasspathInfo(), element);

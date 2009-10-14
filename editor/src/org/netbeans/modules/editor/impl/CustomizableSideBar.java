@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -76,7 +76,8 @@ import org.openide.util.LookupListener;
  *  @author  Martin Roskanin
  */
 public final class CustomizableSideBar {
-    
+
+    // -J-Dorg.netbeans.modules.editor.impl.CustomizableSideBar.level=FINE
     private static final Logger LOG = Logger.getLogger(CustomizableSideBar.class.getName());
     
     private static final Map<JTextComponent, Map<SideBarPosition, Reference<JPanel>>> CACHE = new WeakHashMap<JTextComponent, Map<SideBarPosition, Reference<JPanel>>>(5);
@@ -141,6 +142,12 @@ public final class CustomizableSideBar {
     public static Map<SideBarPosition, JComponent> getSideBars(JTextComponent target) {
         assert SwingUtilities.isEventDispatchThread() : "Side bars can only be accessed from AWT"; //NOI18N
         return getSideBarsInternal(target);
+    }
+
+    public static void resetSideBars(JTextComponent target) {
+        synchronized (CACHE) {
+            CACHE.put(target, null);
+        }
     }
 
     private static Map<SideBarPosition, JComponent> getSideBarsInternal(JTextComponent target) {
@@ -224,6 +231,10 @@ public final class CustomizableSideBar {
                 if (errorStripeOnly && !"errorStripe".equals(sideBar.getName())) { //NOI18N
                     LOG.fine("Error stripe sidebar only. Ignoring '" + sideBar.getName() + "' side bar created by the factory: " + f); //NOI18N
                     continue;
+                }
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Created sidebar " + sideBar + "; IHC=" + System.identityHashCode(sideBar) + '\n');
                 }
                 
                 sideBars.add(sideBar);

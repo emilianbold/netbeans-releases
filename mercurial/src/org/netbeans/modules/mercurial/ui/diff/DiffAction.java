@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,8 +48,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Set;
 
-import org.netbeans.modules.mercurial.FileInformation;
-import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -75,9 +73,8 @@ public class DiffAction extends ContextAction {
     public void performAction(ActionEvent e) {
         String contextName = Utils.getContextDisplayName(context);
                 
-        File root = HgUtils.getRootFile(context);
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
-        boolean bNotManaged = (root == null) || ( files == null || files.length == 0);
+        boolean bNotManaged = !HgUtils.isFromHgRepository(context) || ( files == null || files.length == 0);
 
         if (bNotManaged) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
@@ -97,9 +94,10 @@ public class DiffAction extends ContextAction {
         diff(context, Setup.DIFFTYPE_LOCAL, contextName);
     }
     
+    @Override
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true;
     } 

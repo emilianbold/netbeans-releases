@@ -68,7 +68,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  * @author Radek Matous
  */
 public class ParameterInfoSupport {
-
     private ModelVisitor modelVisitor;
     private Document document;
     private int offset;
@@ -178,6 +177,8 @@ public class ParameterInfoSupport {
                             leftBraces++;
                         } else if (isRightBracket(token)) {
                             rightBraces++;
+                        } else {
+                            state = State.PARAMS;
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -188,7 +189,7 @@ public class ParameterInfoSupport {
                         if (isString(token)) {
                             metaAll.insert(0, token.text().toString());
                             if (anchor == -1) {
-                                anchor = tokenSequence.offset();
+                                anchor = tokenSequence.offset()+token.text().toString().length();
                             }
                             state = State.METHOD;
                         }
@@ -237,7 +238,7 @@ public class ParameterInfoSupport {
             if (!elemenst.isEmpty()) {
                 ModelElement element = elemenst.peek();
                 if (element instanceof FunctionScope) {
-                    return new ParameterInfo(toParamNames((FunctionScope) element), commasCount, offset);
+                    return new ParameterInfo(toParamNames((FunctionScope) element), commasCount, anchor);
                 }
             }
         }
@@ -329,7 +330,7 @@ public class ParameterInfoSupport {
 
             @Override
             public void scan(ASTNode node) {
-                if (node != null && retval[0] == null) {
+                if (node != null) {
                     OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                     if (range.containsInclusive(caretOffset)) {
                         super.scan(node);
@@ -339,21 +340,17 @@ public class ParameterInfoSupport {
 
             @Override
             public void visit(ClassInstanceCreation node) {
-                if (retval[0] == null) {
-                    ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
-                    retval[0] = createParameterInfo(nodeInfo,node.ctorParams());
-                    super.visit(node);
-                }
+                ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
+                retval[0] = createParameterInfo(nodeInfo, node.ctorParams());
+                super.visit(node);
             }
 
 
             @Override
             public void visit(FunctionInvocation node) {
-                if (retval[0] == null) {
-                    ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
-                    retval[0] = createParameterInfo(nodeInfo,node.getParameters());
-                    super.visit(node);
-                }
+                ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
+                retval[0] = createParameterInfo(nodeInfo, node.getParameters());
+                super.visit(node);
             }
 
             private ParameterInfo createParameterInfo(ASTNodeInfo nodeInfo, List<Expression> parameters) {
@@ -404,12 +401,28 @@ public class ParameterInfoSupport {
         List<String> paramNames = new ArrayList<String>();
         List<? extends Parameter> parameters = functionScope.getParameters();
         for (Parameter parameter : parameters) {
-            if (parameter.isMandatory()) {
-                paramNames.add(parameter.getName());
-            } else {
-                paramNames.add(parameter.getName() + "=" + parameter.getDefaultValue() != null ? parameter.getDefaultValue() : "");//NOI18N
-            }
+            String paramString = paramToStr(parameter);
+            paramNames.add(paramString);
         }
         return paramNames;
     }
+    private static String paramToStr(Parameter parameter) {
+        StringBuilder sb = new StringBuilder();
+        List<QualifiedName> types = parameter.getTypes();
+        if (types.size() > 1) {
+            sb.append("mixed ");
+        } else {
+            for (QualifiedName qualifiedName : types) {
+                sb.append(qualifiedName.toString()).append(" "); //NOI18N
+            }
+        }
+        sb.append(parameter.getName());
+        String defaultValue = parameter.getDefaultValue();
+        if (defaultValue != null) {
+            sb.append("=").append(defaultValue).append(" "); //NOI18N
+        }
+        final String paramString = sb.toString();
+        return paramString;
+    }
+
 }

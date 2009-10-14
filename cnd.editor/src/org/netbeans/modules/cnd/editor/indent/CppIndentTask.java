@@ -43,6 +43,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
+import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Function;
+import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -136,12 +139,40 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                 }
                 // Indent the inner lines of the multi-line comment by one
                 if (!getFormatLeadingStarInComment()) {
-                    return findIndent(token) + 1;
+                    return getTokenColumn(token) + 1;
                 } else {
-                    int indent = findIndent(token) + 1;
+                    int indent = getTokenColumn(token) + 1;
                     try {
-                        if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
-                            doc.insertString(caretOffset, "* ", null); // NOI18N
+                        if (caretOffset - token.getTokenSequence().offset() == 4 &&
+                            doc.getLength() > token.getTokenSequence().offset() + 6 &&
+                            "/**\n*/".equals(doc.getText(token.getTokenSequence().offset(), 6))){ // NOI18N
+                            Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
+                            if (function != null) {
+                                StringBuilder buf = new StringBuilder();
+                                buf.append("*\n"); // NOI18N
+                                for(Parameter p : function.getParametes()) {
+                                    for(int i = 0; i < indent; i++) {
+                                        buf.append(' ');
+                                    }
+                                    buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
+                                }
+                                if (!"void".equals(function.getReturnType())) { // NOI18N
+                                    for(int i = 0; i < indent; i++) {
+                                        buf.append(' ');
+                                    }
+                                    buf.append("* @return").append('\n'); // NOI18N
+                                }
+                                for(int i = 0; i < indent; i++) {
+                                    buf.append(' ');
+                                }
+                                doc.insertString(caretOffset, buf.toString(), null);
+                            }
+                        } else {
+                            if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
+                                if (caretOffset > 0 && "\n".equals(doc.getText(caretOffset-1, 1))) { // NOI18N
+                                    doc.insertString(caretOffset, "* ", null); // NOI18N
+                                }
+                            }
                         }
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);

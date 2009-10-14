@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -408,11 +408,11 @@ class FilesystemHandler extends VCSInterceptor {
         try {
             url = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.WARNING, "No repository root url found for managed file : [" + file + "]", ex);
+            Subversion.LOG.log(Level.FINE, "No repository root url found for managed file : [" + file + "]", ex); //NOI18N
             try {
                 url = SvnUtils.getRepositoryUrl(file); // try to falback
             } catch (SVNClientException ex1) {
-                Subversion.LOG.log(Level.WARNING, "No repository url found for managed file : [" + file + "]", ex1);
+                Subversion.LOG.log(Level.FINE, "No repository url found for managed file : [" + file + "]", ex1);
             }
         }
         return url != null ? url.toString() : null;

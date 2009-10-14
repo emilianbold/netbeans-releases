@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,10 +51,10 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     public 
     @Override
     File locate(String relativePath, String codeNameBase, boolean localized) {
-        if (relativePath.equals("jython-2.5")) {
+        if (relativePath.equals("jython-2.5.1")) {
             return PythonTestBase.getXTestPythonHome();
-        } else if (relativePath.startsWith("jython-2.5" + File.separator)) {
-            return new File(PythonTestBase.getXTestPythonHome(), relativePath.substring("jython-2.5".length() + 1));
+        } else if (relativePath.startsWith("jython-2.5.1" + File.separator)) {
+            return new File(PythonTestBase.getXTestPythonHome(), relativePath.substring("jython-2.5.1".length() + 1));
         } else if (relativePath.equals("platform_info.py")) {
             String script = System.getProperty("xtest.platform_info.py");
             if (script == null) {

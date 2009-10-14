@@ -18,7 +18,7 @@
 <h2>Call Enterprise Bean Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>This dialog box generates a reference to an enterprise bean in a Java class 
-  file. Once you have a reference to the bean's local or remote interface, you 
+  file. Once you have a reference to the bean's interface, you 
   can call the bean's business methods. </p>
 <p>You open the dialog box by right-clicking in the file to which you want to 
   add the lookup code and choosing Insert Code &gt; Call Enterprise Bean. 
@@ -42,7 +42,7 @@
     Select the enterprise bean you want to call.</li>
   <li>Select whether to use inline lookup code or use an existing <a href="../../enterprise/general/service_locator.html">service 
     locator</a> class. </li>
-  <li>Specify whether to reference the local interface or the remote interface. 
+  <li>Specify whether to reference the interface you want to use.
     In order to reference a bean's local interface, the class that is referencing 
     the bean must be packaged in the same enterprise application as the enterprise 
     bean.</li>
@@ -53,8 +53,8 @@
   <li>A lookup method is created in the caller class.</li>
   <li>The enterprise bean project is added to the caller project's classpath.</li>
   <li>A reference to the entity or session bean being called is added to the deployment 
-    descriptor of the caller project. If and where the reference is added depends 
-    on which of the following applies: 
+    descriptor of the caller project or the resource is injected using annotations.
+    If and where the reference is added depends on which of the following applies:
     <ul>
       <li>If the lookup is made from an enterprise bean implementation class, 
         the reference is added to the corresponding bean.</li>

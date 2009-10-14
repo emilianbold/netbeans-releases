@@ -40,17 +40,14 @@
 package org.netbeans.modules.cnd.execution.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -58,9 +55,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-import org.openide.windows.OutputListener;
 
-public abstract class ErrorParser {
+public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
 
     protected FileObject relativeTo;
     protected final ExecutionEnvironment execEnv;
@@ -70,8 +66,6 @@ public abstract class ErrorParser {
         this.relativeTo = relativeTo;
         this.execEnv = execEnv;
     }
-
-    public abstract Result handleLine(String line) throws IOException;
 
     protected FileObject resolveFile(String fileName) {
         if (Utilities.isWindows()) {
@@ -165,54 +159,5 @@ public abstract class ErrorParser {
             }
         }
         return myObj;
-    }
-    protected static final Result NO_RESULT = new NoResult();
-    protected static final Result REMOVE_LINE = new RemoveLine();
-
-    public static abstract class Result {
-        public abstract boolean result();
-        public abstract List<ConvertedLine> converted();
-    }
-
-    private static final class NoResult extends Result {
-        @Override
-        public boolean result() {
-            return false;
-        }
-        @Override
-        public List<ConvertedLine> converted() {
-            return Collections.<ConvertedLine>emptyList();
-        }
-    }
-
-    private static final class RemoveLine extends Result {
-        @Override
-        public boolean result() {
-            return true;
-        }
-        @Override
-        public List<ConvertedLine> converted() {
-            return Collections.<ConvertedLine>emptyList();
-        }
-    }
-
-    protected static final class Results extends Result {
-        List<ConvertedLine> result = new ArrayList<ConvertedLine>(1);
-        public Results(){
-        }
-        public Results(String line, OutputListener listener, boolean important){
-            result.add(ConvertedLine.forText(line, listener));
-        }
-        public void add(String line, OutputListener listener, boolean important) {
-            result.add(ConvertedLine.forText(line, listener));
-        }
-        @Override
-        public boolean result() {
-            return true;
-        }
-        @Override
-        public List<ConvertedLine> converted() {
-            return result;
-        }
     }
 }

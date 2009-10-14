@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,8 +69,12 @@ public class RestConstants {
     public static final String SINGLETON_ANNOTATION = "Singleton";     //NOI18N
     
     public static final String CONTEXT_ANNOTATION = "Context";     //NOI18N
+
+    public static final String STATELESS_ANNOTATION = "Stateless"; //NOI18N
     
     public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
+
+     public static final String JavaEE5_EJB_PACKAGE = "javax.ejb.";       //NOI18N
     
     public static final String REST_API_CORE_PACKAGE = REST_API_PACKAGE + "core.";      //NOI18N
     
@@ -118,5 +122,5 @@ public class RestConstants {
     
     public static final String RESOURCE_CONTEXT = JERSEY_API_PACKAGE + "core.ResourceContext";          //NOI18N
     
-    
+    public static final String STATELESS = JavaEE5_EJB_PACKAGE + "Stateless";    //NOI18N
 }

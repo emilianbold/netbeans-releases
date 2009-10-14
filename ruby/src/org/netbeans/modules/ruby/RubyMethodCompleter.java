@@ -38,12 +38,10 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -69,7 +67,6 @@ import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.util.Exceptions;
 
 final class RubyMethodCompleter extends RubyBaseCompleter {
 
@@ -600,7 +597,6 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
             }
             anchorOffsetHolder[0] = anchorOffset;
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
             return false;
         }
 

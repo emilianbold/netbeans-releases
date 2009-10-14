@@ -248,7 +248,8 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
     }
 
     private static String getTcId(Artifact artifact) {
-        return artifact.getGroupId() + ":" + artifact.getArtifactId();
+        return artifact.getGroupId() + ":" + artifact.getArtifactId() +
+                ":" + artifact.getVersion();
     }
 
 }

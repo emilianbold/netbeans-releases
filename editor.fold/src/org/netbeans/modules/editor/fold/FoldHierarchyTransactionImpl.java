@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -89,10 +89,8 @@ import org.openide.loaders.DataObject;
 
 public final class FoldHierarchyTransactionImpl {
 
-    private static final Logger LOG = Logger.getLogger(FoldHierarchyTransactionImpl.class.getName());
-    
-    private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.fold");
+    // -J-Dorg.netbeans.api.editor.fold.FoldHierarchy.level=FINE
+    private static final Logger LOG = Logger.getLogger(org.netbeans.api.editor.fold.FoldHierarchy.class.getName());
     
     private static final Fold[] EMPTY_FOLDS = new Fold[0];
 
@@ -195,6 +193,10 @@ public final class FoldHierarchyTransactionImpl {
         execution.clearActiveTransaction();
 
         if (!isEmpty()) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("FoldHierarchy BEFORE transaction commit:\n" + execution);
+                execution.checkConsistency();
+            }
             
             int size;
             Fold[] removedFolds;
@@ -237,6 +239,11 @@ public final class FoldHierarchyTransactionImpl {
                 }
             }
 
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("FoldHierarchy AFTER transaction commit:\n" + execution);
+                execution.checkConsistency();
+            }
+
             execution.createAndFireFoldHierarchyEvent(
                 removedFolds, addedFolds, stateChanges,
                 affectedStartOffset, affectedEndOffset
@@ -253,9 +260,9 @@ public final class FoldHierarchyTransactionImpl {
         // Check whether there was an insert done right
         // at the original ending offset of the fold
         // so the fold end offset should be moved back.
-        if (debug) {
-            /*DEBUG*/System.err.println("insertUpdate: offset=" + evt.getOffset() // NOI18N
-                + ", length=" + evt.getLength()); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("insertUpdate: offset=" + evt.getOffset() // NOI18N
+                + ", length=" + evt.getLength() + '\n'); // NOI18N
         }
 
         try {
@@ -301,9 +308,9 @@ public final class FoldHierarchyTransactionImpl {
                         execution.remove(childFold, this);
                         removeDamagedNotify(childFold);
                         
-                        if (debug) {
-                            /*DEBUG*/System.err.println("insertUpdate: removed damaged " // NOI18N
-                                + childFold);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("insertUpdate: removed damaged " // NOI18N
+                                + childFold + '\n');
                         }
                     }
                 }
@@ -352,8 +359,8 @@ public final class FoldHierarchyTransactionImpl {
     public void removeUpdate(DocumentEvent evt) {
         // Check whether the remove damaged any folds
         // or made them empty.
-        if (debug) {
-            /*DEBUG*/System.err.println("removeUpdate: offset=" + evt.getOffset());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("removeUpdate: offset=" + evt.getOffset() + ", len=" + evt.getLength() + '\n'); // NOI18N
         }
 
         removeCheckDamaged(execution.getRootFold(), evt);
@@ -361,8 +368,16 @@ public final class FoldHierarchyTransactionImpl {
     
     private void removeCheckDamaged(Fold fold, DocumentEvent evt) {
         ApiPackageAccessor api = ApiPackageAccessor.get();
-        int childIndex = FoldUtilitiesImpl.findFoldStartIndex(fold, evt.getOffset(), true);
+        int removeOffset = evt.getOffset();
+        int childIndex = FoldUtilitiesImpl.findFoldStartIndex(fold, removeOffset, true);
         if (childIndex >= 0) {
+            // Check if previous fold was affected too
+            if (childIndex >= 1) {
+                Fold prevChildFold = fold.getFold(childIndex - 1);
+                if (prevChildFold.getEndOffset() == removeOffset) {
+                    removeCheckDamaged(prevChildFold, evt);
+                }
+            }
             boolean removed;
             do {
                 Fold childFold = fold.getFold(childIndex);
@@ -373,9 +388,9 @@ public final class FoldHierarchyTransactionImpl {
                     getManager(childFold).removeEmptyNotify(childFold);
                     removed = true;
 
-                    if (debug) {
-                        /*DEBUG*/System.err.println("insertUpdate: removed empty " // NOI18N
-                        + childFold);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("insertUpdate: removed empty " // NOI18N
+                        + childFold + '\n');
                     }
 
                 } else if (api.foldIsStartDamaged(childFold) || api.foldIsEndDamaged(childFold)) {
@@ -384,9 +399,9 @@ public final class FoldHierarchyTransactionImpl {
                     getManager(childFold).removeDamagedNotify(childFold);
                     removed = true;
 
-                    if (debug) {
-                        /*DEBUG*/System.err.println("insertUpdate: removed damaged " // NOI18N
-                        + childFold);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("insertUpdate: removed damaged " // NOI18N
+                        + childFold + '\n');
                     }
 
                 } else if (childFold.getFoldCount() > 0) { // check children
@@ -432,8 +447,8 @@ public final class FoldHierarchyTransactionImpl {
      * Remove the fold either from the hierarchy or from the blocked list.
      */
     void removeFold(Fold fold) {
-        if (debug) {
-            /*DEBUG*/System.err.println("removeFold: " + fold);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("removeFold: " + fold + '\n');
         }
 
         Fold parent = fold.getParent();
@@ -500,8 +515,8 @@ public final class FoldHierarchyTransactionImpl {
      *  or false if it could not be added and became blocked.
      */
     boolean addFold(Fold fold) {
-        if (debug) {
-            /*DEBUG*/System.err.println("addFold: " + fold); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("addFold: " + fold + '\n'); // NOI18N
         }
 
         return addFold(fold, null, 0);

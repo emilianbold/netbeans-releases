@@ -47,10 +47,6 @@ import java.net.URL;
  */
 public interface IndexableImpl {
 
-//    public long getLastModified();
-
-//    public String getName();
-
     public String getRelativePath();
 
     public URL getURL();
@@ -58,7 +54,5 @@ public interface IndexableImpl {
     public String getMimeType();
 
     public boolean isTypeOf(String mimeType);
-
-//    public InputStream openInputStream() throws IOException;
 
 }

@@ -395,63 +395,7 @@ public class RunAsWebAdvanced extends JPanel {
         proxyPortLabel = new JLabel();
         proxyPortTextField = new JTextField();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return doNotOpenBrowserRadioButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return doNotOpenBrowserRadioButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return proxyPortTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  doNotOpenBrowserRadioButton){
-                    return newPathMappingButton;
-                }
-                if(aComponent ==  proxyHostTextField){
-                    return proxyPortTextField;
-                }
-                if(aComponent ==  askUrlRadioButton){
-                    return doNotOpenBrowserRadioButton;
-                }
-                if(aComponent ==  newPathMappingButton){
-                    return removePathMappingButton;
-                }
-                if(aComponent ==  removePathMappingButton){
-                    return proxyHostTextField;
-                }
-                if(aComponent ==  defaultUrlRadioButton){
-                    return askUrlRadioButton;
-                }
-                return doNotOpenBrowserRadioButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  newPathMappingButton){
-                    return doNotOpenBrowserRadioButton;
-                }
-                if(aComponent ==  proxyPortTextField){
-                    return proxyHostTextField;
-                }
-                if(aComponent ==  doNotOpenBrowserRadioButton){
-                    return askUrlRadioButton;
-                }
-                if(aComponent ==  removePathMappingButton){
-                    return newPathMappingButton;
-                }
-                if(aComponent ==  proxyHostTextField){
-                    return removePathMappingButton;
-                }
-                if(aComponent ==  askUrlRadioButton){
-                    return defaultUrlRadioButton;
-                }
-                return proxyPortTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
 
@@ -461,9 +405,8 @@ public class RunAsWebAdvanced extends JPanel {
 
         Mnemonics.setLocalizedText(defaultUrlRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.text")); // NOI18N
         defaultUrlPreviewLabel.setLabelFor(defaultUrlRadioButton);
-        Mnemonics.setLocalizedText(defaultUrlPreviewLabel, "dummy"); // NOI18N
-        defaultUrlPreviewLabel.setEnabled(false);
 
+        Mnemonics.setLocalizedText(defaultUrlPreviewLabel, "dummy"); // NOI18N
         debugUrlButtonGroup.add(askUrlRadioButton);
 
         Mnemonics.setLocalizedText(askUrlRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.text")); // NOI18N
@@ -494,17 +437,15 @@ public class RunAsWebAdvanced extends JPanel {
 
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
+
+
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
             }
         });
-
         Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
-        pathMappingInfoLabel.setEnabled(false);
-
-
-        Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
         proxyHostLabel.setLabelFor(proxyHostTextField);
 
         Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text")); // NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
@@ -954,7 +954,12 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 bundle = new File(
                         bundle.getAbsolutePath().replaceFirst("\\.jar$", ".sh"));
             }
-            
+            if (!bundle.exists()) {
+                throw new ManagerException("Could not create bundle." +
+                        "\nOutput:\n" + results.getStdOut() +
+                        "\nStderr:\n" + results.getStdErr());
+
+            }
             bundlesList.add(key);
             bundlesList.add(bundle.getAbsolutePath());
             FileUtils.writeStringList(bundlesListFile, bundlesList);

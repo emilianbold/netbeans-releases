@@ -106,7 +106,7 @@ public class IntroduceHint extends AbstractRule {
         return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintDispName");//NOI18N
     }
 
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -115,12 +115,8 @@ public class IntroduceHint extends AbstractRule {
         final int caretOffset = context.caretOffset;
         int lineBegin = -1;
         int lineEnd = -1;
-        try {
-            lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             final Model model = phpParseResult.getModel();
             IntroduceFixVisitor introduceFixVisitor = new IntroduceFixVisitor(model,lineBegin, lineEnd);
@@ -431,7 +427,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintMethodDesc",
-                    item.getFunction().getFunctionSignature(), clsName, fileName);//NOI18N
+                    item.getFunction().getFunctionSignature(true), clsName, fileName);//NOI18N
 
         }
 
@@ -469,7 +465,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = clz.getName();
             String fileName = clz.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
-                    item.getFunction().getFunctionSignature(), clsName, fileName);//NOI18N
+                    item.getFunction().getFunctionSignature(true), clsName, fileName);//NOI18N
         }
 
         static MethodDeclarationItem createMethodDeclarationItem(StaticMethodInvocation node) {

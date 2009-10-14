@@ -67,18 +67,13 @@ import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.DialogDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
-import static org.openide.DialogDescriptor.INFORMATION_MESSAGE;
 
 /**
  * Push action for mercurial:
@@ -96,8 +91,12 @@ public class PushAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        final File root = HgUtils.getRootFile(context);
-        if (root == null) {
+        final File roots[] = HgUtils.getActionRoots(context);
+        final File repository =
+                roots != null && roots.length > 0 ?
+                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
+                    null;
+        if (repository == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
@@ -111,26 +110,23 @@ public class PushAction extends ContextAction {
             logger.closeLog();
             return;
         }
-
-        push(context);
+        push(context, repository);
     }
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 
-    public static void push(final VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
-
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+    private static void push(final VCSContext ctx, final File repository){
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { getDefaultAndPerformPush(ctx, root, this.getLogger()); } };
-        support.start(rp, root,
-                org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
-
+            public void perform() { 
+                getDefaultAndPerformPush(ctx, repository, this.getLogger());
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
     }
 
     public static void notifyUpdatedFiles(File repo, List<String> list){
@@ -150,9 +146,9 @@ public class PushAction extends ContextAction {
 
     static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
         // If the repository has no default push path then inform user
-        String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(ctx);
+        String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(root);
         if (isNullOrEmpty(tmpPushPath)) {
-            tmpPushPath = HgRepositoryContextCache.getInstance().getPullDefault(ctx);
+            tmpPushPath = HgRepositoryContextCache.getInstance().getPullDefault(root);
         }
         if (isNullOrEmpty(tmpPushPath)) {
             notifyDefaultPushUrlNotSpecified(logger);

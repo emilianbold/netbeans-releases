@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.api.tool;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -92,7 +93,13 @@ public final class DLightConfiguration {
     private final ToolsConfiguration toolsConfiguration;
     private final DLightConfigurationOptions configurationOptions;
     private final String displayedName;
+    private final String category;
+    private final String[] platforms;
+    private final String collectorProviders;
+    private final String[] indicatorProviders;
     private final boolean isHidden;
+    private final boolean isSystem;
+    private final boolean isDefault;
     private final DLightConfigurationOptionsListener listener = new DLightConfigurationOptionsListenerImpl();
 
     static DLightConfiguration create(FileObject configurationRoot) {
@@ -115,13 +122,42 @@ public final class DLightConfiguration {
         this.configurationOptions = getConfigurationOptions();
         this.displayedName = configurationRoot.getAttribute("displayedName") == null ? configurationRoot.getName() : (String)configurationRoot.getAttribute("displayedName");//NOI18N
         this.isHidden = configurationRoot.getAttribute("hidden") != null && (Boolean)configurationRoot.getAttribute("hidden"); // NOI18N
-
+        this.isSystem = configurationRoot.getAttribute("system") != null && (Boolean)configurationRoot.getAttribute("system"); // NOI18N
+        this.isDefault = configurationRoot.getAttribute("default") != null && (Boolean)configurationRoot.getAttribute("default"); // NOI18N
+        this.category = configurationRoot.getAttribute("category") == null ? configurationRoot.getName() : (String)configurationRoot.getAttribute("category");//NOI18N
+        this.platforms = configurationRoot.getAttribute("platforms") == null ? null : ((String)configurationRoot.getAttribute("platforms")).split(",");//NOI18N
+        this.collectorProviders = configurationRoot.getAttribute("collector.providers") == null ? null : ((String)configurationRoot.getAttribute("collector.providers"));//NOI18N
+        this.indicatorProviders = configurationRoot.getAttribute("indicator.providers") == null ? null : ((String)configurationRoot.getAttribute("indicator.providers")).split(",");//NOI18N
     }
 
     public final String getDisplayedName(){
         return displayedName;
     }
 
+    public final String getCategoryName(){
+        return category;
+    }
+
+    public final List<String> getPlatforms() {
+        return Arrays.asList(platforms);
+    }
+
+    public final String getCollectorProviders() {
+        return collectorProviders;
+    }
+    
+
+    public final List<String> getIndicatorProviders() {
+        return Arrays.asList(indicatorProviders);
+    }
+
+    boolean isSystem(){
+        return isSystem;
+    }
+
+    boolean isDefault(){
+        return isDefault;
+    }
 
 
     final ToolsConfiguration getToolsConfiguration(){
@@ -269,7 +305,7 @@ public final class DLightConfiguration {
 
     private class DefaultConfigurationOption implements DLightConfigurationOptions {
 
-        private boolean turnState = false;
+        private boolean turnState = true;
 
         public void turnCollectorsState(boolean turnState) {
             this.turnState = turnState;
@@ -294,7 +330,7 @@ public final class DLightConfiguration {
         }
 
         public boolean validateToolsRequiredUserInteraction() {
-            return false;
+            return true;
         }
 
         public boolean profileOnRun() {
@@ -302,7 +338,13 @@ public final class DLightConfiguration {
         }
 
         public Collection<String> getActiveToolNames() {
-            return null;
+            Collection<String> toolIDs = new ArrayList<String>();
+            for(DLightTool tool : getToolsSet()){
+                if (tool.isEnabled()){
+                    toolIDs.add(tool.getID());
+                }
+            }
+            return toolIDs;
         }
 
         public void addListener(DLightConfigurationOptionsListener listener) {

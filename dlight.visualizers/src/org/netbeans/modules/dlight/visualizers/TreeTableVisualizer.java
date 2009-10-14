@@ -95,7 +95,7 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         Visualizer<TreeTableVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
     //public static final String IS_CALLS = "TopTenFunctionsIsCalls"; // NOI18N
-    private final Object queryLock = new String(TreeTableVisualizer.class + " query lock"); // NOI18N
+    private final Object queryLock = TreeTableVisualizer.class.getName() + "Lock"; // NOI18N
     private boolean isShown = true;
     private JToolBar buttonsToolbar;
     private JButton refresh;
@@ -496,6 +496,9 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         isShown = false;
     }
 
+    public void updateVisualizerConfiguration(TreeTableVisualizerConfiguration configuration) {
+    }
+
     protected class TreeModelImpl implements TreeModel, TreeExpansionModel {
 
         private final Object listenersLock = new Object();
@@ -713,11 +716,11 @@ class TreeTableVisualizer<T extends TreeTableNode> extends JPanel implements
         }
 
         @SuppressWarnings("unchecked")
-        public String getIconBase(Object node) {
+        public String getIconBase(final Object node) {
             if (node == TreeModel.ROOT) {
                 return null;
             }
-            final Object finalNodeObject = node;
+
             if (node instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
                 final Object nodeObject = treeNode.getUserObject();

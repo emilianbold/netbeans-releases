@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -53,8 +53,6 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Templates">
         <folder name="SunResources">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
-      <attr name="position" intvalue="1800"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/WizardInformation.html"/>
       <!--attr name="templateType_Web" boolvalue="true"/-->
       <file name="JDBC_Connection_Pool">

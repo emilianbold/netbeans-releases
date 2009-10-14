@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -155,7 +155,11 @@ public final class SourceRoots {
         if (readme != null) {
             plainFiles.add(readme);
         }
-        
+        FileObject capfile = fo.getFileObject("Capfile"); // NOI18N
+        if (capfile != null) {
+            plainFiles.add(capfile);
+        }
+
         // show app/metal for Rack applications, but only if the folder already exists
         boolean metal = fo.getFileObject("app/metal") != null;//NOI18N
 

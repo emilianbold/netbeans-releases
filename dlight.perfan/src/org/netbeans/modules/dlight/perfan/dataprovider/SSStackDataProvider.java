@@ -84,6 +84,7 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
@@ -153,7 +154,12 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             timeIntervalDataFilter = null;
         }
         if (hasTimeIntervalFilter && timeIntervalDataFilter != null) {
-            storage.setFilter(timeIntervalDataFilter.getInterval() == null ? "\"\"" : "TSTAMP>" + timeIntervalDataFilter.getInterval().getStart() + "&&TSTAMP<" + timeIntervalDataFilter.getInterval().getEnd());//NOI18N
+            Range<?> filterInterval = timeIntervalDataFilter.getInterval();
+            if (filterInterval.getStart() != null || filterInterval.getEnd() != null) {
+                storage.setFilter(filterInterval.toString(null, "TSTAMP>%d", "&&", "TSTAMP<%d", null)); // NOI18N
+            } else {
+                storage.setFilter(null);
+            }
         }
     }
 
@@ -532,7 +538,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                     }
 
                     String colName = col.getColumnName();
-                    Class colClass = col.getColumnClass();
+                    Class<?> colClass = col.getColumnClass();
                     FunctionMetric metric = getMetricInstance(colName);
                     boolean isPrimaryColumn = col.equals(primarySortColumn);
 

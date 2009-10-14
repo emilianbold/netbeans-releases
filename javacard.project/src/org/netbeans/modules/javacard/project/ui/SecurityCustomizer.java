@@ -54,6 +54,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
+import org.openide.util.HelpCtx;
 
 /**
  * Security customizer
@@ -81,6 +82,7 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
         Mnemonics.setLocalizedText(browseButton, browseButton.getText());
         l.actionPerformed(null);
         updateState();
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.BuildSecurityPanel"); //NOI18N
     }
 
     void updateState() {

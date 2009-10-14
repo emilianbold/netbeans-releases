@@ -54,7 +54,7 @@ public class DefaultViewportModelTest {
 
     @Test
     public void testLimits() {
-        DefaultViewportModel model = new DefaultViewportModel();
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 0L));
         assertEquals(Long.valueOf(0L), model.getLimits().getStart());
         assertEquals(Long.valueOf(0L), model.getLimits().getEnd());
         model.setLimits(new Range<Long>(null, 20L));
@@ -64,7 +64,7 @@ public class DefaultViewportModelTest {
 
     @Test
     public void testViewport() {
-        DefaultViewportModel model = new DefaultViewportModel();
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 0L));
         assertEquals(Long.valueOf(0L), model.getViewport().getStart());
         assertEquals(Long.valueOf(0L), model.getViewport().getEnd());
         model.setViewport(new Range<Long>(null, 20L));
@@ -74,7 +74,7 @@ public class DefaultViewportModelTest {
 
     @Test
     public void testViewportState() {
-        DefaultViewportModel model = new DefaultViewportModel();
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 0L));
         model.setLimits(new Range<Long>(-10L, 10L));
         model.setViewport(new Range<Long>(-1L, 1L));
         ViewportModelState state = model.getState();
@@ -85,7 +85,7 @@ public class DefaultViewportModelTest {
     @Test
     public void testLimitsNotification() {
         final AtomicBoolean gotNotification = new AtomicBoolean(false);
-        DefaultViewportModel model = new DefaultViewportModel();
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 0L));
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 gotNotification.set(true);
@@ -98,7 +98,7 @@ public class DefaultViewportModelTest {
     @Test
     public void testViewportNotification() {
         final AtomicBoolean gotNotification = new AtomicBoolean(false);
-        DefaultViewportModel model = new DefaultViewportModel();
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 0L));
         model.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 gotNotification.set(true);
@@ -106,5 +106,29 @@ public class DefaultViewportModelTest {
         });
         model.setViewport(new Range<Long>(0L, 2L));
         assertTrue(gotNotification.get());
+    }
+
+    @Test
+    public void testViewportAutoscroll() {
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 10L));
+        model.setLimits(new Range<Long>(0L, 20L));
+        assertEquals(Long.valueOf(10L), model.getViewport().getStart());
+        assertEquals(Long.valueOf(20L), model.getViewport().getEnd());
+    }
+
+    @Test
+    public void testMinViewportSize() {
+        final AtomicBoolean gotNotification = new AtomicBoolean(false);
+        DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, 10L));
+        model.setMinViewportSize(10L);
+        model.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                gotNotification.set(true);
+            }
+        });
+        model.setViewport(new Range<Long>(5L, 10L));
+        assertFalse(gotNotification.get());
+        assertEquals(Long.valueOf(0L), model.getViewport().getStart());
+        assertEquals(Long.valueOf(10L), model.getViewport().getEnd());
     }
 }

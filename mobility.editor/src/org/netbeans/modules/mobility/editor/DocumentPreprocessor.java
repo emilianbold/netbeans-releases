@@ -136,18 +136,17 @@ public class DocumentPreprocessor implements PropertyChangeListener {
             doc.removeDocumentListener(dl);
 
         }
-        
         JTextComponent current = EditorRegistry.focusedComponent();
         if (current != null){
             final NbEditorDocument doc = (NbEditorDocument) current.getDocument();
             doc.addDocumentListener(dl);
             doc.getDocumentProperties().put(TextSwitcher.TEXT_SWITCH_SUPPORT, new ChangeListener() {
-                public void stateChanged(@SuppressWarnings("unused")
+                public void stateChanged(@SuppressWarnings("unused") //NOI18N
                             final ChangeEvent e) {
-                    updateBlockChain(doc);
+                    restartTimer();
                 }
             });
-            updateBlockChain(doc);
+            restartTimer();
         }
     }
 
@@ -204,33 +203,7 @@ public class DocumentPreprocessor implements PropertyChangeListener {
             } catch (PreprocessorException e) {
                 ErrorManager.getDefault().notify(e);
             }
-            if (SwingUtilities.isEventDispatchThread()){
-                repaintDocument(doc);
-            } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        repaintDocument(doc);
-                    }
-                });
-            }
         }
-    }
-
-    public static void repaintDocument(final NbEditorDocument doc) {
-        final DataObject dob = NbEditorUtilities.getDataObject(doc);
-        final EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
-        if (ec != null) {
-            final JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes != null) {
-                for (int i=0;i<panes.length;i++) try {
-                    if (panes[0] != null) panes[i].getUI().damageRange(panes[i],0,doc.getLength()+1);
-                } catch (NullPointerException npe) {
-                    // see CR #6197050, I don't know how to predict and avoid occasionally NPE beeing thrown from damageRange(...) method.
-                }
-
-            }
-        }
-
     }
 
     static String prefixPropertyName(final String configuration, final String propertyName) {

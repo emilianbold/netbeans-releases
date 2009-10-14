@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -79,6 +80,7 @@ public class ModelSource implements SourceFileProperties {
     private Item item;
     private CsmFile file;
     private Map<String,List<String>> searchBase;
+    private Map<String,Item> projectSearchBase;
     private PkgConfig pkgConfig;
     private String itemPath;
     private List<String> userIncludePaths;
@@ -86,10 +88,11 @@ public class ModelSource implements SourceFileProperties {
     private Map<String,String> userMacros;
     private boolean preferLocal;
     
-    public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, PkgConfig pkgConfig, boolean preferLocal){
+    public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, Map<String,Item> projectSearchBase, PkgConfig pkgConfig, boolean preferLocal){
         this.item = item;
         this.file = file;
         this.searchBase = searchBase;
+        this.projectSearchBase = projectSearchBase;
         this.pkgConfig = pkgConfig;
         this.preferLocal = preferLocal;
     }
@@ -178,7 +181,15 @@ public class ModelSource implements SourceFileProperties {
                 // unresolved include
                 String path = guessPath(include);
                 if (path != null) {
-                    resolved = file.getProject().findFile(path+File.separatorChar+include.getIncludeName());
+                    String fullPath = CndFileUtils.normalizeAbsolutePath(path + File.separatorChar + include.getIncludeName());
+                    if (!file.getProject().isArtificial()) {
+                        Item aItem = projectSearchBase.get(fullPath);
+                        if (aItem != null) {
+                            resolved = file.getProject().findFile(aItem);
+                        }
+                    } else {
+                        resolved = file.getProject().findFile(fullPath);
+                    }
                     path = getRelativepath(path);
                     res.add(path);
                     if (level < 5 && resolved != null) {
@@ -230,7 +241,8 @@ public class ModelSource implements SourceFileProperties {
                             if (TRACE_AMBIGUOUS) {
                                 logger.fine("Directive resolved in project on path: "+path+" instead "+resolvedPath); // NOI18N
                             }
-                            resolved = file.getProject().findFile(path+File.separatorChar+include.getIncludeName());
+                            String fullPath = CndFileUtils.normalizeAbsolutePath(path+File.separatorChar+include.getIncludeName());
+                            resolved = file.getProject().findFile(fullPath);
                             path = getRelativepath(path);
                             res.add(path);
                             reResolve = true;

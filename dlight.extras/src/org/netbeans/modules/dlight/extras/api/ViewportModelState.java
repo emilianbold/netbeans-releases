@@ -56,7 +56,7 @@ public interface ViewportModelState {
 
     /**
      * Returns viewport. Viewport's start and
-     * end are in milliseconds since session start.
+     * end are in nanoseconds since session start.
      *
      * @return current viewport
      */

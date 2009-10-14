@@ -116,6 +116,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -279,6 +288,15 @@
                     <run-dependency>
                         <release-version>0</release-version>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.utilities</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -212,6 +212,19 @@ public class JSFUtils {
             }
         }
         return value;
+    }
+    /** Returns relative path from one file to another file
+     */
+    public static String getRelativePath (FileObject fromFO, FileObject toFO){
+        String path = "./";
+        FileObject parent = fromFO.getParent();
+        String tmpPath = null;
+        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null){
+            parent = parent.getParent();
+            path = path + "../";
+        }
+
+        return (tmpPath != null ? path + tmpPath : null);
     }
   
 }

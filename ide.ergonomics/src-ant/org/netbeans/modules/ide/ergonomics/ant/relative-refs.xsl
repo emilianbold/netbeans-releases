@@ -1,105 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-    <xsl:output method="xml"/>
+    <xsl:output method="xml" indent="yes"/>
     <xsl:param name="cluster.name"/>
+    <xsl:key name="unique" match="folder|file|attr" use="@path"/>
 
-    <xsl:template match="/">
+<!-- iterates through hierarchy taking only those with unique path -->
+
+    <xsl:template match="/filesystem">
         <xsl:element name="filesystem">
-            <xsl:element name="folder">
-                <xsl:attribute name="name">Templates</xsl:attribute>
-                <xsl:apply-templates
-                    select="//*/folder[@name='Templates']/*"
-                    mode="project-wizard"
-                />
-            </xsl:element>
-            <xsl:if test="//*/folder[@name='Services']/folder[@name='MIMEResolver']/*">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Services</xsl:attribute>
-                    <xsl:element name="folder">
-                        <xsl:attribute name="name">MIMEResolver</xsl:attribute>
-                        <xsl:apply-templates
-                            select="//*/folder[@name='Services']/folder[@name='MIMEResolver']/*"
-                            mode="project-wizard"
-                        />
-                    </xsl:element>
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//*/folder[@name='Ergonomics']/*">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Ergonomics</xsl:attribute>
-                    <xsl:apply-templates
-                        select="//*/folder[@name='Ergonomics']/*"
-                        mode="project-wizard"
-                    />
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//*/folder[@name='Loaders']">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Loaders</xsl:attribute>
-                    <xsl:apply-templates
-                        select="//*/folder[@name='Loaders']/*"
-                        mode="project-wizard"
-                    />
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//*/folder[@name='Debugger']">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Debugger</xsl:attribute>
-                    <xsl:apply-templates
-                        select="//*/folder[@name='Debugger']/*"
-                        mode="project-wizard"
-                    />
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//*/folder[@name='Servers']">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Servers</xsl:attribute>
-                        <xsl:apply-templates
-                            select="//*/folder[@name='Servers']/*"
-                            mode="project-wizard"
-                        />
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//*/folder[@name='Menu']/folder[@name='Profile']">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Menu</xsl:attribute>
-                    <xsl:element name="folder">
-                        <xsl:attribute name="name">Profile</xsl:attribute>
-                        <xsl:apply-templates
-                            select="//*/folder[@name='Menu']/folder[@name='Profile']/*"
-                            mode="project-wizard"
-                        />
-                    </xsl:element>
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//*/folder[@name='Menu']/folder[@name='File']/folder[@name='Import']">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Menu</xsl:attribute>
-                    <xsl:element name="folder">
-                        <xsl:attribute name="name">File</xsl:attribute>
-                        <xsl:element name="folder">
-                            <xsl:attribute name="name">Import</xsl:attribute>
-                            <xsl:apply-templates
-                                select="//*/folder[@name='Menu']/folder[@name='File']/folder[@name='Import']/*"
-                                mode="project-wizard"
-                            />
-                        </xsl:element>
-                    </xsl:element>
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="//filesystem/folder[@name='Actions']">
-                <xsl:element name="folder">
-                    <xsl:attribute name="name">Actions</xsl:attribute>
-                    <xsl:apply-templates
-                        select="//filesystem/folder[@name='Actions']/*"
-                        mode="project-wizard"
-                    />
-                </xsl:element>
-            </xsl:if>
+            <xsl:apply-templates/>
         </xsl:element>
     </xsl:template>
 
-    <xsl:template match="file" mode="project-wizard">
+    <xsl:template match="folder|file|attr">
+        <xsl:variable name="myid" select="generate-id()"/>
+        <xsl:variable name="pathid" select="generate-id(key('unique', @path))"/>
+
+        <xsl:if test="$myid = $pathid">
+            <xsl:element name="{name()}">
+                <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+                <xsl:variable name="orig" select="."/>
+                <xsl:for-each select="/descendant::folder[@path=$orig/@path]">
+                    <xsl:apply-templates mode="replace-refs"/>
+                    <xsl:apply-templates select="folder"/>
+                </xsl:for-each>
+            </xsl:element>
+        </xsl:if>
+    </xsl:template>
+
+<!-- apply the mappings -->
+
+    <!-- ignore is iterated already -->
+    <xsl:template match="folder" mode="replace-refs"/>
+    <xsl:template match="@path" mode="replace-refs"/>
+    <xsl:template match="file" mode="replace-refs">
         <xsl:element name="file">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:if test="@url">
@@ -109,31 +43,27 @@
                     </xsl:call-template>
                 </xsl:attribute>
             </xsl:if>
-            <xsl:apply-templates mode="project-wizard"/>
+            <xsl:apply-templates mode="replace-refs"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="folder" mode="project-wizard">
-        <xsl:element name="folder">
-            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
-            <xsl:apply-templates mode="project-wizard"/>
-        </xsl:element>
-    </xsl:template>
-    <xsl:template match="attr[@name='SystemFileSystem.localizingBundle']" mode="project-wizard">
+    <xsl:template match="attr[@name='SystemFileSystem.localizingBundle']" mode="replace-refs">
         <xsl:element name="attr">
             <xsl:attribute name="name">SystemFileSystem.localizingBundle</xsl:attribute>
             <xsl:attribute name="stringvalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle</xsl:attribute>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr[@bundlevalue]" mode="project-wizard">
+    <xsl:template match="attr[@bundlevalue]" mode="replace-refs">
         <xsl:element name="attr">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:attribute name="bundlevalue">org.netbeans.modules.ide.ergonomics.<xsl:value-of select="$cluster.name"/>.Bundle#<xsl:value-of select="substring-after(@bundlevalue, '#')"/></xsl:attribute>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr[@urlvalue]" mode="project-wizard">
+    <xsl:template match="attr[@urlvalue]" mode="replace-refs">
         <xsl:choose>
             <xsl:when test="contains(@urlvalue,'javax/swing/beaninfo/')">
-                <xsl:copy-of select="."/>
+                <xsl:element name="attr">
+                    <xsl:apply-templates select="@*" mode="replace-refs"/>
+                </xsl:element>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:element name="attr">
@@ -150,7 +80,7 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="attr[@name = 'iconBase' or @name='iconResource']" mode="project-wizard">
+    <xsl:template match="attr[@name = 'iconBase' or @name='iconResource']" mode="replace-refs">
         <xsl:element name="attr">
             <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
             <xsl:attribute name="stringvalue">
@@ -163,8 +93,10 @@
             </xsl:attribute>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="attr" mode="project-wizard">
-        <xsl:copy-of select="."/>
+    <xsl:template match="@*|node()" mode="replace-refs">
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()" mode="replace-refs"/>
+        </xsl:copy>
     </xsl:template>
 
 

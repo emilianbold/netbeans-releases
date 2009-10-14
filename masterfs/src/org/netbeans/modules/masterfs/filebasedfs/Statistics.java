@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
-import java.util.Iterator;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 /**
@@ -78,9 +77,7 @@ public final class Statistics {
     
     public static int fileObjects() {
         int retVal = 0;
-        Iterator it = FileObjectFactory.getInstances().iterator();
-        for (int i = 0; it.hasNext(); i++) {
-            FileObjectFactory fbs = (FileObjectFactory)it.next();
+        for (FileObjectFactory fbs : FileObjectFactory.getInstances()) {
             retVal += fileObjectsPerFileSystem(fbs);
         }
         
@@ -114,6 +111,7 @@ public final class Statistics {
             numberOfCalls = 0;
         }
 
+        @Override
         public String toString() {
             return description + ": " + numberOfCalls + " calls in " + elapsedTime + "ms";
         }

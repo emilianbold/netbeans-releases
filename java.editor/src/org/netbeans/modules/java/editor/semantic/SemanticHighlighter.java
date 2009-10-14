@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -77,6 +77,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -87,12 +88,14 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -100,7 +103,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -112,7 +114,6 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -453,9 +454,9 @@ public class SemanticHighlighter extends JavaParserResultTask {
         
         private final Map<Element, ImportTree> element2Import = new HashMap<Element, ImportTree>();
         private final Map<String, ImportTree> method2Import = new HashMap<String, ImportTree>();
+        private final Map<String, Collection<ImportTree>> simpleName2UnresolvableImports = new HashMap<String, Collection<ImportTree>>();
+        private final Set<ImportTree> unresolvablePackageImports = new HashSet<ImportTree>();
         private final Map<ImportTree, TreePath/*ImportTree*/> import2Highlight = new HashMap<ImportTree, TreePath>();
-        
-        private Set<Element> additionalUsedTypes; //types used *before* the imports has been processed (ie. annotations in package-info.java)
         
         private Map<Tree, Token> tree2Token;
         private TokenList tl;
@@ -470,7 +471,6 @@ public class SemanticHighlighter extends JavaParserResultTask {
             this.info = info;
             this.doc  = doc;
             type2Uses = new HashMap<Element, List<Use>>();
-            this.additionalUsedTypes = new HashSet<Element>();
             
             tree2Token = new IdentityHashMap<Tree, Token>();
             
@@ -726,7 +726,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 addUse(decl, type, expr, c);
             }
             
-            typeUsed(decl, expr);
+            typeUsed(decl, expr, type);
         }
         
         private void handleJavadoc(Element classMember) {
@@ -734,7 +734,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 return;
             }
             for (Element el : JavadocImports.computeReferencedElements(info, classMember)) {
-                typeUsed(el, null);
+                typeUsed(el, null, EnumSet.of(UseTypes.CLASS_USE));
             }
         }
         
@@ -793,10 +793,18 @@ public class SemanticHighlighter extends JavaParserResultTask {
         public Void visitCompilationUnit(CompilationUnitTree tree, EnumSet<UseTypes> d) {
 	    //ignore package X.Y.Z;:
 	    //scan(tree.getPackageDecl(), p);
-	    scan(tree.getPackageAnnotations(), d);
+            tl.moveBefore(tree.getImports());
 	    scan(tree.getImports(), d);
+            tl.moveBefore(tree.getPackageAnnotations());
+	    scan(tree.getPackageAnnotations(), d);
+            tl.moveToEnd(tree.getImports());
 	    scan(tree.getTypeDecls(), d);
 	    return null;
+        }
+
+        private long startOf(List<? extends Tree> trees) {
+            if (trees.isEmpty()) return -1;
+            return sourcePositions.getStartPosition(info.getCompilationUnit(), trees.get(0));
         }
 
         private void handleMethodTypeArguments(TreePath method, List<? extends Tree> tArgs) {
@@ -1019,39 +1027,62 @@ public class SemanticHighlighter extends JavaParserResultTask {
             
             return ((MemberSelectTree) qualIdent).getIdentifier().contentEquals("*");
         }
+
+        private boolean parseErrorInImport(ImportTree imp) {
+            if (isStar(imp)) return false;
+            final StringBuilder fqn = new StringBuilder();
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                    super.visitMemberSelect(node, p);
+                    fqn.append('.');
+                    fqn.append(node.getIdentifier());
+                    return null;
+                }
+                @Override
+                public Void visitIdentifier(IdentifierTree node, Void p) {
+                    fqn.append(node.getName());
+                    return null;
+                }
+            }.scan(imp.getQualifiedIdentifier(), null);
+
+            return !SourceVersion.isName(fqn);
+        }
         
         @Override
         public Void visitImport(ImportTree tree, EnumSet<UseTypes> d) {
+            if (parseErrorInImport(tree)) {
+                return super.visitImport(tree, null);
+            }
             if (!tree.isStatic()) {
                 if (isStar(tree)) {
                     MemberSelectTree qualIdent = (MemberSelectTree) tree.getQualifiedIdentifier();
                     Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
                     
                     if (decl != null && decl.getKind() == ElementKind.PACKAGE) {
-                        boolean assign = false;
-                        
-                        for (TypeElement te : ElementFilter.typesIn(decl.getEnclosedElements())) {
-                            if (additionalUsedTypes.contains(te)) {
-                                break;
-                            } else {
-                                assign = true;
-                            }
-                        }
-                        
-                        if (assign) {
+                        if (!ElementFilter.typesIn(decl.getEnclosedElements()).isEmpty()) {
                             for (TypeElement te : ElementFilter.typesIn(decl.getEnclosedElements())) {
                                 element2Import.put(te, tree);
                             }
+                            import2Highlight.put(tree, getCurrentPath());
+                        } else {
+                            unresolvablePackageImports.add(tree);
                             import2Highlight.put(tree, getCurrentPath());
                         }
                     }
                 } else {
                     Element decl = info.getTrees().getElement(new TreePath(getCurrentPath(), tree.getQualifiedIdentifier()));
 
-                    if (decl != null && decl.asType().getKind() != TypeKind.ERROR //unresolvable imports should not be marked as unused
-                            && !additionalUsedTypes.contains(decl)) {
-                        element2Import.put(decl, tree);
-                        import2Highlight.put(tree, getCurrentPath());
+                    if (decl != null) {
+                        if (decl.asType().getKind() != TypeKind.ERROR) {
+                            element2Import.put(decl, tree);
+                            import2Highlight.put(tree, getCurrentPath());
+                        } else {
+                            if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
+                                addUnresolvableImport(((MemberSelectTree) tree.getQualifiedIdentifier()).getIdentifier(), tree);
+                                import2Highlight.put(tree, getCurrentPath());
+                            }
+                        }
                     }
                 }
             } else {
@@ -1060,35 +1091,44 @@ public class SemanticHighlighter extends JavaParserResultTask {
                     Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
 
                     if (   decl != null
-                        && decl.asType().getKind() != TypeKind.ERROR //unresolvable imports should not be marked as unused
                         && (decl.getKind().isClass() || decl.getKind().isInterface())) {
-                        Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
-                        boolean assign = false;
+                        if (decl.asType().getKind() != TypeKind.ERROR) {
+                            Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
+                            boolean assign = false;
 
-                        for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
-                            if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
-                                continue;
-                            }
-                            if (e.getKind() == ElementKind.METHOD) {
-                                method2Import.put(e.getSimpleName().toString() + e.asType().toString(), tree);
-                                assign = true;
-                                continue;
+                            for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
+                                if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
+                                    continue;
+                                }
+                                if (e.getKind() == ElementKind.METHOD) {
+                                    method2Import.put(e.getSimpleName().toString() + e.asType().toString(), tree);
+                                    assign = true;
+                                    continue;
+                                }
+
+                                if (e.getKind().isField()) {
+                                    element2Import.put(e, tree);
+                                    assign = true;
+                                    continue;
+                                }
+
+                                if (e.getKind().isClass() || e.getKind().isInterface()) {
+                                    element2Import.put(e, tree);
+                                    assign = true;
+                                    continue;
+                                }
                             }
 
-                            if (e.getKind().isField()) {
-                                element2Import.put(e, tree);
-                                assign = true;
-                                continue;
+                            if (!assign) {
+                                addUnresolvableImport(qualIdent.getIdentifier(), tree);
                             }
-
-                            if (e.getKind().isClass() || e.getKind().isInterface()) {
-                                element2Import.put(e, tree);
-                                assign = true;
-                                continue;
+                            import2Highlight.put(tree, getCurrentPath());
+                        } else {
+                            if (!isStar(tree)) {
+                                addUnresolvableImport(qualIdent.getIdentifier(), tree);
+                            } else {
+                                unresolvablePackageImports.add(tree);
                             }
-                        }
-
-                        if (assign) {
                             import2Highlight.put(tree, getCurrentPath());
                         }
                     }
@@ -1096,6 +1136,18 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
             super.visitImport(tree, null);
             return null;
+        }
+
+        private void addUnresolvableImport(Name name, ImportTree imp) {
+            String key = name.toString();
+
+            Collection<ImportTree> l = simpleName2UnresolvableImports.get(key);
+
+            if (l == null) {
+                simpleName2UnresolvableImports.put(key, l = new LinkedList<ImportTree>());
+            }
+
+            l.add(imp);
         }
         
         @Override
@@ -1185,7 +1237,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 tp = new TreePath(getCurrentPath(), ident);
             }
             
-            typeUsed(info.getTrees().getElement(tp), tp);
+            typeUsed(info.getTrees().getElement(tp), tp, EnumSet.of(UseTypes.CLASS_USE));
             handlePossibleIdentifier(tp, EnumSet.of(UseTypes.EXECUTE), info.getTrees().getElement(getCurrentPath()), true, true);
             
             Element clazz = info.getTrees().getElement(tp);
@@ -1430,21 +1482,50 @@ public class SemanticHighlighter extends JavaParserResultTask {
             return super.visitWildcard(node, p);
         }
         
-        private void typeUsed(Element decl, TreePath expr) {
+        private void typeUsed(Element decl, TreePath expr, Collection<UseTypes> type) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
-                ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
+                if (decl.asType() != null && decl.asType().getKind() != TypeKind.ERROR) {
+                    ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
 
-                if (imp != null) {
-                    if (import2Highlight.remove(imp) == null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
-                        additionalUsedTypes.add(decl);
+                    if (imp != null) {
+                        if (isStar(imp)) {
+                            //TODO: explain
+                            handleUnresolvableImports(decl, type, false);
+                        }
+                        import2Highlight.remove(imp);
                     }
                 } else {
-                    additionalUsedTypes.add(decl);
+                    handleUnresolvableImports(decl, type, true);
+                }
+            }
+        }
+
+        private void handleUnresolvableImports(Element decl,
+                Collection<UseTypes> type, boolean removeStarImports) {
+            Name simpleName = decl.getSimpleName();
+            if (simpleName != null) {
+                Collection<ImportTree> imps = simpleName2UnresolvableImports.get(simpleName.toString());
+
+                if (imps != null) {
+                    for (ImportTree imp : imps) {
+                        if (type.contains(UseTypes.CLASS_USE) || imp.isStatic()) {
+                            import2Highlight.remove(imp);
+                        }
+                    }
+                } else {
+                    if (removeStarImports) {
+                        //TODO: explain
+                        for (ImportTree unresolvable : unresolvablePackageImports) {
+                            if (type.contains(UseTypes.CLASS_USE) || unresolvable.isStatic()) {
+                                import2Highlight.remove(unresolvable);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-    
+
     public static interface ErrorDescriptionSetter {
         
         public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports);

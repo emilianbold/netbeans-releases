@@ -60,7 +60,7 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;

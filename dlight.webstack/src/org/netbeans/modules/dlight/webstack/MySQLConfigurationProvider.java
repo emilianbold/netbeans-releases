@@ -34,10 +34,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.webstack;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
@@ -48,7 +49,6 @@ import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.ClockIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.support.TimerIDPConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
@@ -63,14 +63,14 @@ public final class MySQLConfigurationProvider implements DLightToolConfiguration
 
   public DLightToolConfiguration create() {
     final String toolName = getMessage("MysqlTool.Name"); // NOI18N
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
+    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("mysql.id", toolName); // NOI18N
     List<Column> mysqlColumns = Arrays.asList(
             new Column("timestamp", Long.class, getMessage("Column.Timestamp"), null), // NOI18N
             new Column("query", String.class, getMessage("Column.SqlQuery"), null), // NOI18N
             new Column("time", Double.class, getMessage("Column.ExecutionTime"), null)); // NOI18N
     final DataTableMetadata mysqlDatatableMetadata = new DataTableMetadata("mysql", mysqlColumns, null); // NOI18N
-    DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
-            "org/netbeans/modules/dlight/webstack/resources/script_1.d"), Arrays.asList(mysqlDatatableMetadata)); // NOI18N
+    final URL scriptUrl = getClass().getResource("resources/script_1.d"); // NOI18N
+    DTDCConfiguration dcConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(mysqlDatatableMetadata)); // NOI18N
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
     dcConfiguration.setScriptArgs("`pgrep -x mysqld`"); // NOI18N
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);

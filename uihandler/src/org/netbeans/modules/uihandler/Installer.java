@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -158,7 +158,7 @@ public class Installer extends ModuleInstall implements Runnable {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
-    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data"); // NOI18N
+    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data", 2); // NOI18N
     public static RequestProcessor RP_OPT = null;
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
@@ -1574,6 +1574,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
+                reportPanel.showCheckingPassword();
                 RP_SUBMIT.post(new Runnable() {
 
                     public void run() {
@@ -1932,11 +1933,12 @@ public class Installer extends ModuleInstall implements Runnable {
                     panel.setText(panelContent.toString());
                     panel.getExplorerManager().setRootContext(root);
                 } else {
+                    List<LogRecord> displayedRecords = new ArrayList<LogRecord>(recs);
                     LinkedList<Node> nodes = new LinkedList<Node>();
                     root.setName("root"); // NOI18N
-                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size() + 1, new Date()));
+                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", displayedRecords.size() + 1, new Date()));
                     root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-                    for (LogRecord r : recs) {
+                    for (LogRecord r : displayedRecords) {
                         procesLog(r, nodes, panelContent);
                     }
                     procesLog(getUserData(false, reportPanel), nodes, panelContent);

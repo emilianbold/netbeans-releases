@@ -61,9 +61,10 @@ import org.openide.filesystems.FileUtil;
  */
 public final class SQLExecuteHelper {
 
+    public static final int DEFAULT_PAGE_SIZE = 20;
+
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private static final int DEFAULT_PAGE_SIZE = 20;
     private static final FileObject USERDIR = FileUtil.getConfigRoot();
     
     /**
@@ -73,8 +74,20 @@ public final class SQLExecuteHelper {
      * @param sqlScript the SQL script to execute. If it contains multiple lines
      * they have to be delimited by '\n' characters.
      */
-    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, 
+    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset,
             DatabaseConnection conn, SQLExecutionLogger executionLogger) {
+        return execute(sqlScript, startOffset, endOffset, conn, executionLogger, DEFAULT_PAGE_SIZE);
+    }
+
+    /**
+     * Executes a SQL string, possibly containing multiple statements. Returns the execution
+     * result, but only if the string contained a single statement.
+     *
+     * @param sqlScript the SQL script to execute. If it contains multiple lines
+     * they have to be delimited by '\n' characters.
+     */
+    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, 
+            DatabaseConnection conn, SQLExecutionLogger executionLogger, int pageSize) {
         
         boolean cancelled = false;
         
@@ -100,7 +113,7 @@ public final class SQLExecuteHelper {
                 LOGGER.log(Level.FINE, "Executing: " + sql);
             }
 
-            DataView view = DataView.create(conn, sql, DEFAULT_PAGE_SIZE);
+            DataView view = DataView.create(conn, sql, pageSize);
 
             // Save SQL statements executed for the SQLHistoryManager
             SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date()));

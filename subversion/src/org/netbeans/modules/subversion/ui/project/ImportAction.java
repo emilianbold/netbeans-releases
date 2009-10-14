@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -125,34 +125,9 @@ public final class ImportAction extends NodeAction {
                 list.add(importDirectory);
                 Context context = new Context(Context.getEmptyList(), list, Context.getEmptyList());
                 ImportWizard wizard = new ImportWizard(context);
-                if (!wizard.show()) return;
-                
-                Map commitFiles = wizard.getCommitFiles();
-                String message = wizard.getMessage();
-                        
-                performAction(context, commitFiles, message);
+                wizard.show(); // wizard starts all neccessary task (import, commit)
             }
         }
-    }
-
-    private void performAction(final Context context,
-                               final Map/*<SvnFileNode, CommitOptions>*/ commitFiles,
-                               final String message)
-    {                        
-        SVNUrl repository;
-        try {
-            repository = SvnUtils.getRepositoryRootUrl(context.getRootFiles()[0]);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }                 
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                    
-                CommitAction.performCommit(message, commitFiles, context, this, true);
-            }
-        };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(ImportAction.class, "LBL_Import_Progress"));
     }
 
     public boolean cancel() {

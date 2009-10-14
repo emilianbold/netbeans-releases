@@ -49,13 +49,12 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.FeatureData;
 import org.netbeans.modules.kenai.LicenceData;
 import org.netbeans.modules.kenai.ProjectData;
@@ -68,7 +67,6 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
  * @author Jan Becicka
  */
 public final class KenaiProject {
-
     /**
      * getSource() returns project being refreshed
      * values are undefined
@@ -181,23 +179,6 @@ public final class KenaiProject {
     }
 
     /**
-     * Synchronously (!) loads the image of the project from the server.
-     * You should call this method before you need the image of the project, so that you avoid
-     * remote image loading on AWT thread. Do not call this method from AWT thread...
-     * @param forceReload Forces reloading image from the server (in case that image for a Kenai project was already cached)
-     */
-    public void fetchProjectImage(boolean forceReload) {
-        if (projectIcon == null || forceReload) {
-            try {
-                BufferedImage img = ImageIO.read(new URL(getImageUrl()));
-                projectIcon = new ImageIcon(img);
-            } catch (IOException ex) {
-                Logger.getLogger(KenaiProject.class.getName()).log(Level.FINE, "Kenai project icon loading failed.", ex); //NOI18N
-            }
-        }
-    }
-
-    /**
      * is this project bookmarked?
      * @return true if bookmarked and logged in<br>
      *         false otherwise
@@ -229,14 +210,25 @@ public final class KenaiProject {
     }
 
     /**
-     * Returns the image of the project, method can load it if needed (synchronous load). If you call this method in AWT thread,
-     * make sure that you have image already cached locally. Use {@link #fetchProjectImage(boolean)}. for caching the image outside the AWT thread.
-     * @param loadIfNeeded indicates if image should be loaded and cached if it wasn't already cached. If false, this method may return null.
-     * @return the image of the project or null, if loading image fails or if image is not cached and loadIfNeeded is false
+     * Returns the image of the project, method can load it if needed
+     * (synchronous load). If the method is called from AWT thread and icon
+     * is not cached outside it before, this method throws an exception - it
+     * is to prevent blocking AWT thread due to loading an image.
+     * @return the image of the project or null, if loading image fails
+     * @throws KenaiException
      */
-    public Icon getProjectIcon(boolean loadIfNeeded) {
-        if (projectIcon == null && loadIfNeeded) {
-            fetchProjectImage(false);
+    public Icon getProjectIcon() throws KenaiException {
+        if (projectIcon==null) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                throw new KenaiException("KenaiProject.getProjectIcon() must not be called from AWT thread unless an icon is cached!");
+            }
+            try {
+                URL url = new URL(getImageUrl());
+                BufferedImage img = ImageIO.read(url);
+                projectIcon = new ImageIcon(img);
+            } catch (IOException ex) {
+                throw new KenaiException(ex.getMessage());
+            }
         }
         return projectIcon;
     }
@@ -259,8 +251,10 @@ public final class KenaiProject {
         fetchDetailsIfNotAvailable();
         return data.private_hidden;
     }
-
-    private static Pattern repositoryPattern = Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    
+    private static Pattern getRepositoryPattern() {
+        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+    }
     private static final int repositoryPatternProjectGroup = 4;
 
     /**
@@ -272,7 +266,7 @@ public final class KenaiProject {
      * @throws KenaiException if the project cannot be loaded
      */
     public static KenaiProject forRepository(String uri) throws KenaiException {
-        Matcher m = repositoryPattern.matcher(uri);
+        Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return Kenai.getDefault().getProject(m.group(repositoryPatternProjectGroup));
         }
@@ -288,7 +282,7 @@ public final class KenaiProject {
      * @return name of kenai project or null, if given uri is not from kenai
      */
     public static String getNameForRepository(String uri) {
-        Matcher m = repositoryPattern.matcher(uri);
+        Matcher m = getRepositoryPattern().matcher(uri);
         if (m.matches()) {
             return m.group(repositoryPatternProjectGroup);
         }
@@ -324,6 +318,11 @@ public final class KenaiProject {
             members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
         }
         return members;
+    }
+
+    public synchronized KenaiUser getOwner() throws KenaiException {
+        fetchDetailsIfNotAvailable();
+        return KenaiUser.forName(data.owner);
     }
 
     /**
@@ -409,6 +408,7 @@ public final class KenaiProject {
             features = null;
             members = null;
             licenses = null;
+            projectIcon = null;
         }
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_PROJECT_CHANGED, null, null));
     }

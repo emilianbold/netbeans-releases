@@ -1,4 +1,47 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
 #include <stdlib.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -9,10 +52,18 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <errno.h>
+#include <unistd.h>
+#include <limits.h>
+#include <sys/stat.h>
 
-#include "rfs_controller.h"
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+
+#include "rfs_protocol.h"
 #include "rfs_util.h"
 #include "rfs_filedata.h"
+
+ 
 
 #if TRACE
 static int emulate = false;
@@ -25,73 +76,191 @@ typedef struct connection_data {
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void new_connection_start_function(void* data) {
+static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
-    const int bufsize = 512;
-    char request[bufsize];
-    char response[bufsize];
-    int size;
+
+    const int maxsize = PATH_MAX + 32;
+    char buffer[maxsize];
+    struct package *pkg = (struct package *) &buffer;
+
+    int first = true;
+    char requestor_id[32];
+
     while (1) {
-        trace("Waiting for a data to arrive...\n");
-        memset(request, 0, sizeof (request));
-        size = recv(conn_data->sd, request, sizeof (request), 0);
-        if (size == -1) {
+        trace("Waiting for a data to arrive from %s, sd=%d...\n", requestor_id, conn_data->sd);
+        errno = 0;
+        enum sr_result recv_res = pkg_recv(conn_data->sd, pkg, maxsize);
+        if (recv_res == sr_reset) {
+            trace("Connection sd=%d reset by peer => normal termination\n", conn_data->sd);
+            break;
+        } else if (recv_res == sr_failure) {
+            if (errno != 0) {
+                perror("error getting message");
+            }
             break;
         }
-        if (size == 0) {
-            break; // TODO: why is it 0??? Should be -1 and errno==ECONNRESET
+
+        trace("Request (%s): %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg->data, conn_data->sd);
+        enum pkg_kind expected_kind = first ? pkg_handshake : pkg_request;
+        if (pkg->kind != expected_kind) {
+            fprintf(stderr, "prodocol error: got %s instead of %s from %s sd=%d\n", pkg_kind_to_string(pkg->kind), pkg_kind_to_string(expected_kind), requestor_id, conn_data->sd);
+            break;
         }
 
-        file_data *fd = find_file_data(request);
-        
-        trace("Request: %s (size=%d)\n", request, size);
-        if (fd->state == file_state_pending) {
+        if (first) {
+            first = false;
+            strncpy(requestor_id, pkg->data, sizeof requestor_id);
+            continue;
+        }
 
-            /* TODO: this is a very primitive sync!  */
-            pthread_mutex_lock(&mutex);
+        char response[64];
+        const char* filename = pkg->data;
+        file_data *fd = find_or_insert_file_data(filename, true); // temporary FIXUP: should be find_file_data
 
-            fprintf(stdout, "%s\n", request);
-            fflush(stdout);
+        if (fd != NULL) {
+            if (fd->state == file_state_pending) {
+                /* TODO: this is a very primitive sync!  */
+                pthread_mutex_lock(&mutex);
 
-            memset(response, 0, sizeof (response));
-            #if TRACE
-            if (emulate)
+                fprintf(stdout, "%s\n", filename);
+                fflush(stdout);
+
+                #if TRACE
+                    if (emulate) {
+                        response[0] = response_ok;
+                    } else
+                #endif
+                fgets(response, sizeof response, stdin);
+                fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
+                pthread_mutex_unlock(&mutex);
+                trace("Got reply=%s for %s from sd=%d set %X->state to %d\n", response, filename, conn_data->sd, fd, fd->state);
+            }
+            else if (fd->state == file_state_ok) {
                 response[0] = response_ok;
-            else
-            #endif
-            gets(response);
-            fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
-            pthread_mutex_unlock(&mutex);
-            trace("Got reply: %s set %X->state to %d\n", response, fd, fd->state);
-        } else {
-            if (fd->state == file_state_ok) {
-                response[0] = response_ok;
-            } else {
+                trace("Already known: %s; filled reply: %s\n", filename, response);
+            } else if(fd->state == file_state_error) {
+                response[0] = response_failure;
+                trace("Old error: %s; filled reply: %s\n", filename, response);
+            } else { // this can never happen, unless we have a bug in logic
+                report_error("Unexpected fd->state fir %s: %d\n", filename, fd->state);
                 response[0] = response_failure;
             }
-            response[1] = 0;
-            trace("Already known; filled reply: %s\n", response);
-        }
-        
-        if ((size = send(conn_data->sd, response, strlen(response), 0)) == -1) {
-            perror("send");
         } else {
-            trace("%d bytes sent\n", size);
+            response[0] = response_ok;
+            trace("Not mine: %s; filled reply: %s\n", filename, response);
         }
-        
-    }
-    if (errno == ECONNRESET) {
-        trace("Connection reset by peer => normal termination\n");
-    } else if (errno != 0) {
-        perror("error getting message");
+
+        response[1] = 0;
+        enum sr_result send_res = pkg_send(conn_data->sd, pkg_reply, response);
+        if (send_res == sr_failure) {
+            perror("send");
+        } else if (send_res == sr_reset) {
+            perror("send");
+        } else { // success
+            trace("reply for %s sent to %s sd=%d\n", filename, requestor_id, conn_data->sd);
+        }        
     }
     close(conn_data->sd);
-    trace("Connection to %s:%d closed\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port));
+    trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
+}
+
+static void create_dir(const char* path) {
+    trace("\tcreating dir %s\n", path);
+    int rc = mkdir(path, 0700); // TODO: error processing
+    if (rc != 0) {
+        trace("\t\terror creating dir %s: rc=%d\n", path, rc);
+    }
+}
+
+static int create_file(const char* path, int size) {
+    trace("\tcreating file %s %d\n", path, size);
+
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
+    if (fd > 0) { // // TODO: error processing
+        if (size > 0) {
+            lseek(fd, size-1, SEEK_SET);
+            char space = '\n';
+            int written = write(fd, &space, 1);
+            if (written != 1) {
+                report_error("Error writing %s: %d bytes written\n", path, written);
+                return false;
+            }
+        }
+        if (close(fd) != 0) {
+            report_error("error closing %s (fd=%d)\n", path, fd);
+            return false;
+        }
+        char real_path[PATH_MAX];
+        if ( realpath(path, real_path)) {
+            insert_file_data(real_path);
+        } else {
+            trace_unresolved_path(path);
+            return false;
+        }
+    } else {
+        report_error("Error opening %s: %s\n", path, strerror(errno));
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Reads the list of files from the host IDE runs on,
+ * creates files, fills internal file table
+ */
+static int init_files() {
+    trace("Files list initialization\n");
+    int bufsize = PATH_MAX + 32;
+    char buffer[bufsize];
+    int success = false;
+    while (1) {
+        fgets(buffer, bufsize, stdin);
+        if (buffer[0] == '\n') {
+            success = true;
+            break;
+        }
+        // remove trailing LF
+        char* lf = strchr(buffer, '\n');
+        if (lf) {
+            *lf = 0;
+        }
+        if (*buffer == 'D') { // directory
+            create_dir(buffer + 2);
+        } else { // plain file
+            // check that the line has proper format, otherwise we can got seg. fault
+            // also find where the path begin
+            char* path = buffer;
+            while (path < buffer + bufsize - 1 && *path && *path != ' ') {
+                if (!isdigit(*path)) {
+                    report_error("prodocol error: %s\n", buffer);
+                    break;
+                }
+                path++;
+            }
+            // we should necessarily stay on ' '
+            if (path < buffer + bufsize - 1 && *path == ' ') {
+                path++; // skip space after size
+            } else {
+                report_error("prodocol error: %s\n", buffer);
+                break;
+            }
+            int size = atoi(buffer);
+            int old_errno = errno;
+            errno = 0;
+            if (!create_file(path, size)) {
+                report_error("can not create file %s: %s\n", path, strerror(errno));
+                //break; // don't break, otherewise can break build if because of absence of some irrelevant file (say, configurations.xml)
+            }
+            errno = old_errno;
+        }
+    }
+    trace("Files list initialization done\n");
+    return success;
 }
 
 int main(int argc, char* argv[]) {
-    trace_startup("RFS_CONTROLLER_LOG");
+    trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);
@@ -115,7 +284,10 @@ int main(int argc, char* argv[]) {
     sin.sin_port = htons(port);
 
     if (bind(sd, (struct sockaddr *) & sin, sizeof (sin)) == -1) {
-        perror("Port");
+        if (errno != EADDRINUSE) {
+            perror("Error opening port: ");
+            exit(2);
+        }
         trace("Searching for available port...\n", port);
         int bind_rc;
         do {
@@ -125,18 +297,24 @@ int main(int argc, char* argv[]) {
         } while (bind_rc == -1 && port < 99999);
         if (bind_rc == -1) {
             perror("port");
-            exit(2);
+            exit(4);
         }
     };
-
-    fprintf(stdout, "PORT %d\n", port);
-    fflush(stdout);
     
     /* show that we are willing to listen */
     if (listen(sd, 5) == -1) {
         perror("listen");
         exit(1);
     }
+
+    if (!init_files()) {
+        report_error("Error when initializing files\n");
+        exit(8);
+    }
+
+    // print port later, when we're done with initializing files
+    fprintf(stdout, "PORT %d\n", port);
+    fflush(stdout);
 
     while (1) {
         /* wait for a client to talk to us */
@@ -147,7 +325,8 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
         pthread_t thread;
-        pthread_create(&thread, NULL, (void *(*) (void *)) new_connection_start_function, conn_data);
+        pthread_create(&thread, NULL /*&attr*/, (void *(*) (void *)) serve_connection, conn_data);
+        pthread_detach(thread);
     }
 
     close(sd);

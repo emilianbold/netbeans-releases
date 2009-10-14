@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -75,12 +75,16 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private List<PathResourceImplementation> resourcesCache;
     private long eventId;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private ClassPath endorsedClassPath;
 
-    BootClassPathImplementation(PropertyEvaluator evaluator) {
+    BootClassPathImplementation(PropertyEvaluator evaluator, ClassPath endorsedClassPath) {
         assert evaluator != null;
-
+        this.endorsedClassPath = endorsedClassPath;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        if (endorsedClassPath != null) {
+            endorsedClassPath.addPropertyChangeListener(this);
+        }
     }
     
     /**
@@ -97,6 +101,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
         JavaPlatform jp = findActivePlatform();
         final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        if (endorsedClassPath != null) {
+            for (ClassPath.Entry entry : endorsedClassPath.entries()) {
+                result.add(ClassPathSupport.createResource(entry.getURL()));
+            }
+        }
         if (jp != null) {
             // TODO: may also listen on CP, but from Platform it should be fixed
             final ClassPath cp = jp.getBootstrapLibraries();
@@ -154,6 +163,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                     resetCache();
                 }
             }
+        } else if (endorsedClassPath != null && evt.getSource() == endorsedClassPath) {
+            resetCache();
         }
     }
 

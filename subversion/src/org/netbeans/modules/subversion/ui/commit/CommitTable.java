@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,6 +60,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.Component;
 import java.lang.String;
 import java.util.*;
+import org.netbeans.modules.versioning.util.SortedTable;
 
 /**
  * {@link #getComponent Table} that displays nodes in the commit dialog.
@@ -107,12 +108,11 @@ public class CommitTable implements AncestorListener, TableModelListener {
             sorter = new TableSorter(tableModel);
         } 
         this.sorter = sorter;   
-        table = new JTable(this.sorter);
+        table = new SortedTable(this.sorter);
         table.getTableHeader().setReorderingAllowed(false);
         table.setDefaultRenderer(String.class, new CommitStringsCellRenderer());
         table.setDefaultEditor(CommitOptions.class, new CommitOptionsCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
-        this.sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -285,7 +285,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
             JComboBox combo = (JComboBox) editorComponent;
             if (fileStatus == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || fileStatus == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 combo.setModel(new DefaultComboBoxModel(removeOptions));
-            } else if ((fileStatus & FileInformation.STATUS_IN_REPOSITORY) == 0) {
+            } else if ((fileStatus & (FileInformation.STATUS_IN_REPOSITORY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) == 0) {
                 if (info.isDirectory()) {
                     combo.setModel(new DefaultComboBoxModel(dirAddOptions));
                 } else {

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -46,6 +46,28 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="CloneableEditorSupport.asynchronousOpen">
+        <api name="text"/>
+        <summary>Add CloneableEditorSupport.asynchronousOpen</summary>
+        <version major="6" minor="26"/>
+        <date day="1" month="10" year="2009"/>
+        <author login="mslama"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            Add CloneableEditorSupport.asynchronous to control if CloneableEditorSupport.open opens document synchronously or not.
+            If CloneableEditorSupport.asynchronous return true then CloneableEditorSupport.open opens document synchronously
+            and handles UserQuestionException.
+            If CloneableEditorSupport.asynchronous return false then CloneableEditorSupport.open does not open document. Document is then
+            opened during initialization of CloneableEditor form non AWT thread and UserQuestionException is handled there.
+            Implementation of method asynchronous in CloneableEditorSupport returns false ie. it keeps original behavior
+            of CloneableEditorSupport.open. Subclasses can overwrite method asynchronous to return true to avoid blocking AWT thread by
+            call CloneableEditorSupport.open which calls CloneableEditorSupport.openDocument.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="171713"/>
+    </change>
     <change id="NbDocument.findRecentEditorPane">
         <api name="text"/>
         <summary>Add NbDocument.findRecentEditorPane</summary>

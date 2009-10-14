@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -66,7 +66,6 @@ import org.openide.util.lookup.Lookups;
  */
 public final class ModuleLogicalView implements LogicalViewProvider {
     
-    
     private final NbModuleProject project;
     
     public ModuleLogicalView(NbModuleProject project) {
@@ -84,7 +83,6 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return null;
         }
         
-        Node[] rootChildren = root.getChildren().getNodes(true);
         DataObject file;
         
         if (target instanceof FileObject) {
@@ -99,19 +97,18 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             // What is it?
             return null;
         }
-        
-        for (int i = 0; i < rootChildren.length; i++) {
-            Node found = PackageView.findPath(rootChildren[i], target);
+
+        for (Node rootChild : root.getChildren().getNodes(true)) {
+            Node found = PackageView.findPath(rootChild, target);
             //System.err.println("found " + found + " for " + target + " in " + rootChildren[i]);
             if (found != null) {
                 return found;
             }
             // For Important Files node:
-            if (rootChildren[i].getName().equals(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME)) {
-                Node[] ifChildren = rootChildren[i].getChildren().getNodes(true);
-                for (int j = 0; j < ifChildren.length; j++) {
-                    if (ifChildren[j].getCookie(DataObject.class) == file) {
-                        return ifChildren[j];
+            if (rootChild.getName().equals(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME)) {
+                for (Node ifChild : rootChild.getChildren().getNodes(true)) {
+                    if (ifChild.getLookup().lookup(DataObject.class) == file) {
+                        return ifChild;
                     }
                 }
             }
@@ -151,19 +148,19 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             });
         }
         
-        public Action[] getActions(boolean ignore) {
+        public @Override Action[] getActions(boolean ignore) {
             return ModuleActions.getProjectActions(project);
         }
         
-        public boolean canRename() {
+        public @Override boolean canRename() {
             return true;
         }
         
-        public String getName() {
+        public @Override String getName() {
             return ProjectUtils.getInformation(project).getDisplayName();
         }
         
-        public void setName(String name) {
+        public @Override void setName(String name) {
             DefaultProjectOperations.performDefaultRenameOperation(project, name);
         }
         

@@ -70,13 +70,12 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             String args, Map<String, String> env, PrintWriter out, Reader userInput) {
         super(execEnv);
 
-        RemoteUtil.LOGGER.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment);
         Process process;
         try {
             //String cmd = makeCommand(dirf, exe, args, envp);
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
             pb.setExecutable(cmd);
-            pb.putAllEnvironmentVariables(env);
+            pb.getEnvironment().putAll(env);
 
             if (args != null) {
                 pb.setArguments(Utilities.parseParameters(args));
@@ -95,6 +94,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
                 }
                 pb = pb.setWorkingDirectory(path);
             }
+            RemoteUtil.LOGGER.fine("RNES<Init>: Running [" + cmd + "] on " + executionEnvironment + " in " + path);
             process = pb.call();
             InputStream is = process.getInputStream();
             Reader in = new InputStreamReader(is);

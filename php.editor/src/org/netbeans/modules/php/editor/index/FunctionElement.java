@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,13 +40,14 @@
 package org.netbeans.modules.php.editor.index;
 
 import java.util.List;
+import org.netbeans.modules.php.editor.model.Parameter;
 
 /**
  *
  * @author Tor Norbye
  */
 public interface FunctionElement extends Element {
-    List<String> getParameters();
+    List<Parameter> getParameters();
 //    boolean isTopLevel();
     String getIn();
 //    boolean isInherited();

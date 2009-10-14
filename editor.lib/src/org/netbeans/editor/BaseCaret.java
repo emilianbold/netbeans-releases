@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -303,9 +303,16 @@ AtomicLockListener, FoldHierarchyListener {
 
             FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
             if (fcs != null) {
-                AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
-                if (attribs != null) {
-                    caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                if (overwriteMode) {
+                    AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_OVERWRITE_MODE); //NOI18N
+                    if (attribs != null) {
+                        caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                    }
+                } else {
+                    AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
+                    if (attribs != null) {
+                        caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
+                    }
                 }
             }
             

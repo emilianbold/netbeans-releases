@@ -43,7 +43,6 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 
 import java.util.List;
@@ -51,10 +50,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.MalformedURLException;
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -158,34 +159,12 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         for (int i = 0; i < pieces.length; i++) {
             try {
-                URL entry;
-                
-                // if file does not exist (e.g. build/classes folder
-                // was not created yet) then corresponding File will
-                // not be ended with slash. Fix that.
-                
-                //HACK the url is considered archive if the name contains a dot.
-                // should be safe since the only folder classpath items are sources and target/classes
-                // if this causes problems we need to move the url finetuning in the place which
-                //creates the URIs (createPath())
-                String lowecasePath = pieces[i].toString().toLowerCase();
-                int lastdot = lowecasePath.lastIndexOf('.');
-                int lastslash = lowecasePath.lastIndexOf('/');
-                boolean isFile = (lastdot > 0 && lastdot > lastslash);
-                
-                if (isFile) {//NOI18N
-                    entry = FileUtil.getArchiveRoot(pieces[i].toURL());
-                } else {
-                    entry = pieces[i].toURL();
-                    if  (!entry.toExternalForm().endsWith("/")) { //NOI18N
-                        entry = new URL(entry.toExternalForm() + "/"); //NOI18N
-                    }
-                }
+                URL entry = FileUtil.urlForArchiveOrDir(new File(pieces[i]));
                 if (entry != null) {
                     result.add(ClassPathSupport.createResource(entry));
                 }
-            } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify(mue);
+            } catch (IllegalArgumentException exc) {
+                Logger.getLogger(AbstractProjectClassPathImpl.class.getName()).log(Level.INFO, "Cannot use uri " + pieces[i] + " for classpath", exc);
             }
         }
         return result;
