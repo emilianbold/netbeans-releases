@@ -1278,8 +1278,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         // TODO: should only include fields etc. down to caret location??? Decide. (Depends on language semantics. Can I have forward referemces?
         if (call.isConstantExpected()) {
-            //addConstants(root, constants);
             RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
+            RubyClassCompleter.complete(proposals, request, anchor, caseSensitive, call, showSymbols);
+            RubyType type = call.getType();
+            if (type.isKnown() && type.isSingleton()) {
+                RubyMethodCompleter.complete(proposals, request, type.first(), call, anchor, caseSensitive);
+            }
             return completionResult;
         }
         
