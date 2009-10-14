@@ -236,81 +236,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return knownHostsFileTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return knownHostsFileTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return timeoutTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  knownHostsFileTextField){
-                    return knownHostsFileBrowseButton;
-                }
-                if(aComponent ==  identityFileBrowseButton){
-                    return knownHostsFileTextField;
-                }
-                if(aComponent ==  hostTextField){
-                    return portTextField;
-                }
-                if(aComponent ==  identityFileTextField){
-                    return identityFileBrowseButton;
-                }
-                if(aComponent ==  initialDirectoryTextField){
-                    return timeoutTextField;
-                }
-                if(aComponent ==  portTextField){
-                    return userTextField;
-                }
-                if(aComponent ==  knownHostsFileBrowseButton){
-                    return initialDirectoryTextField;
-                }
-                if(aComponent ==  userTextField){
-                    return passwordTextField;
-                }
-                if(aComponent ==  passwordTextField){
-                    return identityFileTextField;
-                }
-                return knownHostsFileTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  knownHostsFileBrowseButton){
-                    return knownHostsFileTextField;
-                }
-                if(aComponent ==  knownHostsFileTextField){
-                    return identityFileBrowseButton;
-                }
-                if(aComponent ==  portTextField){
-                    return hostTextField;
-                }
-                if(aComponent ==  identityFileBrowseButton){
-                    return identityFileTextField;
-                }
-                if(aComponent ==  timeoutTextField){
-                    return initialDirectoryTextField;
-                }
-                if(aComponent ==  userTextField){
-                    return portTextField;
-                }
-                if(aComponent ==  initialDirectoryTextField){
-                    return knownHostsFileBrowseButton;
-                }
-                if(aComponent ==  passwordTextField){
-                    return userTextField;
-                }
-                if(aComponent ==  identityFileTextField){
-                    return passwordTextField;
-                }
-                return timeoutTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         hostLabel.setLabelFor(hostTextField);
 
@@ -330,9 +256,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
 
         Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.text")); // NOI18N
         passwordLabelInfo.setLabelFor(this);
-        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text")); // NOI18N
-        passwordLabelInfo.setEnabled(false);
 
+        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text")); // NOI18N
         identityFileLabel.setLabelFor(identityFileTextField);
 
         Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text"));

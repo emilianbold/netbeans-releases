@@ -63,8 +63,8 @@ import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
-import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.modules.php.project.util.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -268,7 +268,7 @@ class ConfigActionTest extends ConfigAction {
 
             ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                     .workingDirectory(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.workingDirectory)))
-                    .addArgument(PhpUnit.PARAM_XML_LOG)
+                    .addArgument(phpUnit.getXmlLogParam())
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
             if (configFiles.bootstrap != null) {

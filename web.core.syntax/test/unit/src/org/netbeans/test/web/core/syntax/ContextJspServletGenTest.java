@@ -109,11 +109,53 @@ public class ContextJspServletGenTest extends TestBase2 {
         super(name);
     }
     
-    public void testJsp() throws BadLocationException{
-        SimplifiedJspServlet processor = getProcessor("testJsp.jsp");
+    public void testJsp() throws Exception{
+        /*SimplifiedJspServlet processor = getProcessor("testJsp.jsp");
         processor.process();
         Embedding servlet = processor.getSimplifiedServlet();
-        System.out.println(servlet.getSnapshot().getText());
+        System.out.println(servlet.getSnapshot().getText());*/
+    }
+    
+    protected void generateServlet( String prjFolder ) throws Exception{
+        String jsp = prjFolder +"/index.jsp";
+        SimplifiedJspServlet processor = getProcessor( jsp );
+        processor.process();
+        Embedding servlet = processor.getSimplifiedServlet();
+        assertServletMatches( prjFolder , servlet.getSnapshot().getText().toString());
+    }
+    
+    protected void generateServlet( String testPrj, String fileName )throws Exception{
+        SimplifiedJspServlet processor = getProcessor( testPrj +"/"+fileName);
+        processor.process();
+        Embedding servlet = processor.getSimplifiedServlet();
+        assertServletMatches( testPrj , fileName , 
+                servlet.getSnapshot().getText().toString(), true);
+    }
+    
+    protected void assertServletMatches( String testFolder , String content ) throws Exception{
+        assertServletMatches(testFolder, "index.jsp", content, false);
+    }
+    
+    protected void assertServletMatches( String testFolder , String fileName , 
+            String content , boolean addFileName ) throws Exception
+    {
+        String prjPath = TEST_FOLDER_CONTEXT_JPS+"/"+testFolder;
+        String newFile;
+        if (addFileName) {
+            int i = fileName.lastIndexOf('.');
+            if (i > -1) {
+                newFile = "."+fileName.substring(0, i);
+            }
+            else {
+                newFile = "."+fileName;
+            }
+        }
+        else {
+            newFile = "";
+        }
+        newFile = testFolder +newFile+".java";                      // NOI18N
+        assertFileContentsMatches(prjPath +"/"+fileName, TEST_FOLDER_CONTEXT_JPS+
+                "/" +newFile,content);
     }
     
     @Override

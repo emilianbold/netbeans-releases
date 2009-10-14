@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.phpunit;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -79,18 +79,20 @@ import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
- * PHP Unit 3.x support.
+ * PHP Unit 3.x support, the common part.
  * @author Tomas Mysik
  */
-public final class PhpUnit extends PhpProgram {
+public abstract class PhpUnit extends PhpProgram {
     // for keeping log files to able to evaluate and fix issues
-    public static final boolean KEEP_LOGS = Boolean.getBoolean("org.netbeans.modules.php.project.util.PhpUnit.keepLogs");
+    public static final boolean KEEP_LOGS = Boolean.getBoolean(PhpUnit.class.getName() + ".keepLogs"); // NOI18N
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
+    // create test
+    private static final String REQUIRE_ONCE_TPL_START = "require_once '"; // NOI18N
+    private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
-    public static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     // for older PHP Unit versions
@@ -136,7 +138,7 @@ public final class PhpUnit extends PhpProgram {
         }
     }
 
-    private PhpUnit(String command) {
+    PhpUnit(String command) {
         super(command);
     }
 
@@ -146,7 +148,12 @@ public final class PhpUnit extends PhpProgram {
         if (error != null) {
             throw new InvalidPhpProgramException(error);
         }
-        return new PhpUnit(command);
+        // a bit ugly :/
+        if (new PhpUnitCustom(command).supportedVersionFound()
+                && version[1] >= 4) {
+            return new PhpUnit34(command);
+        }
+        return new PhpUnit33(command);
     }
 
     public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
@@ -154,7 +161,14 @@ public final class PhpUnit extends PhpProgram {
         if (error != null) {
             throw new InvalidPhpProgramException(error);
         }
-        return new PhpUnit(command);
+        return new PhpUnitCustom(command);
+    }
+
+    public abstract String getXmlLogParam();
+
+    public static boolean isRequireOnceSourceFile(String line, String filename) {
+        return line.startsWith(REQUIRE_ONCE_TPL_START)
+                && line.endsWith(String.format(REQUIRE_ONCE_TPL_END, filename));
     }
 
     @Override
@@ -502,7 +516,7 @@ public final class PhpUnit extends PhpProgram {
     }
 
     public static String validate(String command) {
-        return new PhpUnit(command).validate();
+        return new PhpUnitCustom(command).validate();
     }
 
     public static final class ConfigFiles {
