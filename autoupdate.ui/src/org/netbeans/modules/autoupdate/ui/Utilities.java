@@ -217,8 +217,11 @@ public class Utilities {
         }
 
         List<Unit.InternalUpdate> internals = new ArrayList <Unit.InternalUpdate>();
-        getVisibleModulesDependecyMap(units, coveredByVisibleMap);
-        if(otherUnits.size() > 0 && !isNbms) {            
+        createVisibleModulesDependecyMap(units, coveredByVisibleMap);
+
+        Set <UpdateUnit> invisibleElementsWithoutVisibleParent = new HashSet <UpdateUnit> ();
+
+        if(otherUnits.size() > 0 && !isNbms) {
             for(UpdateUnit uu : otherUnits) {
                 UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
                 if (u != null) {
@@ -242,20 +245,45 @@ public class Utilities {
                     }
                 } else {
                     // fallback, show module itself
-                    String catName = uu.getAvailableUpdates().get(0).getCategory();
-                    UnitCategory cat = null;
-
-                    if (names.contains(catName)) {
-                        cat = res.get(names.indexOf(catName));
-                    } else {
-                        cat = new UnitCategory(catName);
-                        res.add(cat);
-                        names.add(catName);
-                    }
-                    cat.addUnit(new Unit.Update(uu, isNbms, cat.getCategoryName()));
+                    invisibleElementsWithoutVisibleParent.add(uu);
                 }
             }            
         }
+
+        Map<UpdateUnit, List<UpdateElement>> coveredByInvisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
+        createVisibleModulesDependecyMap(invisibleElementsWithoutVisibleParent, coveredByInvisibleMap);
+
+        Set <UpdateUnit> coveredByInvisible = new HashSet <UpdateUnit>();
+        for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
+            boolean add = true;
+            UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
+            for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
+                if(key.equals(invisibleUnit)) {
+                    continue;
+                }
+                if(coveredByInvisibleMap.get(key).contains(update) && !coveredByInvisible.contains(key)) {
+                    add = false;
+                    break;
+                }
+            }
+            
+            if (add) {
+                String catName = update.getCategory();
+                UnitCategory cat = null;
+
+                if (names.contains(catName)) {
+                    cat = res.get(names.indexOf(catName));
+                } else {
+                    cat = new UnitCategory(catName);
+                    res.add(cat);
+                    names.add(catName);
+                }
+                cat.addUnit(new Unit.Update(invisibleUnit, isNbms, cat.getCategoryName()));
+            } else {
+                coveredByInvisible.add(invisibleUnit);
+            }
+        }
+
         for(Unit.InternalUpdate iu : internals) {
             iu.initState();
         }
@@ -266,11 +294,11 @@ public class Utilities {
 
     public static HashMap<UpdateUnit, List<UpdateElement>> getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits) {
         HashMap<UpdateUnit, List<UpdateElement>> result = new HashMap <UpdateUnit, List<UpdateElement>>();
-        getVisibleModulesDependecyMap(allUnits, result);
+        createVisibleModulesDependecyMap(allUnits, result);
         return result;
     }
 
-    private static void getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
+    private static void createVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
         for (UpdateUnit u : allUnits) {
             if (u.getInstalled() != null && !u.isPending() && !result.containsKey(u)) {
 

@@ -80,6 +80,7 @@ public final class Mnemonics extends Object {
 
         int i = findMnemonicAmpersand(text);
 
+        setMnemonicIndex(item, -1);
         if (i < 0) {
             // no '&' - don't set the mnemonic
             setText(item, text);
