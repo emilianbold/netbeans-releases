@@ -54,7 +54,7 @@ public class RubyConstantCodeCompleterTest extends RubyCodeCompleterTestBase {
     }
 
     public void testModuleSensivity2() throws Exception {
-        checkCompletion("testfiles/cc-constants.rb", "puts Colors::^BLUE");
+        checkCompletion("testfiles/cc-constants.rb", "puts Colours::^BLUE");
     }
 
     public void testModuleSensivity3() throws Exception {
@@ -63,5 +63,16 @@ public class RubyConstantCodeCompleterTest extends RubyCodeCompleterTestBase {
 
     public void testModuleSensivity4() throws Exception {
         checkCompletion("testfiles/cc-constants.rb", "puts Outer::Inner::^INNER_CONST");
+    }
+
+    public void testModuleSensivityForStaticMethods() throws Exception {
+        checkCompletion("testfiles/cc-classfqn.rb", "Eka::^eka_static");
+    }
+    public void testModuleSensivityForStaticMethods2() throws Exception {
+        checkCompletion("testfiles/cc-classfqn.rb", "Eka::Toka::^toka_static");
+    }
+
+    public void testModuleSensivityForStaticMethods3() throws Exception {
+        checkCompletion("testfiles/cc-classfqn.rb", "Eka::Toka::Vika::^vika_static");
     }
 }

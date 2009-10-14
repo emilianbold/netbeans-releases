@@ -40,10 +40,8 @@
  */
 package org.netbeans.modules.xml.wizard.impl;
 
-import org.netbeans.modules.xml.wizard.SchemaParser;
 import org.netbeans.modules.xml.wizard.*;
 import java.awt.Component;
-
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -57,7 +55,9 @@ import javax.swing.DefaultComboBoxModel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.openide.loaders.TemplateWizard;
 import java.util.Vector;
 import javax.swing.AbstractCellEditor;
@@ -77,8 +77,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-
-
 
 /**
  * This panel gathers data that are necessary for instantiting of XML
@@ -104,8 +102,9 @@ public class SchemaPanel extends AbstractPanel implements ActionListener, TableM
     private static String startString;
     /** Prefix for the namespace prefix values (e.g. "ns"). */
     private static final String PREFIX = "ns"; // NOI18N
+
    /** Hashmap to keep track of prefixes */
-    private List<String> prefixMap = new ArrayList<String>();
+   //private Set<String> prefixSet = new HashSet<String>();
    
     
     /** Creates new form SchemaPanel */
@@ -377,7 +376,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     String pre = generateUniquePrefix();
                     obj.setPrefix(pre);
                     //keep track of unique prefixes
-                    addPrefix(pre);
+                    //addPrefix(pre);
                     row.add(pre);
                     tableModel.addRow(0,row);
                }
@@ -411,6 +410,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         
         //set key listener to delete rows when user presses del key
         schemaTable.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent evt) {
                 tableKeyPressed(evt);
             }           
@@ -456,16 +456,16 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     
     public void tableChanged(TableModelEvent e) {
         //System.out.println("TBALE changed");
-        boolean prefixFlag = false;
+        //boolean prefixFlag = false;
         int row = e.getFirstRow();
         int column = e.getColumn();
-        AbstractTableModel model = (AbstractTableModel) e.getSource();
-        Object data = model.getValueAt(row, column);
+        AbstractTableModel tblModel = (AbstractTableModel) e.getSource();
+        Object data = tblModel.getValueAt(row, column);
         if(column == SCHEMA_COL) {
             SchemaObject rowValue = (SchemaObject)data;
             if(rowValue.toString().equals(startString))
                 return;
-            String genPrefix = (String)model.getValueAt(row, PREFIX_COL);
+            String genPrefix = (String) tblModel.getValueAt(row, PREFIX_COL);
             if (genPrefix == null || genPrefix.equals(" ")  ) {
                 String prefix = generateUniquePrefix();               
                 tableModel.setValueAt(prefix, row, PREFIX_COL);                 
@@ -476,7 +476,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             //if its the first row, then select it as primary
             if(row == 0) {
                // System.out.println("added first row");
-                model.setValueAt(new Boolean(true), 0, 0);
+                tblModel.setValueAt(new Boolean(true), 0, 0);
             }
         } 
     }
@@ -485,22 +485,28 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         int counter = 1;
         String generatedName = PREFIX + counter++;
         
-        while(!verifyUniquePrefix(generatedName)) {
+        while(! isPrefixUnique(generatedName)) {
             generatedName = PREFIX + counter++;
         } 
         return generatedName;    
     }
-    
-     private void addPrefix(String prefix){
-        prefixMap.add(prefix);
+/*
+    private void addPrefix(String prefix) {
+        if (prefix == null) return;
+
+        prefixSet.add(prefix.trim());
     }
+*/
     
-      private boolean verifyUniquePrefix(String pre) {
-          int i = prefixMap.indexOf(pre);
-          if(i == -1)
-              return true;
-          else 
-              return false;
+    private boolean isPrefixUnique(String prefix) {
+        Set<String> prefixSet = new HashSet<String>();
+        for (int i = 0; i < tableModel.getRowCount(); ++i) {
+            Object prefixValue = tableModel.getValueAt(i, PREFIX_COL);
+            if (prefixValue instanceof String) {
+                prefixSet.add((String) prefixValue);
+            }
+        }
+        return (! prefixSet.contains(prefix));
     }
     
     public boolean isPanelValid() {
@@ -565,6 +571,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
          * Don't need to implement this method unless your table's
          * editable.
          */
+        @Override
         public boolean isCellEditable(int row, int col) {
             if(col == ROOT_COL ) {
                    return true;
@@ -583,6 +590,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
          * Don't need to implement this method unless your table's
          * data can change.
          */
+        @Override
         public void setValueAt(Object value, int row, int col) {
           /*  if(value != null)
                          System.out.println("Setting value at " + row + "," + col
@@ -655,13 +663,18 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                
                
             } else if (col == PREFIX_COL) {
-                String prefix = (String)value;
-                if(prefix.trim().length() ==0 )
-                     return;
-                if(verifyUniquePrefix( prefix) ) {
-                    addPrefix(prefix);
-                    rowVector.set(col, value);                    
-                }             
+                String prefix = ((String) value).trim();
+
+//              if (prefix.trim().length() == 0)
+//                  return;
+//              if (verifyUniquePrefix(prefix)) {
+//                   addPrefix(prefix);
+//                   rowVector.set(col, value);
+//               }
+
+                if (isPrefixUnique(prefix)) {
+                    rowVector.set(col, prefix);
+                }
             } else {
                 rowVector.set(col, value);
             }
