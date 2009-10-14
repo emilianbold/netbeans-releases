@@ -41,9 +41,10 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
-import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.collab.chat.ChatNotifications;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,39 +52,80 @@ import org.netbeans.modules.kenai.ui.spi.MemberHandle;
  */
 public class MemberHandleImpl extends MemberHandle {
 
-    private KenaiUser delegate;
-    public MemberHandleImpl (KenaiProjectMember member) {
-        this.delegate = member.getKenaiUser();
+    private KenaiProjectMember delegate;
+    private boolean isOwner;
+    public MemberHandleImpl (KenaiProjectMember member, boolean isOwner) {
+        this.delegate = member;
+        this.isOwner = isOwner;
     }
 
     @Override
     public String getDisplayName() {
-        return delegate.getUserName();
+        return delegate.getKenaiUser().getUserName();
     }
 
     @Override
     public String getName() {
-        return delegate.getUserName();
+        return delegate.getKenaiUser().getUserName();
+    }
+
+    @Override
+    public String getRole() {
+        KenaiProjectMember.Role r = delegate.getRole();
+        String result = null;
+        if (r != null) {
+            switch (r) {
+                case ADMIN: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Admin"); break;// NOI18N
+                case DEVELOPER: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Developer");break; // NOI18N
+                case CONTENT: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Content");break; // NOI18N
+                case OBSERVER: result = NbBundle.getMessage(MemberHandleImpl.class, "Role.Observer");break; // NOI18N
+            }
+        }
+        if (isOwner) {
+            result += ", " + NbBundle.getMessage(MemberHandleImpl.class, "Role.Owner");
+        }
+
+        return result;
     }
 
     @Override
     public boolean hasMessages() {
-        return KenaiConnection.getDefault().getMessagesCountFor(getName()) >0;
+        return ChatNotifications.getDefault().hasNewPrivateMessages(getName());
     }
 
     @Override
     public boolean isOnline() {
-        return delegate.isOnline();
+        return delegate.getKenaiUser().isOnline();
     }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        delegate.addPropertyChangeListener(listener);
+        delegate.getKenaiUser().addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        delegate.removePropertyChangeListener(listener);
+        delegate.getKenaiUser().removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public String getFullName() {
+        return delegate.getKenaiUser().getFirstName() + " " + delegate.getKenaiUser().getLastName();
+    }
+
+    public int compareTo(MemberHandle o) {
+        MemberHandleImpl other = (MemberHandleImpl) o;
+        if (this.isOwner) {
+            return -1;
+        }
+        if (other.isOwner) {
+            return 1;
+        }
+
+        int res = this.delegate.getRole().compareTo(other.delegate.getRole());
+        if (res==0)
+            return getDisplayName().compareToIgnoreCase(o.getDisplayName());
+        return res;
     }
 
 }

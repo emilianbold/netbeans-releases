@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -598,14 +598,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Handle project and file level changes
         for (int i = 0; i < items.length; i++) {
             ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-            if (itemConfiguration.getExcluded().getValue()) {
-                deleted.add(items[i]);
-                continue;
-            }
-            if ((cFiles && itemConfiguration.getTool() == Tool.CCompiler) ||
-                    (ccFiles && itemConfiguration.getTool() == Tool.CCCompiler) ||
-                    items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
-                list.add(items[i]);
+            if (itemConfiguration != null) { // prevent NPE for corrupted projects IZ#174350
+                if (itemConfiguration.getExcluded().getValue()) {
+                    deleted.add(items[i]);
+                    continue;
+                }
+                if ((cFiles && itemConfiguration.getTool() == Tool.CCompiler) ||
+                        (ccFiles && itemConfiguration.getTool() == Tool.CCCompiler) ||
+                        items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
+                    list.add(items[i]);
+                }
             }
         }
         if (deleted.size() > 0) {

@@ -46,7 +46,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 /**
  * 
  * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
- * To use register your implementation in the {@link BugtrackingController}-s lookup.
+ * To use register your implementation in the {@link BugtrackingConnector}-s and
+ * {@link Repositories} lookup.
  * 
  * @author Tomas Stupka
  */
@@ -66,4 +67,12 @@ public abstract class KenaiSupport {
      * @param filter
      */
     public abstract void setFilter(Query query, Filter filter);
+
+    /**
+     * Returns the default "All Issues" query for the given repository
+     * 
+     * @return
+     */
+    public abstract Query getAllIssuesQuery(Repository repository);
+
 }

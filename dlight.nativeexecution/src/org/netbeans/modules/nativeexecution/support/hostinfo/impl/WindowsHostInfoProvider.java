@@ -40,7 +40,7 @@ package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
@@ -81,7 +81,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private final String path;
 
         public HostInfoImpl() {
-            Properties env = WindowsSupport.getInstance().getEnv();
+            Map<String, String> env = WindowsSupport.getInstance().getEnv();
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:
@@ -94,12 +94,12 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             int _cpuNum = 1;
 
             try {
-                _cpuNum = Integer.parseInt(env.getProperty("NUMBER_OF_PROCESSORS")); // NOI18N
+                _cpuNum = Integer.parseInt(env.get("NUMBER_OF_PROCESSORS")); // NOI18N
             } catch (Exception ex) {
             }
 
             cpuNum = _cpuNum;
-            hostname = env.getProperty("COMPUTERNAME"); // NOI18N
+            hostname = env.get("COMPUTERNAME"); // NOI18N
             shell = WindowsSupport.getInstance().getShell();
 
             File _tmpDirFile = null;
@@ -108,7 +108,11 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             String ioTmpDir = System.getProperty("java.io.tmpdir"); // NOI18N
 
-            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.getProperty("USERNAME")); // NOI18N
+            _tmpDirFile = new File(ioTmpDir, "dlight_" + env.get("USERNAME")); // NOI18N
+
+            // create the directory if absent (IZ#174327)
+            _tmpDirFile.mkdirs();
+
             _tmpDir = _tmpDirFile.getAbsolutePath();
 
             try {
@@ -119,7 +123,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
 
             if (shell != null) {
                 _tmpDir = WindowsSupport.getInstance().convertToShellPath(_tmpDir);
-                _path = env.getProperty("PATH"); // NOI18N
+                _path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
             }
 
             tmpDirFile = _tmpDirFile;

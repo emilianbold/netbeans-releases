@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,9 +42,12 @@
 package org.netbeans.modules.palette;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 
@@ -88,6 +91,8 @@ public final class PaletteItemHandler extends DefaultHandler {
     private String tooltip;
     
     private StringBuffer textBuffer;
+
+    private boolean error = false;
     
     public String getBody() { return body; }
     public String getClassName() { return className; }
@@ -100,6 +105,7 @@ public final class PaletteItemHandler extends DefaultHandler {
     public String getDisplayName() { return displayName; }
     public String getTooltip() { return tooltip; }
     
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) 
         throws SAXException 
     {
@@ -140,6 +146,7 @@ public final class PaletteItemHandler extends DefaultHandler {
         }
     }
     
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
 
         if (TAG_BODY.equals(qName)) {
@@ -154,6 +161,7 @@ public final class PaletteItemHandler extends DefaultHandler {
         }
     }
     
+    @Override
     public void characters(char buf[], int offset, int len)
         throws SAXException
     {
@@ -194,11 +202,32 @@ public final class PaletteItemHandler extends DefaultHandler {
         for (int i = firstNonEmpty; i <= lastNonEmpty; i++)
             sb.append(lines.get(i));
         
-        String body = sb.toString();
-        if (body.length() > 0  && body.charAt(body.length() - 1) == '\n') // cut trailing new-line
-            body = body.substring(0, body.length() - 1); 
+        String theBody = sb.toString();
+        if (theBody.length() > 0  && theBody.charAt(theBody.length() - 1) == '\n') // cut trailing new-line
+            theBody = theBody.substring(0, theBody.length() - 1);
         
-        return body;
+        return theBody;
+    }
+
+    @Override
+    public void error(SAXParseException e) throws SAXException {
+        error = true;
+        Logger.getLogger(PaletteItemHandler.class.getName()).log(Level.INFO, null, e);
+    }
+
+    @Override
+    public void fatalError(SAXParseException e) throws SAXException {
+        error = true;
+        Logger.getLogger(PaletteItemHandler.class.getName()).log(Level.INFO, null, e);
+    }
+
+    @Override
+    public void warning(SAXParseException e) throws SAXException {
+        Logger.getLogger(PaletteItemHandler.class.getName()).log(Level.FINE, null, e);
+    }
+    
+    boolean isError() {
+        return error;
     }
 }
 

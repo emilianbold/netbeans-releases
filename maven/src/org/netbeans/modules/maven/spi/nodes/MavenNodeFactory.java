@@ -47,6 +47,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -74,7 +75,7 @@ public final class MavenNodeFactory {
 
         /** Creates a new instance of VersionNode */
         public VersionNode(NBVersionInfo versionInfo, boolean fromDepMng) {
-            super(Children.LEAF);
+            super(Children.LEAF, Lookups.fixed(versionInfo));
 
             this.nbvi = versionInfo;
             this.fromDepMng = fromDepMng;

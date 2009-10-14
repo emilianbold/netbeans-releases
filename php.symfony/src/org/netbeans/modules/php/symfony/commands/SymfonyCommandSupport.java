@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,6 +128,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return externalProcessBuilder;
     }
 
+    @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
         ExternalProcessBuilder processBuilder = createCommand("list"); // NOI18N
         if (processBuilder == null) {
@@ -147,7 +149,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         Future<Integer> task = service.run();
         try {
             if (task.get().intValue() == 0) {
-                freshCommands = new ArrayList<FrameworkCommand>(lineProcessor.getCommands());
+                freshCommands = lineProcessor.getCommands();
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -157,13 +159,20 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         return freshCommands;
     }
 
+    @Override
+    protected File getPluginsDirectory() {
+        return new File(FileUtil.toFile(phpModule.getSourceDirectory()), "plugins"); // NOI18N
+    }
+
     class CommandsLineProcessor implements LineProcessor {
 
-        private List<FrameworkCommand> commands = Collections.synchronizedList(new ArrayList<FrameworkCommand>());
+        // @GuardedBy(commands)
+        private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
         private String prefix;
 
         public void processLine(String line) {
             if (!StringUtils.hasText(line)) {
+                prefix = null;
                 return;
             }
             String trimmed = line.trim();
@@ -171,18 +180,25 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             if (prefixMatcher.matches()) {
                 prefix = prefixMatcher.group(1);
             }
-            if (prefix != null) {
-                Matcher commandMatcher = COMMAND_PATTERN.matcher(trimmed);
-                if (commandMatcher.matches()) {
-                    String command = prefix + ":" + commandMatcher.group(1); // NOI18N
-                    String description = commandMatcher.group(2);
+            Matcher commandMatcher = COMMAND_PATTERN.matcher(trimmed);
+            if (commandMatcher.matches()) {
+                String command = commandMatcher.group(1);
+                if (prefix != null) {
+                    command = prefix + ":" + command; // NOI18N
+                }
+                String description = commandMatcher.group(2);
+                synchronized (commands) {
                     commands.add(new SymfonyCommand(phpModule, command, description, command));
                 }
             }
         }
 
         public List<FrameworkCommand> getCommands() {
-            return commands;
+            List<FrameworkCommand> copy = null;
+            synchronized (commands) {
+                copy = new ArrayList<FrameworkCommand>(commands);
+            }
+            return copy;
         }
 
         public void close() {

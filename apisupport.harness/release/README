@@ -307,6 +307,17 @@ sources.
 FORMAT OF YOUR project.xml's MAIN CONFIGURATION SECTION
 -------------------------------------------------------
 
+The format of project.xml is controlled by XML Schema. For the main section of
+new modules, use:
+
+  http://www.netbeans.org/ns/nb-module-project/3.xsd
+
+If you wish to edit project.xml by hand rather than using the IDE's GUI, you
+should validate all changes against this schema. If using the IDE's XML text
+editor, just type Alt-Shift-F9 to validate the current document. (Make sure the
+file is valid BEFORE saving it, as the IDE will refuse to load a malformed
+project.xml.)
+
 You must specify the "code name base" of your module. This is the value of
 OpenIDE-Module in manifest.mf, *except* without any major release version (e.g.
 "/1"). In the future OpenIDE-Module might be generated from this, but not yet.
@@ -1207,6 +1218,41 @@ Do not forget that manifest files must begin with the magic phrase
     Manifest-Version: 1.0
 
 and to be safe should end in *two* newlines.
+
+TEST COVERAGE SUPPORT SPI
+-------------------------
+
+There is a support for test coverage measurement for apisupport projects 
+since 6.7. There is a general contract under which alternative 
+implementations may by added (in case of multiple impls present, only 
+one is used). NetBeans 6.7 and 6.8 use Cobertura implementation. 
+
+A contract for test coverage implementation for module projects is to 
+create Ant script testcoverage.xml in 'harness' cluster. Script 
+must: 
+
+  * reside directly in root folder of the cluster
+  * set property testcoverage.present to true outside of any target
+  * define target 'coverage-report' in the script
+  * set property testcoverage.report.dir in 'coverage-report' target to dir
+    with index.html file with results.
+  * As of 6.8, unit and functional tests are supported.
+
+A contract for test coverage implementation for suite projects is to 
+create Ant script testcoverage-suite.xml in 'harness' cluster. Script 
+must: 
+
+  * reside directly in root folder of the cluster
+  * set property testcoverage.suite.present to true outside of any target
+  * define target 'coverage-report' in the script
+  * set property testcoverage.report.dir in 'coverage-report' target to dir
+    with index.html file with results.
+  * As of 6.8, only unit tests are supported for suite projects.
+	
+Clients should make no other assumptions beyond these contracts. All 
+other related files must be stored in 'testcoverage/<impl name>' 
+subfolder. 
+
 
 UPGRADING FROM NETBEANS 5.x
 ---------------------------

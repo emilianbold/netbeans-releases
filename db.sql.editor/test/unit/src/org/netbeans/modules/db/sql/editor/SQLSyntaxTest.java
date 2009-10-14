@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -104,6 +104,23 @@ public class SQLSyntaxTest extends NbTestCase {
             SQLTokenContext.OPERATOR,
             SQLTokenContext.INT_LITERAL,
         });
+    }
+
+    public void testComments() {
+        assertTokens("select /* block comment */ * from #notLineComment -- line comment", new TokenID[] {
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.BLOCK_COMMENT,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.IDENTIFIER,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.LINE_COMMENT
+        });
+        assertTokens("# MySQL Line Comment", SQLTokenContext.LINE_COMMENT);
     }
 
     private void assertTokens(String m, TokenID... tokens) {

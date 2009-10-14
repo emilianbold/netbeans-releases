@@ -245,6 +245,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     return WAIT_STRING;
                 }
                 final KenaiFeature repo = repos[k];
+                if (repo == null) continue;
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 String base = Kenai.getDefault().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
@@ -270,7 +271,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     continue;
                 } catch (IOException e) {
                     _appString += "<br>" + addRepoHeaderWithButton(repo, htmlID, k); //NOI18N
-                    _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_CANNOT_OPEN_FEED")); //NOI18N
+                    _appString += String.format("<i>%s</i><br>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_CANNOT_OPEN_FEED", urlStr)); //NOI18N
                     _appString += String.format("<p>&nbsp;&nbsp;&nbsp;&nbsp;%s&nbsp;<a href=\"%s\">%s</a></p>", kenaiProjectTopComponent.linkImageHTML, repo.getWebLocation(), repo.getWebLocation()); //NOI18N
                     _appString += "<br><div style=\"height: 0px; font-size: 0px; border-width: 1px; border-style: solid; border-color: silver\"></div><br>"; //NOI18N
                     continue;

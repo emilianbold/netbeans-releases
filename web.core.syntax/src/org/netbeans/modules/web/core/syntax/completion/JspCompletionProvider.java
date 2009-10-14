@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -123,8 +123,11 @@ public class JspCompletionProvider implements CompletionProvider {
                 JspCompletionQuery.CompletionResultSet<? extends CompletionItem> jspResultSet = new JspCompletionQuery.CompletionResultSet<CompletionItem>();
                 JspCompletionQuery.instance().query(jspResultSet, component, caretOffset);
                 if (jspResultSet.getItems().size() > 0) {
-                    resultSet.setDocumentation(new DocItem((JspCompletionItem) jspResultSet.getItems().get(0)));
-                    resultSet.setAnchorOffset(jspResultSet.getAnchor());
+                    CompletionItem citem = jspResultSet.getItems().get(0);
+                    if(citem instanceof JspCompletionItem) {
+                        resultSet.setDocumentation(new DocItem((JspCompletionItem) citem));
+                        resultSet.setAnchorOffset(jspResultSet.getAnchor());
+                    }
                 }
 
             }

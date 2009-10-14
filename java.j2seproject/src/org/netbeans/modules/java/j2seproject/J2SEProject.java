@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -117,6 +117,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -166,7 +167,13 @@ public final class J2SEProject implements Project, AntProjectListener {
 
     private AntBuildExtender buildExtender;
 
+    /**
+     * @see J2SEProject.ProjectXmlSavedHookImpl#projectXmlSaved() 
+     */
+    private final ThreadLocal<Boolean> projectPropertiesSave;
+
     public J2SEProject(AntProjectHelper helper) throws IOException {
+        this.projectPropertiesSave = new ThreadLocal<Boolean>();
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
@@ -419,8 +426,15 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
 
 
-
-
+    /**
+     * J2SEProjectProperties helper method to notify ProjectXmlSavedHookImpl about customizer save
+     * @see J2SEProject.ProjectXmlSavedHookImpl#projectXmlSaved() 
+     * @param value true = active
+     */
+    public void setProjectPropertiesSave(boolean value) {
+        this.projectPropertiesSave.set(value);
+    }
+    
     // Private innerclasses ----------------------------------------------------
     //when #110886 gets implemented, this class is obsolete
     private final class Info implements ProjectInformation {
@@ -498,6 +512,31 @@ public final class J2SEProject implements Project, AntProjectListener {
             //which didn't affect the j2seproject 
             if (updateHelper.isCurrent()) {
                 //Refresh build-impl.xml only for j2seproject/2
+                final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
+                if (projectPropertiesSave != null &&
+                    projectPropertiesSave.booleanValue() &&
+                    (genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl")) & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+                    //When the project.xml was changed from the customizer and the build-impl.xml was modified
+                    //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
+                    //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
+                    //when the project is opened.
+                    final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                    final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                    if (buildImpl  != null) {
+                        final String name = buildImpl.getName();
+                        final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
+                        final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
+                        if (oldBackup != null) {
+                            oldBackup.delete();
+                        }
+                        FileLock lock = buildImpl.lock();
+                        try {
+                            buildImpl.rename(lock, name, backupext);
+                        } finally {
+                            lock.releaseLock();
+                        }
+                    }
+                }
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     J2SEProject.class.getResource("resources/build-impl.xsl"),
@@ -554,9 +593,6 @@ public final class J2SEProject implements Project, AntProjectListener {
                                 EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                                 File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                                 ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-
-                                // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-                                setJaxWsEndorsedDirProperty(ep);
 
                                 // move web-service-clients one level up from in project.xml
                                 // WS should be part of auxiliary configuration
@@ -779,34 +815,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             return J2SEProject.this;
         }
         
-    }
-    
-    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
-    
-    /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
-     *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
-     */
-    public static void setJaxWsEndorsedDirProperty(EditableProperties ep) {
-        String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
-        String javaVersion = System.getProperty("java.specification.version"); //NOI18N
-        if ("1.6".equals(javaVersion)) { //NOI18N
-            String jaxWsEndorsedDirs = getJaxWsApiDir();
-            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs))
-                ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
-        } else {
-            if (oldJaxWsEndorsedDirs!=null) {
-                ep.remove(ENDORSED_DIR_PROPERTY);
-            }
-        }
-    }
-    
-    private static String getJaxWsApiDir() {
-        File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-        if (jaxwsApi!=null) {
-            File jaxbApi =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
-            return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
-        }
-        return null;
     }
     
     private static final DocumentBuilder db;

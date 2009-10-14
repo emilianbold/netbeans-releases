@@ -45,12 +45,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -62,12 +65,13 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Radek Matous
  */
-public final class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener {
+public final class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener, ChangeListener {
     private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
 
     public static final boolean ALLOW_BROKEN = Boolean.getBoolean("org.netbeans.modules.php.project.util.CopySupport.allowBroken"); // NOI18N
@@ -102,6 +106,8 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
         proxyOperationFactory = new ProxyOperationFactory(project);
         ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
+        RemoteConnections remoteConnections = RemoteConnections.get();
+        remoteConnections.addChangeListener(WeakListeners.change(this, remoteConnections));
 
         initTask = COPY_SUPPORT_RP.create(new Runnable() {
            public void run() {
@@ -275,6 +281,13 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event PROPERTY CHANGE for opened project {0}", project.getName());
+            initTask.schedule(PROPERTY_CHANGE_DELAY);
+        }
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        if (projectOpened) {
+            LOGGER.log(Level.FINE, "Processing event STATE CHANGE (remote connections) for opened project {0}", project.getName());
             initTask.schedule(PROPERTY_CHANGE_DELAY);
         }
     }

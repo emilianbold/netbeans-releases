@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,8 +45,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Mutex;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources
@@ -58,6 +60,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
     private int baseDirLength;
     private boolean privateShared;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private static final boolean IGNORE_BINARIES = CndUtils.getBoolean("cnd.vcs.ignore.binaries", true);
 
     MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, File baseDirFile) {
         this.projectDescriptorProvider = projectDescriptorProvider;
@@ -86,6 +89,9 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 
             public Integer run() {
                 synchronized (MakeSharabilityQuery.this) {
+                    if (IGNORE_BINARIES && CndFileVisibilityQuery.getDefault().isIgnored(file))  {
+                        return SharabilityQuery.NOT_SHARABLE;
+                    }
                     boolean sub = file.getPath().startsWith(baseDir);
                     if (!sub) {
                         return Integer.valueOf(SharabilityQuery.UNKNOWN);

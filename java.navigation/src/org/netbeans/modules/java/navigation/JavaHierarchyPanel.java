@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,7 +52,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
 
 import javax.lang.model.element.Element;
 import javax.swing.JComponent;
@@ -64,19 +63,14 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,6 +80,9 @@ import org.openide.util.RequestProcessor;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public class JavaHierarchyPanel extends javax.swing.JPanel {
+
+    private static final RequestProcessor RP = new RequestProcessor(JavaHierarchyPanel.class.getName(),1);
+
     private static TreeModel pleaseWaitTreeModel;
     static
     {
@@ -98,12 +95,12 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     private JavaHierarchyModel javaHierarchyModel;
 
     /**
-     *
+     * Threading: Called under Parser lock
      * @param fileObject
      * @param elements
-     * @param compilationInfo
      */
-    public JavaHierarchyPanel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
+    public JavaHierarchyPanel(final FileObject fileObject,
+            final Element[] elements) {
         this.fileObject = fileObject;
         initComponents();
         
@@ -124,10 +121,23 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         javaHierarchyTree.setRootVisible(false);
         javaHierarchyTree.setShowsRootHandles(true);
         javaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
+        javaHierarchyModel = new JavaHierarchyModel(fileObject, elements);
+        registerActions();
+        enterBusy();
+        RP.post(new Runnable() {
+            public void run() {
+                javaHierarchyModel.update();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        leaveBusy();
+                    }
+                });
+            }
+        });
+    }
 
-        javaHierarchyModel = new JavaHierarchyModel(fileObject, elements, compilationInfo);
-        javaHierarchyTree.setModel(javaHierarchyModel);
-
+    //<editor-fold defaultstate="collapsed" desc="Registration of Swing event handlers">
+    private void registerActions() {
         registerKeyboardAction(
                 new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -267,7 +277,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                             JEditorPane editorPane = (JEditorPane) view;
                             ActionListener actionForKeyStroke =
                                 editorPane.getActionForKeyStroke(
-                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));                            
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));
                             actionForKeyStroke.actionPerformed(
                                     new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, ""));
                         }
@@ -410,6 +420,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     }
                 });
     }
+    //</editor-fold>
 
     public void addNotify() {
         super.addNotify();

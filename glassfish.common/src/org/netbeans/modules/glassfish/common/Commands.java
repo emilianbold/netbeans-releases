@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -431,7 +432,7 @@ public class Commands {
         private final boolean isDirDeploy;
         private final File path;
 
-        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions) {
+        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties) {
             super("deploy"); // NOI18N
 
             this.isDirDeploy = path.isDirectory();
@@ -449,6 +450,7 @@ public class Commands {
                 cmd.append(contextRoot);
             }
             cmd.append(PARAM_SEPARATOR + "force=true"); // NOI18N
+            addProperties(cmd,properties);
             query = cmd.toString();
         }
 
@@ -484,6 +486,21 @@ public class Commands {
         @Override
         public String getLastModified() {
             return Long.toString(path.lastModified());
+        }
+
+        private void addProperties(StringBuilder cmd, Map<String,String> properties) {
+            if (null != properties && properties.size() > 0) {
+                cmd.append(ServerCommand.PARAM_SEPARATOR + "properties="); // NOI18N
+                int i = 0;
+                for (Entry<String,String> e : properties.entrySet()) {
+                    String k = e.getKey();
+                    String v = e.getValue();
+                    if (i > 0) {
+                        cmd.append(":"); // NOI18N
+                    }
+                    cmd.append(k+"="+v);
+                }
+            }
         }
     }
 

@@ -55,6 +55,12 @@ public interface Datarace {
     long getAddress();
 
     /**
+     * 
+     * @return returns string representation, can return Multiple Address
+     */
+    String stringAddress();
+
+    /**
      * @return list of unique thread dumps related to this datarace
      */
     List<ThreadDump> getThreadDumps();

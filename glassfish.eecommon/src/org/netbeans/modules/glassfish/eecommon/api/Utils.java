@@ -143,10 +143,12 @@ public final class Utils {
                 }
             }
         }
-        if (null == moduleID || moduleID.trim().length() < 1) {
-            moduleID = simplifyModuleID(dir.getParentFile().getParentFile().getName(), fallbackExt);
-        } else {
-            moduleID = simplifyModuleID(moduleID, fallbackExt);
+        if (null != dir && null != fallbackExt) {
+            if (null == moduleID || moduleID.trim().length() < 1) {
+                moduleID = simplifyModuleID(dir.getParentFile().getParentFile().getName(), fallbackExt);
+            } else {
+                moduleID = simplifyModuleID(moduleID, fallbackExt);
+            }
         }
 
         return moduleID;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -102,7 +102,7 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 hasLocal,
                 methodsNode == null ? hasLocal : methodsNode.isLocal(),
                 methodsNode == null ? hasRemote : methodsNode.isRemote(),
-                ejbMethodController.allowsNoInterface(),
+                ejbMethodController != null ? ejbMethodController.allowsNoInterface() : false,
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }

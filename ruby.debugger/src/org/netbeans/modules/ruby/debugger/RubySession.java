@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -488,7 +488,10 @@ public final class RubySession {
         public void propertyChange(PropertyChangeEvent evt) {
             Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
             if (currentSession != null && RubyDebuggerEngineProvider.RUBY_LANGUAGE.equals(currentSession.getCurrentLanguage())) {
-                Util.getCurrentSession().refresh();
+                RubySession rubySession = Util.getCurrentSession();
+                if (rubySession != null) {
+                    rubySession.refresh();
+                }
             }
         }
     }

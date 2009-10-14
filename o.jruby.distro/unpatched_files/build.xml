@@ -434,11 +434,12 @@
             <arg value="rspec"/>
             <arg value="rake"/>
               <!-- Modified for NetBeans builds: activerecord-jdbc-adapter, Rails, no ri or rdoc indices -->
-            <arg value="activesupport-2.3.2"/>
-            <arg value="actionpack-2.3.2"/>
-            <arg value="activerecord-2.3.2"/>
-            <arg value="actionmailer-2.3.2"/>
-            <arg value="activeresource-2.3.2"/>
+            <arg value="rack"/>
+            <arg value="activesupport-2.3.4"/>
+            <arg value="actionpack-2.3.4"/>
+            <arg value="activerecord-2.3.4"/>
+            <arg value="actionmailer-2.3.4"/>
+            <arg value="activeresource-2.3.4"/>
             <arg value="activerecord-jdbc-adapter-0.9.1"/>
             <arg value="jdbc-mysql-5.0.4"/>
             <arg value="activerecord-jdbcmysql-adapter-0.9.1"/>

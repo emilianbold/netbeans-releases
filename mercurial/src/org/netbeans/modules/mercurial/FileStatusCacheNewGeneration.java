@@ -69,7 +69,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
     private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, false);
-    private int MAX_COUNT_UPTODATE_FILES = 1000;
+    private int MAX_COUNT_UPTODATE_FILES = 1024;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial.fileStatusCacheNewGeneration"); //NOI18N
     private static final Logger LOG_UPTODATE_FILES = Logger.getLogger("mercurial.cache.upToDateFiles"); //NOI18N
@@ -148,7 +148,7 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
         synchronized (cachedFiles) {
             info = cachedFiles.get(file);
             synchronized (upToDateFiles) {
-                if (info == null && removeUpToDate(file)) {
+                if (info == null && upToDateFiles.contains(file)) {
                     addUpToDate(file);
                     info = FILE_INFORMATION_UPTODATE;
                 }
@@ -188,20 +188,23 @@ public class FileStatusCacheNewGeneration extends FileStatusCache {
      */
     private void addUpToDate (File file) {
         synchronized (upToDateFiles) {
-            upToDateFiles.add(file);
-            if (upToDateFiles.size() > MAX_COUNT_UPTODATE_FILES) {
-                // XXX exchange the following code
-                // trying to find a reasonable limit for uptodate files in cache
-                LOG_UPTODATE_FILES.log(Level.WARNING, "Cache of uptodate files grows too quickly: {0}", upToDateFiles.size()); //NOI18N
-                MAX_COUNT_UPTODATE_FILES <<= 1;
+            upToDateFiles.remove(file);
+            upToDateFiles.add(file); // add the file to the end of the linked collection
+            if (upToDateFiles.size() >= MAX_COUNT_UPTODATE_FILES) {
                 if (LOG_UPTODATE_FILES.isLoggable(Level.FINE)) {
-                    LOG_UPTODATE_FILES.fine(upToDateFiles.toString());
+                    // trying to find a reasonable limit for uptodate files in cache
+                    LOG_UPTODATE_FILES.log(Level.WARNING, "Cache of uptodate files grows too quickly: {0}", upToDateFiles.size()); //NOI18N
+                    MAX_COUNT_UPTODATE_FILES <<= 1;
                     assert false;
+                } else {
+                    // removing 1/8 eldest entries
+                    Iterator<File> it = upToDateFiles.iterator();
+                    int toDelete = MAX_COUNT_UPTODATE_FILES >> 3;
+                    for (int i = 0; i < toDelete && it.hasNext(); ++i) {
+                        it.next();
+                        it.remove();
+                    }
                 }
-                // removing the eldest entry
-//                Iterator<File> it = upToDateFiles.iterator();
-//                it.next();
-//                it.remove();
             }
         }
     }

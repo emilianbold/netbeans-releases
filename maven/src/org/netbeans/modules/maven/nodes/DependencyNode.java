@@ -799,6 +799,9 @@ public class DependencyNode extends AbstractNode {
                             dep.setGroupId(art.getGroupId());
                             dep.setType(art.getType());
                             dep.setVersion(art.getVersion());
+                            if (!Artifact.SCOPE_COMPILE.equals(art.getScope())) {
+                                dep.setScope(art.getScope());
+                            }
                             if (art.getClassifier() != null) {
                                 dep.setClassifier(art.getClassifier());
                             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -247,6 +247,54 @@ public class Utils {
         return (JSeparator)menu.getPopupMenu().getComponent(0);
     }
 
+    /**
+     * Calls {@link java.io.File#isFile()} and returns it's result.
+     * But loggs a warning if {@link java.io.File#isFile()} blocks for a defined amount of time.
+     * @param file file to test
+     * @return result of {@link java.io.File#isFile()}
+     */
+    public static boolean isFile (File file) {
+        long startTime = System.currentTimeMillis();
+        try {
+            return file.isFile();
+        } finally {
+            logLasting(file, System.currentTimeMillis() - startTime,
+                    "Utils.isFile: java.io.File.isFile takes too much time ({0} ms): {1}, stacktrace:"); //NOI18N
+        }
+    }
+
+    /**
+     * Calls {@link java.io.File#exists()} and returns it's result.
+     * But loggs a warning if {@link java.io.File#exists()} blocks for a defined amount of time.
+     * @param file file to test
+     * @return result of {@link java.io.File#exists()}
+     */
+    public static boolean exists (File file) {
+        long startTime = System.currentTimeMillis();
+        try {
+            return file.exists();
+        } finally {
+            logLasting(file, System.currentTimeMillis() - startTime,
+                    "Utils.exists: java.io.File.exists takes too much time ({0} ms): {1}, stacktrace:"); //NOI18N
+        }
+    }
+
+    /**
+     * Calls {@link java.io.File#canWrite()} and returns it's result.
+     * But loggs a warning if {@link java.io.File#canWrite()} blocks for a defined amount of time.
+     * @param file file to test
+     * @return result of {@link java.io.File#canWrite()}
+     */
+    public static boolean canWrite (File file) {
+        long startTime = System.currentTimeMillis();
+        try {
+            return file.canWrite();
+        } finally {
+            logLasting(file, System.currentTimeMillis() - startTime,
+                    "Utils.canWrite: java.io.File.canWrite takes too much time ({0} ms): {1}, stacktrace:"); //NOI18N
+        }
+    }
+
     static FileSystem getRootFilesystem() {
         if(filesystem == null) {
             try {
@@ -258,5 +306,27 @@ public class Utils {
             }
         }
         return filesystem;
+    }
+
+    private static void logLasting (File file, long last, String message) {
+        boolean allowed = false;
+        assert allowed = true;
+        if (allowed && last > 1500) {
+            StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+            StringBuilder sb = new StringBuilder();
+            int i = 0;
+            for (StackTraceElement e : stElements) {
+                if (i++ > 1) {
+                    if (i == 8) {
+                        sb.append("...\n");                         //NOI18N
+                        break;
+                    } else {
+                        sb.append(e.toString() + "\n");             //NOI18N
+                    }
+                }
+            }
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, message, new String[]{Long.toString(last), file.getAbsolutePath()});
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, sb.toString());
+        }
     }
 }

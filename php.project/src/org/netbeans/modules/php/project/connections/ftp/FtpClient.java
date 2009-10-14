@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.connections.ftp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +144,12 @@ public class FtpClient implements RemoteClient {
                     LOGGER.log(Level.FINE, "Exception while disconnecting", e);
                 }
             }
-            LOGGER.log(Level.FINE, "Exception while connecting", ex);
+            LOGGER.log(Level.INFO, "Exception while connecting", ex);
+            // # 169796
+            if (ex instanceof UnknownHostException) {
+                // no I18N to be consistent
+                ex = new IOException("Unknown host " + configuration.getHost()); // NOI18N
+            }
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotConnect", configuration.getHost()), ex, getReplyString());
         }
     }

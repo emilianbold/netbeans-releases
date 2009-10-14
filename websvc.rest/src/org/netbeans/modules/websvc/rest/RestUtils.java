@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,6 +51,8 @@ import javax.lang.model.element.AnnotationMirror;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -438,5 +440,13 @@ public class RestUtils {
             return key + "_";
         else
             return key;
-    }    
+    }
+
+    public static J2eeModule getJ2eeModule(Project prj) {
+        J2eeModuleProvider provider = prj.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            return provider.getJ2eeModule();
+        }
+        return null;
+    }
 }

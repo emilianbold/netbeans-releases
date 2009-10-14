@@ -65,6 +65,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -310,6 +311,11 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                 }
             }
         };
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.javacard.Customize"); //NOI18N
+        }
 
         CardDataNode(CardDataObject ob) {
             super(ob, Children.LEAF, ob.getLookup());

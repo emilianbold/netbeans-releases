@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -331,7 +331,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="705"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.dd.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.dd.EjbJarXmlWizardIterator"/>
-                <attr name="templateCategory" stringvalue="ejb-types,ejb-deployment-descriptor"/>
+                <attr name="templateCategory" stringvalue="ejb-deployment-descriptor"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/dd/ejbJarXml.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"/>
             </file>
@@ -363,19 +363,19 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddBusinessMethodCodeGenerator.instance">
-                        <attr name="position" intvalue="1000"/>
+                        <attr name="position" intvalue="10"/>
                     </file>
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddCreateMethodCodeGenerator.instance">
-                        <attr name="position" intvalue="1100"/>
+                        <attr name="position" intvalue="30"/>
                     </file>
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddFinderMethodCodeGenerator.instance">
-                        <attr name="position" intvalue="1200"/>
+                        <attr name="position" intvalue="50"/>
                     </file>
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddHomeMethodCodeGenerator.instance">
-                        <attr name="position" intvalue="1300"/>
+                        <attr name="position" intvalue="70"/>
                     </file>
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddSelectMethodCodeGenerator.instance">
-                        <attr name="position" intvalue="1400"/>
+                        <attr name="position" intvalue="90"/>
                     </file>
                     <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entries-CallEjbCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="2000"/>

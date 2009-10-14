@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.web.project;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
@@ -84,6 +87,11 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import java.util.HashSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
@@ -94,6 +102,7 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
+import org.netbeans.modules.web.project.ui.ServletScanObserver;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -290,13 +299,6 @@ class WebActionProvider implements ActionProvider {
                 if (isDebugged()) {
                     p.setProperty("is.debugged", "true");
                 }
-                // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
-                if (isEjbRefAndNoJ2eeApp(project)) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                }
                 if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
                     p.setProperty("forceRedeploy", "true"); //NOI18N
                 } else {
@@ -347,33 +349,12 @@ class WebActionProvider implements ActionProvider {
                                 p.setProperty("run.class", clazz); // NOI18N
                                 targetNames = new String[]{"run-main"};
                             } else {
-                                    // run servlet
-                                    // PENDING - what about servlets with main method? servlet should take precedence
-                                    WebModule webModule = WebModule.getWebModule(javaFile);
-                                    String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule, javaFile);
-                                    if (urlPatterns != null && urlPatterns.length > 0) {
-                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,
-                                                (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI), false);
-                                        DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                                NbBundle.getMessage(WebActionProvider.class, "TTL_setServletExecutionUri"));
-                                        Object res = DialogDisplayer.getDefault().notify(desc);
-                                        if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                            p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
-                                            try {
-                                                javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI, uriPanel.getServletUri());
-                                            } catch (IOException ex) {
-                                            }
-                                        } else {
-                                            return null;
-                                        }
-                                    } else {
-                                        String mes = java.text.MessageFormat.format(
-                                                NbBundle.getMessage(WebActionProvider.class, "TXT_noExecutableClass"),
-                                                new Object[]{javaFile.getName()});
-                                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                                        DialogDisplayer.getDefault().notify(desc);
-                                        return null;
-                                    }
+                                // Fix for IZ#170419 - Invoking Run took 29110 ms.
+                                if ( !runServlet(p, javaFile, "LBL_RunAction" ,     //NOI18N
+                                        false))
+                                {
+                                    return null;
+                                }
                             }
                         }
                     }
@@ -392,13 +373,6 @@ class WebActionProvider implements ActionProvider {
                 }
                 if (isDebugged()) {
                     p.setProperty("is.debugged", "true");
-                }
-                // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
-                if (isEjbRefAndNoJ2eeApp(project)) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
                 }
                 if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
                     p.setProperty("forceRedeploy", "true"); //NOI18N
@@ -429,13 +403,6 @@ class WebActionProvider implements ActionProvider {
                 }
                 if (isDebugged()) {
                     p.setProperty("is.debugged", "true");
-                }
-                // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
-                if (isEjbRefAndNoJ2eeApp(project)) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
                 }
 
                 boolean keepDebugging = setJavaScriptDebuggerProperties(p);
@@ -490,43 +457,12 @@ class WebActionProvider implements ActionProvider {
                                 p.setProperty("debug.class", clazz); // NOI18N
                                 targetNames = new String[]{"debug-single-main"};
                             } else {
-                                    // run servlet
-                                    // PENDING - what about servlets with main method? servlet should take precedence
-                                    WebModule webModule = WebModule.getWebModule(javaFile);
-                                    String[] urlPatterns = SetExecutionUriAction.getServletMappings(webModule, javaFile);
-                                    if (urlPatterns != null && urlPatterns.length > 0) {
-                                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns,
-                                                (String)javaFile.getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI), false);
-                                        DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                                NbBundle.getMessage(WebActionProvider.class, "TTL_setServletExecutionUri"));
-                                        Object res = DialogDisplayer.getDefault().notify(desc);
-                                        if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                            p.setProperty("client.urlPart", uriPanel.getServletUri()); //NOI18N
-                                            try {
-                                                javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI, uriPanel.getServletUri());
-                                            } catch (IOException ex) {
-                                            }
-                                        } else {
-                                            return null;
-                                        }
-                                    } else {
-                                        JavaSource js = JavaSource.forFileObject(javaFile);
-                                        if (isWebService(js)) {  //cannot debug web service implementation file
-                                            String mes = java.text.MessageFormat.format(
-                                                    NbBundle.getMessage(WebActionProvider.class, "TXT_cannotDebugWebservice"),
-                                                    new Object[]{javaFile.getName()});
-                                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                                            DialogDisplayer.getDefault().notify(desc);
-                                            return null;
-                                        } else {
-                                            String mes = java.text.MessageFormat.format(
-                                                    NbBundle.getMessage(WebActionProvider.class, "TXT_missingServletMappings"),
-                                                    new Object[]{javaFile.getName()});
-                                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                                            DialogDisplayer.getDefault().notify(desc);
-                                            return null;
-                                        }
-                                    }
+                                // Fix for IZ#170419 - Invoking Run took 29110 ms.
+                                if ( !runServlet( p, javaFile, "LBL_DebugAction",   //NOI18N
+                                        true))
+                                {
+                                    return null;
+                                }
                             }
                         }
                     }
@@ -542,14 +478,6 @@ class WebActionProvider implements ActionProvider {
 
             if (isDebugged()) {
                 p.setProperty("is.debugged", "true");
-            }
-// 51462 - if there's an ejb reference, but no j2ee app, debug will not work
-            if (isEjbRefAndNoJ2eeApp(project)) {
-                NotifyDescriptor nd;
-                nd =
-                        new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                return null;
             }
 
             boolean keepDebugging = setJavaScriptDebuggerProperties(p);
@@ -732,6 +660,130 @@ class WebActionProvider implements ActionProvider {
             }
         }
         return targetNames;
+    }
+
+    // Fix for IZ#170419 - Invoking Run took 29110 ms.
+    private boolean runServlet( Properties p, FileObject javaFile, String
+            actionName , boolean debug ) 
+    {
+        // run servlet
+        // PENDING - what about servlets with main method? servlet should take
+        // precedence
+        WebModule webModule = WebModule.getWebModule(javaFile);
+        final Dialog[] waitDialog = new Dialog[1];
+        final boolean[] cancel = new boolean[1];
+        if (SetExecutionUriAction.isScanInProgress(webModule, javaFile,
+                new ServletScanObserver() {
+
+                    public void scanFinished() {
+                        SwingUtilities.invokeLater( new Runnable(){
+                            public void run(){
+                                if ( waitDialog[0]!=null ){
+                                    waitDialog[0].setVisible(false);
+                                    waitDialog[0].dispose();
+                                }
+                            }
+                        });
+                    }
+                }))
+        {
+            JLabel label = new JLabel(
+                    NbBundle
+                            .getMessage(WebActionProvider.class, "MSG_WaitScan"),
+                    javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                    SwingConstants.LEFT); // NOI18N
+            label.setBorder(new EmptyBorder(12, 12, 11, 11));
+            DialogDescriptor dd = new DialogDescriptor(label, NbBundle
+                    .getMessage(WebActionProvider.class, actionName).
+                    replace("&", ""),true, new Object[] { NbBundle.getMessage(
+                            WebActionProvider.class,"LBL_CancelAction", 
+                            new Object[] { NbBundle
+                                    .getMessage(WebActionProvider.class,
+                                            actionName) }) }, null, 0,
+                    null, new ActionListener() {
+                        
+                        public void actionPerformed( ActionEvent arg0 ) {
+                            if ( waitDialog[0]!=null ){
+                                waitDialog[0].setVisible(false);
+                                waitDialog[0].dispose();
+                                cancel[0] = true;
+                            }                            
+                        }
+                    });        //NOI8N
+            waitDialog[0] = DialogDisplayer.getDefault().createDialog(dd);
+            waitDialog[0].pack();
+            waitDialog[0].setVisible(true);
+            
+            if ( cancel[0] ){
+                return false;
+            }
+        }
+        String[] urlPatterns = SetExecutionUriAction.getServletMappings(
+                webModule, javaFile);
+        if (urlPatterns != null && urlPatterns.length > 0) {
+            ServletUriPanel uriPanel = new ServletUriPanel(
+                    urlPatterns,
+                    (String) javaFile
+                            .getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI),
+                    false);
+            DialogDescriptor desc = new DialogDescriptor(uriPanel, NbBundle
+                    .getMessage(WebActionProvider.class,
+                            "TTL_setServletExecutionUri"));
+            Object res = DialogDisplayer.getDefault().notify(desc);
+            if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                p.setProperty("client.urlPart", uriPanel.getServletUri()); // NOI18N
+                try {
+                    javaFile.setAttribute(
+                            SetExecutionUriAction.ATTR_EXECUTION_URI, uriPanel
+                                    .getServletUri());
+                }
+                catch (IOException ex) {
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else if (debug ){
+            return debugEmptyMapping(javaFile);
+        }
+        else {
+            return runEmptyMapping(javaFile);
+        }
+        return true;
+    }
+
+    private boolean runEmptyMapping( FileObject javaFile ) {
+        String mes = java.text.MessageFormat.format(NbBundle.getMessage(
+                WebActionProvider.class, "TXT_noExecutableClass"),
+                new Object[] { javaFile.getName() });
+        NotifyDescriptor desc = new NotifyDescriptor.Message(mes,
+                NotifyDescriptor.Message.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(desc);
+        return false;
+    }
+    
+    private boolean debugEmptyMapping( FileObject javaFile ){
+        JavaSource js = JavaSource.forFileObject(javaFile);
+        if (isWebService(js)) {  //cannot debug web service implementation file
+            String mes = java.text.MessageFormat.format(
+                    NbBundle.getMessage(WebActionProvider.class, 
+                            "TXT_cannotDebugWebservice"),
+                    new Object[]{javaFile.getName()});      // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+            return false;
+        } else {
+            String mes = java.text.MessageFormat.format(
+                    NbBundle.getMessage(WebActionProvider.class, 
+                            "TXT_missingServletMappings"),
+                    new Object[]{javaFile.getName()});      // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+            return false;
+        }
     }
 
     private boolean setJavaScriptDebuggerProperties(Properties p) {
@@ -1133,53 +1185,6 @@ class WebActionProvider implements ActionProvider {
             }
         }
         return null;
-    }
-
-    private boolean isEjbRefAndNoJ2eeApp(Project p) {
-        WebModule wmod = WebModule.getWebModule(p.getProjectDirectory());
-        if (wmod != null) {
-            boolean hasEjbLocalRefs = false;
-            try {
-                wmod.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Boolean>() {
-                    public Boolean run(WebAppMetadata metadata) {
-                        // return true if there is an ejb reference in this module
-                        return !metadata.getEjbLocalRefs().isEmpty();
-                    }
-                });
-            } catch (IOException e) {
-                // ignore
-            }
-            if (hasEjbLocalRefs && !isInJ2eeApp(p)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isInJ2eeApp(Project p) {
-        Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
-        Iterator iter = globalPath.iterator();
-        while (iter.hasNext()) {
-            FileObject sourceRoot = (FileObject) iter.next();
-            Project project = FileOwnerQuery.getOwner(sourceRoot);
-            if (project != null) {
-                Object j2eeApplicationProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
-                if (j2eeApplicationProvider != null) { // == it is j2ee app
-                    J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider) j2eeApplicationProvider;
-                    J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
-                    if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
-                        J2eeModuleProvider affectedPrjProvider =
-                                (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-                        if (affectedPrjProvider != null) {
-                            if (Arrays.asList(j2eeModules).contains(affectedPrjProvider)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private boolean isDebugged() {

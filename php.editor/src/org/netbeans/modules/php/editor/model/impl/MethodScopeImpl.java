@@ -130,14 +130,28 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
         sb.append("function").append(" ").append(getName());//NOI18N
         sb.append("(");//NOI18N
-        List<? extends String> parameterNames = getParameterNames();
-        for (int i = 0; i < parameterNames.size(); i++) {
-            String param = parameterNames.get(i);
-            if (i > 0) {
-                sb.append(",");//NOI18N
+        List<? extends Parameter> parameterList = getParameters();
+        if (parameterList.size() > 0) {
+            for (int i = 0, n = parameterList.size(); i < n; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                final Parameter param = parameterList.get(i);
+                    List<QualifiedName> types = param.getTypes();
+                    if (types.size() == 1) {
+                        for (QualifiedName qName : types) {
+                            sb.append(qName.toString()).append(' ');//NOI18N
+                        }
+                    }
+
+                sb.append(param.getName());
+                    String defaultValue = param.getDefaultValue();
+                    if (defaultValue != null) {
+                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                    }
             }
-            sb.append(param);
         }
+
         sb.append(")");
         sb.append("{\n}\n");//NOI18N
         return sb.toString();
@@ -165,20 +179,17 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName()).append(";");//NOI18N
-        StringBuilder defaultArgs = new StringBuilder();
+        sb.append(getOffset()).append(";");//NOI18N
         List<? extends Parameter> parameters = getParameters();
-        for (int paramIdx = 0; paramIdx < parameters.size(); paramIdx++) {
-            Parameter parameter = parameters.get(paramIdx);
-            if (paramIdx > 0) { sb.append(","); }//NOI18N
-            sb.append(parameter.getName());
-            if (!parameter.isMandatory()) {
-                if (defaultArgs.length() > 0) { defaultArgs.append(","); }//NOI18N
-                defaultArgs.append(paramIdx);
+        for (int idx = 0; idx < parameters.size(); idx++) {
+            Parameter parameter = parameters.get(idx);
+            if (idx > 0) {
+                sb.append(',');//NOI18N
             }
+            sb.append(parameter.getIndexSignature());
+
         }
         sb.append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        sb.append(defaultArgs).append(";");//NOI18N
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
             sb.append(returnType);
         }

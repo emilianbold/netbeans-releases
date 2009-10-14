@@ -23,7 +23,7 @@
 /*
  * @(#)XmlUtil.java 
  *
- * Copyright 2004-2007 Sun Microsystems, Inc. All Rights Reserved.
+ * Copyright 2004-2009 Sun Microsystems, Inc. All Rights Reserved.
  * 
  * END_HEADER - DO NOT EDIT
  */

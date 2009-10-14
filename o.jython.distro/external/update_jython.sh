@@ -1,8 +1,8 @@
 #!/bin/sh
 
-repository=https://jython.svn.sourceforge.net/svnroot/jython/tags/Release_2_5_0/jython
-target=jython-2.5.zip
-dist=jython-2.5
+repository=https://jython.svn.sourceforge.net/svnroot/jython/tags/Release_2_5_1/jython
+target=jython-2.5.1.zip
+dist=jython-2.5.1
 location=jython
 
 svn co $repository

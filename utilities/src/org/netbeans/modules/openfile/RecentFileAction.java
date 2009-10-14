@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -204,11 +204,17 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
      * created in fillSubMenu, not for whole RecentFileAction.
      */
     public void actionPerformed(ActionEvent evt) {
-        JMenuItem source = (JMenuItem) evt.getSource();
-        URL url = (URL) source.getClientProperty(URL_PROP);
-        if (url != null) {
-            OpenFile.open(RecentFiles.convertURL2File(url), -1);
+        Object source = evt.getSource();
+        if (source instanceof JMenuItem) {
+            JMenuItem menuItem = (JMenuItem) source;
+            URL url = (URL) menuItem.getClientProperty(URL_PROP);
+            if (url != null) {
+                OpenFile.open(RecentFiles.convertURL2File(url), -1);
+            }
         }
+        // TODO: Processing of pressing of a shortcut key that can be associated
+        // with this action. Note, in this case, any UI component can be passed
+        // as the source.
     }
     
     /** Menu that checks its enabled state just before is populated */

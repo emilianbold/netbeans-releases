@@ -59,6 +59,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -144,6 +145,7 @@ public class TabbedController extends OptionsPanelController {
     public JComponent getComponent(Lookup masterLookup) {
         if (pane == null) {
             pane = new JTabbedPane();
+            pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TabbedController.class, "TabbedController.pane.AD"));
             component2Option = new HashMap<JComponent, OptionsPanelController>();
             for (OptionsPanelController c : getControllers()) {
                 JComponent comp = c.getComponent( c.getLookup());

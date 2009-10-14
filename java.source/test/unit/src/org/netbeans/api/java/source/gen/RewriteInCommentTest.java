@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,12 +42,16 @@ package org.netbeans.api.java.source.gen;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tests WorkingCopy.rewriteInComment
@@ -124,6 +128,35 @@ public class RewriteInCommentTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
+    public void testLastRewriteInComment() throws Exception {
+        File f = new File(getWorkDir(), "TestClass.java");
+        String code = "package foo;\n" +
+                      "public class TestClass{\n" +
+                      "   public void foo() {\n" +
+                      "   }\n" +
+                      "}//test";
+        TestUtilities.copyStringToFile(f, code);
+        FileObject fo = FileUtil.toFileObject(f);
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        ModificationResult mr = javaSource.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
+
+                TokenSequence ts = copy.getTokenHierarchy().tokenSequence();
+
+                ts.moveEnd();
+                assertTrue(ts.movePrevious());
+
+                int off = ts.offset() + ts.token().length();
+
+                copy.rewriteInComment(off - "test".length(), "test".length(), "foo");
+            }
+        });
+
+        assertEquals(code.replaceAll("test", "foo"), mr.getResultingSource(fo));
+    }
+    
     String getGoldenPckg() {
         return "";
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,7 +45,6 @@ import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.MethodElement;
 import org.netbeans.modules.ruby.options.TypeInferenceSettings;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * This class contains a lot of logic used to build the code indices
@@ -307,9 +306,12 @@ public final class RubyIndexerHelper {
                 blockArgs = "";
             }
 
-            MethodDefNode method = (MethodDefNode)child.getNode();
-            //hashNames = getAttribute(file, fo, root, method);
-            hashNames = getAttribute(fo, root, method);
+            if (child.getNode() instanceof MethodDefNode) {
+                MethodDefNode method = (MethodDefNode) child.getNode();
+                //hashNames = getAttribute(file, fo, root, method);
+                hashNames = getAttribute(fo, root, method);
+            }
+            
             if (hashNames == null) {
                 hashNames = "";
             } else {
@@ -343,7 +345,7 @@ public final class RubyIndexerHelper {
             }
 
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return signature;
@@ -386,7 +388,7 @@ public final class RubyIndexerHelper {
                 }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return DEFAULT_DOC;

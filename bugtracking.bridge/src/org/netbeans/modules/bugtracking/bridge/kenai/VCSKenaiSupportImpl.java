@@ -51,9 +51,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -76,8 +76,6 @@ import org.openide.filesystems.FileUtil;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiSupport.class)
 public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChangeListener {
-
-    private Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.kenai.VCSKenaiSupport");  // NOI18N
 
     private static final String KENAI_WEB_SOURCES_REVISION_PATH = "{0}/sources/{1}/revision/{2}"; //NOI18N
     private static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation"; // NOI18N
@@ -219,6 +217,11 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
 
         @Override
+        public void startChat(String msg) {
+            delegate.startChat(msg);
+        }
+
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             delegate.getKenaiUser().removePropertyChangeListener(listener);
         }
@@ -255,6 +258,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         private final File projectDir;
 
         public VCSKenaiNotificationImpl(KenaiNotification kn, File projectDir) {
+            assert kn != null;
             assert kn.getType() == KenaiService.Type.SOURCE;
             this.kn = kn;
             this.projectDir = projectDir;
@@ -292,6 +296,20 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         @Override
         public File getProjectDirectory() {
             return projectDir;
+        }
+
+        @Override
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("[");
+            sb.append(projectDir);
+            sb.append(",");
+            sb.append(getUri());
+            sb.append(",");
+            sb.append(getService());
+            sb.append(",");
+            sb.append(getStamp());
+            return sb.toString();
         }
     }
 

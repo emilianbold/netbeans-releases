@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.java.navigation;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -52,34 +55,36 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
+import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.openide.awt.HtmlBrowser;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -88,6 +93,9 @@ import org.openide.util.RequestProcessor;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public class JavaMembersPanel extends javax.swing.JPanel {
+
+    private static final RequestProcessor RP = new RequestProcessor(JavaMembersPanel.class.getName(),1);
+
     private static TreeModel pleaseWaitTreeModel;
     static
     {
@@ -96,7 +104,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
 
-    private FileObject fileObject;
     private JavaMembersModel javaMembersModel;
     private JavaMembersModel.FilterModel javaMembersFilterModel;
 
@@ -107,9 +114,76 @@ public class JavaMembersPanel extends javax.swing.JPanel {
      * @param compilationInfo
      */
     public JavaMembersPanel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
-        this.fileObject = fileObject;
-        initComponents();
+        this();
+        javaMembersModel = new JavaMembersModel(fileObject, elements, compilationInfo);
+        javaMembersFilterModel = javaMembersModel.getFilterModel();
+        javaMembersTree.setModel(javaMembersFilterModel);
+        registerActions();
+    }
+
+    JavaMembersPanel(final FileObject fileObject) {
+        this();
+        enterBusy();
+        RP.post(new Runnable() {
+            public void run() {
+                try {
+                    JavaSource javaSource = JavaSource.forFileObject(fileObject);
+                    if (javaSource != null) {
+                        javaSource.runUserActionTask(new Task<CompilationController>() {
+                            public void run(CompilationController compilationController) throws Exception {
+                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                Trees trees = compilationController.getTrees();
+                                CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                Set<Element> elementsSet = new LinkedHashSet<Element>(typeDecls.size() + 1);
+                                for (Tree tree : typeDecls) {
+                                    Element element = trees.getElement(trees.getPath(
+                                                compilationUnitTree, tree));
+
+                                    if (element != null) {
+                                        if (elementsSet.size() == 0) {
+                                            Element enclosingElement = element.getEnclosingElement();
+
+                                            if ((enclosingElement != null) &&
+                                                    (enclosingElement.getKind() == ElementKind.PACKAGE)) {
+                                                // add package
+                                                elementsSet.add(enclosingElement);
+                                            }
+                                        }
+
+                                        elementsSet.add(element);
+                                    }
+                                }
+                                Element[] elements = elementsSet.toArray(JavaMembersModel.EMPTY_ELEMENTS_ARRAY);
+                                javaMembersModel = new JavaMembersModel(fileObject, elements, compilationController);
+                                javaMembersFilterModel = javaMembersModel.getFilterModel();
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run () {
+                                        javaMembersTree.setModel(javaMembersFilterModel);
+                                    }
+                                });
+                                
+                            }
+                        }, true);
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            leaveBusy();
+                        }
+                    });
+                }
+            }
+        });
         
+        registerActions();
+    }
+
+    private JavaMembersPanel() {
+        initComponents();
         docPane = new DocumentationScrollPane( true );
         splitPane.setRightComponent( docPane );
         splitPane.setDividerLocation(JavaMembersAndHierarchyOptions.getMembersDividerLocation());
@@ -134,11 +208,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         javaMembersTree.setRootVisible(false);
         javaMembersTree.setShowsRootHandles(true);
         javaMembersTree.setCellRenderer(new JavaTreeCellRenderer());
+    }
 
-        javaMembersModel = new JavaMembersModel(fileObject, elements, compilationInfo);
-        javaMembersFilterModel = javaMembersModel.getFilterModel();
-        javaMembersTree.setModel(javaMembersFilterModel);
 
+
+    //<editor-fold defaultstate="collapsed" desc="Action Registration">
+    private void registerActions() {
         registerKeyboardAction(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
@@ -205,7 +280,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                             JEditorPane editorPane = (JEditorPane) view;
                             ActionListener actionForKeyStroke =
                                 editorPane.getActionForKeyStroke(
-                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));                            
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));
                             actionForKeyStroke.actionPerformed(
                                     new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, ""));
                         }
@@ -450,6 +525,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     }
                 });
     }
+    //</editor-fold>
 
     public void addNotify() {
         super.addNotify();
@@ -558,7 +634,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         JavaMembersAndHierarchyOptions.setShowStatic(showStaticToggleButton.isSelected());
         
         // apply filters and update the tree
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
             public void run() {
                     try {    

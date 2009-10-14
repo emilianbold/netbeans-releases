@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -93,7 +93,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -154,6 +153,7 @@ public class J2SEProjectProperties {
     public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
+    public static final String RUNTIME_ENCODING="runtime.encoding"; //NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
     public static final String DO_DEPEND = "do.depend"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
@@ -212,6 +212,7 @@ public class J2SEProjectProperties {
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
+    DefaultListModel ENDORSED_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
@@ -320,6 +321,7 @@ public class J2SEProjectProperties {
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH)));
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_CLASSPATH)));
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
+        ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
@@ -401,27 +403,7 @@ public class J2SEProjectProperties {
     }
     
     public void save() {
-        try {
-            if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
-                & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                //Back up build-impl.xml
-                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                if (buildImpl  != null) {
-                    final String name = buildImpl.getName();
-                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
-                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
-                    if (oldBackup != null) {
-                        oldBackup.delete();
-                    }
-                    FileLock lock = buildImpl.lock();
-                    try {
-                        buildImpl.rename(lock, name, backupext);
-                    } finally {
-                        lock.releaseLock();
-                    }
-                }
-            }            
+        try {                        
             saveLibrariesLocation();
             // Store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -456,7 +438,12 @@ public class J2SEProjectProperties {
                 }
             });
             // and save the project
-            ProjectManager.getDefault().saveProject(project);
+            project.setProjectPropertiesSave(true);
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } finally {
+                project.setProjectPropertiesSave(false);
+            }
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
@@ -495,6 +482,7 @@ public class J2SEProjectProperties {
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -538,6 +526,7 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_CLASSPATH, run_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         //Handle platform selection and javac.source javac.target properties
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
@@ -578,12 +567,14 @@ public class J2SEProjectProperties {
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.ENDORSED_CLASSPATH ) ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
         // Create set of removed artifacts and remove them
         Set<ClassPathSupport.Item> removed = new HashSet<ClassPathSupport.Item>(oldArtifacts);
@@ -818,6 +809,7 @@ public class J2SEProjectProperties {
         collectLibs(JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
         collectLibs(RUN_CLASSPATH_MODEL, libs, jars);
         collectLibs(RUN_TEST_CLASSPATH_MODEL, libs, jars);
+        collectLibs(ENDORSED_CLASSPATH_MODEL, libs, jars);
         libs.add("CopyLibs"); // #132201 - copylibs is integral part of j2seproject
         String customTasksLibs = getProject().evaluator().getProperty(AntBuildExtender.ANT_CUSTOMTASKS_LIBS_PROPNAME);
         if (customTasksLibs != null) {

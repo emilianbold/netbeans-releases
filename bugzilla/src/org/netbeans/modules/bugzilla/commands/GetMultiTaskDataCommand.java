@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.commands;
 
 import java.util.Set;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
@@ -65,11 +66,26 @@ public class GetMultiTaskDataCommand extends BugzillaCommand {
 
     @Override
     public void execute() throws CoreException {
+        if(Bugzilla.LOG.isLoggable(Level.FINER)) {
+            Bugzilla.LOG.finer("will retrieve data for issues: " + print(ids));    // NOI18N
+        }
         Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
                 repository.getTaskRepository(),
                 ids,
                 collector,
                 new NullProgressMonitor());
+    }
+
+    private String print(Set<String> ids) {
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        for (String string : ids) {
+            sb.append(string);
+            if(++i < ids.size()) {
+                sb.append(", ");                                                // NOI18N
+            }
+        }
+        return sb.toString();
     }
 
 }

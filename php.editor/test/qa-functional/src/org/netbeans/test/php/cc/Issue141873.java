@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -92,12 +92,12 @@ public class Issue141873 extends cc
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here", false );
     // Add new line
-    eoPHP.insert( "\nclass a\n{\n" );
+    TypeCode(eoPHP, "\nclass a\n{\n" );
     Sleep( 1000 );
 
     // Check constructor
     String sCode = "function __con";
-    String sIdeal = "function __construct() {";
+    String sIdeal = "function  __construct() {";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     WaitCompletionScanning( );
@@ -109,17 +109,18 @@ public class Issue141873 extends cc
     if( -1 == sText.indexOf( sIdeal ) )
       fail( "Invalid completion: \"" + sText + "\", should be: \"" + sIdeal + "\"" );
 
+    eoPHP.setCaretPositionToEndOfLine(14);
     // Check destructor
-    eoPHP.insert( ";\n" );
+    TypeCode(eoPHP, "\n" );
     Sleep( 1000 );
     sCode = "function __des";
-    sIdeal = "function __destruct()";
+    sIdeal = "function  __destruct()";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     WaitCompletionScanning( );
 
     // Get code
-    sText = eoPHP.getText( eoPHP.getLineNumber( ) );
+    sText = eoPHP.getText( eoPHP.getLineNumber( ) -1 );
 
     // Check code completion list
     if( -1 == sText.indexOf( sIdeal ) )

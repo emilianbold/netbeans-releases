@@ -90,7 +90,7 @@ public class UserListItem implements ContactListItem {
     }
 
     public boolean hasMessages() {
-        return KenaiConnection.getDefault().getMessagesCountFor(entry.getUser()) >0;
+        return ChatNotifications.getDefault().hasNewPrivateMessages(entry.getUser());
     }
 
 

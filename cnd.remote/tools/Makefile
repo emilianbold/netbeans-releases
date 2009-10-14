@@ -37,30 +37,28 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-INSTALLDIR = /dev/null
+LINKER=cc
+CC=gcc
 
-PRELOAD_NAME=rfs_preload
-CONTROLLER_NAME=rfs_controller
-FILEDATA_NAME=rfs_filedata
+DEBUG := -g
 
-ifdef DEBUG
-    C_DBG_FLAGS := -g
-endif
+CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
+CFLAGS-Linux := ${CFLAGS-COMMON}
+CFLAGS-SunOS := ${CFLAGS-COMMON}
+CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
-CFLAGS-Linux := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
-CFLAGS-SunOS := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
-CFLAGS-Mac_OS_X := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE
-
-LDFLAGS-LIB-Linux := -ldl -shared
-LDFLAGS-LIB-SunOS := -G -ldl -lsocket
+LDFLAGS-LIB-Linux := -shared -ldl
+LDFLAGS-LIB-SunOS := -shared -ldl -lsocket
 LDFLAGS-LIB-Mac_OS_X := -G -ldl
 
-LDFLAGS-APP-Linux := -lrt -s -lnsl -lresolv
-LDFLAGS-APP-SunOS := -lrt -s -lnsl -lsocket -lresolv
-LDFLAGS-APP-Mac_OS_X := -lrt -s -lnsl -lsocket -lresolv
+LDFLAGS-APP-Linux := -lrt -lnsl -lresolv
+LDFLAGS-APP-SunOS := -lrt -lnsl -lsocket -lresolv
+LDFLAGS-APP-Mac_OS_X := -lrt -lnsl -lsocket -lresolv
 
 ifdef 64BITS
-    FLAG64 := -m64
+    FLAG32_64 := -m64
+else
+    FLAG32_64 := -m32
 endif
 
 # The following sets UNAME_S to a platform dependent string. Since
@@ -78,16 +76,21 @@ ifeq (Darwin,$(UNAME_S))
 	OSNAME = Mac_OS_X
 endif
 
-DEBUG := 
 TRACE := 0
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64} -DTRACE=${TRACE} ${DEBUG} ${EXTRA_CFLAGS}
-LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}}
-LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${DEBUG}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
+LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
+LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
+
+ifneq (${TRACE}, 0)
+	LDFLAGS_LIB_TRACE = -lrt
+endif
 
 ifdef 64BITS
     PLATFORM_64 := _64
+    TEST_ENV_PARAM := 64
 else
     PLATFORM_64 :=
+    TEST_ENV_PARAM := 
 endif
 
 PLATFORM-i386  :=  x86${PLATFORM_64}
@@ -102,58 +105,53 @@ endif
 
 testit :sh= uname -s
 
-DIST=../release/bin
-BUILD=./build
+DIST_BASE=../release/bin
+BUILD_BASE="./build"
 
-PLATFORM_DIR=$(OSNAME)-$(PLATFORM)
-PLATFORM_DIST=${DIST}/${PLATFORM_DIR}
-PLATFORM_BUILD=${BUILD}/${PLATFORM_DIR}
+DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
+BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-PRELOAD_PATH=${PLATFORM_DIST}/${PRELOAD_NAME}.so
-PRELOAD_OBJ=${PLATFORM_BUILD}/${PRELOAD_NAME}.o
+INSTALLDIR=../../nbbuild/netbeans/cnd?/bin
 
-CONTROLLER_PATH=${PLATFORM_DIST}/${CONTROLLER_NAME}
-CONTROLLER_OBJ=${PLATFORM_BUILD}/${CONTROLLER_NAME}.o
-FILEDATA_OBJ=${PLATFORM_BUILD}/${FILEDATA_NAME}.o
+all: build_impl install
 
-all: check init ${PRELOAD_PATH} ${CONTROLLER_PATH}
+install: build_impl
+	cp -r ${DIST} ${INSTALLDIR}
+
+build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
+
+#object files
+${BUILD}/%.o : %.c
+	${CC} ${CFLAGS} -Werror -o $@ $<
+
+# rfs_test_env can do with implicit function declarations
+${BUILD}/rfs_test_env.o : rfs_test_env.c
+	${CC} ${CFLAGS} -o $@ $<
+
+PRELOAD_OBJFILES := ${BUILD}/rfs_preload.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
+CONTROLLER_OBJFILES := ${BUILD}/rfs_controller.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_filedata.o
+TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 
 #library:
-${PRELOAD_PATH}: ${PRELOAD_OBJ}
-	gcc ${LDFLAGS_LIB} -o ${PRELOAD_PATH} ${PRELOAD_OBJ}
-
-${PRELOAD_OBJ}: ${PRELOAD_NAME}.c
-	gcc ${CFLAGS} -o ${PRELOAD_OBJ} ${PRELOAD_NAME}.c
+${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
+	${LINKER} ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 
 #appliction:
-${CONTROLLER_PATH}: ${CONTROLLER_OBJ} ${FILEDATA_OBJ}
-	gcc ${LDFLAGS_APP} -o ${CONTROLLER_PATH} ${CONTROLLER_OBJ} ${FILEDATA_OBJ}
+${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
+	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
 
-${CONTROLLER_OBJ}: ${CONTROLLER_NAME}.c
-	gcc ${CFLAGS} -o ${CONTROLLER_OBJ} ${CONTROLLER_NAME}.c
-
-${FILEDATA_OBJ}: ${FILEDATA_NAME}.c
-	gcc ${CFLAGS} -o ${FILEDATA_OBJ} ${FILEDATA_NAME}.c
+#test environment:
+${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
+	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
 
 clean:
-	rm -rf ${PLATFORM_BUILD} ${PLATFORM_DIST}
-
-cleanall:
 	rm -rf ${BUILD} ${DIST}
 
-install: all
-	@if [ -n "$(INSTALLDIR)" -a -d $(INSTALLDIR) ]; \
-	then \
-		mkdir -p $(INSTALLDIR); \
-		cp ${LIB_PATH} $(INSTALLDIR); \
-		echo "Installing ${LIB_NAME}-${PLATFORM_DIR}.$(SOEXT) in $(INSTALLDIR)"; \
-	else \
-		echo "Error: Missing INSTALLDIR"; \
-		exit 1; \
-	fi
+cleanall:
+	rm -rf ${BUILD_BASE} ${DIST_BASE}
 
 init:
-	@mkdir -p ${PLATFORM_BUILD} ${DIST}/${PLATFORM_DIR}
+	@mkdir -p ${BUILD} ${DIST}
 
 check:
 	@if [ -n "$(testit)" ]; \
@@ -162,13 +160,22 @@ check:
 		exit 1; \
 	fi
 
+test_env: all
+	sh rfs_test_env.sh
 
-test: test_build
-	${PLATFORM_BUILD}/rfs_filedata_test
+test_filedata: test_filedata_build
+	${BUILD}/test_rfs_filedata
 
-test_build: all
-	gcc ${CFLAGS} -o ${PLATFORM_BUILD}/rfs_filedata_test.o test/rfs_filedata_test.c
-	gcc ${LDFLAGS_APP} -o ${PLATFORM_BUILD}/rfs_filedata_test ${FILEDATA_OBJ} ${PLATFORM_BUILD}/rfs_filedata_test.o
+test_filedata_build: all
+	${CC} ${CFLAGS} -DTRACE=1 -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
+	${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
+
+test_pkg: test_pkg_build
+	${BUILD}/test_pkg_client
+
+test_pkg_build: all
+	${CC} ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
+	${LINKER} ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 
 test_platform:
 	@echo "UNAME_S = [${UNAME_S}]"

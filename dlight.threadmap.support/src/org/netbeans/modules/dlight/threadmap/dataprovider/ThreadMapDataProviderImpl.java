@@ -358,8 +358,8 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         Range<Long> interval = intervals.iterator().next().getInterval();
         ResultSet rset = null;
         try {
-            querySummaryStatement.setLong(1, interval.getStartMilliSeconds());
-            querySummaryStatement.setLong(2, interval.getEndMilliSeconds());
+            querySummaryStatement.setLong(1, interval.getStart());
+            querySummaryStatement.setLong(2, interval.getEnd());
 
             rset = querySummaryStatement.executeQuery();
 

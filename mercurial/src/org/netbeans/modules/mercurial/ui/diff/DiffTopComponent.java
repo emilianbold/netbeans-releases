@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -57,7 +57,7 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
     private final MultiDiffPanel panel;
 
-    public DiffTopComponent(MultiDiffPanel c) {
+    DiffTopComponent(MultiDiffPanel c) {
         setLayout(new BorderLayout());
         c.putClientProperty(TopComponent.class, this);
         add(c, BorderLayout.CENTER);
@@ -66,27 +66,33 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         return panel.getUndoRedo();
     }
     
+    @Override
     public int getPersistenceType(){
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Override
     protected void componentClosed() {
         panel.componentClosed();
         super.componentClosed();
     }
 
+    @Override
     protected String preferredID(){
         return "PERSISTENCE_NEVER-DiffTopComponent";    // NOI18N       
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         panel.requestActive();

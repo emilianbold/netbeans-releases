@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -124,7 +124,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     public void filePropertiesChanged(NativeFileItem fileItem) {
         if (TRACE) {
-            System.err.println("Native event filesPropertiesChanged:"); // NOI18N
+            System.err.println("Native event filePropertiesChanged:"); // NOI18N
             System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
         }
 	onProjectItemChanged(fileItem);

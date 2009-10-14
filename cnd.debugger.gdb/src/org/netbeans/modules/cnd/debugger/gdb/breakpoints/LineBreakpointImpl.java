@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,13 +43,14 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
 * Implementation of breakpoint on method.
 *
 * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
 */
-public class LineBreakpointImpl extends BreakpointImpl {
+public class LineBreakpointImpl extends BreakpointImpl<LineBreakpoint> {
 
     private String lastPath;
     
@@ -83,6 +84,10 @@ public class LineBreakpointImpl extends BreakpointImpl {
 	if (path == null) {
 	    return null;
 	} else {
+            // IZs 169200 & 174479 (send internal path for cygwin)
+            if (debugger.isCygwin()) {
+                path = WindowsSupport.getInstance().convertToCygwinPath(path);
+            }
 	    return path + ':' + lineNumber;
 	}
     }

@@ -258,7 +258,6 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     public List<? extends MethodScope> findInheritedMethods(String queryName) {
         List<MethodScope> retval = new ArrayList<MethodScope>();
-        retval.addAll(findDeclaredMethods(queryName));
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         PHPIndex index = indexScope.getIndex();
         QuerySupport.Kind kind = "".equals(queryName) ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;

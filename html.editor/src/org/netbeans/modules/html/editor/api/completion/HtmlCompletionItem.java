@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -195,7 +195,7 @@ public class HtmlCompletionItem implements CompletionItem {
                         doc.insertString(substitutionOffset, substituteText, null);
                     } else {
                         c.setCaretPosition(c.getCaret().getDot() + substituteText.length() - len);
-                    }
+                        }
                 } catch (BadLocationException ex) {
                     result[0] = false;
                 }
@@ -332,8 +332,6 @@ public class HtmlCompletionItem implements CompletionItem {
         //end tag autocomplete handling
         @Override
         public void defaultAction(JTextComponent component) {
-            //force the completion not to hide when the item text is completed
-            super.shift = true;
             super.defaultAction(component);
         }
 

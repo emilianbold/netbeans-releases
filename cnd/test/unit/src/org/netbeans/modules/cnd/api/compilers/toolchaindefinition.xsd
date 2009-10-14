@@ -9,6 +9,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="tns:toolchain" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:download" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:platforms" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:makefile_writer" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:default_locations" minOccurs="0" maxOccurs="1"/>
@@ -276,15 +277,17 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="drive_letter_prefix">
+    <xs:element name="download">
         <xs:complexType>
-            <xs:attribute name="stringvalue" type="xs:string" use="optional" />
+            <xs:attribute name="uc_url" type="xs:string" />
+            <xs:attribute name="module_id" type="xs:string" />
+            <xs:attribute name="uc_display" type="xs:string" />
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="makefile_writer">
+    <xs:element name="drive_letter_prefix">
         <xs:complexType>
-            <xs:attribute name="class" type="xs:string" use="optional" />
+            <xs:attribute name="stringvalue" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
@@ -322,6 +325,12 @@
     <xs:element name="fast_build">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="filter_out">
+        <xs:complexType>
+            <xs:attribute name="pattern" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
@@ -424,6 +433,12 @@
                 <xs:element ref="tns:version" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:dependency_support" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="makefile_writer">
+        <xs:complexType>
+            <xs:attribute name="class" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
@@ -579,7 +594,9 @@
                 <xs:element ref="tns:change_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:stack_header" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:stack_next" minOccurs="0" maxOccurs="1" />
+                <xs:element ref="tns:filter_out" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
+            <xs:attribute name="id" type="xs:string" />
         </xs:complexType>
     </xs:element>
 

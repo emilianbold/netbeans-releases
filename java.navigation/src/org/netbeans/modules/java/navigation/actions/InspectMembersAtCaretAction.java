@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,9 +42,12 @@
 package org.netbeans.modules.java.navigation.actions;
 
 import com.sun.source.util.TreePath;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
+import javax.swing.JFrame;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -73,10 +76,13 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /**
  * This actions shows the members of the type of the element under the caret
@@ -85,6 +91,8 @@ import org.netbeans.api.project.ui.OpenProjects;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class InspectMembersAtCaretAction extends BaseAction {
+
+    private static final RequestProcessor RP = new RequestProcessor(InspectMembersAtCaretAction.class.getName(), 1);
 
     private static final String INSPECT_MEMBERS_AT_CARET = "inspect-members-at-caret"; // NOI18N
     private static final String INSPECT_MEMBERS_AT_CARET_POPUP = 
@@ -119,76 +127,98 @@ public final class InspectMembersAtCaretAction extends BaseAction {
             return;
         }
 
-        JavaSource javaSource = JavaSource.forDocument(target.getDocument());
+        final JavaSource javaSource = JavaSource.forDocument(target.getDocument());
 
         if (javaSource == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
+        final Component glassPane = ((JFrame) WindowManager.getDefault().getMainWindow()).getGlassPane();
+        final Cursor original = glassPane.getCursor();
+        Cursor wait = org.openide.util.Utilities.createProgressCursor(glassPane);
+        if (wait != null) {
+            glassPane.setCursor(wait);
+        }
+        glassPane.setVisible(true);
+        RP.post(new Runnable() {
+            public void run() {                
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController compilationController) throws IOException {
+                            // Move to resolved phase
+                            compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
 
-        try {
-            javaSource.runUserActionTask(new Task<CompilationController>() {
+                            // Get document if open
+                            Document document = compilationController.getDocument();
 
-                    public void run(
-                        CompilationController compilationController)
-                        throws IOException {
-                        // Move to resolved phase
-                        compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                            if (document != null) {
+                                // Get Caret position
+                                int dot = target.getCaret().getDot();
 
-                        // Get document if open
-                        Document document = compilationController.getDocument();
+                                // Find the TreePath for the caret position
+                                TreePath tp = compilationController.getTreeUtilities()
+                                                                   .pathFor(dot);
 
-                        if (document != null) {
-                            // Get Caret position
-                            int dot = target.getCaret().getDot();
+                                // Get Element
+                                Element element = compilationController.getTrees()
+                                                                       .getElement(tp);
+                                FileObject elementFileObject = NbEditorUtilities.getFileObject(document);
+                                if (elementFileObject != null) {
+                                    if (element instanceof TypeElement) {
+                                        show(elementFileObject, new Element[] {element}, compilationController);
+                                    } else if (element instanceof VariableElement) {
+                                        TypeMirror typeMirror = ((VariableElement) element).asType();
 
-                            // Find the TreePath for the caret position
-                            TreePath tp = compilationController.getTreeUtilities()
-                                                               .pathFor(dot);
-
-                            // Get Element
-                            Element element = compilationController.getTrees()
-                                                                   .getElement(tp);
-                            FileObject elementFileObject = NbEditorUtilities.getFileObject(document);
-                            if (elementFileObject != null) {
-                                if (element instanceof TypeElement) {
-                                    JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
-                                } else if (element instanceof VariableElement) {
-                                    TypeMirror typeMirror = ((VariableElement) element).asType();
-                                    
-                                    if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                        element = ((DeclaredType) typeMirror).asElement();
-                                        
-                                        if (element != null) {
-                                            JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
-                                        }
-                                    }
-                                } else if (element instanceof ExecutableElement) {
-                                    // Method
-                                    if (element.getKind() == ElementKind.METHOD) {
-                                        TypeMirror typeMirror = ((ExecutableElement) element).getReturnType();
-                                        
                                         if (typeMirror.getKind() == TypeKind.DECLARED) {
                                             element = ((DeclaredType) typeMirror).asElement();
-                                            
+
                                             if (element != null) {
-                                                JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
+                                                show(elementFileObject, new Element[] {element}, compilationController);
                                             }
                                         }
-                                    } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                                        element = element.getEnclosingElement();
-                                        
-                                        if (element != null) {
-                                            JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);                                            
+                                    } else if (element instanceof ExecutableElement) {
+                                        // Method
+                                        if (element.getKind() == ElementKind.METHOD) {
+                                            TypeMirror typeMirror = ((ExecutableElement) element).getReturnType();
+
+                                            if (typeMirror.getKind() == TypeKind.DECLARED) {
+                                                element = ((DeclaredType) typeMirror).asElement();
+
+                                                if (element != null) {
+                                                    show(elementFileObject, new Element[] {element}, compilationController);
+                                                }
+                                            }
+                                        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                                            element = element.getEnclosingElement();
+
+                                            if (element != null) {
+                                                show(elementFileObject, new Element[] {element}, compilationController);
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }, true);
-        } catch (IOException e) {
-            Logger.getLogger(InspectMembersAtCaretAction.class.getName()).log(Level.WARNING, e.getMessage(), e);
-        }
+                    }, true);
+                } catch (IOException e) {
+                    Logger.getLogger(InspectMembersAtCaretAction.class.getName()).log(Level.WARNING, e.getMessage(), e);
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            glassPane.setVisible(false);
+                            glassPane.setCursor(original);
+                        }
+                    });
+                }
+            }
+        });                
+    }
+
+    private void show(final FileObject fileObject, final Element[] elements, final CompilationController compilationController) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run () {
+                JavaMembers.show(fileObject, elements, compilationController);
+            }
+        });
     }
 }

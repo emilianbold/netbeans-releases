@@ -3,8 +3,13 @@
 <filesystem>
     <folder name="DLight">
         <folder name="Configurations">
-            <folder name="Gizmo">
-                <attr name="displayedName" stringvalue="C/C++ Profiling"/>
+            <folder name="GizmoDTraceExtended">
+                <attr name="displayedName" stringvalue="C/C++ DTrace Extended"/>
+                <attr name="system" boolvalue="true"/>
+                <attr name="category" stringvalue="Gizmo"/>
+                <attr name="platforms" stringvalue="Solaris"/>
+                <attr name="collector.providers" stringvalue="DTrace"/>
+                <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader,prstat,DTrace"/>
                 <folder name="KnownToolsConfigurationProviders">
                     <file name="DLightCPUToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
@@ -17,11 +22,11 @@
                     </file>
                     <file name="ThreadMapToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/ThreadMapToolConfigurationProvider.instance"/>
-                        <attr name="enabledByDefault" boolvalue="false"/>
+                        <attr name="enabledByDefault" boolvalue="true"/>
                     </file>
                     <file name="FopsToolConfigurationProvider.shadow">
                         <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/FopsToolConfigurationProvider.instance"/>
-                        <attr name="enabledByDefault" boolvalue="false"/>
+                        <attr name="enabledByDefault" boolvalue="true"/>
                     </file>
                 </folder>
                 <folder name="ConfigurationOptions">
@@ -30,6 +35,83 @@
                     </file>
                 </folder>
             </folder>
+
+            <folder name="GizmoSunStudioStandard">
+                <attr name="displayedName" stringvalue="C/C++ Sun Studio Standard"/>
+                <attr name="category" stringvalue="Gizmo"/>
+                <attr name="system" boolvalue="true"/>
+                <attr name="platforms" stringvalue="Solaris,Linux"/>
+                <attr name="collector.providers" stringvalue="SunStudio"/>
+                <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader,prstat,SunStudio"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="MemoryToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
+            <folder name="GizmoDTraceStandard">
+                <attr name="displayedName" stringvalue="C/C++ DTrace Standard"/>
+                <attr name="category" stringvalue="Gizmo"/>
+                <attr name="system" boolvalue="true"/>
+                <attr name="platforms" stringvalue="Solaris"/>
+                <attr name="collector.providers" stringvalue="DTrace"/>
+                <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader,prstat,DTrace"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="MemoryToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
+            <folder name="GizmoSimple">
+                <attr name="displayedName" stringvalue="C/C++ Simple (indicators only)"/>
+                <attr name="category" stringvalue="Gizmo"/>
+                <attr name="system" boolvalue="true"/>
+                <attr name="default" boolvalue="true"/>
+                <attr name="platforms" stringvalue="Linux,Solaris"/>
+                <attr name="collector.providers" stringvalue=""/>
+                <attr name="indicator.providers" stringvalue="ProcFSReader,ProcReader,LLTool"/>
+                <folder name="KnownToolsConfigurationProviders">
+                    <file name="DLightCPUToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/DLightCPUToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="SyncToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/SyncToolConfigurationProvider.instance"/>
+                    </file>
+                    <file name="MemoryToolConfigurationProvider.shadow">
+                        <attr name="originalFile" stringvalue="DLight/ToolConfigurationProviders/MemoryToolConfigurationProvider.instance"/>
+                    </file>
+                </folder>
+                <folder name="ConfigurationOptions">
+                    <file name="GizmoConfigurationOptions.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions"/>
+                    </file>
+                </folder>
+            </folder>
+
         </folder>
     </folder>
     <folder name="Actions">

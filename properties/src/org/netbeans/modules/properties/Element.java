@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -225,6 +225,21 @@ public abstract class Element implements Serializable {
             this.print();
         }
 
+        @Override
+        public boolean equals(Object anObject) {
+            if(this == anObject) {
+                return true;
+            }
+            if(anObject instanceof Basic) {
+                Basic b = (Basic)anObject;
+                if(value == null) {
+                    return b.value == null;
+                }
+                return value.equals(b.value);
+            }
+            return false;
+        }
+
     } // End of nested class Basic.
 
 
@@ -279,6 +294,11 @@ public abstract class Element implements Serializable {
                 }
             }
             return buf.toString();
+        }
+
+        @Override
+        public boolean equals(Object anObject) {
+            return anObject instanceof KeyElem && super.equals(anObject);
         }
 
     } // End of nested class KeyElem.
@@ -394,6 +414,12 @@ public abstract class Element implements Serializable {
                 return sb.toString();
             }
         }
+
+        @Override
+        public boolean equals(Object anObject) {
+            return anObject instanceof CommentElem && super.equals(anObject);
+        }
+
     } // End of nested CommentElem.
 
 
@@ -560,11 +586,29 @@ public abstract class Element implements Serializable {
             if (item == null || !(item instanceof ItemElem))
                 return false;
             ItemElem ie = (ItemElem)item;
-            if ( ((key==null && ie.getKeyElem()==null) || (key!=null && ie.getKeyElem()!=null && getKey()!=null && getKey().equals(ie.getKey())) ) &&
-                 ((value==null && ie.getValueElem()==null) || (value!=null && ie.getValueElem()!=null && getValue().equals(ie.getValue())) ) &&
-                 ((comment==null && ie.getCommentElem()==null) || (comment!=null && ie.getCommentElem()!=null && getComment().equals(ie.getComment())) ) )
-                return true;
-            return false;
+            return isKeyEqual(ie) && isValueEqual(ie) && isCommentEqual(ie);
         }
+
+        private boolean isKeyEqual(ItemElem ie) {
+            if(key==null) {
+                return ie.key==null;
+            }
+            return key.equals(ie.key);
+        }
+
+        private boolean isValueEqual(ItemElem ie) {
+            if(value==null) {
+                return ie.value==null;
+            }
+            return value.equals(ie.value);
+        }
+
+        private boolean isCommentEqual(ItemElem ie) {
+            if(comment==null) {
+                return ie.comment==null;
+            }
+            return comment.equals(ie.comment);
+        }
+
     } // End of nested class ItemElem.
 }

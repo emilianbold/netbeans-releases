@@ -44,6 +44,10 @@ import java.awt.event.ActionListener;
 public final class WhoIsOnlineAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
-        PresenceIndicator.getDefault().showPopup();
+        ChatTopComponent chat = ChatTopComponent.findInstance();
+        chat.open();
+        chat.requestActive();
+        chat.switchToContactList();
+
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.ejbjar.project.ui;
 
 import java.io.IOException;
+import java.util.HashMap;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -69,6 +70,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Ejbs contained within a module
@@ -81,6 +83,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     private final EjbJar ejbModule;
     private final EjbNodesFactory nodeFactory;
     private final Project project;
+    private final HashMap<Key, Node> nodesHash = new HashMap<Key, Node>();
 
     public EjbContainerChildren(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, EjbNodesFactory nodeFactory, Project project) {
         this.ejbModule = ejbModule;
@@ -93,7 +96,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                     if (ejbJar != null) {
                         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
                         if (enterpriseBeans != null) {
-                            enterpriseBeans.addPropertyChangeListener(EjbContainerChildren.this);
+                            enterpriseBeans.addPropertyChangeListener(WeakListeners.propertyChange(EjbContainerChildren.this, enterpriseBeans));
                         }
                     }
                     return null;
@@ -160,6 +163,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                     } catch (ExecutionException ee) {
                         Exceptions.printStackTrace(ee);
                     }
+                    createNodesForKeys(result);
                     setKeys(result);
                 } catch (MetadataModelException ex) {
                     Exceptions.printStackTrace(ex);
@@ -170,38 +174,46 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         });
     }
 
+    private void createNodesForKeys(List<Key> keys){
+        nodesHash.clear();
+        for(Key key: keys){
+            nodesHash.put(key, createNodes(key)[0]);
+        }
+    }
+
     @Override
     protected void removeNotify() {
-        //TODO: RETOUCHE stop listening on model
-//        model.removePropertyChangeListener(this);
         setKeys(Collections.<Key>emptyList());
+        nodesHash.clear();
         super.removeNotify();
     }
 
     protected Node[] createNodes(Key key) {
-        Node node = null;
-        if (key.ejbType == Key.EjbType.SESSION) {
-            // do not create node for web service
-            if (!key.isWebService && nodeFactory != null) {
-                node = nodeFactory.createSessionNode(key.ejbClass, ejbModule, project);
+        Node node = nodesHash.get(key);
+        if (node == null){
+            if (key.ejbType == Key.EjbType.SESSION) {
+                // do not create node for web service
+                if (!key.isWebService && nodeFactory != null) {
+                    node = nodeFactory.createSessionNode(key.ejbClass, ejbModule, project);
+                }
+            }
+            if (key.ejbType == Key.EjbType.ENTITY && nodeFactory != null) {
+                node = nodeFactory.createEntityNode(key.ejbClass, ejbModule, project);
+            }
+            if (key.ejbType == Key.EjbType.MESSAGE_DRIVEN && nodeFactory != null) {
+                node = nodeFactory.createMessageNode(key.ejbClass, ejbModule, project);
+            }
+            if (key == Key.SCANNING){
+                node = new AbstractNode(Children.LEAF);
+                node.setDisplayName(NbBundle.getMessage(EjbContainerChildren.class, "MSG_Scanning_EJBs")); //NOI18N
+                ((AbstractNode)node).setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbjar/project/ui/wait.gif"); //NOI18N
             }
         }
-        if (key.ejbType == Key.EjbType.ENTITY && nodeFactory != null) {
-            node = nodeFactory.createEntityNode(key.ejbClass, ejbModule, project);
-        }
-        if (key.ejbType == Key.EjbType.MESSAGE_DRIVEN && nodeFactory != null) {
-            node = nodeFactory.createMessageNode(key.ejbClass, ejbModule, project);
-        }
-        if (key == Key.SCANNING){
-            node = new AbstractNode(Children.LEAF);
-            node.setDisplayName(NbBundle.getMessage(EjbContainerChildren.class, "MSG_Scanning_EJBs")); //NOI18N
-            ((AbstractNode)node).setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbjar/project/ui/wait.gif"); //NOI18N
-        }
-        return node == null ? new Node[0] : new Node[] { node };
+        return node == null ? new Node[1] : new Node[] { node };
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-         updateKeys();
+        updateKeys();
     }
 
     final static class Key {

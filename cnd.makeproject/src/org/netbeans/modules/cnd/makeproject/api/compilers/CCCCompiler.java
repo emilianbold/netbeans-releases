@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -266,7 +266,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     //TODO: move to a more convenient place and remove fixed tempfile name
     private String remote_command(String command, boolean use_stdout) {
         String diversion = use_stdout ? "" : "2>&1 "; // NOI18N
-        return "sh -c \"touch /tmp/xyz.c; " + command + " /tmp/xyz.c " + diversion + "; rm -f /tmp/xyz.c\""; // NOI18N
+        return "sh -c \"" + command + " /dev/null " + diversion + "\""; // NOI18N
     }
     
     // To be overridden

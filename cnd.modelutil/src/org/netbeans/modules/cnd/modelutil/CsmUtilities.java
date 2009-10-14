@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -102,6 +102,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.windows.WindowManager;
@@ -249,17 +250,17 @@ public class CsmUtilities {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing);
     }
 
-    public static JEditorPane[] getOpenedPanesInEQ(final EditorCookie ec) {
+    public static JEditorPane findRecentEditorPaneInEQ(final EditorCookie ec) {
         assert ec != null;
-        final JEditorPane[][] panes = {null};
+        final JEditorPane[] panes = {null};
         if (SwingUtilities.isEventDispatchThread()) {
-            panes[0] = ec.getOpenedPanes();
+            panes[0] = NbDocument.findRecentEditorPane(ec);
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 
                     public void run() {
-                        panes[0] = ec.getOpenedPanes();
+                        panes[0] = NbDocument.findRecentEditorPane(ec);
                     }
                 });
             } catch (InterruptedException ex) {
@@ -883,8 +884,8 @@ public class CsmUtilities {
         StringBuilder sb = new StringBuilder(CsmKindUtilities.isTemplate(fun) ? ((CsmTemplate) fun).getDisplayName() : fun.getName());
         sb.append('(');
         boolean addComma = false;
-        for (Iterator iter = fun.getParameters().iterator(); iter.hasNext();) {
-            CsmParameter par = (CsmParameter) iter.next();
+        for (Iterator<CsmParameter> iter = fun.getParameters().iterator(); iter.hasNext();) {
+            CsmParameter par = iter.next();
             if (addComma) {
                 sb.append(", "); // NOI18N
 

@@ -56,6 +56,7 @@ import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -75,6 +76,10 @@ class DependenciesEditorPanel extends javax.swing.JPanel implements ExplorerMana
         GuiUtils.prepareContainer(this);
         mgr.addPropertyChangeListener(this);
         ((ListView) depsList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        HelpCtx.setHelpIDString(addButton, "org.netbeans.modules.javacard.AddLibrary"); //NOI18N
+        HelpCtx.setHelpIDString(remButton, "org.netbeans.modules.javacard.RemoveLibrary"); //NOI18N
+        HelpCtx.setHelpIDString(editButton, "org.netbeans.modules.javacard.ChangeLibraryDeploymentStrategy"); //NOI18N
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.DependenciesPanel"); //NOI18N
     }
 
     public DependenciesEditorPanel(JCProject project, ResolvedDependencies deps) {

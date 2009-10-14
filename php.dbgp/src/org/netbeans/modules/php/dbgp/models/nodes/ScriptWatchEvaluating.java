@@ -9,7 +9,7 @@
  * replaced by your own identifying information: "Portions Copyrighted [year]
  * [name of copyright owner]" The Original Software is NetBeans. The Initial
  * Developer of the Original Software is Sun Microsystems, Inc. Portions
- * Copyright 1997-2006 Sun Microsystems, Inc. All Rights Reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.php.dbgp.models.nodes;
 

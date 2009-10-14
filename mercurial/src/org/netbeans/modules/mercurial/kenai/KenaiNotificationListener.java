@@ -39,111 +39,96 @@
 
 package org.netbeans.modules.mercurial.kenai;
 
-import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JTextPane;
-import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.ImageUtilities;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiNotificationListener implements PropertyChangeListener {
+public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
 
-    private RequestProcessor rp = new RequestProcessor("Kenai vcs notifications");
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(VCSKenaiSupport.PROP_KENAI_VCS_NOTIFICATION)) {
-            handleVCSNotification((VCSKenaiNotification) evt.getNewValue());
+    protected void handleVCSNotification(final VCSKenaiNotification notification) {
+        if(notification.getService() != VCSKenaiSupport.Service.VCS_HG) {
+            Mercurial.LOG.fine("rejecting VCS notification " + notification + " because not from hg"); // NOI18N
+            return;
+        }
+        File projectDir = notification.getProjectDirectory();
+        if(!Mercurial.getInstance().isManaged(projectDir)) {
+            assert false : " project " + projectDir + " not managed";
+            Mercurial.LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by hg"); // NOI18N
+            return;
+        }
+        Mercurial.LOG.fine("accepting VCS notification " + notification + " for " + projectDir); // NOI18N
+
+        File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(new File[] { projectDir }, FileInformation.STATUS_LOCAL_CHANGE);
+        List<VCSKenaiModification> modifications = notification.getModifications();
+
+        List<File> notifyFiles = new LinkedList<File>();
+        String revision = null;
+        for (File file : files) {
+            String path = HgUtils.getRelativePath(file);
+            if(path == null) {
+                assert false : file.getAbsolutePath() + " - no relative path"; // NOI18N
+                continue;
+            }
+            path = trim(path);
+            for (VCSKenaiModification modification : modifications) {
+                String resource = modification.getResource();
+                resource = trim(resource);
+                LOG.finer(" changed file " + path + ", " + resource); // NOI18N
+                if(path.equals(resource)) {
+                    LOG.fine("  will notify " + file + ", " + notification); // NOI18N
+                    notifyFiles.add(file);
+                    if(revision == null) {
+                        revision = modification.getId();
+                    }
+                    break;
+                }
+            }
+        }
+        if(notifyFiles.size() > 0) {
+            notifyFileChange(notifyFiles.toArray(new File[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
         }
     }
 
-    private void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_HG) {
-            return;
-        }
-        rp.post(new Runnable() {
-            public void run() {
-                File projectDir = notification.getProjectDirectory();
-                if(!Mercurial.getInstance().isManaged(projectDir)) {
-                    assert false : "project at " + projectDir + " notified, yet not versioned.";
-                    return;
-                }
-                
-                File[] files = Mercurial.getInstance().getFileStatusCache().listFiles(projectDir);
-                List<VCSKenaiModification> modifications = notification.getModifications();
+    @Override
+    protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {
+        String text = NbBundle.getMessage(
+                KenaiNotificationListener.class,
+                "MSG_NotificationBubble_Description", 
+                getFileNames(files),
+                HgKenaiSupport.getInstance().getRevisionUrl(url, revision)); //NOI18N
+        pane.setText(text);
 
-                for (File file : files) {
-                    for (VCSKenaiModification modification : modifications) {
-                        String resource = modification.getResource();
-                        if(file.equals(new File(projectDir, resource))) {
-                            notifyChange(file, notification, modification);
-                        }
+        pane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                    URL url = e.getURL();
+                    assert url != null;
+                    HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                    assert displayer != null : "HtmlBrowser.URLDisplayer found.";   //NOI18N
+                    if (displayer != null) {
+                        displayer.showURL (url);
+                    } else {
+                        Mercurial.LOG.info("No URLDisplayer found.");               //NOI18N
                     }
                 }
             }
         });
-
-    }
-
-    // XXX unify with svn
-    private void notifyChange(File file, VCSKenaiNotification notification, VCSKenaiModification modification) {
-        notifyFileChange(file, notification.getUri().toString(), modification.getId());
-    }
-
-    private static final String NOTIFICATION_ICON_PATH = "org/netbeans/modules/subversion/resources/icons/info.png"; //NOI18N    
-    private static final String NOTIFICATION_REVISION_LINK = "<a href=\"{0}\">{1}</a>"; //NOI18N    
-    
-    private void notifyFileChange(File file, String url, String revision) {
-        NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Title"), //NOI18N
-                ImageUtilities.loadImageIcon(NOTIFICATION_ICON_PATH, false),
-                getSimplePane(file), getDetailsPane(file, url, revision), NotificationDisplayer.Priority.NORMAL);
-    }
-
-    private JTextPane getSimplePane (File file) {
-        JTextPane bubble = new JTextPane();
-        String text = NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_Description", file.getName()); //NOI18N
-        bubble.setText(text);
-        bubble.setOpaque(false);
-        bubble.setEditable(false);
-
-        if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {  //NOI18N
-            //#134837
-            //http://forums.java.net/jive/thread.jspa?messageID=283882
-            bubble.setBackground(new Color(0, 0, 0, 0));
-        }
-        return bubble;
-    }
-
-    private JTextPane getDetailsPane (final File file, final String url, final String revision) {
-        JTextPane bubble = getSimplePane(file);
-        bubble.setContentType("text/html");                        //NOI18N
-        String text = java.text.MessageFormat.format(NOTIFICATION_REVISION_LINK, url,
-                    NbBundle.getMessage(KenaiNotificationListener.class, "MSG_NotificationBubble_DescriptionRevision"));
-        bubble.setText(text);
-
-        bubble.addHyperlinkListener(new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-                    // XXX imlement me
-                }
-            }
-        });
-        return bubble;
     }
 
 }

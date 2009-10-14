@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -43,6 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="dlight-metrics-annotations" foreColor="FF006500" bgColor="FFFFFFE6"/>
-    <fontcolor name="dlight-metrics-text-highlighting"/>
+    <fontcolor name="dlight-metrics-annotations" foreColor="FF000000" bgColor="FFDBE7F3"/>
+    <fontcolor name="dlight-metrics-text-highlighting" foreColor="FF719DD2"/>
 </fontscolors>

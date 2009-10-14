@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -672,10 +672,6 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         imports.addAll(getRelatedClasses(bean));
         imports.add(getConverterType(bean));
 
-        if (injectEntityManager) {
-            imports.add(Constants.PERSISTENCE_CONTEXT);
-        }
-
         imports.addAll(getAdditionalItemResourceImports(bean));
 
         return imports.toArray(new String[imports.size()]);
@@ -717,10 +713,10 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         // Add @PersistenceContext EntityManager em
         if (injectEntityManager) {
             modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                    new String[]{Constants.PERSISTENCE_CONTEXT_ANNOTATION},
-                    new Object[]{JavaSourceHelper.createAssignmentTree(copy, "unitName",
+                    bean.isContainer() ? new String[]{Constants.PERSISTENCE_CONTEXT_ANNOTATION} : null,
+                    bean.isContainer() ? new Object[]{JavaSourceHelper.createAssignmentTree(copy, "unitName",
                         persistenceUnit.getName())
-                    },
+                    } : null,
                     "em", Constants.ENTITY_MANAGER_TYPE);  //NOI18N
 
         }
@@ -747,13 +743,17 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
             for (int i = 0; i < ids.length; i++) {
                 tree = addAccessorMethods(copy, tree, ids[i], types[i]);
             }
+
+            if (injectEntityManager) {
+                tree = addAccessorMethods(copy, tree, "em", Constants.ENTITY_MANAGER_TYPE); //
+            }
         }
 
         return tree;
     }
 
     protected ClassTree addAccessorMethods(WorkingCopy copy, ClassTree tree, String name, Object type) {
-        Modifier[] modifiers = new Modifier[]{Modifier.PUBLIC};
+        Modifier[] modifiers = new Modifier[]{Modifier.PROTECTED};
 
 //        String methodName = "get" + capitalizeFirstLetter(name);
 //        String bodyText = "{ return " + name + ";}";            //NOI18N
@@ -944,6 +944,9 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         for (int i = 0; i < parameters.length; i++) {
             String id = parameters[i];
             bodyText += "resource.set" + capitalizeFirstLetter(id) + "(" + id + ");";
+            if (injectEntityManager) {
+                bodyText += "resource.setEm(em);";
+            }
         }
 
         bodyText += "return resource;}";

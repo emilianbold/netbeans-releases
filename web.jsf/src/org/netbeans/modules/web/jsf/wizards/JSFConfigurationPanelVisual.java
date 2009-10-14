@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -85,6 +85,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private boolean libsInitialized;
     private String serverInstanceID;
     private final List<String> preferredLanguages = new ArrayList<String>();
+    private String currentServerInstanceID;
     
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
@@ -649,7 +650,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
      *   according web module version.
      */
     private void initLibSettings(Profile profile, String serverInstanceID) {
-        if (panel==null || panel.getLibraryType() == null) {
+        if (panel==null || panel.getLibraryType() == null || isServerInstanceChanged()) {
             try {
                 File[] cp;
                 J2eePlatform platform = null;
@@ -731,6 +732,16 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             }
 
         }
+    }
+
+    private boolean isServerInstanceChanged() {
+        if ((serverInstanceID==null && currentServerInstanceID !=null) ||
+                (serverInstanceID == null && currentServerInstanceID !=null) ||
+                !serverInstanceID.equals(currentServerInstanceID)) {
+            currentServerInstanceID = serverInstanceID;
+            return true;
+        }
+        return false;
     }
 
     /** Help context where to find more about the paste type action.

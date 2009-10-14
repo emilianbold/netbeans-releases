@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -113,15 +113,24 @@ final class MetaInfServicesLookup extends AbstractLookup {
     protected final void beforeLookup(Lookup.Template t) {
         Class c = t.getType();
 
+        Collection<AbstractLookup.Pair<?>> toAdd = null;
+        synchronized (this) {
+            if (classes.get(c) == null) { // NOI18N
+                toAdd = new ArrayList<Pair<?>>();
+            } else {
+                // ok, nothing needs to be done
+                return;
+            }
+        }
+        if (toAdd != null) {
+            search(c, toAdd);
+        }
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
-                search(c, arr);
+                arr.addAll(toAdd);
                 setPairs(arr, RP);
-            } else {
-                // ok, nothing needs to be done
-                return;
             }
         }
     }
@@ -477,6 +486,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         object = o;
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
+                        object = null;
+                    } catch (ExceptionInInitializerError x) { // #174055
+                        LOGGER.log(Level.WARNING, "Cannot create " + object, x);
                         object = null;
                     }
                 }

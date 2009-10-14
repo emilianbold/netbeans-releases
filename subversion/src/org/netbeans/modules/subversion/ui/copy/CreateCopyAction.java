@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,8 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.text.MessageFormat;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -65,6 +67,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class CreateCopyAction extends ContextAction {
+    private static final String MESSAGE_CREATE_FOLDER = "Netbeans SVN client generated message: create a new folder for the copy:\n{0}"; //NOI18N
     
     /** Creates a new instance of CreateCopyAction */
     public CreateCopyAction() {
@@ -226,8 +229,7 @@ public class CreateCopyAction extends ContextAction {
                 }
 
                 if(info == null) {
-                    client.mkdir(folderToCreate, true,
-                                 "[Netbeans SVN client generated message: create a new folder for the copy]: '\n" + createCopy.getMessage() + "\n'"); // NOI18N
+                    client.mkdir(folderToCreate, true, getCreateFolderMessage(createCopy.getMessage()));
                 }
             }
 
@@ -284,6 +286,21 @@ public class CreateCopyAction extends ContextAction {
 
     private RepositoryFile getToRepositoryFile(RepositoryFile toRepositoryFile, File file) {
         return toRepositoryFile.replaceLastSegment(file.getName(), 0);
+    }
+
+    private String getCreateFolderMessage (String commitMessage) {
+        String message = System.getProperty("subversion.copy.createFolderMessage", MESSAGE_CREATE_FOLDER); //NOI18N
+        if (message == null || message.length() == 0) {
+            message = "{0}";                                //NOI18N
+        }
+        String createMessage;
+        try {
+            createMessage = MessageFormat.format(message, commitMessage);
+        } catch (IllegalArgumentException ex) {
+            Subversion.LOG.log(Level.INFO, message, ex);
+            createMessage = MessageFormat.format(MESSAGE_CREATE_FOLDER, commitMessage); // fallback to default
+        }
+        return createMessage;
     }
 
 }

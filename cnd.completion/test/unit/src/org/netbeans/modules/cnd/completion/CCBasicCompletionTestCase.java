@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -334,5 +334,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testIZ166620() throws Exception {
         // IZ#166620 : Code comlpetion does not show local variable inside for operator
         performTest("iz166620.cc", 6, 24);
+    }
+
+    public void testIZ173049() throws Exception {
+        // IZ#173049 : Incorrect type resolution for template class functions
+        performTest("iz173049.cc", 16, 16);
     }
 }

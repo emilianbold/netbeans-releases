@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -287,6 +287,18 @@ public class RDocFormatterTest extends RubyTestBase {
 
     public void testFormatLists() throws Exception {
         formatFile("testfiles/lists.comment");
+    }
+
+    public void testLinks() throws Exception {
+        RDocFormatter instance = new RDocFormatter();
+
+        instance.appendLine("#");
+        instance.appendLine("#This should not be a link");
+        instance.appendLine("# This#should be a link");
+        instance.appendLine("# ");
+        String html = instance.toHtml();
+        assertEquals("This should not be a link <a href=\"This#should\">This#should</a> be a link <br><br>", html);
+
     }
     
     // TODO test bullets, labels, preformat

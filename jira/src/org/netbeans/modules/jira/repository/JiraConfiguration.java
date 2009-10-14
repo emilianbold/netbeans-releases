@@ -56,6 +56,7 @@ import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.Group;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
+import org.eclipse.mylyn.internal.jira.core.model.JiraVersion;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
@@ -212,10 +213,16 @@ public class JiraConfiguration extends JiraClientCache {
     }
 
     public IssueType[] getIssueTypes(String projectId) {
+        if(!supportsProjectIssueTypes(data.serverInfo.getVersion())) {
+            return data.issueTypes;
+        }
         return getProjectById(projectId).getIssueTypes();
     }
 
     public IssueType[] getIssueTypes(final Project project) {
+        if(!supportsProjectIssueTypes(data.serverInfo.getVersion())) {
+            return data.issueTypes;
+        }
         synchronized(PROJECT_LOCK) {
             ensureProjectLoaded(project);
             return project.getIssueTypes();
@@ -392,10 +399,12 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
-                IssueType[] subTaskTypes = client.getSubTaskIssueTypes(project.getId(), new NullProgressMonitor());
-                project.setIssueTypes(mergeIssueTypes(issueTypes, subTaskTypes));
-
+                ServerInfo info = getServerInfo(new NullProgressMonitor());
+                if(supportsProjectIssueTypes(info.getVersion())) {
+                    IssueType[] issueTypes = client.getIssueTypes(project.getId(), new NullProgressMonitor());
+                    IssueType[] subTaskTypes = client.getSubTaskIssueTypes(project.getId(), new NullProgressMonitor());
+                    project.setIssueTypes(mergeIssueTypes(issueTypes, subTaskTypes));
+                }
                 Component[] components = client.getComponents(project.getKey(), new NullProgressMonitor());
                 project.setComponents(components);
 
@@ -477,6 +486,10 @@ public class JiraConfiguration extends JiraClientCache {
         return data.workHoursPerDay;
     }
 
+    public boolean supportsProjectIssueTypes(String version) {
+        return new JiraVersion(version).compareTo(JiraVersion.JIRA_3_12) > -1;
+    }
+
     protected ConfigurationData initializeCached () {
         String repoUrl = repository.getUrl();
         ConfigurationData cached = Jira.getInstance().getConfigurationCacheManager().getCachedData(repoUrl);
@@ -499,7 +512,7 @@ public class JiraConfiguration extends JiraClientCache {
                 loadedProjects.add(p.getId());
             }
         }
-    }
+    }    
 
     protected static class ConfigurationData extends JiraClientData {
 	Group[] groups = new Group[0];

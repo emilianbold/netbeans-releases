@@ -56,27 +56,10 @@ public abstract class ProcReaderImpl implements ProcReader {
     private final static HashMap<Integer, Long> prevTSData = new HashMap<Integer, Long>();
     private final static int MAXFILELENGTH = 512;
     private final static ReusableByteBuffer buffer = new ReusableByteBuffer(MAXFILELENGTH, 10);
+    private final boolean bigendian;
 
-    public ProcReaderImpl() {
-    }
-
-    public void init(int pid) {
-        // TODO: fixme!
-        // Try to set endian ... bad way!
-
-        PStatus pstatus = getProcessStatus();
-        if (pstatus == null) {
-            return;
-        }
-
-        PStatus.PIDInfo pidinfo = pstatus.getPIDInfo();
-        if (pidinfo == null) {
-            return;
-        }
-
-        if (pidinfo.pr_pid != pid) {
-            DataReader.switchEndian();
-        }
+    public ProcReaderImpl(boolean bigendian) {
+        this.bigendian = bigendian;
     }
 
     public abstract PStatus getProcessStatus();
@@ -196,6 +179,6 @@ public abstract class ProcReaderImpl implements ProcReader {
             is.close();
         }
 
-        return new DataReader(buffer, offset);
+        return new DataReader(buffer, offset, bigendian);
     }
 }

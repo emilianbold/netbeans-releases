@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,14 +42,15 @@
 package org.netbeans.modules.j2ee.ejbjarproject.jaxws;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -83,6 +84,19 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
     }
 
     protected void addJaxWs20Library() throws Exception {
+        // add JAX-WS Endorsed Classpath
+        SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
+        if (sgs.length > 0) {
+            try {
+                FileObject srcRoot = sgs[0].getRootFolder();
+                String java_version = System.getProperty("java.version"); //NOI18N
+                if (java_version.compareTo("1.6") >= 0) {
+                    WSUtils.addJaxWsApiEndorsed(project, srcRoot);
+                }
+            } catch (java.io.IOException ex) {
+                Logger.getLogger(EjbProjectJAXWSClientSupport.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
+            }
+        }
     }
     
     /** return root folder for xml artifacts

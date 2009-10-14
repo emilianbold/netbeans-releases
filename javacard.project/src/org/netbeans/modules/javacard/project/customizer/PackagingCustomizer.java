@@ -45,7 +45,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
+import org.openide.util.HelpCtx;
 
 public final class PackagingCustomizer extends javax.swing.JPanel implements ChangeListener {
     private final Category category;
@@ -61,6 +61,7 @@ public final class PackagingCustomizer extends javax.swing.JPanel implements Cha
         }
         aIDPanel1.addChangeListener(this);
         stateChanged(null);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ClassicAppletEditAppletAID"); //NOI18N
     }
 
     /** This method is called from within the constructor to

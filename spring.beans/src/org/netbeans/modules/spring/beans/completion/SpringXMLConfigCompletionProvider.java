@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -114,7 +114,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
             
             boolean retVal = completor.canFilter(new CompletionContext(component.getDocument(), 
                     component.getCaretPosition(), queryType));
-            if(!retVal) {
+            if( (!retVal) && (completor != null) ) {
                 completor.cancel();
         }
 

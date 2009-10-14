@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,13 +43,14 @@ package org.netbeans.modules.cnd.ui.options;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    id="ToolsTab", // NOI18N
-    location="CPlusPlus", // NOI18N
+    id=CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_ID,
+    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
     displayName="#TAB_ToolsTab", // NOI18N
     position=100
 )

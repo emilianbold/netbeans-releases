@@ -56,12 +56,19 @@ import org.openide.util.ImageUtilities;
 final class StackRootNode extends AbstractNode{
     private final String stackName;
     private final Image icon;
+    private final Action[] actions;
 
-    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
-//        super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack, Action[] actions) {
         super(stack == null || stack.size() == 0 ? Children.LEAF : new PlainListFunctionCallChildren(sourceFileInfoDataProvider, stack));
         this.stackName = stackName;
         this.icon = icon != null ? ImageUtilities.icon2Image(icon) : null;
+        this.actions = actions;
+    }
+
+    StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, Icon icon, String stackName, List<FunctionCall> stack) {
+     //   super(stack == null || stack.size() == 0 ? Children.LEAF : new FunctionCallChildren( new CallStackTreeModel(sourceFileInfoDataProvider, stack), stack.get(stack.size() - 1)));
+        this(sourceFileInfoDataProvider, icon, stackName, stack, null);
+
     }
     
     StackRootNode(SourceFileInfoDataProvider sourceFileInfoDataProvider, String stackName, List<FunctionCall> stack) {
@@ -70,7 +77,7 @@ final class StackRootNode extends AbstractNode{
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[0];
+        return actions;
     }
 
     @Override

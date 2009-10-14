@@ -65,4 +65,6 @@ public interface Draggable {
     void paint(Graphics g);
 
     Cursor getCursor();
+
+    String getTooltip();
 }

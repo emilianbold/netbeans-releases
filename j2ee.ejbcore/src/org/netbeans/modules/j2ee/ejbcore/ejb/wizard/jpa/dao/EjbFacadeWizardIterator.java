@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -86,6 +86,7 @@ import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -160,6 +161,9 @@ import org.openide.util.NbBundle;
         for (String entity : entities) {
             createdFiles.addAll(generate(targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), false));
         }
+
+        PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});
+
         return createdFiles;
     }
     
@@ -559,6 +563,8 @@ import org.openide.util.NbBundle;
             sbFileObjects[i]=iterator.generate(jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote, overrideExisting).iterator().next();
         }
 
+        PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});
+        
         return sbFileObjects;
     }
 

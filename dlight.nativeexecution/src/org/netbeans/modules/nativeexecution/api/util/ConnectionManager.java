@@ -80,8 +80,8 @@ public final class ConnectionManager {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib");
-    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 0); // NOI18N
-    private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 0); // NOI18N
+    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 5000); // NOI18N
+    private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 5000); // NOI18N
     // Instance of the ConnectionManager
     private final static ConnectionManager instance = new ConnectionManager();
     // Map that contains all connected sessions;
@@ -468,7 +468,7 @@ public final class ConnectionManager {
             try {
                 result = doConnect();
             } catch (ExecutionException ex) {
-                if (ex.getCause() != null && ex instanceof Exception) {
+                if (ex.getCause() != null && ex.getCause() instanceof Exception) {
                     throw (Exception) ex.getCause();
                 }
             }
@@ -481,7 +481,7 @@ public final class ConnectionManager {
                 }
             }
 
-            return session;
+            return result;
         }
 
         public Session doConnect() throws Exception {

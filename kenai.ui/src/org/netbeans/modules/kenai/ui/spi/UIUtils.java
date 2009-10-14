@@ -70,6 +70,7 @@ import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.LoginPanel;
 import org.netbeans.modules.kenai.ui.Utilities;
+import org.netbeans.modules.kenai.ui.dashboard.UserNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -81,24 +82,21 @@ import org.openide.util.RequestProcessor;
  * @author Jan Becicka
  */
 public final class UIUtils {
-    static {
-        String name = Kenai.getDefault().getName();
-        KENAI_USERNAME_PREF= name + ".username"; //NOI18N
-        KENAI_PASSWORD_PREF= name + ".password"; //NOI18N
-        ONLINE_STATUS_PREF = name + ".online"; // NOI18N
-        LOGIN_STATUS_PREF = name + ".login";// NOI18N
-    }
-    
-    private final static String KENAI_PASSWORD_PREF;
-    private final static String KENAI_USERNAME_PREF;
-    public final static String ONLINE_STATUS_PREF;
-    public final static String LOGIN_STATUS_PREF;
+
+    public final static String ONLINE_ON_CHAT_PREF = ".online_chat";// NOI18N
+    private final static String KENAI_PASSWORD_PREF = ".password"; //NOI18N
+    private final static String KENAI_USERNAME_PREF = ".username"; //NOI18N
+    public final static String ONLINE_STATUS_PREF = ".online"; // NOI18N
+    public final static String LOGIN_STATUS_PREF = ".login";// NOI18N
 
     // Usage logging
     private static Logger metricsLogger;
     private static final String USG_KENAI = "USG_KENAI"; // NOI18N
     private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
+    public static String getPrefName(String name)  {
+        return Kenai.getDefault().getName() + name;
+    }
 
     public static void waitStartupFinished() {
         KenaiLoginTask.waitStartupFinished();
@@ -168,25 +166,27 @@ public final class UIUtils {
      * @return true if logged in, false otherwise
      */
     @Deprecated
-    public static synchronized boolean tryLogin() {
+    public static synchronized boolean tryLogin(boolean force) {
         if (Kenai.getDefault().getPasswordAuthentication()!=null) {
             return true;
         }
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
-        String online = preferences.get(LOGIN_STATUS_PREF, "false"); // NOI18N
-        if (!Boolean.parseBoolean(online)) {
-            return false;
+        if (!force) {
+            String online = preferences.get(getPrefName(LOGIN_STATUS_PREF), "false"); // NOI18N
+            if (!Boolean.parseBoolean(online)) {
+                return false;
+            }
         }
 
-        String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
+        String uname=preferences.get(getPrefName(KENAI_USERNAME_PREF), null); // NOI18N
         if (uname==null) {
             return false;
         }
-        String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
+        String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), Boolean.parseBoolean(preferences.get(ONLINE_STATUS_PREF, "true")));
+            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), "true")));
         } catch (KenaiException ex) {
             return false;
         }
@@ -243,11 +243,11 @@ public final class UIUtils {
                             }
                         });
                         if (loginPanel.isStorePassword()) {
-                            preferences.put(KENAI_USERNAME_PREF, loginPanel.getUsername()); // NOI18N
-                            preferences.put(KENAI_PASSWORD_PREF, Scrambler.getInstance().scramble(new String(loginPanel.getPassword()))); // NOI18N
+                            preferences.put(getPrefName(KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
+                            preferences.put(getPrefName(KENAI_PASSWORD_PREF), Scrambler.getInstance().scramble(new String(loginPanel.getPassword()))); // NOI18N
                         } else {
-                            preferences.remove(KENAI_USERNAME_PREF); // NOI18N
-                            preferences.remove(KENAI_PASSWORD_PREF); // NOI18N
+                            preferences.remove(getPrefName(KENAI_USERNAME_PREF)); // NOI18N
+                            preferences.remove(getPrefName(KENAI_PASSWORD_PREF)); // NOI18N
                         }
                     } else {
                         loginPanel.putClientProperty("cancel", "true"); // NOI18N
@@ -260,8 +260,8 @@ public final class UIUtils {
         login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        String uname=preferences.get(KENAI_USERNAME_PREF, null); // NOI18N
-        String password=preferences.get(KENAI_PASSWORD_PREF, null); // NOI18N
+        String uname=preferences.get(getPrefName(KENAI_USERNAME_PREF), null); // NOI18N
+        String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
         if (uname!=null && password!=null) {
             loginPanel.setUsername(uname);
             loginPanel.setPassword(Scrambler.getInstance().descramble(password).toCharArray());
@@ -281,11 +281,14 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
+        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName();
+        result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
                     result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                    result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
                     result.repaint();
                 }
             }

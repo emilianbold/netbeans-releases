@@ -110,6 +110,9 @@ public class PHPDOCCodeCompletion {
             phpTS.move(request.anchor);
             phpTS.moveNext();
             TokenSequence<PHPDocCommentTokenId> tokenSequence = phpTS.embedded(PHPDocCommentTokenId.language());
+            if (tokenSequence == null) {
+                return false;
+            }
             tokenSequence.move(request.anchor);
             if (tokenSequence.movePrevious()) {
 

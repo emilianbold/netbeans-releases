@@ -115,7 +115,7 @@ final class ServerResolver {
                 }
 
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             } catch (DataObjectNotFoundException dnfe) {
                 Exceptions.printStackTrace(dnfe);
             }

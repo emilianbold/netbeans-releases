@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -172,6 +172,9 @@ public class VariablesTableModel implements TableModel, Constants {
         if (row == "noDebugInfoWarning") { // NOI18N
             return ""; // NOI18N
         }
+        if (row == "No current thread") { // NOI18N
+            return "";
+        }
         throw new UnknownTypeException (row);
     }
     
@@ -242,6 +245,9 @@ public class VariablesTableModel implements TableModel, Constants {
             return true;
         }
         if (row == "noDebugInfoWarning") {
+            return true;
+        }
+        if (row == "No current thread") {
             return true;
         }
         throw new UnknownTypeException (row);

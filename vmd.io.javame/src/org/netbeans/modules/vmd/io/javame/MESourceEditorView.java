@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -64,7 +64,7 @@ public final class MESourceEditorView implements DataEditorView {
     static final String VIEW_ID = "source"; // NOI18N
 
     private DataObjectContext context;
-    private transient CloneableEditor editor;
+    private transient MECloneableEditor editor;
     private transient JComponent toolbar;
 
     MESourceEditorView (DataObjectContext context) {
@@ -74,7 +74,7 @@ public final class MESourceEditorView implements DataEditorView {
 
     private void init () {
         MEDesignEditorSupport sup = (MEDesignEditorSupport) context.getCloneableEditorSupport ();
-        editor = new CloneableEditor (sup);
+        editor = new MECloneableEditor (sup);
         sup.initializeCloneableEditor (editor);
     }
 
@@ -141,6 +141,7 @@ public final class MESourceEditorView implements DataEditorView {
     }
 
     public void componentActivated () {
+        editor.componentActivatedSuper();
     }
 
     public void componentDeactivated () {
@@ -170,4 +171,13 @@ public final class MESourceEditorView implements DataEditorView {
         init ();
     }
 
+    private static final class MECloneableEditor extends CloneableEditor {
+        public MECloneableEditor(MEDesignEditorSupport s) {
+            super(s);
+        }
+
+        final void componentActivatedSuper() {
+            componentActivated();
+        }
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -256,6 +256,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ?  new WeakReference<DeclarationContainer>(null) : null;
+    private int preventMultiplyDiagnosticExceptions = 0;
     private DeclarationContainer getDeclarationsSorage() {
         if (declarationsSorageKey == null) {
             return DeclarationContainer.empty();
@@ -272,8 +273,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             }
         }
         dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
-        if (dc == null) {
+        if (dc == null && preventMultiplyDiagnosticExceptions < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+            preventMultiplyDiagnosticExceptions++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
             weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);

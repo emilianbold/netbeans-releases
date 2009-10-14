@@ -67,7 +67,7 @@ public final class StringUtils {
 
     /**
      * Implode list of strings to one string using delimiter.
-     * @param items string to be imploded
+     * @param items list of strings to be imploded, can be empty (but not <code>null</code>)
      * @param delimiter delimiter to be used
      * @return one string of imploded strings using delimiter, never <code>null</code>
      * @see #explode(String, String)

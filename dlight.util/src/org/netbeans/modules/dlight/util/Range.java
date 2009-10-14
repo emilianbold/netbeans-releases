@@ -55,6 +55,15 @@ public final class Range<T extends Number & Comparable<? super T>> {
     private final T start;
     private final T end;
 
+    /**
+     * Creates a new range.
+     * If both are non-null, then <code>start</code> must be less
+     * than or equal to <code>end</code>.
+     *
+     * @param start  range start; <code>null</code> if range is unlimited
+     * @param end  range end; <code>null</code> if range is unlimited
+     * @throws IllegalArgumentException if mentioned constraints are violated
+     */
     public Range(T start, T end) {
         if (start != null && end != null && 0 < start.compareTo(end)) {
             throw new IllegalArgumentException(start + " > " + end); // NOI18N
@@ -63,24 +72,32 @@ public final class Range<T extends Number & Comparable<? super T>> {
         this.end = end;
     }
 
+    /**
+     * @return range start, may be <code>null</code>
+     */
     public T getStart() {
         return start;
     }
 
+    /**
+     * @return range end, may be <code>null</code>
+     */
     public T getEnd() {
         return end;
     }
 
-    public int getStartMilliSeconds() {
-        return (int) (start.longValue() / 1000 / 1000);
-    }
-
-    public int getEndMilliSeconds() {
-        return (int) (end.longValue() / 1000 / 1000);
-    }
-
-    public boolean cotains(T t){
-        return t.longValue() >= start.longValue() && t.longValue() <= end.longValue();
+    /**
+     * Checks if this range contains given value.
+     *
+     * @param value  value to check
+     * @return <code>true</code> if range contains <code>value</code>,
+     *      <code>false</code> otherwise
+     *
+     * @throws NullPointerException if <code>value</code> is <code>null</code>
+     */
+    public boolean contains(T value) {
+        return (start == null || start.longValue() <= value.longValue())
+                && (end == null || value.longValue() <= end.longValue());
     }
 
     public boolean intersects(Range<T> timeInterval) {
@@ -219,7 +236,6 @@ public final class Range<T extends Number & Comparable<? super T>> {
         return result;
     }
 
-
     /**
      * Extend current range to cover given range.
      *
@@ -232,7 +248,31 @@ public final class Range<T extends Number & Comparable<? super T>> {
 
     @Override
     public String toString() {
-        return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end); // NOI18N
+        return String.valueOf(start) + STRING_DELIMITER + String.valueOf(end);
+    }
+
+    public String toString(String prefix, String startFormat, String glue, String endFormat, String suffix) {
+        if (start != null || end != null) {
+            StringBuilder buf = new StringBuilder();
+            if (prefix != null) {
+                buf.append(prefix);
+            }
+            if (start != null) {
+                buf.append(String.format(startFormat, start));
+            }
+            if (start != null && end != null && glue != null) {
+                buf.append(glue);
+            }
+            if (end != null) {
+                buf.append(String.format(endFormat, end));
+            }
+            if (suffix != null) {
+                buf.append(suffix);
+            }
+            return buf.toString();
+        } else {
+            return ""; // NOI18N
+        }
     }
 
     @Override

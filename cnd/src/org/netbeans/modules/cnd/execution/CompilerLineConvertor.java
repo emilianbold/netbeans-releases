@@ -39,18 +39,26 @@
 
 package org.netbeans.modules.cnd.execution;
 
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.execution.impl.ErrorAnnotation;
-import org.netbeans.modules.cnd.execution.impl.SUNErrorParser;
-import org.netbeans.modules.cnd.execution.impl.GCCErrorParser;
-import org.netbeans.modules.cnd.execution.impl.MSVCErrorParser;
-import org.netbeans.modules.cnd.execution.impl.CWErrorParser;
-import org.netbeans.modules.cnd.execution.impl.ErrorParser;
-import org.netbeans.modules.cnd.execution.impl.ErrorParser.Result;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider.ErrorParser;
+import org.netbeans.modules.cnd.execution.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -60,16 +68,16 @@ import org.openide.util.Exceptions;
  */
 public class CompilerLineConvertor implements LineConvertor {
 
-    private final ErrorParser[] parsers;
+    private final List<ErrorParser> parsers = new ArrayList<ErrorParser>();
 
-    public CompilerLineConvertor(ExecutionEnvironment execEnv, FileObject relativeTo) {
-        this.parsers = new ErrorParser[] {
-            new GCCErrorParser(execEnv, relativeTo),
-            new SUNErrorParser(execEnv, relativeTo),
-            new MSVCErrorParser(execEnv, relativeTo),
-            new CWErrorParser(execEnv, relativeTo),
-        };
-
+    public CompilerLineConvertor(Project project, ExecutionEnvironment execEnv, FileObject relativeTo) {
+	List<CompilerFlavor> flavors = getCompilerSet(project, execEnv);
+	for(CompilerFlavor flavor : flavors) {
+	    ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(flavor, execEnv, relativeTo);
+	    if (parser != null) {
+		parsers.add(parser);
+	    }
+	}
         ErrorAnnotation.getInstance().detach(null);
     }
 
@@ -90,13 +98,117 @@ public class CompilerLineConvertor implements LineConvertor {
             // We can ignore strings which can't be compiler messages
             // (their's length is capped by max(filename) + max(error desc)).
             // See IZ#124796 for details about perf issues with very long lines.
-            for (int cntr = 0; cntr < parsers.length; cntr++) {
-               Result res = parsers[cntr].handleLine(line);
+            for (ErrorParser parser : parsers) {
+               Result res = parser.handleLine(line);
                if (res != null && res.result()) {
                    return res.converted();
                 }
             }
         }
         return null;
+    }
+
+    private List<CompilerFlavor> getCompilerSet(Project project, ExecutionEnvironment execEnv) {
+        CompilerSet set = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        }
+	int platform = PlatformTypes.getDefaultPlatform();
+	try {
+	    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+	    switch(hostInfo.getOSFamily()){
+		case SUNOS:
+		    if (hostInfo.getCpuFamily() == CpuFamily.SPARC){
+			platform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
+		    } else {
+			platform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+		    }
+		    break;
+		case WINDOWS:
+		    platform = PlatformTypes.PLATFORM_WINDOWS;
+		    break;
+		case LINUX:
+		    platform = PlatformTypes.PLATFORM_LINUX;
+		    break;
+		case MACOSX:
+		    platform = PlatformTypes.PLATFORM_MACOSX;
+		    break;
+		case UNKNOWN:
+		default:
+		    platform = PlatformTypes.PLATFORM_GENERIC;
+		    break;
+	    }
+	} catch (IOException ex) {
+	    //Exceptions.printStackTrace(ex);
+	} catch (CancellationException ex) {
+	    //Exceptions.printStackTrace(ex);
+	}
+	List<CompilerFlavor> flavors = new ArrayList<CompilerFlavor>();
+	flavors.add(set.getCompilerFlavor());
+	for(CompilerFlavor flavor : CompilerFlavor.getFlavors(platform)) {
+	    if (!flavors.contains(flavor)){
+		boolean found = false;
+		for(CompilerFlavor f : flavors) {
+		    if (isScannerEquals(f, flavor)) {
+			found = true;
+			break;
+		    }
+		}
+		if (!found) {
+		    flavors.add(flavor);
+		}
+	    }
+	}
+        return flavors;
+    }
+
+    private boolean isScannerEquals(CompilerFlavor flavor1, CompilerFlavor flavor2) {
+	ScannerDescriptor scanner1 = flavor1.getToolchainDescriptor().getScanner();
+	ScannerDescriptor scanner2 = flavor2.getToolchainDescriptor().getScanner();
+	if (scanner1.getPatterns().size() != scanner2.getPatterns().size()) {
+	    return false;
+	}
+	for(int i = 0; i < scanner1.getPatterns().size(); i++){
+	    if (!scanner1.getPatterns().get(i).getPattern().equals(scanner2.getPatterns().get(i).getPattern())){
+		return false;
+	    }
+	}
+	if (!isEquals(scanner1.getEnterDirectoryPattern(), scanner2.getEnterDirectoryPattern())) {
+	    return false;
+	}
+	if (!isEquals(scanner1.getLeaveDirectoryPattern(), scanner2.getLeaveDirectoryPattern())) {
+	    return false;
+	}
+	if (!isEquals(scanner1.getChangeDirectoryPattern(), scanner2.getChangeDirectoryPattern())) {
+	    return false;
+	}
+	if (!isEquals(scanner1.getStackHeaderPattern(), scanner2.getStackHeaderPattern())) {
+	    return false;
+	}
+	if (!isEquals(scanner1.getStackNextPattern(), scanner2.getStackNextPattern())) {
+	    return false;
+	}
+	if (scanner1.getFilterOutPatterns().size() != scanner2.getFilterOutPatterns().size()) {
+	    return false;
+	}
+	for(int i = 0; i < scanner1.getFilterOutPatterns().size(); i++){
+	    if (!scanner1.getFilterOutPatterns().get(i).equals(scanner2.getFilterOutPatterns().get(i))){
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    private boolean isEquals(String s1, String s2) {
+	if (s1 == null) {
+	    return s2 == null;
+	}
+	return s1.equals(s2);
     }
 }

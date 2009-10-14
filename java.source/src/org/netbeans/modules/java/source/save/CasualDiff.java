@@ -101,7 +101,7 @@ public class CasualDiff {
         this.context = context;
         this.tree2Tag = tree2Tag;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
-        printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span);
+        printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText);
     }
 
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -1673,7 +1673,12 @@ public class CasualDiff {
         // called.
     }
 
-    protected void diffErroneous(JCErroneous oldT, JCErroneous newT) {
+    protected void diffErroneous(JCErroneous oldT, JCErroneous newT, int[] bounds) {
+        JCTree oldTident = oldT.getErrorTrees().get(0);
+        JCTree newTident = newT.getErrorTrees().get(0);
+        if (oldTident.getKind() == Kind.IDENTIFIER && newTident.getKind() == Kind.IDENTIFIER) {
+            diffIdent((JCIdent) oldTident, (JCIdent) newTident, bounds);
+        }
     }
 
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
@@ -1896,6 +1901,7 @@ public class CasualDiff {
         int[][] matrix = estimator.getMatrix();
         int testPos = initialPos;
         int i = 0;
+        boolean firstNewItem = true;
         for (int j = 0; j < result.length; j++) {
             JCTree oldT;
             ResultItem<JCTree> item = result[j];
@@ -1909,7 +1915,8 @@ public class CasualDiff {
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
                     oldT = oldIter.next(); ++i;
-                    copyTo(lastOldPos, getOldPos(oldT));
+                    if (!firstNewItem)
+                        copyTo(lastOldPos, getOldPos(oldT));
 
                     if (treesMatch(oldT, item.element, false)) {
                         lastOldPos = diffTree(oldT, item.element, getBounds(oldT));
@@ -1917,6 +1924,7 @@ public class CasualDiff {
                         printer.print(item.element);
                         lastOldPos = Math.max(testPos, endPos(oldT));
                     }
+                    firstNewItem = false;
                     break;
                 }
                 case INSERT: {
@@ -1930,6 +1938,7 @@ public class CasualDiff {
                     printer.print(item.element);
                     printer.print(tail);
                     //append(Diff.insert(testPos, prec, item.element, tail, LineInsertionType.NONE));
+                    firstNewItem = false;
                     break;
                 }
                 case DELETE: {
@@ -1974,6 +1983,7 @@ public class CasualDiff {
                     }
                     oldT = oldIter.next(); ++i;
                     copyTo(lastOldPos, lastOldPos = endPos(oldT));
+                    firstNewItem = false;
                     break;
                 }
             }
@@ -2421,7 +2431,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -2438,7 +2448,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                            this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -2873,7 +2883,7 @@ public class CasualDiff {
               retVal = diffAssignop((JCAssignOp)oldT, (JCAssignOp)newT, elementBounds);
               break;
           case JCTree.ERRONEOUS:
-              diffErroneous((JCErroneous)oldT, (JCErroneous)newT);
+              diffErroneous((JCErroneous)oldT, (JCErroneous)newT, elementBounds);
               break;
           case JCTree.MODIFIERS:
               retVal = diffModifiers((JCModifiers) oldT, (JCModifiers) newT, parent, elementBounds[0]);

@@ -48,6 +48,8 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.javacard.GuiUtils;
+import org.openide.util.HelpCtx;
 
 public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
     private Map<Object, String> selection2url;
@@ -64,6 +66,8 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
         selection2url = new HashMap<Object, String>();
         selecting = SELECTING_SERVLET;
         updateSelection();
+        GuiUtils.prepareContainer(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
     }
 
     private static final class CRen extends DefaultListCellRenderer {
@@ -87,17 +91,11 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton2 = new javax.swing.JButton();
         servletComboBox = new javax.swing.JComboBox();
         jSeparator1 = new javax.swing.JSeparator();
         launchBrowserCheckBox = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
         platformAndDevicePanel21 = new org.netbeans.modules.javacard.project.ui.PlatformAndDevicePanel();
-
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javacard/resources/rc.png"))); // NOI18N
-        jButton2.setText(org.openide.util.NbBundle.getMessage(AppletProjectCustomizerRun.class, "AppletProjectCustomizerRun.jButton2.text")); // NOI18N
-        jButton2.setToolTipText(org.openide.util.NbBundle.getMessage(AppletProjectCustomizerRun.class, "AppletProjectCustomizerRun.jButton2.toolTipText")); // NOI18N
-        jButton2.addActionListener(this);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 0, 0, 0));
 
@@ -130,8 +128,8 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
                         .add(14, 14, 14))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, platformAndDevicePanel21, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, platformAndDevicePanel21, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -159,9 +157,6 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
         }
         else if (evt.getSource() == launchBrowserCheckBox) {
             AppletProjectCustomizerRun.this.launchBrowserCheckBoxActionPerformed(evt);
-        }
-        else if (evt.getSource() == jButton2) {
-            AppletProjectCustomizerRun.this.jButton2ActionPerformed(evt);
         }
     }
 
@@ -192,9 +187,6 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
     private void servletComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_servletComboBoxItemStateChanged
         updateUrl();
     }//GEN-LAST:event_servletComboBoxItemStateChanged
-
-private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-}//GEN-LAST:event_jButton2ActionPerformed
     
     private void updateSelection() {
         boolean enabled = launchBrowserCheckBox.isSelected();
@@ -218,7 +210,6 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox launchBrowserCheckBox;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,6 +51,7 @@ import org.netbeans.junit.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class AbstractLookupTest extends AbstractLookupBaseHid implements AbstractLookupBaseHid.Impl {
     public AbstractLookupTest(java.lang.String testName) {
         super(testName, null);
@@ -86,7 +87,7 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
         public int cleared;
         public int dirty;
 
-        synchronized boolean cleanUpResult (Template t) {
+        synchronized @Override boolean cleanUpResult(Template t) {
             boolean res = super.cleanUpResult (t);
             if (res) {
                 cleared++;
@@ -172,7 +173,7 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
                 this.ic = ic;
             }
             
-            protected void initialize () {
+            protected @Override void initialize() {
                 if (direct) {
                     run ();
                 } else {
@@ -214,7 +215,7 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
                 this.ic = c;
             }
         
-            protected void beforeLookup (Template t) {
+            protected @Override void beforeLookup(Template t) {
                 if (toAdd != null) {
                     list.add (0, new SerialPair (toAdd));
                     setPairs (list);

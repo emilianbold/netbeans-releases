@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +60,9 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
@@ -66,6 +70,8 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -77,6 +83,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -205,17 +212,41 @@ public class ImportManager extends java.awt.Panel {
         }
     }
 
-    public void attachButtons (JButton bImport, JButton bNo) {
+    public void attachButtons(JButton bImport, JButton bNo) {
         this.bImport = bImport;
         this.bNo = bNo;
-        bImport.addActionListener (new ActionListener () {
-            public void actionPerformed (ActionEvent e) {
-                if (doImport ()) {
-                    doClose ();
+        bImport.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                Object source = e.getSource();
+                if (source instanceof JButton) {
+                    final JButton button = (JButton) source;
+                    button.setEnabled(false);
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        public void run() {
+                            try {
+                                final boolean res = doImport();
+                                SwingUtilities.invokeAndWait(new Runnable() {
+                                    public void run() {
+                                        if (res) {
+                                            doClose();
+                                        } else {
+                                            button.setEnabled(true);
+                                        }
+                                    }
+                                });
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (InvocationTargetException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                 }
             }
         });
-        refreshUI ();
+        refreshUI();
     }
 
     public void remindLater () {
@@ -238,32 +269,51 @@ public class ImportManager extends java.awt.Panel {
 
     private boolean doImport () {
         boolean res = true;
-        boolean wizardFinished = false;
-        try {
-            if (checkedToImport.indexOf (Boolean.TRUE) != -1) {
-                Collection<UpdateElement> reallyToImport = new HashSet<UpdateElement> ();
-                for (UpdateElement el : toImport) {
-                    if (checkedToImport.get (toImport.indexOf (el))) {
-                        reallyToImport.add (el);
-                    }
+        if (checkedToImport.indexOf (Boolean.TRUE) != -1) {
+            final Collection<UpdateElement> reallyToImport = new HashSet<UpdateElement>();
+            for (UpdateElement el : toImport) {
+                if (checkedToImport.get(toImport.indexOf(el))) {
+                    reallyToImport.add(el);
                 }
-                importer.importPlugins (reallyToImport, srcCluster, dest);
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        toImport.clear ();
-                        checkedToImport.clear ();
-                        tToImport.setModel (getModel (toImport, checkedToImport));
-                        refreshUI ();
-                    }
-                });
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace (ex);
+            if (reallyToImport.size() > 0) {
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportManager.class, ("ImportManager.Progress.Name")));
+                final JComponent progressComp = ProgressHandleFactory.createProgressComponent(handle);
+                final JLabel detailLabel = new JLabel(NbBundle.getMessage(ImportManager.class, "ImportManager.Progress.Label"));
+                detailLabel.setHorizontalAlignment(SwingConstants.LEFT);
+                setProgressComponent(detailLabel, progressComp);
+
+                try {
+                    importer.importPlugins(reallyToImport, srcCluster, dest, handle);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    toImport.clear();
+                    checkedToImport.clear();
+                }
+
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        public void run() {
+                            detailLabel.setVisible(false);
+                            progressComp.setVisible(false);
+                            tToImport.setModel(getModel(toImport, checkedToImport));
+                            refreshUI();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
+        
         try {
             dontRemind ();
             if (checkedToInstall.indexOf (Boolean.TRUE) != -1) {
-                OperationContainer<InstallSupport> oc = OperationContainer.createForInstall ();
+                final OperationContainer<InstallSupport> oc = OperationContainer.createForInstall ();
                 for (UpdateElement el : toInstall) {
                     if (checkedToInstall.get (toInstall.indexOf (el))) {
                         OperationContainer.OperationInfo<InstallSupport> info = oc.add (el);
@@ -276,20 +326,81 @@ public class ImportManager extends java.awt.Panel {
                         }
                     }
                 }
-                wizardFinished = PluginManager.openInstallWizard (oc);
-                if (wizardFinished) {
-                    toInstall.clear ();
-                    checkedToInstall.clear ();
-                 } else {
-                    res = false;
-                 }
+                try {
+                    final List <Object> list = new ArrayList <Object>();
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        public void run() {
+                            boolean wizardFinished = PluginManager.openInstallWizard(oc);
+                            if (wizardFinished) {
+                                toInstall.clear();
+                                checkedToInstall.clear();
+                            } else {
+                                list.add(new Object());
+                            }
+                        }
+                    });
+                    if(!list.isEmpty()) {
+                        res = false;
+                    }
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         } finally {
-            tToInstall.setModel (getModel (toInstall, checkedToInstall));
-            refreshUI ();
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        tToInstall.setModel(getModel(toInstall, checkedToInstall));
+                        refreshUI();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
         }
         return res;
 
+    }
+
+    private void setProgressComponent (final JLabel detail, final JComponent progressComponent) {
+        if (SwingUtilities.isEventDispatchThread ()) {
+            setProgressComponentInAwt (detail, progressComponent);
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    setProgressComponentInAwt (detail, progressComponent);
+                }
+            });
+        }
+    }
+    private void setProgressComponentInAwt (JLabel detail, JComponent progressComponent) {
+        assert pProgress != null;
+        assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
+
+        progressComponent.setMinimumSize (progressComponent.getPreferredSize ());
+
+        pProgress.setVisible (true);
+
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        pProgress.add(progressComponent, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        pProgress.add(detail, gridBagConstraints);
+
+        validate ();
     }
 
     private TableModel getModel (final List<UpdateElement> plugins, final List<Boolean> checked) {
@@ -384,6 +495,7 @@ public class ImportManager extends java.awt.Panel {
         lDesc = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
+        pProgress = new javax.swing.JPanel();
 
         jScrollPane3.setViewportView(jTextPane1);
 
@@ -413,31 +525,26 @@ public class ImportManager extends java.awt.Panel {
         lDesc.setFont(lDesc.getFont().deriveFont(lDesc.getFont().getStyle() | java.awt.Font.BOLD));
         org.openide.awt.Mnemonics.setLocalizedText(lDesc, org.openide.util.NbBundle.getMessage(ImportManager.class, "ImportManager.lDesc.text", new Object[] {srcCluster})); // NOI18N
 
+        pProgress.setLayout(new java.awt.GridBagLayout());
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(lToImport, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, lToInstall)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, lDesc)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(lBroken, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 565, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(19, Short.MAX_VALUE))))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lToImport, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lToInstall)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lDesc)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, lBroken, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 565, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -446,19 +553,21 @@ public class ImportManager extends java.awt.Panel {
                 .add(7, 7, 7)
                 .add(lToInstall)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lToImport)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lBroken)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
+                .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -476,6 +585,7 @@ public class ImportManager extends java.awt.Panel {
     private javax.swing.JLabel lDesc;
     private javax.swing.JLabel lToImport;
     private javax.swing.JLabel lToInstall;
+    private javax.swing.JPanel pProgress;
     private javax.swing.JTable tToImport;
     private javax.swing.JTable tToInstall;
     private javax.swing.JTextPane tpBroken;

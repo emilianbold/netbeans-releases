@@ -80,7 +80,7 @@ public class LoginPanel extends javax.swing.JPanel {
     public LoginPanel() {
         initComponents();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.ONLINE_STATUS_PREF, "true")));
+        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true")));
         lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoLeft.setBorder(null);
         lblKenaiLogoRight.setBorder(null);
@@ -192,6 +192,11 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chkIsOnline, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkIsOnline.text")); // NOI18N
+        chkIsOnline.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkIsOnlineActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -286,6 +291,10 @@ public class LoginPanel extends javax.swing.JPanel {
             tooltipManager.setInitialDelay(initialDelay);
         }
     }//GEN-LAST:event_chkRememberMeActionPerformed
+
+    private void chkIsOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkIsOnlineActionPerformed
+        NbPreferences.forModule(LoginPanel.class).put(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
+    }//GEN-LAST:event_chkIsOnlineActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,6 +69,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -418,6 +419,12 @@ public class AppClientProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
+        Profile j2eeProfile = createData.getJavaEEProfile();
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
+            }
+        }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
     
@@ -643,6 +650,11 @@ public class AppClientProjectGenerator {
                 != null) {
             ep.put(AppClientProjectProperties.CLIENT_NAME, mainClassArgs);
         }
+
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
+        }
+
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         //private.properties

@@ -39,17 +39,29 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Pattern;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.Utilities;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author alexeybutenko
  */
-public class CompositeComponentWizardPanel implements WizardDescriptor.Panel {
+public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, ChangeListener {
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -58,10 +70,19 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel {
     private CompositeComponentVisualPanel component;
     private String text;
     private TemplateWizard wizard;
+    Project project;
+    SourceGroup[] folders;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private static final String RESOURCES_FOLDER = "resources"; //NOI18N
+    //TODO how to add [,] to the regular expression?
+    private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
+    private static final Pattern INVALID_FOLDERNAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+|{};:'\",<>?]"); // NOI18N
 
-    public CompositeComponentWizardPanel(TemplateWizard wizard, String selectedText) {
+    public CompositeComponentWizardPanel(TemplateWizard wizard, SourceGroup[] folders, String selectedText) {
         this.wizard = wizard;
         text = selectedText;
+        this.folders = folders;
+        project = Templates.getProject(wizard);
     }
 
 
@@ -71,7 +92,8 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel {
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new CompositeComponentVisualPanel(text);
+            component = new CompositeComponentVisualPanel(project, folders, text);
+            component.addChangeListener(this);
         }
         return component;
     }
@@ -85,13 +107,43 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel {
 
     public boolean isValid() {
 
+        String errorMessage = null;
         if (!Utilities.isJavaEE6(wizard)) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "Not Java EE 6");
+            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JavaEE6");
+        }
+        boolean ok = ( component != null && component.getTargetName() != null && component.getTargetGroup() != null );
+
+        if (!ok) {
             return false;
         }
+        if (component ==null || component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
+            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");
+        } else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER+File.separatorChar)) {
+            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");
+        }
+        
+        String filename = component.getTargetName();
+        if ("".equals(filename) || INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
+            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Filename");
+        }
 
-        // If it is always OK to press Next or Finish, then:
-        return true;
+        String folderName = component.getTargetFolder();
+        if (INVALID_FOLDERNAME_CHARACTERS.matcher(folderName).find()) {
+            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Foldername");
+        }
+
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule !=null && webModule.getDocumentBase() !=null) {
+            String expectedExtension = Templates.getTemplate(wizard).getExt();
+            expectedExtension = expectedExtension.length() == 0 ? "" : "."+expectedExtension;   //NOI18N
+            FileObject targetFile = webModule.getDocumentBase().getFileObject(folderName+"/"+filename+expectedExtension);   //NOI18N
+            if (targetFile != null) {
+                errorMessage = filename+expectedExtension+" already exist"; //NOI18N
+            }
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+
+        return errorMessage == null;
         // If it depends on some condition (form filled out...), then:
         // return someCondition();
         // and when this condition changes (last form field filled in...) then:
@@ -99,47 +151,103 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel {
         // and uncomment the complicated stuff below.
     }
 
-    public final void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
-    /*
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
-    public final void addChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.add(l);
-    }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-    synchronized (listeners) {
-    listeners.remove(l);
-    }
-    }
-    protected final void fireChangeEvent() {
-    Iterator<ChangeListener> it;
-    synchronized (listeners) {
-    it = new HashSet<ChangeListener>(listeners).iterator();
-    }
-    ChangeEvent ev = new ChangeEvent(this);
-    while (it.hasNext()) {
-    it.next().stateChanged(ev);
-    }
-    }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-//        wizard = (TemplateWizard) settings;
-//        if (component == null){
-//            getComponent();
-//        }
+        if (settings instanceof TemplateWizard) {
+            this.wizard = (TemplateWizard) settings;
+            this.project = Templates.getProject(wizard);
+            if (component == null) {
+                getComponent();
+            }
+            if (component != null) {
+
+                FileObject preselectedTarget = Templates.getTargetFolder( wizard );
+                if (preselectedTarget == null) {
+                    preselectedTarget = project.getProjectDirectory();
+                }
+                // Try to preserve the already entered target name
+                String targetName = Templates.getTargetName( wizard );
+                // Init values
+                component.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName );
+            }
+            Object substitute = component.getClientProperty ("NewFileWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+            }
+            wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
+//                NbBundle.getBundle (CompositeComponentWizardPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
+                NbBundle.getBundle (CompositeComponentWizardPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
+        }
     }
 
     public void storeSettings(Object settings) {
+        if (settings instanceof TemplateWizard) {
+            TemplateWizard wizard = (TemplateWizard) settings;
+
+            if (WizardDescriptor.PREVIOUS_OPTION.equals(wizard.getValue())) {
+                return;
+            }
+            if(!wizard.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
+
+                FileObject template = Templates.getTemplate( wizard );
+
+                String name = component.getTargetName ();
+                if (name.indexOf ('/') > 0) { // NOI18N
+                    name = name.substring (name.lastIndexOf ('/') + 1);
+                }
+
+                Templates.setTargetFolder(wizard, getTargetFolderFromGUI());
+                Templates.setTargetName(wizard, name);
+            }
+            wizard.putProperty("NewFileWizard_Title", null); // NOI18N
+        }
     }
+    
+    private FileObject getTargetFolderFromGUI () {
+        FileObject rootFolder = component.getTargetGroup().getRootFolder();
+        String folderName = component.getTargetFolder();
+        String newObject = component.getTargetName ();
+
+        if (newObject.indexOf ('/') > 0) { // NOI18N
+            String path = newObject.substring (0, newObject.lastIndexOf ('/')); // NOI18N
+            folderName = folderName == null || "".equals (folderName) ? path : folderName + '/' + path; // NOI18N
+        }
+
+        FileObject targetFolder;
+        if ( folderName == null ) {
+            targetFolder = rootFolder;
+        }
+        else {
+            targetFolder = rootFolder.getFileObject( folderName );
+        }
+
+        if ( targetFolder == null ) {
+            // XXX add deletion of the file in uninitalize ow the wizard
+            try {
+                targetFolder = FileUtil.createFolder( rootFolder, folderName );
+            } catch (IOException ioe) {
+                // Can't create the folder
+                throw new IllegalArgumentException(ioe); // ioe already annotated
+            }
+        }
+
+        return targetFolder;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
+    }
+
 }
 

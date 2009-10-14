@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,7 @@ package org.netbeans.modules.gsf.testrunner.api;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -69,6 +70,12 @@ public class TestsuiteNode extends AbstractNode {
      * The system property for enabling/disabling tooltips.
      */
     static final boolean DISPLAY_TOOLTIPS = Boolean.valueOf(System.getProperty("testrunner.display.tooltips", "true"));//NOI18N
+    /**
+     * The max line length to display in the messages.
+     * See Issue #172772
+     */
+    static final int MAX_MSG_LINE_LENGTH =
+          Integer.getInteger("testrunner.max.msg.line.length", 80); //NOI18N
 
     protected String suiteName;
     protected TestSuite suite;
@@ -129,11 +136,7 @@ public class TestsuiteNode extends AbstractNode {
                     break;
                 }
                 String line = lines.get(i).getLine();
-                int orgLength = line.length();
-                if (orgLength > MAX_TOOLTIP_LINE_LENGTH) {
-                    line = line.substring(0, MAX_TOOLTIP_LINE_LENGTH);
-                    line = line.concat("<i> " + NbBundle.getMessage(TestsuiteNode.class, "MSG_CharsOmitted", orgLength - MAX_TOOLTIP_LINE_LENGTH) + "</i>"); //NOI18N
-                }
+                line = cutLine(line, MAX_TOOLTIP_LINE_LENGTH, true); // #172772
                 result.append(line);
                 if (i < lines.size()) {
                     result.append("<br>"); //NOI18N
@@ -350,4 +353,36 @@ public class TestsuiteNode extends AbstractNode {
         }
         return result;
     }
+
+    /**
+     * Cuts the ending chars in the specified {@code line} if its length is more
+     * than the specified value {@code maxLength}.
+     *
+     * @param line the line
+     * @param maxLength maximum of the line length
+     * @param isHTML if {@code true} then the HTML tags will be added.
+     * @return If length of the {@code line} is more than the {@code maxLength}
+     * then concatenation of the string that is limited up to {@code maxLength}
+     * chars and a comment string that describes how many chars are omitted,
+     * otherwise the {@code line} without any changes.
+     * @throws MissingResourceException if resources for the comment string
+     * can't be loaded.
+     *
+     * @see Issue #172772
+     */
+    public static String cutLine(String line, int maxLength, boolean isHTML)
+                                               throws MissingResourceException {
+        int length = line.length();
+        if (length > maxLength) {
+            line = line.substring(0, maxLength);
+            String startMsg = isHTML ? "<i> " : "";
+            String endMsg = isHTML ? "</i>" : "";
+            line = line.concat(startMsg +
+                               NbBundle.getMessage(TestsuiteNode.class,
+                                       "MSG_CharsOmitted", length - maxLength) +
+                               endMsg);
+        }
+        return line;
+    }
+
 }

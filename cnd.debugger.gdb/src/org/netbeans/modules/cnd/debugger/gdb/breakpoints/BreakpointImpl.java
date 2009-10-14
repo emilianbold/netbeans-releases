@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.MICommand;
  *
  * @author   Jan Jancura and Gordon Prieur
  */
-public abstract class BreakpointImpl implements PropertyChangeListener {
+public abstract class BreakpointImpl<B extends CndBreakpoint> implements PropertyChangeListener {
 
     /* valid breakpoint states */
     private static enum State {
@@ -70,13 +70,15 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     }
 
     protected final GdbDebugger debugger;
-    private final CndBreakpoint breakpoint;
+    private final B breakpoint;
     private State state = State.UNVALIDATED;
     protected String err = null;
     private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
-    protected BreakpointImpl(CndBreakpoint breakpoint, GdbDebugger debugger) {
+    private String address;
+
+    protected BreakpointImpl(B breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
         this.breakpoint = breakpoint;
     }
@@ -97,6 +99,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 // path to a possiby non-unique relative path and another project has a similar
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
+                fullname = debugger.getOSPath(fullname);
                 // fix for IZ 157752, we need to resolve sym links
                 // TODO: what about remote?
                 if (debugger.getHostExecutionEnvironment().isLocal()) {
@@ -147,14 +150,8 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 command.send();
             }
 
-            //TODO: not good to check for child type here
-            if (this instanceof FunctionBreakpointImpl) {
-                try {
-                    breakpoint.setURL(map.get("fullname")); // NOI18N
-                    breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
-                } catch (Exception ex) {
-                }
-            }
+            validationUpdate(map);
+            
             breakpoint.setValid();
             debugger.getBreakpointList().put(breakpointNumber, this);
             setRunWhenValidated(false);
@@ -167,6 +164,17 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 		setState(State.VALIDATION_FAILED);
 	    }
         }
+    }
+
+    /**
+     * Update implementation with the real breakpoint values if needed
+     */
+    protected void validationUpdate(Map<String, String> map) {
+        address = map.get("addr"); //NOI18N
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     private static String canonicalPath(String path) {
@@ -315,7 +323,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
     }
 
-    public CndBreakpoint getBreakpoint() {
+    public B getBreakpoint() {
         return breakpoint;
     }
 

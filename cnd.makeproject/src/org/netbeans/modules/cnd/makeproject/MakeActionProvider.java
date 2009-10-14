@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1225,7 +1225,7 @@ public class MakeActionProvider implements ActionProvider {
                 model.setShowRequiredBuildTools(true);
                 model.setShowRequiredDebugTools(false);
                 model.setEnableRequiredCompilerCB(conf.isMakefileConfiguration());
-                if (bt.initBuildTools(model, errs) && pd.okToChange()) {
+                if (bt.initBuildTools(model, errs, cs) && pd.okToChange()) {
                     String name = model.getSelectedCompilerSetName();
                     CppSettings.getDefault().setCompilerSetName(name);
                     conf.getCRequired().setValue(model.isCRequired());

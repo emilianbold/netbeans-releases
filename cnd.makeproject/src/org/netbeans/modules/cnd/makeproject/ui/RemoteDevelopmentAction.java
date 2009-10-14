@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -102,7 +103,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
         subMenu.removeAll();
         
-        MakeConfiguration mconf = project.getActiveConfiguration();
+        final MakeConfiguration mconf = project.getActiveConfiguration();
         ExecutionEnvironment currExecEnv = project.getDevelopmentHostExecutionEnvironment();
         if (mconf == null || currExecEnv == null) {
             return;
@@ -120,14 +121,48 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
         // Now add the Manage... action. Do it in it's own menu item othervise it will get shifted to the right.
         subMenu.add(new JSeparator());
-        JMenuItem managePlatformsItem = new JMenuItem(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
+        final JMenuItem managePlatformsItem = new JMenuItem(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
         subMenu.add(managePlatformsItem);
         managePlatformsItem.addActionListener(new ActionListener() {
-
+            private MakeProject currProject = project;
             public void actionPerformed(ActionEvent event) {
-                ServerListUI.showServerListDialog();
+                AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<ExecutionEnvironment>();
+                if (ServerListUI.showServerListDialog(selectedEnv)) {
+                    ExecutionEnvironment env = selectedEnv.get();
+                    if (env != null) {
+                        setRemodeDevelopmentHost(managePlatformsItem, mconf, env, project);
+                    }
+                }
             }
         });
+    }
+
+    private static boolean setRemodeDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
+        if (mconf != null && execEnv != null) {
+            ServerRecord record = ServerList.get(execEnv);
+            if (!record.isSetUp()) {
+                if (!record.setUp()) {
+                    return true;
+                }
+            }
+            DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
+            DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
+            if (dhc.getValue() == oldDhc.getValue()) {
+                return true;
+            }
+            mconf.setDevelopmentHost(dhc);
+            mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+//                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
+//                    platformConfiguration.propertyChange(new PropertyChangeEvent(
+//                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
+            
+            NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
+            npp.propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+            ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
+            configurationDescriptor.setModified(true);
+        }
+        return false;
     }
 
     private static class MenuItemActionListener implements ActionListener {
@@ -137,29 +172,8 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 JMenuItem jmi = (JMenuItem) e.getSource();
                 ExecutionEnvironment execEnv = (ExecutionEnvironment) jmi.getClientProperty(HOST_ENV);
                 MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
-                if (mconf != null && execEnv != null) {
-                    ServerRecord record = ServerList.get(execEnv);
-                    if (!record.isSetUp()) {
-                        if (!record.setUp()) {
-                            return;
-                        }
-                    }
-                    DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
-                    DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
-                    mconf.setDevelopmentHost(dhc);
-                    mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
-//                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
-//                    platformConfiguration.propertyChange(new PropertyChangeEvent(
-//                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
-                    Project project = (Project) jmi.getClientProperty(PROJECT);
-                    NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
-                    npp.propertyChange(new PropertyChangeEvent(this, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
-
-                    ConfigurationDescriptorProvider configurationDescriptorProvider =
-                            project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
-                    configurationDescriptor.setModified(true); 
-                }
+                Project project = (Project) jmi.getClientProperty(PROJECT);
+                if (setRemodeDevelopmentHost(jmi, mconf, execEnv, project)) return;
             }
         }
     }

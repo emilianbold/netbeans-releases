@@ -46,6 +46,7 @@ import org.netbeans.modules.javacard.GuiUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,6 +63,7 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
         initComponents();
         GuiUtils.prepareContainer(this);
         fileField.getDocument().addDocumentListener(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.DependenciesPanel"); //NOI18N
     }
     private IntermediatePanelKind kind;
 

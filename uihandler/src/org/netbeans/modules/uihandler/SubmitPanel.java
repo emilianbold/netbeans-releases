@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -55,26 +56,41 @@ import org.openide.explorer.view.ChoiceView;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author  Jaroslav Tulach
  */
 public class SubmitPanel extends javax.swing.JPanel 
-implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comparator<Object> {
-    
-    /** Creates new form SubmitPanel */
+        implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comparator<Object>, Runnable {
+
+    private EditorKit betterXMLKit;
+
     public SubmitPanel() {
         manager = new ExplorerManager();
-        
-        initComponents();
 
-        EditorKit betterXML = CloneableEditorSupport.getEditorKit("text/xml");
-        if (betterXML != null) {
-            text.setEditorKit(betterXML);
+        initComponents();
+        RequestProcessor.getDefault().post(this);
+    }
+
+    public void run() {
+        if (EventQueue.isDispatchThread()) {
+            try {
+                String content = text.getDocument().getText(0, text.getDocument().getLength());
+                text.setEditorKit(betterXMLKit);
+                setText(content);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            betterXMLKit = CloneableEditorSupport.getEditorKit("text/xml");
+            if (betterXMLKit != null) {
+                EventQueue.invokeLater(this);
+            }
         }
     }
-    
+   
     @Override
     public void addNotify() {
         super.addNotify();
@@ -120,7 +136,7 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(remove, 0, 514, Short.MAX_VALUE)))
+                        .add(remove, 0, 510, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -202,7 +218,7 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JComboBox remove;
-    javax.swing.JEditorPane text;
+    private javax.swing.JEditorPane text;
     // End of variables declaration//GEN-END:variables
     
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -391,6 +391,10 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     private void componentChange(String oldClassName, String newClassName) {
+        if (oldClassName == null || newClassName == null) {
+            return; // for unknown reason 'newClassName' is sometimes null during move refactoring, issue 174136
+        }
+
         FormEditorSupport fes = formDataObject.getFormEditorSupport();
         if (fes.isOpened()) {
             fes.closeFormEditor();

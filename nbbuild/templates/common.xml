@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -949,11 +949,11 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="display-coverage-report" depends="coverage-report"
-        description="Creates and displays test coverage report for this module">
-        <fail unless="testcoverage.report.dir">
-Property testcoverage.report.dir not set. Test coverage script may be missing in ${harness.dir}.
+        description="Creates and displays unit test coverage report for this module">
+        <fail unless="testcoverage.unit.report.dir">
+Property testcoverage.unit.report.dir not set. Test coverage script may be missing in ${harness.dir}.
         </fail>
-        <nbbrowse file="${testcoverage.report.dir}/index.html"/>
+        <nbbrowse file="${testcoverage.unit.report.dir}/index.html"/>
     </target>
     
 </project>

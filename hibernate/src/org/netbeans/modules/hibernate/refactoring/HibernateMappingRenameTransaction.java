@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -82,16 +82,18 @@ public class HibernateMappingRenameTransaction extends RenameTransaction {
                 if(sfactory != null) {
                     for(int i = 0; i < sfactory.sizeMapping(); i ++ ) {
                         String resourceName = sfactory.getAttributeValue(SessionFactory.MAPPING, i, rescrName);
-                        String comparePart = resourceName;
-                        String newResourceName = newName;
-                        
-                        // If we're only replace the directory part of the resource name, then...
-                        if(pathOnly) {
-                            comparePart = resourceName.substring(0, resourceName.lastIndexOf('/'));
-                            newResourceName = newName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
-                        }
-                        if(comparePart.equals(origName)) {
-                            sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newResourceName);
+                        if (resourceName != null) {
+                            String comparePart = resourceName;
+                            String newResourceName = newName;
+
+                            // If we're only replace the directory part of the resource name, then...
+                            if(pathOnly) {
+                                comparePart = resourceName.substring(0, resourceName.lastIndexOf('/'));
+                                newResourceName = newName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
+                            }
+                            if(comparePart.equals(origName)) {
+                                sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newResourceName);
+                            }
                         }
                     }
                 }

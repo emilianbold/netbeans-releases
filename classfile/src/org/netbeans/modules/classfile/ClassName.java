@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -59,7 +59,7 @@ import java.util.WeakHashMap;
  *
  * @author Thomas Ball
  */
-public final class ClassName implements Comparable, Comparator, Serializable {
+public final class ClassName implements Comparable<ClassName>, Comparator<ClassName>, Serializable {
 
     static final long serialVersionUID = -8444469778945723553L;
 
@@ -144,8 +144,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     }
 
     private static ClassName getCacheEntry(String key) {
-	WeakReference ref = cache.get(key);
-	return ref != null ? (ClassName)ref.get() : null;
+	WeakReference<ClassName> ref = cache.get(key);
+	return ref != null ? ref.get() : null;
     }
 
     /**
@@ -284,10 +284,10 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      *		less than this string.
      * @see     java.lang.Comparable
      */
-    public int compareTo(Object obj) {
+    public int compareTo(ClassName obj) {
         // If obj isn't a ClassName, the correct ClassCastException
         // will be thrown by the cast.
-        return type.compareTo(((ClassName)obj).type);
+        return type.compareTo(obj.type);
     }
 
     /**
@@ -303,8 +303,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * @throws ClassCastException if the arguments' types prevent them from
      * 	       being compared by this Comparator.
      */
-    public int compare(Object o1, Object o2) {
-        return ((ClassName)o1).compareTo(o2);
+    public int compare(ClassName o1, ClassName o2) {
+        return o1.compareTo(o2);
     }
 
     @Override

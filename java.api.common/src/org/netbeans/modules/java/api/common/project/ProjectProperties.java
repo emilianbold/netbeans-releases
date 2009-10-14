@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -59,6 +59,7 @@ public final class ProjectProperties {
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
+    public static final String ENDORSED_CLASSPATH = "endorsed.classpath"; // NOI18N
 
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
@@ -66,6 +67,7 @@ public final class ProjectProperties {
         "${" + RUN_CLASSPATH + "}", // NOI18N
         "${" + RUN_TEST_CLASSPATH + "}", // NOI18N
         "${" + BUILD_CLASSES_DIR + "}", // NOI18N
+        "${" + ENDORSED_CLASSPATH + "}", // NOI18N
         "${" + BUILD_TEST_CLASSES_DIR + "}" // NOI18N
     };    
    

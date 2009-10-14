@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -333,7 +333,10 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
     }//GEN-LAST:event_languageChanged
 
     private void categoryChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryChanged
-        selector.setSelectedCustomizer(((PreferencesCustomizer)categoryCombo.getSelectedItem()).getId());
+        PreferencesCustomizer selectedCustomizer = ((PreferencesCustomizer)categoryCombo.getSelectedItem());
+        if (selectedCustomizer != null) {
+            selector.setSelectedCustomizer(selectedCustomizer.getId());
+        } // else #168066 - no idea how this can happen
     }//GEN-LAST:event_categoryChanged
     
     
