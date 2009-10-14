@@ -193,11 +193,6 @@ public final class JavaDataObject extends MultiDataObject {
         protected @Override CloneableEditor createCloneableEditor() {
             return new JavaEditor(this);
         }
-
-        @Override
-        protected boolean asynchronousOpen() {
-            return true;
-        }
         
         public @Override boolean close(boolean ask) {
             return super.close(ask);
