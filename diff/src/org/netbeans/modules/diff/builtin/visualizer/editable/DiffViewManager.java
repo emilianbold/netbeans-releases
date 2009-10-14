@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.*;
+import org.openide.util.RequestProcessor;
 
 /**
  * Handles interaction among Diff components: editor panes, scroll bars, action bars and the split pane.
@@ -79,12 +80,14 @@ class DiffViewManager implements ChangeListener {
     private DecoratedDifference []  decorationsCached = new DecoratedDifference[0];
     private HighLight []            secondHilitesCached = new HighLight[0];
     private HighLight []            firstHilitesCached = new HighLight[0];
-    private final ScrollMapCached   scrollMap = new ScrollMapCached();    
+    private final ScrollMapCached   scrollMap = new ScrollMapCached();
+    private final RequestProcessor.Task highlightComputeTask;
     
     public DiffViewManager(EditableDiffView master) {
         this.master = master;
         this.leftContentPanel = master.getEditorPane1();
         this.rightContentPanel = master.getEditorPane2();
+        highlightComputeTask = new RequestProcessor("DiffViewHighlightsComputer", 1, true).create(new HighlightsComputeTask());
     }
     
     void init() {
@@ -163,8 +166,10 @@ class DiffViewManager implements ChangeListener {
         if (mds <= cachedDiffSerial) return;
         cachedDiffSerial = mds;
         computeDecorations();
-        computeSecondHighlights();
-        computeFirstHighlights();
+        firstHilitesCached = secondHilitesCached = new HighLight[0];
+        // interrupt running highlight scan and start new one outside of AWT
+        highlightComputeTask.cancel();
+        highlightComputeTask.schedule(0);
     }
 
     public synchronized DecoratedDifference [] getDecorations() {
@@ -185,7 +190,11 @@ class DiffViewManager implements ChangeListener {
     private void computeFirstHighlights() {
         List<HighLight> hilites = new ArrayList<HighLight>();
         Document doc = leftContentPanel.getEditorPane().getDocument();
-        for (DecoratedDifference dd : decorationsCached) {
+        DecoratedDifference[] decorations = decorationsCached;
+        for (DecoratedDifference dd : decorations) {
+            if (Thread.interrupted()) {
+                return;
+            }
             Difference diff = dd.getDiff();
             if (dd.getBottomLeft() == -1) continue;
             int start = getRowStartFromLineOffset(doc, diff.getFirstStart() - 1);
@@ -227,7 +236,11 @@ class DiffViewManager implements ChangeListener {
     private void computeSecondHighlights() {
         List<HighLight> hilites = new ArrayList<HighLight>();
         Document doc = rightContentPanel.getEditorPane().getDocument();
-        for (DecoratedDifference dd : decorationsCached) {
+        DecoratedDifference[] decorations = decorationsCached;
+        for (DecoratedDifference dd : decorations) {
+            if (Thread.interrupted()) {
+                return;
+            }
             Difference diff = dd.getDiff();
             if (dd.getBottomRight() == -1) continue;
             int start = getRowStartFromLineOffset(doc, diff.getSecondStart() - 1);
@@ -686,5 +699,26 @@ class DiffViewManager implements ChangeListener {
             }
             return newMap;
         }
-    }        
+    }
+
+    /**
+     * Counts differences for rows
+     */
+    private class HighlightsComputeTask implements Runnable {
+        private int diffSerial;
+
+        public void run() {
+            diffSerial = cachedDiffSerial;
+            computeSecondHighlights();
+            if (diffSerial == cachedDiffSerial) { // no change has come yet, continue computing
+                master.getEditorPane2().fireHilitingChanged();
+            } else {
+                return;
+            }
+            computeFirstHighlights();
+            if (diffSerial == cachedDiffSerial) {
+                master.getEditorPane1().fireHilitingChanged();
+            }
+        }
+    }
 }

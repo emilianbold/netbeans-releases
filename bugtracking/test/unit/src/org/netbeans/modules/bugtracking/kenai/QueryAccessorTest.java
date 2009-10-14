@@ -93,8 +93,12 @@ public class QueryAccessorTest extends NbTestCase {
         QueryAccessorImpl qa = new QueryAccessorImpl();
         KenaiProject project = Kenai.getDefault().getProject("koliba");
 
-        QueryResultHandle r = qa.getAllChangesResult(new ProjectHandleImpl(project));
+        QueryHandle h = qa.getAllIssuesQuery(new ProjectHandleImpl(project));
+        assertNotNull(h);
+
+        QueryResultHandle r = qa.getAllChangesResult(h);
         assertNotNull(r);
+        
         Integer.parseInt(r.getText()); // just an integer value without text
     }
 
