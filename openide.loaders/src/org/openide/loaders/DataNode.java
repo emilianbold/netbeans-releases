@@ -300,8 +300,12 @@ public class DataNode extends AbstractNode {
         return obj.isDeleteAllowed ();
     }
 
-    /* Destroyes the node
-    */
+    /**
+     * Removes the node from its parent, deletes it and fires a property change.
+     * Since a DataNode is always bound to a DataObject, which itself is rooted
+     * in a filesystem, destroying a DataNode also implies deleting the associated
+     * FileObject.
+     */
     @Override
     public void destroy () throws IOException {
         if (obj.isDeleteAllowed ()) {
