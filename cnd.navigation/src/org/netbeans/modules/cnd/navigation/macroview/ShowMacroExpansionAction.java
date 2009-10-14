@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
@@ -76,9 +77,9 @@ public final class ShowMacroExpansionAction extends CookieAction {
     private int getOffset(Node[] activatedNodes) {
         EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
         if (c != null) {
-            JEditorPane[] panes = c.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0].getCaret().getDot();
+            JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
+            if (pane != null ) {
+                return pane.getCaret().getDot();
             }
         }
         return 0;
