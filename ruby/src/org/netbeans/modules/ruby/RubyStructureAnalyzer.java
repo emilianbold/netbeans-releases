@@ -746,7 +746,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     AstDynamicMethodElement co = new AstDynamicMethodElement(result, method);
                     co.setIn(in);
                     co.setModifiers(EnumSet.of(Modifier.PUBLIC));
-                    co.setType(new RubyType(ActiveRecordAssociationFinder.getClassNameFor(node, method))); //NOI18N
+                    String type = ActiveRecordAssociationFinder.getClassNameFor(node, method);
+                    if (type != null && type.length() > 0) {
+                        co.setType(RubyType.create(type)); //NOI18N
+                    }
                     co.setHidden(true);
                     if (parent != null) {
                         parent.addChild(co);
