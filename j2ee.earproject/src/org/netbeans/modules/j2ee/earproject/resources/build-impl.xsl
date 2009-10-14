@@ -339,7 +339,6 @@ exists or setup the property manually. For example like this:
 
             <target name="-do-compile-deps">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <xsl:attribute name="if">do.package.not.directory.deploy</xsl:attribute>
 
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
