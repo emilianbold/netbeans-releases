@@ -103,14 +103,46 @@ public class SingleJspServletGenTest extends TestBase2 {
         super(name);
     }
     
-    public void testJsp() throws BadLocationException{
-        SimplifiedJspServlet processor = getProcessor("testJsp.jsp");
-        processor.process();
-        Embedding servlet = processor.getSimplifiedServlet();
-        System.out.println(servlet.getSnapshot().getText());
+    public void testJsp() throws Exception{
+        generateServlet("testJsp.jsp");
     }
     
+    protected void generateServlet( String fileName ) throws Exception{
+        SimplifiedJspServlet processor = getProcessor(fileName);
+        processor.process();
+        Embedding servlet = processor.getSimplifiedServlet();
+        assertServletMatches( fileName , servlet.getSnapshot().getText().toString());
+    }
     
+    protected void generateServlet( String testFolder, String fileName ) throws Exception{
+        SimplifiedJspServlet processor = getProcessor( testFolder +"/"+fileName);
+        processor.process();
+        Embedding servlet = processor.getSimplifiedServlet();
+        assertServletMatches( testFolder , fileName , 
+                servlet.getSnapshot().getText().toString());
+    }
+    
+    protected void assertServletMatches( String fileName , String content ) 
+        throws Exception
+    {
+        String filePath = TEST_FOLDER_SINGLE_JPS+"/"+fileName;
+        String newFile;
+        int i = filePath.lastIndexOf('.');
+        if ( i >-1){
+            newFile = filePath.substring(0, i);
+        }
+        else {
+            newFile = filePath;
+        }
+        newFile = newFile+".java";                      // NOI18N
+        assertFileContentsMatches(filePath, newFile,content);
+    }
+    
+    protected void assertServletMatches( String testFolder , String fileName , 
+            String content ) throws Exception
+    {
+        assertServletMatches( testFolder+"/"+fileName, content);
+    }
     
     @Override
     protected void setUp() throws Exception {
