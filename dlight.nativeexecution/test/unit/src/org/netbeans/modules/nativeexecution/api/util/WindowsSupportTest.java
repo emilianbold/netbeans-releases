@@ -118,7 +118,7 @@ public class WindowsSupportTest {
         }
         
         String winPath = "C:\\Documents and Settings";
-        String cygwinPath = "/cygdrive/c/Documents\\ and\\ Settings";
+        String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToCygwinPath(winPath);
         assertEquals(cygwinPath, result);
@@ -135,13 +135,11 @@ public class WindowsSupportTest {
             return;
         }
 
-        String cygwinPath = "";
-        WindowsSupport instance = null;
-        String expResult = "";
+        String winPath = "c:\\Documents and Settings";
+        String cygwinPath = "/cygdrive/c/Documents and Settings";
+        WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromCygwinPath(cygwinPath);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(winPath, result);
     }
 
     /**
@@ -155,13 +153,11 @@ public class WindowsSupportTest {
             return;
         }
 
-        String winPath = "";
-        WindowsSupport instance = null;
-        String expResult = "";
+        String winPath = "c:\\Documents and Settings";
+        String msysPath = "/c/Documents and Settings";
+        WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToMSysPath(winPath);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(msysPath, result);
     }
 
     /**
@@ -175,13 +171,11 @@ public class WindowsSupportTest {
             return;
         }
 
-        String msysPath = "";
-        WindowsSupport instance = null;
-        String expResult = "";
+        String winPath = "c:\\Documents and Settings";
+        String msysPath = "/c/Documents and Settings";
+        WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromMSysPath(msysPath);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertEquals(winPath, result);
     }
 
     /**
@@ -195,13 +189,13 @@ public class WindowsSupportTest {
             return;
         }
 
-        String path = "";
-        WindowsSupport instance = null;
-        String expResult = "";
-        String result = instance.convertToShellPath(path);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+//        String path = "";
+//        WindowsSupport instance = null;
+//        String expResult = "";
+//        String result = instance.convertToShellPath(path);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
     }
 
     /**
@@ -215,13 +209,13 @@ public class WindowsSupportTest {
             return;
         }
 
-        String path = "";
-        WindowsSupport instance = null;
-        String expResult = "";
-        String result = instance.convertToWindowsPath(path);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+//        String path = "";
+//        WindowsSupport instance = null;
+//        String expResult = "";
+//        String result = instance.convertToWindowsPath(path);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
     }
 
     /**
@@ -235,13 +229,13 @@ public class WindowsSupportTest {
             return;
         }
 
-        String paths = "";
-        WindowsSupport instance = null;
-        String expResult = "";
-        String result = instance.convertToAllShellPaths(paths);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+//        String paths = "";
+//        WindowsSupport instance = null;
+//        String expResult = "";
+//        String result = instance.convertToAllShellPaths(paths);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
     }
 
     /**
@@ -255,11 +249,8 @@ public class WindowsSupportTest {
             return;
         }
 
-        WindowsSupport instance = null;
-        Map expResult = null;
+        WindowsSupport instance = WindowsSupport.getInstance();
         Map result = instance.getEnv();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertNotNull(result);
     }
 }

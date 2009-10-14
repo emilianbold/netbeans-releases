@@ -530,7 +530,9 @@ public final class WindowsSupport {
                         break;
                     case MSYS:
                         for (String path : origPaths) {
-                            convertedPaths.add(convertSingle(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, path, true)));
+                            if (path.trim().length() > 0) {
+                                convertedPaths.add(convertSingle(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, path.trim(), true)));
+                            }
                         }
                         break;
                     default:
