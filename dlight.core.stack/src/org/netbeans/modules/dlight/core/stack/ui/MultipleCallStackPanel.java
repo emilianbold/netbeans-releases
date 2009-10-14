@@ -141,8 +141,10 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     public void scrollToRoot() {
         //     Component c  = treeView.getComponents();
         treeView.getViewport().setViewPosition(new Point(0, 0));
+    }
 
-
+    public void expandNode(Node node){
+        treeView.expandNode(node);
     }
 
     public void setRootVisible(String rootName) {

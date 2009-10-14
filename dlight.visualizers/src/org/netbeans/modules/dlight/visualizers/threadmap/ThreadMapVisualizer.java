@@ -166,6 +166,12 @@ public class ThreadMapVisualizer extends JPanel implements
         this.toolID = toolID;
     }
 
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        threadsTimelinePanelContainer.requestFocus();
+    }
+
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //filter out with the time
         if (session != null) {
