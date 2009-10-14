@@ -62,7 +62,7 @@ public final class ToolsCustomizerAction extends SystemAction implements ActionL
     public String getName() {
         return NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction");
     }
-    
+
     /**
      * Shows libraries customizer displaying all currently open library managers.
      * @return true if user pressed OK and libraries were sucessfully modified
