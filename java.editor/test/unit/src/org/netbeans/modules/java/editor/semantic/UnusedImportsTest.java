@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -59,16 +58,11 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -342,6 +336,18 @@ public class UnusedImportsTest extends NbTestCase {
                                           "public class Main { }"));
 
         performUnusedImportsTest();
+    }
+
+    public void testBrokenSource() throws Exception {
+        writeFilesAndWaitForScan(src, new File("test/State.java",
+                                               "public enum State implements Iface {\n" +
+                                               "    A(1) {\n" +
+                                               "    }\n" +
+                                               "    int x;\n" +
+                                               "    private State(int x) {\n" +
+                                               "        this.x = x;\n" +
+                                               "    }\n" +
+                                               "}\n"));
     }
 
     private void performUnusedImportsTest(String... golden) throws Exception {

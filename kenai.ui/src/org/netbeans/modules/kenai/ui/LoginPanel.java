@@ -80,7 +80,7 @@ public class LoginPanel extends javax.swing.JPanel {
     public LoginPanel() {
         initComponents();
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.ONLINE_ON_CHAT_PREF, "true")));
+        chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), "true")));
         lblKenaiLogoCenter.setBorder(null);
         lblKenaiLogoLeft.setBorder(null);
         lblKenaiLogoRight.setBorder(null);
@@ -293,7 +293,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_chkRememberMeActionPerformed
 
     private void chkIsOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkIsOnlineActionPerformed
-        NbPreferences.forModule(LoginPanel.class).put(UIUtils.ONLINE_ON_CHAT_PREF, Boolean.toString(isOnline()));
+        NbPreferences.forModule(LoginPanel.class).put(UIUtils.getPrefName(UIUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
     }//GEN-LAST:event_chkIsOnlineActionPerformed
 
 

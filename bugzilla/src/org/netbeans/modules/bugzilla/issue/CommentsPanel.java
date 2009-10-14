@@ -73,6 +73,7 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
@@ -189,7 +190,9 @@ public class CommentsPanel extends JPanel {
         if (issue.getRepository() instanceof KenaiRepository) {
             int index = author.indexOf('@');
             String userName = (index == -1) ? author : author.substring(0,index);
-            stateLabel = new KenaiUserUI(userName).createUserWidget();
+            KenaiUserUI ku = new KenaiUserUI(userName);
+            ku.setMessage(KenaiUtil.getChatLink(issue));
+            stateLabel = ku.createUserWidget();
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N

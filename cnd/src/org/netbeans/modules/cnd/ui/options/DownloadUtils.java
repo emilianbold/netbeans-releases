@@ -64,10 +64,11 @@ public final class DownloadUtils {
     }
 
     public static boolean showDownloadConfirmation(CompilerSet cs) {
+        String selected = cs.getCompilerFlavor().toString();
         String name = cs.getDisplayName();
         String uc = cs.getCompilerFlavor().getToolchainDescriptor().getUpdateCenterUrl();
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                ToolsPanel.getString("ToolsPanel.UpdateCenterMessage", name, uc),
+        String message = ToolsPanel.getString("ToolsPanel.UpdateCenterMessageConformation", selected, name, uc);
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
                 ToolsPanel.getString("ToolsPanel.UpdateCenterTitle"), NotifyDescriptor.YES_NO_OPTION);
         Object ret = DialogDisplayer.getDefault().notify(nd);
         if (ret == NotifyDescriptor.YES_OPTION) {
@@ -106,7 +107,7 @@ public final class DownloadUtils {
          return null;
     }
 
-    private static void downloadCompilerSet(CompilerSet cs) {
+    static void downloadCompilerSet(CompilerSet cs) {
         String fail = null;
         try {
             UpdateUnit unit = findKnownUnit(cs);

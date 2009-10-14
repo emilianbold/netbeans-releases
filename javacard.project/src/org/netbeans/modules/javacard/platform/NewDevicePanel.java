@@ -51,6 +51,7 @@ import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.conversion.Converter;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,6 +75,7 @@ public class NewDevicePanel extends javax.swing.JPanel {
         group.add (displayNameField, v);
         displayNameField.setName (jLabel1.getText());
         GuiUtils.prepareContainer(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.AddNewDevice"); //NOI18N
     }
 
     public ValidationGroup getValidationGroup() {

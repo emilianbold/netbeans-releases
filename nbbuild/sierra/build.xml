@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -205,20 +205,19 @@
     <target name="clean-xml"><antcall target="do-xml"><param name="action" value="clean"/></antcall></target>
     <target name=  "nbm-xml"><antcall target="do-xml"><param name="action" value="nbm"/></antcall></target>
     <target name=   "do-xml">
+        <antcall target="do-module"><param name="module" value="libs.jxpath"/></antcall>
+        <antcall target="do-module"><param name="module" value="visdev.prefuse"/></antcall>
+        <antcall target="do-module"><param name="module" value="o.n.xml.libs.jxpath"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.kit"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.wsdl.kit"/></antcall>
-        <antcall target="do-module"><param name="module" value="libs.jxpath"/></antcall>
-        <antcall target="do-module"><param name="module" value="o.n.xml.libs.jxpath"/></antcall>
-        <antcall target="do-module"><param name="module" value="visdev.prefuse"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.catalogsupport"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xam.ui"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.search"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.nbprefuse"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.refactoring"/></antcall>
-        <antcall target="do-module"><param name="module" value="xml.wsdl.model"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.schema.ui.basic"/></antcall>
-        <antcall target="do-module"><param name="module" value="xml.validation"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.schema.abe"/></antcall>
+        <antcall target="do-module"><param name="module" value="xml.validation"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.schema"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.schema.refactoring"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.xpath"/></antcall>
@@ -239,12 +238,12 @@
     <target name="clean-libs"><antcall target="do-libs"><param name="action" value="clean"/></antcall></target>
     <target name=  "nbm-libs"><antcall target="do-libs"><param name="action" value="nbm"/></antcall></target>
     <target name=   "do-libs">
-        <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.httpunit"/></antcall-->
         <antcall target="do-module"><param name="module" value="o.n.soa.libs.jbiadmincommon"/></antcall>
         <antcall target="do-module"><param name="module" value="o.n.soa.libs.jgo"/></antcall>
-        <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.mail"/></antcall-->
         <antcall target="do-module"><param name="module" value="o.n.soa.libs.wsdl4j"/></antcall>
         <antcall target="do-module"><param name="module" value="o.n.soa.libs.xmlbeans"/></antcall>
+        <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.httpunit"/></antcall-->
+        <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.mail"/></antcall-->
         <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.pojo"/></antcall-->
         <!--antcall target="do-module"><param name="module" value="o.n.soa.libs.xslt"/></antcall-->
     </target>
@@ -384,10 +383,10 @@
     <target name="clean-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="clean"/></antcall></target>
     <target name=  "nbm-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="nbm"/></antcall></target>
     <target name=   "do-wsdlextensions">
-        <!--antcall target="do-module"><param name="module" value="wsdlextensions.ftp"/></antcall-->
-        <!--antcall target="do-module"><param name="module" value="wsdlextensions.snmp"/></antcall-->
         <antcall target="do-module"><param name="module" value="wsdlextensions.file"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jms"/></antcall>
+        <!--antcall target="do-module"><param name="module" value="wsdlextensions.ftp"/></antcall-->
+        <!--antcall target="do-module"><param name="module" value="wsdlextensions.snmp"/></antcall-->
         <!--antcall target="do-module"><param name="module" value="wsdlextensions.mq"/></antcall-->
         <!--antcall target="do-module"><param name="module" value="wsdlextensions.ims"/></antcall-->
         <!--antcall target="do-module"><param name="module" value="wsdlextensions.jdbc"/></antcall-->

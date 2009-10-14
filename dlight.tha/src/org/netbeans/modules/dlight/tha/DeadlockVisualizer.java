@@ -62,8 +62,8 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
 
     public final static Image deadlockImage = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
     public final static Icon deadlockIcon = ImageUtilities.image2Icon(deadlockImage);
-    public final static Icon deadlockRequestIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver1.png", false);
-    public final static Icon deadlockHeldIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver2.png", false);
+    public final static Icon deadlockRequestIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver1.png", false);//NOI18N
+    public final static Icon deadlockHeldIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver2.png", false);//NOI18N
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
     private MasterSlaveView<Deadlock, DeadlockTHANodeFactory> msview;

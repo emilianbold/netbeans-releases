@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.extras.api.support.dragging;
 
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -47,7 +46,10 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 
 /**
  *
@@ -55,15 +57,16 @@ import javax.swing.SwingUtilities;
  */
 public final class DraggingSupport extends MouseAdapter implements MouseMotionListener {
 
-    private final Component component;
+    private final JComponent component;
     private final List<Draggable> draggables;
     private Draggable currentDraggable;
 
-    public DraggingSupport(Component component, List<Draggable> marks) {
+    public DraggingSupport(JComponent component, List<Draggable> marks) {
         this.component = component;
         this.draggables = Collections.unmodifiableList(new ArrayList<Draggable>(marks));
         component.addMouseListener(this);
         component.addMouseMotionListener(this);
+        ToolTipManager.sharedInstance().registerComponent(component);
     }
 
     private Draggable findDraggable(Point p) {
@@ -79,6 +82,7 @@ public final class DraggingSupport extends MouseAdapter implements MouseMotionLi
     public void mouseMoved(MouseEvent e) {
         Draggable draggableUnderCursor = findDraggable(e.getPoint());
         component.setCursor(draggableUnderCursor == null? Cursor.getDefaultCursor() : draggableUnderCursor.getCursor());
+        component.setToolTipText(draggableUnderCursor == null? null : draggableUnderCursor.getTooltip());
         e.consume();
     }
 

@@ -164,8 +164,6 @@ public final class CommonTasksSupport {
 
         public Integer call() throws Exception {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            MacroMap env = npb.getEnvironment();
-            env.prependPathVariable("PATH", "/bin:/usr/bin"); // NOI18N
             npb.setExecutable(cmd).setArguments(args);
             Process p = npb.call();
 

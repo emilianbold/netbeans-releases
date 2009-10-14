@@ -42,15 +42,17 @@ package org.netbeans.modules.versioning.spi;
 
 import java.io.File;
 import java.util.prefs.Preferences;
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Versioning SPI unit tests.
  *
  * @author Maros Sandor
  */
-public class VersioningSupportTest extends TestCase {
+public class VersioningSupportTest extends NbTestCase {
     
     private File dataRootDir;
 
@@ -60,7 +62,10 @@ public class VersioningSupportTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        dataRootDir = getWorkDir();
+        File userdir = new File(getWorkDir(), "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
     }
     
     public void testGetPreferences() {

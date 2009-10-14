@@ -41,10 +41,15 @@
 package org.netbeans.modules.cnd.gizmo.options;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.dlight.toolsui.api.ToolsManagerPanel;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -130,7 +135,9 @@ public class GizmoIntNodeProp extends Node.Property {
         return intEditor;
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    private class IntEditor extends PropertyEditorSupport implements ExPropertyEditor, VetoableChangeListener {
+        private PropertyEnv env;
+        private ToolsManagerPanel toolsManagerPanel = null;
 
         @Override
         public String getJavaInitializationString() {
@@ -158,7 +165,26 @@ public class GizmoIntNodeProp extends Node.Property {
 
         @Override
         public Component getCustomEditor() {
-            return new ToolsManagerPanel();
+            env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            env.addVetoableChangeListener(this);
+            toolsManagerPanel = new ToolsManagerPanel();
+            return toolsManagerPanel;
+        }
+
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
+        }
+
+        /**
+         * Once the user presses OK, we attempt to validate the remote host. We never veto the action
+         * because a failure should still close the property editor, but with the host still offline.
+         * Set the PropertyEnv state to valid so the dialog is removed.
+         *
+         * @param evt A PropertyEnv where we can control the custom property editor
+         * @throws java.beans.PropertyVetoException
+         */
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            toolsManagerPanel.apply();
         }
     }
 }

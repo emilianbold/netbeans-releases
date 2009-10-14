@@ -55,6 +55,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -68,7 +69,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -157,6 +157,7 @@ public class Utilities {
 
         List<String> names = new ArrayList<String> ();
         Set<UpdateUnit> coveredByVisible = new HashSet <UpdateUnit> ();
+        Map<UpdateUnit, List<UpdateElement>> coveredByVisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
@@ -167,15 +168,25 @@ public class Utilities {
                 }
                 coveredByVisible.add(u);
 
+                List<UpdateElement> list = new ArrayList<UpdateElement>();
                 OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
                 OperationInfo<InstallSupport> info = container.add(updates.get(0));
                 Set <UpdateElement> required = info.getRequiredElements();
                 for(UpdateElement ue : required){
-                    coveredByVisible.add(ue.getUpdateUnit());
+                    if(!ue.getUpdateUnit().isPending()) {
+                        coveredByVisible.add(ue.getUpdateUnit());
+                        list.add(ue);
+                    }
                 }
                 for(OperationInfo <InstallSupport> i : container.listAll()) {
-                    coveredByVisible.add((i.getUpdateUnit()));
+                    if(!i.getUpdateUnit().isPending()) {
+                        coveredByVisible.add((i.getUpdateUnit()));
+                        if(!u.equals(i.getUpdateUnit())) {
+                            list.add(i.getUpdateElement());
+                        }
+                    }
                 }
+                //coveredByVisibleMap.put(u,list);
 
                 String catName = el.getCategory();
                 if (names.contains (catName)) {
@@ -206,10 +217,10 @@ public class Utilities {
         }
 
         List<Unit.InternalUpdate> internals = new ArrayList <Unit.InternalUpdate>();
-        HashMap <UpdateUnit, List<UpdateElement>> map = getVisibleModulesDependecyMap(units);
+        getVisibleModulesDependecyMap(units, coveredByVisibleMap);
         if(otherUnits.size() > 0 && !isNbms) {            
             for(UpdateUnit uu : otherUnits) {
-                UpdateUnit u = getVisibleUnitForInvisibleModule(uu, map);
+                UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
                 if (u != null) {
                     boolean exist = false;
                     for(Unit.InternalUpdate internal : internals) {
@@ -255,10 +266,19 @@ public class Utilities {
 
     public static HashMap<UpdateUnit, List<UpdateElement>> getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits) {
         HashMap<UpdateUnit, List<UpdateElement>> result = new HashMap <UpdateUnit, List<UpdateElement>>();
+        getVisibleModulesDependecyMap(allUnits, result);
+        return result;
+    }
+
+    private static void getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
         for (UpdateUnit u : allUnits) {
-            if (u.getInstalled() != null && !u.isPending()) {
-                OperationContainer<InstallSupport> container = OperationContainer.createForInternalUpdate();
-                OperationInfo<InstallSupport> info = container.add(u, u.getInstalled());
+            if (u.getInstalled() != null && !u.isPending() && !result.containsKey(u)) {
+
+                OperationContainer<InstallSupport> container = u.getAvailableUpdates().isEmpty() ? 
+                    OperationContainer.createForInternalUpdate() :
+                    OperationContainer.createForUpdate();
+                OperationInfo<InstallSupport> info = container.add(u, 
+                        u.getAvailableUpdates().isEmpty() ? u.getInstalled() : u.getAvailableUpdates().get(0));
 
                 List<UpdateElement> list = new ArrayList<UpdateElement>();
 
@@ -280,11 +300,10 @@ public class Utilities {
                     result.put(u, list);
                 }
             }
-        }
-        return result;
+        }        
     }
 
-    public static UpdateUnit getVisibleUnitForInvisibleModule(UpdateUnit invisible, HashMap<UpdateUnit, List<UpdateElement>> map) {
+    public static UpdateUnit getVisibleUnitForInvisibleModule(UpdateUnit invisible, Map<UpdateUnit, List<UpdateElement>> map) {
         List <UpdateUnit> candidates = new ArrayList<UpdateUnit>();
 
         for(UpdateUnit unit : map.keySet()) {

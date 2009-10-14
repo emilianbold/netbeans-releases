@@ -174,7 +174,8 @@ final class ProjectProperties {
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
             this.helper = helper;
-            FileUtil.addFileChangeListener(this, new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar)));
+            File fl = new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar));
+            FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(fl));
         }
         
         private FileObject dir() {

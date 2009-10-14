@@ -44,10 +44,18 @@
 
 #include "rfs_util.h"
 
+void report_error(const char *format, ...) {
+    va_list args;
+    va_start (args, format);
+    vfprintf(stderr, format, args);
+    va_end (args);
+}
+
 #if TRACE
 
 static const char* pattern = "%u #%s[%d]: ";
-static const char* prefix = 0;
+static const char* prefix = "";
+static FILE *trace_file;
 
 static unsigned long get_timestamp() {
     struct timespec tp;
@@ -55,8 +63,10 @@ static unsigned long get_timestamp() {
     return tp.tv_sec*1000000000+tp.tv_nsec;
 }
 
-FILE *trace_file;
 void trace(const char *format, ...) {
+    if (!trace_file) {
+        trace_file = stderr;
+    }
     fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
     va_list args;
     va_start (args, format);

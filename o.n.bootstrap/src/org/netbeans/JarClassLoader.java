@@ -279,6 +279,16 @@ public class JarClassLoader extends ProxyClassLoader {
         }
     }
 
+    /** package-private method useful only for testing.
+     * Used from JarClassLoaderTest to force close before reopening. */
+    void releaseJars() throws IOException {
+        for (Source src : sources) {
+            if (src instanceof JarSource) {
+                ((JarSource)src).doCloseJar();
+            }
+        }
+    }
+
     static abstract class Source {
         private URL url;
         private ProtectionDomain pd;
@@ -585,20 +595,22 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         private JarFile callGet() throws IOException {
-            try {
-                return fjar.get();
-            } catch (InterruptedException ex) {
-                throw (IOException)new IOException().initCause(ex);
-            } catch (ExecutionException ex) {
-                Throwable cause = ex.getCause();
-                if (cause instanceof IOException) {
-                    // This is important for telling general IOException from ZipException
-                    // down the stack.
-                    throw (IOException)cause;
-                } else {
-                    throw (IOException)new IOException().initCause(cause);
+            for (;;) {
+                try {
+                    return fjar.get();
+                } catch (InterruptedException ex) {
+                    // ignore and retry
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause instanceof IOException) {
+                        // This is important for telling general IOException from ZipException
+                        // down the stack.
+                        throw (IOException)cause;
+                    } else {
+                        throw (IOException)new IOException().initCause(cause);
+                    }
                 }
-            }            
+            }
         }
 
         private void doCloseJar() throws IOException {

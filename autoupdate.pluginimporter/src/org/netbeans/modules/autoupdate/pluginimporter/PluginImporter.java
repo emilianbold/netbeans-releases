@@ -58,11 +58,13 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -206,9 +208,22 @@ public class PluginImporter {
         return broken;
     }
 
-    public void importPlugins (Collection<UpdateElement> plugins, File src, File dest) throws IOException {
+    public void importPlugins (Collection<UpdateElement> plugins, File src, File dest, ProgressHandle handle) throws IOException {
+        if(handle!=null) {
+            handle.setInitialDelay(0);
+            handle.start(plugins.size());
+        }
         List<String> configs = new ArrayList<String> (plugins.size ());
+        int completed = 0;
         for (UpdateElement el : plugins) {
+            if(handle != null) {
+                String name = el.getDisplayName();
+                if(name==null) {
+                    name = el.getCodeName();
+                }
+                String detail = NbBundle.getMessage(PluginImporter.class, "PluginImporter.Importing.Plugin", name);//NOI18N
+                handle.progress(detail, completed ++);
+            }
             String cnb = el.getCodeName ();
 
             // 1. find all plugin's resources
@@ -231,6 +246,9 @@ public class PluginImporter {
 
         // 5. don't forget to call refreshModuleList - XXX
         refreshModuleList ();
+        if(handle!=null) {
+            handle.finish();
+        }
     }
 
     private static void copy (String path, File sourceFolder, File destFolder) throws IOException {

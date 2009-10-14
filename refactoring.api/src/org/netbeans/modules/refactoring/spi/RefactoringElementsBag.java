@@ -97,6 +97,7 @@ public final class RefactoringElementsBag {
      */
     public Problem add(AbstractRefactoring refactoring, RefactoringElementImplementation el) {
         Problem p = null;
+        if (el == null) throw new NullPointerException ();
         //isQuery should be used
         if (isReadOnly(el) && !(refactoring instanceof WhereUsedQuery)) {
             FileObject file = el.getParentFile();
@@ -189,6 +190,9 @@ public final class RefactoringElementsBag {
     }    
     
     private boolean isReadOnly(RefactoringElementImplementation rei) {
+        FileObject fileObject = rei.getParentFile();
+        if (fileObject == null)
+            throw new NullPointerException ("null parent file: " + rei.getClass ().getName ());
         return !rei.getParentFile().canWrite();
     }
     

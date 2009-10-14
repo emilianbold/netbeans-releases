@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -98,6 +99,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -1433,6 +1435,45 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             progressHandle.progress(sb.toString());
         }
 
+        protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
+                                   final Indexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
+                                   final Map<SourceIndexerFactory,Context> ctxToFinish) throws IOException {
+            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : indexers.cifInfos) {
+                final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
+                final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null,
+                        followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
+                boolean vote = factory.scanStarted(ctx);
+                votes.put(factory,vote);
+                ctxToFinish.put(factory,ctx);
+            }
+            for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
+                for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
+                    EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
+                    final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null,
+                            followUpJob, checkEditor, sourceForBinaryRoot, null);
+                    boolean vote = eif.scanStarted(context);
+                    votes.put(eif, vote);
+                    ctxToFinish.put(eif, context);
+                }
+            }
+        }
+
+        protected final void scanFinished(final Map<SourceIndexerFactory,Context> ctxToFinish) throws IOException {
+            try {
+                for (Map.Entry<SourceIndexerFactory,Context> entry : ctxToFinish.entrySet()) {
+                    entry.getKey().scanFinished(entry.getValue());
+                }
+            } finally {
+                for(Context ctx : ctxToFinish.values()) {
+                    IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
+                    if (support != null) {
+                        SupportAccessor.getInstance().store(support);
+                    }
+                }
+            }
+        }
+
         protected final void delete (final Collection<IndexableImpl> deleted, final URL root) throws IOException {
             if (deleted == null || deleted.size() == 0) {
                 return;
@@ -1474,11 +1515,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 final URL root,
 //                final boolean allFiles,
                 final boolean sourceForBinaryRoot,
-                Indexers indexers
+                Indexers indexers,
+                Map<SourceIndexerFactory,Boolean> votes
         ) throws IOException {
-            LinkedList<Context> transactionContexts = new LinkedList<Context>();
-            final Map<SourceIndexerFactory,Context> ctxToFinish = new IdentityHashMap<SourceIndexerFactory, Context>();
-            try {                
+            LinkedList<Context> transactionContexts = new LinkedList<Context>();                            
                 try {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     final ClusteredIndexables ci = new ClusteredIndexables(resources);
@@ -1502,7 +1542,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
                         transactionContexts.add(ctx);
                         boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
-                        boolean forceReindex = !factory.scanStarted(ctx) && allResources != null;
+                        boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
                         boolean allFiles = cifIsChanged || forceReindex || resources == allResources;
                         SPIAccessor.getInstance().setAllFilesJob(ctx, allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
@@ -1532,10 +1572,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                             throw td;
                         } catch (Throwable t) {
                             LOGGER.log(Level.WARNING, null, t);
-                        }
-                        finally {
-                            ctxToFinish.put(factory,ctx);
-                        }
+                        }                                                                            
                         if (LOGGER.isLoggable(Level.FINE)) {
                             StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
                             LOGGER.fine("Indexing source root " + root + " using " + indexer
@@ -1544,6 +1581,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                         }
                     }
 
+                    if (getShuttdownRequest().isRaised()) {
+                        return false;
+                    }
+                    
                     // now process embedding indexers
                     boolean containsNewIndexers = false;
                     boolean forceReindex = false;
@@ -1554,16 +1595,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
-                                final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, null);
-                                transactionContexts.add(context);
-                                if (!eif.scanStarted(context)) {
-                                    forceReindex = true;
-                                }
-                                ctxToFinish.put(eif, context);
+                                forceReindex = votes.get(eif) == Boolean.FALSE;
                             }
                         }
                     }
-
                     boolean useAllCi = false;
                     if ((containsNewIndexers||forceReindex) && resources != allResources) {
                         if (allCi == null) {
@@ -1599,28 +1634,30 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 } finally {
                     for(Context ctx : transactionContexts) {
                         IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
-                        SPIAccessor.getInstance().context_clearAttachedIndexingSupport(ctx);
                         if (support != null) {
                             SupportAccessor.getInstance().store(support);
                         }
                     }
                 }
-            } finally {
-                try {
-                    for (Map.Entry<SourceIndexerFactory,Context> entry : ctxToFinish.entrySet()) {
-                        entry.getKey().scanFinished(entry.getValue());
-                    }
-                } finally {
-                    for(Context ctx : transactionContexts) {
-                        IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(ctx);
-                        if (support != null) {
-                            SupportAccessor.getInstance().store(support);
-                        }
+        }
+
+        protected final void invalidateSources (final Iterable<? extends IndexableImpl> toInvalidate) {
+            final long st = System.currentTimeMillis();
+            for (IndexableImpl indexable : toInvalidate) {
+                final FileObject cheapFo = indexable instanceof FileObjectProvider ?
+                    ((FileObjectProvider)indexable).getFileObject() :
+                    URLMapper.findFileObject(indexable.getURL());
+                if (cheapFo != null) {
+                    final Source src = SourceAccessor.getINSTANCE().get(cheapFo);
+                    if (src != null) {
+                        SourceAccessor.getINSTANCE().setFlags(src, EnumSet.of(SourceFlags.INVALID));    //Only invalidate not reschedule                        
                     }
                 }
             }
+            final long et = System.currentTimeMillis();
+            LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
         }
-
+       
         protected final void indexBinary(URL root) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
@@ -1712,6 +1749,10 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                                 if (infos != null && infos.size() > 0) {
                                     for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
+                                        if (getShuttdownRequest().isRaised()) {
+                                            return;
+                                        }
+
                                         EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
                                         if (LOGGER.isLoggable(Level.FINE)) {
                                             LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
@@ -1739,6 +1780,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                                 }
 
                                 for (Embedding embedding : resultIterator.getEmbeddings()) {
+                                    if (getShuttdownRequest().isRaised()) {
+                                        return;
+                                    }
                                     run(resultIterator.getResultIterator(embedding));
                                 }
                             }
@@ -1749,7 +1793,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
 
-            return true;
+            return !getShuttdownRequest().isRaised();
         }
 
         protected final boolean scanFiles(URL root, Collection<FileObject> files, boolean forceRefresh, boolean sourceForBinaryRoot) {
@@ -1763,9 +1807,18 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
 
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
-                        if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, Indexers.load(false))) {
-                            crawler.storeTimestamps();
-                            return true;
+                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
+                        final Map<SourceIndexerFactory,Context> ctxToFinish = new IdentityHashMap<SourceIndexerFactory, Context>();
+                        final Indexers indexers = Indexers.load(false);
+                        scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
+                        try {
+                            if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
+                                crawler.storeTimestamps();
+                                invalidateSources(resources);
+                                return true;
+                            }
+                        } finally {
+                            scanFinished(ctxToFinish);
                         }
                     }
 
@@ -2894,23 +2947,31 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     final Collection<IndexableImpl> allResources = crawler.getAllResources();
                     final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
-                        delete(deleted, root);
-                        if (index(resources, allResources, root, sourceForBinaryRoot, indexers)) {
-                            crawler.storeTimestamps();
-                            outOfDateFiles[0] = resources.size();
-                            deletedFiles[0] = deleted.size();
-                            if (logStatistics) {
-                                logStatistics = false;
-                                if (SFEC_LOGGER.isLoggable(Level.INFO)) {
-                                    LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
-                                    r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
-                                    r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
-                                    r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
-                                    r.setLoggerName(SFEC_LOGGER.getName());
-                                    SFEC_LOGGER.log(r);
+                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
+                        final Map<SourceIndexerFactory,Context> ctxToFinish = new IdentityHashMap<SourceIndexerFactory, Context>();
+                        scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
+                        try {
+                            delete(deleted, root);
+                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers,invalidatedMap)) {
+                                crawler.storeTimestamps();
+                                outOfDateFiles[0] = resources.size();
+                                deletedFiles[0] = deleted.size();
+                                if (logStatistics) {
+                                    logStatistics = false;
+                                    if (SFEC_LOGGER.isLoggable(Level.INFO)) {
+                                        LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
+                                        r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
+                                        r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
+                                        r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
+                                        r.setLoggerName(SFEC_LOGGER.getName());
+                                        SFEC_LOGGER.log(r);
+                                    }
                                 }
+                                invalidateSources(resources);
+                                return true;
                             }
-                            return true;
+                        } finally {
+                            scanFinished(ctxToFinish);
                         }
                     }
                     return false;
@@ -2920,7 +2981,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 }
             }
         }
-
+        
         private static void reportRootScan(URL root, long duration) {
             try {
                 Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N

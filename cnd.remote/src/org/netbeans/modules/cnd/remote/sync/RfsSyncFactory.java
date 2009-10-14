@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=300)
+public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=50)
 class RfsSyncFactory extends RemoteSyncFactory {
 
     public static final boolean ENABLE_RFS = CndUtils.getBoolean("cnd.remote.fs", true);

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
-import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
@@ -53,14 +52,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.WeakHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -70,11 +65,9 @@ import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -287,35 +280,27 @@ public final class HighlightingManager {
                 Document doc = pane.getDocument();
                 if (factories != null) {
                     Collection<? extends HighlightsLayerFactory> all = factories.allInstances();
-                    final HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
-                    final HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
+                    HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
 
-                    Cursor wait = org.openide.util.Utilities.createProgressCursor(pane);
-                    Cursor original = pane.getCursor();
-                    pane.setCursor(wait);
-                    try {
-                        for (final HighlightsLayerFactory factory : all) {
-                            HighlightsLayer[] factoryLayers = factory.createLayers(context);
-                            if (factoryLayers == null) {
-                                continue;
-                            }
+                    HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
 
-                            for (HighlightsLayer layer : factoryLayers) {
-                                HighlightsLayerAccessor layerAccessor =
-                                        HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
-
-                                String layerTypeId = layerAccessor.getLayerTypeId();
-                                if (!layers.containsKey(layerTypeId)) {
-                                    layers.put(layerTypeId, layer);
-                                }
-                            }
-
+                    for(HighlightsLayerFactory factory : all) {
+                        HighlightsLayer [] factoryLayers = factory.createLayers(context);
+                        if (factoryLayers == null) {
+                            continue;
                         }
-                    } finally {
-                        pane.setCursor(original);
+
+                        for(HighlightsLayer layer : factoryLayers) {
+                            HighlightsLayerAccessor layerAccessor = 
+                                HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+
+                            String layerTypeId = layerAccessor.getLayerTypeId();
+                            if (!layers.containsKey(layerTypeId)) {
+                                layers.put(layerTypeId, layer);
+                            }
+                        }
                     }
 
-                    
                     // Sort the layers by their z-order
                     List<? extends HighlightsLayer> sortedLayers;
                     try {
@@ -349,8 +334,6 @@ public final class HighlightingManager {
                 inRebuildAllLayers = false;
             }
         }
-
-        final RequestProcessor WORKER = new RequestProcessor(HighlightingManager.class.getName());
         
         private synchronized void rebuildAllContainers(Document document) {
             if (LOG.isLoggable(Level.FINE)) {

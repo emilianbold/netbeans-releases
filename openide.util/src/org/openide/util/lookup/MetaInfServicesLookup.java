@@ -487,6 +487,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
                         object = null;
+                    } catch (ExceptionInInitializerError x) { // #174055
+                        LOGGER.log(Level.WARNING, "Cannot create " + object, x);
+                        object = null;
                     }
                 }
             }

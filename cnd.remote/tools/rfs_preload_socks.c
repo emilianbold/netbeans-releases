@@ -55,6 +55,7 @@
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"
+#include "rfs_preload_socks.h"
 
 /** SOCKET_ERROR means that we failed to open a socket */
 #define SOCKET_ERROR -1
@@ -65,9 +66,9 @@
 /** Socked descriptor. */
 static __thread int _sd = SOCKET_UNINITIALIZED;
 
-void trace_sd(const char* text) {
-    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
-}
+//void trace_sd(const char* text) {
+//    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
+//}
 
 /**
  * as well as open syscall, returns
@@ -105,6 +106,16 @@ static int open_socket() {
         perror("connect");
         return -1;
     }
+    // configure script contains a weird command: exec 7<&0 </dev/null 6>&1
+    // so using descriptor 6 or 7 can get us into trouble
+    if (sd == 6 || sd == 7) {
+        int new_sd = fcntl(sd, F_DUPFD, 10);
+        trace("configure workaround: duplicating descriptor %d to %d\n", sd, new_sd);
+        if (new_sd != -1) {
+            close(sd);
+            sd = new_sd;
+        }
+    }
     return sd;
 }
 
@@ -134,7 +145,7 @@ int get_socket(int create) {
         trace("Sending handshake package (%s) to sd=%d\n", buf, _sd);
         enum sr_result res = pkg_send(_sd, pkg_handshake, buf);
         if (res == sr_reset) {
-            fprintf(stderr, "Connection reset by peer when sending a handshake package\n");
+            report_error("Connection reset by peer when sending a handshake package\n");
         } else if (res == sr_failure) {
             perror("Error sending a handshake package");
         }

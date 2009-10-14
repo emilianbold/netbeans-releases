@@ -184,6 +184,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 saxParser.parse(is, new AutoupdateCatalogParser(items, provider, base));
             } catch (Exception ex) {
                 ERR.log(Level.INFO, "Failed to parse " + base, ex);
+            } finally {
                 if (is != null && is.getByteStream() != null) {
                     try {
                         is.getByteStream().close();

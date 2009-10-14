@@ -60,6 +60,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -190,6 +191,11 @@ public class CardChildren extends ChildFactory.Detachable<XListEntry> implements
         }
 
         @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.javacard.AboutJavaCard3Development"); //NOI18N
+        }
+
+        @Override
         public Action[] getActions (boolean ignored) {
             return new Action[]{};
         }
@@ -224,6 +230,11 @@ public class CardChildren extends ChildFactory.Detachable<XListEntry> implements
         @Override
         public Action[] getActions (boolean ignored) {
             return new Action[]{};
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("org.netbeans.modules.javacard.AboutJavaCard3Development"); //NOI18N
         }
     }
 }

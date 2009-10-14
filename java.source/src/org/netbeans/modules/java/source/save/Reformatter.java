@@ -140,7 +140,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null,null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
@@ -741,6 +741,16 @@ public class Reformatter implements ReformatTask {
                         String ind = getIndent();
                         if (!ind.equals(text))
                             addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                    } else if (tokens.movePrevious()) {
+                        if (tokens.token().id() == LINE_COMMENT) {
+                            tokens.moveNext();
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                        } else {
+                            tokens.moveNext();
+                        }
                     }
                 }
                 tokens.moveNext();
@@ -1251,6 +1261,16 @@ public class Reformatter implements ReformatTask {
                             String ind = getIndent();
                             if (!ind.equals(text))
                                 addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        } else if (tokens.movePrevious()) {
+                            if (tokens.token().id() == LINE_COMMENT) {
+                                tokens.moveNext();
+                                String ind = getIndent();
+                                if (!ind.equals(text))
+                                    addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                            } else {
+                                tokens.moveNext();
+                            }
                         }
                     }
                     tokens.moveNext();

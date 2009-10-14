@@ -37,13 +37,12 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-INSTALLDIR = /dev/null
+LINKER=cc
+CC=gcc
 
-ifdef DEBUG
-    C_DBG_FLAGS := -g
-endif
+DEBUG := -g
 
-CFLAGS-COMMON := -c ${C_DBG_FLAGS} -fPIC -D_GNU_SOURCE -Wimplicit -Werror
+CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
 CFLAGS-Linux := ${CFLAGS-COMMON}
 CFLAGS-SunOS := ${CFLAGS-COMMON}
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
@@ -77,10 +76,9 @@ ifeq (Darwin,$(UNAME_S))
 	OSNAME = Mac_OS_X
 endif
 
-DEBUG := 
 TRACE := 0
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${DEBUG} ${EXTRA_CFLAGS}
-LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64}
+CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
+LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
 LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
 
 ifneq (${TRACE}, 0)
@@ -89,8 +87,10 @@ endif
 
 ifdef 64BITS
     PLATFORM_64 := _64
+    TEST_ENV_PARAM := 64
 else
     PLATFORM_64 :=
+    TEST_ENV_PARAM := 
 endif
 
 PLATFORM-i386  :=  x86${PLATFORM_64}
@@ -106,27 +106,43 @@ endif
 testit :sh= uname -s
 
 DIST_BASE=../release/bin
-BUILD_BASE=./build
+BUILD_BASE="./build"
 
 DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
 BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-all: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller
+INSTALLDIR=../../nbbuild/netbeans/cnd?/bin
+
+all: build_impl install
+
+install: build_impl
+	cp -r ${DIST} ${INSTALLDIR}
+
+build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
 
 #object files
 ${BUILD}/%.o : %.c
-	gcc ${CFLAGS} -o $@ $<
+	${CC} ${CFLAGS} -Werror -o $@ $<
+
+# rfs_test_env can do with implicit function declarations
+${BUILD}/rfs_test_env.o : rfs_test_env.c
+	${CC} ${CFLAGS} -o $@ $<
 
 PRELOAD_OBJFILES := ${BUILD}/rfs_preload.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 CONTROLLER_OBJFILES := ${BUILD}/rfs_controller.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_filedata.o
+TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
-	gcc ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
+	${LINKER} ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
-	gcc ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
+	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
+
+#test environment:
+${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
+	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
 
 clean:
 	rm -rf ${BUILD} ${DIST}
@@ -144,15 +160,22 @@ check:
 		exit 1; \
 	fi
 
+test_env: all
+	sh rfs_test_env.sh
 
-test: test_build
+test_filedata: test_filedata_build
 	${BUILD}/test_rfs_filedata
 
-test_build: all
-	#gcc ${CFLAGS} -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
-	#gcc ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
-	gcc ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
-	gcc ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
+test_filedata_build: all
+	${CC} ${CFLAGS} -DTRACE=1 -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
+	${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
+
+test_pkg: test_pkg_build
+	${BUILD}/test_pkg_client
+
+test_pkg_build: all
+	${CC} ${CFLAGS} -o ${BUILD}/test_pkg_client.o test/test_pkg_client.c
+	${LINKER} ${LDFLAGS_APP} -lpthread -o ${BUILD}/test_pkg_client ${BUILD}/test_pkg_client.o ${BUILD}/rfs_util.o ${BUILD}/rfs_protocol.o ${BUILD}/rfs_preload_socks.o
 
 test_platform:
 	@echo "UNAME_S = [${UNAME_S}]"

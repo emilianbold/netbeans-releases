@@ -400,26 +400,17 @@ public class RunAsWebAdvanced extends JPanel {
 
 
             public Component getDefaultComponent(Container focusCycleRoot){
-                return doNotOpenBrowserRadioButton;
+                return proxyPortTextField;
             }//end getDefaultComponent
             public Component getFirstComponent(Container focusCycleRoot){
-                return doNotOpenBrowserRadioButton;
+                return proxyPortTextField;
             }//end getFirstComponent
             public Component getLastComponent(Container focusCycleRoot){
                 return proxyPortTextField;
             }//end getLastComponent
             public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  doNotOpenBrowserRadioButton){
-                    return newPathMappingButton;
-                }
                 if(aComponent ==  proxyHostTextField){
                     return proxyPortTextField;
-                }
-                if(aComponent ==  askUrlRadioButton){
-                    return doNotOpenBrowserRadioButton;
-                }
-                if(aComponent ==  newPathMappingButton){
-                    return removePathMappingButton;
                 }
                 if(aComponent ==  removePathMappingButton){
                     return proxyHostTextField;
@@ -427,26 +418,35 @@ public class RunAsWebAdvanced extends JPanel {
                 if(aComponent ==  defaultUrlRadioButton){
                     return askUrlRadioButton;
                 }
-                return doNotOpenBrowserRadioButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
                 if(aComponent ==  newPathMappingButton){
-                    return doNotOpenBrowserRadioButton;
-                }
-                if(aComponent ==  proxyPortTextField){
-                    return proxyHostTextField;
+                    return removePathMappingButton;
                 }
                 if(aComponent ==  doNotOpenBrowserRadioButton){
-                    return askUrlRadioButton;
-                }
-                if(aComponent ==  removePathMappingButton){
                     return newPathMappingButton;
+                }
+                if(aComponent ==  askUrlRadioButton){
+                    return doNotOpenBrowserRadioButton;
+                }
+                return proxyPortTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  proxyPortTextField){
+                    return proxyHostTextField;
                 }
                 if(aComponent ==  proxyHostTextField){
                     return removePathMappingButton;
                 }
                 if(aComponent ==  askUrlRadioButton){
                     return defaultUrlRadioButton;
+                }
+                if(aComponent ==  removePathMappingButton){
+                    return newPathMappingButton;
+                }
+                if(aComponent ==  newPathMappingButton){
+                    return doNotOpenBrowserRadioButton;
+                }
+                if(aComponent ==  doNotOpenBrowserRadioButton){
+                    return askUrlRadioButton;
                 }
                 return proxyPortTextField;//end getComponentBefore
 

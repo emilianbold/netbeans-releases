@@ -225,7 +225,12 @@ public final class RemoteClient implements Cancellable {
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
         Queue<TransferFile> queue = new LinkedList<TransferFile>();
         for (FileObject fo : filesToUpload) {
-            if (isVisible(FileUtil.toFile(fo))) {
+            File f = FileUtil.toFile(fo);
+            if (f == null) {
+                // ???
+                continue;
+            }
+            if (isVisible(f)) {
                 LOGGER.fine("File " + fo + " added to upload queue");
                 queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
             } else {
@@ -458,7 +463,10 @@ public final class RemoteClient implements Cancellable {
 
         List<File> files = new ArrayList<File>(filesToDownload.length);
         for (FileObject fo : filesToDownload) {
-            files.add(FileUtil.toFile(fo));
+            File f = FileUtil.toFile(fo);
+            if (f != null) {
+                files.add(f);
+            }
         }
         return prepareDownload(FileUtil.toFile(baseLocalDirectory), files.toArray(new File[files.size()]));
     }
