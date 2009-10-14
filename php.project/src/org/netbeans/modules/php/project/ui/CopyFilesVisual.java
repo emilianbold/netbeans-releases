@@ -147,7 +147,6 @@ public class CopyFilesVisual extends JPanel {
         localServerLabel = new JLabel();
         copyFilesComboBox = new JComboBox();
         copyFilesButton = new JButton();
-        copyFilesInfoLabel = new JLabel();
 
         setFocusTraversalPolicy(null);
 
@@ -163,9 +162,6 @@ public class CopyFilesVisual extends JPanel {
         Mnemonics.setLocalizedText(copyFilesButton, NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
         copyFilesButton.setEnabled(false);
 
-        Mnemonics.setLocalizedText(copyFilesInfoLabel, NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesInfoLabel.text")); // NOI18N
-        copyFilesInfoLabel.setEnabled(false);
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
@@ -179,10 +175,6 @@ public class CopyFilesVisual extends JPanel {
                 .add(copyFilesComboBox, 0, 235, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(copyFilesButton))
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(copyFilesInfoLabel)
-                .addContainerGap(22, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -192,9 +184,7 @@ public class CopyFilesVisual extends JPanel {
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(copyFilesButton)
                     .add(copyFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(localServerLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(copyFilesInfoLabel))
+                    .add(localServerLabel)))
         );
 
         copyFilesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -214,7 +204,6 @@ public class CopyFilesVisual extends JPanel {
     private JButton copyFilesButton;
     private JCheckBox copyFilesCheckBox;
     private JComboBox copyFilesComboBox;
-    private JLabel copyFilesInfoLabel;
     private JLabel localServerLabel;
     // End of variables declaration//GEN-END:variables
 

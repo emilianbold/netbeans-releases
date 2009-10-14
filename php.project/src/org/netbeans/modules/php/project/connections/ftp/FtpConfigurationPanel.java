@@ -225,69 +225,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         passiveModeCheckBox = new JCheckBox();
         passwordLabelInfo = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return passwordTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return passwordTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return passiveModeCheckBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  passwordTextField){
-                    return initialDirectoryTextField;
-                }
-                if(aComponent ==  anonymousCheckBox){
-                    return passwordTextField;
-                }
-                if(aComponent ==  userTextField){
-                    return anonymousCheckBox;
-                }
-                if(aComponent ==  hostTextField){
-                    return portTextField;
-                }
-                if(aComponent ==  portTextField){
-                    return userTextField;
-                }
-                if(aComponent ==  timeoutTextField){
-                    return passiveModeCheckBox;
-                }
-                if(aComponent ==  initialDirectoryTextField){
-                    return timeoutTextField;
-                }
-                return passwordTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  initialDirectoryTextField){
-                    return passwordTextField;
-                }
-                if(aComponent ==  passwordTextField){
-                    return anonymousCheckBox;
-                }
-                if(aComponent ==  anonymousCheckBox){
-                    return userTextField;
-                }
-                if(aComponent ==  portTextField){
-                    return hostTextField;
-                }
-                if(aComponent ==  userTextField){
-                    return portTextField;
-                }
-                if(aComponent ==  passiveModeCheckBox){
-                    return timeoutTextField;
-                }
-                if(aComponent ==  timeoutTextField){
-                    return initialDirectoryTextField;
-                }
-                return passiveModeCheckBox;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         hostLabel.setLabelFor(hostTextField);
 
@@ -318,9 +256,8 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         timeoutTextField.setMinimumSize(new Dimension(20, 19));
         Mnemonics.setLocalizedText(passiveModeCheckBox, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passiveModeCheckBox.text_1"));
         passwordLabelInfo.setLabelFor(this);
-        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.text_1")); // NOI18N
-        passwordLabelInfo.setEnabled(false);
 
+        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.text_1"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 

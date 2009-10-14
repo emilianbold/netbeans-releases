@@ -262,6 +262,13 @@ public class VariousUtils {
         } else if (expression instanceof Scalar) {
             Scalar scalar = (Scalar) expression;
             Type scalarType = scalar.getScalarType();
+            if (scalarType.equals(Scalar.Type.STRING)) {
+                // #174333 - TODO: probably would be better to fix it in parser
+                String stringValue = scalar.getStringValue().toLowerCase();
+                if (stringValue.equals("false") || stringValue.equals("true")) { //NOI18N
+                    return "boolean";//NOI18N
+                }
+            }
             return scalarType.toString().toLowerCase();
         } else if (expression instanceof InfixExpression) {
             InfixExpression infixExpression = (InfixExpression) expression;

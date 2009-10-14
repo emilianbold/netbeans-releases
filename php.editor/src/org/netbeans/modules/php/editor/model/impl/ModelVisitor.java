@@ -549,7 +549,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         List<Variable> variables = node.getVariables();
         for (Variable var : variables) {
             String varName = CodeUtils.extractVariableName(var);
-            //TODO: ugly
             if (varName == null) {
                 continue;
             }
@@ -631,11 +630,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 if (rightHandSide instanceof ArrayCreation) {
                     ArrayCreation arrayCreation = (ArrayCreation) rightHandSide;
                     List<ArrayElement> elements = arrayCreation.getElements();
-                    for (ArrayElement arrayElement : elements) {
-                        Expression value = arrayElement.getValue();
-                        String typeName = VariousUtils.extractVariableTypeFromExpression(value, allAssignments);
+                    if (!elements.isEmpty()) {
+                        for (ArrayElement arrayElement : elements) {
+                            Expression value = arrayElement.getValue();
+                            String typeName = VariousUtils.extractVariableTypeFromExpression(value, allAssignments);
+                            VarAssignmentImpl vAssignment = new VarAssignmentImpl(varN, scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            vAssignment.setAsArrayAccess(true);
+                        }
+                    } else {
+                        String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, allAssignments);
                         VarAssignmentImpl vAssignment = new VarAssignmentImpl(varN, scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
-                        vAssignment.setAsArrayAccess(true);
                     }
                 } else {
                     varN.createAssignment(scope, getBlockRange(scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node,
@@ -737,6 +741,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         ScopeImpl scope = modelBuilder.getCurrentScope();
         FunctionScopeImpl fncScope = FunctionScopeImpl.createElement(scope, node);
         modelBuilder.setCurrentScope(scope = fncScope);
+        List<Expression> lexicalVariables = node.getLexicalVariables();
+        for (Expression expression : lexicalVariables) {
+            if (expression instanceof Variable) {
+                Variable variable = (Variable) expression;
+                VariableNameImpl varNameImpl= createVariable((VariableNameFactory) scope, variable);
+                varNameImpl.setGloballyVisible(true);
+            }
+        }
+        scan(lexicalVariables);
         scope.setBlockRange(node.getBody());
         scan(node.getFormalParameters());
         scan(node.getBody());
