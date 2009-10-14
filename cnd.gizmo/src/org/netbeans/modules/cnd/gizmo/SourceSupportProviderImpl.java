@@ -65,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -199,34 +200,42 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
 
                     public void run() {
                         NbEditorUtilities.addJumpListEntry(dob);
-                        JEditorPane[] panes = ec.getOpenedPanes();
+                        JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+//                        JEditorPane[] panes = ec.getOpenedPanes();
+//                        boolean opened = true;
+//                        if (panes != null && panes.length >= 0) {
+//                            //editor already opened, so just select
+//                            opened = true;
+//                        } else {
+//                            // editor not yet opened
+//                            // XXX: vv159170 commented out the ollowing code, because on the time
+//                            // of firing even no chance to get opened panes yet...
+////                            ec.addPropertyChangeListener(new PropertyChangeListener() {
+////                                public void propertyChange(PropertyChangeEvent evt) {
+////                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+////                                        final JEditorPane[] panes = ec.getOpenedPanes();
+////                                        if (panes != null && panes.length > 0) {
+////                                            selectElementInPane(panes[0], element, true);
+////                                        }
+////                                        ec.removePropertyChangeListener(this);
+////                                    }
+////                                }
+////                            });
+//                            opened = false;
+//                            ec.open();
+//                            // XXX: get panes here instead of in listener
+//                            panes = ec.getOpenedPanes();
+//                        }
+//                        if (panes != null && panes.length > 0) {
+//                            jumpToLine(panes[0], lineInfo, !opened);
+//                        }
                         boolean opened = true;
-                        if (panes != null && panes.length >= 0) {
-                            //editor already opened, so just select
-                            opened = true;
-                        } else {
-                            // editor not yet opened
-                            // XXX: vv159170 commented out the ollowing code, because on the time
-                            // of firing even no chance to get opened panes yet...
-//                            ec.addPropertyChangeListener(new PropertyChangeListener() {
-//                                public void propertyChange(PropertyChangeEvent evt) {
-//                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-//                                        final JEditorPane[] panes = ec.getOpenedPanes();
-//                                        if (panes != null && panes.length > 0) {
-//                                            selectElementInPane(panes[0], element, true);
-//                                        }
-//                                        ec.removePropertyChangeListener(this);
-//                                    }
-//                                }
-//                            });
-                            opened = false;
+                        if (pane == null){
                             ec.open();
-                            // XXX: get panes here instead of in listener
-                            panes = ec.getOpenedPanes();
+                            opened = false;
+                            pane = NbDocument.findRecentEditorPane(ec);
                         }
-                        if (panes != null && panes.length > 0) {
-                            jumpToLine(panes[0], lineInfo, !opened);
-                        }
+                         jumpToLine(pane, ec, lineInfo, !opened);
 //                        JEditorPane[] panes = ec.getOpenedPanes();
 //                        if (panes == null || panes.length <= 0) {
 //                            ec.open();
@@ -254,12 +263,12 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
     }
 
-    private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
+    private static void jumpToLine(final JEditorPane pane, final EditorCookie ec, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
  // immediate processing
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    jumpToLine(pane, sourceFileInfo);
+                    jumpToLine(pane == null ? NbDocument.findRecentEditorPane(ec)  : pane, sourceFileInfo);
                 }
             });
             // try to activate outer TopComponent
