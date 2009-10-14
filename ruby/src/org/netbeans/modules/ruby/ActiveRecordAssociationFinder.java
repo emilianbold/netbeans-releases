@@ -39,15 +39,16 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Set;
 import org.jrubyparser.ast.ArrayNode;
 import org.jrubyparser.ast.HashNode;
+import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.ruby.RubyDeclarationFinderHelper.RubyAltLocation;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 
 /**
@@ -57,9 +58,10 @@ import org.netbeans.modules.ruby.elements.IndexedClass;
 final class ActiveRecordAssociationFinder {
 
     private static final String HAS_MANY = "has_many";
+    private static final String HAS_MANY_POLYMORPHS = "has_many_polymorphs";
     private static final String HAS_AND_BELONGS_TO_MANY = "has_and_belongs_to_many";
 
-    static final String[] AR_ASSOCIATIONS = {"belongs_to", "has_one", HAS_MANY, HAS_AND_BELONGS_TO_MANY};
+    static final String[] AR_ASSOCIATIONS = {"belongs_to", "has_one", HAS_MANY, HAS_MANY_POLYMORPHS, HAS_AND_BELONGS_TO_MANY};
 
     private final RubyIndex index;
     private final SymbolNode closest;
@@ -81,19 +83,20 @@ final class ActiveRecordAssociationFinder {
             }
         }
         // others
-        if (AstUtilities.isActiveRecordAssociation(path.leafParent())){
-            return path.leafParent();
-        }
-
-        if (AstUtilities.isActiveRecordAssociation(path.leafGrandParent())) {
-            return path.leafGrandParent();
+        ListIterator<Node> leafToRoot = path.leafToRoot();
+        while(leafToRoot.hasNext()) {
+            Node next = leafToRoot.next();
+            if (AstUtilities.isActiveRecordAssociation(next)) {
+                return next;
+            }
         }
 
         return null;
     }
 
-    private String getExplicitySpecifiedClassName(Node associationNode) {
-        if (associationNode.childNodes().isEmpty()) {
+    private static String getExplicitySpecifiedClassName(Node associationNode) {
+        if (associationNode.childNodes().isEmpty()
+                || HAS_MANY_POLYMORPHS.equals(AstUtilities.getName(associationNode))) {
             return null;
         }
         ArrayNode parameters = (ArrayNode) associationNode.childNodes().get(0);
@@ -111,6 +114,9 @@ final class ActiveRecordAssociationFinder {
             }
             for (int i = 0; i < hashParams.childNodes().size(); i++) {
                 Node each = hashParams.childNodes().get(i);
+                if (!(each instanceof INameNode)) {
+                    continue;
+                }
                 if ("class_name".equals(AstUtilities.getName(each)) &&  hashParams.childNodes().size() > i + 1) {
                     Node value = hashParams.childNodes().get(i + 1);
                     if (value instanceof StrNode) {
@@ -124,7 +130,17 @@ final class ActiveRecordAssociationFinder {
         return null;
     }
 
-    private String getClassNameFor(Node associationNode) {
+    /**
+     * Gets the class name specified in the given <code>associationNode</code>, e.g. 
+     * returns <code>Project</code> for <code>has_many :projects</code> or
+     * <code>User</code>belongs_to :owner, class_name => "User"</code>.
+     * 
+     * @param associationNode the call node, e.g. the node for <code>has_many</code>.
+     * @param closest the closest symbol node for the call node.
+     * 
+     * @return the class name.
+     */
+    static String getClassNameFor(Node associationNode, SymbolNode closest) {
         // first check whether class_name is explicitly specified,
         // e.g. has_many :details, class_name => "UserDetail"
         String className = getExplicitySpecifiedClassName(associationNode);
@@ -133,10 +149,12 @@ final class ActiveRecordAssociationFinder {
             if (className.length() == 0) {
                 return className;
             }
-            className = Character.toUpperCase(className.charAt(0)) + className.substring(1);
+            className = RubyUtils.underlinedNameToCamel(className);
         }
         String associationName = AstUtilities.getName(associationNode);
-        if ((HAS_MANY.equals(associationName) || HAS_AND_BELONGS_TO_MANY.equals(associationName))) { //NOI18N
+        if ((HAS_MANY.equals(associationName)
+                || HAS_MANY_POLYMORPHS.equals(associationName)
+                || HAS_AND_BELONGS_TO_MANY.equals(associationName))) { //NOI18N
             return Inflector.getDefault().singularize(className);
         }
         return className;
@@ -148,7 +166,7 @@ final class ActiveRecordAssociationFinder {
             return DeclarationLocation.NONE;
         }
 
-        String className = getClassNameFor(associationNode);
+        String className = getClassNameFor(associationNode, closest);
         if (className.length() == 0) {
             return DeclarationLocation.NONE;
         }
