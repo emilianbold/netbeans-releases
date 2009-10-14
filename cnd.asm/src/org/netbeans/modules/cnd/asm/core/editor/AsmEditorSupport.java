@@ -97,6 +97,11 @@ public class AsmEditorSupport extends DataEditorSupport implements EditorCookie,
         removeSaveCookie();
     }
 
+    @Override
+    protected boolean asynchronousOpen() {
+        return true;
+    }
+
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
