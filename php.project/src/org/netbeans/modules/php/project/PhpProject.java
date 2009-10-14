@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.util.CopySupport;
+import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
