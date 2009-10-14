@@ -143,7 +143,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
     static QueryResultHandle getAllChangedResult(Query query) {
         int notIssues = 0;
         Issue[] issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
-        notIssues = issues == null ? issues.length : 0;
+        notIssues = issues != null ? issues.length : 0;
         
         return new QueryResultHandleImpl(
                 query,
