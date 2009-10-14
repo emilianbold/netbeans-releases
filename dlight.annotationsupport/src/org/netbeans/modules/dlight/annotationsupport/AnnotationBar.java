@@ -13,7 +13,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -22,7 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.accessibility.Accessible;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -45,6 +49,8 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -99,6 +105,29 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 //    this.setLayout(new BorderLayout());
 //    this.add(mainPanel, BorderLayout.CENTER);
+        addMouseListener(new PopupMenuListener());
+    }
+
+    private static class PopupMenuListener extends MouseAdapter implements MouseListener {
+        private JPopupMenu pm;
+        JCheckBoxMenuItem checkBoxMenuItem;
+
+        public PopupMenuListener() {
+            SystemAction action = SystemAction.get(ShowTextAnnotationsAction.class);
+            pm = new JPopupMenu();
+            checkBoxMenuItem = new JCheckBoxMenuItem(action);
+            checkBoxMenuItem.setIcon(null);
+            checkBoxMenuItem.setState(true);
+            pm.add(checkBoxMenuItem);
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                checkBoxMenuItem.setState(true);
+                pm.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
     }
 
     private void getColors() {
