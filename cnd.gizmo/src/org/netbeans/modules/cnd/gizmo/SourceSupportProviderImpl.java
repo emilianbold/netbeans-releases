@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.gizmo;
 
 import org.netbeans.modules.dlight.spi.SourceSupportProvider;
 import java.awt.Container;
-import java.awt.EventQueue;
 import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -57,7 +56,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -68,7 +66,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -202,34 +199,6 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                     public void run() {
                         NbEditorUtilities.addJumpListEntry(dob);
                         JEditorPane pane = NbDocument.findRecentEditorPane(ec);
-//                        JEditorPane[] panes = ec.getOpenedPanes();
-//                        boolean opened = true;
-//                        if (panes != null && panes.length >= 0) {
-//                            //editor already opened, so just select
-//                            opened = true;
-//                        } else {
-//                            // editor not yet opened
-//                            // XXX: vv159170 commented out the ollowing code, because on the time
-//                            // of firing even no chance to get opened panes yet...
-////                            ec.addPropertyChangeListener(new PropertyChangeListener() {
-////                                public void propertyChange(PropertyChangeEvent evt) {
-////                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-////                                        final JEditorPane[] panes = ec.getOpenedPanes();
-////                                        if (panes != null && panes.length > 0) {
-////                                            selectElementInPane(panes[0], element, true);
-////                                        }
-////                                        ec.removePropertyChangeListener(this);
-////                                    }
-////                                }
-////                            });
-//                            opened = false;
-//                            ec.open();
-//                            // XXX: get panes here instead of in listener
-//                            panes = ec.getOpenedPanes();
-//                        }
-//                        if (panes != null && panes.length > 0) {
-//                            jumpToLine(panes[0], lineInfo, !opened);
-//                        }
                         boolean opened = true;
                         if (pane == null) {
                             ec.open();
@@ -240,24 +209,6 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                         if (pane != null){
                             jumpToLine(pane, lineInfo, !opened);
                         }
-//                        JEditorPane[] panes = ec.getOpenedPanes();
-//                        if (panes == null || panes.length <= 0) {
-//                            ec.open();
-//                            panes = ec.getOpenedPanes();
-//                        }
-//                        final JEditorPane pane = panes[0];
-//                        RequestProcessor.getDefault().post(new Runnable() {
-//
-//                            public void run() {
-//                                jumpToLine(pane, lineInfo);
-//                            }
-//                        });
-//                        // try to activate outer TopComponent
-//                        Container temp = pane;
-//                        while (!(temp instanceof TopComponent)) {
-//                            temp =  SwingUtilities.getAncestorOfClass(TopComponent.class, temp);
-//                        }
-//                        ((TopComponent) temp).requestActive();
                     }
                 });
             }
