@@ -57,6 +57,7 @@ import java.awt.*;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseListener;
 import javax.swing.text.JTextComponent;
+import org.openide.util.HelpCtx;
 public final class AIDPanel extends javax.swing.JPanel implements DocumentListener, FocusListener, ActionListener {
     private final ChangeSupport supp = new ChangeSupport(this);
     private JCProjectProperties props;
@@ -70,6 +71,7 @@ public final class AIDPanel extends javax.swing.JPanel implements DocumentListen
         getAID();
         pixField.addFocusListener(this);
         ridField.addFocusListener(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.EditAppletAID"); //NOI18N
     }
 
     public void removeChangeListener(ChangeListener listener) {

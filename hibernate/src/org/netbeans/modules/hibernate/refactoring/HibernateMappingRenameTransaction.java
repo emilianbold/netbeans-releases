@@ -82,16 +82,18 @@ public class HibernateMappingRenameTransaction extends RenameTransaction {
                 if(sfactory != null) {
                     for(int i = 0; i < sfactory.sizeMapping(); i ++ ) {
                         String resourceName = sfactory.getAttributeValue(SessionFactory.MAPPING, i, rescrName);
-                        String comparePart = resourceName;
-                        String newResourceName = newName;
-                        
-                        // If we're only replace the directory part of the resource name, then...
-                        if(pathOnly) {
-                            comparePart = resourceName.substring(0, resourceName.lastIndexOf('/'));
-                            newResourceName = newName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
-                        }
-                        if(comparePart.equals(origName)) {
-                            sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newResourceName);
+                        if (resourceName != null) {
+                            String comparePart = resourceName;
+                            String newResourceName = newName;
+
+                            // If we're only replace the directory part of the resource name, then...
+                            if(pathOnly) {
+                                comparePart = resourceName.substring(0, resourceName.lastIndexOf('/'));
+                                newResourceName = newName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
+                            }
+                            if(comparePart.equals(origName)) {
+                                sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newResourceName);
+                            }
                         }
                     }
                 }

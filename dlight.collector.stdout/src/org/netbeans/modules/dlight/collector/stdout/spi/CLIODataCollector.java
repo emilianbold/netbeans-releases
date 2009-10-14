@@ -78,6 +78,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -347,8 +348,9 @@ public final class CLIODataCollector
         }
     }
 
-    public Map<String, String> getExecutionEnv(DLightTarget target) {
-        return envs;
+    @Override
+    public void setupEnvironment(DLightTarget target, MacroMap env) {
+        env.putAll(envs);
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {

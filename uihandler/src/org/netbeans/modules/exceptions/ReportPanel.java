@@ -322,6 +322,14 @@ public class ReportPanel extends javax.swing.JPanel {
         }
         
         public void showWrongPassword(){
+            jLabel10.setForeground(new java.awt.Color(255, 51, 51));
+            jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel10.text")); // NOI18N
+            jLabel10.setVisible(true);
+        }
+
+        public void showCheckingPassword() {
+            jLabel10.setForeground(new java.awt.Color(51, 51, 255));
+            jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.checking_password")); // NOI18N
             jLabel10.setVisible(true);
         }
         

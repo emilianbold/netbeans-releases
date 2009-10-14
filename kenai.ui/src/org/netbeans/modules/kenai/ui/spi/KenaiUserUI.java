@@ -70,6 +70,7 @@ public final class KenaiUserUI {
     private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/user_online.png"));
     private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/user_offline.png"));
     private Icon icon;
+    private String chatMessage;
 
     public KenaiUserUI(String userName) {
         this.user=KenaiUser.forName(userName);
@@ -114,7 +115,15 @@ public final class KenaiUserUI {
         return user.getUserName();
     }
 
+    public void setMessage(String message) {
+        chatMessage = message;
+    }
+
     public void startChat() {
+        startChat(chatMessage);
+    }
+
+    public void startChat(final String message) {
         Runnable run = new Runnable() {
 
             public void run() {
@@ -160,6 +169,7 @@ public final class KenaiUserUI {
                 tc.open();
                 tc.requestActive();
                 tc.setActivePrivate(user.getUserName());
+                tc.insertToActiveChat(message);
                 tc.requestFocus();
             }
         };

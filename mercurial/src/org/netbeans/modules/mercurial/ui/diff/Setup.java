@@ -45,13 +45,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileInformation;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.NbBundle;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Exception;
 
 import java.io.File;
 import java.io.IOException;
@@ -248,14 +242,15 @@ public final class Setup {
         return secondSource;
     }
 
-    public void setNode(DiffNode node) {
+    void setNode(DiffNode node) {
         this.node = node;
     }
 
-    public DiffNode getNode() {
+    DiffNode getNode() {
         return node;
     }
 
+    @Override
     public String toString() {
         return title;
     }

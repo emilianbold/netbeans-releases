@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
+import org.netbeans.modules.kenai.collab.chat.ChatNotifications;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
 import org.openide.util.NbBundle;
@@ -89,7 +90,7 @@ public class MemberHandleImpl extends MemberHandle {
 
     @Override
     public boolean hasMessages() {
-        return KenaiConnection.getDefault().getMessagesCountFor(getName()) >0;
+        return ChatNotifications.getDefault().hasNewPrivateMessages(getName());
     }
 
     @Override

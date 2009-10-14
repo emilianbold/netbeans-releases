@@ -56,6 +56,7 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -92,6 +93,7 @@ public class CustomizeDeploymentPanel extends javax.swing.JPanel implements Chan
             setEntry((DeploymentXmlAppletEntry) e.clone());
         }
         aidPnl.addChangeListener(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ClassicAppletAddInstanceApplet"); //NOI18N
     }
 
     public void saveChanges() {

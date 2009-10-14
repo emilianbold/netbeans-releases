@@ -54,7 +54,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
  */
 public class DataView {
 
-    private org.netbeans.modules.db.dataview.output.DataView delegate;
+    org.netbeans.modules.db.dataview.output.DataView delegate;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.

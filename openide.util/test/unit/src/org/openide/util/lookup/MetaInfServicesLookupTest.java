@@ -41,6 +41,7 @@
 
 package org.openide.util.lookup;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,6 +51,8 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,6 +75,7 @@ import java.util.regex.Pattern;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -220,38 +224,39 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
     public void testBasicUsage() throws Exception {
         Lookup l = getTestedLookup(c2);
-        Class xface = c1.loadClass("org.foo.Interface");
-        List results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
+        Class<?> xface = c1.loadClass("org.foo.Interface");
+        List<?> results = new ArrayList<Object>(l.lookupAll(xface));
         assertEquals("Two items in result: " + results, 2, results.size());
         // Note that they have to be in order:
         assertEquals("org.foo.impl.Implementation1", results.get(0).getClass().getName());
         assertEquals("org.bar.Implementation2", results.get(1).getClass().getName());
         // Make sure it does not gratuitously replace items:
-        List results2 = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
+        List<?> results2 = new ArrayList<Object>(l.lookupAll(xface));
         assertEquals(results, results2);
     }
 
     public void testLoaderSkew() throws Exception {
-        Class xface1 = c1.loadClass("org.foo.Interface");
+        Class<?> xface1 = c1.loadClass("org.foo.Interface");
         Lookup l3 = getTestedLookup(c3);
         // If we cannot load Interface, there should be no impls of course... quietly!
-        assertEquals(Collections.EMPTY_LIST,
-                new ArrayList(l3.lookup(new Lookup.Template(xface1)).allInstances()));
+        assertEquals(Collections.emptyList(),
+                new ArrayList<Object>(l3.lookupAll(xface1)));
         Lookup l4 = getTestedLookup(c4);
         // If we can load Interface but it is the wrong one, ignore it.
-        assertEquals(Collections.EMPTY_LIST,
-                new ArrayList(l4.lookup(new Lookup.Template(xface1)).allInstances()));
+        assertEquals(Collections.emptyList(),
+                new ArrayList<Object>(l4.lookupAll(xface1)));
         // Make sure l4 is really OK - it can load from its own JARs.
-        Class xface4 = c4.loadClass("org.foo.Interface");
-        assertEquals(2, l4.lookup(new Lookup.Template(xface4)).allInstances().size());
+        Class<?> xface4 = c4.loadClass("org.foo.Interface");
+        assertEquals(2, l4.lookupAll(xface4).size());
     }
 
     public void testStability() throws Exception {
         Lookup l = getTestedLookup(c2);
-        Class xface = c1.loadClass("org.foo.Interface");
-        Object first = l.lookup(new Lookup.Template(xface)).allInstances().iterator().next();
+        Class<?> xface = c1.loadClass("org.foo.Interface");
+        Object first = l.lookup(xface);
+        assertEquals(first, l.lookupAll(xface).iterator().next());
         l = getTestedLookup(c2a);
-        Object second = l.lookup(new Lookup.Template(xface)).allInstances().iterator().next();
+        Object second = l.lookup(xface);
         assertEquals(first, second);
     }
 
@@ -267,13 +272,13 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
     public void testOrdering() throws Exception {
         Lookup l = getTestedLookup(c1);
-        Class xface = c1.loadClass("java.util.Comparator");
-        List results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
+        Class<?> xface = c1.loadClass("java.util.Comparator");
+        List<?> results = new ArrayList<Object>(l.lookupAll(xface));
         assertEquals(1, results.size());
 
         l = getTestedLookup(c2);
         xface = c2.loadClass("java.util.Comparator");
-        results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
+        results = new ArrayList<Object>(l.lookupAll(xface));
         assertEquals(2, results.size());
         // Test order:
         assertEquals("org.bar.Comparator2", results.get(0).getClass().getName());
@@ -282,7 +287,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         // test that items without position are always at the end
         l = getTestedLookup(c2);
         xface = c2.loadClass("java.util.Iterator");
-        results = new ArrayList(l.lookup(new Lookup.Template(xface)).allInstances());
+        results = new ArrayList<Object>(l.lookupAll(xface));
         assertEquals(2, results.size());
         // Test order:
         assertEquals("org.bar.Iterator2", results.get(0).getClass().getName());
@@ -306,14 +311,11 @@ public class MetaInfServicesLookupTest extends NbTestCase {
             }
 
             @Override
-            protected Enumeration findResources(String name) throws IOException {
+            protected Enumeration<URL> findResources(String name) throws IOException {
                 if (name.equals(prefix() + "java.lang.Object")) {
                     counter++;
                 }
-                Enumeration retValue;
-
-                retValue = super.findResources(name);
-                return retValue;
+                return super.findResources(name);
             }
         }
         Loader loader = new Loader();
@@ -361,7 +363,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
 
             @Override
-            protected Enumeration findResources(String name) throws IOException {
+            protected Enumeration<URL> findResources(String name) throws IOException {
                 if (name.equals(prefix() + "java.lang.Runnable")) {
                     return Collections.enumeration(Collections.singleton(findResource(name)));
                 }
@@ -492,4 +494,42 @@ public class MetaInfServicesLookupTest extends NbTestCase {
 
         assertNull("Nothing found", loader.value);
     }
+
+    public void testInitializerRobustness() throws Exception { // #174055
+        check(Broken1.class.getName());
+        check(Broken2.class.getName());
+    }
+    private void check(final String n) {
+        assertNull(Lookups.metaInfServices(new ClassLoader() {
+            protected @Override Enumeration<URL> findResources(String name) throws IOException {
+                if (name.equals("META-INF/services/java.lang.Object")) {
+                    return Enumerations.singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
+                        protected URLConnection openConnection(URL u) throws IOException {
+                            return new URLConnection(u) {
+                                public void connect() throws IOException {}
+                                public @Override InputStream getInputStream() throws IOException {
+                                    return new ByteArrayInputStream(n.getBytes("UTF-8"));
+                                }
+                            };
+                        }
+                    }));
+                } else {
+                    return Enumerations.empty();
+                }
+            }
+        }).lookup(Object.class));
+    }
+    public static class Broken1 {
+        public Broken1() {
+            throw new NullPointerException("broken1");
+        }
+    }
+    public static class Broken2 {
+        static {
+            if (true) { // otherwise javac complains
+                throw new NullPointerException("broken2");
+            }
+        }
+    }
+
 }

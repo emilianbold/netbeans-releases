@@ -45,7 +45,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -66,9 +65,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
@@ -95,7 +91,7 @@ class DataViewUI extends JXPanel {
     private JXButton first;
     private JXButton deleteRow;
     private JXButton insert;
-    private FixedSizeTextField refreshField;
+    private JTextField refreshField;
     private JTextField matchBoxField;
     private JXLabel totalRowsLabel;
     private JXLabel limitRow;
@@ -437,11 +433,22 @@ class DataViewUI extends JXPanel {
         toolbar.add(limitRow);
 
         //add refresh text field
-        refreshField = new FixedSizeTextField(4);
-        refreshField.setText("" + dataView.getDataViewPageContext().getPageSize()); // NOI18N
-        refreshField.setMinimumSize(new Dimension(45, refreshField.getHeight()));
-        refreshField.setSize(45, refreshField.getHeight());
-
+        refreshField = new JTextField();
+        refreshField.setColumns(2);
+        refreshField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                refreshField.selectAll();
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (refreshField.getText().length() >= 4) {
+                    refreshField.setColumns(refreshField.getText().length());
+                } else {
+                    refreshField.setColumns(2);
+                }
+            }
+        });
         refreshField.addActionListener(outputListener);
         toolbar.add(refreshField);
         toolbar.addSeparator(new Dimension(10, 10));
@@ -583,37 +590,4 @@ class DataViewUI extends JXPanel {
         deleteRow.setEnabled(value);
     }
 
-    private class FixedSizeTextField extends JTextField {
-
-        private int limit;
-
-        FixedSizeTextField(int limit) {
-            super();
-            this.limit = limit;
-            customize();
-        }
-
-        private void customize() {
-            this.setDocument(new PlainDocument() {
-
-                @Override
-                public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
-                    if (getLength() + str.length() > limit) {
-                        Toolkit.getDefaultToolkit().beep();
-                    } else {
-                        super.insertString(offset, str, a);
-
-                    }
-                }
-            });
-
-            this.addFocusListener(new FocusAdapter() {
-
-                @Override
-                public void focusGained(FocusEvent e) {
-                    FixedSizeTextField.this.selectAll();
-                }
-            });
-        }
-    }
 }

@@ -92,6 +92,9 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController cc) throws Exception {
+                    if (className == null) {
+                        return;
+                    }
                     TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
                     if (te == null) {
                         return;

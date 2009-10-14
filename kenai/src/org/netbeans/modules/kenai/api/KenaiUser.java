@@ -122,6 +122,12 @@ public final class KenaiUser {
             return user;
         }
     }
+
+    public static int getOnlineUserCount() {
+        synchronized (onlineUsers) {
+            return onlineUsers.size();
+        }
+    }
     
     static KenaiUser get(UserData data) {
         synchronized (users) {

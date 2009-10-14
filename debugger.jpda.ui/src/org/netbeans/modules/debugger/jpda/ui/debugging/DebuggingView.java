@@ -112,7 +112,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -134,7 +133,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     static final Color hitsBarColor = new Color(230, 230, 130);
     static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground"); // new Color(252, 157, 159); 
     static final Color greenBarColor = new Color(189, 230, 170);
-    private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
+    private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.textBackground"); // NOI18N
     
     private transient RequestProcessor requestProcessor = new RequestProcessor("DebuggingView Refresh Scheduler", 1);
     private transient boolean refreshScheduled = false;
@@ -197,6 +196,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         leftPanel = new BarsPanel();
         rightPanel = new IconsPanel();
+        mainPanel.setBackground(treeBackgroundColor);
         mainPanel.add(leftPanel, BorderLayout.WEST);
         mainPanel.add(rightPanel, BorderLayout.EAST);
 

@@ -619,11 +619,12 @@ public class JavacParser extends Parser {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum);
+        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new CancelService() {
+            public @Override boolean isCanceled() {
+                return parser.canceled.get();
+            }
+        });
         Context context = javacTask.getContext();
-        if (parser != null) {
-            JavacCancelService.preRegister(context, parser);
-        }
         JavacFlowListener.preRegister(context);
         TreeLoader.preRegister(context, cpInfo);
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
@@ -634,14 +635,14 @@ public class JavacParser extends Parser {
         return javacTask;
     }
     
-    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel,  ClassNamesForFileOraculum cnih) {
+    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel,  ClassNamesForFileOraculum cnih, CancelService cancelService) {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih);
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, cancelService);
     }
     
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih, CancelService cancelService) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
@@ -680,6 +681,9 @@ public class JavacParser extends Parser {
             JavadocClassReader.preRegister(context, !backgroundCompilation);
             if (cnih != null) {
                 context.put(ClassNamesForFileOraculum.class, cnih);
+            }
+            if (cancelService != null) {
+                CancelServiceRegistrator.preRegister(context, cancelService);
             }
             return task;
         } finally {
@@ -942,38 +946,18 @@ public class JavacParser extends Parser {
     
     //Helper classes
             
-    /**
-     * Implementation of CancelService responsible for stopping
-     * expensive parser operations when the result is not needed any more.
-     */
-    private static class JavacCancelService extends CancelService {
-                       
-        private final JavacParser parser;
-        boolean active;        
-        
-        private JavacCancelService (final JavacParser parser) {
-            this.parser = parser;
+    private static class CancelServiceRegistrator extends CancelService {
+
+        public static void preRegister(Context context, CancelService cancelServiceToRegister) {
+            context.put(cancelServiceKey, cancelServiceToRegister);
         }
-        
-        public static JavacCancelService instance (final Context context) {
-            final CancelService cancelService = CancelService.instance(context);
-            return (cancelService instanceof JavacCancelService) ? (JavacCancelService) cancelService : null;
-        }
-        
-        static void preRegister(final Context context, final JavacParser parser) {
-            assert context != null;
-            assert parser != null;
-            context.put(cancelServiceKey, new JavacCancelService(parser));
-        }
-        
+
         @Override
-        public boolean isCanceled () {
-            final boolean res =  active && parser.canceled.get();
-            return res;
+        public boolean isCanceled() {
+            throw new UnsupportedOperationException("Never use CancelServiceRegistrator as a CancelService");
         }
-               
     }
-        
+
     /**
      * Lexer listener used to detect partial reparse
      */

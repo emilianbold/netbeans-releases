@@ -44,6 +44,8 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPopupMenu;
@@ -66,7 +68,6 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.modules.web.jsf.palette.items.CancellableDialog;
-import org.netbeans.modules.web.jsf.palette.items.ManagedBeanCustomizer;
 import org.netbeans.modules.web.jsf.palette.items.ManagedBeanCustomizer.OpenTemplateAction;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -406,6 +407,9 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
                 catch (ClassNotFoundException cnfe) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
                     return false;
+                }
+                catch (UnsupportedClassVersionError ucve) {
+                    Logger.getLogger(PersistenceClientSetupPanelVisual.class.getName()).log(Level.WARNING, ucve.toString());
                 }
             }
         

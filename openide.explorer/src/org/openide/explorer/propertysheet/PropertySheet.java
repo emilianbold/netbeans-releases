@@ -1352,8 +1352,9 @@ public class PropertySheet extends JPanel {
                 Mutex.EVENT.readAccess(
                     new Runnable() {
                         public void run() {
-                            attach(n);
-                            setCurrentNode(n);
+                            if (currNode == n) {
+                                setCurrentNode(n);
+                            }
                         }
                     }
                 );
@@ -1372,9 +1373,11 @@ public class PropertySheet extends JPanel {
                             
                             //XXX SHOULD NOT BE FIRED TO NODELISTENERS
                             Node n = (Node) evt.getSource();
-                            String description = (String) n.getValue("nodeDescription"); //NOI18N
-                            psheet.setDescription(n.getDisplayName(), (description == null) ? n.getShortDescription() : description);
-                            table.setBeanName(n.getDisplayName());
+                            if (currNode == n) {
+                                String description = (String) n.getValue("nodeDescription"); //NOI18N
+                                psheet.setDescription(n.getDisplayName(), (description == null) ? n.getShortDescription() : description);
+                                table.setBeanName(n.getDisplayName());
+                            }
                         }
                     }
                 };
@@ -1395,15 +1398,19 @@ public class PropertySheet extends JPanel {
         }
 
         @Override
-        public void nodeDestroyed(org.openide.nodes.NodeEvent ev) {
-            detach();
-            Mutex.EVENT.readAccess(
-                new Runnable() {
-                    public void run() {
-                        doSetNodes(null);
-                    }
-                }
-            );
+        public void nodeDestroyed(final org.openide.nodes.NodeEvent ev) {
+            if (ev.getNode() == currNode) {
+                detach();
+                Mutex.EVENT.readAccess(
+                        new Runnable() {
+
+                            public void run() {
+                                if (currNode == null) {
+                                    doSetNodes(null);
+                                }
+                            }
+                        });
+            }
         }
 
         private final class PCL implements PropertyChangeListener {

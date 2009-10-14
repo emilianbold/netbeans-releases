@@ -29,8 +29,8 @@
 -->
  <answer id="arch-overall">
   <p>
-    This module contains implementation of   D-Light Toolkit <api name="VisualizerSPI" group="java" type="import" category="devel"></api>.
-    See <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a> for more details about D-Light Toolkit.
+    This module contains implementation of   DLight Toolkit <api name="VisualizerSPI" group="java" type="import" category="devel"></api>.
+    See <a href="http://wiki.netbeans.org/DLightToolkitDesign">DLight Toolkit</a> for more details about DLight Toolkit.
     This module provides to the clients <api name="TableVisualizerConfiguration" group="java" type="export" category="devel"></api> ,
     <api name="TreeTableVisualizerConfiguration" group="java" type="export" category="devel"></api>  and 
     <api name="CallersCaleesTableVisualizerConfiguration" group="java" type="export" category="devel"></api> which
@@ -145,7 +145,7 @@
  <answer id="arch-what">
   <p>
    This module represents implementation for Visualizers which can be used by the tool which is built on the top
-   of D-Light Toolkit. <br></br>
+   of DLight Toolkit. <br></br>
    The following Visualizer are implemented here:<br></br>
    <i>Table View Visualizer</i><br></br>
    <i>Tree Table View Visualizer</i><br></br>
@@ -766,7 +766,7 @@
  <answer id="lookup-register">
   <p>
    Register Factories to create Visualizers on the base of configuration provided by this module using  a declarative annotation such as <code>@ServiceProvider</code>.
-   Infrastructure D-Light Toolkit module is supposed  to find these factories.
+   Infrastructure DLight Toolkit module is supposed  to find these factories.
   </p>
  </answer>
 

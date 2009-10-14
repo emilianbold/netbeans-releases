@@ -50,7 +50,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -122,12 +122,14 @@ public class GoToTest implements TestLocator {
         assert editorSupport != null : "Editor support must exist";
         Collection<PhpClass> classes = editorSupport.getClasses(testFo);
         for (PhpClass phpClass : classes) {
-            String clsName = phpClass.getName();
-            if (clsName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
-                int lastIndexOf = clsName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
+            String clsFQName = org.netbeans.modules.php.project.util.PhpProjectUtils.getFullyQualifiedName(project, phpClass);
+            if (clsFQName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
+                int lastIndexOf = phpClass.getName().lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
                 assert lastIndexOf != -1;
-                String srcClassName = clsName.substring(0, lastIndexOf);
-                Collection<FileObject> files = editorSupport.filesForClass(sources, new PhpClass(srcClassName, srcClassName, -1));
+                String srcClassName = phpClass.getName().substring(0, lastIndexOf);
+                lastIndexOf = clsFQName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
+                String srcClassFQName = clsFQName.substring(0, lastIndexOf);
+                Collection<FileObject> files = editorSupport.filesForClass(sources, new PhpClass(srcClassName, srcClassFQName, -1));
                 for (FileObject fileObject : files) {
                     if (FileUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(sources, fileObject)) {
@@ -146,9 +148,9 @@ public class GoToTest implements TestLocator {
             assert editorSupport != null : "Editor support must exist";
             Collection<PhpClass> classes = editorSupport.getClasses(srcFo);
             for (PhpClass phpClass : classes) {
-                String clsName = phpClass.getName();
-                String testClsName = clsName + PhpUnit.TEST_CLASS_SUFFIX;
-                Collection<FileObject> files = editorSupport.filesForClass(tests, new PhpClass(testClsName, testClsName, -1));
+                String testClsName = phpClass.getName() + PhpUnit.TEST_CLASS_SUFFIX;
+                String testClsFQName = org.netbeans.modules.php.project.util.PhpProjectUtils.getFullyQualifiedName(project, phpClass) + PhpUnit.TEST_CLASS_SUFFIX;
+                Collection<FileObject> files = editorSupport.filesForClass(tests, new PhpClass(testClsName, testClsFQName, -1));
                 for (FileObject fileObject : files) {
                     if (FileUtils.isPhpFile(fileObject)
                             && FileUtil.isParentOf(tests, fileObject)) {

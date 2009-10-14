@@ -36,14 +36,15 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.core.syntax.gsf;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -62,75 +63,71 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
-    //runs w/o document readlock
-    //runs in AWT, we can safely exit the document lock before reformatting
+    //runs under document atomic lock
+    //runs in AWT
     @Override
-    public boolean afterCharInserted(final Document doc, final int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        final BaseDocument bdoc = (BaseDocument) doc;
         if ('>' != ch) {
             return false;
         }
 
-        final int[] lineStart = new int[1];
-        ((BaseDocument) doc).render(new Runnable() {
-
-            public void run() {
-                TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, caretOffset, JspTokenId.language());
-                if (ts == null) {
-                    return;
-                }
-                ts.move(caretOffset);
-                boolean found = false;
-                while (ts.movePrevious()) {
-                    if (ts.token().id() == JspTokenId.SYMBOL && (ts.token().text().toString().equals("<") ||
-                            ts.token().text().toString().equals("</"))) {
-                        found = true;
-                        break;
-                    }
-                    if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
-                        break;
-                    }
-                    if (ts.token().id() != JspTokenId.ATTRIBUTE &&
-                            ts.token().id() != JspTokenId.ATTR_VALUE &&
-                            ts.token().id() != JspTokenId.TAG &&
-                            ts.token().id() != JspTokenId.ENDTAG &&
-                            ts.token().id() != JspTokenId.SYMBOL &&
-                            ts.token().id() != JspTokenId.EOL &&
-                            ts.token().id() != JspTokenId.WHITESPACE) {
-                        break;
-                    }
-                }
-                if (!found) {
-                    return;
-                }
-                try {
-                    lineStart[0] = Utilities.getRowFirstNonWhite((BaseDocument) doc, ts.offset());
-                    if (lineStart[0] != ts.offset()) {
-                        lineStart[0] = -1; //do not reindent
-                    }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
+        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, caretOffset, JspTokenId.language());
+        if (ts == null) {
+            return false;
+        }
+        ts.move(caretOffset);
+        boolean found = false;
+        while (ts.movePrevious()) {
+            if (ts.token().id() == JspTokenId.SYMBOL && (ts.token().text().toString().equals("<") ||
+                    ts.token().text().toString().equals("</"))) {
+                found = true;
+                break;
             }
-        });
-
-        if(lineStart[0] != -1) {
-            final Indent indent = Indent.get(doc);
-            indent.lock();
-            try {
-                ((BaseDocument)doc).runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            indent.reindent(lineStart[0], caretOffset); 
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            } finally {
-                indent.unlock();
+            if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
+                break;
+            }
+            if (ts.token().id() != JspTokenId.ATTRIBUTE &&
+                    ts.token().id() != JspTokenId.ATTR_VALUE &&
+                    ts.token().id() != JspTokenId.TAG &&
+                    ts.token().id() != JspTokenId.ENDTAG &&
+                    ts.token().id() != JspTokenId.SYMBOL &&
+                    ts.token().id() != JspTokenId.EOL &&
+                    ts.token().id() != JspTokenId.WHITESPACE) {
+                break;
             }
         }
+
+        if (found) {
+            //ok, the user just type tag closing symbol, lets reindent the line
+            //since the code runs under document atomic lock, we cannot lock the
+            //indentation infrastructure directly. Instead of that create a new
+            //AWT task and post it for later execution.
+            final Position from = doc.createPosition(Utilities.getRowStart(bdoc, ts.offset()));
+            final Position to = doc.createPosition(Utilities.getRowEnd(bdoc, ts.offset()));
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    final Indent indent = Indent.get(bdoc);
+                    indent.lock();
+                    try {
+                        bdoc.runAtomic(new Runnable() {
+
+                            public void run() {
+                                try {
+                                    indent.reindent(from.getOffset(), to.getOffset());
+                                } catch (BadLocationException ex) {
+                                    //ignore
+                                }
+                            }
+                        });
+                    } finally {
+                        indent.unlock();
+                    }
+                }
+            });
+        }
+
         return false;
     }
 
@@ -145,7 +142,7 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         // tokens between JSP tokens are actually HTML tokens and not JSP tokens.
         // Proper way is to iterate over document characters and skip all whitespaces
         // till you get to a text and then get token for the text.
-        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, JspTokenId.language());
+        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, caretOffset, JspTokenId.language());
         if (ts == null) {
             return -1;
         }
@@ -156,13 +153,13 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
                 ts.token().text().toString().equals("</")) {
             if (ts.moveNext() && ts.token().id() == JspTokenId.ENDTAG) {
                 closingTagName = ts.token().text().toString();
-                end = ts.offset()+ts.token().text().length();
+                end = ts.offset() + ts.token().text().length();
                 ts.movePrevious();
                 ts.movePrevious();
             }
         }
         if (closingTagName == null) {
-            return  -1;
+            return -1;
         }
         boolean foundOpening = false;
         if (ts.token().id() == JspTokenId.SYMBOL &&
@@ -201,5 +198,5 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
-
+    
 }

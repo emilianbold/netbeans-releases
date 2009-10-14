@@ -362,7 +362,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         
         return result;
     }
-    
+
+    Document getDocument() {
+        return doc;
+    }
+
     /**
      * Registers "close" popup menu, tooltip manager // NOI18N
      * and repaint on documet change manager.
@@ -470,6 +474,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
 
+        final int lineNr = al.getLineNum();
         if(isKenai() && al != null) {
             String author = al.getAuthor();
             final KenaiUser ku = kenaiUsersMap.get(author);
@@ -478,7 +483,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        ku.startChat();
+                        ku.startChat(ku.getChatLink(doc, lineNr));
                     }
                 });
                 popupMenu.add(chatMenu);

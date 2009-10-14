@@ -514,6 +514,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
+        AbstractDocument adoc = (AbstractDocument)component.getDocument();
+        adoc.readLock();
         try {
             List<? extends PaintInfo> ps = getPaintInfo(clip);
             Font defFont = coloring.getFont();
@@ -584,6 +586,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
         } catch (BadLocationException ble) {
             LOG.log(Level.WARNING, null, ble);
+        } finally {
+            adoc.readUnlock();
         }
     }
 

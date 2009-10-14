@@ -119,7 +119,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip,GlassfishModule.DRIVER_DEPLOY_FLAG, "true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
+            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, adminPort);
             ip.put(URL_ATTR, deployerUrl);
         }
 
@@ -134,9 +134,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
         
-        if(isRunning(hostName, adminPort)) {
             refresh();
-        }
     }
     
 //<<<<<<< local
@@ -361,8 +359,14 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public Future<OperationState> deploy(final OperationStateListener stateListener, 
             final File application, final String name, final String contextRoot) {
+        return deploy(stateListener, application, name, contextRoot, null);
+    }
+
+    public Future<OperationState> deploy(final OperationStateListener stateListener,
+            final File application, final String name, final String contextRoot, Map properties) {
         CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
-        return mgr.deploy(application, name, contextRoot);
+        
+        return mgr.deploy(application, name, contextRoot, properties);
     }
     
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 

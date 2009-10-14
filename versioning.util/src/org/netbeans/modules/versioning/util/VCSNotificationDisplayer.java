@@ -88,7 +88,7 @@ public abstract class VCSNotificationDisplayer {
     protected String getFileNames(final File[] files) {
         StringBuffer filesSb = new StringBuffer();
         for (int i = 0; i < files.length; i++) {
-            if (i == 4) {
+            if (i == 5) {
                 filesSb.append("...");                                      // NOI18N
                 break;
             }

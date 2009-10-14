@@ -78,15 +78,64 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/real_life/spacesAfterObjectReferences.php");
     }
 
-//      *** These are test cases for known problems, they were never passing ***
+    /**
+     * issue 160996
+     * @throws Exception
+     */
       
-//    public void testStatementsWithoutSpaces() throws Exception {
-//        reformatFileContents("testfiles/formatting/real_life/statementsWithoutSpaces.php");
-//    }
+    public void testStatementsWithoutSpaces() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/160996.php");
+    }
 
-//    public void testCommentsInStatements() throws Exception {
-//        reformatFileContents("testfiles/formatting/real_life/comments_in_statements.php");
-//    }
+    /**
+     * issue 162320
+     * @throws Exception
+     */
+
+    public void testCommentsInStatements() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/162320.php");
+    }
+
+    /**
+     * issue 162586
+     * @throws Exception
+     */
+
+    public void testCommentsFormattingMixedWithHTML() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/162586.php");
+    }
+
+    /**
+     * issue 173899
+     * @throws Exception
+     */
+
+    public void test173899() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173899.php");
+    }
+    /**
+     * issue 173903
+     * @throws Exception
+     */
+    public void test173903() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173903.php");
+    }
+
+    /**
+     * issue 173906
+     * @throws Exception
+     */
+    public void test173906() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173906.php");
+    }
+
+     /**
+     * issue 173908
+     * @throws Exception
+     */
+    public void test173908() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173908.php");
+    }
 
     public void testIfElseStatement() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/else_if.php");

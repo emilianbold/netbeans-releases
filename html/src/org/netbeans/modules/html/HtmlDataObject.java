@@ -120,14 +120,9 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 try {
                     return Charset.forName(charsetName);
                 } catch(IllegalCharsetNameException ichse) {
-                    //the jsp templates contains the ${encoding} property 
-                    //so the ICHNE is always thrown for them, just ignore
-                    Boolean template = (Boolean)file.getAttribute("template");//NOI18N
-                    if(template == null || !template.booleanValue()) {
-                        Logger.getLogger("global").log(Level.INFO, null, ichse);
-                    }
+                    //no-op
                 } catch (UnsupportedCharsetException uchse) {
-                    Logger.getLogger("global").log(Level.INFO, null, uchse);
+                    //no-op
                 }
                 return null;
             }
@@ -140,6 +135,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         return getCookieSet().getLookup();
     }
     
+    @Override
     protected org.openide.nodes.Node createNodeDelegate() {
         DataNode n = new HtmlDataNode(this, Children.LEAF);
         n.setIconBaseWithExtension("org/netbeans/modules/html/htmlObject.png"); // NOI18N

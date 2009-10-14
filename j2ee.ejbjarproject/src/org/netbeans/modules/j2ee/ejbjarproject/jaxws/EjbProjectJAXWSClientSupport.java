@@ -42,14 +42,15 @@
 package org.netbeans.modules.j2ee.ejbjarproject.jaxws;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -83,6 +84,15 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
     }
 
     protected void addJaxWs20Library() throws Exception {
+        // add JAX-WS Endorsed Classpath
+        SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
+        if (sgs.length > 0) {
+            try {
+                WSUtils.addJaxWsApiEndorsed(project, sgs[0].getRootFolder());
+            } catch (java.io.IOException ex) {
+                Logger.getLogger(EjbProjectJAXWSClientSupport.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
+            }
+        }
     }
     
     /** return root folder for xml artifacts

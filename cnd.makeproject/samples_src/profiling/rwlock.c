@@ -33,6 +33,8 @@
 #include <unistd.h>
 #include "rwlock.h"
 
+#ifdef HAVE_PTHREAD_RWLOCK
+
 static void rwlock_demo_header(int readers, int writers, work_t* works) {
     char buf[64];
     int usrcpu = usrcpu_usage(readers, works);
@@ -105,3 +107,12 @@ void rwlock_demo(int readers, int writers, work_t* works, int seconds) {
     }
     free(t);
 }
+
+#else
+
+void rwlock_demo(int readers, int writers, work_t* works, int seconds) {
+    EXPLAIN("RW-locks are not supported on this platform\n");
+    PAUSE("Press [Enter] to skip...\n");
+}
+
+#endif

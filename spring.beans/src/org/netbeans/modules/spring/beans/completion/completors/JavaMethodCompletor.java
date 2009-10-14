@@ -94,6 +94,9 @@ public abstract class JavaMethodCompletor extends Completor {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                if (classBinaryName == null) {
+                    return;
+                }
                 TypeElement classElem = JavaUtils.findClassElementByBinaryName(classBinaryName, controller);
                 if (classElem == null) {
                     return;

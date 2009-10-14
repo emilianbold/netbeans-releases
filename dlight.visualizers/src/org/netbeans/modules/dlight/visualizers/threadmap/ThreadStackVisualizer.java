@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.visualizers.threadmap;
 
+import java.beans.PropertyVetoException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
@@ -53,6 +54,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -67,6 +69,8 @@ import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.StackNameProvider;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -85,6 +89,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     private final CardLayout cardLayout = new CardLayout();
     private DLightSession session;
     private List<DataFilter> filters;
+    private int prefferedSelection = -1;
 
     private static final class Lock { }
     private static final class UiLock { }
@@ -110,6 +115,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
     }
 
     private void setEmptyContent() {
+	assert SwingUtilities.isEventDispatchThread();
         cardLayout.show(this, "empty");//NOI18N
         emptyPanel.removeAll();
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
@@ -157,6 +163,7 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
                         public void run() {
                             synchronized(uiLock){
+				assert SwingUtilities.isEventDispatchThread();
                                 stackPanel.clean();
                                 stackPanel.setRootVisible(rootName);
                                 for (int i = 0, size = snapshots.length; i < size; i++) {
@@ -166,7 +173,11 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                                     if (res != null) {
                                         final List<FunctionCall> functionCalls = stacks.get(i);
                                         if (functionCalls != null) {
-                                            stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls); // NOI18N
+                                            stackPanel.add(stackNameProvider.getStackName(snapshot), new ThreadStateIcon(msa, 10, 10), functionCalls,
+                                                           configuration.getStackNodeActionsProvider().getStackNodeActions(snapshot.getThreadInfo().getThreadId()));
+                                            if (configuration.getPreferredSelection() == snapshot.getThreadInfo().getThreadId()) {
+                                                prefferedSelection = i;
+                                            }
                                         }
                                     }
                                 }
@@ -194,6 +205,18 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             public void run() {
                 //      try {
                 stackPanel.expandAll();
+                int i = 0;
+                for(Node node : stackPanel.getExplorerManager().getRootContext().getChildren().getNodes()) {
+                    if (i == prefferedSelection) {
+                        try {
+                            stackPanel.getExplorerManager().setSelectedNodes(new Node[]{node});
+                        } catch (PropertyVetoException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        break;
+                    }
+                    i++;
+                }
 //                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
 //                } catch (PropertyVetoException ex) {
 //                    Exceptions.printStackTrace(ex);
@@ -291,10 +314,12 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         }
         synchronized (lock) {
             //check new and old one's
-            this.filters = newSet;
+            this.filters = new ArrayList<DataFilter>(newSet);
             needUpdate = !getDataFilter(ThreadDumpFilter.class).isEmpty();
         }
+    }
 
-
+    public void updateVisualizerConfiguration(ThreadStackVisualizerConfiguration aConfiguration) {
+        configuration.update(aConfiguration);
     }
 }

@@ -50,6 +50,9 @@ public class WagPreferences {
     private static final String ZEMBLY_USERNAME_PREF = "zemblyUsernamePref";    //NOI18N
     private static final String ZEMBLY_PASSWORD_PREF = "zemblyPasswordPref";    //NOI18N
     private static final String ZEMBLY_ONLINE_STATUS_PREF = "zemblyOnlineStatusPref";    //NOI18N
+    private static final String ZEMBLY_KENAI_EMAIL_PREF = "zemblyKenaiEmailPref";   //NOI18N
+    private static final String ZEMBLY_KENAI_USERNAME_PREF = "zemblyKenaiUsernamePref";  //NOI!8N
+    
     private static WagPreferences instance;
     private static Preferences preferences;
 
@@ -75,6 +78,32 @@ public class WagPreferences {
 
     public String getUsername() {
         return preferences.get(ZEMBLY_USERNAME_PREF, null);
+    }
+
+
+    public void setKenaiUsername(String username) {
+        if (username != null) {
+            preferences.put(ZEMBLY_KENAI_USERNAME_PREF, username);
+        } else {
+            preferences.remove(ZEMBLY_KENAI_USERNAME_PREF);
+        }
+    }
+
+    public String getKenaiUsername() {
+        return preferences.get(ZEMBLY_KENAI_USERNAME_PREF, null);
+    }
+
+
+    public void setKenaiEmail(String email) {
+        if (email != null) {
+            preferences.put(ZEMBLY_KENAI_EMAIL_PREF, email);
+        } else {
+            preferences.remove(ZEMBLY_USERNAME_PREF);
+        }
+    }
+
+    public String getKenaiEmail() {
+        return preferences.get(ZEMBLY_KENAI_EMAIL_PREF, null);
     }
 
     public void setPassword(char[] password) {

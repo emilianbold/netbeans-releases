@@ -102,11 +102,11 @@ public final class Kenai {
 
     public static final String PROP_XMPP_LOGIN_FAILED = "xmpp_login_failed";
 
+    public static final String PROP_URL_CHANGED = "url";
+
     private static Kenai instance;
     private PasswordAuthentication auth = null;
-    private URL url;
-    private String name;
-    private final KenaiImpl impl;
+    private KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
 
@@ -129,7 +129,7 @@ public final class Kenai {
                 }
                 URL url = new URL(urlString);
                 KenaiImpl impl = new KenaiREST(url);
-                instance = new Kenai(impl, url);
+                instance = new Kenai(impl);
             } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
             }
@@ -142,7 +142,20 @@ public final class Kenai {
      * @return
      */
     public URL getUrl() {
-        return url;
+        return impl.getUrl();
+    }
+
+    public void setUrl(URL url) {
+        if (impl.getUrl().equals(url))
+            return;
+        if (getStatus()!=Status.OFFLINE) {
+            logout(true);
+        }
+        URL old = impl.getUrl();
+        synchronized (Kenai.class) {
+            impl = new KenaiREST(url);
+        }
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_URL_CHANGED, old, impl.getUrl()));
     }
 
     /**
@@ -150,16 +163,11 @@ public final class Kenai {
      * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
      */
     public String getName() {
-        if (name==null) {
-            String urlString = getUrl().toString();
-            name = urlString.substring("https://".length()); //NOI18N
-        }
-        return name;
+        return getUrl().toString().substring("https://".length());
     }
 
-    Kenai(KenaiImpl impl, URL url) {
+    Kenai(KenaiImpl impl) {
         this.impl = impl;
-        this.url = url;
     }
 
     /**
@@ -194,13 +202,13 @@ public final class Kenai {
                     //already connected without xmpp
                     return;
                 } else {
-                    xmppDisconnect();
+                    xmppDisconnect(false);
                     return;
                 }
             }
         }
         PasswordAuthentication old = auth;
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, null));
+        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, username));
         try {
             synchronized (this) {
                 String shortName = impl.verify(username, password);
@@ -233,13 +241,21 @@ public final class Kenai {
      * Logs out current session
      */
     public void logout() {
+        logout(false);
+    }
+
+    private void logout(boolean setPropId) {
         PasswordAuthentication old=auth;
         auth = null;
         synchronized(this) {
             myProjects=null;
-            xmppDisconnect();
+            xmppDisconnect(setPropId);
         }
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+        PropertyChangeEvent propertyChangeEvent = new PropertyChangeEvent(this, PROP_LOGIN, old, auth);
+        if (setPropId) {
+            propertyChangeEvent.setPropagationId(PROP_URL_CHANGED);
+        }
+        propertyChangeSupport.firePropertyChange(propertyChangeEvent);
     }
 
     /**
@@ -581,7 +597,7 @@ public final class Kenai {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, null, xmppConnection));
     }
 
-    private void xmppDisconnect() {
+    private void xmppDisconnect(boolean setPropId) {
         if (xmppConnection == null) {
             return;
         }
@@ -590,7 +606,11 @@ public final class Kenai {
         XMPPConnection temp = xmppConnection;
         xmppConnection = null;
         temp.removePacketListener(packetListener);
-        propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN, temp, null));
+        PropertyChangeEvent propertyChangeEvent = new PropertyChangeEvent(this, PROP_XMPP_LOGIN, temp, null);
+        if (setPropId) {
+            propertyChangeEvent.setPropagationId(PROP_URL_CHANGED);
+        }
+        propertyChangeSupport.firePropertyChange(propertyChangeEvent);
     }
     /**
      * user status on kenai

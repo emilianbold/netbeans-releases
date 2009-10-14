@@ -283,7 +283,9 @@ import org.openide.util.WeakListeners;
             // create a fake JEditorPane
             if (pane == null) {
                 Document doc = ctx.getEditorUI().getDocument();
-                
+                if (doc == null) {
+                    return; // highlights will stay null
+                }
                 // Get the document's mime type
                 String mimeType = (String) doc.getProperty(BaseDocument.MIME_TYPE_PROP); //NOI18N
                 assert mimeType != null : "Document's mime type can't be null: " + doc; //NOI18N

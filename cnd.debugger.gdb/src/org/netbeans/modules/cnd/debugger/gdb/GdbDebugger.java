@@ -76,7 +76,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.common.utils.IOProxy;
-import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -106,6 +105,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -295,12 +295,10 @@ public class GdbDebugger implements PropertyChangeListener {
             String cspath = getCompilerSetPath(pae);
             // see IZ 158224, gdb should be run with the default environment
             // see IZ 170287, PATH should be set on Windows
+            // see IZ 166812, on windows we should add all defined env variables
             String[] debuggerEnv = new String[0];
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
-                if (path != null) {
-                    debuggerEnv = new String[]{path}; //NOI18N
-                }
+               debuggerEnv = pae.getProfile().getEnvironment().getenv();
             }
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
@@ -598,11 +596,11 @@ public class GdbDebugger implements PropertyChangeListener {
         return System.getProperty("gdb.testsuite") != null; // NOI18N
     }
 
-    private String win2UnixPath(String path) {
+    public String win2UnixPath(String path) {
         if (isCygwin()) {
-            return WinPath.win2cyg(path);
+            return WindowsSupport.getInstance().convertToCygwinPath(path);
         } else if (isMinGW()) {
-            return WinPath.win2ming(path);
+            return WindowsSupport.getInstance().convertToMSysPath(path);
         }
         return path.replace('\\', '/');
     }
@@ -804,7 +802,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (line.contains("Reading symbols from ") || // NOI18N
                     (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
                 line = line.substring(21, line.length() - 8);
-                if (GdbUtils.compareExePaths(platform, line, exepath)) {
+                if (compareExePaths(line, exepath)) {
                     return true;
                 }
             } else if (line.contains("Loaded symbols for ") && comparePaths(exepath, line.substring(19))) { // NOI18N
@@ -815,13 +813,59 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public boolean comparePaths(String path1, String path2) {
-        return GdbUtils.comparePaths(platform, path1, path2);
+        path1 = path1.trim();
+        path2 = path2.trim();
+
+        if (path1.equals(path2)) {
+            return true;
+        }
+        
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            path1 = path1.toLowerCase();
+            path2 = path2.toLowerCase();
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+
+            // we need to convert paths to unix-like style, so that normalization works correctly
+            if (cygwin) {
+                path1 = WindowsSupport.getInstance().convertToCygwinPath(path1).toLowerCase();
+                path2 = WindowsSupport.getInstance().convertToCygwinPath(path2).toLowerCase();
+            } else if (mingw) {
+                path1 = WindowsSupport.getInstance().convertToMSysPath(path1).toLowerCase();
+                path2 = WindowsSupport.getInstance().convertToMSysPath(path2).toLowerCase();
+            }
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+        }
+        return GdbUtils.compareUnixPaths(path1, path2);
+    }
+
+    private boolean compareExePaths(String exe1, String exe2) {
+        exe1 = exe1.trim();
+        exe2 = exe2.trim();
+
+        if (exe1.equals(exe2)) {
+            return true;
+        }
+
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            exe1 = GdbUtils.removeExe(exe1);
+            exe2 = GdbUtils.removeExe(exe2);
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            exe1 = exe1.toLowerCase();
+            exe2 = exe2.toLowerCase();
+        }
+        return comparePaths(exe1, exe2);
     }
 
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
-                return GdbUtils.compareExePaths(platform, line.substring(15, line.length() - 3), exepath);
+                return compareExePaths(line.substring(15, line.length() - 3), exepath);
             }
         }
         return false;
@@ -1612,11 +1656,7 @@ public class GdbDebugger implements PropertyChangeListener {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
                 map = GdbUtils.createMapFromString(frame);
-                String fullname = map.get("fullname"); // NOI18N
-                String line = map.get("line"); // NOI18N
-                if (fullname != null && line != null) {
-                    lastStop = fullname + ":" + line; // NOI18N
-                }
+                updateLastStop(map);
             }
             setLoading();
             return;
@@ -1697,11 +1737,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
-                    String fullname = map.get("fullname"); // NOI18N
-                    String line = map.get("line"); // NOI18N
-                    if (fullname != null && line != null) {
-                        lastStop = fullname + ":" + line; // NOI18N
-                    }
+                    updateLastStop(map);
                 }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
@@ -1714,12 +1750,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
-                    String fullname = map.get("fullname"); // NOI18N
-                    fullname = checkCygwinLibs(fullname);
-                    String line = map.get("line"); // NOI18N
-                    if (fullname != null && line != null) {
-                        lastStop = fullname + ":" + line; // NOI18N
-                    }
+                    updateLastStop(map);
                 }
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
                     GdbTimer.getTimer("Step").stop("Step1");// NOI18N
@@ -1751,15 +1782,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    public String checkCygwinLibs(String path) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && path != null && path.charAt(0) == '/') {
-            if (path.length() >= 5 && path.startsWith("/usr/")) { // NOI18N
-                return CompilerSetManager.getCygwinBase() + path.substring(4);
-            } else {
-                return CompilerSetManager.getCygwinBase() + path;
-            }
+    private void updateLastStop(Map<String, String> map) {
+        String fullname = map.get("fullname"); // NOI18N
+        String line = map.get("line"); // NOI18N
+        if (fullname != null && line != null) {
+            lastStop = fullname + ":" + line; // NOI18N
         }
-        return path;
     }
 
     private void signalReceived(Map<String, String> map) {
@@ -1966,12 +1994,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private String getOSPath(String path) {
+    public String getOSPath(String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin()) { // NOI18N
-                return WinPath.cyg2win(path);
+                return WindowsSupport.getInstance().convertFromCygwinPath(path);
             } else if (isMinGW()) {
-                return WinPath.ming2win(path); // NOI18N
+                return WindowsSupport.getInstance().convertFromMSysPath(path);
             }
         } 
         return path;
@@ -2070,7 +2098,10 @@ public class GdbDebugger implements PropertyChangeListener {
             conf = (MakeConfiguration)conf.cloneConf();
             conf.setDevelopmentHost(new DevelopmentHostConfiguration(exEnv));
 
-            String path = getExecutableOrSharedLibrary(pinfo, conf);
+            String path = getBuildResult(pinfo, conf);
+            if (target.checkExecutable() && !isExecutableOrSharedLibrary(conf, path)) {
+                path = null;
+            }
 
             if (path != null) {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
@@ -2096,11 +2127,6 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
             }
         }
-    }
-
-    private static String getExecutableOrSharedLibrary(ProjectInformation pinfo, MakeConfiguration conf) {
-        String buildResult = getBuildResult(pinfo, conf);
-        return isExecutableOrSharedLibrary(conf, buildResult) ? buildResult : null;
     }
 
     /**
@@ -2290,6 +2316,9 @@ public class GdbDebugger implements PropertyChangeListener {
                     response = response.substring(pos + 2, response.length()).replace("\\n", "").trim(); // NOI18N
                 }
             }
+        }
+        if (getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+            response = GdbUtils.mackHack(response);
         }
         return response.length() > 0 ? response : null;
     }
@@ -2604,7 +2633,7 @@ public class GdbDebugger implements PropertyChangeListener {
         pcs.firePropertyChange(name, o, n);
     }
 
-    private boolean isCygwin() {
+    public boolean isCygwin() {
         return cygwin;
     }
 

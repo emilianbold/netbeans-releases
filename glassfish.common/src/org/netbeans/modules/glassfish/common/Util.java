@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -98,9 +99,10 @@ public final class Util {
      * @param path file path in string form.
      * @return adjusted path with backslashes and dollar signs escaped with
      *   backslash character.
+     * @deprecated use spi.Utils.escapePath(String)
      */
     public static final String escapePath(String path) {
-        return path.replace("\\", "\\\\").replace("$", "\\$"); // NOI18N
+        return Utils.escapePath(path);
     }
 
     /**

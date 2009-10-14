@@ -40,7 +40,6 @@ package org.netbeans.modules.nativeexecution;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -136,7 +135,10 @@ public final class NativeProcessInfo {
         }
 
         this.arguments.clear();
-        this.arguments.addAll(Arrays.asList(arguments));
+
+        for (String arg : arguments) {
+            this.arguments.add(arg.trim());
+        }
     }
 
     public List<String> getCommand() {
@@ -169,29 +171,6 @@ public final class NativeProcessInfo {
         return result;
     }
 
-    public List<String> getCommandListForShell() {
-        List<String> result = new ArrayList<String>();
-        List<String> cmd = getCommand();
-
-        if (isWindows) {
-            String exec = WindowsSupport.getInstance().convertToShellPath(cmd.get(0));
-            cmd.set(0, exec);
-        }
-
-        boolean first = true;
-
-        for (String s : cmd) {
-            if (first) {
-                result.add(quoteExecutable(s));
-                first = false;
-            } else {
-                result.add(quote(s));
-            }
-        }
-
-        return result;
-    }
-
     private String quoteExecutable(String orig) {
         StringBuilder sb = new StringBuilder();
         String escapeChars = (isWindows) ? " \"'()" : " \"'()!"; // NOI18N
@@ -206,24 +185,6 @@ public final class NativeProcessInfo {
         return sb.toString();
     }
 
-    private String quote(String orig) {
-        String quote = "'"; // NOI18N
-
-        if (isWindows) {
-            // On Windows when ExternalTerminal is used and we have "$" in
-            // parameters we get it expanded by shell (which is not the same
-            // behavior as we have in case of use of OutputWindow or when we
-            // are not on Windows)... So do the following replacement..
-            orig = orig.replaceAll("\\$", "\\\\\\$"); // NOI18N
-        }
-
-        if (orig.indexOf('\'') >= 0) {
-            quote = (isWindows) ? "\\\"" : "\""; // NOI18N
-        }
-
-        return quote + orig + quote;
-    }
-
     public String getCommandLineForShell() {
         if (commandLine != null) {
             return commandLine;
@@ -231,12 +192,40 @@ public final class NativeProcessInfo {
 
         StringBuilder sb = new StringBuilder();
 
-        for (String s : getCommandListForShell()) {
-            sb.append(s).append(' ');
+        List<String> cmd = getCommand();
+
+        String exec = cmd.get(0);
+
+        sb.append(quoteExecutable(exec)).append(' ');
+        if (isWindows) {
+            /**
+             * See IZ#168186 - Wrongly interpreted "$" symbol in arguments
+             *
+             * The only case when we use bash/sh to start process on Windows
+             * is a case of execution in ExternalTerminal.
+             *
+             * In this case $'s in arguments will be interpreted by the shell.
+             * But from the other hand this will not happen in debugger (gdb).
+             *
+             * To make output (Arguments sample) consistent between run and
+             * debug session FORCE ESCAPE arguments (but them in ')
+             */
+
+            exec = WindowsSupport.getInstance().convertToShellPath(exec);
+            
+            for (String arg : arguments) {
+                if (!arg.startsWith("'")) { // NOI18N
+                    sb.append('\'').append(arg).append("' "); // NOI18N
+                } else {
+                    sb.append(arg).append(' ');
+                }
+            }
+        } else {
+            sb.append(Utilities.escapeParameters(arguments.toArray(new String[0])));
         }
 
         if (redirectError) {
-            sb.append("2>&1"); // NOI18N
+            sb.append(" 2>&1"); // NOI18N
         }
 
         return sb.toString().trim();
@@ -251,18 +240,14 @@ public final class NativeProcessInfo {
     }
 
     public String getWorkingDirectory(boolean expandMacros) {
-        String result;
-
+        String result = workingDirectory;
         if (expandMacros && macroExpander != null) {
             try {
                 result = macroExpander.expandPredefinedMacros(workingDirectory);
             } catch (ParseException ex) {
-                result = workingDirectory;
+                // nothing
             }
         }
-
-        result = workingDirectory;
-
         return result;
     }
 

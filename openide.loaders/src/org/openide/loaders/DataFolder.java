@@ -571,13 +571,26 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         Enumeration en = children ();
 
-        DataFolder newFolder = (DataFolder)super.handleCopy (f);
+        DataObject newFolderDO = super.handleCopy (f);
+        DataFolder newFolderDF;
+        if (newFolderDO instanceof DataFolder) {
+            newFolderDF = (DataFolder) newFolderDO;
+        } else {
+            // #173922 - in target directory probably exists file with the same name as pasted folder
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(DataObject.class,
+                    "MSG_FMT_FileExists",
+                    getName(), f.getName()),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return newFolderDO;
+        }
 
         while (en.hasMoreElements ()) {
             try {
                 DataObject obj = (DataObject)en.nextElement ();
                 if (obj.isCopyAllowed()) {
-                    obj.copy (newFolder);
+                    obj.copy(newFolderDF);
                 } else {
                     // data object can not be copied, inform user
                     DataObject.LOG.warning(
@@ -590,7 +603,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             }
         }
 
-        return newFolder;
+        return newFolderDF;
     }
 
     /**

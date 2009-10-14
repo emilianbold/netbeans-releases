@@ -83,8 +83,8 @@ public final class DLightConfigurationSupport {
 
     }
 
-    public DLightConfiguration registerConfiguration(String configurationName, String displayedName){
-        return DLightConfigurationManagerAccessor.getDefault().registerConfiguration(DLightConfigurationManager.getInstance(), configurationName, displayedName);
+    public DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators){
+        return DLightConfigurationManagerAccessor.getDefault().registerConfiguration(DLightConfigurationManager.getInstance(), configurationName, displayedName, category, platforms, collector, indicators);
     }
 
     public boolean removeConfiguration(String configurationName){

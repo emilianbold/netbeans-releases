@@ -4207,6 +4207,22 @@ public class LayoutDesigner implements LayoutConstants {
                     layoutModel.setIntervalAlignment(seqIntT, DEFAULT);
                     operations.addContent(seqIntT, seq, -1);
                 }
+
+                // merging sequencies may cause only one remains in parent
+                if (parent.getSubIntervalCount() == 1 && parent.getParent() != null) { // last interval in parallel group
+                    // cancel the group and move the interval up
+                    LayoutInterval remaining = parent.getSubInterval(0);
+                    layoutModel.removeInterval(remaining);
+                    layoutModel.setIntervalAlignment(remaining, parent.getAlignment());
+                    LayoutInterval superParent = parent.getParent();
+                    int i = layoutModel.removeInterval(parent);
+                    operations.addContent(remaining, superParent, i);
+                    if (remaining.isSequential() && superParent.isSequential()) {
+                        // eliminate possible directly consecutive gaps
+                        // [this could be done by the addContent method directly]
+                        eliminateConsecutiveGaps(superParent, i, dimension);
+                    }
+                }
             }
         }
     }

@@ -47,12 +47,13 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.Conditional;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
+public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
 
     public RfsGnuRemoteBuildTestCase(String testName) {
         super(testName);
@@ -65,23 +66,26 @@ public class RfsGnuRemoteBuildTestCase extends RfsRemoteBuildTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        setupHost("rfs");
-        removeRemoteHome();
+        setupHost("rfs");        
     }
 
+    @Conditional(section="remote.platforms.smart.secure.copy.options", key="test.gnu.single")
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
         log.setLevel(Level.ALL); // TODO: comment out
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        removeRemoteHomeSubdir("remote/" + projectDirFO.getNameExt());
         buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
 
+    @Conditional(section="remote.platforms.smart.secure.copy.options", key="gnu.multy")
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
+        removeRemoteHomeSubdir("remote/" + projectDirFO.getNameExt());
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
         buildProject(makeProject, 60, TimeUnit.SECONDS);

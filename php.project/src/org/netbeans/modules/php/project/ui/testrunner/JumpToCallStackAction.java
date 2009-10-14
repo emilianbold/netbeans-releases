@@ -43,7 +43,7 @@ import java.awt.event.ActionEvent;
 import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.openide.util.NbBundle;
 
 public class JumpToCallStackAction extends AbstractAction {

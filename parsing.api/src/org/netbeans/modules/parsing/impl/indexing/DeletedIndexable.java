@@ -43,12 +43,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class DeletedIndexable implements IndexableImpl {
+public final class DeletedIndexable implements IndexableImpl, FileObjectProvider {
 
     private static final Logger LOG = Logger.getLogger(DeletedIndexable.class.getName());
 
@@ -62,15 +63,6 @@ public final class DeletedIndexable implements IndexableImpl {
         this.root = root;
         this.relativePath = relativePath;
     }
-
-//    public long getLastModified() {
-//        return -1;
-//    }
-//
-//    public String getName() {
-//        int index = this.relativePath.lastIndexOf('/'); //NOI18N
-//        return index == -1 ? relativePath : relativePath.substring(index+1);
-//    }
 
     public String getRelativePath() {
         return relativePath;
@@ -93,9 +85,9 @@ public final class DeletedIndexable implements IndexableImpl {
         throw new UnsupportedOperationException("Mimetype related operations are not supported by DeletedIndexable"); //NOI18N
     }
 
-//    public InputStream openInputStream() throws IOException {
-//        throw new IOException();
-//    }
+    public FileObject getFileObject() {
+        return null;
+    }
 
     @Override
     public String toString() {

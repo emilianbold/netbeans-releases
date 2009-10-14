@@ -53,6 +53,7 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -80,7 +81,7 @@ public class MemberAccessorImpl extends MemberAccessor {
 
     @Override
     public Action getStartChatAction(final MemberHandle member) {
-        return new AbstractAction() {
+        return new AbstractAction(NbBundle.getMessage(MemberAccessorImpl.class, "CTL_StartChat")) {
 
             public void actionPerformed(ActionEvent e) {
                 new KenaiUserUI(member.getName()).startChat();

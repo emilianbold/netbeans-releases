@@ -40,10 +40,10 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -144,16 +144,16 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
     public IssueHandle[] getRecentIssues(KenaiProject project) {
         assert project != null;
         if(project == null) {
-            return null;
+            return new IssueHandle[0];
         }
         Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             BugtrackingManager.LOG.warning("No issue tracker available for the given kanei project [" + project.getName() + "," + project.getDisplayName() + "]");
-            return null;
+            return new IssueHandle[0];
         }
         Collection<Issue> issues = BugtrackingManager.getInstance().getRecentIssues(repo);
         if(issues == null) {
-            return null;
+            return new IssueHandle[0];
         }
 
         List<IssueHandle> ret = new ArrayList<IssueHandle>(issues.size());

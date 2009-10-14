@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -248,7 +249,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project,sourceGroups,templatePanel);
         JComponent c = (JComponent)firstPanel.getComponent();
-        
+        Dimension d  = c.getPreferredSize();
+        d.setSize(d.getWidth(), d.getHeight()+65);
+        c.setPreferredSize(d);
         return new WizardDescriptor.Panel[] {
             firstPanel
         };

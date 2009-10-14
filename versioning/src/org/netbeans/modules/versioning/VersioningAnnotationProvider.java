@@ -153,7 +153,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file);
                 if(localHistoryAction == null && localHistory != null && localHistory.getVCSAnnotator() != null) {
                     localHistoryAction = SystemAction.get(LocalHistoryActions.class);
-                    localHistoryAction.setVersioninSystem(localHistory);
+                    localHistoryAction.setVersioningSystem(localHistory);
                     actions.add(localHistoryAction);
                 }
 
@@ -182,7 +182,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
         if (an != null) {
             VersioningSystemActions action = SystemAction.get(VersioningSystemActions.class);
-            action.setVersioninSystem(vs);
+            action.setVersioningSystem(vs);
             actions.add(action);
         }
 
@@ -215,7 +215,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             return new RealVersioningSystemActions(system, Utils.contextForLookup(actionContext));
         }
 
-        public void setVersioninSystem(VersioningSystem system) {
+        public void setVersioningSystem(VersioningSystem system) {
             this.system = system;
         }
     }

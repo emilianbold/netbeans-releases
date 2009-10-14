@@ -61,10 +61,10 @@ public final class EnvWriter {
             String name = null;
             String value = null;
             // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
+            Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
             for (Entry<String, String> entry : env.entrySet()) {
-                name = entry.getKey();
+                name = entry.getKey().toUpperCase();
 
                 if (!pattern.matcher(name).matches()) {
                     continue;

@@ -57,7 +57,7 @@ public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
 
     private TimeMarksProvider() {
     }
-    private static final int[] INTERVALS = {100, 500, 1000, 5000, 10000, 30000, 60000, 300000, 600000};
+    private static final long[] INTERVALS = {100000000L, 500000000L, 1000000000L, 5000000000L, 10000000000L, 30000000000L, 60000000000L, 300000000000L, 600000000000L};
     private static final String LABEL_TEXT = "99:99"; // NOI18N
     private static final TimeFormatter TIME_FORMATTER = new TimeFormatter();
 
@@ -69,7 +69,8 @@ public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
         long tickInterval = getTickInterval(viewportEnd - viewportStart, axisSize);
         long labelInterval = getLabelInterval(viewportEnd - viewportStart, axisSize, axisFontMetrics);
         List<AxisMark> marks = new ArrayList<AxisMark>();
-        for (long value = viewportStart; value <= viewportEnd; ++value) {
+        for (long value = viewportStart;
+                value <= viewportEnd; value = DLightMath.nextProductOf(tickInterval, value)) {
             if (value % tickInterval == 0) {
                 String text = null;
                 if (value % labelInterval == 0) {
@@ -82,9 +83,9 @@ public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
     }
 
     private long getTickInterval(long viewportSize, int axisSize) {
-        float pixelsPerMilli = (float) axisSize / viewportSize;
+        float pixelsPerNano = (float) axisSize / viewportSize;
         for (int i = 0; i < INTERVALS.length; ++i) {
-            if (10 <= INTERVALS[i] * pixelsPerMilli) {
+            if (10 <= INTERVALS[i] * pixelsPerNano) {
                 return INTERVALS[i];
             }
         }
@@ -92,9 +93,9 @@ public final class TimeMarksProvider extends AbstractCachingAxisMarksProvider {
     }
 
     private long getLabelInterval(long viewportSize, int axisSize, FontMetrics axisFontMetrics) {
-        float pixelsPerMilli = (float) axisSize / viewportSize;
+        float pixelsPerNano = (float) axisSize / viewportSize;
         for (int i = 0; i < INTERVALS.length; ++i) {
-            if (4 * axisFontMetrics.stringWidth(LABEL_TEXT) / 3 <= INTERVALS[i] * pixelsPerMilli) {
+            if (4 * axisFontMetrics.stringWidth(LABEL_TEXT) / 3 <= INTERVALS[i] * pixelsPerNano) {
                 return INTERVALS[i];
             }
         }

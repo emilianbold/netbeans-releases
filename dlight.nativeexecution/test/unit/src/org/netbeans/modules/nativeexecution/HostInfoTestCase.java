@@ -110,10 +110,10 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
             existentFile = "/etc/passwd";
             nonexistentFile = "/etc/passwdx";
         }
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, true));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, true));
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, false));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, false));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
     }
 
 
@@ -122,10 +122,10 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         String existentFile = "/etc/passwd";
         String nonexistentFile = "/etc/passwdx";
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, true));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, true));
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, false));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, false));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
     }
 
     @Test

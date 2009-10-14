@@ -288,6 +288,15 @@ public class AnalyzeModel implements DiscoveryProvider {
             PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
             boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
             Item[] items = makeConfigurationDescriptor.getProjectItems();
+            Map<String,Item> projectSearchBase = new HashMap<String,Item>();
+            for (int i = 0; i < items.length; i++){
+                if (isStoped) {
+                    break;
+                }
+                Item item = items[i];
+                String path = item.getNormalizedFile().getAbsolutePath();
+                projectSearchBase.put(path, item);
+            }
             for (int i = 0; i < items.length; i++){
                 if (isStoped) {
                     break;
@@ -297,7 +306,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     Language lang = item.getLanguage();
                     if (lang == Language.C || lang == Language.CPP){
                         CsmFile langFile = langProject.findFile(item);
-                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, pkgConfig, preferLocal);
+                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
                         res.add(source);
                     }
                 }

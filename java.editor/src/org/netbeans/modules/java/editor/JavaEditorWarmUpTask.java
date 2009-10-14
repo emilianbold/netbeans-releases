@@ -148,7 +148,9 @@ public class JavaEditorWarmUpTask implements Runnable{
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
-        
+
+                // initialize empty doc
+                emptyDoc = javaKit.createDefaultDocument();
 
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
@@ -185,7 +187,6 @@ public class JavaEditorWarmUpTask implements Runnable{
             case STATUS_CREATE_DOCUMENTS:
 
                 // Have two documents - one empty and another one filled with many lines
-                emptyDoc = javaKit.createDefaultDocument();
                 longDoc = pane.getDocument();
 
                 try {

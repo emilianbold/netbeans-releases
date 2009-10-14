@@ -488,7 +488,10 @@ public final class RubySession {
         public void propertyChange(PropertyChangeEvent evt) {
             Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
             if (currentSession != null && RubyDebuggerEngineProvider.RUBY_LANGUAGE.equals(currentSession.getCurrentLanguage())) {
-                Util.getCurrentSession().refresh();
+                RubySession rubySession = Util.getCurrentSession();
+                if (rubySession != null) {
+                    rubySession.refresh();
+                }
             }
         }
     }
