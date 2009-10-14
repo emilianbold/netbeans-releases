@@ -2621,7 +2621,13 @@ class_name:className T_PAAMAYIM_NEKUDOTAYIM variable_without_objects:var
 {:
 	RESULT = new StaticFieldAccess(classNameleft, varright, className, var);
 :}
+
+| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM variable_without_objects:var
+{:
+	RESULT = new StaticFieldAccess(classNameleft, varright, className, var);
+:}
 ;
+
 
 variable_class_name ::=
 reference_variable:var

@@ -286,6 +286,8 @@ EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
+NAMESPACE_SEPARATOR=[\\]
+QUALIFIED_LABEL=({NAMESPACE_SEPARATOR}?{LABEL})+
 WHITESPACE=[ \n\r\t]+
 TABS_AND_SPACES=[ \t]*
 ANY_CHAR=(.|[\n])
@@ -963,7 +965,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	} 
 }
 
-<ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}{WHITESPACE}{LABEL}([|]{LABEL})*{WHITESPACE}?"*/" {
+<ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}{WHITESPACE}{QUALIFIED_LABEL}([|]{QUALIFIED_LABEL})*{WHITESPACE}?"*/" {
     comment = yytext();
     handleVarComment();
     // if we want to handle the var comment in  ast, then return the T_VAR_Comment symbol
