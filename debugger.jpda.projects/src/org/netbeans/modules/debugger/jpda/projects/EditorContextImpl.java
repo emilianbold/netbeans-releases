@@ -94,6 +94,7 @@ import javax.lang.model.util.Elements;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.tools.Diagnostic;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -131,6 +132,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -1543,7 +1545,7 @@ public class EditorContextImpl extends EditorContext {
      */
     public <R,D> R parseExpression(final String expression, String url, final int line,
                                    final TreePathScanner<R,D> visitor, final D context,
-                                   final SourcePathProvider sp) {
+                                   final SourcePathProvider sp) throws InvalidExpressionException {
         JavaSource js = null;
         FileObject fo = null;
         if (url != null) {
@@ -1584,6 +1586,9 @@ public class EditorContextImpl extends EditorContext {
             if (treePath != null) {
                 retValue = visitor.scan(treePath, context);
             } else {
+                if (tree == null) {
+                    throw new InvalidExpressionException(NbBundle.getMessage(EditorContextImpl.class, "MSG_NoParseNoEval"));
+                }
                 retValue = tree.accept(visitor, context);
             }
             //t4 = System.nanoTime();

@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
@@ -119,7 +120,7 @@ public class EditorContextBridge {
      */
     public static <R,D> R parseExpression(String expression, String url, final int line,
                                           TreePathScanner<R,D> visitor, D context,
-                                          SourcePathProvider sp) {
+                                          SourcePathProvider sp) throws InvalidExpressionException {
 
         // TODO: return getContext ().parseExpression ();
         try {
@@ -131,6 +132,8 @@ public class EditorContextBridge {
             Throwable tex = itex.getTargetException();
             if (tex instanceof RuntimeException) {
                 throw (RuntimeException) tex;
+            } else if (tex instanceof InvalidExpressionException) {
+                throw ((InvalidExpressionException) tex);
             } else {
                 ErrorManager.getDefault().notify(tex);
                 return null;
