@@ -19,7 +19,9 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>When you install the Java EE version of the IDE, you can choose to install and register the Tomcat Web Server. You can also configure the IDE to deploy web applications to other 
+<p>When you install a version of the IDE that contains Java EE technologies, you can choose to
+install and register the Tomcat Web Server during the installation process.
+You can also configure the IDE to deploy web applications to other 
 installations of supported versions of the Tomcat Web Server. These versions need to be
 <a href="tomcat_addinstall.html">registered</a> first.</p>
 <p>Use the following steps to check that the Tomcat Web Server is the target server 
@@ -33,21 +35,21 @@ installations of supported versions of the Tomcat Web Server. These versions nee
   <li>Click OK.</li>
 </ol>
 
-<b>To deploy to the target server:</b>
+<p><b>To deploy to the target server:</b></p>
 <ol>
 	<li>(Optional) <a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/create/jsp/jsp_queryparams.html">Define parameters</a>
 	to pass to one or more JSP files.</li>
   <li>In the Projects window, right-click the project's node.</li>
   <li>Choose Run Project from the contextual menu.</li>
 </ol>  
-    The IDE sends the web application's URL to the server. The URL is derived from 
+<p>The IDE sends the web application's URL to the server. The URL is derived from
     the server's URL and the web application's context path.
 The server runs through the files listed in the welcome-file-list element 
   in the deployment descriptor (the <tt>web.xml</tt> file), displaying the 
   first one it finds.
 If the server does not find a welcome file, the server's default servlet 
   displays the root of the web application. You can change the behavior of the default 
-  servlet in the <tt>web.xml</tt> file.
+  servlet in the <tt>web.xml</tt> file.</p>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
@@ -58,9 +60,9 @@ If the server does not find a welcome file, the server's default servlet
 </dl>
 
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
+<small><a href="../credits.html">Legal Notices</a> </small>
 <table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
-</small></body></html>
+</body></html>

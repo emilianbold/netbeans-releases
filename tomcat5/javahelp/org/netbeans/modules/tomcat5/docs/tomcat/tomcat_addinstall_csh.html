@@ -9,65 +9,66 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 
-<title>Add Server Instance Wizard: Tomcat Server Instance Properties</title>
+<title>Add Server Instance Wizard: Tomcat Installation and Login Details</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Add Server Instance Wizard: Tomcat Server Instance Properties</h2>
+<h2>Add Server Instance Wizard: Tomcat Installation and Login Details</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>When you download install the Java EE version of the IDE, you can choose to install and register the Tomcat Web Server. You can also configure the IDE to deploy web applications to other 
-installations of supported versions of the Tomcat Web Server. These Tomcat Web Server
-installations must first be registered. Unsupported versions of the Tomcat Web Server
-cannot be registered with the IDE. Instead, you can <a href="tomcat_setup_unsupported.html">create Ant targets</a> that
-you can run from the IDE to deploy an application, JSP page, or servlet to an unsupported version of the Tomcat Web Server.</p>
-
-<p>You can open the Tomcat Server Instance Properties panel by choosing Tools &gt; Servers,
- clicking Add Server, choosing Tomcat 5.0, Tomcat 5.5, or Tomcat 6.0, and choosing Next.
+<p>The Tomcat Installation and Login Details panel of the Add Server Instance wizard
+enables you to register an instance of the Apache Tomcat web server with the IDE.
+You open this panel by choosing Tools &gt; Servers from the main menu and then
+choosing to add a Tomcat web server.
+Alternatively, you can right-click the Servers node in the Services window and choose
+Add Server.</p>
 
 
- <p>Using the Tomcat Server Instance Properties, you can set the following
-  properties while registering the Tomcat Web Server:
+ <p>To register an Apache Tomcat web server, set the following properties in the wizard:</p>
 
 <ul>
-	<li><b>Server Location (Catalina Home).</b> Specifies the Tomcat installation 
-    directory on your local system. Note that the IDE verifies that you have 
-    specified a valid Tomcat installation directory.
-    <li><b>Use Private Configuration Folder (Catalina Base).</b> Specifies that you expect to use Tomcat in a multi-user configuration.
-     When you select this checkbox, you can set the Catalina Base directory.
-    <li><b>Catalina Base.</b> Specifies the Tomcat base directory. Typically, the base directory is placed under 
-    a user's directory. If you associate a base directory with the server, the 
-    base directory must have the following subdirectories. If the base directory is
-    empty, the IDE creates the subdirectories by copying them from Tomcat's
-    home directory. In addition, the <tt>conf</tt> 
-    directory must have a <tt>server.xml</tt> file.</li>
-  <ul>
-    <li><b><tt>conf.</tt></b> Directory for server configuration files</li>
-    <li><b><tt>logs.</tt></b> Directory for log and output files</li>
-    <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
-    <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
-  </ul>
-  <li><b>Username/Password.</b> The user must be a Tomcat user who has a 
-   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.
-<ul class="note"><li><b>Note:</b> If the username does not exist, you can check the box to create it.</li></ul></li>
+    <li><strong>Server Location.</strong> Specifies the Tomcat installation
+    directory (Catalina Home) on your local system. Note that the IDE verifies that you have
+    specified a valid Tomcat installation directory.</li>
+    <li><strong>Use Private Configuration Folder (Catalina Base).</strong>
+    Specifies that you expect to use Tomcat in a multi-user configuration.
+    When you select this option, you can set the Catalina Base directory.</li>
+    <li><b>Catalina Base.</b> Specifies the Tomcat base directory.
+        <p>Typically, a base directory is placed under
+        a user's directory. If you associate a base directory with the server, the
+        base directory must have the following subdirectories.</p>
+       <ul>
+        <li><b><tt>conf.</tt></b> Directory for server configuration files.
+         This directory must have a <tt>server.xml</tt> file.</li>
+        <li><b><tt>logs.</tt></b> Directory for log and output files</li>
+        <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
+        <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
+      </ul>
+      <p>If the base directory is empty, the IDE creates the subdirectories by
+        copying them from Tomcat's home directory.</p>
+    </li>
+    <li><b>Username/Password.</b> The user must be a Tomcat user who has a
+    <a href="tomcat_edit_tomcatuser.html">manager role</a>.
+    <ul class="note"><li><b>Note:</b> If the username does not exist, you can select the box to create it.</li></ul></li>
     
 </ul>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="tomcat_addinstall.html">Registering an External Tomcat Web Server</a></dd>
+<dd><a href="tomcat_addinstall.html">Registering a Tomcat Web Server</a></dd>
 <dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
 <dd><a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a></dd>
 <dd><a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a></dd>
 <dd><a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a></dd>
+<dd><a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a></dd>
 </dl>
 
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
+<small><a href="../credits.html">Legal Notices</a></small>
 <table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
-</small></body></html>
+</body></html>
