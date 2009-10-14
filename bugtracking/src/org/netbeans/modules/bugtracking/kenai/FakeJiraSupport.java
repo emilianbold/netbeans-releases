@@ -157,15 +157,22 @@ public class FakeJiraSupport {
         };
     }
 
+    QueryHandle getAllIssuesQuery() {
+        List<QueryHandle> queries = getQueries();
+        String allIssuesName = NbBundle.getMessage(FakeJiraSupport.class, "LBL_AllIssues");
+        for (QueryHandle queryHandle : queries) {
+            if(queryHandle.getDisplayName().equals(allIssuesName)) {
+                return queryHandle;
+            }
+        }
+        return null;
+    }
+
     List<QueryHandle> getQueries() {
         if(queryHandles == null) {
             queryHandles = createQueryHandles();
         }
         return queryHandles;
-    }
-
-    QueryResultHandle getUnseenResult() {
-        return new FakeJiraQueryResultHandle("0"); // NOI18N
     }
 
     private List<QueryHandle> createQueryHandles() {
@@ -220,7 +227,11 @@ public class FakeJiraSupport {
                 results = r;
             }
             return results; 
-        }        
+        }
+
+        QueryResultHandle getUnseenResult() {
+            return new FakeJiraQueryResultHandle("0"); // NOI18N
+        }
     }
 
     static class FakeJiraQueryResultHandle extends QueryResultHandle implements ActionListener {

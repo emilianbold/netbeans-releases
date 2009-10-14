@@ -122,7 +122,7 @@ public class KenaiRepository extends JiraRepository {
     @Override
     protected Object[] getLookupObjects() {
         Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 1];
+        Object[] obj2 = new Object[obj.length + 2];
         System.arraycopy(obj, 0, obj2, 0, obj.length);
         obj2[obj2.length - 1] = kenaiProject;
         obj2[obj2.length - 2] = Jira.getInstance().getKenaiSupport();
