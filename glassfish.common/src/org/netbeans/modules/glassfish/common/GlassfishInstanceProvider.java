@@ -155,6 +155,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     private final Map<String, GlassfishInstance> instanceMap =
             Collections.synchronizedMap(new HashMap<String, GlassfishInstance>());
+    private static final Set<String> activeDisplayNames = Collections.synchronizedSet(new HashSet<String>());
     private final ChangeSupport support = new ChangeSupport(this);
 
     private String[] instancesDirNames;
@@ -197,7 +198,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         if (null != noPasswordOptionsArray) {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
-        //init();
+        init();
     }
 
     public static synchronized boolean initialized() {
@@ -234,6 +235,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         synchronized(instanceMap) {
             try {
                 instanceMap.put(si.getDeployerUri(), si);
+                activeDisplayNames.add(si.getDisplayName());
                 if (instanceMap.size() == 1) { // only need to do if this first of this type
                     RegisteredDDCatalog catalog = getDDCatalog();
                     if (null != catalog) {
@@ -295,6 +297,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             if(instanceMap.remove(si.getDeployerUri()) != null) {
                 result = true;
                 removeInstanceFromFile(si.getDeployerUri());
+                activeDisplayNames.remove(si.getDisplayName());
                 // If this was the last of its type, need to remove the
                 // resolver catalog contents
                 if (instanceMap.size() == 0) {
@@ -325,13 +328,13 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
     
     public ServerInstanceImplementation getInternalInstance(String uri) {
-        init();
+        //init();
         return instanceMap.get(uri);
     }
 
     public <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
         T result = null;
-        init();
+        //init();
         GlassfishInstance instance = instanceMap.get(uri);
         if(instance != null) {
             result = instance.getLookup().lookup(serverFacadeClass);
@@ -341,7 +344,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     public <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
         List<T> result = new ArrayList<T>();
-        init();
+        //init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 T serverFacade = instance.getLookup().lookup(serverFacadeClass);
@@ -359,7 +362,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     public List<ServerInstance> getInstances() {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
-        init();
+        //init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 result.add(instance.getCommonInstance());
@@ -383,7 +386,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     public ServerInstance getInstance(String uri) {
 //        return instanceMap.get(uri);
-        init();
+        //init();
         GlassfishInstance instance = instanceMap.get(uri);
         return instance == null ? null : instance.getCommonInstance();
     }
@@ -401,7 +404,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // shutdown any instances we started during this IDE session.
     // ------------------------------------------------------------------------
     Collection<GlassfishInstance> getInternalInstances() {
-        init();
+        //init();
         return instanceMap.values();
     }
 
@@ -411,8 +414,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     private void init() {
         synchronized (instanceMap) {
-            if (instanceMap.isEmpty()) {
                 try {
+                    loadServerInstances();
                     registerDefaultInstance();
                     loadServerInstances();
                 } catch (RuntimeException ex) {
@@ -427,7 +430,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     }
                     refreshCatalogFromFirstInstance(this, catalog);
                 }
-            }
         }
 
     }
@@ -446,6 +448,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
                             if(si != null) {
                                 instanceMap.put(si.getDeployerUri(), si);
+                                activeDisplayNames.add(si.getDisplayName());
                             } else {
                                 getLogger().finer("Unable to create glassfish instance for " + instanceFOs[i].getPath()); // NOI18N
                             }
@@ -619,21 +622,26 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     }
     
     private void registerDefaultInstance() {
-        final boolean needToRegisterDefaultServer =
-                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
+//        final boolean needToRegisterDefaultServer =
+//                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
 
-//        String candidate = System.getProperty(installRootPropName);
-//        String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false"); // NOI18N
-//        boolean needToRegisterDefaultServer = computeNeedToRegister(firstRunValue, candidate, getInstallRoots());
-//        if ("true".equals(firstRunValue) && !needToRegisterDefaultServer) {  // NOI18N
-//            //  change the "true" into the path for future checks
-//            //
-//            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN, candidate);
-//        }
+        String candidate = System.getProperty(installRootPropName);
+        String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
+        
+        // we may be migrating from 'old' to new
+        if ("false".equals(firstRunValue)) {
+            firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false");
+        }
+        boolean needToRegisterDefaultServer = computeNeedToRegister(firstRunValue, candidate, getInstallRoots());
+        if ("true".equals(firstRunValue) && !needToRegisterDefaultServer && null != candidate) {  // NOI18N
+            //  change the "true" into the path for future checks
+            //
+            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
+        }
 
         if (needToRegisterDefaultServer) {
             try {
-                String candidate = System.getProperty(installRootPropName); //NOI18N
+                //String candidate = System.getProperty(installRootPropName); //NOI18N
 
                 if (null != candidate) {
                     File f = new File(candidate);
@@ -644,7 +652,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
                                 f.getCanonicalPath() + File.separator + "glassfish"); // NOI18N
                         if (Utils.canWrite(f)) { // f.canWrite()) {
-                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultDomainName);
+                            String dn = getUniqueName(defaultDomainName);
+                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, dn);
                             ip.put(GlassfishModule.HTTPPORT_ATTR,
                                     Integer.toString(8080));
                             ip.put(GlassfishModule.ADMINPORT_ATTR,
@@ -654,7 +663,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                     File.separator + "domains"); // NOI18N
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, "domain1"); // NOI18N
                             GlassfishInstance gi = GlassfishInstance.create(ip,this);
-                            NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
+                            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
                         } else {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
@@ -738,11 +747,22 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     private Collection<String> getInstallRoots() {
         Set<String> registeredRoots = new HashSet<String>();
-        if (!instanceMap.isEmpty()) {
+        //if (!instanceMap.isEmpty()) {
         for (GlassfishInstance i : getInternalInstances()) {
             registeredRoots.add(i.getInstallRoot());
-        }
+        //}
         }
         return registeredRoots;
+    }
+
+    private String getUniqueName(String defaultDomainName) {
+        synchronized(instanceMap) {
+            String candidate = defaultDomainName;
+            int n = 1;
+            while (activeDisplayNames.contains(candidate)) {
+                candidate = defaultDomainName + " " + n++;
+            }
+            return candidate;
+        }
     }
 }
