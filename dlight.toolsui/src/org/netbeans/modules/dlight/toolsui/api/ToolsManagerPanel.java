@@ -118,6 +118,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         toolsTable = new ToolsTable(dlightConfigurationUIWrapper, dlightConfigurationUIWrapper.getTools(), new MySelectionListener());
         toolsList.setViewportView(toolsTable);
         toolsTable.initSelection();//getSelectionModel().setSelectionInterval(0, 0);
+        toolsLabel.setLabelFor(toolsTable);
     }
 
     private DLightConfigurationUIWrapper inList(String name, List<DLightConfigurationUIWrapper> list) {
@@ -241,6 +242,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        profileConfigurationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/api/Bundle").getString("ProfilerConfiguration_MN").charAt(0));
         profileConfigurationLabel.setLabelFor(profileConfigurationComboBox);
         profileConfigurationLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.profileConfigurationLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -276,6 +278,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         toolsPanel.add(toolsList, gridBagConstraints);
 
+        toolsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/api/Bundle").getString("TOOLS_MN").charAt(0));
         toolsLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.toolsLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
