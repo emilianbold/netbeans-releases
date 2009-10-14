@@ -131,6 +131,6 @@ class FunctionsListDataProviderImpl implements FunctionsListDataProvider {
     }
 
     public boolean hasTheSameDetails(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
-        return false;
+        return true;
     }
 }

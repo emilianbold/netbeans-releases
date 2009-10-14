@@ -176,13 +176,6 @@ static void create_dir(const char* path) {
 static int create_file(const char* path, int size) {
     trace("\tcreating file %s %d\n", path, size);
 
-    char real_path[PATH_MAX];
-    if ( realpath(path, real_path)) {
-        insert_file_data(path);
-    } else {
-        return false;
-    }
-
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
     if (fd > 0) { // // TODO: error processing
         if (size > 0) {
@@ -196,6 +189,13 @@ static int create_file(const char* path, int size) {
         }
         if (close(fd) != 0) {
             report_error("error closing %s (fd=%d)\n", path, fd);
+            return false;
+        }
+        char real_path[PATH_MAX];
+        if ( realpath(path, real_path)) {
+            insert_file_data(real_path);
+        } else {
+            trace_unresolved_path(path);
             return false;
         }
     } else {
@@ -233,7 +233,7 @@ static int init_files() {
             char* path = buffer;
             while (path < buffer + bufsize - 1 && *path && *path != ' ') {
                 if (!isdigit(*path)) {
-                    fprintf(stderr, "prodocol error: %s\n", buffer);
+                    report_error("prodocol error: %s\n", buffer);
                     break;
                 }
                 path++;
@@ -242,13 +242,17 @@ static int init_files() {
             if (path < buffer + bufsize - 1 && *path == ' ') {
                 path++; // skip space after size
             } else {
-                fprintf(stderr, "prodocol error: %s\n", buffer);
+                report_error("prodocol error: %s\n", buffer);
                 break;
             }
             int size = atoi(buffer);
+            int old_errno = errno;
+            errno = 0;
             if (!create_file(path, size)) {
-                break;
+                report_error("can not create file %s: %s\n", path, strerror(errno));
+                //break; // don't break, otherewise can break build if because of absence of some irrelevant file (say, configurations.xml)
             }
+            errno = old_errno;
         }
     }
     trace("Files list initialization done\n");

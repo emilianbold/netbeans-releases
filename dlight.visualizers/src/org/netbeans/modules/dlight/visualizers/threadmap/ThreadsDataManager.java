@@ -234,12 +234,12 @@ public class ThreadsDataManager {
      * Convert the data received from the server on this iteration into the internal compressed format,
      * and notify listeners
      */
-    public synchronized void processData(MonitoredData monitoredData, DLightSession session, final ThreadMapDataProvider provider) {
+    public synchronized void processData(MonitoredData monitoredData, DLightSession session, final ThreadMapDataProvider provider, long requestFrom) {
         int threadSize = monitoredData.getThreadsSize();
         if (threadSize == 0) {
             return;
         }
-        mergeData(monitoredData);
+        mergeData(monitoredData, requestFrom);
         threadSize = threadData.size();
         if (threadSize == 0) {
             return;
@@ -258,7 +258,7 @@ public class ThreadsDataManager {
         }
     }
 
-    private void mergeData(MonitoredData monitoredData){
+    private void mergeData(MonitoredData monitoredData, long requestFrom){
         int updateThreadSize = monitoredData.getThreadsSize();
         if (updateThreadSize == 0) {
             return;
@@ -274,12 +274,16 @@ public class ThreadsDataManager {
             ThreadStateColumnImpl col = threadData.get(i);
             Integer number = IdToNumber.get(col.getThreadID());
             if (number != null) {
-                ThreadState lastState = col.getThreadStateAt(col.size()-1);
+                long lastState = col.getThreadStateAt(col.size()-1).getTimeStamp();
+                if (requestFrom < lastState) {
+                    col.clearStates();
+                    lastState = requestFrom - 1;
+                }
                 int newData = number.intValue();
                 List<ThreadState> states = monitoredData.getThreadStates(newData);
                 for (int j = 0; j < states.size(); j++) {
                     ThreadState newState = states.get(j);
-                    if (newState.getTimeStamp() > lastState.getTimeStamp()) {
+                    if (newState.getTimeStamp() > lastState) {
                         col.add(newState);
                     }
                     col.updateStackProvider(monitoredData.getStackProvider(newData));

@@ -94,6 +94,21 @@ public class IndentTestCase extends EditorBase {
                 );
         
     }
+
+    public void testJavadocStarTyping() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "/**\n" +
+                "|\n" +
+                " */\n"
+                );
+        typeChar('h', true);
+        assertDocumentTextAndCaret("Incorrect line indent",
+                "/**\n"
+                + " h|\n"
+                + " */\n"
+                );
+    }
     
     public void testEnterInMultiLineSystemOutPrintln() {
         setDefaultsOptions();

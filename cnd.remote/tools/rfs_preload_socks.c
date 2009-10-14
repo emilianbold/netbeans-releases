@@ -108,8 +108,9 @@ static int open_socket() {
     }
     // configure script contains a weird command: exec 7<&0 </dev/null 6>&1
     // so using descriptor 6 or 7 can get us into trouble
-    if (sd == 6 || sd == 7) {
-        int new_sd = fcntl(sd, F_DUPFD, 10);
+    const int min_sock = 64; // an arbitrary number big enougth to not coincide with 6, 7, etc
+    if (sd < min_sock) {
+        int new_sd = fcntl(sd, F_DUPFD, min_sock);
         trace("configure workaround: duplicating descriptor %d to %d\n", sd, new_sd);
         if (new_sd != -1) {
             close(sd);
