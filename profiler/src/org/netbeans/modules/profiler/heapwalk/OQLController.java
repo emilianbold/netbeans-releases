@@ -252,9 +252,10 @@ public class OQLController extends AbstractTopLevelController
                             sb.append("</table>"); // NOI18N
 
                             analysisRunning.compareAndSet(true, false);
-                            queryController.queryFinished();
                             resultsController.setResult(sb.toString());
+                            queryController.queryFinished();
                         } catch (OQLException oQLException) {
+                            analysisRunning.set(false);
                             StringBuilder errorMessage = new StringBuilder();
                             errorMessage.append("<h2>").append(NbBundle.getMessage(OQLController.class, "OQL_QUERY_ERROR")).append("</h2>"); // NOI18N
                             errorMessage.append(NbBundle.getMessage(OQLController.class, "OQL_QUERY_PLZ_CHECK")); // NOI18N
@@ -262,7 +263,6 @@ public class OQLController extends AbstractTopLevelController
                             errorMessage.append(oQLException.getLocalizedMessage().replace("\n", "<br>").replace("\r", "<br>"));
                             resultsController.setResult(errorMessage.toString());
                             queryController.queryFinished();
-                            cancelQuery();
                         }
                     }
                 });
