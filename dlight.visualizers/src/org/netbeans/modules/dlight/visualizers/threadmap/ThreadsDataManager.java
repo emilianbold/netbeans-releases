@@ -275,9 +275,9 @@ public class ThreadsDataManager {
             Integer number = IdToNumber.get(col.getThreadID());
             if (number != null) {
                 long lastState = col.getThreadStateAt(col.size()-1).getTimeStamp();
-                if (requestFrom < lastState) {
+                if (requestFrom == 0) {
                     col.clearStates();
-                    lastState = requestFrom - 1;
+                    lastState = -1;
                 }
                 int newData = number.intValue();
                 List<ThreadState> states = monitoredData.getThreadStates(newData);
