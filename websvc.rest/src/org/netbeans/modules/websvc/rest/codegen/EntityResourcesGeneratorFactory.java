@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
 
 /**
@@ -52,8 +54,21 @@ public class EntityResourcesGeneratorFactory {
 
         if (RestUtils.hasSpringSupport(project)) {
             return new SpringEntityResourcesGenerator();
+        } else if (isJavaEE6(project)) {
+            return new JavaEE6EntityResourcesGenerator();
         } else {
             return new J2eeEntityResourcesGenerator();
         }
+    }
+
+    private static boolean isJavaEE6(Project project) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile profile = webModule.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_WEB == profile || Profile.JAVA_EE_6_FULL == profile) {
+                return true;
+            }
+        }
+        return false;
     }
 }

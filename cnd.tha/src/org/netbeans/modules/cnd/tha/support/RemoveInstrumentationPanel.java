@@ -68,6 +68,7 @@ public class RemoveInstrumentationPanel extends javax.swing.JPanel {
         message.setBackground(getBackground());
         message.setContentType("text/html"); // NOI18N
         message.setText(NbBundle.getMessage(RemoveInstrumentationPanel.class, "RemoveInstrumentationPanel.info.text", projectName)); // NOI18N
+        message.select(message.getDocument().getLength()-1, message.getDocument().getLength()-1);
     }
 
     public static boolean showDialog(Project project){
@@ -117,12 +118,16 @@ public class RemoveInstrumentationPanel extends javax.swing.JPanel {
         dontAsk = new javax.swing.JCheckBox();
 
         setBackground(getBackground());
+        setMinimumSize(new java.awt.Dimension(350, 250));
+        setPreferredSize(new java.awt.Dimension(350, 250));
         setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setBorder(null);
         jScrollPane1.setPreferredSize(new java.awt.Dimension(300, 100));
 
         message.setBorder(null);
+        message.setEditable(false);
+        message.setFocusable(false);
         jScrollPane1.setViewportView(message);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -229,7 +229,12 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Services">
-        <folder name="MIMEResolver">
+        <folder name="JavaHelp">
+            <file name="org-netbeans-modules-javacard-helpset.xml" url="helpset.xml">
+                <attr name="position" intvalue="1157"/>
+            </file>
+        </folder>
+      <folder name="MIMEResolver">
             <file name="APDUFileResolver.xml" url="resources/APDUFileResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                 <attr name="position" intvalue="267"/>

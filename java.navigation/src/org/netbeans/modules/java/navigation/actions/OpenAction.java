@@ -47,19 +47,15 @@
 package org.netbeans.modules.java.navigation.actions;
 
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import javax.lang.model.element.Element;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
-
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.awt.StatusDisplayer;
-import org.openide.text.Line;
-import org.openide.text.Line.ShowOpenType;
-import org.openide.text.Line.ShowVisibilityType;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.util.*;
 
+import javax.swing.*;
+import java.awt.event.*;
 
 /**
  * An action that opens editor and jumps to the element given in constructor.
@@ -69,50 +65,33 @@ import org.openide.util.NbBundle;
  */
 public final class OpenAction extends AbstractAction {
     
-    private String              displayName;
-    private Line.Part           line;
+    private ElementHandle<? extends Element> elementHandle;   
+    private FileObject fileObject;
+    private String displayName;
       
+    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject ) {
+        this( elementHandle, fileObject, null );
+    }
     
-    public OpenAction (
-        ElementHandle<? extends Element>
-                                elementHandle,
-        String                  displayName,
-        Line.Part               line
-    ) {
-
+    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject, String displayName ) {
+        this.elementHandle = elementHandle;
+        this.fileObject = fileObject;
         this.displayName = displayName;
-        this.line = line;
-        putValue (Action.NAME, NbBundle.getMessage (OpenAction.class, "LBL_Goto")); //NOI18N
+        putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N
     }
     
     public void actionPerformed (ActionEvent ev) {
-        if (null == line) {
+        if( null == fileObject ) {
             Toolkit.getDefaultToolkit().beep();
-            if (null != displayName)
-                StatusDisplayer.getDefault ().setStatusText (
-                    NbBundle.getMessage (OpenAction.class, "MSG_NoSource", displayName)   //NOI18N
-                );
-            return;
-        } 
-        if (SwingUtilities.isEventDispatchThread ())
-            line.getLine ().show (
-                ShowOpenType.OPEN,
-                ShowVisibilityType.FOCUS,
-                line.getColumn ()
-            );
-        else
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    line.getLine ().show (
-                        ShowOpenType.OPEN,
-                        ShowVisibilityType.FOCUS,
-                        line.getColumn ()
-                    );
-                }
-            });
+            if( null != displayName ) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName) );  //NOI18N
+            }
+        } else {
+            ElementOpen.open(fileObject, elementHandle);
+        }
     }
 
-    @Override
     public boolean isEnabled () {
           return true;
     }

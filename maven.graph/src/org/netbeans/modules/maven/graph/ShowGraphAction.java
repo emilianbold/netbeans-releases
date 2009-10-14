@@ -44,6 +44,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
@@ -64,12 +65,16 @@ public class ShowGraphAction extends AbstractAction implements ContextAwareActio
             putValue("prj", prj); //NOI18N
         }
     }
+
+    @Override
+    public boolean isEnabled() {
+        Project project = (Project) getValue("prj"); //NOI18N
+        return project != null && project.getLookup().lookup(NbMavenProject.class) != null;
+    }
     
     public void actionPerformed(ActionEvent e) {
         final Project project = (Project) getValue("prj"); //NOI18N
-        if (project != null) {
-            ArtifactViewer.showArtifactViewer(project, ArtifactViewer.HINT_GRAPH);
-        }
+        ArtifactViewer.showArtifactViewer(project, ArtifactViewer.HINT_GRAPH);
     }
     
     public Action createContextAwareInstance(Lookup lookup) {

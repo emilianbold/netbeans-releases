@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
+import org.openide.util.HelpCtx;
 
 public class WebProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
 
@@ -72,6 +73,7 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
         group.add (pageRadioButton);
         group.add (servletRadioButton);
         group.add (urlRadioButton);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
     }
 
     /** This method is called from within the constructor to

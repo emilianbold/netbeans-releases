@@ -126,4 +126,8 @@ public class DLightMath {
             return b;
         }
     }
+
+    public static long nextProductOf(long multiplier, long ref) {
+        return (ref / multiplier + 1) * multiplier;
+    }
 }

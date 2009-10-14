@@ -177,11 +177,6 @@ public class KenaiConnection implements PropertyChangeListener {
         return result;
     }
 
-    public synchronized int getMessagesCountFor(String name) {
-        LinkedList<Message> m = privateMessageQueue.get(name);
-        return m==null?0:m.size();
-    }
-
     /**
      * Adds listener to given MultiUserChat
      * only one listener can listen on given MultiUserChat

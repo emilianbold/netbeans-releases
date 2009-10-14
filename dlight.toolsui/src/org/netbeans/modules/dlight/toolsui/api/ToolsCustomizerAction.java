@@ -43,12 +43,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
-public final class ToolsCustomizerAction implements ActionListener {
+public final class ToolsCustomizerAction extends SystemAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         showCustomizer();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction");
     }
 
     /**

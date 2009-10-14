@@ -58,7 +58,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -235,7 +234,14 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 if(master.isKenai()) {
                     KenaiUser kenaiUser = master.getKenaiUser(author);
                     if(kenaiUser != null) {
-                        l = new AuthorLinker(kenaiUser, authorStyle, doc, author);
+                        l = new AuthorLinker(
+                                kenaiUser,
+                                authorStyle,
+                                doc,
+                                author, 
+                                kenaiUser.getChatLink(
+                                    master.getdDocument(),
+                                    annotateLine.getLineNum()));
                         linkerSupport.add(l, 0);
                     }                    
                 }

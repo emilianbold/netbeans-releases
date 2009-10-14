@@ -58,6 +58,7 @@ import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemListener {
@@ -69,6 +70,7 @@ final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemLi
         this.wiz = wiz;
         setLayout (new GridBagLayout());
         setBorder (BorderFactory.createEmptyBorder (12,12,12,12));
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ChangeLibraryDeploymentStrategy"); //NOI18N
     }
 
     void setDependencyKind(DependencyKind kind) {

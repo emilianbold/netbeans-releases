@@ -205,57 +205,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel = new JTextArea();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return advancedButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return advancedButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return advancedButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  runAsCombo){
-                    return urlTextField;
-                }
-                if(aComponent ==  urlTextField){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  argsTextField){
-                    return advancedButton;
-                }
-                return advancedButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  urlTextField){
-                    return runAsCombo;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return urlTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  advancedButton){
-                    return argsTextField;
-                }
-                return advancedButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsCombo);
 
@@ -281,8 +231,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setRows(2);
         hintLabel.setWrapStyleWord(true);
         hintLabel.setBorder(null);
-        hintLabel.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
-        hintLabel.setEnabled(false);
         hintLabel.setOpaque(false);
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text"));
         advancedButton.addActionListener(new ActionListener() {

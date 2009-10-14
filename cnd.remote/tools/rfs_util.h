@@ -46,6 +46,8 @@ enum {
     false = 0
 };
 
+void report_error(const char *format, ...);
+
 #if TRACE
     void trace(const char *format, ...);
     void trace_startup(const char* prefix, const char* env_var, const char* binary);

@@ -54,7 +54,9 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.api.editor.PhpFunction;
 import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.index.IndexedClass;
+import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -112,7 +114,9 @@ public class EditorSupportImpl implements EditorSupport {
         final List<FileObject> retval = new ArrayList<FileObject>();
 
         PHPIndex index = PHPIndex.get(Collections.singletonList(sourceRoot));
-        Collection<IndexedClass> classes = index.getClasses(null, phpClass.getName(), QuerySupport.Kind.EXACT);
+        NamespaceIndexFilter<IndexedClass> namespaceFilter = new NamespaceIndexFilter<IndexedClass>(phpClass.getFullyQualifiedName());
+        Collection<IndexedClass> classes = namespaceFilter.filter(
+                index.getClasses(null, namespaceFilter.getName(), QuerySupport.Kind.EXACT));
         for (IndexedClass indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
             if (fo != null && fo.isValid()) {

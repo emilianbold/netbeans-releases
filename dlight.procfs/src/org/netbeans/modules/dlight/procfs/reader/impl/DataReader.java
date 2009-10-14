@@ -42,23 +42,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class DataReader {
 
-    private static volatile int bigendian = 0;
+    private final boolean bigendian;
     private final AtomicInteger data_offset;
     private final ReusableByteBuffer buffer;
     private final int buffer_offset;
 
-    DataReader(final ReusableByteBuffer buffer, final int offset) {
+    DataReader(final ReusableByteBuffer buffer, final int offset, final boolean bigendian) {
         this.buffer = buffer;
+        this.bigendian = bigendian;
         buffer_offset = offset;
         data_offset = new AtomicInteger(0);
     }
 
     void releaseBuffer() {
         buffer.unlock(buffer_offset);
-    }
-
-    static void switchEndian() {
-        bigendian = 1 - bigendian;
     }
 
     void seek(int pos) {
@@ -71,7 +68,7 @@ class DataReader {
         int b3 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
         int b4 = 0xFF & buffer.buffer[data_offset.getAndIncrement()];
 
-        return bigendian == 0 ? (b4 << 24 | b3 << 16 | b2 << 8 | b1) : (b1 << 24 | b2 << 16 | b3 << 8 | b4);
+        return bigendian ? (b1 << 24 | b2 << 16 | b3 << 8 | b4) : (b4 << 24 | b3 << 16 | b2 << 8 | b1);
     }
 
     long _time() {

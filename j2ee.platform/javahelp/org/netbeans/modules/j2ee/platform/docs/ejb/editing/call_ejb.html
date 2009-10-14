@@ -29,9 +29,6 @@
             <li>In the Source Editor, right-click anywhere in the body of the class and 
             choose Insert Code &gt; Call Enterprise Bean.</li>
             <li>In the dialog box, select the enterprise bean that you want to call.</li>
-            <li>If the project uses the J2EE 1.4 specification, select whether to 
-            use inline lookup code or use an existing <a href="../../enterprise/general/service_locator.html">service 
-            locator</a> class. </li>
             <li>(Optional) Type a new name for the reference.</li>
             <li>Specify whether to reference the local interface or the remote interface. 
             To reference a bean's local interface, the class that is referencing 
@@ -41,7 +38,7 @@
         </ol>
         <p>When you call an enterprise bean, the following occurs:</p>
         <ul>
-            <li><b>Java EE 5 projects:</b>
+            <li><b>Java EE 5  and Java EE 6 projects:</b>
             <ul>
                 <li>The IDE uses the <tt>@EJB</tt> annotation to indicate a dependency on another bean.
                 In the Java class from which you are calling the enterprise bean, the IDE adds code similar to the following:
@@ -72,7 +69,10 @@ private NewSessionRemote newSessionBean;</pre></li>
         <p><b>Notes:</b></p>
         
 <ul class="note">
-  <li>The IDE cannot assist you when calling an enterprise bean from a free-form 
+    <li>If the project uses the J2EE 1.4 specification, when you select the enterprise bean that you want to call you
+    need to select whether to use inline lookup code or use an existing <a href="../../enterprise/general/service_locator.html">service
+    locator</a> class. </li>
+    <li>The IDE cannot assist you when calling an enterprise bean from a free-form
     web application project.</li>
 </ul>
         <dl>

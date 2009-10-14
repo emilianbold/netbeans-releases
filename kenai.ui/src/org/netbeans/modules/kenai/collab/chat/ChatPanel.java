@@ -657,7 +657,7 @@ public class ChatPanel extends javax.swing.JPanel {
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
                 .add(sendLinkButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 154, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
@@ -667,8 +667,6 @@ public class ChatPanel extends javax.swing.JPanel {
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
-
-        outboxScrollPane.setBorder(null);
 
         outbox.setMaximumSize(new java.awt.Dimension(0, 16));
         outbox.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -689,6 +687,7 @@ public class ChatPanel extends javax.swing.JPanel {
         inboxPanel.setLayout(new java.awt.BorderLayout());
 
         inboxScrollPane.setBorder(null);
+        inboxScrollPane.setViewportBorder(null);
 
         inbox.setBorder(null);
         inbox.setContentType("text/html"); // NOI18N
@@ -943,22 +942,28 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String getMessageBody(Message m) {
         final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
+        String b = m.getBody();
         if (ne==null) {
-            return m.getBody();
+            return b;
         }
         KenaiNotification n = ne.getNotification();
         if (n.getType() != KenaiService.Type.SOURCE) {
-            return m.getBody();
+            return b;
         }
-        String author = n.getAuthor();
-        String body = m.getBody().substring(m.getBody().indexOf(']')+2);
+        int i = b.indexOf(']');
+        String body;
+        if (i>=0) {
+            body = b.substring(i+2);
+        } else {
+            body = b;
+        }
         String id = n.getModifications().get(0).getId();
         String projectName = StringUtils.parseName(m.getFrom());
         if (projectName.contains("@")) {
             projectName = StringUtils.parseName(projectName);
         }
         String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id;
-        return author + ": " + body + "\n" + url;
+        return body + "\n" + url;
     }
 
     protected void insertMessage(Message message) {

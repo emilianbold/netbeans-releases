@@ -23,53 +23,32 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="methodCodeCompletionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="codeCompletionNonStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="codeCompletionStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-              </Group>
-              <EmptySpace pref="332" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="codeCompletionNonStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="codeCompletionStaticMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="codeCompletionTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                              <Component id="smartInfoLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="smartRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="fullyQualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                              <Component id="fullyQualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="unqualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                              <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Component id="smartInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="smartRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="fullyQualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Component id="fullyQualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="unqualifiedRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                      <Component id="unqualifiedInfoLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="enableAutocompletionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="autoCompletionTypesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="autoCompletionVariablesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="autoCompletionNamespacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
+                  <Component id="autoCompletionTypesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="autoCompletionVariablesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="autoCompletionNamespacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="109" max="32767" attributes="0"/>
           </Group>
@@ -190,7 +169,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.smartInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="fullyQualifiedRadioButton">
@@ -211,7 +189,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.fullyQualifiedInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="unqualifiedRadioButton">
@@ -232,7 +209,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/editor/options/Bundle.properties" key="CodeCompletionPanel.unqualifiedInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

@@ -310,8 +310,10 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         
         @Override
         public Set<ModuleUpdateElementImpl> getContainedModuleElements () {
-            if (moduleElementsImpl == null) {
-                moduleElementsImpl = processContainedModules (featureItem.getModuleCodeNames (), null);
+            synchronized(this) {
+                if (moduleElementsImpl == null) {
+                    moduleElementsImpl = processContainedModules (featureItem.getModuleCodeNames (), null);
+                }
             }
             assert moduleElementsImpl != null : "FeatureUpdateElementImpl contains modules " + moduleElementsImpl;
             return moduleElementsImpl;

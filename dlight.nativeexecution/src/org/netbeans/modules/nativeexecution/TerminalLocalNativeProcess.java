@@ -66,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -85,11 +86,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
-        if (dorunScriptFile != null) {
+        if (dorunScriptFile == null) {
+            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
+        } else if (!Utilities.isWindows()) {
             CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
                     dorunScriptFile.getAbsolutePath(), 0755, null);
-        } else {
-            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }
 
         dorunScript = dorunScriptFile;
@@ -152,7 +153,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     "-p", pidFile, // NOI18N
                     "-x", terminalInfo.getPrompt(terminal))); // NOI18N
 
-            terminalArgs.addAll(info.getCommandListForShell());
+            terminalArgs.add(commandLine);
 
             List<String> command = terminalInfo.wrapCommand(
                     info.getExecutionEnvironment(),
@@ -187,16 +188,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 pb.environment().put("DISPLAY", display); // NOI18N
             }
 
+            env.appendPathVariable("PATH", hostInfo.getPath()); // NOI18N
+
             if (!env.isEmpty()) {
                 // TODO: FIXME (?)
                 // Do PATH normalization on Windows....
                 // Problem here is that this is done for PATH env. variable only!
 
                 if (isWindows) {
-                    String path = env.get("PATH"); // NOI18N
-                    // As we use sh to start... convert paths to shell's format
-                    String newPath = WindowsSupport.getInstance().convertToAllShellPaths(path);
-                    env.put("PATH", "/bin:/usr/bin:" + newPath); // NOI18N
+                    env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
                 }
 
                 OutputStream fos = new FileOutputStream(envFileFile);
@@ -214,7 +214,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             Process terminalProcess = pb.start();
 
             creation_ts = System.nanoTime();
-            
+
             waitPID(terminalProcess, pidFileFile);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
@@ -265,7 +265,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     log.log(Level.FINEST, "", ex); // NOI18N
                     rc = -1;
                 }
-                
+
                 Thread.sleep(300);
             }
         } else {

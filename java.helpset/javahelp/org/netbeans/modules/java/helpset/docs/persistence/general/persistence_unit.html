@@ -15,13 +15,13 @@
         
         <h2>Creating a Persistence Unit</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>A persistence unit is required if you are using Java Persistence in your EJB module or web module.
+        <p>A persistence unit is required if you are using Java Persistence in your project.
         </p>
         
         
         <p><b>To create a persistence unit:</b></p>
         <ol>
-            <li>In the Projects window, right-click a web or EJB module project node and choose New &gt; Other.</li>
+            <li>In the Projects window, right-click the project node and choose New &gt; Other.</li>
             <li>Select Persistence Unit in the Persistence category and click Next.</li>
             <li>Specify a unique Persistence Unit Name.
             In most cases you can keep the default name suggested by the IDE.</li>
@@ -41,10 +41,10 @@
         </ol>
         
         <p>When you click Finish, the file <tt>persistence.xml</tt> opens in the Source Editor.</p>
-        <p>In the IDE, you can find <tt>persistence.xml</tt> in the Projects window under the Configuration Files node.
+        <p>In EJB and WAR projects, you can find <tt>persistence.xml</tt> in the Projects window under the Configuration Files node.
         In the Files window, <tt>persistence.xml</tt> is located in the <tt>src/conf</tt> directory.</p>
-        <p>When packaged, <tt>persistence.xml</tt> is located in the <tt>META-INF</tt> directory of an EJB JAR file or the
-        <tt>WEB-INF/classes</tt> directory of a WAR file. </p>
+        <p>When packaged, <tt>persistence.xml</tt> is located in the <tt>META-INF</tt> directory of an EJB JAR archive or the
+        <tt>WEB-INF/classes</tt> directory of a WAR archive. </p>
         
         <dl>
         <dt><a name="seealso">See Also</a></dt>

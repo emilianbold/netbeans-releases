@@ -474,8 +474,15 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
         }
 
 
+        boolean inStateChanged;
         public void stateChanged(ChangeEvent e) {
-            supp.fireChange();
+            if (inStateChanged) return;
+            inStateChanged = true;
+            try {
+                supp.fireChange();
+            } finally {
+                inStateChanged = false;
+            }
         }
     }
 }

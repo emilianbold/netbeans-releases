@@ -83,6 +83,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
         setDefaultCompilerSet("GNU");
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String projectPath = rcFile.get( SECTION, projectKey);
+        System.setProperty("cnd.remote.timestamps.clear", rcFile.get(SECTION, "cnd.remote.timestamps.clear", ""));
         assertNotNull(projectPath);
         File projectDirFile = new File(projectPath);
         assertTrue(projectDirFile.exists());

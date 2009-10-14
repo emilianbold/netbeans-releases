@@ -96,7 +96,6 @@ public final class DashboardImpl extends Dashboard {
     private static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     private static final String PREF_COUNT = "count"; //NOI18N
     private static final String PREF_ID = "id"; //NOI18N
-    private static final String PREF_PRIVATE_PROJECTS = "privateProjects"; // NOI18N
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -409,6 +408,17 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
+    void refreshNonMemberProjects() {
+        synchronized( LOCK ) {
+            removeProjectsFromModel(openProjects);
+            openProjects.clear();
+            otherProjectsLoaded = false;
+            if( isOpened() ) {
+                startLoadingAllProjects(true);
+            }
+        }
+    }
+
     private void refreshMemberProjects() {
         synchronized( LOCK ) {
             memberProjects.clear();
@@ -528,7 +538,8 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
+        String kenaiName = Kenai.getDefault().getName();
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
         if( 0 == count )
             return; //nothing to load
@@ -550,7 +561,8 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void storeAllProjects() {
-        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS); //NOI18N
+        String kenaiName = Kenai.getDefault().getName();
+        Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int index = 0;
         for( ProjectHandle project : openProjects ) {
             //do not store private projects
@@ -701,7 +713,7 @@ public final class DashboardImpl extends Dashboard {
             model.removeRoot(node);
         }
         if (i==projects.size()) {
-            if (!model.getRootNodes().contains(noMyProjects))
+            if (!model.getRootNodes().contains(noMyProjects) && login!=null)
                 model.addRoot(-1, noMyProjects);
         }
     }

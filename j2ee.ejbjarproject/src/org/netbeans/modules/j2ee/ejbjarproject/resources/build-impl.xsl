@@ -804,20 +804,29 @@ exists or setup the property manually. For example like this:
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <copyfiles todir="${{dist.ear.dir}}">
+                    <copyfiles>
+                        <xsl:attribute name="todir">${dist.ear.dir}</xsl:attribute>
+                        <xsl:if test="//ejbjarproject3:included-library[@dirs]">
+                            <xsl:if test="(@dirs = 200)">
+                                <xsl:attribute name="todir">${dist.ear.dir}/lib</xsl:attribute>
+                            </xsl:if>
+                            <xsl:if test="(@dirs = 300)">
+                                <xsl:attribute name="todir">${build.classes.dir}</xsl:attribute>
+                            </xsl:if>
+                        </xsl:if>
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
-                       <xsl:attribute name="manifestproperty">
+<!--                       <xsl:attribute name="manifestproperty">
                            <xsl:value-of select="concat('manifest.', $included.prop.name)"/>
-                       </xsl:attribute>
+                       </xsl:attribute> -->
                     </copyfiles>
                 </xsl:for-each>   
                 
-                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF"/>
+<!--                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//ejbjarproject3:included-library">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
-                                <!-- cp elements for included libraries and files -->
                                 <xsl:for-each select="//ejbjarproject3:included-library">
                                     <xsl:variable name="included.prop.name">
                                         <xsl:value-of select="."/>
@@ -827,7 +836,7 @@ exists or setup the property manually. For example like this:
                             </xsl:attribute>
                         </attribute>
                     </xsl:if>
-                </manifest>
+                </manifest> -->
                 
             </target>
             

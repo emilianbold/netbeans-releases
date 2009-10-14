@@ -45,12 +45,11 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.text.Document;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
@@ -76,6 +75,7 @@ final class ChooseOriginPanelVisual extends JPanel implements DocumentListener {
         initComponents();
         originField.getDocument().addDocumentListener(this);
         sourcesField.getDocument().addDocumentListener(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.DependenciesPanel"); //NOI18N
     }
 
     @Override

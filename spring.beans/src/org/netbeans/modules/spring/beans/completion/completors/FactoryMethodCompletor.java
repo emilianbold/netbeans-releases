@@ -99,6 +99,9 @@ public class FactoryMethodCompletor extends JavaMethodCompletor {
             final String factoryBeanName = mergedBean.getFactoryBean();
             FileObject fo = context.getFileObject();
             SpringConfigModel model = SpringConfigModel.forFileObject(fo);
+            if (model == null) {
+                return null;
+            }
             try {
                 model.runReadAction(new Action<SpringBeans>() {
 
