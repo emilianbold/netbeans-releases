@@ -39,10 +39,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.WeakSet;
 
 /**
  * Copied from Java Debugger
@@ -50,8 +50,10 @@ import org.openide.util.WeakSet;
  */
 public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
-    private Set<String> expandedNodes = new WeakSet<String>();
-    private Set<String> collapsedNodes = new WeakSet<String>();
+    // CND debugger support re-creates all variables each step
+    // so we can not use weakset here
+    private Set<String> expandedNodes = new HashSet<String>();
+    private Set<String> collapsedNodes = new HashSet<String>();
 
     /**
      * Defines default state (collapsed, expanded) of given node.
