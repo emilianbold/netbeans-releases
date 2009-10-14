@@ -590,6 +590,20 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         keys.add(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK));
         table.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, keys);
 
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.ALT_MASK, true), "ascSortFor1");//NOI18N
+        table.getActionMap().put("ascSortFor1", new AbstractAction() {// NOI18N
+            public void actionPerformed(ActionEvent e) {
+                sortByColumn(0);
+            }
+        });
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_3, KeyEvent.ALT_MASK, true), "ascSortFor3");//NOI18N
+        table.getActionMap().put("ascSortFor3", new AbstractAction() {// NOI18N
+            public void actionPerformed(ActionEvent e) {
+                sortByColumn(2);
+            }
+        });
+
         updateScrollbar();
         updateZoomButtonsEnabledState();
         manager.addDataListener(this);
