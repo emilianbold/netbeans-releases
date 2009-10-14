@@ -99,7 +99,7 @@ final class RubyClassCompleter extends RubyBaseCompleter {
         String lhs = call.getLhs();
 
         if (lhs != null && type.isSingleton() && lhs.equals(type.first())) {
-            fullPrefix = type + "::" + prefix; // NOI18N
+            fullPrefix = type.first() + "::" + prefix; // NOI18N
         }
 
         AstPath path = request.path;

@@ -1,4 +1,4 @@
-module Colors
+module Colours
   RED   = "#FF0000"
   GREEN = "#00FF00"
   BLUE  = "#0000FF"
@@ -16,6 +16,6 @@ module Outer
 end
 
 puts Shapes::CIRCLE
-puts Colors::BLUE
+puts Colours::BLUE
 puts Outer::OUTER_CONST
 puts Outer::Inner::INNER_CONST
