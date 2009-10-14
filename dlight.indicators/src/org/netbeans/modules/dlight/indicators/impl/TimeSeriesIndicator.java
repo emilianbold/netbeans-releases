@@ -68,7 +68,6 @@ import org.netbeans.modules.dlight.extras.api.ViewportModel;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesDataContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
@@ -102,7 +101,6 @@ public final class TimeSeriesIndicator
         this.graph = createGraph(configuration, data);
         this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
         this.button = new JButton(getDefaultAction());
-        button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph, legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
     }
 
@@ -184,9 +182,8 @@ public final class TimeSeriesIndicator
 
     @Override
     protected void tick() {
-        this.data.grow(tickCounter);
         ++tickCounter;
-        graph.getViewportModel().setLimits(new Range<Long>(null, 1000L * tickCounter));
+        this.data.grow(tickCounter);
         refresh();
     }
 

@@ -531,9 +531,9 @@ public class ClassFile {
         Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants from constant pool
-        Collection c = constantPool.getAllConstants(CPClassInfo.class);
-        for (Iterator i = c.iterator(); i.hasNext();) {
-            CPClassInfo ci = (CPClassInfo)i.next();
+        Collection<? extends CPClassInfo> c = constantPool.getAllConstants(CPClassInfo.class);
+        for (Iterator<? extends CPClassInfo> i = c.iterator(); i.hasNext();) {
+            CPClassInfo ci = i.next();
             set.add(ci.getClassName());
         }
 
@@ -587,7 +587,7 @@ public class ClassFile {
         sb.append("\n   ");
 	loadAnnotations();
 	if (annotations.size() > 0) {
-	    Iterator iter = annotations.values().iterator();
+	    Iterator<Annotation> iter = annotations.values().iterator();
 	    sb.append("annotations: ");
 	    while (iter.hasNext()) {
                 sb.append("\n      ");

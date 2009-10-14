@@ -156,7 +156,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return false;
         }
 
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
 
         if (instrSupport == null || !instrSupport.isSupported()) {
             return false;
@@ -166,7 +166,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
     }
 
     public boolean isConfiguredForInstrumentation(THAConfiguration configuration) {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(true);
 
         if (instrSupport == null){// || !instrSupport.isSupported()) {
             // should be be possible call method in UI thread
@@ -200,7 +200,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
     }
 
     private boolean isConfiguredForInstrumentationMakefile() {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
         String args = ReconfigureProvider.getDefault().getLastFlags(project);
         if (args != null && args.indexOf(instrSupport.getCompilerOptions())>=0) {
             return true;
@@ -272,7 +272,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return doInstrumentationMakefile();
         }
 
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
 
         String linkerOptions = mc.getLinkerConfiguration().getCommandLineConfiguration().getValue();
 
@@ -307,14 +307,14 @@ public final class THAProjectSupport implements PropertyChangeListener {
     }
 
     private boolean doInstrumentationMakefile() {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
         ReconfigureProvider.getDefault().reconfigure(project, "-g "+instrSupport.getCompilerOptions(), // NOI18N
                 "-g "+instrSupport.getCompilerOptions(), instrSupport.getLinkerOptions()); // NOI18N
         return true;
     }
 
     public List<String> undoInstrumentation() {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(true);
 
         if (instrSupport == null){// || !instrSupport.isSupported()) {
             return Collections.<String>emptyList();
@@ -436,9 +436,11 @@ public final class THAProjectSupport implements PropertyChangeListener {
         listeners.remove(listener);
     }
 
-    private THAInstrumentationSupport getInstrumentationSupport() {
-        if (!activeCompilerIsSunStudio()) {
-            return null;
+    private THAInstrumentationSupport getInstrumentationSupport(boolean force) {
+        if (!force) {
+            if (!activeCompilerIsSunStudio()) {
+                return null;
+            }
         }
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);

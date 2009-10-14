@@ -212,6 +212,7 @@ public class J2SEProjectProperties {
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
+    DefaultListModel ENDORSED_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
@@ -320,6 +321,7 @@ public class J2SEProjectProperties {
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH)));
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_CLASSPATH)));
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
+        ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
@@ -480,6 +482,7 @@ public class J2SEProjectProperties {
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -523,6 +526,7 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_CLASSPATH, run_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         //Handle platform selection and javac.source javac.target properties
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
@@ -563,12 +567,14 @@ public class J2SEProjectProperties {
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.ENDORSED_CLASSPATH ) ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
         // Create set of removed artifacts and remove them
         Set<ClassPathSupport.Item> removed = new HashSet<ClassPathSupport.Item>(oldArtifacts);
@@ -803,6 +809,7 @@ public class J2SEProjectProperties {
         collectLibs(JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
         collectLibs(RUN_CLASSPATH_MODEL, libs, jars);
         collectLibs(RUN_TEST_CLASSPATH_MODEL, libs, jars);
+        collectLibs(ENDORSED_CLASSPATH_MODEL, libs, jars);
         libs.add("CopyLibs"); // #132201 - copylibs is integral part of j2seproject
         String customTasksLibs = getProject().evaluator().getProperty(AntBuildExtender.ANT_CUSTOMTASKS_LIBS_PROPNAME);
         if (customTasksLibs != null) {

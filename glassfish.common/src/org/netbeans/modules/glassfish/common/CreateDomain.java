@@ -192,8 +192,9 @@ public class CreateDomain extends Thread {
                 // The create was successful... create the instance and register it.
                 if (register) {
                     GlassfishInstance gi = GlassfishInstance.create(ip,gip);
+                    NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+gip.getInstallRootKey(),
+                            irf.getParentFile().getAbsolutePath());
                 }
-                NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
             }
         }
     }

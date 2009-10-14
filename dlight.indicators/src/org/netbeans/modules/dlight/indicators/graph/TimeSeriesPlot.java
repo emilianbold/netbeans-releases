@@ -70,7 +70,7 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
  */
 public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
 
-    private static final long EXTENT = 20000; // 20 seconds
+    private static final long EXTENT = 20000000000L; // 20 seconds
     private final GraphPainter graph;
     private ViewportModel viewportModel;
     private int upperLimit;
@@ -89,7 +89,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         timeMarksProvider = TimeMarksProvider.newInstance();
         valueMarksProvider = ValueMarksProvider.newInstance(formatter);
         DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
-        model.setMinViewportSize(1000L); // 1 second
+        model.setMinViewportSize(1000000000L); // 1 second
         setViewportModel(model);
         setOpaque(true);
 //        ToolTipManager.sharedInstance().registerComponent(this);
@@ -155,7 +155,9 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;
         }
-        graph.paint(g, upperLimit, valueMarks, viewport.getStart(), viewport.getEnd(), timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
+        graph.paint(g, upperLimit,
+                valueMarks, (int) (viewport.getStart() / 1000000000), (int) (viewport.getEnd() / 1000000000),
+                timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
     public ViewportModel getViewportModel() {

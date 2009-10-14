@@ -103,7 +103,7 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     public void startElement(String element, Attributes atts) {
 	if (element.equals(VARIABLE_ELEMENT)) {
 	    profile.getEnvironment().
-		putenv(atts.getValue(0), atts.getValue(1));
+		putenv(atts.getValue(NAME_ATTR), atts.getValue(VALUE_ATTR));
 	}
     }
 

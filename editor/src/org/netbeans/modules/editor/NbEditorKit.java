@@ -958,6 +958,9 @@ public class NbEditorKit extends ExtKit implements Callable {
         // initialize FoldHierarchy (#172381)
         FoldHierarchy.get(pane).getRootFold();
 
+        // initialize popup menu actions providers (#174175)
+        PopupMenuActionsProvider.getPopupMenuItems(getContentType());
+
         return null;
     }
 }

@@ -153,7 +153,7 @@ public class ElChecker extends HintsProvider {
         JsfElExpression expression = (JsfElExpression)expressions.get(
                 JsfElExpression.class);
         
-        JsfElContextChecker checker = JSF_CHECKERS.get( expression.getParseType());
+        ElContextChecker checker = JSF_CHECKERS.get( expression.getParseType());
         if ( checker != null ){
              if ( checker.check(expression, document, fileObject, hints) ){
                  return;
@@ -174,16 +174,16 @@ public class ElChecker extends HintsProvider {
         myJspChecker.check( hints , document, fileObject, expressions);
     }
 
-    private static final Map<Integer, JsfElContextChecker> JSF_CHECKERS = new HashMap<Integer, 
-        JsfElContextChecker>();
+    private static final Map<Integer, ElContextChecker> JSF_CHECKERS = new HashMap<Integer, 
+        ElContextChecker>();
 
     static {
-        JSF_CHECKERS.put( ELExpression.EL_START, new JsfElStartContextChecker());
-        JSF_CHECKERS.put( JsfElExpression.EL_JSF_BEAN, new JsfElBeanContextChecker());
+        JSF_CHECKERS.put( ELExpression.EL_START, new ElContextChecker.JsfElStartContextChecker());
+        JSF_CHECKERS.put( JsfElExpression.EL_JSF_BEAN, new ElContextChecker.JsfElBeanContextChecker());
         JSF_CHECKERS.put( JsfElExpression.EL_JSF_BEAN_REFERENCE, 
                 JSF_CHECKERS.get(JsfElExpression.EL_JSF_BEAN));
         JSF_CHECKERS.put( JsfElExpression.EL_JSF_RESOURCE_BUNDLE, 
-                new JsfElResourceBundleContextChecker());
+                new ElContextChecker.JsfElResourceBundleContextChecker());
     }
     
     private JspElChecker myJspChecker;

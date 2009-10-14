@@ -157,7 +157,7 @@ bool JvmLauncher::start(const char *mainClassName, list<string> args, list<strin
 
         logMsg("Java DLL path: %s", javaDllPath.c_str());
         if (!canLoadJavaDll()) {
-            logMsg("Fallbacking to running java in separate process, dll cannot be loaded (64bit dll?).");
+            logMsg("Falling back to running Java in a separate process; DLL cannot be loaded (64-bit DLL?).");
             separateProcess = true;
         }
     }

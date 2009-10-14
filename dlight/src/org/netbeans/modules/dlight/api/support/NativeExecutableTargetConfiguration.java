@@ -45,7 +45,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.windows.InputOutput;
 
 /**
@@ -100,7 +99,7 @@ public final class NativeExecutableTargetConfiguration {
     }
 
     public String putInfo(String name, String value) {
-        if (name == null || value == null){
+        if (name == null || value == null) {
             throw new IllegalArgumentException("Null is not allowed as an argument of this method");//NOI18N
         }
         return info.put(name, value);

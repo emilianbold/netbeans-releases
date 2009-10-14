@@ -63,7 +63,8 @@ public class RemoteProcReader extends ProcReaderImpl {
     private final String lwpDir;
     private final NativeProcessBuilder npb;
 
-    public RemoteProcReader(ExecutionEnvironment execEnv, int pid) {
+    public RemoteProcReader(ExecutionEnvironment execEnv, int pid, boolean bigendian) {
+        super(bigendian);
         usageFile = "/proc/" + pid + "/usage"; // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(execEnv);

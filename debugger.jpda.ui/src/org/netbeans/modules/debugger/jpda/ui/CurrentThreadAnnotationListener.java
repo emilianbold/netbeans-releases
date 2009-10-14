@@ -271,7 +271,22 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             currentPCSet = true; // The annotation is goint to be set
         }
         if (csf != null && sourcePath != null && currentThread != null) {
-            sourcePath.showSource (csf, language);
+            CallStackFrame frameToShow = csf;
+            int lineNumber = frameToShow.getLineNumber(language);
+            if (lineNumber < 1) {
+                for (int x = 0; x < stack.length; x++) {
+                    if (csf.equals(stack[x])) {
+                        for (int xx = x + 1; xx < stack.length; xx++) {
+                            if (stack[xx].getLineNumber(language) >= 1) {
+                                frameToShow = stack[xx];
+                                break;
+                            }
+                        } // for
+                        break;
+                    } // if
+                } // for
+            } // if
+            sourcePath.showSource (frameToShow, language);
         }
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {

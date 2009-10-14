@@ -139,7 +139,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     };
     
     private static final String JavaEE6TypeToURLMap[] = {
-        "-//Sun Microsystems, Inc.//DTD GlassFish v3 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
     };
 
         /*******NetBeans 3.6 is NOT ready yet to support schemas for code completion... What a pity!:        */

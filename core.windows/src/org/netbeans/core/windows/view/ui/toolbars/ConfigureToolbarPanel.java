@@ -282,8 +282,8 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         Object ok = org.openide.DialogDisplayer.getDefault ().notify (il);
         if (ok != NotifyDescriptor.OK_OPTION)
             return;
-        String s = il.getInputText();
-        if( s.trim().length() == 0 )
+        String s = il.getInputText().trim();
+        if( s.length() == 0 )
             return;
 
         DataFolder folder = ToolbarPool.getDefault().getFolder();

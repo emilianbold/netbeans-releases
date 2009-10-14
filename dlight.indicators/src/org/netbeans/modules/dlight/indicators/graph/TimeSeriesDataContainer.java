@@ -38,9 +38,10 @@
  */
 package org.netbeans.modules.dlight.indicators.graph;
 
-import org.netbeans.modules.dlight.indicators.Aggregation;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.dlight.indicators.Aggregation;
+import org.netbeans.modules.dlight.util.Range;
 
 /**
  * Data structure for storing time series data.
@@ -160,6 +161,9 @@ public final class TimeSeriesDataContainer {
         if (list.size() < size) {
             list.ensureCapacity(size);
             list.addAll(Collections.<Bucket>nCopies(size - list.size(), null));
+            if (plot != null) {
+                plot.getViewportModel().setLimits(new Range<Long>(0L, 1000000000L * size));
+            }
         }
     }
 

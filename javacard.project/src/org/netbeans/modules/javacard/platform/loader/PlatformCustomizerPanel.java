@@ -50,6 +50,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.Properties;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -72,6 +73,7 @@ public class PlatformCustomizerPanel extends javax.swing.JPanel implements Chang
             initComponents();
             initUi();
         }
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizingJavaCardPlatform"); //NOI18N
     }
 
     private void initUi() {

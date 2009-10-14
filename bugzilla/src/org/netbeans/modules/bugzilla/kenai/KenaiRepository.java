@@ -45,10 +45,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -78,6 +80,7 @@ public class KenaiRepository extends BugzillaRepository {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
         this.host = host;
+        assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
     }
 
@@ -140,24 +143,23 @@ public class KenaiRepository extends BugzillaRepository {
             }
             queries.add(myIssues);
         }
+        Query ai = getAllIssuesQuery();
+        if(ai != null) {
+            queries.add(ai);
+        }
 
-        // all issues
-        if(allIssues == null) {
+        return queries.toArray(new Query[queries.size()]);
+    }
+
+    Query getAllIssuesQuery() throws MissingResourceException {
+        if (allIssues == null) {
             StringBuffer url = new StringBuffer();
             url = new StringBuffer();
             url.append(urlParam);
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
-            allIssues =
-                new KenaiQuery(
-                    NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
-                    this,
-                    url.toString(),
-                    product,
-                    true,
-                    true);
+            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true);
         }
-        queries.add(allIssues);
-        return queries.toArray(new Query[queries.size()]);
+        return allIssues;
     }
 
     @Override
@@ -189,9 +191,10 @@ public class KenaiRepository extends BugzillaRepository {
     @Override
     protected Object[] getLookupObjects() {
         Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 1];
+        Object[] obj2 = new Object[obj.length + 2];
         System.arraycopy(obj, 0, obj2, 0, obj.length);
-        obj2[obj.length] = kenaiProject;
+        obj2[obj2.length - 2] = kenaiProject;
+        obj2[obj2.length - 1] = Bugzilla.getInstance().getKenaiSupport();
         return obj2;
     }
 

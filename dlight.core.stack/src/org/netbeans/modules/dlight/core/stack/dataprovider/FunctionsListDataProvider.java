@@ -59,5 +59,9 @@ public interface FunctionsListDataProvider extends SourceFileInfoDataProvider{
         FunctionDatatableDescription functionDescription,
         List<Column> metricsColumn);
 
+    boolean hasTheSameDetails(DataTableMetadata metadata,
+        FunctionDatatableDescription functionDescription,
+        List<Column> metricsColumn);
+
    
 }

@@ -101,8 +101,10 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         racesLabel.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive16.png"))); // NOI18N
 
         deadlocksDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksDetails.text")); // NOI18N
+        deadlocksDetails.setName("deadlocksDetails"); // NOI18N
 
         racesDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.racesDetails.text")); // NOI18N
+        racesDetails.setName("racesDetails"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -112,22 +114,22 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(103, 103, 103)
-                        .add(deadlocksDetails))
-                    .add(layout.createSequentialGroup()
                         .add(racesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(racesDetails))
-                    .add(deadlocksLabel))
-                .addContainerGap(340, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(deadlocksLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(deadlocksDetails)))
+                .addContainerGap(174, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(deadlocksDetails)
-                    .add(deadlocksLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deadlocksLabel)
+                    .add(deadlocksDetails))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(racesLabel)

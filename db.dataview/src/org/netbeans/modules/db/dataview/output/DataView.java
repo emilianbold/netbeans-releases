@@ -357,4 +357,11 @@ public class DataView {
 
     private DataView() {
     }
+
+    public int getPageSize() {
+        if (dataViewUI == null) {
+            return -1;
+        }
+        return dataViewUI.getPageSize();
+    }
 }

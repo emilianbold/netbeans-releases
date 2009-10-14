@@ -87,6 +87,25 @@ int syscpu_usage(int threads, work_t* works);
 int cpucount();
 void mem2str(char* buf, long bytes);
 
+
+// Check available pthread features
+#include <pthread.h>
+
+#ifdef PTHREAD_BARRIER_SERIAL_THREAD
+// assume that barriers and spinlocks come together
+#define HAVE_PTHREAD_BARRIER
+#define HAVE_PTHREAD_SPINLOCK
+#else
+typedef void *pthread_barrier_t;
+#define pthread_barrier_init(a, b, c)
+#define pthread_barrier_wait(a)
+#endif
+
+#ifdef PTHREAD_RWLOCK_INITIALIZER
+#define HAVE_PTHREAD_RWLOCK
+#endif
+
+
 #ifdef	__cplusplus
 }
 #endif

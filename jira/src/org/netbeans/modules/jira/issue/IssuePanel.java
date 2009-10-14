@@ -109,6 +109,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.jira.Jira;
@@ -567,7 +568,9 @@ public class IssuePanel extends javax.swing.JPanel {
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
-                JLabel label = new KenaiUserUI(reporter).createUserWidget();
+                KenaiUserUI ku = new KenaiUserUI(reporter);
+                ku.setMessage(KenaiUtil.getChatLink(issue));
+                JLabel label = ku.createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
                 reporterStatusLabel = label;
@@ -593,7 +596,9 @@ public class IssuePanel extends javax.swing.JPanel {
             String assignee = issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE);
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
-                JLabel label = new KenaiUserUI(assignee).createUserWidget();
+                KenaiUserUI ku = new KenaiUserUI(assignee);
+                ku.setMessage(KenaiUtil.getChatLink(issue));
+                JLabel label = ku.createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;

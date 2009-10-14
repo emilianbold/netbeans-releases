@@ -159,7 +159,7 @@ We don't want to index these for every user - it's done ahead,
 by you, not during the build. If you change the index version,
 you must update the preindexed data. Doing that is simple - run
 the external/UPDATE.zsh script in python.editor. You may not
-have zsh on your syste, but the script is simple so you can read
+have zsh on your system, but the script is simple so you can read
 through it and see the commands you have to issue. You will
 basically run NetBeans with some special startup flags and 
 parameters, and then when it is finished run some commands to

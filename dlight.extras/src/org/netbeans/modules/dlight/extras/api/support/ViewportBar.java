@@ -54,7 +54,6 @@ import java.awt.RenderingHints;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -74,6 +73,7 @@ import org.netbeans.modules.dlight.util.DLightMath;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -135,6 +135,11 @@ import org.openide.util.ImageUtilities;
             }
 
             @Override
+            public String getTooltip() {
+                return getMessage("viewport.start.tooltip"); // NOI18N
+            }
+
+            @Override
             public void paint(Graphics g) {
                 int pos = getPosition();
                 g.setColor(VIEWPORT_HANDLE_COLOR);
@@ -171,6 +176,11 @@ import org.openide.util.ImageUtilities;
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("viewport.end.tooltip"); // NOI18N
             }
 
             @Override
@@ -223,6 +233,11 @@ import org.openide.util.ImageUtilities;
             }
 
             @Override
+            public String getTooltip() {
+                return getMessage("filter.start.tooltip"); // NOI18N
+            }
+
+            @Override
             public void paint(Graphics g) {
                 int pos = getPosition();
                 g.drawImage(FILTER_HANDLE, pos - FILTER_HANDLE_WIDTH / 2,
@@ -272,6 +287,11 @@ import org.openide.util.ImageUtilities;
             }
 
             @Override
+            public String getTooltip() {
+                return getMessage("filter.end.tooltip"); // NOI18N
+            }
+
+            @Override
             public void paint(Graphics g) {
                 int pos = getPosition();
                 g.drawImage(FILTER_HANDLE, pos - FILTER_HANDLE_WIDTH / 2,
@@ -306,21 +326,15 @@ import org.openide.util.ImageUtilities;
     private Range<Long> getTimeSelection() {
         Collection<TimeIntervalDataFilter> timeFilters = filterManager == null ? null : filterManager.getDataFilter(TimeIntervalDataFilter.class);
         if (timeFilters != null && !timeFilters.isEmpty()) {
-            Range<Long> selection = timeFilters.iterator().next().getInterval();
-            return new Range<Long>(
-                    TimeUnit.NANOSECONDS.toMillis(selection.getStart()),
-                    TimeUnit.NANOSECONDS.toMillis(selection.getEnd()));
+            return timeFilters.iterator().next().getInterval();
         } else {
             return null;
         }
     }
 
-    private void setTimeSelection(Range<Long> selection, boolean isAdjusting) {
+    private void setTimeSelection(Range<Long> range, boolean isAdjusting) {
         if (filterManager != null) {
-            Long start = TimeUnit.MILLISECONDS.toNanos(selection.getStart());
-            Long end = TimeUnit.MILLISECONDS.toNanos(selection.getEnd());
-            filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(
-                    new Range<Long>(start, end)), isAdjusting);
+            filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(range), isAdjusting);
         }
     }
 
@@ -417,5 +431,9 @@ import org.openide.util.ImageUtilities;
         public Range<Long> getViewport() {
             return viewport;
         }
+    }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(ViewportBar.class, key);
     }
 }
