@@ -41,10 +41,15 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -61,6 +66,8 @@ import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -76,12 +83,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 
 /**
  * @author   Jan Jancura
  */
-public class SourcesModel implements TreeModel, CheckNodeModelFilter,
+public class SourcesModel implements TreeModel, CheckNodeModelFilter, /*ExtendedNodeModelFilter,*/
 NodeActionsProvider {
 
     private Listener                listener;
@@ -348,6 +356,83 @@ NodeActionsProvider {
             sourceRootsSet.add(roots[x]);
         }
     }
+
+    /*// ExtendedNodeModelFilter:
+    
+    public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        synchronized (SourcesModel.this) {
+            return node instanceof String && additionalSourceRoots.contains((String) node);
+        }
+    }
+
+    public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        return original.clipboardCopy(node);
+    }
+
+    public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        System.err.println("clipboardCut("+node+")");
+        if (node instanceof String) {
+            return new StringSelection((String) node);
+        } else {
+            return original.clipboardCut(node);
+        }
+    }
+
+    public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
+        if (t instanceof StringSelection) {
+            String movedNode;
+            try {
+                movedNode = (String) t.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+        if (!(node instanceof String)) return ;
+        synchronized (SourcesModel.this) {
+            boolean removed = additionalSourceRoots.remove((String) node);
+            if (!removed) return ;
+            additionalSourceRoots.add(name);
+        }
+        // Set the new source roots:
+        String[] sourceRoots = sourcePath.getSourceRoots();
+        int l = sourceRoots.length;
+        int index = -1;
+        for (int ii = 0; ii < l; ii++) {
+            if (node.equals(sourceRoots[ii])) {
+                index = ii;
+                break;
+            }
+        }
+        if (index >= 0) {
+            sourceRoots[index] = name;
+            sourcePath.setSourceRoots(sourceRoots, additionalSourceRoots.toArray(new String[]{}));
+        }
+    }
+
+    public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        String iconBase = getIconBase(original, node);
+        if (iconBase != null) {
+            iconBase += ".gif";  // NOI18N
+        }
+        return iconBase;
+    }
+     */
 
     // innerclasses ............................................................
 
