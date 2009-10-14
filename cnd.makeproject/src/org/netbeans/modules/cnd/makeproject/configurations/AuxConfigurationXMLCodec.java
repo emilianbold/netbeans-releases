@@ -80,7 +80,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
-            String currentConfName = atts.getValue(0);
+            String currentConfName = atts.getValue(NAME_ATTR);
             Configurations confs = configurationDescriptor.getConfs();
             Configuration currentConf = confs.getConf(currentConfName);
 
