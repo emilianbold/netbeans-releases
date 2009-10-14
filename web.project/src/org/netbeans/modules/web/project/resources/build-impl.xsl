@@ -322,7 +322,7 @@ introduced by support for multiple source roots. -jglick
                 </condition>
                 <property name="runmain.jvmargs" value=""/>
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
-                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
             </target>
