@@ -44,8 +44,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -64,6 +66,7 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.util.Exceptions;
 
 final class ExecutionContext {
@@ -348,10 +351,10 @@ final class ExecutionContext {
 
     final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {
 
-        private List<ExecutionEnvVariablesProvider> providers;
+        private Set<ExecutionEnvVariablesProvider> providers;
 
         DLightTargetExecutionEnvProviderCollection() {
-            providers = new ArrayList<DLightTarget.ExecutionEnvVariablesProvider>();
+            providers = new HashSet<DLightTarget.ExecutionEnvVariablesProvider>();
         }
 
         void clear() {
@@ -366,8 +369,8 @@ final class ExecutionContext {
             }
         }
 
-        public Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException {
-            Map<String, String> env = new HashMap<String, String>();
+        @Override
+        public void setupEnvironment(DLightTarget target, MacroMap env) throws ConnectException {
             ExecutionEnvVariablesProvider[] pp = null;
 
             synchronized (this) {
@@ -375,10 +378,8 @@ final class ExecutionContext {
             }
 
             for (ExecutionEnvVariablesProvider provider : pp) {
-                env.putAll(provider.getExecutionEnv(target));
+                provider.setupEnvironment(target, env);
             }
-
-            return env;
         }
     }
 

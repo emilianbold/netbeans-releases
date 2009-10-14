@@ -49,8 +49,6 @@ HANDLE stderrHandle = INVALID_HANDLE_VALUE;
 DWORD newLine = 1;
 const WCHAR * FILE_SEP = L"\\";
 
-char TIME_STRING [30];
-
 const long CRC32_TABLE[256] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535,
     0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988, 0x09b64c2b, 0x7eb17cbd,
@@ -94,14 +92,50 @@ const long CRC32_TABLE[256] = {
 void writeTimeStamp(HANDLE hd, DWORD need) {
     DWORD written;
     if(need==1) {
-        SYSTEMTIME t;
-		DWORD i=0;
-        GetLocalTime(&t);		
-        sprintf(TIME_STRING, "[%02u-%02u-%02u %02u:%02u:%02u.%03u]> ", t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
-        WriteFile(hd, TIME_STRING, sizeof(char) * getLengthA(TIME_STRING), & written, NULL);
-	for(i=0;i<getLengthA(TIME_STRING);i++) {
-		TIME_STRING[i]=' ';
-	}
+        SYSTEMTIME t;	
+        char * yearStr;
+        char * monthStr;
+        char * dayStr;
+        char * hourStr;
+        char * minuteStr;
+        char * secondStr;
+        char * msStr;
+        char * result = NULL;
+        GetLocalTime(&t);
+        yearStr = word2charN(t.wYear,2);
+        monthStr = word2charN(t.wMonth,2);
+        dayStr = word2charN(t.wDay,2);
+        hourStr = word2charN(t.wHour,2);
+        minuteStr = word2charN(t.wMinute,2);
+        secondStr = word2charN(t.wSecond,2);
+        msStr = word2charN(t.wMilliseconds,3);
+        
+        result = appendString(NULL, "[");
+        result = appendString(result, yearStr);
+        result = appendString(result, "-");
+        result = appendString(result, monthStr);
+        result = appendString(result, "-");
+        result = appendString(result, dayStr);
+        result = appendString(result, " ");
+        result = appendString(result, hourStr);
+        result = appendString(result, ":");
+        result = appendString(result, minuteStr);
+        result = appendString(result, ":");
+        result = appendString(result, secondStr);
+        result = appendString(result, ".");
+        result = appendString(result, msStr);
+        result = appendString(result, "]> ");
+
+        WriteFile(hd, result, sizeof(char) * getLengthA(result), & written, NULL);
+        FREE(result);
+        FREE(yearStr);
+        FREE(monthStr);
+        FREE(dayStr);
+
+        FREE(hourStr);
+        FREE(minuteStr);
+        FREE(secondStr);
+        FREE(msStr);
     }
 }
 
@@ -182,10 +216,27 @@ void checkFreeSpace(LauncherProperties * props, WCHAR * tmpDir, int64t * size) {
         DWORD   result = 0;
         result = ((space->High > size->High) ||
                 (space->High == size->High && space->Low >= size->Low));
-        FREE(space);
-        if(!result) {
+        
+        if(!result) {            
+            WCHAR * available = NULL;
+            WCHAR * str = NULL;
+            WCHAR * required = NULL;
+            available = int64ttoWCHAR(space);
+            required  = int64ttoWCHAR(size);
+            str = appendStringW(str, L"Not enough free space in ");
+            str = appendStringW(str, tmpDir);
+            str = appendStringW(str, L", available=");
+            str = appendStringW(str, available);
+            str = appendStringW(str, L", required=");
+            str = appendStringW(str, required);
+
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, str, 1);
+            FREE(str);
+            FREE(available);
+            FREE(required);
             props->status = ERROR_FREESPACE;
         }
+        FREE(space);
     } else {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... free space checking is disabled", 1);
     }

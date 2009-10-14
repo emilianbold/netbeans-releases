@@ -129,36 +129,12 @@ public class Utils {
      *
      * @return current editor component instance
      */
-    private static JEditorPane getCurrentEditor () {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) return null;
-        JEditorPane[] op = e.getOpenedPanes ();
-        if ((op == null) || (op.length < 1)) return null;
-        return op [0];
-    }
-    
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
     private static JEditorPane getCurrentEditor (EditorCookie e) {
         JEditorPane[] op = e.getOpenedPanes ();
         if ((op == null) || (op.length < 1)) return null;
         return op [0];
     }
      
-    /** 
-     * Returns current editor component instance.
-     *
-     * @return current editor component instance
-     */
-    private static String getSelectedText () {
-        JEditorPane ep = getCurrentEditor ();
-        if (ep == null) return null;
-        return ep.getSelectedText ();
-    }
-    
     /** 
      * Returns current editor component instance.
      *

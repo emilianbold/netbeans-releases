@@ -391,6 +391,10 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     private void componentChange(String oldClassName, String newClassName) {
+        if (oldClassName == null || newClassName == null) {
+            return; // for unknown reason 'newClassName' is sometimes null during move refactoring, issue 174136
+        }
+
         FormEditorSupport fes = formDataObject.getFormEditorSupport();
         if (fes.isOpened()) {
             fes.closeFormEditor();

@@ -853,7 +853,7 @@ public final class CreatedModifiedFilesFactory {
                                 nue = GeneratorUtilities.get(wc).importFQNs(nue);
                                 wc.rewrite(old, nue);
                             }
-                        });
+                        })/*.commit()*/;
                     }
                 }
             });

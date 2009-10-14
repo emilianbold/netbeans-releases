@@ -367,6 +367,11 @@ if [ $ML_BUILD == 1 ]; then
 #        exit $ERROR_CODE;
     fi
 
+    if [ ! -z $UC_NBMS_DIR ]; then
+       for UC_CLUSTER in $UC_EXTRA_CLUSTERS; do
+          cp -r ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/ml/uc
+       done
+    fi
 
     cd $NB_ALL/nbbuild
     #Build catalog for ML FU NBMs
@@ -400,6 +405,23 @@ if [ $ML_BUILD == 1 ]; then
 fi
 
 cd $NB_ALL/nbbuild
+
+if [ ! -z $UC_NBMS_DIR ]; then
+   for UC_CLUSTER in $UC_EXTRA_CLUSTERS; do
+      cp -r ${UC_NBMS_DIR}/${UC_CLUSTER} ${DIST}/uc
+   done
+fi
+
+#Build catalog for FU NBMs
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url="."
+ERROR_CODE=$?
+
+create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build catalog FU for NBMs"
+#    exit $ERROR_CODE;
+fi
+
 
 #Remove the build helper files
 rm -f netbeans/nb.cluster.*

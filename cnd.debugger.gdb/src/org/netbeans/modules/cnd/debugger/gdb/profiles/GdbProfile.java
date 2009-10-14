@@ -194,7 +194,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             model.setEnableDevelopmentHostChange(false);
             BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
             bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
-            if (bt.initBuildTools(model, new ArrayList<String>())) {
+            if (bt.initBuildTools(model, new ArrayList<String>(), cs)) {
 //                if (!name.equals(model.getGdbName())) {
 //                    setGdbCommand(model.getGdbName());
 //                }

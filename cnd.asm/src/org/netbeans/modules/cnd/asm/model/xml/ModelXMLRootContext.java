@@ -295,7 +295,7 @@ public class ModelXMLRootContext implements XMLReaderContext {
             
             public Instruction makeInstruction() {
                 final String defClazz = 
-                         "org.netbeans.modules.asm.model.xml.DefaultXMLBaseInstruction";   //NOI18N
+                         "org.netbeans.modules.cnd.asm.model.xml.DefaultXMLBaseInstruction";   //NOI18N
                 
                 XMLBaseInstruction instr = null;
                 

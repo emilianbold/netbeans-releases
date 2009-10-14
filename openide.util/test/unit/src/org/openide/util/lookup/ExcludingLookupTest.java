@@ -46,6 +46,7 @@ import org.openide.util.Lookup;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class ExcludingLookupTest extends AbstractLookupBaseHid
 implements AbstractLookupBaseHid.Impl {
     public ExcludingLookupTest(java.lang.String testName) {

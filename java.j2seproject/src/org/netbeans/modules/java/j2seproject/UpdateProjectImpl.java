@@ -99,7 +99,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public boolean isCurrent () {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
-                synchronized (this) {
+                synchronized (UpdateProjectImpl.this) {
                     if (isCurrent == null) {
                         if ((cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) != null) ||
                         (cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true) != null)) {

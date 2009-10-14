@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
@@ -151,15 +152,13 @@ public class RemoteServerSetup {
                                 || !file.exists()
                                 || !copyTo(file, REMOTE_SCRIPT_DIR + file.getName())
                                 || RemoteCommandSupport.run(executionEnvironment, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key) != 0) { //NO18N
-                            failed = true;
-                            reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NO18N
-                                    executionEnvironment.toString(), key);
+                            setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NO18N
+                                    executionEnvironment.toString(), key));
                         }
                     }
                 } else {
-                    failed = true;
-                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", //NO18N
-                            executionEnvironment.toString(), exit_status);
+                    setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", //NO18N
+                            executionEnvironment.toString(), exit_status));
                 }
             } else if (path.equals(REMOTE_LIB_DIR)) {
                 RemoteUtil.LOGGER.fine("RSS.setup: Creating ~/" + REMOTE_LIB_DIR); //NO18N
@@ -174,15 +173,13 @@ public class RemoteServerSetup {
                         if (file == null
                                 || !file.exists()
                                 || !copyTo(file, remoteFileName)) {
-                            failed = true;
-                            reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NOI18N
-                                    executionEnvironment.toString(), localFileName);
+                            setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", //NOI18N
+                                    executionEnvironment.toString(), localFileName));
                         }
                     }
                 } else {
-                    failed = true;
-                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", //NO18N
-                            executionEnvironment.toString(), exit_status);
+                    setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", //NO18N
+                            executionEnvironment.toString(), exit_status));
                 }
             } else {                
                 RemoteUtil.LOGGER.fine("RSS.setup: Updating \"" + path + "\" on " + executionEnvironment); //NO18N
@@ -195,8 +192,7 @@ public class RemoteServerSetup {
                     if (file == null
                             || !file.exists()
                             || !copyTo(file, remotePath)) {
-                        failed = true;
-                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path); //NOI18N
+                        setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path)); //NOI18N
                     }
                 } else {
                     File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + path, null, false);
@@ -204,8 +200,7 @@ public class RemoteServerSetup {
                             || !file.exists()
                             || !copyTo(file, REMOTE_SCRIPT_DIR + file.getName())
                             || RemoteCommandSupport.run(executionEnvironment, DOS2UNIX_CMD + path + ' ' + REMOTE_SCRIPT_DIR + path) != 0) { //NOI18N
-                        failed = true;
-                        reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment.toString(), path); //NOI18N
+                        setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment.toString(), path)); //NOI18N
                     }
                 }
             }
@@ -284,7 +279,7 @@ public class RemoteServerSetup {
     
     private List<String> getBinaryUpdates(List<String> list) {
 
-        if (Boolean.getBoolean("cnd.remote.force.setup")) {
+        if (CndUtils.getBoolean("cnd.remote.force.setup", true)) {
             RemoteUtil.LOGGER.info("Forcing remote host setup for " + executionEnvironment);
             list.add(REMOTE_LIB_DIR);
             for (String path : binarySetupMap.keySet()) {
@@ -326,8 +321,7 @@ public class RemoteServerSetup {
             }
         } else {
             // failed
-            failed = true;
-            reason = support.getFailureReason();
+            setFailed(support.getFailureReason());
         }
         return list;
     }
@@ -345,7 +339,12 @@ public class RemoteServerSetup {
     protected boolean isCancelled() {
         return cancelled;
     }
-    
+
+    private void setFailed(String reason) {
+        this.failed = true;
+        this.reason = reason;
+    }
+
     protected boolean isFailed() {
         return failed;
     }

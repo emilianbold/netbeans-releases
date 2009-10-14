@@ -641,6 +641,17 @@ public final class Source {
                 return --source.taskCount;
             }
         }
+
+        @Override
+        public Source get(final FileObject file) {
+            assert file != null;
+            Reference<Source> ref;
+            synchronized (Source.class) {
+                ref = instances.get(file);
+            }
+            return ref == null ? null : ref.get();
+        }
+
     } // End of MySourceAccessor class
         
     static class ASourceModificationEvent extends SourceModificationEvent {

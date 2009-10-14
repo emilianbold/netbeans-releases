@@ -41,8 +41,8 @@ package org.netbeans.modules.dlight.core.stack.api.support;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 
 /**
@@ -58,8 +58,8 @@ public final class FunctionMetricFormatter {
             format = NumberFormat.getNumberInstance();
             format.setGroupingUsed(false);
             format.setMinimumIntegerDigits(1);
-            format.setMinimumFractionDigits(3);
-            format.setMaximumFractionDigits(3);
+            format.setMinimumFractionDigits(1);
+            format.setMaximumFractionDigits(1);
         }
         return format.format(value);
     }
@@ -69,6 +69,10 @@ public final class FunctionMetricFormatter {
         if (value instanceof Double || value instanceof Float) {
             return formatValue(value);
         }
+        if (value instanceof Time) {
+            return formatValue(((Time) value).getNanos() / 1e9);
+        }
+
         PropertyEditor editor = value == null ? null : PropertyEditorManager.findEditor(value.getClass());
         if (editor != null){
             editor.setValue(value);

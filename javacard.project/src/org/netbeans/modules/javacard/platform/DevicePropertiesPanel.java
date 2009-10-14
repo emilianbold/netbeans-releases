@@ -72,6 +72,7 @@ import org.netbeans.validation.api.conversion.Converter;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationUI;
 import org.openide.awt.HtmlRenderer;
+import org.openide.util.HelpCtx;
 
 public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable, ValidationGroupProvider {
 
@@ -175,6 +176,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         httpPortTextField.getDocument().addDocumentListener(this);
         cardManagerUrlField.getDocument().addDocumentListener(this);
         serverUrlField.getDocument().addDocumentListener(this);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CustomizeDevice"); //NOI18N
     }
 
     private static final void localizeName (Component c) {

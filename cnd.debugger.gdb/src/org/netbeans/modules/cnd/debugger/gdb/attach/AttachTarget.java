@@ -44,6 +44,10 @@ package org.netbeans.modules.cnd.debugger.gdb.attach;
  * @author Egor Ushakov
  */
 public abstract class AttachTarget {
+    public boolean checkExecutable() {
+        return true;
+    }
+
     public static class PidAttach extends AttachTarget {
         public final long pid;
 
@@ -66,6 +70,12 @@ public abstract class AttachTarget {
 
         public GdbServerAttach(String target) {
             this.target = target;
+        }
+
+        @Override
+        public boolean checkExecutable() {
+            // see IZ 173485
+            return false;
         }
     }
 }

@@ -98,6 +98,9 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
 
                     public void run(CompilationController cc) throws Exception {
                         ElementUtilities eu = cc.getElementUtilities();
+                        if (className == null) {
+                            return;
+                        }
                         TypeElement type = JavaUtils.findClassElementByBinaryName(className, cc);
                         Property[] props = new PropertyFinder(type.asType(), propName, eu, MatchType.PREFIX).findProperties();
                         if(props.length > 0 && props[0].getSetter() != null) {

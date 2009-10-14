@@ -69,6 +69,7 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
@@ -603,9 +604,9 @@ public class StartTask extends BasicTask<OperationState> {
             Map<String, String> argMap, Map<String, String> propMap) {
         Map<String, String> varMap = new HashMap<String, String>();
 
-        varMap.put("com.sun.aas.installRoot", Util.escapePath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
-        varMap.put("com.sun.aas.instanceRoot", Util.escapePath(domainRoot.getAbsolutePath())); // NOI18N
-        varMap.put("com.sun.aas.javaRoot", Util.escapePath(jdkHome.getPath())); // NOI18N
+        varMap.put("com.sun.aas.installRoot", Utils.escapePath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR))); // NOI18N
+        varMap.put("com.sun.aas.instanceRoot", Utils.escapePath(domainRoot.getAbsolutePath())); // NOI18N
+        varMap.put("com.sun.aas.javaRoot", Utils.escapePath(jdkHome.getPath())); // NOI18N
         varMap.put("com.sun.aas.derbyRoot", getJavaDBLocation()); // NOI18N
 
         File domainXml = new File(domainRoot, "config/domain.xml"); // NOI18N
@@ -625,10 +626,10 @@ public class StartTask extends BasicTask<OperationState> {
         String javadb = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR) + File.separatorChar + "javadb"; // NOI18N
         if (new File(javadb).exists()) {
             // V3 Prelude includes javadb as it can run on JDK 5
-            javadb = Util.escapePath(javadb);
+            javadb = Utils.escapePath(javadb);
         } else {
             // V3 uses javadb from JDK 6
-            javadb = Util.escapePath(jdkHome.getPath() + File.separatorChar + "javadb"); // NOI18N
+            javadb = Utils.escapePath(jdkHome.getPath() + File.separatorChar + "javadb"); // NOI18N
         }
         return javadb;
     }

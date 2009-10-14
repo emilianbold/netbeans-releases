@@ -45,6 +45,7 @@ import org.openide.awt.Mnemonics;
 
 import javax.swing.*;
 import java.awt.*;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -67,6 +68,7 @@ public class CompilingPanel extends javax.swing.JPanel {
         generateDebugInfoBox.setModel (props.GENERATE_DEBUG_INFO_BUTTON_MODEL);
         deprecationBox.setModel (props.ENABLE_DEPRECATION_BUTTON_MODEL);
         compileOnSaveBox.setEnabled(false); //XXX not yet supported
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.BuildCompilingPanel"); //NOI18N
     }
 
     /** This method is called from within the constructor to

@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
     Now that the application is connected to the database, the application can read, modify, and add data to the database.
     Applications access the database by making calls to the JDBC API. The JDBC driver translates the application's JDBC calls into the protocol of the database server.</li>
     <li><b>Close connection.</b> When it is finished accessing the database, the application closes the connection.
-    The application server returns the connection to the connection pool. Once it is back in the pool, the connection is available for the next application.</li>
+    The application server returns the connection to the connection pool. Once it is back in the pool, the connection is available for the next application.
   
     <ul class="note">  
         <li><b>JNDI name.</b> Each resource has a unique JNDI name which specifies its name and location.
@@ -85,6 +85,7 @@ made subject to such option by the copyright holder.
         the JNDI name of a JDBC resource is expected in the <tt>java:comp/env/jdbc</tt> subcontext.
         For example, for a database name MyDatabase, specify <tt>jdbc/MyDatabase</tt>.</li> 
     </ul>
+    </li>
     </ol>
 <dl>
     <dt><a name="seealso">See Also</a></dt>

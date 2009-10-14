@@ -148,15 +148,15 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="sql-separator-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="792"/>
-                    </file>
-                    <file name="sql-separator-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="900"/>
                     </file>
                     <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
-                        <attr name="position" intvalue="790"/>
+                        <attr name="position" intvalue="902"/>
+                    </file>
+                    <file name="sql-separator-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="904"/>
                     </file>
                 </folder>
             </folder>

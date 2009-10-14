@@ -47,6 +47,7 @@ import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.dlight.api.impl.DLightTargetAccessor;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.openide.windows.InputOutput;
 
 /**
@@ -243,11 +244,11 @@ public abstract class DLightTarget {
          * Returns enviroment variables map (name - value) which should
          * be set up before DLightTarget is started
          * @param target  target that is going to start
-         * @return enviroment variables map to set up before target is starting
+         * @param env  updateable environment variables map
          * @throws ConnectException in case connection to target host is needed,
          *      but the host is not connected yet
          */
-        Map<String, String> getExecutionEnv(DLightTarget target) throws ConnectException;
+        void setupEnvironment(DLightTarget target, MacroMap env) throws ConnectException;
     }
 
     private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {

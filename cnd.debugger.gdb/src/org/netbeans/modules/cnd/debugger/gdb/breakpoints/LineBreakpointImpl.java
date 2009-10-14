@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 
 /**
 * Implementation of breakpoint on method.
@@ -83,6 +84,10 @@ public class LineBreakpointImpl extends BreakpointImpl<LineBreakpoint> {
 	if (path == null) {
 	    return null;
 	} else {
+            // IZs 169200 & 174479 (send internal path for cygwin)
+            if (debugger.isCygwin()) {
+                path = WindowsSupport.getInstance().convertToCygwinPath(path);
+            }
 	    return path + ':' + lineNumber;
 	}
     }

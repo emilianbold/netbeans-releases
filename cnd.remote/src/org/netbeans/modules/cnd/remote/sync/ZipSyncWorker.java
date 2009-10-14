@@ -77,10 +77,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         return tmpFile.exists() ? tmpFile : null;
     }
 
-    protected TimestampAndSharabilityFilter createFilter() {
-        return new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
-    }
-
     @Override
     protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
 
@@ -92,7 +88,8 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             System.out.printf("Uploading %s to %s ...\n", topLocalDir.getAbsolutePath(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
-        filter = createFilter();
+        filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
+        filter.setMode(FileTimeStamps.Mode.COPYING);
         filter.setStatisticsCallback(new SharabilityFilter.StatisticsCallback() {
             public void onAccept(File file, boolean accepted) {
                 totalCount++;
@@ -116,7 +113,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
                 localDirName = localDirName + ((localDirName.length() == 1) ? "_" : "__"); //NOI18N
             }
             zipFile = File.createTempFile(localDirName, ".zip", getTemp()); // NOI18N
-            Zipper zipper = createZipper(zipFile);
+            Zipper zipper = new Zipper(zipFile);
             {
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {System.out.printf("\tZipping %s to %s...\n", topLocalDir.getAbsolutePath(), zipFile); } // NOI18N
                 long zipStart = System.currentTimeMillis();
@@ -222,9 +219,5 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     @Override
     public boolean cancel() {
         return false;
-    }
-
-    protected Zipper createZipper(File zipFile) throws FileNotFoundException {
-        return new Zipper(zipFile);
     }
 }

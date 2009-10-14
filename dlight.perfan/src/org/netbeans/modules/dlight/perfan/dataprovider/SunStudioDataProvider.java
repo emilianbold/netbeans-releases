@@ -135,5 +135,9 @@ final class SunStudioDataProvider extends SSStackDataProvider
         return result;
     }
 
+    public boolean hasTheSameDetails(DataTableMetadata metadata, FunctionDatatableDescription functionDescription, List<Column> metricsColumn) {
+        return !(metadata.getName().equals(cpuTableName));
+    }
+
 
 }

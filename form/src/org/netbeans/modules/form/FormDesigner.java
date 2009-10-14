@@ -1039,7 +1039,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void repaintSelection() {
-        handleLayer.repaint();
+        if (handleLayer != null) { // Issue 174373
+            handleLayer.repaint();
+        }
     }
 
     private void updateDesignerActions() {

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -99,7 +100,10 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 
@@ -501,6 +505,62 @@ public final class SingleModuleProperties extends ModuleProperties {
             }, getHelper());
         }
         return updHelper;
+    }
+
+    DependencyListModel getDependenciesListModelInBg(final Runnable runAfterPopulated) {
+        if (dependencyListModel == null) {
+            if (isActivePlatformValid()) {
+                // XXX wait for some time in AWT and perhaps fill model in the same event?
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        Runnable r;
+                        try {
+                            final SortedSet<ModuleDependency> deps = getProjectXMLManager().getDirectDependencies(getActivePlatform());
+                            r = new Runnable() {
+
+                                public void run() {
+                                    dependencyListModel.setDependencies(deps);
+                                    if (runAfterPopulated != null)
+                                        runAfterPopulated.run();
+                                }
+                            };
+                        } catch (IOException ioe) {
+                            r = new Runnable() {
+
+                                public void run() {
+                                    dependencyListModel.setInvalid();
+                                    if (runAfterPopulated != null)
+                                        runAfterPopulated.run();
+                                }
+                            };
+                        }
+                        EventQueue.invokeLater(r);
+                    }
+                });
+                dependencyListModel = DependencyListModel.createBgWaitModel(true);
+                // add listener and fire DEPENDENCIES_PROPERTY when deps are changed
+                dependencyListModel.addListDataListener(new ListDataListener() {
+                    public void contentsChanged(ListDataEvent e) {
+                        firePropertyChange(DEPENDENCIES_PROPERTY, null,
+                                getDependenciesListModel());
+                    }
+                    public void intervalAdded(ListDataEvent e) {
+                        contentsChanged(null);
+                    }
+                    public void intervalRemoved(ListDataEvent e) {
+                        contentsChanged(null);
+                    }
+                });
+            } else {
+                dependencyListModel = CustomizerComponentFactory.getInvalidDependencyListModel();
+                if (runAfterPopulated != null)
+                    runAfterPopulated.run();
+            }
+        } else {
+            if (runAfterPopulated != null)
+                runAfterPopulated.run();
+        }
+        return dependencyListModel;
     }
 
     /**

@@ -70,7 +70,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 
 
 /**
@@ -302,11 +301,11 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 }
             }
             //
-            final boolean needToRegisterDefaultServer =
-                    !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
-            if (needToRegisterDefaultServer) {
-                commonUtilities.getServerProvider();
-            }
+//            final boolean needToRegisterDefaultServer =
+//                    !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
+//            if (needToRegisterDefaultServer) {
+//                commonUtilities.getServerProvider();
+//            }
         } catch (Exception ex) {
             throw new ServerInitializationException("failed to init default instance", ex);
         }

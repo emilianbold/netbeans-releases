@@ -66,7 +66,7 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
 
     public int index() {
         checkCurrentTokenSequence();
-        int index = (currentTokenSequence+1) *1000000;
+        int index = (currentTokenSequence+1) *100000;
         return index + currentTokenSequence().index();
     }
 
@@ -78,12 +78,12 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
     public void moveIndex(int ind) {
         checkCurrentTokenSequence();
         String s = ""+ind;
-        assert s.length() > 6 : s;
-        s = s.substring(s.length()-6);
+        assert s.length() > 5 : s;
+        s = s.substring(s.length()-5);
         int tokenIndex = Integer.parseInt(s);
-        int tokenSequence = ((ind - tokenIndex) / 1000000)-1;
+        int tokenSequence = ((ind - tokenIndex) / 100000)-1;
         if (tokenSequence < 0 || tokenSequence >= tss.size()) {
-            throw new IllegalStateException("index "+ind+" is out of boundaries "+tss );
+            throw new IllegalStateException("index "+ind+" is out of boundaries "+tss.size() );
         }
         setCurrentTokenSequenceIndex(tokenSequence);
         currentTokenSequence().moveIndex(tokenIndex);
@@ -156,8 +156,44 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
         return true;
     }
 
+    /**
+     * Method move() iterates over all items in tss array to find one
+     * corresponding to given offset. In order to make move() faster this
+     * method was added to find nearby start item instead of starting always
+     * from 0.
+     */
+    private int findNearbyTokenSequenceIndexForOffset(int offset) {
+        int end = tss.size()-1;
+        int start = 0;
+        while (true) {
+            if (end - start < 10) {
+                // do not bother further optimize
+                return start;
+            }
+            int middle = start+((end-start)/2);
+            TokenSequenceWrapper<T1> middleItem = tss.get(middle);
+            while (middleItem.isVirtual() && middle > 0) {
+                middle--;
+                middleItem = tss.get(middle);
+            }
+            if (middle == 0) {
+                // something wrong; abort optimization.
+                return 0;
+            }
+            if (offset >= middleItem.getStart() && offset <= middleItem.getEnd()) {
+                return middle;
+            }
+            if (offset > middleItem.getEnd()) {
+                start = middle;
+            } else {
+                end = middle;
+            }
+        }
+    }
+
     public int move(int offset) {
-        for (int i = 0; i < tss.size(); i++) {
+        int start = findNearbyTokenSequenceIndexForOffset(offset);
+        for (int i = start; i < tss.size(); i++) {
             TokenSequenceWrapper<T1> cdts = tss.get(i);
             if (cdts.isVirtual()) {
                 continue;
@@ -173,7 +209,8 @@ public final class JoinedTokenSequence<T1 extends TokenId> {
 
     public boolean move(int offset, boolean forward) {
         int previous = -1;
-        for (int i = 0; i < tss.size(); i++) {
+        int start = findNearbyTokenSequenceIndexForOffset(offset);
+        for (int i = start; i < tss.size(); i++) {
             TokenSequenceWrapper<T1> cdts = tss.get(i);
             if (cdts.isVirtual()) {
                 continue;

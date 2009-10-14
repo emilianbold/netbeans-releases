@@ -54,7 +54,6 @@ import java.awt.RenderingHints;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -71,8 +70,10 @@ import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.extras.api.AxisMark;
 import org.netbeans.modules.dlight.util.DLightMath;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -83,14 +84,11 @@ import org.openide.util.ImageUtilities;
     private static final Color VIEWPORT_HANDLE_COLOR = new Color(0x72, 0x8A, 0x84);
     private static final int VIEWPORT_HANDLE_WIDTH = VIEWPORT_HANDLE.getWidth(null);
     private static final int VIEWPORT_HANDLE_HEIGHT = VIEWPORT_HANDLE.getHeight(null);
-
     private static final Image FILTER_HANDLE = ImageUtilities.loadImage("org/netbeans/modules/dlight/extras/resources/filter_handle.png"); // NOI18N
     private static final Color FILTER_HANDLE_COLOR = new Color(0xE7, 0x6F, 0x00);
     private static final int FILTER_HANDLE_WIDTH = FILTER_HANDLE.getWidth(null);
     private static final int FILTER_HANDLE_HEIGHT = FILTER_HANDLE.getHeight(null);
-
     private static final Color GRADIENT_DARK_COLOR = new Color(0xB4, 0xB4, 0xB4);
-
     private final ViewportModel viewportModel;
     private final DataFilterManager filterManager;
     private final Draggable viewportStartMark;
@@ -125,7 +123,7 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
                 Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
-                if (viewport != null && startTime >= viewport.getEnd()){
+                if (viewport != null && startTime >= viewport.getEnd()) {
                     return;
                 }
                 viewportModel.setViewport(new Range<Long>(startTime, null));
@@ -134,6 +132,11 @@ import org.openide.util.ImageUtilities;
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("viewport.start.tooltip"); // NOI18N
             }
 
             @Override
@@ -152,6 +155,7 @@ import org.openide.util.ImageUtilities;
             }
         };
         this.viewportEndMark = new AbstractDraggable(this) {
+
             @Override
             public int getPosition() {
                 ViewportModelState vms = getViewportModelState();
@@ -163,7 +167,7 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> viewport = vms.getViewport();
                 Long endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
-                if (viewport != null && viewport.getStart() >= endTime){
+                if (viewport != null && viewport.getStart() >= endTime) {
                     return;
                 }
                 viewportModel.setViewport(new Range<Long>(null, endTime));
@@ -172,6 +176,11 @@ import org.openide.util.ImageUtilities;
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("viewport.end.tooltip"); // NOI18N
             }
 
             @Override
@@ -212,16 +221,20 @@ import org.openide.util.ImageUtilities;
                 ViewportModelState vms = getViewportModelState();
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
                 Long startTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
-                if (selection != null && selection.getEnd() <= startTime){
-                    //return
-                    return;
+                if (selection == null || startTime < selection.getEnd()) {
+                    Long endTime = selection == null? Long.MAX_VALUE : selection.getEnd();
+                    setTimeSelection(new Range<Long>(startTime, endTime), isAdjusting);
                 }
-                setTimeSelection(new Range<Long>(startTime, null), isAdjusting);
             }
 
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("filter.start.tooltip"); // NOI18N
             }
 
             @Override
@@ -254,17 +267,28 @@ import org.openide.util.ImageUtilities;
             @Override
             protected void setPosition(int pos, boolean isAdjusting) {
                 ViewportModelState vms = getViewportModelState();
-                Long endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 Range<Long> selection = ViewportBar.this.getTimeSelection();
-                if (selection  != null && selection.getStart() >= endTime){
-                    return;
+                Long endTime;
+                if (pos >= getWidth() - rightMargin) {
+                    // special case: stick time filter to the right
+                    endTime = Long.MAX_VALUE;
+                } else {
+                    endTime = DLightMath.map(pos, leftMargin, getWidth() - rightMargin, vms.getLimits().getStart(), vms.getLimits().getEnd());
                 }
-                setTimeSelection(new Range<Long>(null, endTime), isAdjusting);
+                if (selection == null || selection.getStart() < endTime) {
+                    Long startTime = selection == null? Long.MIN_VALUE : selection.getStart();
+                    setTimeSelection(new Range<Long>(startTime, endTime), isAdjusting);
+                }
             }
 
             @Override
             public Cursor getCursor() {
                 return Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+            }
+
+            @Override
+            public String getTooltip() {
+                return getMessage("filter.end.tooltip"); // NOI18N
             }
 
             @Override
@@ -302,32 +326,16 @@ import org.openide.util.ImageUtilities;
     private Range<Long> getTimeSelection() {
         Collection<TimeIntervalDataFilter> timeFilters = filterManager == null ? null : filterManager.getDataFilter(TimeIntervalDataFilter.class);
         if (timeFilters != null && !timeFilters.isEmpty()) {
-            Range<Long> selection = timeFilters.iterator().next().getInterval();
-            return new Range<Long>(
-                    TimeUnit.NANOSECONDS.toMillis(selection.getStart()),
-                    TimeUnit.NANOSECONDS.toMillis(selection.getEnd()));
+            return timeFilters.iterator().next().getInterval();
         } else {
             return null;
         }
     }
 
-    private void setTimeSelection(Range<Long> selection, boolean isAdjusting) {
+    private void setTimeSelection(Range<Long> range, boolean isAdjusting) {
         if (filterManager != null) {
-            if (selection.getStart() == null || selection.getEnd() == null) {
-                Range<Long> currentSelection = getTimeSelection();
-                ViewportModelState vms = getViewportModelState();
-                selection = substituteDefaults(selection, currentSelection == null ? vms.getLimits() : currentSelection);
-            }
-            filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(new Range<Long>(
-                    TimeUnit.MILLISECONDS.toNanos(selection.getStart()),
-                    TimeUnit.MILLISECONDS.toNanos(selection.getEnd()))), isAdjusting);
+            filterManager.addDataFilter(TimeIntervalDataFilterFactory.create(range), isAdjusting);
         }
-    }
-
-    private Range<Long> substituteDefaults(Range<Long> range, Range<Long> defaults) {
-        return new Range<Long>(
-                range.getStart() == null ? defaults.getStart() : range.getStart(),
-                range.getEnd() == null ? defaults.getEnd() : range.getEnd());
     }
 
     @Override
@@ -395,7 +403,12 @@ import org.openide.util.ImageUtilities;
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
-        repaint();
+        //repaint in UI thread
+        UIThread.invoke(new Runnable() {
+            public void run() {
+                repaint();
+            }
+        });
     }
 
     /**
@@ -418,5 +431,9 @@ import org.openide.util.ImageUtilities;
         public Range<Long> getViewport() {
             return viewport;
         }
+    }
+
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(ViewportBar.class, key);
     }
 }

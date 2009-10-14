@@ -248,11 +248,22 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
                     if (input.read() == 't') {
                         if (input.read() == 't') {
                             if (input.read() == 'p') {
-                                if (input.read() == ':') {
-                                    foundLinkBegin = true;
-                                } else {
-                                    input.backup(4);
-                                }
+				int next = input.read();
+				switch (next) {
+				    case ':':
+                                        foundLinkBegin = true;
+                                        break;
+				    case 's':
+                                        if (input.read() == ':') {
+                                            foundLinkBegin = true;
+                                        } else {
+                                            input.backup(5);
+                                        }
+					break;
+                                   default:
+                                        input.backup(4);
+                                        break;
+				}
                             } else {
                                 input.backup(3);
                             }

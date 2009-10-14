@@ -112,6 +112,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
             }
         }
         catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

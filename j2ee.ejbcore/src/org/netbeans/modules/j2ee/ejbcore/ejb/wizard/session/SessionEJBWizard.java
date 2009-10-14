@@ -101,7 +101,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
         Profile profile = ejbModule.getJ2eeProfile();
-        boolean isSimplified = profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB);
+        boolean isSimplified = Profile.JAVA_EE_5.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile);
         SessionGenerator sessionGenerator = SessionGenerator.create(
                 Templates.getTargetName(wiz), 
                 pkg, 

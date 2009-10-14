@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import junit.framework.TestCase;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -55,13 +54,14 @@ import java.io.File;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Versioning SPI unit tests of VCSContext.
  * 
  * @author Maros Sandor
  */
-public class VCSContextTest extends TestCase {
+public class VCSContextTest extends NbTestCase {
     
     private File dataRootDir;
 
@@ -71,7 +71,8 @@ public class VCSContextTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        dataRootDir = getWorkDir();
+        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
     }
 
     public void testForEmptyNodes() {
