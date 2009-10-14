@@ -58,6 +58,8 @@ import javax.swing.table.TableCellRenderer;
  */
 public class ThreadNameHeaderRenderer extends JPanel implements TableCellRenderer, Serializable {
 
+    private static final boolean CHANGE_BUTTON = false;
+
     private ThreadsPanel viewManager; // view manager for this header
     private JLabel label;
     private JLabel shift;
@@ -65,18 +67,23 @@ public class ThreadNameHeaderRenderer extends JPanel implements TableCellRendere
 
     public ThreadNameHeaderRenderer(ThreadsPanel aViewManager) {
         viewManager = aViewManager;
-        label = new JLabel(ThreadsPanel.THREAD_NAME_ID);
-        shift = new JLabel(" > "); //NOI18N
         setLayout(new BorderLayout());
+        label = new JLabel(ThreadsPanel.THREAD_NAME_ID);
         add(label, BorderLayout.CENTER);
-        add(shift, BorderLayout.EAST);
+        if (CHANGE_BUTTON) {
+            shift = new JLabel(" > "); //NOI18N
+            shift.setForeground(Color.blue);
+            add(shift, BorderLayout.EAST);
+        }
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JPanel component = this;
         component.setBackground(Color.WHITE);
         label.setFont(table.getFont().deriveFont(Font.BOLD));
-        shift.setFont(table.getFont().deriveFont(Font.BOLD));
+        if (CHANGE_BUTTON) {
+            shift.setFont(table.getFont().deriveFont(Font.BOLD));
+        }
 
         component.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
         switch (viewManager.getThreadNameFormat()){
@@ -111,7 +118,9 @@ public class ThreadNameHeaderRenderer extends JPanel implements TableCellRendere
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        shiftRect = shift.getBounds();
+        if (CHANGE_BUTTON) {
+            shiftRect = shift.getBounds();
+        }
     }
 
     Rectangle getFormatRectangle() {
