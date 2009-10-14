@@ -414,6 +414,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
     }
 
+    // placeholder to allow modules to compile until b4dd900f3229 is reapplied w/ fixes
+    protected boolean asynchronousOpen() {
+        return false;
+    }
+
     /** Overrides superclass method, first processes document preparation.
      * @see #prepareDocument */
     @Override
