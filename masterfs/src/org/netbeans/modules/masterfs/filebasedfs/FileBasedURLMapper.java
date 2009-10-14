@@ -49,14 +49,13 @@ import org.openide.filesystems.URLMapper;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.openide.util.Exceptions;
 
 //TODO: JDK problems with URL, URI, File conversion for UNC
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 /*
 There must be consistently called conversion from FileUtil and URLMapper.
 new File (URI.create (fo.getURL ().toExternalForm ())) is typical scenario that leads to this
@@ -89,14 +88,16 @@ catch] at org.netbeans.modules.javacore.JMManager.scanFiles(JMManager.java:1112)
 
 public final class FileBasedURLMapper extends URLMapper {
     public final URL getURL(final FileObject fo, final int type) {
-        if (type == URLMapper.NETWORK) return null;        
+        if (type == URLMapper.NETWORK) {
+            return null;
+        }
         URL retVal = null;
         try {
             if (fo instanceof BaseFileObj)  {
                 final BaseFileObj bfo = (BaseFileObj) fo;
                 retVal = FileBasedURLMapper.fileToURL(bfo.getFileName().getFile(), fo);
-            } else if (fo instanceof RootObj) {
-                final RootObj rfo = (RootObj) fo;
+            } else if (fo instanceof RootObj<?>) {
+                final RootObj<?> rfo = (RootObj<?>) fo;
                 return getURL(rfo.getRealRoot(), type);                
             }
         } catch (MalformedURLException e) {
@@ -106,7 +107,9 @@ public final class FileBasedURLMapper extends URLMapper {
     }
 
     public final FileObject[] getFileObjects(final URL url) {
-        if (!"file".equals(url.getProtocol())) return null;  //NOI18N
+        if (!"file".equals(url.getProtocol())) {  //NOI18N
+            return null;
+        }
         // return null for UNC root
         if(url.getPath().equals("//") || url.getPath().equals("////")) {  //NOI18N
             return null;
@@ -130,7 +133,7 @@ public final class FileBasedURLMapper extends URLMapper {
     }
 
     private static URL fileToURL(final File file, final FileObject fo) throws MalformedURLException {
-        URL retVal = file.toURI().toURL();
+        URL retVal = toURI(file, fo.isFolder()).toURL();
         if (fo.isFolder()) {
             // #155742 - URL for folder must always end with slash
             final String urlDef = retVal.toExternalForm();
@@ -140,5 +143,36 @@ public final class FileBasedURLMapper extends URLMapper {
             }
         }
         return retVal;
+    }
+        // #171330 - used toURI() to eliminate disk touch in file.toURI()
+
+    /** #171330 - Method taken from java.io.File.toURI. We know whether given
+     * FileObject is a file or folder, so we can eliminate File.isDirectory
+     * disk touch which is needed in file.toURI().  */
+    private static URI toURI(final File file, boolean isDirectory) {
+	try {
+	    File f = file.getAbsoluteFile();
+	    String sp = slashify(f.getPath(), isDirectory);
+	    if (sp.startsWith("//")) {  //NOI18N
+		sp = "//" + sp;  //NOI18N
+            }
+	    return new URI("file", null, sp, null);  //NOI18N
+	} catch (URISyntaxException x) {
+	    throw new Error(x);		// Can't happen
+	}
+    }
+
+    private static String slashify(String path, boolean isDirectory) {
+	String p = path;
+	if (File.separatorChar != '/') {  //NOI18N
+	    p = p.replace(File.separatorChar, '/');  //NOI18N
+        }
+	if (!p.startsWith("/")) {  //NOI18N
+	    p = "/" + p;  //NOI18N
+        }
+	if (!p.endsWith("/") && isDirectory) {  //NOI18N
+	    p = p + "/";  //NOI18N
+        }
+	return p;
     }
 }

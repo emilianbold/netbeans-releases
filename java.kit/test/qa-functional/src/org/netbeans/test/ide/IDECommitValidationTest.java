@@ -41,17 +41,12 @@
 
 package org.netbeans.test.ide;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.ide.CountingSecurityManager.Mode;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -70,10 +65,8 @@ public class IDECommitValidationTest extends IDEValidation {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDECommitValidationTest.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
-        /* XXX: Enable as soon as there are no warnings during start
-                and exceptions are not that common
         .failOnException(Level.INFO)
-        .failOnMessage(Level.WARNING)*/;
+        .failOnMessage(Level.SEVERE);
         
         
         CountingSecurityManager.initWrites();

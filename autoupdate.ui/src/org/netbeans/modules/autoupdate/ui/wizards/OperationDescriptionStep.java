@@ -161,6 +161,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             body = new OperationDescriptionPanel (tableTitle,
                     preparePluginsForShow (
+                    model.getPrimaryUpdateElements(),
                     model.getPrimaryVisibleUpdateElements(false),
                         model.getCustomHandledComponents (),
                         model.getOperation (), false),
@@ -195,12 +196,14 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 } else {
                     body = new OperationDescriptionPanel (tableTitle,
                             preparePluginsForShow (
+                                model.getPrimaryUpdateElements(),
                                 model.getPrimaryVisibleUpdateElements(true),
                                 model.getCustomHandledComponents (),
                                 model.getOperation (),
                                 true),
                             dependenciesTitle,
                             preparePluginsForShow (
+                                model.getRequiredUpdateElements(),
                                 model.getRequiredVisibleUpdateElements(),
                                 null,
                                 model.getOperation (),
@@ -361,13 +364,13 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return presentationName == null ? dep : presentationName;
     }
     
-    private String preparePluginsForShow (Set<UpdateElement> allplugins, Set<UpdateElement> customHandled, OperationType type,boolean checkInternalUpdates) {
+    private String preparePluginsForShow (Set <UpdateElement> allPlugins, Set<UpdateElement> visiblePlugins, Set<UpdateElement> customHandled, OperationType type,boolean checkInternalUpdates) {
         String s = new String ();
         List<String> names = new ArrayList<String> ();
         List <UpdateUnit> invisibleIncluded = new ArrayList <UpdateUnit>();
         List <UpdateUnit> units = new ArrayList <UpdateUnit>();
         List <UpdateElement> plugins = new ArrayList<UpdateElement>();
-        for(UpdateElement el : allplugins) {
+        for(UpdateElement el : visiblePlugins) {
             boolean internal = false;
             if (OperationWizardModel.OperationType.UPDATE == type && el.getUpdateUnit ().getInstalled () != null) {
                  String oldVersion = el.getUpdateUnit ().getInstalled ().getSpecificationVersion ();
@@ -410,12 +413,12 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                         internalUpdate.add(el);
                         for (OperationInfo<InstallSupport> info : internalUpdate.listAll()) {
                             if (!info.getUpdateElement().equals(el)) {
-                                if (!container.contains(info.getUpdateElement())) {
+                                if (!container.contains(info.getUpdateElement()) && allPlugins.contains(info.getUpdateElement())) {
                                     container.add(info.getUpdateElement());
                                 }
                             }
                             for (UpdateElement r : info.getRequiredElements()) {
-                                if (!container.contains(r) && container.canBeAdded(r.getUpdateUnit(), r)) {
+                                if (!container.contains(r) && container.canBeAdded(r.getUpdateUnit(), r) && allPlugins.contains(r)) {
                                     container.add(r);
                                 }
                             }
@@ -478,6 +481,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                                     "]";
                             }
                         }
+                        map.remove(el.getUpdateUnit());
                     }
                 } else {
                     updatename += getBundle ("OperationDescriptionStep_PluginVersionFormat",  // NOI18N
