@@ -79,9 +79,10 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         EditorRegistry.addPropertyChangeListener(new EditorFileChangeListener());
     }
 
-    public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
-        //   log(sourceFileInfoProvider, metrics, list, functionCalls);
-        activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+    private void preProcessAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, boolean lineAnnotations) {
+        if (list == null || list.size() == 0) {
+            return;
+        }
         for (FunctionCallWithMetric functionCall : list) {
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {
@@ -119,55 +120,24 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
                         col++;
                     }
-                    if (!below) {
+                    if (lineAnnotations && !below) {
+                        // line annotation (none zero)
                         fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                     }
-                }
-            }
-        }
-        if (functionCalls != null){
-            for (FunctionCallWithMetric functionCall : functionCalls) {
-                SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
-                if (sourceFileInfo != null) {
-                    if (sourceFileInfo.isSourceKnown()) {
-                        String filePath = sourceFileInfo.getFileName();
-                        FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
-                        if (fileAnnotationInfo == null) {
-                            fileAnnotationInfo = new FileAnnotationInfo();
-                            fileAnnotationInfo.setFilePath(filePath);
-                            fileAnnotationInfo.setColumnNames(new String[metrics.size()]);
-                            fileAnnotationInfo.setMaxColumnWidth(new int[metrics.size()]);
-                            activeAnnotations.put(filePath, fileAnnotationInfo);
-                        }
-                        LineAnnotationInfo lineAnnotationInfo = new LineAnnotationInfo(fileAnnotationInfo);
-                        lineAnnotationInfo.setLine(sourceFileInfo.getLine());
-                        lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
-                        lineAnnotationInfo.setColumns(new String[metrics.size()]);
-                        boolean below = true;
-                        int col = 0;
-                        for (Column column : metrics) {
-                            String metricId = column.getColumnName();
-                            Object metricVal = functionCall.getMetricValue(metricId);
-                            String metricValString = FunctionMetricFormatter.getFormattedValue(functionCall, metricId);
-                            if (!metricValString.equals("0.0")) { // NOI18N
-                                below = false;
-                            }
-                            lineAnnotationInfo.getColumns()[col] = metricValString;
-                            int metricValLength = metricValString.length();
-                            if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
-                                fileAnnotationInfo.getMaxColumnWidth()[col] = metricValLength;
-                            }
-
-                            String metricUName = column.getColumnUName();
-                            fileAnnotationInfo.getColumnNames()[col] = metricUName;
-
-                            col++;
-                        }
-                            fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
+                    if (!lineAnnotations) {
+                        // block annotation
+                        fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
                     }
                 }
             }
         }
+    }
+
+    public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
+        // log(sourceFileInfoProvider, metrics, list, functionCalls);
+        activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+        preProcessAnnotations(sourceFileInfoProvider, metrics, list, true);
+        preProcessAnnotations(sourceFileInfoProvider, metrics, functionCalls, false);
         // Check current focused file in editor whether it should be annotated
         annotateCurrentFocusedFile();
     }
