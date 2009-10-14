@@ -111,7 +111,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     protected String[] getExtensibleClassPathTypes (SourceGroup sg) {
         return new String[] {
             ClassPath.COMPILE,
-            ClassPath.EXECUTE
+            ClassPath.EXECUTE,
+            ClassPathSupport.ENDORSED,
         };
     }
 
