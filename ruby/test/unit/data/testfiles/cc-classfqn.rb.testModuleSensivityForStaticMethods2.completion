@@ -1,7 +1,8 @@
 Code completion result for source line:
-puts Shapes::|CIRCLE
+Eka::Toka::|toka_static
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CONSTANT   CIRCLE                                     null
+CLASS      Vika                                       Eka::Toka
+METHOD     toka_static                     [STATIC]   Eka::Toka
 ------------------------------------
 METHOD     alias_attribute(new_name, old_             Module
 METHOD     alias_method(new_name, old_nam             Module
