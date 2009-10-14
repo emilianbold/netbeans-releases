@@ -45,20 +45,16 @@ import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Provider;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 
 /**
  *
  * @author Jan Lahoda
  */
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class SimpleProxyLookupTest extends NbTestCase {
 
     public SimpleProxyLookupTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
     }
 
     public void test69810() throws Exception {

@@ -175,7 +175,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
     }
 
     public boolean hasNext() {
-        return !superclassPanelCurrent && superclassPanel != null;
+        return delegateIterator.hasNext() || (!superclassPanelCurrent && superclassPanel != null);
     }
     
     public boolean hasPrevious() {

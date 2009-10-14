@@ -196,6 +196,18 @@ public class ChatPanel extends javax.swing.JPanel {
     private static final Pattern RESOURCES =
             Pattern.compile("("+STACK_TRACE_STRING+")|("+CLASSPATH_RESOURCE_STRING +")|("+PROJECT_RESOURCE_STRING +")|("+ABSOLUTE_RESOURCE_STRING + ")");//NOI18N
 
+    private void addNotificationsMenuItem(JPopupMenu menu) throws MissingResourceException {
+        NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
+        String name = null;
+        try {
+            name = isPrivate() ? getPrivateName() : Kenai.getDefault().getProject(getName()).getDisplayName();
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem(NbBundle.getMessage(ChatPanel.class, "CTL_NotificationsFor", new Object[]{name}), ChatNotifications.getDefault().isEnabled(getName()));
+        jCheckBoxMenuItem.addActionListener(bubbleEnabled);
+        menu.add(jCheckBoxMenuItem);
+    }
     private void insertLinkToEditor() {
         if (EditorRegistry.lastFocusedComponent() != null) {
             new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true).actionPerformed(null);
@@ -422,9 +434,6 @@ public class ChatPanel extends javax.swing.JPanel {
         outbox.setBackground(Color.WHITE);
         splitter.setResizeWeight(0.9);
         refreshOnlineStatus();
-        NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
-        inbox.addMouseListener(bubbleEnabled);
-        outbox.addMouseListener(bubbleEnabled);
         undo = new CompoundUndoManager(outbox);
 
         inboxScrollPane.addMouseWheelListener(new MouseWheelListener() {
@@ -448,31 +457,27 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         });
 
+        inbox.setComponentPopupMenu(dropDownMenu);
+        outbox.setComponentPopupMenu(dropDownMenu);
+
+
         UIUtils.logKenaiUsage("CHAT", isPrivate() ? "PRIVATE_CHAT" : "CHATROOM"); // NOI18N
     }
 
-    private class NotificationsEnabledAction extends MouseAdapter implements ActionListener {
+    void insertToInputArea(String message) {
+        if (message==null)
+            return;
+        try {
+            outbox.getDocument().insertString(outbox.getCaretPosition(), message, null);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private class NotificationsEnabledAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             JCheckBoxMenuItem m = (JCheckBoxMenuItem) e.getSource();
             ChatNotifications.getDefault().setEnabled(getName(),m.getState());
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                try {
-                    JPopupMenu menu = new JPopupMenu();
-                    String name = isPrivate()?getPrivateName():Kenai.getDefault().getProject(getName()).getDisplayName();
-                    JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem(
-                            NbBundle.getMessage(ChatPanel.class, "CTL_NotificationsFor", new Object[]{name}),  //NOI18N
-                            ChatNotifications.getDefault().isEnabled(getName()));
-                    jCheckBoxMenuItem.addActionListener(this);
-                    menu.add(jCheckBoxMenuItem);
-                    menu.show((Component) e.getSource(), e.getX(), e.getY());
-                } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
         }
     }
 
@@ -652,7 +657,7 @@ public class ChatPanel extends javax.swing.JPanel {
             buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
                 .add(sendLinkButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 154, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
                 .add(sendButton))
         );
         buttonsLayout.setVerticalGroup(
@@ -662,8 +667,6 @@ public class ChatPanel extends javax.swing.JPanel {
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
-
-        outboxScrollPane.setBorder(null);
 
         outbox.setMaximumSize(new java.awt.Dimension(0, 16));
         outbox.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -684,6 +687,7 @@ public class ChatPanel extends javax.swing.JPanel {
         inboxPanel.setLayout(new java.awt.BorderLayout());
 
         inboxScrollPane.setBorder(null);
+        inboxScrollPane.setViewportBorder(null);
 
         inbox.setBorder(null);
         inbox.setContentType("text/html"); // NOI18N
@@ -823,8 +827,16 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         }
         if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_L) {
-            insertLinkToEditor();
-        }
+                if (EditorRegistry.lastFocusedComponent() != null) {
+                    insertLinkToEditor();
+                } else {
+                   Point magicCaretPosition = outbox.getCaret().getMagicCaretPosition();
+                   if (magicCaretPosition==null) {
+                       magicCaretPosition = new Point(0,0);
+                   }
+                   outbox.getComponentPopupMenu().show(outbox, magicCaretPosition.x, magicCaretPosition.y);
+                }
+            }
     }//GEN-LAST:event_outboxKeyPressed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
@@ -846,6 +858,11 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void dropDownMenuPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_dropDownMenuPopupMenuWillBecomeVisible
         dropDownMenu.removeAll();
+        JPopupMenu menu = (JPopupMenu) evt.getSource();
+        if (menu.getInvoker() == inbox) {
+            addNotificationsMenuItem(dropDownMenu);
+            return;
+        }
         
         JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
         if (lastFocused!=null) {
@@ -873,7 +890,7 @@ public class ChatPanel extends javax.swing.JPanel {
         }
 
 
-        for (int i=0;i<3 && i< issues.length;i++) {
+        for (int i=0;issues!=null&& i<3 && i< issues.length;i++) {
             dropDownMenu.add(new InsertLinkAction(issues[i], outbox));
         }
         if (issues.length>0) {
@@ -882,6 +899,11 @@ public class ChatPanel extends javax.swing.JPanel {
 
         dropDownMenu.add(new LinkOtherFileAction(outbox));
         dropDownMenu.add(new LinkOtherIssue(outbox));
+        
+        if (menu.getInvoker()==outbox) {
+            dropDownMenu.add(new JSeparator());
+            addNotificationsMenuItem(dropDownMenu);
+        }
     }//GEN-LAST:event_dropDownMenuPopupMenuWillBecomeVisible
 
     private void dropDownMenuPopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_dropDownMenuPopupMenuWillBecomeInvisible
@@ -920,22 +942,28 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private String getMessageBody(Message m) {
         final NotificationExtension ne = (NotificationExtension) m.getExtension("notification", NotificationExtensionProvider.NAMESPACE);
+        String b = m.getBody();
         if (ne==null) {
-            return m.getBody();
+            return b;
         }
         KenaiNotification n = ne.getNotification();
         if (n.getType() != KenaiService.Type.SOURCE) {
-            return m.getBody();
+            return b;
         }
-        String author = n.getAuthor();
-        String body = m.getBody().substring(m.getBody().indexOf(']')+2);
+        int i = b.indexOf(']');
+        String body;
+        if (i>=0) {
+            body = b.substring(i+2);
+        } else {
+            body = b;
+        }
         String id = n.getModifications().get(0).getId();
         String projectName = StringUtils.parseName(m.getFrom());
         if (projectName.contains("@")) {
             projectName = StringUtils.parseName(projectName);
         }
         String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id;
-        return author + ": " + body + "\n" + url;
+        return body + "\n" + url;
     }
 
     protected void insertMessage(Message message) {

@@ -57,6 +57,7 @@ import org.openide.util.LookupListener;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class ProxyLookupTest extends AbstractLookupBaseHid
 implements AbstractLookupBaseHid.Impl {
     public ProxyLookupTest(java.lang.String testName) {
@@ -459,6 +460,7 @@ implements AbstractLookupBaseHid.Impl {
             }
 
             @Override
+            @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
             public boolean equals(Object obj) {
                 if (set != null) {
                     cnt[0]++;

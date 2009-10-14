@@ -135,4 +135,12 @@ public class MakeProjectOptions {
     public static boolean getDepencyChecking() {
         return MakeOptions.getInstance().getDepencyChecking();
     }
+
+    public static boolean getShowIndicatorsOnRun() {
+        return MakeOptions.getInstance().getShowProfiling();
+    }
+
+    public static void setShowIndicatorsOnRun(boolean val) {
+        MakeOptions.getInstance().setShowProfiling(val);
+    }
 }

@@ -53,17 +53,17 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#define RFS_PRELOAD 1 // rfs_utils.h needs this
-
-#include "rfs_controller.h"
+#include "rfs_protocol.h"
+#include "rfs_preload_socks.h"
 #include "rfs_util.h"
 
 /** the name of the directory under control, including trailing "\" */
 static const char *my_dir = 0;
 static int my_dir_len;
 
-//static char* curr_dir = 0;
-//static int curr_dir_len = 0;
+static int test_env = 0;
+
+static int __thread inside_open = 0;
 
 #define get_real_addr(name) _get_real_addr(#name, name);
 
@@ -103,105 +103,6 @@ static inline void print_dlsym() {
 }
 #endif
 
-static int open_socket() {
-    int port = default_controller_port;
-    char *env_port = getenv("RFS_CONTROLLER_PORT");
-    if (env_port) {
-        port = atoi(env_port);
-    }
-    char* hostname = "localhost";
-    char *env_host = getenv("RFS_CONTROLLER_HOST");
-    if (env_host) {
-        hostname = env_host;
-    }
-    trace("Connecting %s:%d\n", hostname, port);
-    struct hostent *hp;
-    if ((hp = gethostbyname(hostname)) == 0) {
-        perror("gethostbyname");
-        return -1;
-    }
-    struct sockaddr_in pin;
-    memset(&pin, 0, sizeof (pin));
-    pin.sin_family = AF_INET;
-    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-    pin.sin_port = htons(port);
-    int sd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sd == -1) {
-        perror("socket");
-        return -1;
-    }
-    if (connect(sd, (struct sockaddr *) & pin, sizeof (pin)) == -1) {
-        perror("connect");
-        return -1;
-    }
-    return sd;
-}
-
-/** 
- * Socked descriptor. 
- * Should be assigned ONLY in get_socket_descriptor and release_socket
- */
-static __thread int _sd = 0;
-
-static void trace_sd(const char* text) {
-    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
-}
-
-static int get_socket_descriptor(int create) {
-    // 0 means unitialized
-    // -1 means that we failed to open a socket
-    if (!create || _sd > 0) {
-        return _sd;
-    }
-    if (_sd == -1) {
-        return -1;
-    }
-    if (_sd == 0) {
-        _sd = -1; // in the case of success, it will become > 0
-        trace_sd("opening socket 1");
-    }
-    _sd = open_socket();
-    trace_sd("opening socket 2");
-    return _sd;
-}
-
-/* static int is_mine(const char *path) {
-    if (path[0] == '/') {
-        return (strncmp(my_dir, path, my_dir_len) == 0);
-    } else {
-        // TODO: make an honest comparison
-        if (strncmp(my_dir, curr_dir, my_dir_len) == 0) { // with trailing "/"
-            return true;
-        }
-        if (strncmp(my_dir, curr_dir, my_dir_len-1) == 0) { // w/o trailing "/"
-            return true;
-        }
-        return false;
-    }
-}*/
-
-/** 
- * Does the same as realpath, except for it
- * - does not resolve symlinks
- * - does not call getcwd each time
-static char * my_realpath(const char *file_name, char *resolved_name, int resolved_name_size) {
-    if (file_name == NULL || resolved_name == NULL || file_name[0] == 0 || resolved_name_size < 2) {
-        return NULL;
-    } else if (file_name[0] == '/') {
-        strncpy(resolved_name, file_name, resolved_name_size);
-        return resolved_name;
-    }
-    // TODO: write a honest implementation!
-    if (file_name[0] == '.' && file_name[0] == '/') {
-        file_name += 2;
-    }
-    ...
-
-    return resolved_name;
-}*/
-
-static int __thread inside_open = 0;
-
 /**
  * Called upon opening a file; returns "boolean" success
  * @return true means "ok" (either file is in already sync,
@@ -209,6 +110,10 @@ static int __thread inside_open = 0;
  * false means that the file is ourm, but can't be synched
  */
 static int on_open(const char *path, int flags) {
+    if (test_env) {
+        fprintf(stdout, "RFS_TEST_PRELOAD %s\n", path);
+        return true;
+    }
     if (inside_open != 1) {
         trace("%s inside_open == %d   returning\n", path, inside_open);
         return true; // recursive call to open
@@ -233,7 +138,14 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            trace("Can not resolve path %s\n", path);
+            report_error("Can not resolve path %s : %s\n", path, strerror(errno));
+            //#if TRACE
+            {
+                char pwd[PATH_MAX];
+                getcwd(pwd, sizeof pwd);
+                trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
+            }
+            //#endif
             inside = 0;
             return false;
         }
@@ -245,34 +157,41 @@ static int on_open(const char *path, int flags) {
         return true;
     }
     int result = false;
-    int sd = get_socket_descriptor(1);
+    int sd = get_socket(true);
     if (sd == -1) {
         trace("On open %s: sd == -1\n", path);
     } else {
         //struct rfs_request;
-        int path_len = strlen(path);
         trace_sd("sending request");
-        trace("Sending %s (%d bytes) sd=%d\n", path, path_len, sd);
-        int sent = send(sd, path, path_len, 0);
-        if (sent == -1) {
+        trace("Sending \"%s\" to sd=%d\n", path, sd);
+        enum sr_result send_res = pkg_send(sd, pkg_request, path);
+        if (send_res == sr_failure) {
             perror("send");
-        } else {
-            trace("%d bytes sent to sd=%d\n", sent, sd);
-            char response_buf[512];
-            memset(response_buf, 0, sizeof(response_buf));
-            int response_size = recv(sd, response_buf, sizeof (response_buf), 0);
-            if (response_size == -1) {
-                perror("receive");
-                // TODO: correct error processing
-            } else {
-                trace("Got %s for %s, flags=%d, sd=%d\n", response_buf, path, flags, sd);
-                if (response_buf[0] == response_ok) {
-                    result = true;
-                } else if (response_buf[0] == response_failure) {
-                    result = false;
+        } else if (send_res == sr_reset) {
+            perror("Connection reset by peer when sending request");
+        } else { // success
+            trace("Request for \"%s\" sent to sd=%d\n", path, sd);
+            const int maxsize = 256;
+            char buffer[maxsize + sizeof(int)];
+            struct package *pkg = (struct package *) &buffer;
+            enum sr_result recv_res = pkg_recv(sd, pkg, maxsize);
+            if (recv_res == sr_failure) {
+                perror("Error receiving response");
+            } else if (recv_res == sr_reset) {
+                perror("Connection reset by peer when receiving response");
+            } else { // success
+                if (pkg->kind == pkg_reply) {
+                    trace("Got %s for %s, flags=%d, sd=%d\n", pkg->data, path, flags, sd);
+                    if (pkg->data[0] == response_ok) {
+                        result = true;
+                    } else if (pkg->data[0] == response_failure) {
+                        result = false;
+                    } else {
+                        trace("Protocol error, sd=%d\n", sd);
+                        result = false;
+                    }
                 } else {
-                    trace("Protocol error, sd=%d\n", sd);
-                    result = false;
+                    trace("Protocol error: get pkg_kind %d instead of %d\n", pkg->kind, pkg_reply);
                 }
             }
         }
@@ -281,10 +200,44 @@ static int on_open(const char *path, int flags) {
     return result;
 }
 
+static pid_t real_fork(const char* function_name, pid_t (*wrapper_addr)(void)) {
+    pid_t result;
+    static pid_t (*prev)(void);
+        if (!prev) {
+            prev = (pid_t (*)(void)) _get_real_addr(function_name, wrapper_addr);
+        }
+        if (prev) {
+            result = prev();
+        } else {
+            trace("Could not find original \"%s\" function\n", function_name);
+            errno = EFAULT;
+            result = -1;
+        }
+    if (result == 0) {
+        release_socket(); // child
+    } else {
+        trace("%s -> %ld\n", function_name, result);
+    }
+    return result;
+}
+
+pid_t fork() {
+    real_fork("fork", fork);
+}
+
+//pid_t vfork() {
+//    real_fork("vfork", vfork);
+//}
+
+#pragma init(on_startup)
 void
 __attribute__((constructor))
 on_startup(void) {
-    trace_startup("RFS_PRELOAD_LOG");    
+    trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
+
+    test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
+    trace("test_env %s\n", test_env ? "ON" : "OFF");
+    
 //#if TRACE
 //    print_dlsym();
 //#endif
@@ -307,8 +260,12 @@ on_startup(void) {
         strcat(p, "/");
         my_dir = p;
     }
-    trace("RFS startup; my dir: %s\n", my_dir);
-    _sd = 0;
+
+    static int startup_count = 0;
+    startup_count++;
+    trace("RFS startup (%d) my dir: %s\n", startup_count, my_dir);
+
+    release_socket();
     trace_sd("startup");
 
     const char* env_sleep_var = "RFS_PRELOAD_SLEEP";
@@ -328,19 +285,13 @@ on_startup(void) {
     }
 }
 
-static void release_socket() {
-    if (_sd > 0) {
-        trace("agent closes socket _sd=%d &_sd=%X\n", _sd, &_sd);
-        close(_sd);
-        _sd = 0;
-        trace_sd("releasing socket");
-    }
-}
-
+#pragma init(on_shutdown)
 void
 __attribute__((destructor))
 on_shutdown(void) {
-    trace("RFS shutdown\n");
+    static int shutdown_count = 0;
+    shutdown_count++;
+    trace("RFS shutdown (%d)\n", shutdown_count);
     trace_shutdown();
     release_socket();
 }
@@ -376,24 +327,6 @@ int pthread_create(void *newthread,
     prev(newthread, attr, pthread_routine_wrapper, data);
 }
 
-/* int chdir(const char *dir) {
-    trace("chdir %s\n", dir);
-    static int (*prev) (const char*);
-    if (!prev) {
-        prev = (int (*) (const char*)) get_real_addr(chdir);
-    }
-    int res = prev(dir);
-    if (res == 0) {
-        int len = strlen(dir);
-        if (len >= curr_dir_len) {
-            free(curr_dir);
-            curr_dir = malloc(curr_dir_len = len * 2);
-        }
-        strcpy(curr_dir, dir);
-    }
-    return res;
-}*/
-
 #define real_open(function_name, path, flags) \
     inside_open++; \
     trace("%s %s %d\n", #function_name, path, flags); \
@@ -420,40 +353,69 @@ int pthread_create(void *newthread,
     inside_open--; \
     return result;
 
+#define real_fopen(function, path, mode) \
+    inside_open++; \
+    trace("%s %s %s\n", #function, path, mode); \
+    FILE* result = NULL; \
+    int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
+    if (on_open(path, int_mode)) { \
+        static FILE* (*prev)(const char *, const char *); \
+        if (!prev) { \
+            prev = (FILE* (*)(const char *, const char *)) get_real_addr(function); \
+        } \
+        if (prev) { \
+            result = prev(path, mode); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function); \
+            errno = EFAULT; \
+            result = NULL; \
+        } \
+    } \
+    trace("%s %s -> %d\n", #function, path, result); \
+    inside_open--; \
+    return result;
+    //result ? -12345 : fileno(result)
 
 int open(const char *path, int flags, ...) {
-    real_open(open, path, flags)
+    real_open(open, path, flags);
 }
 
 #if _FILE_OFFSET_BITS != 64
 int open64(const char *path, int flags, ...) {
-    real_open(open64, path, flags)
+    real_open(open64, path, flags);
 }
 #endif
 
 int _open(const char *path, int flags, ...) {
-    real_open(_open, path, flags)
+    real_open(_open, path, flags);
 }
 
 int _open64(const char *path, int flags, ...) {
-    real_open(_open64, path, flags)
+    real_open(_open64, path, flags);
 }
 
-/* int lstat64(const char *_RESTRICT_KYWD path, struct stat64 *_RESTRICT_KYWD buf)
-{
-    trace("lstat64 %s\n", path);
-    static int (*prev)(const char *_RESTRICT_KYWD, struct stat64 *_RESTRICT_KYWD);
-    if (!prev) {
-        prev = (int (*)(const char *_RESTRICT_KYWD, struct stat64 *_RESTRICT_KYWD)) get_real_addr("lstat64");
-    }
-    return prev(path, buf);
+int __open(const char *path, int flags, ...) {
+    real_open(__open, path, flags);
 }
 
-int _lxstat(const int mode, const char *path, struct stat *buf) {
-    trace("_lxstat %d %s\n", mode, path);
-    static int (*prev)(const int, const char *, struct stat*);
-    if (!prev) {
-        prev = (int (*)(const int, const char *, struct stat*)) get_real_addr("_lxstat");
-    }
-    return prev(mode, path, buf);
-} */
+int __open64(const char *path, int flags, ...) {
+    real_open(__open64, path, flags);
+}
+
+
+//#ifdef __linux__
+FILE *fopen(const char * filename, const char * mode) {
+    real_fopen(fopen, filename, mode);
+}
+
+#if _FILE_OFFSET_BITS != 64
+FILE *fopen64(const char * filename, const char * mode) {
+    real_fopen(fopen64, filename, mode);
+}
+#endif
+//#endif
+
+// TODO: int openat(int fd, const char *path, int flags, ...);
+// TODO: int openat64(int fd, const char *path, int flags, ...);
+
+

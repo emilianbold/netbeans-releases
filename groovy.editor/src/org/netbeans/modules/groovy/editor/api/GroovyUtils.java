@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 
 /**
@@ -49,9 +52,23 @@ import javax.swing.text.BadLocationException;
  * @author Martin Adamek
  * @author Gopala Krishnan Sankaran
  */
-public class GroovyUtils {
+public final class GroovyUtils {
+
+    public static final Set<String> DEFAULT_IMPORT_PACKAGES;
+    public static final Set<String> DEFAULT_IMPORT_CLASSES;
+
+    static {
+        Set<String> defaultImportPackages = new HashSet<String>(7);
+        Collections.addAll(defaultImportPackages, "java.io", "java.lang", "java.net", // NOI18N
+                "java.util", "groovy.util", "groovy.lang"); // NOI18N
+        DEFAULT_IMPORT_PACKAGES = Collections.unmodifiableSet(defaultImportPackages);
+        Set<String> defaultImportClasses = new HashSet<String>(3);
+        Collections.addAll(defaultImportClasses, "java.math.BigDecimal", "java.math.BigInteger"); // NOI18N
+        DEFAULT_IMPORT_CLASSES = Collections.unmodifiableSet(defaultImportClasses);
+    }
 
     private GroovyUtils() {
+        super();
     }
     
     public static String getLineCommentPrefix() {

@@ -543,6 +543,14 @@ public final class ToolchainManagerImpl {
                         }
                         root.appendChild(element);
 
+                        if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null){
+                            element = doc.createElement("download"); // NOI18N
+                            element.setAttribute("uc_url", descriptor.getUpdateCenterUrl()); // NOI18N
+                            element.setAttribute("module_id", descriptor.getModuleID()); // NOI18N
+                            element.setAttribute("uc_display", descriptor.getUpdateCenterDisplayName()); // NOI18N
+                            root.appendChild(element);
+                        }
+
                         element = doc.createElement("platforms"); // NOI18N
                         element.setAttribute("stringvalue", unsplit(descriptor.getPlatforms())); // NOI18N
                         root.appendChild(element);
@@ -1153,6 +1161,9 @@ public final class ToolchainManagerImpl {
         Map<String, List<String>> default_locations;
         String family;
         String platforms;
+        String uc;
+        String ucName;
+        String module;
         String driveLetterPrefix;
         List<FolderInfo> baseFolder;
         List<FolderInfo> commandFolder;
@@ -1569,6 +1580,11 @@ public final class ToolchainManagerImpl {
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
+                return;
+            } else if (path.endsWith(".download")) { // NOI18N
+                v.uc = getValue(attributes, "uc_url"); // NOI18N
+                v.ucName = getValue(attributes, "uc_display"); // NOI18N
+                v.module = getValue(attributes, "module_id"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = getValue(attributes, "stringvalue"); // NOI18N
@@ -2048,6 +2064,18 @@ public final class ToolchainManagerImpl {
                 return v.platforms.split(","); // NOI18N
             }
             return new String[]{};
+        }
+
+        public String getUpdateCenterUrl() {
+            return v.uc;
+        }
+
+        public String getUpdateCenterDisplayName() {
+            return v.ucName;
+        }
+
+        public String getModuleID() {
+            return v.module;
         }
 
         public String getDriveLetterPrefix() {

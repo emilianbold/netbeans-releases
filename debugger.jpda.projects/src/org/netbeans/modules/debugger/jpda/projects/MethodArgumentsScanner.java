@@ -53,6 +53,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
+import javax.tools.Diagnostic;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 
 /**
@@ -125,8 +126,11 @@ class MethodArgumentsScanner extends TreeScanner<MethodArgument[], Object> {
 
     @Override
     public MethodArgument[] visitMethod(MethodTree node, Object p) {
-        if (methodInvocation || !(offset >= lineMap.getLineNumber(positions.getStartPosition(tree, node)) &&
-                                 (offset <= lineMap.getLineNumber(positions.getEndPosition(tree, node))))) {
+        long startMethod = positions.getStartPosition(tree, node);
+        long endMethod = positions.getEndPosition(tree, node);
+        if (methodInvocation || startMethod == Diagnostic.NOPOS || endMethod == Diagnostic.NOPOS ||
+                                !(offset >= lineMap.getLineNumber(startMethod) &&
+                                 (offset <= lineMap.getLineNumber(endMethod)))) {
             return super.visitMethod(node, p);
         }
         List<? extends VariableTree> args = node.getParameters();
@@ -137,6 +141,9 @@ class MethodArgumentsScanner extends TreeScanner<MethodArgument[], Object> {
             VariableTree var = args.get(i);
             long startOffset = positions.getStartPosition(tree, var);
             long endOffset = positions.getEndPosition(tree, var);
+            if (startOffset == Diagnostic.NOPOS || endOffset == Diagnostic.NOPOS) {
+                return new MethodArgument[] {};
+            }
             arguments[i] = new MethodArgument(var.getName().toString(),
                                               var.getType().toString(),
                                               positionDelegate.createPosition(
@@ -163,6 +170,9 @@ class MethodArgumentsScanner extends TreeScanner<MethodArgument[], Object> {
             Tree var = args.get(i);
             long startOffset = positions.getStartPosition(tree, var);
             long endOffset = positions.getEndPosition(tree, var);
+            if (startOffset == Diagnostic.NOPOS || endOffset == Diagnostic.NOPOS) {
+                return new MethodArgument[] {};
+            }
             arguments[i] = new MethodArgument(var.toString(),
                                               (argTypes.size() > i) ? argTypes.get(i).toString() : "",
                                               positionDelegate.createPosition(

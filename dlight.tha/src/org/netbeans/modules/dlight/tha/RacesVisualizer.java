@@ -56,7 +56,6 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -115,6 +114,9 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         }
     }
 
+    public void updateVisualizerConfiguration(RacesVisualizerConfiguration configuration) {
+    }
+
     private class RacesRenderer implements Renderer {
 
         private List<ThreadDump> threadDumps;
@@ -134,7 +136,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             for (ThreadDump threadDump : threadDumps) {
                 List<ThreadSnapshot> threads = threadDump.getThreadStates();
                 for (ThreadSnapshot snap : threads) {
-                    stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.image2Icon(CallStackUISupport.downBadge), snap.getStack());//NOI18N
+                    stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png", false), snap.getStack());//NOI18N
                 }
             }
             RequestProcessor.getDefault().post(new Runnable() {
@@ -160,7 +162,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         @Override
         public String getDisplayName() {
-            return "Address " + race.getAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
+            return "Address " + race.stringAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
         }
 
         @Override

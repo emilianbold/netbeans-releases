@@ -59,6 +59,7 @@ import org.netbeans.modules.dlight.extras.api.support.DefaultViewportModel;
 import org.netbeans.modules.dlight.extras.api.support.TimeMarksProvider;
 import org.netbeans.modules.dlight.extras.api.support.ValueMarksProvider;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
@@ -69,8 +70,7 @@ import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
  */
 public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeListener, DataFilterListener {
 
-    private static final long EXTENT = 20000; // 20 seconds
-
+    private static final long EXTENT = 20000000000L; // 20 seconds
     private final GraphPainter graph;
     private ViewportModel viewportModel;
     private int upperLimit;
@@ -81,14 +81,15 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     private final Object timeFilterLock = new Object();
     private volatile TimeIntervalDataFilter timeFilter;
 
-    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series) {
+    public TimeSeriesPlot(int scale, ValueFormatter formatter, List<TimeSeriesDescriptor> series, TimeSeriesDataContainer data) {
         upperLimit = scale;
-        graph = new GraphPainter(series);
-        graph.addData(new float[series.size()]); // 0th tick - all zeros
+        TimeSeriesDataContainer container = data;
+        container.setTimeSeriesPlot(this);
+        graph = new GraphPainter(series, container);
         timeMarksProvider = TimeMarksProvider.newInstance();
         valueMarksProvider = ValueMarksProvider.newInstance(formatter);
         DefaultViewportModel model = new DefaultViewportModel(new Range<Long>(0L, 0L), new Range<Long>(0L, EXTENT));
-        model.setMinViewportSize(1000L); // 1 second
+        model.setMinViewportSize(1000000000L); // 1 second
         setViewportModel(model);
         setOpaque(true);
 //        ToolTipManager.sharedInstance().registerComponent(this);
@@ -144,19 +145,19 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         TimeIntervalDataFilter tmpTimeFilter = timeFilter;
         if (tmpTimeFilter != null) {
             Range<Long> filterInterval = tmpTimeFilter.getInterval();
-            filterStart = (int)TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
-            filterEnd = (int)TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
+            filterStart = filterInterval.getStart() == null?
+                    Integer.MIN_VALUE :
+                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getStart());
+            filterEnd = filterInterval.getEnd() == null?
+                    Integer.MAX_VALUE :
+                    (int) TimeUnit.NANOSECONDS.toSeconds(filterInterval.getEnd());
         } else {
             filterStart = Integer.MIN_VALUE;
             filterEnd = Integer.MAX_VALUE;
         }
-        graph.paint(g, upperLimit, valueMarks, viewport.getStart(), viewport.getEnd(), timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
-    }
-
-    public void addData(float... newData) {
-        graph.addData(newData);
-        viewportModel.setLimits(new Range<Long>(0L, TimeUnit.SECONDS.toMillis(graph.getDataSize())));
-        repaintAll();
+        graph.paint(g, upperLimit,
+                valueMarks, (int) (viewport.getStart() / 1000000000), (int) (viewport.getEnd() / 1000000000),
+                timeMarks, filterStart, filterEnd, 0, 0, getWidth(), getHeight(), isEnabled());
     }
 
     public ViewportModel getViewportModel() {
@@ -193,12 +194,18 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
         synchronized (timeFilterLock) {
             if (newTimeFilter != timeFilter) {
                 timeFilter = newTimeFilter;
-                repaintAll();
+                UIThread.invoke(new Runnable() {
+
+                    public void run() {
+                        repaintAll();
+                    }
+                });
+                    
             }
         }
     }
 
-    private void repaintAll() {
+    public void repaintAll() {
         repaint();
         if (hAxis != null) {
             hAxis.repaint();
@@ -209,6 +216,7 @@ public class TimeSeriesPlot extends JComponent implements ViewportAware, ChangeL
     }
 
     private static enum AxisOrientation {
+
         HORIZONTAL,
         VERTICAL
     }

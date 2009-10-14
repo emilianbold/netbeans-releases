@@ -43,7 +43,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.util.TestUtils;
 import org.openide.util.Utilities;
 

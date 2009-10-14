@@ -84,6 +84,7 @@ public class ExportDiffAction extends ContextAction {
         exportDiff(context);
     }
 
+    @Override
     public boolean isEnabled() {
         Set<File> roots = context.getFiles();
         if(roots == null) return false;

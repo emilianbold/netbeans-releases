@@ -44,14 +44,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.NbBundle;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
@@ -97,6 +97,8 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
 
+        env.appendPathVariable("PATH", "/bin:/usr/bin:" + hostInfo.getPath()); // NOI18N
+
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
         if (isInterrupted()) {
@@ -128,6 +130,54 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
         processInput.flush();
 
+        creation_ts = System.nanoTime();
+
+        readPID(processOutput);
+    }
+
+    private void createWinUsingShell() throws IOException, InterruptedException {
+        // Get working directory ....
+        String workingDirectory = info.getWorkingDirectory(true);
+
+        if (workingDirectory != null) {
+            workingDirectory = new File(workingDirectory).getAbsolutePath();
+        }
+
+        final MacroMap env = info.getEnvironment().clone();
+
+        if (info.isUnbuffer()) {
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+        }
+
+        env.put("PATH", "/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
+
+        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+
+        if (isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        process = pb.start();
+
+        processInput = process.getOutputStream();
+        processError = process.getErrorStream();
+        processOutput = process.getInputStream();
+
+        processInput.write("echo $$\n".getBytes()); // NOI18N
+        processInput.flush();
+
+        EnvWriter ew = new EnvWriter(processInput);
+        ew.write(env);
+
+        if (workingDirectory != null) {
+            processInput.write(("cd \"" + WindowsSupport.getInstance().convertToShellPath(workingDirectory) + "\"\n").getBytes()); // NOI18N
+        }
+
+        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
+        processInput.flush();
+
+        creation_ts = System.nanoTime();
+
         readPID(processOutput);
     }
 
@@ -138,17 +188,11 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         // Suspend is not supported on Windows.
 
-        final MacroMap env = info.getEnvironment().clone();
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
 
-        // Do all env variables upper-case
-        Map<String, String> _env = new HashMap<String, String>(pb.environment());
-
-        pb.environment().clear();
-
-        for (Entry<String, String> envEntry : _env.entrySet()) {
-            pb.environment().put(envEntry.getKey().toUpperCase(), envEntry.getKey());
-        }
+        final MacroMap jointEnv = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
+        jointEnv.putAll(pb.environment());
+        jointEnv.putAll(info.getEnvironment());
 
         if (isInterrupted()) {
             throw new InterruptedException();
@@ -159,21 +203,23 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         // PATH variable..
 
         if (hostInfo.getShell() != null) {
-            env.appendPathVariable("PATH", new File(hostInfo.getShell()).getParent()); // NOI18N
+            jointEnv.appendPathVariable("PATH", new File(hostInfo.getShell()).getParent()); // NOI18N
         }
 
         if (info.isUnbuffer()) {
-            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
+            UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), jointEnv);
         }
 
-        for (Entry<String, String> envEntry : env.entrySet()) {
+        pb.environment().clear();
+
+        for (Entry<String, String> envEntry : jointEnv.entrySet()) {
             pb.environment().put(envEntry.getKey(), envEntry.getValue());
         }
 
         pb.command(info.getCommand());
 
         if (LOG.isLoggable(Level.FINEST)) {
-            LOG.log(Level.FINEST, "Command: {0}", info.getCommand());
+            LOG.finest(String.format("Command: %s", info.getCommand())); // NOI18N
         }
 
         String wdir = info.getWorkingDirectory(true);
@@ -182,12 +228,14 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             if (wd.exists()) {
                 pb.directory(wd);
                 if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.log(Level.FINEST, "Working directory: {0}", wdir);
+                    LOG.finest(String.format("Working directory: %s", wdir)); // NOI18N
                 }
             }
         }
 
         process = pb.start();
+
+        creation_ts = System.nanoTime();
 
         processInput = process.getOutputStream();
         processError = process.getErrorStream();

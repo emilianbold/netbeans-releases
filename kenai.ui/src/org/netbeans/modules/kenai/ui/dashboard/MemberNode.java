@@ -89,14 +89,13 @@ public class MemberNode extends LeafNode {
             };
             lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
             panel.add( lbl, BorderLayout.CENTER);
-            if (user.hasMessages()) {
-                btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());
-                panel.add(btn, BorderLayout.EAST);
-                panel.validate();
-                btn.setForeground(foreground);
-            }
-        }
+            btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());
+            panel.add(btn, BorderLayout.EAST);
+            panel.validate();
+       }
        lbl.setForeground(foreground);
+       btn.setForeground(foreground);
+       btn.setVisible(user.hasMessages());
        return panel;
     }
 
@@ -104,4 +103,10 @@ public class MemberNode extends LeafNode {
     public Action getDefaultAction() {
         return MemberAccessor.getDefault().getStartChatAction(user);
     }
+
+    @Override
+    public Action[] getPopupActions() {
+        return new Action[]{getDefaultAction()};
+    }
+
 }

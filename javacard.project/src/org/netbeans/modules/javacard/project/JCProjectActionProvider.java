@@ -65,7 +65,6 @@ import org.netbeans.modules.javacard.api.CardState;
 import org.netbeans.modules.javacard.api.JavacardPlatform;
 import org.netbeans.modules.javacard.card.ReferenceImplementation;
 import org.netbeans.modules.javacard.card.loader.CardDataObject;
-import org.netbeans.modules.javacard.card.loader.CardDataObject;
 import org.openide.awt.StatusDisplayer;
 
 

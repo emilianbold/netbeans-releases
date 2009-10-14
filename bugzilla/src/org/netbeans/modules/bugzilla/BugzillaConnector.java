@@ -57,7 +57,6 @@ import org.openide.util.lookup.Lookups;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
 public class BugzillaConnector extends BugtrackingConnector {
 
-    private KenaiSupport kenaiSupport;
     private BugzillaIssueFinder issueFinder;
 
     public String getDisplayName() {
@@ -91,14 +90,7 @@ public class BugzillaConnector extends BugtrackingConnector {
     }
 
     public Lookup getLookup() {
-        return Lookups.singleton(getKenaiSupport());
-    }
-
-    private KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
+        return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
     }
 
 }

@@ -103,7 +103,7 @@ public final class SearchHistory {
         this.historyKey = historyKey;
         this.textField = textField;
         data = readHistory();
-
+        storeHistory(); // #170243
         registerListeners();
     }
 
@@ -251,7 +251,10 @@ public final class SearchHistory {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("History found: " + deserialized);
         }
-        assert deserialized.size() <= HISTORY_LIMIT : String.format("Too many items found %d > %d", deserialized.size(), HISTORY_LIMIT);
+        deserialized = trimToLimit(deserialized, HISTORY_LIMIT); // #170243
+        assert deserialized.size() <= HISTORY_LIMIT : 
+            String.format("Too many items found %d > %d", deserialized.size(),
+                          HISTORY_LIMIT);
         return deserialized;
     }
 
@@ -289,5 +292,19 @@ public final class SearchHistory {
             return data.get(offset);
         }
         return null;
+    }
+
+    /**
+     * Trims the specified {@code list} up to the specified {@code limit},
+     * so that the recent {@code limit+1} elements of the list will be only
+     * remained.
+     * @param list the list
+     * @param limit the limit
+     * @return unmodified list if its size &lt; {@code limit}, otherwise
+     * a sublist of that list.
+     */
+    private static List<String> trimToLimit(List<String> list, int limit) {
+        int size = list.size();
+        return size > limit ? list.subList(size - limit, size) : list;
     }
 }

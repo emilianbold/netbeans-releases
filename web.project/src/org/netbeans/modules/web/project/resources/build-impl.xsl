@@ -321,6 +321,10 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="runmain.jvmargs" value=""/>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
             
             <!-- COS feature - used in run-deploy -->
@@ -455,6 +459,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
@@ -505,6 +510,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                         </junit>
                     </sequential>
@@ -532,6 +538,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <!--
                                 #113297, #118187
@@ -670,6 +677,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
@@ -1102,11 +1110,20 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <!-- copy libraries into ear  -->
                 <xsl:for-each select="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                    <copyfiles todir="${{dist.ear.dir}}" iftldtodir="${{build.web.dir}}/WEB-INF">
+                    <copyfiles iftldtodir="${{build.web.dir}}/WEB-INF">
+                        <xsl:attribute name="todir">${dist.ear.dir}</xsl:attribute>
+                        <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@dirs]">
+                            <xsl:if test="(@dirs = 200)">
+                                <xsl:attribute name="todir">${dist.ear.dir}/lib</xsl:attribute>
+                            </xsl:if>
+                            <xsl:if test="(@dirs = 300)">
+                                <xsl:attribute name="todir"><xsl:value-of select="concat('${build.web.dir}/',webproject3:path-in-war)"/></xsl:attribute>
+                            </xsl:if>
+                        </xsl:if>
                        <xsl:attribute name="files"><xsl:value-of select="webproject3:file"/></xsl:attribute>
-                       <xsl:attribute name="manifestproperty">
+<!--                       <xsl:attribute name="manifestproperty">
                            <xsl:value-of select="concat('manifest.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>
-                       </xsl:attribute>
+                       </xsl:attribute> -->
                     </copyfiles>
                 </xsl:for-each>
                 <!-- copy additional content into web module -->
@@ -1118,7 +1135,8 @@ exists or setup the property manually. For example like this:
                 </xsl:for-each>
                 
                 <mkdir dir="${{build.web.dir}}/META-INF"/>
-                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update">
+                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF"/>
+<!--                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
@@ -1129,7 +1147,7 @@ exists or setup the property manually. For example like this:
                             </xsl:attribute>
                         </attribute>
                     </xsl:if>
-                </manifest>
+                </manifest> -->
             </target>
             
             <target name="library-inclusion-in-archive" depends="init">

@@ -159,7 +159,7 @@ public class NbJiraIssue extends Issue {
         FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS", false),
         ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
         REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
-        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNEE"),
+        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNED_TO"),
         TYPE(JiraAttribute.TYPE.id(), "LBL_TYPE"),
         CREATION(JiraAttribute.CREATION_DATE.id(), null),
         MODIFICATION(JiraAttribute.MODIFICATION_DATE.id(), null),
@@ -1034,6 +1034,15 @@ public class NbJiraIssue extends Issue {
         return getFieldValue(taskData, f);
     }
 
+    String getSeenValue(IssueField f) {
+        Map<String, String> attr = getSeenAttributes();
+        String seenValue = attr != null ? attr.get(f.key) : null;
+        if(seenValue == null) {
+            seenValue = "";                                                     // NOI18N
+        }
+        return seenValue;
+    }
+    
     /**
      * Returns the given fields diplay value
      * @param f

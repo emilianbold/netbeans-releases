@@ -205,6 +205,9 @@ public class BeanClassFinder {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController cc) throws Exception {
+                    if (implClass == null) {
+                        return;
+                    }
                     TypeElement te = JavaUtils.findClassElementByBinaryName(implClass, cc);
                     if (te == null) {
                         return;

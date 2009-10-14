@@ -52,6 +52,10 @@ public final class FileSearchParams {
     private final boolean searchInUserPaths;
 
     public FileSearchParams(ExecutionEnvironment execEnv, List<String> searchPaths, String filename, boolean searchInUserPaths) {
+        if (execEnv == null || searchPaths == null || filename == null) {
+            throw new NullPointerException("FileSearchParams cannot be null"); // NOI18N
+        }
+
         this.execEnv = execEnv;
         this.searchPaths = Collections.unmodifiableList(new ArrayList<String>(searchPaths));
         this.filename = filename;
@@ -75,8 +79,33 @@ public final class FileSearchParams {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof FileSearchParams)) {
+            return false;
+        }
+
+        final FileSearchParams that = (FileSearchParams) obj;
+
+        return this.searchInUserPaths == that.searchInUserPaths &&
+                this.execEnv.equals(that.execEnv) &&
+                this.filename.equals(that.filename) &&
+                this.searchPaths.equals(that.searchPaths);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.execEnv != null ? this.execEnv.hashCode() : 0);
+        hash = 29 * hash + (this.searchPaths != null ? this.searchPaths.hashCode() : 0);
+        hash = 29 * hash + (this.filename != null ? this.filename.hashCode() : 0);
+        hash = 29 * hash + (this.searchInUserPaths ? 1 : 0);
+        return hash;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("File to search: " + filename + "; "); // NOI18N
         sb.append("Search env: " + execEnv.toString() + "; "); // NOI18N
         sb.append("Search paths: " + Arrays.toString(searchPaths.toArray(new String[0])) + "; "); // NOI18N
         sb.append("Search in PATH: " + (searchInUserPaths ? "yes" : "no")); // NOI18N

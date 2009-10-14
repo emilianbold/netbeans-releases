@@ -153,9 +153,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     }
 
     private void cleanupSession(DLightSession session) {
-        List<Visualizer> visualizers = session.getVisualizers();
+        List<Visualizer<?>> visualizers = session.getVisualizers();
         if (visualizers != null) {
-            for (Visualizer v : visualizers) {
+            for (Visualizer<?> v : visualizers) {
                 VisualizerContainer vc = (VisualizerContainer) SwingUtilities.getAncestorOfClass(VisualizerContainer.class, v.getComponent());
                 // TODO: It could be so, that Visualizer is already closed - in this case vc will be null
                 //       Should visualizer be removed from a session on it's closure?
@@ -281,13 +281,16 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return activeSession;
     }
 
-    private Visualizer openVisualizer(String toolID, final VisualizerConfiguration visualizerConfiguration, DLightSession dlightSession) {
-        Visualizer visualizer = null;
+    private Visualizer<?> openVisualizer(String toolID, final VisualizerConfiguration visualizerConfiguration, DLightSession dlightSession) {
+        Visualizer<?> visualizer = null;
 
         //Check if we have already instance in the session:
 
         if (dlightSession.hasVisualizer(toolID, visualizerConfiguration.getID())) {
             visualizer = dlightSession.getVisualizer(toolID, visualizerConfiguration.getID());
+            @SuppressWarnings("unchecked")
+            Visualizer<VisualizerConfiguration> v = (Visualizer<VisualizerConfiguration>) visualizer;
+            v.updateVisualizerConfiguration(visualizerConfiguration);
             if (visualizer instanceof SessionStateListener) {
                 dlightSession.addSessionStateListener((SessionStateListener) visualizer);
                 ((SessionStateListener) visualizer).sessionStateChanged(dlightSession, null, dlightSession.getState());
@@ -489,7 +492,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
-    public void openVisualizerForIndicator(Indicator source, VisualizerConfiguration vc) {
+    public void openVisualizerForIndicator(Indicator<?> source, VisualizerConfiguration vc) {
         DLightSession session = findIndicatorOwner(source);
         //set active session
         setActiveSession(session);
@@ -507,7 +510,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
-    public void mouseClickedOnIndicator(Indicator source) {
+    public void mouseClickedOnIndicator(Indicator<?> source) {
         DLightSession session = findIndicatorOwner(source);
         //set active session
         setActiveSession(session);

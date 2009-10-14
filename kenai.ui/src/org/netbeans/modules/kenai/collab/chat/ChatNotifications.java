@@ -50,6 +50,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -70,6 +71,7 @@ public class ChatNotifications {
 
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
     private HashMap<String, Notification> privateNotifications = new HashMap();
+    private HashMap<String, Integer> privateMessagesCounter = new HashMap();
     private Preferences preferences = NbPreferences.forModule(ChatNotifications.class);
 
     
@@ -103,6 +105,7 @@ public class ChatNotifications {
         if (n != null) {
             n.clear();
             privateNotifications.remove(name);
+            privateMessagesCounter.remove(name);
         }
     }
 
@@ -118,7 +121,13 @@ public class ChatNotifications {
         r.notifyMessageReceived(msg);
         String title = null;
         try {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_GroupChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), r.getNewMessageCount()});
+        int count = r.getMessageCount();
+        if (count==1) {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+        } else {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+
+        }
             final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
 
             final ActionListener l = new ActionListener() {
@@ -130,7 +139,7 @@ public class ChatNotifications {
                 }
             };
 
-            if (r.getNewMessageCount()>0) {
+            if (r.getMessageCount()>0) {
                 Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
                 r.updateNotification(n);
             }
@@ -148,8 +157,15 @@ public class ChatNotifications {
             n.clear();
             privateNotifications.remove(name);
         }
-        String title = NbBundle.getMessage(ChatTopComponent.class, "LBL_PrivateNotificationTitle"); // NOI18N
-        String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_PrivateNotificationDescription", new Object[] { name }); // NOI18N
+        increasePrivateMessagesCount(name);
+        String title;
+        int count = getPrivateMessagesCount(name);
+        if (count==1) {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{name, count}); // NOI18N
+        } else {
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{name, count}); // NOI18N
+        }
+        String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt"); // NOI18N
         n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -160,6 +176,11 @@ public class ChatNotifications {
         }, Priority.NORMAL);
         privateNotifications.put(name, n);
         ChatTopComponent.refreshContactList();
+        DashboardImpl.getInstance().getComponent().repaint();
+    }
+
+    public synchronized boolean hasNewPrivateMessages(String name) {
+        return privateNotifications.get(name)!=null;
     }
 
     public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
@@ -167,7 +188,6 @@ public class ChatNotifications {
         if (handle==null) {
             handle =new MessagingHandleImpl(id);
             groupMessages.put(id, handle);
-            handle.setMessageCount(0);
         }
         return handle;
     }
@@ -175,7 +195,7 @@ public class ChatNotifications {
     synchronized void clearAll() {
         for (MessagingHandleImpl h:groupMessages.values()) {
             h.disposeNotification();
-            h.setMessageCount(-1);
+            h.setMessageCount(0);
             h.setOnlineCount(-1);
         }
         groupMessages.clear();
@@ -193,6 +213,18 @@ public class ChatNotifications {
     
     private Icon getIcon() {
         return NEWMSG;
+    }
+
+    private void increasePrivateMessagesCount(String name) {
+        privateMessagesCounter.put(name, getPrivateMessagesCount(name)+1);
+    }
+
+    private int getPrivateMessagesCount(String name) {
+        Integer count = privateMessagesCounter.get(name);
+        if (count==null) {
+            return 0;
+        }
+        return count;
     }
 }
 

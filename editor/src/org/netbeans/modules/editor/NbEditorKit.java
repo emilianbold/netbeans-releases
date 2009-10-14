@@ -66,6 +66,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -73,6 +74,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -107,6 +109,8 @@ import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightsLayerFilter;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -930,6 +934,18 @@ public class NbEditorKit extends ExtKit implements Callable {
         if (defaultColoring != null) {
             defaultColoring.getFont().getMaxCharBounds(new FontRenderContext(null, true, true));
         }
+
+        // initialize HighlightsLayers (#172381)
+        Document doc = createDefaultDocument();
+        JEditorPane pane = new JEditorPane();
+        pane.setDocument(doc);
+        HighlightingManager.getInstance().getHighlights(pane, HighlightsLayerFilter.IDENTITY);
+
+        // initialize FoldHierarchy (#172381)
+        FoldHierarchy.get(pane).getRootFold();
+
+        // initialize popup menu actions providers (#174175)
+        PopupMenuActionsProvider.getPopupMenuItems(getContentType());
 
         return null;
     }

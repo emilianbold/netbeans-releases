@@ -144,7 +144,7 @@ public class ThreadMapVisualizer extends JPanel implements
                                                 name, dataManager.findThreadName(snapshot.getThreadInfo().getThreadId()), at);
                                     }
                                 };
-                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider));
+                                DLightManager.getDefault().openVisualizer(session, toolID, new ThreadStackVisualizerConfiguration(query.getStartTime(), threadDump, stackNameProvider, query.getThreadID(), threadsPanel));
                             }
                         });
                         session.cleanAllDataFilter(ThreadDumpFilter.class);
@@ -190,22 +190,18 @@ public class ThreadMapVisualizer extends JPanel implements
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //filter out with the time
         if (session != null) {
-            if (EventQueue.isDispatchThread()) {
-                DLightExecutorService.submit(new Runnable() {
+            DLightExecutorService.submit(new Runnable() {
+                public void run() {
+                    syncUpdate();
+                }
+            }, "ThreadMapVisualizer. Request Data when filters are changed");//NOI18N
 
-                    public void run() {
-                        update();
-                    }
-                }, "ThreadMapVisualizer. Request Data when filters are changed");//NOI18N
 
-            }else{
-                update();
-            }
         }
 
     }
 
-    private final void update() {
+    private final void syncUpdate() {
         final Collection<TimeIntervalDataFilter> timeFilters = session.getDataFilter(TimeIntervalDataFilter.class);
         lastTimeFilters = timeFilters;
         setTimeIntervalSelection(timeFilters);
@@ -382,5 +378,8 @@ public class ThreadMapVisualizer extends JPanel implements
                 timerSupport.start();
                 break;
         }
+    }
+
+    public void updateVisualizerConfiguration(ThreadMapVisualizerConfiguration configuration) {
     }
 }

@@ -39,12 +39,21 @@
 
 package org.netbeans.modules.kenai.ui.project;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -55,6 +64,8 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -100,6 +111,10 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         mainScrollPane.getVerticalScrollBar().setUnitIncrement(30);
         mainScrollPane.getHorizontalScrollBar().setUnitIncrement(30);
         backToTopLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        backToTopLabel.setBorder(new DottedBorder());
+        wwwLabel.setBorder(new DottedBorder());
+        wikiLabel.setBorder(new DottedBorder());
+        downloadsLabel.setBorder(new DottedBorder());
     }
 
     public static synchronized kenaiProjectTopComponent getDefault() {
@@ -108,6 +123,60 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         }
         return inst;
     }
+
+    private class DottedBorder implements Border {
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            g.setColor(ColorManager.getDefault().getDisabledColor());
+            int px;
+            int py;
+            int w = width - 1;
+            int h = height - 1;
+            for (px = 0; px < w - 1; px += 2) {
+                g.drawLine(x + px, y, x + px, y);
+            }
+            for (py = 0; py < h; py += 2) {
+                g.drawLine(x + w, y + py, x + w, y + py);
+            }
+            for (px = 0; px < w; px += 2) {
+                g.drawLine(x + w - px, y + h, x + w - px, y + h);
+            }
+            for (py = 0; py < h; py += 2) {
+                g.drawLine(x, y + h - py, x, y + h - py);
+            }
+        }
+
+        public Insets getBorderInsets(Component arg0) {
+            return new Insets( 0, 0, 0, 0 ) ;
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
+        }
+
+    }
+
+
+    /**
+     * Just a small helper class for handling a URL displaying
+     */
+    private class URLListener implements ActionListener {
+
+        private URL url = null;
+
+        public URLListener(URL u) {
+            this.url = u;
+        }
+
+        public void actionPerformed(ActionEvent arg0) {
+            URLDisplayer.getDefault().showURL(url);
+        }
+
+    }
+
+    private URLListener wwwActionListener;
+    private URLListener wikiActionListener;
+    private URLListener downloadsActionListener;
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -125,9 +194,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        wwwLabel = new javax.swing.JLabel();
-        wikiLabel = new javax.swing.JLabel();
-        downloadsLabel = new javax.swing.JLabel();
+        wwwLabel = new javax.swing.JButton();
+        wikiLabel = new javax.swing.JButton();
+        downloadsLabel = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         projectsDetailsHeader = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -137,14 +206,16 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         dynamicContentsPanel = new javax.swing.JPanel();
         dynamicContentPane = new javax.swing.JTabbedPane();
         bottomLinkPanel = new javax.swing.JPanel();
-        backToTopLabel = new javax.swing.JLabel();
+        backToTopLabel = new javax.swing.JButton();
 
+        setFocusable(true);
         setLayout(new java.awt.BorderLayout());
 
         mainScrollPane.setAlignmentY(0.0F);
 
         containingPanel.setBackground(new java.awt.Color(255, 255, 255));
         containingPanel.setMinimumSize(new java.awt.Dimension(600, 405));
+        containingPanel.setNextFocusableComponent(projectsDetailsHeader);
 
         generalDetailsPanel.setBackground(java.awt.SystemColor.control);
         generalDetailsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -166,11 +237,56 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.jLabel3.text")); // NOI18N
 
+        wwwLabel.setBackground(new java.awt.Color(229, 229, 229));
         org.openide.awt.Mnemonics.setLocalizedText(wwwLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wwwLabel.text")); // NOI18N
+        wwwLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        wwwLabel.setBorderPainted(false);
+        wwwLabel.setContentAreaFilled(false);
+        wwwLabel.setFocusPainted(false);
+        wwwLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        wwwLabel.setNextFocusableComponent(wikiLabel);
+        wwwLabel.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                wwwLabelFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                wwwLabelFocusLost(evt);
+            }
+        });
 
+        wikiLabel.setBackground(new java.awt.Color(229, 229, 229));
         org.openide.awt.Mnemonics.setLocalizedText(wikiLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.text")); // NOI18N
+        wikiLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        wikiLabel.setBorderPainted(false);
+        wikiLabel.setContentAreaFilled(false);
+        wikiLabel.setFocusPainted(false);
+        wikiLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        wikiLabel.setNextFocusableComponent(downloadsLabel);
+        wikiLabel.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                wikiLabelFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                wikiLabelFocusLost(evt);
+            }
+        });
 
+        downloadsLabel.setBackground(new java.awt.Color(229, 229, 229));
         org.openide.awt.Mnemonics.setLocalizedText(downloadsLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.text")); // NOI18N
+        downloadsLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        downloadsLabel.setBorderPainted(false);
+        downloadsLabel.setContentAreaFilled(false);
+        downloadsLabel.setFocusPainted(false);
+        downloadsLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        downloadsLabel.setNextFocusableComponent(dynamicContentPane);
+        downloadsLabel.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                downloadsLabelFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                downloadsLabelFocusLost(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout webLinksLayout = new org.jdesktop.layout.GroupLayout(webLinks);
         webLinks.setLayout(webLinksLayout);
@@ -186,7 +302,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     .add(wikiLabel)
                     .add(wwwLabel)
                     .add(downloadsLabel))
-                .addContainerGap(340, Short.MAX_VALUE))
+                .addContainerGap(354, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -194,23 +310,29 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         webLinksLayout.setVerticalGroup(
             webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(webLinksLayout.createSequentialGroup()
-                .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(webLinksLayout.createSequentialGroup()
-                        .add(wwwLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(wikiLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(downloadsLabel))
-                    .add(webLinksLayout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel3)))
+                .add(1, 1, 1)
+                .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(wwwLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(wikiLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(webLinksLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(downloadsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         webLinksLayout.linkSize(new java.awt.Component[] {downloadsLabel, jLabel1, jLabel2, jLabel3, wikiLabel, wwwLabel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        wwwLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wwwLabel.AccessibleContext.accessibleName")); // NOI18N
+        wwwLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wwwLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        wikiLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.AccessibleContext.accessibleName")); // NOI18N
+        wikiLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.wikiLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        downloadsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.AccessibleContext.accessibleName")); // NOI18N
+        downloadsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.downloadsLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         projectDescription.add(webLinks, java.awt.BorderLayout.PAGE_END);
 
@@ -218,9 +340,18 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         jPanel1.setPreferredSize(new java.awt.Dimension(25, 126));
 
         projectsDetailsHeader.setBackground(java.awt.SystemColor.control);
-        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18));
+        projectsDetailsHeader.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         projectsDetailsHeader.setForeground(new java.awt.Color(45, 72, 102));
         org.openide.awt.Mnemonics.setLocalizedText(projectsDetailsHeader, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.text")); // NOI18N
+        projectsDetailsHeader.setNextFocusableComponent(projectsDetailsText);
+        projectsDetailsHeader.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                projectsDetailsHeaderFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                projectsDetailsHeaderFocusLost(evt);
+            }
+        });
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -235,21 +366,28 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         projectsDetailsText.setWrapStyleWord(true);
         projectsDetailsText.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         projectsDetailsText.setMargin(new java.awt.Insets(0, 0, 0, 10));
+        projectsDetailsText.setNextFocusableComponent(wwwLabel);
         projectsDetailsText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 projectsDetailsTextFocusGained(evt);
             }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                projectsDetailsTextFocusLost(evt);
+            }
         });
         jScrollPane1.setViewportView(projectsDetailsText);
+        projectsDetailsText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsText.AccessibleContext.accessibleName")); // NOI18N
+        projectsDetailsText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsText.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(projectsDetailsHeader)
-                .addContainerGap(501, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectsDetailsHeader)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -257,8 +395,11 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(projectsDetailsHeader)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE))
         );
+
+        projectsDetailsHeader.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.AccessibleContext.accessibleName")); // NOI18N
+        projectsDetailsHeader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.projectsDetailsHeader.AccessibleContext.accessibleDescription")); // NOI18N
 
         projectDescription.add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -282,22 +423,27 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             imagePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(imagePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
                 .addContainerGap())
         );
         imagePanelLayout.setVerticalGroup(
             imagePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(imagePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+                .add(projectImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         generalDetailsPanel.add(imagePanel, java.awt.BorderLayout.WEST);
 
         dynamicContentsPanel.setOpaque(false);
+        dynamicContentsPanel.setRequestFocusEnabled(false);
         dynamicContentsPanel.setLayout(new java.awt.BorderLayout());
+
+        dynamicContentPane.setNextFocusableComponent(backToTopLabel);
         dynamicContentsPanel.add(dynamicContentPane, java.awt.BorderLayout.CENTER);
+        dynamicContentPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.dynamicContentPane.AccessibleContext.accessibleName")); // NOI18N
+        dynamicContentPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.dynamicContentPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout containingPanelLayout = new org.jdesktop.layout.GroupLayout(containingPanel);
         containingPanel.setLayout(containingPanelLayout);
@@ -306,8 +452,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
             .add(containingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(containingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE)
-                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE))
+                    .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 736, Short.MAX_VALUE)
+                    .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 736, Short.MAX_VALUE))
                 .addContainerGap())
         );
         containingPanelLayout.setVerticalGroup(
@@ -316,60 +462,103 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 .addContainerGap()
                 .add(generalDetailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                .add(39, 39, 39))
+                .add(dynamicContentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)
+                .add(46, 46, 46))
         );
 
         mainScrollPane.setViewportView(containingPanel);
+        containingPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.containingPanel.AccessibleContext.accessibleName")); // NOI18N
+        containingPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.containingPanel.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(mainScrollPane, java.awt.BorderLayout.CENTER);
 
         bottomLinkPanel.setBackground(java.awt.SystemColor.control);
         bottomLinkPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         bottomLinkPanel.setPreferredSize(new java.awt.Dimension(81, 22));
+        bottomLinkPanel.setLayout(new java.awt.BorderLayout());
 
+        org.openide.awt.Mnemonics.setLocalizedText(backToTopLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.backToTopLabel.text")); // NOI18N
+        backToTopLabel.setBorderPainted(false);
+        backToTopLabel.setContentAreaFilled(false);
         backToTopLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        org.openide.awt.Mnemonics.setLocalizedText(backToTopLabel, org.openide.util.NbBundle.getMessage(kenaiProjectTopComponent.class, "kenaiProjectTopComponent.backToTopLabel.text_1")); // NOI18N
-        backToTopLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        backToTopLabel.setPreferredSize(new java.awt.Dimension(101, 16));
-        backToTopLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                backToTopLabelMouseClicked(evt);
+        backToTopLabel.setMargin(new java.awt.Insets(0, 10, 0, 10));
+        backToTopLabel.setNextFocusableComponent(projectsDetailsHeader);
+        backToTopLabel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backToTopLabelActionPerformed(evt);
             }
         });
-
-        org.jdesktop.layout.GroupLayout bottomLinkPanelLayout = new org.jdesktop.layout.GroupLayout(bottomLinkPanel);
-        bottomLinkPanel.setLayout(bottomLinkPanelLayout);
-        bottomLinkPanelLayout.setHorizontalGroup(
-            bottomLinkPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(bottomLinkPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(backToTopLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 717, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        bottomLinkPanelLayout.setVerticalGroup(
-            bottomLinkPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(bottomLinkPanelLayout.createSequentialGroup()
-                .add(backToTopLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        backToTopLabel.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                backToTopLabelFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                backToTopLabelFocusLost(evt);
+            }
+        });
+        bottomLinkPanel.add(backToTopLabel, java.awt.BorderLayout.EAST);
 
         add(bottomLinkPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void backToTopLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_backToTopLabelMouseClicked
-        mainScrollPane.getVerticalScrollBar().setValue(0);
-    }//GEN-LAST:event_backToTopLabelMouseClicked
-
     private void projectsDetailsTextFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectsDetailsTextFocusGained
         projectsDetailsText.getCaret().setVisible(false);
+        projectsDetailsText.setBorder(new DottedBorder());
     }//GEN-LAST:event_projectsDetailsTextFocusGained
 
+    private void wwwLabelFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_wwwLabelFocusGained
+        wwwLabel.setBorderPainted(true);
+    }//GEN-LAST:event_wwwLabelFocusGained
+
+    private void wwwLabelFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_wwwLabelFocusLost
+        wwwLabel.setBorderPainted(false);
+    }//GEN-LAST:event_wwwLabelFocusLost
+
+    private void wikiLabelFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_wikiLabelFocusGained
+        wikiLabel.setBorderPainted(true);
+    }//GEN-LAST:event_wikiLabelFocusGained
+
+    private void wikiLabelFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_wikiLabelFocusLost
+        wikiLabel.setBorderPainted(false);
+    }//GEN-LAST:event_wikiLabelFocusLost
+
+    private void downloadsLabelFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_downloadsLabelFocusGained
+        downloadsLabel.setBorderPainted(true);
+    }//GEN-LAST:event_downloadsLabelFocusGained
+
+    private void downloadsLabelFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_downloadsLabelFocusLost
+        downloadsLabel.setBorderPainted(false);
+    }//GEN-LAST:event_downloadsLabelFocusLost
+
+    private void backToTopLabelFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_backToTopLabelFocusGained
+        backToTopLabel.setBorderPainted(true);
+    }//GEN-LAST:event_backToTopLabelFocusGained
+
+    private void backToTopLabelFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_backToTopLabelFocusLost
+        backToTopLabel.setBorderPainted(false);
+    }//GEN-LAST:event_backToTopLabelFocusLost
+
+    private void backToTopLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backToTopLabelActionPerformed
+        mainScrollPane.getVerticalScrollBar().setValue(0);
+    }//GEN-LAST:event_backToTopLabelActionPerformed
+
+    private void projectsDetailsTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectsDetailsTextFocusLost
+        projectsDetailsText.setBorder(null);
+    }//GEN-LAST:event_projectsDetailsTextFocusLost
+
+    private void projectsDetailsHeaderFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectsDetailsHeaderFocusGained
+        projectsDetailsHeader.setBorder(new DottedBorder());
+    }//GEN-LAST:event_projectsDetailsHeaderFocusGained
+
+    private void projectsDetailsHeaderFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectsDetailsHeaderFocusLost
+        projectsDetailsHeader.setBorder(null);
+    }//GEN-LAST:event_projectsDetailsHeaderFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel backToTopLabel;
+    private javax.swing.JButton backToTopLabel;
     private javax.swing.JPanel bottomLinkPanel;
     private javax.swing.JPanel containingPanel;
-    private javax.swing.JLabel downloadsLabel;
+    private javax.swing.JButton downloadsLabel;
     private javax.swing.JTabbedPane dynamicContentPane;
     private javax.swing.JPanel dynamicContentsPanel;
     private javax.swing.JPanel generalDetailsPanel;
@@ -385,8 +574,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private javax.swing.JLabel projectsDetailsHeader;
     private javax.swing.JTextArea projectsDetailsText;
     private javax.swing.JPanel webLinks;
-    private javax.swing.JLabel wikiLabel;
-    private javax.swing.JLabel wwwLabel;
+    private javax.swing.JButton wikiLabel;
+    private javax.swing.JButton wwwLabel;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -459,15 +648,24 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         loadingImageTask = SingleImageRequestProcessor.post(new Runnable() {
 
             public void run() {
-                final Icon projectIcon = proj.getProjectIcon(true);
-                SwingUtilities.invokeLater(new Runnable() {
+                final Icon projectIcon;
+                try {
+                    projectIcon = proj.getProjectIcon();
+                    SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
-                        projectImage.setIcon(projectIcon);
-                    }
-                });
+                        public void run() {
+                            projectImage.setIcon(projectIcon);
+                        }
+                    });
+                } catch (KenaiException ex) {
+                    SwingUtilities.invokeLater(new Runnable() {
 
-           }
+                        public void run() {
+                            projectImage.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/default.jpg", true));
+                        }
+                    });
+                }
+            }
         });
 
         // Set label for www - make it link
@@ -478,7 +676,9 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                 wwwLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                 wwwLabel.setToolTipText(KENAI_URL + proj.getWebLocation().getPath());
                 wwwLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                URLClickListener.selfRegister(wwwLabel, proj.getWebLocation());
+                wwwLabel.removeActionListener(wwwActionListener);
+                wwwActionListener = new URLListener(proj.getWebLocation());
+                wwwLabel.addActionListener(wwwActionListener);
             }
         });
         KenaiFeature[] _wiki = null;
@@ -500,7 +700,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     downloadsLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                     downloadsLabel.setToolTipText(KENAI_URL + down.getWebLocation().getPath());
                     downloadsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    URLClickListener.selfRegister(downloadsLabel, down.getWebLocation());
+                    downloadsActionListener = new URLListener(down.getWebLocation());
+                    downloadsLabel.addActionListener(downloadsActionListener);
                 }
             });
         } else {
@@ -511,7 +712,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     downloadsLabel.setIcon(null);
                     downloadsLabel.setToolTipText(""); //NOI18N
                     downloadsLabel.setCursor(Cursor.getDefaultCursor());
-                    URLClickListener.deregisterAll(downloadsLabel);
+                    downloadsLabel.removeActionListener(downloadsActionListener);
                 }
             });
         }
@@ -525,7 +726,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     wikiLabel.setIcon(ImageUtilities.loadImageIcon("/org/netbeans/modules/kenai/ui/resources/insertlink.png", false)); //NOI18N
                     wikiLabel.setToolTipText(KENAI_URL + wiki.getWebLocation().getPath());
                     wikiLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    URLClickListener.selfRegister(wikiLabel, wiki.getWebLocation());
+                    wikiActionListener = new URLListener(wiki.getWebLocation());
+                    wikiLabel.addActionListener(wikiActionListener);
                 }
             });
         } else {
@@ -536,7 +738,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
                     wikiLabel.setIcon(null);
                     wikiLabel.setToolTipText(""); //NOI18N
                     wikiLabel.setCursor(Cursor.getDefaultCursor());
-                    URLClickListener.deregisterAll(wikiLabel);
+                    wikiLabel.removeActionListener(wikiActionListener);
                 }
             });
         }
@@ -582,6 +784,13 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             reinitialize(instProj, true);
+        } else if (Kenai.PROP_URL_CHANGED.equals(evt.getPropertyName())) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    close();
+                }
+            });
+
         }
     }
 }

@@ -245,6 +245,10 @@ is divided into following sections:
                         <isset property="app.client"/>
                     </and>
                 </condition>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
 
             <!-- COS feature - used in run-deploy -->
@@ -335,7 +339,6 @@ exists or setup the property manually. For example like this:
 
             <target name="-do-compile-deps">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <xsl:attribute name="if">do.package.not.directory.deploy</xsl:attribute>
 
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
@@ -809,6 +812,7 @@ to simulate
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                 </xsl:if>
+                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                 <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
                 <arg line="${{j2ee.appclient.tool.args}}"/>
@@ -834,6 +838,7 @@ to simulate
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                 </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg={$subprojname}"/>
                     <arg line="${{application.args.param}}"/>
                     <syspropertyset>
@@ -847,6 +852,7 @@ to simulate
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                 </xsl:if>
+                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                 <jvmarg line="-Dj2ee.clientName=${{app.client}}"/>
                 <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
@@ -917,6 +923,7 @@ to simulate
                                         <path path="${{platform.bootcp}}"/>
                                     </bootclasspath>
                                 </xsl:if>
+                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                                 <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>

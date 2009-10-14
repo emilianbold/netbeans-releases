@@ -81,12 +81,16 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
     }
     
     private static Lookup createLookup( NbMavenProjectImpl project ) {
+        //#173465
+        if (!project.getProjectDirectory().isValid()) {
+            return Lookups.fixed(project);
+        }
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
         SearchInfo info = SearchInfoFactory.createSearchInfo( rootFolder.getPrimaryFile(), true,
                 new FileObjectFilter[] {
                     SearchInfoFactory.VISIBILITY_FILTER,
                     SearchInfoFactory.SHARABILITY_FILTER});
-        return Lookups.fixed( new Object[] { project, rootFolder, info } );
+        return Lookups.fixed(project, rootFolder, info);
     }
     
     /**

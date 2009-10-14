@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.java.api.common.classpath;
 
-import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -113,7 +111,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     protected String[] getExtensibleClassPathTypes (SourceGroup sg) {
         return new String[] {
             ClassPath.COMPILE,
-            ClassPath.EXECUTE
+            ClassPath.EXECUTE,
+            ClassPathSupport.ENDORSED,
         };
     }
 

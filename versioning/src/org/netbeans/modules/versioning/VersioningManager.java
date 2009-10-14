@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.versioning;
 
+import java.lang.reflect.Method;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -55,8 +56,10 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
@@ -130,7 +133,12 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * TODO: use SoftHashMap if there is one available in APIs
      */
     private final Map<File, Boolean> localHistoryFiles = new LinkedHashMap<File, Boolean>(200);
-    
+
+    /**
+     * Holds methods intercepted by a specific vcs. See {@link #needsLocalHistory(methodName)}
+     */
+    private Map<String, Set<String>> interceptedMethods = new HashMap<String, Set<String>>();
+
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
     };
     
@@ -247,7 +255,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             return owner;
         }
         File folder = file;
-        if (file.isFile()) {
+        if (Utils.isFile(file)) {
             folder = file.getParentFile();
             if (folder == null) {
                 LOG.log(Level.FINE, " null parent");
@@ -309,7 +317,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
         File folder = file;
-        if (file.isFile()) {
+        if (Utils.isFile(file)) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
@@ -376,5 +384,36 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
     public void preferenceChange(PreferenceChangeEvent evt) {
         VersioningAnnotationProvider.instance.refreshAnnotations(null);
+    }
+
+    /**
+     * Determines if the given methodName is implemented by local histories {@link VCSInterceptor}
+     *
+     * @param methodName
+     * @return <code>true</code> if the given methodName is implemented by local histories {@link VCSInterceptor}
+     * otherwise <code>false</code>
+     */
+    boolean needsLocalHistory(String methodName) {
+        boolean ret = false;
+        try {
+            if(localHistory == null) {
+                return ret;
+}
+            Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
+            if(s == null) {
+                s = new HashSet<String>();
+                Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
+                for (Method method : m) {
+                    if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                        s.add(method.getName());
+                    }
+                }
+                interceptedMethods.put(localHistory.getClass().getName(), s);
+            }
+            ret = s.contains(methodName);
+            return ret;
+        } finally {
+            LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
+        }
     }
 }

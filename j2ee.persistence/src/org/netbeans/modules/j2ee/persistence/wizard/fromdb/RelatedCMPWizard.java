@@ -351,7 +351,9 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                 }
                 
                 String projectName = ProjectUtils.getInformation(project).getDisplayName();
-                dbschemaFile = DBSchemaManager.updateDBSchemas(helper.getSchemaElement(), helper.getDBSchemaFileList(), configFilesFolder, projectName);
+                if (isCMP()) {
+                    dbschemaFile = DBSchemaManager.updateDBSchemas(helper.getSchemaElement(), helper.getDBSchemaFileList(), configFilesFolder, projectName);
+                }
             }
             
             String extracting = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ?

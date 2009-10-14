@@ -659,9 +659,18 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
     }
 
     private ThreadDump _getThreadDump(ThreadDumpQuery query) {
-        long start = query.getThreadState().getTimeStamp()* 1000 * 1000;
-        long middle = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod()/2; ///1000/1000;
-        long end = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod(); ///1000/1000;
+        long start;
+        long middle;
+        long end;
+        if (true) {
+            start = query.getThreadState().getTimeStamp();
+            middle = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod()/2;
+            end = query.getThreadState().getTimeStamp() + query.getThreadState().getMSASamplePeriod();
+        } else {
+            start = query.getThreadState().getTimeStamp()* 1000 * 1000;
+            middle = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod()/2; ///1000/1000;
+            end = query.getThreadState().getTimeStamp()* 1000 * 1000 + query.getThreadState().getMSASamplePeriod(); ///1000/1000;
+        }
         // 1. try to find needed thread in needed state in sampling interval
         TimeFilter time = new TimeFilter(start, end, TimeFilter.Mode.ALL);
         ThreadFilter threads = new ThreadFilter(query.getShowThreads());
@@ -736,7 +745,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 }
             }
             Set<Integer> toAdd = new HashSet<Integer>(query.getShowThreads());
-            ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp/1000/1000);
+            ThreadDumpImpl result = new ThreadDumpImpl(foundTimeSamp);
             for(ThreadSnapshot dump : map.values()) {
                 toAdd.remove(dump.getThreadInfo().getThreadId());
                 result.addStack(dump);
@@ -802,11 +811,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
 
     /**
      *
-     * @param timestamp  in milliseconds
+     * @param timestamp  in nanoseconds
      * @return bucket id
      */
     private static long timeToBucketId(long timestamp) {
-        return timestamp / 1000;  // bucket is 1 second
+        return timestamp / 1000 / 1000 / 1000;  // bucket is 1 second
     }
 
     /**

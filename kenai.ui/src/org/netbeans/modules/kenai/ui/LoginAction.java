@@ -72,12 +72,16 @@ public final class LoginAction extends AbstractAction {
                         } else {
                             instance.setLogout(true);
                         }
-                        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                        preferences.put(UIUtils.LOGIN_STATUS_PREF, Boolean.toString(pce.getNewValue() != null));
+                        if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
+                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                            preferences.put(UIUtils.getPrefName(UIUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                        }
 
                     } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
-                        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                        preferences.put(UIUtils.ONLINE_STATUS_PREF, Boolean.toString(pce.getNewValue() != null));
+                        if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
+                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+                            preferences.put(UIUtils.getPrefName(UIUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                        }
                     }
                 }
             });

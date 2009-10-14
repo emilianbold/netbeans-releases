@@ -59,6 +59,7 @@ hel*lo*you
 www.netbeans.org
 mailto:foo@bar.com
 http://www.netbeans.org
+https://www.netbeans.org
 ftp:foo@bar:80/pub/hello.txt
 #mymethod
 File#exists?

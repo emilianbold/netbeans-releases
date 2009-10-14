@@ -83,7 +83,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -286,6 +285,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Map<String,String> stock = new HashMap<String,String>();
         File dir = project.getProjectDirectoryFile();
         NbModuleProvider.NbModuleType type = typeProvider.getModuleType();
+        PropertyProvider privateProperties = project.getHelper().getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        PropertyProvider projectProperties = project.getHelper().getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         File nbroot;
         if (type == NbModuleProvider.NETBEANS_ORG) {
             nbroot = ModuleList.findNetBeansOrg(dir);
@@ -298,6 +299,13 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             Map<String,String> clusterProperties = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.propertiesFilePropertyProvider(
                     new File(nbroot, "nbbuild/cluster.properties"))).getProperties(); // NOI18N
             if (clusterProperties != null) {
+                StringBuilder allValsB = new StringBuilder();
+                for (PropertyProvider pp : new PropertyProvider[] {privateProperties, projectProperties}) {
+                    for (String val : pp.getProperties().values()) {
+                        allValsB.append(val);
+                    }
+                }
+                String allVals = allValsB.toString();
                 for (Map.Entry<String,String> dirEntry : clusterProperties.entrySet()) {
                     String key = dirEntry.getKey();
                     if (!key.endsWith(".dir")) { // NOI18N
@@ -309,7 +317,10 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         continue;
                     }
                     for (String module : modules.split(",")) { // NOI18N
-                        stock.put((module + ".dir").intern(), clusterDir); // NOI18N
+                        String dirProp = module + ".dir";
+                        if (allVals.contains(dirProp)) {
+                            stock.put(dirProp.intern(), clusterDir); // NOI18N
+                        } // #172203: otherwise don't waste space on it
                     }
                 }
             }
@@ -383,8 +394,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
         providers.add(new NbJdkProvider(baseEval));
-        providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        providers.add(privateProperties);
+        providers.add(projectProperties);
         Map<String,String> defaults = new HashMap<String,String>();
         if (codeNameBase != null) { // #121856
             defaults.put("code.name.base.dashes", codeNameBase.replace('.', '-')); // NOI18N

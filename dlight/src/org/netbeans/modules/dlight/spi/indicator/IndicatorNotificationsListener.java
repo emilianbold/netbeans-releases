@@ -59,6 +59,14 @@ public interface IndicatorNotificationsListener {
     void updated(List<DataRow> data);
 
     /**
+     * Invoked by indicator data provider when there is a good reason
+     * to repaint the indicator as soon as possible.
+     * (Normally indicators are repainted once a second when target is
+     * running and not repainted when target has finished.)
+     */
+    void suggestRepaint();
+
+    /**
      * Resets to the initial state
      */
     void reset();

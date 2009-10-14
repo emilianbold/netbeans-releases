@@ -93,6 +93,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -362,7 +363,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 if (isKenaiRepository && (reportedStatusLabel.getIcon() == null)) {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
-                    JLabel label = new KenaiUserUI(userName).createUserWidget();
+                    KenaiUserUI ku = new KenaiUserUI(userName);
+                    ku.setMessage(KenaiUtil.getChatLink(issue));
+                    JLabel label = ku.createUserWidget();
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
                     reportedStatusLabel = label;
@@ -381,7 +384,9 @@ public class IssuePanel extends javax.swing.JPanel {
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
-                JLabel label = new KenaiUserUI(userName).createUserWidget();
+                KenaiUserUI ku = new KenaiUserUI(userName);
+                ku.setMessage(KenaiUtil.getChatLink(issue));
+                JLabel label = ku.createUserWidget();
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
                 assignedToStatusLabel = label;

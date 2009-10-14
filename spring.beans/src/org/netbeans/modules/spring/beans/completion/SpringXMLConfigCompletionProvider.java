@@ -114,7 +114,7 @@ public class SpringXMLConfigCompletionProvider implements CompletionProvider {
             
             boolean retVal = completor.canFilter(new CompletionContext(component.getDocument(), 
                     component.getCaretPosition(), queryType));
-            if(!retVal) {
+            if( (!retVal) && (completor != null) ) {
                 completor.cancel();
         }
 

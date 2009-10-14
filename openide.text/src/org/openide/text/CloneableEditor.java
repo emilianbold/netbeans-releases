@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +54,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
 import org.netbeans.modules.openide.text.Installer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.*;
@@ -222,6 +225,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         /** Flag to avoid recursive call of initVisual. */
         private boolean isInInitVisual = false;
 
+        private boolean confirmed = false;
+
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
             this.tmpComp = initLoading();
@@ -262,7 +267,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             switch (phase++) {
             case 0:
                 synchronized (CLOSE_LAST_LOCK) {
-                    initNonVisual();
+                    phase = initNonVisual(phase);
+                    if (phase == Integer.MAX_VALUE) {
+                        break;
+                    }
                 }
                 if (newInitialize()) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
@@ -307,7 +315,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             }
         }
             
-        private void initNonVisual() {
+        private int initNonVisual (int phase) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE,"DoInitialize.initNonVisual Enter"
                 + " Time:" + System.currentTimeMillis()
@@ -319,9 +327,67 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             Task prepareTask = support.prepareDocument();
             assert prepareTask != null : "Failed to get prepareTask";
             prepareTask.waitFinished();
-            Throwable ex = support.getPrepareDocumentRuntimeException();
-            if (ex instanceof CloneableEditorSupport.DelegateIOExc) {
-                if ("org.openide.text.DataEditorSupport$Env$ME".equals(ex.getCause().getClass().getName())) {
+            final Throwable ex = support.getPrepareDocumentRuntimeException();
+            if (support.asynchronousOpen()) {
+                if (ex instanceof CloneableEditorSupport.DelegateIOExc) {
+                    if (ex.getCause() instanceof UserQuestionException) {
+                        class Query implements Runnable {
+                            
+                            private DoInitialize doInit;
+                            
+                            public Query (DoInitialize doInit) {
+                                this.doInit = doInit;
+                            }
+                            
+                            public void run() {
+                                UserQuestionException e = (UserQuestionException) ex.getCause();
+                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                                        e.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
+                                    );
+                                nd.setOptions(new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION });
+
+                                Object res = DialogDisplayer.getDefault().notify(nd);
+
+                                if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                                    doInit.confirmed = true;
+                                    try {
+                                        e.confirmed();
+                                    } catch (IOException ex1) {
+                                        Exceptions.printStackTrace(ex1);
+
+                                        return;
+                                    }
+                                } else {
+                                    return;
+                                }
+                            }
+                        }
+
+                        Query query = new Query(this);
+                        try {
+                            SwingUtilities.invokeAndWait(query);
+                        } catch (InterruptedException exc) {
+                            Exceptions.printStackTrace(exc);
+                        } catch (InvocationTargetException exc) {
+                            Exceptions.printStackTrace(exc);
+                        }
+                        if (confirmed) {
+                            prepareTask = support.prepareDocument();
+                            assert prepareTask != null : "Failed to get prepareTask";
+                            prepareTask.waitFinished();
+                        } else {
+                            //Cancel initialization sequence and close editor
+                            SwingUtilities.invokeLater(new Runnable () {
+                                public void run () {
+                                    CloneableEditor.this.close();
+                                }
+                            });
+                            return Integer.MAX_VALUE;
+                        }
+                    }
+                }
+            } else {
+                if (ex instanceof CloneableEditorSupport.DelegateIOExc) {
                     if (ex.getCause() instanceof UserQuestionException) {
                         UserQuestionException e = (UserQuestionException) ex.getCause();
                         try {
@@ -385,6 +451,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 }
                 notifyAll();
             }
+            return phase;
         }
         
         private void initCustomEditor() {
@@ -538,7 +605,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             });
             isInInitVisual = false;
             initVisualFinished = true;
-            
+
             //#168415: Notify clients that pane creation is finished.
             CloneableEditorSupport ces = cloneableEditorSupport();
             if (ces != null) {
@@ -556,6 +623,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             });
         }
     } // end of DoInitialize
+    
     @Override
     protected CloneableTopComponent createClonedObject() {
         return support.createCloneableTopComponent();

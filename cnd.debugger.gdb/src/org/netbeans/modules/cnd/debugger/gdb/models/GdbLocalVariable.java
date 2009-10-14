@@ -70,7 +70,7 @@ public class GdbLocalVariable extends AbstractVariable implements LocalVariable,
         if (GdbCallStackFrame.enableMacros && !GdbWatchVariable.disableMacros) {
             expr = GdbWatchVariable.expandMacro(getDebugger(), expr);
         }
-        value = getDebugger().requestValue(expr);
+        value = getDebugger().evaluate(expr);
         
         debugger.addPropertyChangeListener(GdbDebugger.PROP_VALUE_CHANGED, this);
     }

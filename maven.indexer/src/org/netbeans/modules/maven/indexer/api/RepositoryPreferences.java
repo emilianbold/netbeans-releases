@@ -186,9 +186,22 @@ public final class RepositoryPreferences {
         return customStart + 1;
     }
 
+    private static final char[] forbiddenChars =
+            new char[] {'/', '\\', '?', '%', '*', ':', '|', '"', '<', '>' };
+    private static final char replaceChar = '-';
+
 
     private String getFileObjectName(String id) {
-        String toRet = id;
+        char[] chars = id.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            for (int j = 0; j < forbiddenChars.length; j++) {
+                if (chars[i] == forbiddenChars[j]) {
+                    chars[i] = replaceChar;
+                }
+            }
+        }
+
+        String toRet = String.valueOf(chars);
         if (toRet.contains(".")) { //NOI18N
             toRet = toRet + ".ext"; //NOI18N
         }

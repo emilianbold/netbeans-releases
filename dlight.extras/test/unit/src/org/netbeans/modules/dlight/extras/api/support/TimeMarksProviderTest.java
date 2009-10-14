@@ -56,7 +56,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport1s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 1000, 100, new FakeFontMetrics());
+        List<AxisMark> marks = tmp.getAxisMarks(0L, 1000000000L, 100, new FakeFontMetrics());
         assertEquals(11, marks.size());
         for (int i = 0; i < 11; ++i) {
             assertEquals(10 * i, marks.get(i).getPosition());
@@ -81,7 +81,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport10s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 10000, 100, new FakeFontMetrics());
+        List<AxisMark> marks = tmp.getAxisMarks(0L, 10000000000L, 100, new FakeFontMetrics());
         assertEquals(11, marks.size());
         for (int i = 0; i < 11; ++i) {
             assertEquals(10 * i, marks.get(i).getPosition());
@@ -106,7 +106,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport100s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 100000, 100, new FakeFontMetrics());
+        List<AxisMark> marks = tmp.getAxisMarks(0L, 100000000000L, 100, new FakeFontMetrics());
         assertEquals(11, marks.size());
         for (int i = 0; i < 11; ++i) {
             assertEquals(10 * i, marks.get(i).getPosition());
@@ -130,7 +130,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport500s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 500000, 100, new FakeFontMetrics());
+        List<AxisMark> marks = tmp.getAxisMarks(0L, 500000000000L, 100, new FakeFontMetrics());
         assertEquals(9, marks.size());
         for (int i = 0; i < 9; ++i) {
             assertEquals(12 * i, marks.get(i).getPosition());
@@ -152,7 +152,7 @@ public class TimeMarksProviderTest {
     @Test
     public void testViewport1000s() {
         TimeMarksProvider tmp = TimeMarksProvider.newInstance();
-        List<AxisMark> marks = tmp.getAxisMarks(0, 1000000, 100, new FakeFontMetrics());
+        List<AxisMark> marks = tmp.getAxisMarks(0L, 1000000000000L, 100, new FakeFontMetrics());
         assertEquals(4, marks.size());
         for (int i = 0; i < 4; ++i) {
             assertEquals(30 * i, marks.get(i).getPosition());

@@ -52,6 +52,7 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.openide.explorer.ExplorerManager;
@@ -149,6 +150,11 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         rootNode.setDisplayName(rootName);
     }
 
+    public final void add(String rootName, Icon icon, List<FunctionCall> stack, Action[] actions) {
+        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions));
+    }
+
+
     public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
         rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack));
     }
@@ -182,19 +188,24 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
                 public void run() {
                     try {
-                        manager.setSelectedNodes(new Node[]{rootNode});
+                        Node[] selected = manager.getSelectedNodes();
+                        if (selected == null || selected.length == 0) {
+                            selected = new Node[]{rootNode};
+                            manager.setSelectedNodes(selected);
+                        }
+                        final TreePath path = tree.getSelectionPath();
+                        SwingUtilities.invokeLater(new Runnable(){
+                            public void run() {
+                                if (path != null) {
+                                    tree.scrollPathToVisible(path);
+                                }
+                            }
+                        });
                     } catch (PropertyVetoException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
             }, 500);
-
-
-        }
-
-        void scroolToRoot() {
-            tree.scrollRowToVisible(0);
-
         }
     }
 }

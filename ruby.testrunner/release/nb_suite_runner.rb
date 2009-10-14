@@ -35,14 +35,6 @@
 # Contributor(s):
 # 
 # Portions Copyrighted 2008 Sun Microsystems, Inc.
- 
-require 'test/unit'
-require 'test/unit/testcase'
-require 'test/unit/testsuite'
-require 'test/unit/autorunner'
-require 'test/unit/ui/testrunnermediator'
-require 'test/unit/ui/testrunnerutilities'
-
 class NbSuiteRunner
   
   # Runs the given test suites.

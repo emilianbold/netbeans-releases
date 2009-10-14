@@ -62,6 +62,8 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -504,11 +506,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId());
+                final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         dlm.removeAllElements();
                         for (NBVersionInfo ver : infos) {
-                            dlm.addElement(ver);
+                            if (!av.equals(new DefaultArtifactVersion(ver.getVersion()))) {
+                                dlm.addElement(ver);
+                            }
                         }
                     }
                 });

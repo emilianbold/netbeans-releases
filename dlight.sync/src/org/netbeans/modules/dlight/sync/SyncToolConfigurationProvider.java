@@ -42,6 +42,7 @@ import java.awt.Color;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -320,7 +321,6 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
 
         private final List<Column> threadColumns;
         private final List<Column> lockColumns;
-        private int threads;
         private int locks;
 
         public DataRowToSync(List<Column> threadColumns, List<Column> lockColumns) {
@@ -328,10 +328,15 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
             this.lockColumns = new ArrayList<Column>(lockColumns);
         }
 
-        public void addDataRow(DataRow row) {
+        @Override
+        public float[] getData(DataRow row) {
+            // Warning! Threads and locks can come in different data rows!
+            boolean success = false;
+            int threads = 0;
             for (String columnName : row.getColumnNames()) {
                 for (Column threadColumn : threadColumns) {
                     if (threadColumn.getColumnName().equals(columnName)) {
+                        success = true;
                         threads = DataUtil.toInt(row.getData(columnName));
                     }
                 }
@@ -341,11 +346,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
                     }
                 }
             }
+            if (success) {
+                return new float[] { threads, threads * Math.min(locks, 100) / 100.0f };
+            } else {
+                return null;
+            }
         }
 
-        public void tick(float[] data, Map<String, String> details) {
-            data[0] = threads;
-            data[1] = threads * Math.min(locks, 100) / 100.0f;
+        @Override
+        public Map<String, String> getDetails() {
+            return Collections.emptyMap();
         }
     }
 }

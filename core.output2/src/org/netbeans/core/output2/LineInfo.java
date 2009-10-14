@@ -41,6 +41,8 @@ package org.netbeans.core.output2;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.openide.windows.IOColors;
 import org.openide.windows.OutputListener;
 
@@ -50,7 +52,7 @@ import org.openide.windows.OutputListener;
  */
 public class LineInfo {
 
-    ArrayList<Segment> segments = new ArrayList<Segment>(1);
+    List<Segment> segments = new CopyOnWriteArrayList<Segment>();
     final Lines parent;
 
     LineInfo(Lines parent) {
@@ -200,7 +202,7 @@ public class LineInfo {
 
     private class ColorSegment extends Segment {
 
-        Color color;
+        final Color color;
 
         public ColorSegment(int end, Color color) {
             super(end);
@@ -237,7 +239,7 @@ public class LineInfo {
 
     private class ColorErrSegment extends ErrSegment {
 
-        Color color;
+        final Color color;
 
         public ColorErrSegment(int end, Color color) {
             super(end);
@@ -257,8 +259,8 @@ public class LineInfo {
 
     private class ListenerSegment extends Segment {
 
-        OutputListener listener;
-        boolean important;
+        final OutputListener listener;
+        final boolean important;
 
         public ListenerSegment(int end, OutputListener l, boolean important) {
             super(end);
@@ -280,7 +282,7 @@ public class LineInfo {
 
     private class ColorListenerSegment extends ListenerSegment {
 
-        Color color;
+        final Color color;
 
         public ColorListenerSegment(int end, OutputListener l, boolean important, Color color) {
             super(end, l, important);
