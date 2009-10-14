@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -67,6 +67,37 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     private long totalSize;
     private long uploadSize;
 
+    private class TimestampAndSharabilityFilter implements FileFilter {
+
+        private final FileData timeStamps;
+        private final SharabilityFilter delegate;
+
+        public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+            timeStamps = new FileData(privProjectStorageDir, executionEnvironment);
+            delegate = new SharabilityFilter();
+        }
+
+        @Override
+        public boolean accept(File file) {
+            boolean accepted = delegate.accept(file);
+            if (accepted && ! file.isDirectory()) {
+                accepted = timeStamps.needsCopying(file);
+                if (accepted) {
+                    timeStamps.setState(file, FileState.COPIED);
+                } else {
+                    accepted = false;
+                }
+            }
+            refreshStatistics(file, accepted);
+            return accepted;
+        }
+
+        public void flush() {
+            timeStamps.store();
+        }
+    }
+
+
     public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
         super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
     }
@@ -89,17 +120,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             time = System.currentTimeMillis();
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
-        filter.setMode(FileTimeStamps.Mode.COPYING);
-        filter.setStatisticsCallback(new SharabilityFilter.StatisticsCallback() {
-            public void onAccept(File file, boolean accepted) {
-                totalCount++;
-                totalSize += file.length();
-                if (accepted) {
-                    uploadCount++;
-                    uploadSize += file.length();
-                }
-            }
-        });
         // success flag is for tracing only. TODO: should we drop it?
         boolean success = false;
         File zipFile = null;
@@ -219,5 +239,14 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     @Override
     public boolean cancel() {
         return false;
+    }
+
+    private void refreshStatistics(File file, boolean accepted) {
+        totalCount++;
+        totalSize += file.length();
+        if (accepted) {
+            uploadCount++;
+            uploadSize += file.length();
+        }
     }
 }

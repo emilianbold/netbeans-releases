@@ -2,13 +2,18 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -25,12 +30,12 @@ class RfsLocalController implements Runnable {
     private final File localDir;
     private final ExecutionEnvironment execEnv;
     private final PrintWriter err;
-    private final TimestampAndSharabilityFilter filter;
+    private final FileData fileData;
     private final Set<String> processedFiles = new HashSet<String>();
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File localDir, String remoteDir,
             InputStream requestStream, OutputStream responseStream, PrintWriter err,
-            TimestampAndSharabilityFilter filter) {
+            FileData fileData) {
         super();
         this.execEnv = executionEnvironment;
         this.localDir = localDir;
@@ -38,7 +43,7 @@ class RfsLocalController implements Runnable {
         this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
         this.responseStream = new PrintStream(responseStream);
         this.err = err;
-        this.filter = filter;
+        this.fileData = fileData;
     }
 
     private void respond_ok() {
@@ -73,7 +78,7 @@ class RfsLocalController implements Runnable {
                 if (remoteFile.startsWith(remoteDir)) {
                     File localFile = new File(localDir, remoteFile.substring(remoteDir.length()));
                     if (localFile.exists() && !localFile.isDirectory()) {
-                        if (filter.accept(localFile)) {
+                        if (fileData.needsCopying(localFile)) {
                             RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
                             long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 511, err);
@@ -83,16 +88,15 @@ class RfsLocalController implements Runnable {
                                 totalCopyingTime += fileTime;
                                 System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
                                 if (rc == 0) {
+                                    fileData.setState(localFile, FileState.COPIED);
                                     respond_ok();
                                 } else {
                                     respond_err("1"); // NOI18N
                                 }
                             } catch (InterruptedException ex) {
-                                filter.dropTimestamp(localFile);
                                 Exceptions.printStackTrace(ex);
                                 break;
                             } catch (ExecutionException ex) {
-                                filter.dropTimestamp(localFile);
                                 Exceptions.printStackTrace(ex);
                                 respond_err("2 execution exception\n"); // NOI18N
                             } finally {
@@ -112,6 +116,83 @@ class RfsLocalController implements Runnable {
                 Exceptions.printStackTrace(ex);
             }
         }
-        filter.flush();
+        fileData.store();
     }
+
+    void shutdown() {
+        fileData.store();
+    }
+
+    private static class FileInfo {
+        public final File file;
+        public final String relPath;
+        public FileInfo(File file, String relPath) {
+            this.file = file;
+            this.relPath = relPath;
+        }
+        @Override
+        public String toString() {
+            return relPath;
+        }
+    }
+
+    /**
+     * Feeds remote controller with the list of files and their lengths
+     * @param rcOutputStream
+     */
+    void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
+        PrintWriter writer = new PrintWriter(rcOutputStream);
+        List<FileInfo> files = new ArrayList<FileInfo>(512);
+        File[] children = localDir.listFiles(filter);
+        for (File child : children) {
+            gatherFiles(child, null, filter, files);
+        }
+        Collections.sort(files, new Comparator<FileInfo>() {
+            public int compare(FileInfo f1, FileInfo f2) {
+                if (f1.file.isDirectory() || f2.file.isDirectory()) {
+                    if (f1.file.isDirectory() && f2.file.isDirectory()) {
+                        return f1.relPath.compareTo(f2.relPath);
+                    } else {
+                        return f1.file.isDirectory() ? -1 : +1;
+                    }
+                } else {
+                    long delta = f1.file.lastModified() - f2.file.lastModified();
+                    return (delta == 0) ? 0 : ((delta < 0) ? -1 : +1); // signum(delta)
+                }
+            }
+        });
+        for (FileInfo info : files) {
+            if (info.file.isDirectory()) {
+                String text = String.format("D %s", info.relPath); // NOI18N
+                writer.printf("%s\n", text); // adds LF
+                writer.flush(); //TODO: remove?
+            } else {
+                String text = String.format("%d %s", info.file.length(), info.relPath); // NOI18N
+                writer.printf("%s\n", text); // adds LF
+                writer.flush(); //TODO: remove?
+                fileData.setState(info.file, FileState.TOUCHED);
+            }
+        }
+        writer.printf("\n"); // NOI18N
+        writer.flush();
+        fileData.store();
+    }
+
+    private static void gatherFiles(File file, String base, FileFilter filter, List<FileInfo> files) {
+        // it is assumed that the file itself was already filtered
+        String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
+        files.add(new FileInfo(file, fileName));
+        if (file.isDirectory()) {
+            File[] children = file.listFiles(filter);
+            for (File child : children) {
+                String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
+                gatherFiles(child, newBase, filter, files);
+            }
+        }
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
+    }
+
 }
