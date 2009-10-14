@@ -46,6 +46,8 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
+import org.netbeans.modules.ide.ergonomics.fod.FoDUpdateUnitProvider;
+import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.util.Lookup;
 
@@ -100,6 +102,17 @@ public class DynamicVerifyTest extends NbTestCase {
         all.addTest(new WarningsCheck("testNoWarnings"));
 
         return all;
+    }
+
+    public void testNoUserDefinedFeaturesInStandardBuild() throws Exception {
+        FoDUpdateUnitProvider instance = new FoDUpdateUnitProvider();
+        Map<String, UpdateItem> items = instance.getUpdateItems();
+
+        assertNull("No user installed modules should be in standard build. If this happens,\n" +
+                "like in case of http://openide.netbeans.org/issues/show_bug.cgi?id=174052\n" +
+                "then you probably added new module and did not categorize it properly,\n" +
+                "or you have additional modules (not part of regular build) " +
+                "in your installation.", items.get("fod.user.installed"));
     }
 
     public void testGetAllProjectFactories() throws Exception {
