@@ -447,7 +447,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     public void treeCollapsed(TreeExpansionEvent event) {
         assert SwingUtilities.isEventDispatchThread();
 
-        log ("treeExpanded", event);
+        log ("treeCollapsed", event);
         
         //FixedHeightLayoutCache tests if the event is null.
         //Don't know how it could be, but there's probably a reason...
