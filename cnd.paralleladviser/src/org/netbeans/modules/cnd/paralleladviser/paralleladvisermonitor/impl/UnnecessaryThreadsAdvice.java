@@ -51,10 +51,16 @@
  */
 package org.netbeans.modules.cnd.paralleladviser.paralleladvisermonitor.impl;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
+import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
+import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -64,9 +70,17 @@ import org.openide.windows.OutputWriter;
  */
 public class UnnecessaryThreadsAdvice implements Advice {
 
-    public UnnecessaryThreadsAdvice() {
+    private final WeakReference<CsmProject> projectRef;
+    private List<ThreadSummaryData> threads;
+
+    public UnnecessaryThreadsAdvice(CsmProject project, List<ThreadSummaryData> threads) {
+        projectRef = new WeakReference<CsmProject>(project);
+        this.threads = threads;
     }
 
+    public CsmProject getProject() {
+        return projectRef.get();
+    }
 
     public JComponent getComponent() {
         return ParallelAdviserAdviceUtils.createAdviceComponent(
@@ -76,12 +90,52 @@ public class UnnecessaryThreadsAdvice implements Advice {
 
     public String getHtml() {
         URL iconUrl = LoopParallelizationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
-        String html = "It seems that program uses too many threads."; // NOI18N
-        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Too many threads", // NOI18N
-                html, 800); // NOI18N
+        if(threads == null || threads.isEmpty()) {
+            return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                    getString("PAT_UnnecessaryThreads_Title"), // NOI18N
+                    getString("PAT_UnnecessaryThreads_Body"), // NOI18N
+                    800);            
+        } else {
+            StringBuilder threadsList = new StringBuilder(""); // NOI18N
+            for (int i = 0; i < 3 && i < threads.size(); i++) {
+                threadsList.append(threads.get(i).getThreadInfo().getThreadName());
+                threadsList.append("<br>"); //NOI18N
+            }
+            return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                    getString("PAT_UnnecessaryThreads_Title"), // NOI18N
+                    getString("PAT_UnnecessaryThreadsWithList_Body", threadsList), // NOI18N
+                    800);
+
+        }
+    }
+
+    public static double getThreadWaitTime(ThreadSummaryData summaryData) {
+        for (ThreadSummaryData.StateDuration stateDuration : summaryData.getThreadSummary()) {
+            if (stateDuration.getState() == MSAState.Waiting) {
+                return stateDuration.getDuration();
+            }
+        }
+        return 0;
     }
 
     public void addNotification(OutputWriter writer) {
-        writer.println("It seems that program uses too many threads."); // NOI18N
+        if(threads == null || threads.isEmpty()) {
+            writer.println(getString("PAT_UnnecessaryThreads_Notification")); // NOI18N
+        } else {
+            StringBuilder threadsList = new StringBuilder(""); // NOI18N
+            for (int i = 0; i < 3 && i < threads.size(); i++) {
+                threadsList.append(threads.get(i).getThreadInfo().getThreadName());
+                threadsList.append("\n"); //NOI18N
+            }
+            writer.println(getString("PAT_UnnecessaryThreadsWithList_Notification", threadsList)); // NOI18N
+        }
+    }
+
+    private static String getString(String name) {
+        return NbBundle.getMessage(UnnecessaryThreadsAdvice.class, name);
+    }
+
+    private static String getString(String name, Object param1) {
+        return NbBundle.getMessage(LoopParallelizationAdvice.class, name, param1);
     }
 }

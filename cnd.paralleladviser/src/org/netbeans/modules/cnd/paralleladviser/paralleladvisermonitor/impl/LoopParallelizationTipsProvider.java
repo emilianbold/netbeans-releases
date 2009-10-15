@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
@@ -65,21 +66,15 @@ import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderL
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
 public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvider {
 
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS = 0;
-    private final static int REPRESENTATION_TYPE_ALL_TIPS_IN_ONE = 1;
-    private final static int REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE = 2;
-    private final static int representationType = REPRESENTATION_TYPE_SEPARATE_TIPS_AND_COMMON_ONE;
-
     private final static List<LoopParallelizationAdvice> tips = new ArrayList<LoopParallelizationAdvice>();
-
     private final static List<WeakReference<ParallelAdviserTipsProviderListener>> listeners = new ArrayList<WeakReference<ParallelAdviserTipsProviderListener>>();
 
     public static void addTip(LoopParallelizationAdvice tip) {
         for (LoopParallelizationAdvice advice : tips) {
-            if(advice.getLoop().equals(tip.getLoop())) {
+            if (advice.getLoop().equals(tip.getLoop())) {
                 tips.remove(advice);
                 break;
             }
@@ -92,23 +87,24 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
         tips.clear();
     }
 
-    public Collection<Advice> getTips() {
-        if(representationType == REPRESENTATION_TYPE_SEPARATE_TIPS) {
-            return new ArrayList<Advice>(tips);
-        } else if (representationType == REPRESENTATION_TYPE_ALL_TIPS_IN_ONE) {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>();
-            if(!tips.isEmpty()) {
-                arrayList.add(new LoopsParallelizationAdvice(tips));
+    public static void clearTipsForProject(CsmProject project) {
+        List<LoopParallelizationAdvice> newTips = new ArrayList<LoopParallelizationAdvice>();
+        for (LoopParallelizationAdvice tip : tips) {
+            if (tip.getProject() != null && !tip.getProject().equals(project)) {
+                newTips.add(tip);
             }
-            return arrayList;
-        } else {
-            ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
-            if(!arrayList.isEmpty()) {
-                arrayList.add(new LoopParallelizationCommonAdvice());
-                arrayList.add(new SunStudioCompilerXautoparAdvice());
-            }
-            return arrayList;
         }
+        tips.clear();
+        tips.addAll(newTips);
+    }
+
+    public Collection<Advice> getTips() {
+        ArrayList<Advice> arrayList = new ArrayList<Advice>(tips);
+        if (!arrayList.isEmpty()) {
+            arrayList.add(new LoopParallelizationCommonAdvice());
+            arrayList.add(new SunStudioCompilerXautoparAdvice());
+        }
+        return arrayList;
     }
 
     public void addListener(ParallelAdviserTipsProviderListener listener) {
@@ -126,7 +122,12 @@ public class LoopParallelizationTipsProvider implements ParallelAdviserTipsProvi
 
     private static void notifyListeners() {
         for (WeakReference<ParallelAdviserTipsProviderListener> ref : listeners) {
-            ref.get().tipsChanged();
+            ParallelAdviserTipsProviderListener provider = ref.get();
+            if (provider != null) {
+                provider.tipsChanged();
+            } else {
+                listeners.remove(ref);
+            }
         }
     }
 }
