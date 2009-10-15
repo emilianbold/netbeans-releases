@@ -39,55 +39,38 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
-import org.netbeans.modules.cnd.remote.sync.FileTimeStamps.Mode;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
-/**
- *
- * @author Vladimir Kvashin
- */
-public class TimestampAndSharabilityFilter extends SharabilityFilter {
+public enum FileState {
 
-    private final FileTimeStamps timeStamps;
-    private FileTimeStamps.Mode mode;
+    /** New on local host */
+    INITIAL('i'),
 
-    public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-        timeStamps = new FileTimeStamps(privProjectStorageDir, executionEnvironment);
-        mode = FileTimeStamps.Mode.COPYING;
-        if (Boolean.getBoolean("cnd.remote.timestamps.clear")) {
-            timeStamps.clear();
-        }
+    /** Created ant touched on remote */
+    TOUCHED('t'),
+
+    /** Copied to remote */
+    COPIED('c'),
+
+    /** Is not controlled  */
+    UNCONTROLLED('u'),
+
+    /** Error occured when touching or copying */
+    ERROR('e');
+
+    public final char id;
+
+    FileState(char id) {
+        this.id = id;
     }
 
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    @Override
-    public boolean acceptImpl(File file) {
-        boolean accept = super.acceptImpl(file);
-        if (accept && ! file.isDirectory()) {
-            accept = (mode == Mode.CREATION) ? timeStamps.needsCreating(file) : timeStamps.needsCopying(file);
-            if (accept) {
-                if (mode == Mode.CREATION) {
-                    timeStamps.rememberCreationTimestamp(file);
-                } else { // mode == Mode.COPYING
-                    timeStamps.rememberCopyTimestamp(file);
-                }
-            } else {
-                //System.out.printf("FILE %s UNCHANGED\n", file.getAbsolutePath());
-                accept = false;
+    public static FileState fromId(char c) {
+        for (FileState state : FileState.values()) {
+            if (state.id == c) {
+                return state;
             }
         }
-        return accept;
-    }
-
-    public void flush() {
-        timeStamps.flush();
-    }
-
-    public void dropTimestamp(File file) {
-        timeStamps.dropTimestamp(file);
+        CndUtils.assertTrue(false, "Unexpected state char: " + c); //NOI18N
+        return INITIAL;
     }
 }
