@@ -217,4 +217,9 @@ public class LineAnnotationInfo {
         this.y1 = y1;
         this.y2 = y2;
     }
+
+    @Override
+    public String toString() {
+        return getTooltip() ;
+    }
 }

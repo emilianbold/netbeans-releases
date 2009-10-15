@@ -185,6 +185,20 @@ public class FileAnnotationInfo {
         return tooltip;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("Line Annotations:\n"); // NOI18N
+        for(LineAnnotationInfo line : lineAnnotationInfo) {
+            buf.append('\t').append(line.toString()).append('\n'); // NOI18N
+        }
+        buf.append("Block Annotations:\n"); // NOI18N
+        for(LineAnnotationInfo line : blockAnnotationInfo) {
+            buf.append('\t').append(line.toString()).append('\n'); // NOI18N
+        }
+        return buf.toString();
+    }
+
     /**
      * @return the editorPane
      */
