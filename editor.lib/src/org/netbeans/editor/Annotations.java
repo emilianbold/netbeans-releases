@@ -479,7 +479,11 @@ public class Annotations implements DocumentListener {
      * @return {@link AnnotationDesc} of given type on provided line
      */
     public AnnotationDesc getAnnotation(int line, String type) {
-        return getLineAnnotations(line).getType(type);
+        LineAnnotations lineAnnotations = getLineAnnotations(line);
+        if (lineAnnotations != null)
+            return lineAnnotations.getType(type);
+        else
+            return null;
     }
     
     /** Return list of pasive annotations which should be drawn on the backgorund */
