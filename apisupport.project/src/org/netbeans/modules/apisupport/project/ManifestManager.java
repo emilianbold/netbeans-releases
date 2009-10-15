@@ -268,6 +268,7 @@ public final class ManifestManager {
         if (semicolon >= 0) {
             codenamebase = codenamebase.substring(0, semicolon);
         }
+        codenamebase = codenamebase.replace('-', '_');
         PackageExport[] publicPackages = null;
         String requires = null;
         String provides = null;

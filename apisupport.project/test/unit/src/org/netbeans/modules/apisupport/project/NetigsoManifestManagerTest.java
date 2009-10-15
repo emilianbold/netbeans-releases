@@ -85,6 +85,16 @@ public class NetigsoManifestManagerTest extends TestBase {
         assertFalse("not recursiveb", mm.getPublicPackages()[1].isRecursive());
         assertFalse("not recursivec", mm.getPublicPackages()[2].isRecursive());
     }
+    public void testDashesToUnderscore() throws Exception {
+        File manifest = new File(getWorkDir(), "testManifest.mf");
+        String mfContent = "Manifest-Version: 1.0\n" +
+                "Ant-Version: Apache Ant 1.6.5\n" +
+                "Created-By: 1.4.2_10-b03 (Sun Microsystems Inc.)\n" +
+                "Bundle-SymbolicName: org.netbeans.send-opts; singleton:=true\n";
+        dump(manifest, mfContent);
+        ManifestManager mm = ManifestManager.getInstance(manifest, true);
+        assertEquals("cnb", "org.netbeans.send_opts", mm.getCodeNameBase());
+    }
 
     public void testSingletonBundle() throws Exception {
         File manifest = new File(getWorkDir(), "testManifest.mf");
