@@ -334,12 +334,32 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         class Query implements Runnable {
                             
                             private DoInitialize doInit;
+                            boolean inAWT;
+                            boolean finished;
                             
                             public Query (DoInitialize doInit) {
                                 this.doInit = doInit;
                             }
                             
                             public void run() {
+                                synchronized (this) {
+                                    inAWT = true;
+                                    notifyAll();
+                                    if (finished) {
+                                        return;
+                                    }
+                                }
+                                try {
+                                    doQuestion();
+                                } finally {
+                                    synchronized (this) {
+                                        finished = true;
+                                        notifyAll();
+                                    }
+                                }
+                            }
+
+                            private void doQuestion() {
                                 UserQuestionException e = (UserQuestionException) ex.getCause();
                                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                                         e.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
@@ -361,14 +381,31 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                     return;
                                 }
                             }
+
+                            public synchronized boolean awaitAWT() throws InterruptedException {
+                                if (!inAWT) {
+                                    wait(10000);
+                                }
+                                return inAWT;
+                            }
+
+                            public synchronized void waitRest() throws InterruptedException {
+                                while (inAWT && !finished) {
+                                    wait();
+                                }
+                            }
                         }
 
                         Query query = new Query(this);
                         try {
-                            SwingUtilities.invokeAndWait(query);
+                            SwingUtilities.invokeLater(query);
+                            if (query.awaitAWT()) {
+                                query.waitRest();
+                            }
+                            synchronized (query) {
+                                query.finished = true;
+                            }
                         } catch (InterruptedException exc) {
-                            Exceptions.printStackTrace(exc);
-                        } catch (InvocationTargetException exc) {
                             Exceptions.printStackTrace(exc);
                         }
                         if (confirmed) {
