@@ -162,10 +162,10 @@ public class GroovyLanguage extends DefaultLanguageConfig {
         return true;
     }
 
-    @Override
-    public HintsProvider getHintsProvider() {
-        return new GroovyHintsProvider();
-    }
+//    @Override
+//    public HintsProvider getHintsProvider() {
+//        return new GroovyHintsProvider();
+//    }
 
     @Override
     public DeclarationFinder getDeclarationFinder() {
