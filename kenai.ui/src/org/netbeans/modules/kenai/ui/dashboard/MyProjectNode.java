@@ -121,9 +121,11 @@ public class MyProjectNode extends LeafNode {
                     }
                 } else if (QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName())) {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
-                    if (!queryResults.isEmpty()) {
-                        setBugsLater(queryResults.get(0));
-                        return;
+                    for (QueryResultHandle queryResult : queryResults) {
+                        if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                            setBugsLater(queryResult);
+                            return;
+                        }
                     }
                 }
             }
@@ -173,8 +175,13 @@ public class MyProjectNode extends LeafNode {
                         QueryHandle handle = qaccessor.getAllIssuesQuery(project);
                         if (handle != null) {
                             handle.addPropertyChangeListener(projectListener);
-                            QueryResultHandle queryResult = qaccessor.getAllChangesResult(handle);
-                            setBugsLater(queryResult);
+                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(handle);
+                            for (QueryResultHandle queryResult:queryResults) {
+                                if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                                    setBugsLater(queryResult);
+                                    return;
+                                }
+                            }
                         }
                     }
                 });
@@ -207,7 +214,7 @@ public class MyProjectNode extends LeafNode {
         Runnable run = new Runnable() {
 
             public void run() {
-                if (btnBugs == null) {
+                if (btnBugs == null || "0".equals(btnBugs.getText())) {
                     if (leftPar != null) {
                         leftPar.setVisible(b);
                     }
@@ -277,11 +284,14 @@ public class MyProjectNode extends LeafNode {
                 if (btnBugs!=null) {
                     component.remove(btnBugs);
                 }
+                boolean hasMsgs = btnMessages != null && btnMessages.isVisible();
                 btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
-                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,5,0,0), 0,0) );
-                leftPar.setVisible(true);
-                rightPar.setVisible(true);
+                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,hasMsgs?5:1,0,0), 0,0) );
+                boolean visible = hasMsgs || !"0".equals(bug.getText());
+                leftPar.setVisible(visible);
+                rightPar.setVisible(visible);
+                btnBugs.setVisible(!"0".equals(bug.getText()));
                 component.validate();
                 DashboardImpl.getInstance().dashboardComponent.repaint();
             }
