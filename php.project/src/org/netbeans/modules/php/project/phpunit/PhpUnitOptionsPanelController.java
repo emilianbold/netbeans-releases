@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,67 +34,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.options;
+package org.netbeans.modules.php.project.phpunit;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 @OptionsPanelController.SubRegistration(
-    displayName="#LBL_GeneralOptions",
-//    toolTip="#LBL_GeneralOptionsTooltip",
-    id=PhpOptionsPanelController.ID,
     location=UiUtils.OPTIONS_PATH,
-    position=100
+    id=PhpUnit.OPTIONS_SUB_PATH,
+    displayName="#LBL_OptionsName",
+//    toolTip="#LBL_OptionsTooltip"
+    position=150
 )
-public class PhpOptionsPanelController extends OptionsPanelController implements ChangeListener {
-
-    public static final String ID = "General";
-
-    private PhpOptionsPanel phpOptionsPanel = null;
+public class PhpUnitOptionsPanelController extends OptionsPanelController implements ChangeListener {
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private volatile boolean changed;
+
+    private PhpUnitOptionsPanel phpUnitOptionsPanel = null;
+    private volatile boolean changed = false;
 
     @Override
     public void update() {
-        phpOptionsPanel.setPhpInterpreter(getPhpOptions().getPhpInterpreter());
-        phpOptionsPanel.setOpenResultInOutputWindow(getPhpOptions().isOpenResultInOutputWindow());
-        phpOptionsPanel.setOpenResultInBrowser(getPhpOptions().isOpenResultInBrowser());
-        phpOptionsPanel.setOpenResultInEditor(getPhpOptions().isOpenResultInEditor());
-
-        phpOptionsPanel.setDebuggerPort(getPhpOptions().getDebuggerPort());
-        phpOptionsPanel.setDebuggerSessionId(getPhpOptions().getDebuggerSessionId());
-        phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
+        phpUnitOptionsPanel.setPhpUnit(getPhpOptions().getPhpUnit());
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getPhpOptions().setPhpInterpreter(phpOptionsPanel.getPhpInterpreter());
-        getPhpOptions().setOpenResultInOutputWindow(phpOptionsPanel.isOpenResultInOutputWindow());
-        getPhpOptions().setOpenResultInBrowser(phpOptionsPanel.isOpenResultInBrowser());
-        getPhpOptions().setOpenResultInEditor(phpOptionsPanel.isOpenResultInEditor());
-
-        getPhpOptions().setDebuggerPort(phpOptionsPanel.getDebuggerPort());
-        getPhpOptions().setDebuggerSessionId(phpOptionsPanel.getDebuggerSessionId());
-        getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
-
-        getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
+        getPhpOptions().setPhpUnit(phpUnitOptionsPanel.getPhpUnit());
 
         changed = false;
     }
@@ -105,7 +87,24 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public boolean isValid() {
-        return validateComponent();
+        PhpUnit.resetVersion();
+        PhpUnit phpUnit = null;
+        try {
+            phpUnit = PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
+        } catch (InvalidPhpProgramException ex) {
+            phpUnitOptionsPanel.setWarning(ex.getLocalizedMessage());
+            return true;
+        }
+        assert phpUnit != null;
+        String warning = PhpUnit.validateVersion(phpUnit);
+        if (warning != null) {
+            phpUnitOptionsPanel.setWarning(warning);
+            return true;
+        }
+
+        // everything ok
+        phpUnitOptionsPanel.setError(" "); // NOI18N
+        return true;
     }
 
     @Override
@@ -115,11 +114,11 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-         if (phpOptionsPanel == null) {
-            phpOptionsPanel = new PhpOptionsPanel();
-            phpOptionsPanel.addChangeListener(this);
+        if (phpUnitOptionsPanel == null) {
+            phpUnitOptionsPanel = new PhpUnitOptionsPanel();
+            phpUnitOptionsPanel.addChangeListener(this);
         }
-        return phpOptionsPanel;
+        return phpUnitOptionsPanel;
     }
 
     @Override
@@ -137,47 +136,15 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
-    private PhpOptions getPhpOptions() {
-        return PhpOptions.getInstance();
-    }
-
     public void stateChanged(ChangeEvent e) {
-        changed();
-    }
-
-    private boolean validateComponent() {
-        // errors
-        Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
-        if (debuggerPort == null || debuggerPort < 1) {
-            phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidPort"));
-            return false;
-        }
-        String debuggerSessionId = phpOptionsPanel.getDebuggerSessionId();
-        if (debuggerSessionId == null
-                || debuggerSessionId.trim().length() == 0
-                || debuggerSessionId.contains(" ")) { // NOI18N
-            phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidSessionId"));
-            return false;
-        }
-
-        // warnings
-        // #144680
-        String warning = PhpInterpreter.validate(phpOptionsPanel.getPhpInterpreter());
-        if (warning != null) {
-            phpOptionsPanel.setWarning(warning);
-            return true;
-        }
-
-        // everything ok
-        phpOptionsPanel.setError(" "); // NOI18N
-        return true;
-    }
-
-    private void changed() {
         if (!changed) {
             changed = true;
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
+
+    private PhpOptions getPhpOptions() {
+        return PhpOptions.getInstance();
     }
 }
