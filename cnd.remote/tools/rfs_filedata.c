@@ -47,7 +47,7 @@
 #include "rfs_filedata.h"
 
 static file_data *root = NULL;
-pthread_mutex_t file_data_tree_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t file_data_tree_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static file_data *new_file_data(const char* filename, file_state state) {
     int namelen = strlen(filename);

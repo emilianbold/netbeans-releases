@@ -64,7 +64,7 @@
 #define SOCKET_UNINITIALIZED -2
 
 /** Socked descriptor. */
-static __thread int _sd = SOCKET_UNINITIALIZED;
+static __thread int _sd __attribute__ ((aligned (16))) = SOCKET_UNINITIALIZED;
 
 //void trace_sd(const char* text) {
 //    trace("trace_sd (%s) _sd is %d %X\n", text, _sd, &_sd);
@@ -162,4 +162,3 @@ void release_socket() {
         trace_sd("releasing socket");
     }
 }
-

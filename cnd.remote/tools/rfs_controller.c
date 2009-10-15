@@ -74,7 +74,7 @@ typedef struct connection_data {
     struct sockaddr_in pin;
 } connection_data;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
