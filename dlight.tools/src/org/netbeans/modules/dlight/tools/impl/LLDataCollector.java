@@ -92,6 +92,8 @@ public class LLDataCollector
         implements DataCollector<LLDataCollectorConfiguration>,
         ExecutionEnvVariablesProvider {
 
+    private static final boolean ALLOW_ON_MACOSX = Boolean.getBoolean("cnd.tools.prof_agent.allow_on_macos"); // NOI18N
+
     private final Object lock = LLDataCollector.class.getName();
     private final EnumSet<LLDataCollectorConfiguration.CollectedData> collectedData;
     private final Set<ValidationListener> validationListeners;
@@ -421,7 +423,7 @@ public class LLDataCollector
         } catch (CancellationException ex) {
         }
 
-        if (osFamily != OSFamily.LINUX && osFamily != OSFamily.MACOSX) {
+        if (osFamily != OSFamily.LINUX && !(ALLOW_ON_MACOSX && osFamily == OSFamily.MACOSX)) {
             return ValidationStatus.invalidStatus(getMessage("ValidationStatus.ProfAgent.OSNotSupported")); // NOI18N
         }
 
