@@ -123,6 +123,7 @@ public class MyProjectNode extends LeafNode {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
                     for (QueryResultHandle queryResult : queryResults) {
                         if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                            DashboardImpl.getInstance().myProjectsProgressStarted();
                             setBugsLater(queryResult);
                             return;
                         }
@@ -172,6 +173,7 @@ public class MyProjectNode extends LeafNode {
                 post(new Runnable() {
 
                     public void run() {
+                        DashboardImpl.getInstance().myProjectsProgressStarted();
                         QueryHandle handle = qaccessor.getAllIssuesQuery(project);
                         if (handle != null) {
                             handle.addPropertyChangeListener(projectListener);
@@ -183,6 +185,7 @@ public class MyProjectNode extends LeafNode {
                                 }
                             }
                         }
+                        DashboardImpl.getInstance().myProjectsProgressFinished();
                     }
                 });
 
@@ -287,13 +290,15 @@ public class MyProjectNode extends LeafNode {
                 boolean hasMsgs = btnMessages != null && btnMessages.isVisible();
                 btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
-                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,hasMsgs?5:1,0,0), 0,0) );
+                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 boolean visible = hasMsgs || !"0".equals(bug.getText());
                 leftPar.setVisible(visible);
                 rightPar.setVisible(visible);
                 btnBugs.setVisible(!"0".equals(bug.getText()));
                 component.validate();
-                DashboardImpl.getInstance().dashboardComponent.repaint();
+                DashboardImpl instance = DashboardImpl.getInstance();
+                instance.myProjectsProgressFinished();
+                instance.dashboardComponent.repaint();
             }
         });
     }

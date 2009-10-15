@@ -634,7 +634,14 @@ public final class DashboardImpl extends Dashboard {
 
     private void myProjectLoadingFinished() {
         noMyProjects.loadingFinished();
+    }
 
+    void myProjectsProgressStarted() {
+        myProjectsNode.loadingStarted();
+    }
+
+    void myProjectsProgressFinished() {
+        myProjectsNode.loadingFinished();
     }
 
     private void startLoadingMemberProjects(boolean forceRefresh) {
