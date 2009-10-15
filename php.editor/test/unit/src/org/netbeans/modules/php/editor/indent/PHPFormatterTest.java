@@ -125,9 +125,9 @@ public class PHPFormatterTest extends PHPTestBase {
      * issue 173906
      * @throws Exception
      */
-    public void test173906() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906.php");
-    }
+//    public void test173906() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/173906.php");
+//    }
 
      /**
      * issue 173908
@@ -242,6 +242,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void test164381() throws Exception {
         reformatFileContents("testfiles/formatting/issue164381.php");
+    }
+
+    public void test174544() throws Exception {
+        reformatFileContents("testfiles/formatting/issue174544.php");
     }
 
     public void test173352() throws Exception {

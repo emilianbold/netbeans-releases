@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.copysupport;
 
 import java.io.File;
 import java.io.IOException;

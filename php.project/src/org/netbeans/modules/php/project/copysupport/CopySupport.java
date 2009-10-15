@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.copysupport;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +55,7 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -74,7 +75,7 @@ import org.openide.util.WeakListeners;
 public final class CopySupport extends FileChangeAdapter implements PropertyChangeListener, FileChangeListener, ChangeListener {
     private static final Logger LOGGER = Logger.getLogger(CopySupport.class.getName());
 
-    public static final boolean ALLOW_BROKEN = Boolean.getBoolean("org.netbeans.modules.php.project.util.CopySupport.allowBroken"); // NOI18N
+    public static final boolean ALLOW_BROKEN = Boolean.getBoolean(CopySupport.class.getName() + ".allowBroken"); // NOI18N
 
     private static final RequestProcessor COPY_SUPPORT_RP = new RequestProcessor("PHP file change handler (copy support)"); // NOI18N
     private static final int FILE_CHANGE_DELAY = 300; // ms

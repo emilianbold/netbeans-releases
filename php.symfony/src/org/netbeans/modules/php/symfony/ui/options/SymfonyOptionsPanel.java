@@ -311,14 +311,12 @@ public class SymfonyOptionsPanel extends JPanel {
     }//GEN-LAST:event_learnMoreLabelMouseEntered
 
     private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
-        URL url = null;
         try {
-            url = new URL("http://www.symfony-project.org/installation"); // NOI18N
+            URL url = new URL("http://www.symfony-project.org/installation"); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-        assert url != null;
-        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
 
