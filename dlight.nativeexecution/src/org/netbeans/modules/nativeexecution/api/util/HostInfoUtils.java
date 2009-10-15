@@ -74,6 +74,7 @@ public final class HostInfoUtils {
             stream.println("shell to use  : " + hostinfo.getShell()); // NOI18N
             stream.println("tmpdir to use : " + hostinfo.getTempDir()); // NOI18N
             stream.println("tmpdir (file) to use : " + hostinfo.getTempDirFile().toString()); // NOI18N
+            stream.println("PATH          : " + hostinfo.getPath()); // NOI18N
         }
         stream.println("------------"); // NOI18N
     }
