@@ -50,7 +50,11 @@ import org.openide.filesystems.FileObject;
 /**
  * This is a copy of DefaultError with the additional Groovy
  * information.
- * 
+ *
+ * Because groovyc report some errors multiple times we overrides
+ * hashCode and equals.
+ *
+ * http://jira.codehaus.org/browse/GROOVY-3827
  */
 public class GroovyError implements org.netbeans.modules.csl.api.Error {
 
@@ -61,7 +65,6 @@ public class GroovyError implements org.netbeans.modules.csl.api.Error {
     private final int end;
     private final String key;
     private final Severity severity;
-    private Object[] parameters;
     private final GroovyCompilerErrorID id;
 
     /** Creates a new instance of GroovyError */
@@ -112,11 +115,7 @@ public class GroovyError implements org.netbeans.modules.csl.api.Error {
     }
 
     public Object[] getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(final Object[] parameters) {
-        this.parameters = parameters;
+        return null;
     }
 
     public Severity getSeverity() {
@@ -134,4 +133,55 @@ public class GroovyError implements org.netbeans.modules.csl.api.Error {
     public boolean isLineError() {
         return true;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final GroovyError other = (GroovyError) obj;
+        if ((this.displayName == null) ? (other.displayName != null) : !this.displayName.equals(other.displayName)) {
+            return false;
+        }
+        if ((this.description == null) ? (other.description != null) : !this.description.equals(other.description)) {
+            return false;
+        }
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        if (this.start != other.start) {
+            return false;
+        }
+        if (this.end != other.end) {
+            return false;
+        }
+        if ((this.key == null) ? (other.key != null) : !this.key.equals(other.key)) {
+            return false;
+        }
+        if (this.severity != other.severity) {
+            return false;
+        }
+        if (this.id != other.id) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
+        hash = 53 * hash + (this.description != null ? this.description.hashCode() : 0);
+        hash = 53 * hash + (this.file != null ? this.file.hashCode() : 0);
+        hash = 53 * hash + this.start;
+        hash = 53 * hash + this.end;
+        hash = 53 * hash + (this.key != null ? this.key.hashCode() : 0);
+        hash = 53 * hash + this.severity.hashCode();
+        hash = 53 * hash + this.id.hashCode();
+        return hash;
+    }
+
 }
