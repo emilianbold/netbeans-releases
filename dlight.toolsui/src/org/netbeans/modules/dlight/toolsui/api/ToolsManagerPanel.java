@@ -448,7 +448,12 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
                 copyTool.setEnabled(tool.isEnabled());
                 copyTool.setCanEnable(tool.canEnable());
             }
-            copy.setCopyOf(o.getDLightConfiguration());
+            //always link to the original
+            DLightConfiguration copyOf = o.getDLightConfiguration();
+            if (o.getCopyOf() != null){
+                copyOf = o.getCopyOf();
+            }
+            copy.setCopyOf(copyOf);
             return copy;
         }
 
