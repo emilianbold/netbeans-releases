@@ -222,7 +222,7 @@ pid_t fork() {
 //    real_fork("vfork", vfork);
 //}
 
-#pragma init(on_startup)
+#pragma init(rfs_startup)
 static void
 __attribute__((constructor))
 rfs_startup(void) {
@@ -278,7 +278,7 @@ rfs_startup(void) {
     }
 }
 
-#pragma init(on_shutdown)
+#pragma init(rfs_shutdown)
 static void
 __attribute__((destructor))
 rfs_shutdown(void) {
