@@ -151,7 +151,7 @@ public class CompactMap<K,V> implements Map<K,V> {
      */
     public MapEntry<K,V> putEntry(MapEntry<K,V> entry) {
         Object key = entry.getKey();
-        int hash = entry.keyHashCode();
+        int hash = key.hashCode();
         int tableIndex = hash & (table.length - 1);
         entry.setKeyHashCode(hash);
         MapEntry<K,V> e = table[tableIndex];
