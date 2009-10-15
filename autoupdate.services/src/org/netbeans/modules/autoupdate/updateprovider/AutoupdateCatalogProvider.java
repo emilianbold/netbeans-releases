@@ -62,6 +62,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
     private String description = null;
+    private boolean descriptionInitialized = false;
     private CATEGORY category = null;
 
     public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter) {
@@ -88,11 +89,18 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     }
     
     public String getDescription () {
+        if (description == null && !descriptionInitialized) {
+            try {
+               getUpdateItems();
+            } catch (IOException e) {
+            }            
+        }
         return description;
     }
     
     public void setNotification (String notification) {
         this.description = notification;
+        this.descriptionInitialized = true;
     }
 
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
@@ -107,7 +115,9 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
             return Collections.emptyMap ();
         }
         
-        return AutoupdateCatalogParser.getUpdateItems (toParse, this);
+        Map <String, UpdateItem> map = AutoupdateCatalogParser.getUpdateItems (toParse, this);
+        descriptionInitialized = true;
+        return map;
     }
     
     public boolean refresh (boolean force) throws IOException {
@@ -116,6 +126,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         if (force) {
             res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
             description = null;
+            descriptionInitialized = false;
         } else {
             res = true;
         }
