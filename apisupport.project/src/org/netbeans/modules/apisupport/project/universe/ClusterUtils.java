@@ -183,12 +183,14 @@ public final class ClusterUtils {
             }
             FileObject fo = FileUtil.toFileObject(cd);
             if (fo != null) {
-                prj = FileOwnerQuery.getOwner(fo);
-                if (prj != null
-                        && prj.getLookup().lookup(NbModuleProvider.class) == null
-                        && prj.getLookup().lookup(SuiteProvider.class) == null) {
-                    // probably found nbbuild above the platform, use only regular NB module projects
-                    prj = null;
+                if (! NbPlatform.isPlatformDirectory(cd.getParentFile())) { // #168804, allow custom platforms
+                    prj = FileOwnerQuery.getOwner(fo);
+                    if (prj != null
+                            && prj.getLookup().lookup(NbModuleProvider.class) == null
+                            && prj.getLookup().lookup(SuiteProvider.class) == null) {
+                        // probably found nbbuild above the platform, use only regular NB module projects
+                        prj = null;
+                    }
                 }
             }
             boolean enabled = (pathsWDC == null) || enabledPaths.contains(path);

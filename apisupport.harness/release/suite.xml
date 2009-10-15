@@ -378,6 +378,9 @@ made subject to such option by the copyright holder.
         <unzip src="${dist.dir}/${app.name}.zip" dest="${dist.dir}/${app.name}">
             <globmapper from="${app.name}/*" to="*"/>
         </unzip>
+        <echo level="warning">
+Note: Since NetBeans 6.7, you can use property 'cluster.path' instead of 'create-platform' target. See http://wiki.netbeans.org/DevFaqHowToReuseModules.
+        </echo>
     </target>
     
     <target name="build-mac" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
