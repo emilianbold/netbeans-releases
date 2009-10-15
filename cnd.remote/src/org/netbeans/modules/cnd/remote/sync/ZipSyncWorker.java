@@ -41,15 +41,17 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -66,6 +68,54 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     private int uploadCount;
     private long totalSize;
     private long uploadSize;
+
+    private class TimestampAndSharabilityFilter implements FileFilter {
+
+        private final FileData fileData;
+        private final SharabilityFilter delegate;
+
+        public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+            fileData = new FileData(privProjectStorageDir, executionEnvironment);
+            delegate = new SharabilityFilter();
+        }
+
+        @Override
+        public boolean accept(File file) {
+            boolean accepted = delegate.accept(file);
+            if (accepted && ! file.isDirectory()) {
+                accepted = needsCopying(fileData.getState(file));
+                if (accepted) {
+                    fileData.setState(file, FileState.COPIED);
+                } else {
+                    accepted = false;
+                }
+            }
+            refreshStatistics(file, accepted);
+            return accepted;
+        }
+
+        public void flush() {
+            fileData.store();
+        }
+
+        private void clear() {
+            fileData.clear();
+        }
+    }
+
+    private boolean needsCopying(FileState state) {
+        switch (state) {
+            case INITIAL:       return true;
+            case TOUCHED:       return true;
+            case COPIED:        return false;
+            case ERROR:         return true;
+            case UNCONTROLLED:  return false;
+            default:
+                CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
+                return false;
+        }
+    }
+
 
     public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
         super(executionEnvironment, out, err, privProjectStorageDir, localDirs);
@@ -89,17 +139,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             time = System.currentTimeMillis();
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
-        filter.setMode(FileTimeStamps.Mode.COPYING);
-        filter.setStatisticsCallback(new SharabilityFilter.StatisticsCallback() {
-            public void onAccept(File file, boolean accepted) {
-                totalCount++;
-                totalSize += file.length();
-                if (accepted) {
-                    uploadCount++;
-                    uploadSize += file.length();
-                }
-            }
-        });
+        if (!HostInfoProvider.fileExists(executionEnvironment, remoteDir)) {
+            filter.clear();
+        }
         // success flag is for tracing only. TODO: should we drop it?
         boolean success = false;
         File zipFile = null;
@@ -219,5 +261,14 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     @Override
     public boolean cancel() {
         return false;
+    }
+
+    private void refreshStatistics(File file, boolean accepted) {
+        totalCount++;
+        totalSize += file.length();
+        if (accepted) {
+            uploadCount++;
+            uploadSize += file.length();
+        }
     }
 }
