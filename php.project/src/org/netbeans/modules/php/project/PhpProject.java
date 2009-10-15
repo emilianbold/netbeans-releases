@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.util.CopySupport;
+import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -162,7 +162,7 @@ public class PhpProject implements Project {
     // frameworks
     final Object frameworksLock = new Object();
     // @GuardedBy(frameworksLock)
-    volatile List<PhpFrameworkProvider> frameworks;
+    List<PhpFrameworkProvider> frameworks;
     private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
     private final LookupListener frameworksListener = new FrameworksListener();
 
@@ -261,7 +261,8 @@ public class PhpProject implements Project {
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
         // # 168390 - more logging
         if (srcDirProperty == null) {
-            Logger.getLogger(PhpProject.class.getName()).info("Property for Sources must be defined [" + eval.getProperties() + "]");
+            Logger.getLogger(PhpProject.class.getName()).info("[evaluator] Properties: " + eval.getProperties());
+            Logger.getLogger(PhpProject.class.getName()).info("[helper] Properties: " + helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         }
         assert srcDirProperty != null : "Property for Sources must be defined";
         FileObject srcDir = helper.resolveFileObject(srcDirProperty);
@@ -474,24 +475,27 @@ public class PhpProject implements Project {
     }
 
     public List<PhpFrameworkProvider> getFrameworks() {
-        if (frameworks == null) {
-            synchronized (frameworksLock) {
-                if (frameworks == null) {
-                    frameworks = new LinkedList<PhpFrameworkProvider>();
-                    PhpModule phpModule = getPhpModule();
-                    for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
-                        if (frameworkProvider.isInPhpModule(phpModule)) {
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getName(), getSourcesDirectory()));
-                            }
-                            frameworks.add(frameworkProvider);
+        synchronized (frameworksLock) {
+            if (frameworks == null) {
+                frameworks = new LinkedList<PhpFrameworkProvider>();
+                PhpModule phpModule = getPhpModule();
+                for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
+                    if (frameworkProvider.isInPhpModule(phpModule)) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getName(), getSourcesDirectory()));
                         }
+                        frameworks.add(frameworkProvider);
                     }
                 }
             }
+            return new ArrayList<PhpFrameworkProvider>(frameworks);
         }
-        assert frameworks != null;
-        return new ArrayList<PhpFrameworkProvider>(frameworks);
+    }
+
+    public void resetFrameworks() {
+        synchronized (frameworksLock) {
+            frameworks = null;
+        }
     }
 
     public String getName() {
@@ -641,7 +645,7 @@ public class PhpProject implements Project {
             testsDirectory = null;
             seleniumDirectory = null;
             ignoredFolders = null;
-            frameworks = null;
+            resetFrameworks();
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
@@ -669,10 +673,7 @@ public class PhpProject implements Project {
             getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-            if (phpUnit != null) {
-                phpUnit.supportedVersionFound();
-            }
+            PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
         }
 
         protected void projectClosed() {
@@ -772,14 +773,14 @@ public class PhpProject implements Project {
 
         void processFileChange() {
             LOGGER.fine("file change, frameworks back to null");
-            frameworks = null;
+            resetFrameworks();
         }
     }
 
     private final class FrameworksListener implements LookupListener {
         public void resultChanged(LookupEvent ev) {
             LOGGER.fine("frameworks change, frameworks back to null");
-            frameworks = null;
+            resetFrameworks();
         }
     }
 

@@ -62,15 +62,17 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -91,6 +93,18 @@ public final class Utils {
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
+    }
+
+    public static boolean validatePhpUnitForProject(PhpUnit phpUnit, PhpProject project) {
+        String error = PhpUnit.validateVersion(phpUnit);
+        if (error == null) {
+            error = PhpUnit.validateVersion(phpUnit, project);
+        }
+        if (error != null) {
+            UiUtils.invalidScriptProvided(error, PhpUnit.OPTIONS_SUB_PATH);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -659,7 +673,7 @@ public final class Utils {
      * Display Options dialog with PHP > General panel preselected.
      */
     public static void showGeneralOptionsPanel() {
-        OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH + "/" + PhpOptionsPanelController.ID); // NOI18N
+        UiUtils.showOptions(PhpOptionsPanelController.ID);
     }
 
     public static class PhpVersionComboBoxModel extends DefaultComboBoxModel {
