@@ -42,13 +42,14 @@
 package org.netbeans.core;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -61,7 +62,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -69,16 +69,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import org.netbeans.core.startup.CLIOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -328,10 +330,11 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                     INSTANCE.updateState(t);
                 } else {
                     // No assertions, use the flashing icon.
-                    if( null != flasher && null == INSTANCE ) {
+                    if( null == INSTANCE ) {
+                        ImageIcon img1 = ImageUtilities.loadImageIcon("org/netbeans/core/resources/exception.gif", true);
+                        String summary = getExceptionSummary(t);
+                        ExceptionFlasher flash = ExceptionFlasher.notify(summary, img1);
                         //exception window is not visible, start flashing the icon
-                        flasher.setToolTipText( getExceptionSummary( t ) );
-                        flasher.startFlashing();
                     } else {
                         //exception window is already visible (or the flashing icon is not available)
                         //so we'll only update the exception window
@@ -590,41 +593,37 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
     }
     
-
-    /**
-     * The icon shown in the main status bar that is flashing when an exception
-     * is encountered.
-     */
-    static FlashingIcon flasher = null;
-    
-    /**
-     * Return an icon that is flashing when a new internal exception occurs. 
-     * Clicking the icon opens the regular exception dialog box. The icon
-     * disappears (is hidden) after a short period of time and the exception
-     * list is cleared.
-     *
-     * @return A flashing icon component or null if console logging is switched on.
-     */
-    public static Component getNotificationVisualizer() {
-        //do not create flashing icon if not allowed in system properties
-        if( null == flasher ) {
-            ImageIcon img1 = ImageUtilities.loadImageIcon("org/netbeans/core/resources/exception.gif", true);
-            flasher = new ExceptionFlasher( img1 );
+    static class ExceptionFlasher implements ActionListener {
+        static ExceptionFlasher flash;
+        private static synchronized ExceptionFlasher notify(String summary, ImageIcon icon) {
+            if (flash != null) {
+                flash.timer.restart();
+            } else {
+                flash = new ExceptionFlasher();
+                flash.note = NotificationDisplayer.getDefault().notify(
+                    NbBundle.getMessage(NotifyExcPanel.class, "NTF_ExceptionalExceptionTitle"),
+                    icon, summary,
+                    flash, NotificationDisplayer.Priority.SILENT);
+            }
+            return flash;
         }
-        return flasher;
-    }
+        Notification note;
+        private final Timer timer;
 
-    private static class ExceptionFlasher extends FlashingIcon {
-        static final long serialVersionUID = 1L;
-        
-        public ExceptionFlasher( Icon img1 ) {
-            super( img1 );
+        public ExceptionFlasher() {
+            timer = new Timer(30000, this);
+            timer.setRepeats(false);
+            timer.start();
         }
 
-        /**
-         * User clicked the flashing icon, display the exception window.
-         */
-        protected void onMouseClick() {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == timer) {
+                timeout();
+                return;
+            }
+            synchronized (ExceptionFlasher.class) {
+                flash = null;
+            }
             if (null != exceptions && exceptions.size() > 0) {
                 if (INSTANCE == null) {
                     INSTANCE = new NotifyExcPanel();
@@ -633,22 +632,20 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             }
         }
         
-        /**
-         * The flashing icon disappeared (timed-out), clear the current
-         * exception list.
-         */
-        protected void timeout() {
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    if( null != INSTANCE ) {
-                        return;
-                    }
-                    if( null != exceptions ) {
-                        exceptions.clear();
-                    }
-                    exceptions = null;
+        private void timeout() {
+            synchronized (ExceptionFlasher.class) {
+                assert EventQueue.isDispatchThread();
+                if( null != INSTANCE ) {
+                    return;
                 }
-            });
+                if( null != exceptions ) {
+                    exceptions.clear();
+                }
+                exceptions = null;
+                flash = null;
+                timer.stop();
+                note.clear();
+            }
         }
     }
 
