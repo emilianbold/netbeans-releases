@@ -830,15 +830,22 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         return null;
     }
-
-    /** Overrides superclass method. Remembers last selected component of
+    
+    /**
+     * Overrides superclass method. Remembers last selected component of
      * support belonging to this component.
-     * @see #componentDeactivated */
+     *
+     * Descendants overriding this method must call this implementation to set last
+     * selected pane otherwise <code>CloneableEditorSupport.getRecentPane</code> and
+     * <code>CloneableEditorSupport.getOpenedPanes</code> will be broken.
+     *
+     * @see #componentDeactivated
+     */
     @Override
     protected void componentActivated() {
         support.setLastSelected(this);
     }
-
+    
     /** Updates the name and tooltip of this <code>CloneableEditor</code>
      * {@link org.openide.windows.TopComponent TopCompoenent}
      * according to the support retrieved from {@link #cloneableEditorSupport}
