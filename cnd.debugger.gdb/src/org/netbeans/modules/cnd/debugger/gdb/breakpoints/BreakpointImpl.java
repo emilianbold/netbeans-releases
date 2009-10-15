@@ -52,6 +52,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.MICommand;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -73,10 +74,13 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
     private final B breakpoint;
     private State state = State.UNVALIDATED;
     protected String err = null;
-    private int breakpointNumber = -1;
     private boolean runWhenValidated = false;
 
+    // gdb breakpoint properties
+    private int breakpointNumber = -1;
     private String address;
+    private String fullname;
+    private int line;
 
     protected BreakpointImpl(B breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
@@ -90,34 +94,34 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
         
         String number = (map != null) ? map.get("number") : null; // NOI18N
         if (number != null) {
-            String fullname = map.get("fullname"); // NOI18N
+            String implPath = map.get("fullname"); // NOI18N
             
             // Note: The following test is appropriate only for line breakpoints...
-            if (this instanceof LineBreakpointImpl && fullname != null) {
+            if (this instanceof LineBreakpointImpl && implPath != null) {
                 // We set a valid breakpoint, but its not in the exact source file we meant it to
                 // be. This can happen when a source path has embedded spaces and we shorten the
                 // path to a possiby non-unique relative path and another project has a similar
                 // relative path. See IZ #151761.
                 String path = getBreakpoint().getPath();
-                fullname = debugger.getOSPath(fullname);
+                implPath = debugger.getOSPath(implPath);
                 // fix for IZ 157752, we need to resolve sym links
                 // TODO: what about remote?
                 if (debugger.getHostExecutionEnvironment().isLocal()) {
                     path = canonicalPath(path);
-                    fullname = canonicalPath(fullname);
+                    implPath = canonicalPath(implPath);
                 }
                 
                 if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     // See IZ 151577 - do some magic to ensure equivalent paths really do match
                     path = path.toLowerCase();
-                    fullname = fullname.toLowerCase();
+                    implPath = implPath.toLowerCase();
                 }
                 // go through path map
                 path = debugger.getPathMap().getRemotePath(path,true);
                 
-                if (!debugger.comparePaths(path, fullname)) {
+                if (!debugger.comparePaths(path, implPath)) {
                     debugger.getGdbProxy().getLogger().logMessage(
-                            "IDE: incorrect breakpoint file: requested " + path + " found " + fullname); // NOI18N
+                            "IDE: incorrect breakpoint file: requested " + path + " found " + implPath); // NOI18N
                     debugger.getGdbProxy().break_deleteCMD(number).send();
                     breakpoint.setInvalid(err);
                     setState(State.VALIDATION_FAILED);
@@ -126,6 +130,16 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
             }
             breakpointNumber = Integer.parseInt(number);
             setState(State.VALIDATED);
+
+            // initializing gdb specific attributes
+            address = map.get("addr"); //NOI18N
+            fullname = debugger.getOSPath(map.get("fullname")); // NOI18N
+            try {
+                line = Integer.parseInt(map.get("line")); // NOI18N
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
             if (!breakpoint.isEnabled()) {
                 MICommand command = enableCMD(false);
                 if (isRunWhenValidated()) {
@@ -149,8 +163,6 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
                 }
                 command.send();
             }
-
-            validationUpdate(map);
             
             breakpoint.setValid();
             debugger.getBreakpointList().put(breakpointNumber, this);
@@ -166,15 +178,16 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
         }
     }
 
-    /**
-     * Update implementation with the real breakpoint values if needed
-     */
-    protected void validationUpdate(Map<String, String> map) {
-        address = map.get("addr"); //NOI18N
-    }
-
     public String getAddress() {
         return address;
+    }
+
+    public String getFullname() {
+        return fullname;
+    }
+
+    public int getLine() {
+        return line;
     }
 
     private static String canonicalPath(String path) {
