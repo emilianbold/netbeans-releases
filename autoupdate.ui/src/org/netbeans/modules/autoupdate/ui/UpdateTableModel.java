@@ -89,13 +89,15 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         Unit u = getUnitAtRow(row);
         assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
         boolean beforeMarked = u.isMarked();
-        u.setMarked(!beforeMarked);
-        if (u.isMarked() != beforeMarked) {
-            fireButtonsChange();
-        } else {
-            //TODO: message should contain spec.version
-            String message = NbBundle.getMessage(UpdateTableModel.class, "NotificationAlreadyPreparedToIntsall", u.getDisplayName()); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+        if ((Boolean) anValue != beforeMarked) {
+            u.setMarked(! beforeMarked);
+            if (u.isMarked() != beforeMarked) {
+                fireButtonsChange();
+            } else {
+                //TODO: message should contain spec.version
+                String message = NbBundle.getMessage(UpdateTableModel.class, "NotificationAlreadyPreparedToIntsall", u.getDisplayName()); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }
     
