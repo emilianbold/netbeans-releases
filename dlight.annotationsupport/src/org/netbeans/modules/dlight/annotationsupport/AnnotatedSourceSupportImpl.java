@@ -43,6 +43,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -88,6 +89,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
                     String filePath = sourceFileInfo.getFileName();
+                    filePath = FileUtil.normalizeFile(new File(filePath)).getAbsolutePath();
                     FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                     if (fileAnnotationInfo == null) {
                         fileAnnotationInfo = new FileAnnotationInfo();
@@ -207,7 +209,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                         fileAnnotationInfo.setAnnotated(true);
                     }
                     SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
-                }
+               }
             }
         }
     }
@@ -332,5 +334,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        for(Map.Entry<String, FileAnnotationInfo> entry : activeAnnotations.entrySet()) {
+            buf.append(entry.getKey()).append('=').append(entry.getValue()).append('\n'); // NOI18N
+        }
+        return buf.toString();
     }
 }
