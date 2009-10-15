@@ -87,6 +87,7 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         updateTips();
         ParallelAdviser.addListener(this);
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", true); // NOI18N
     }
 
     public void tipsChanged() {
