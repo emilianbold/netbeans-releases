@@ -149,6 +149,14 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/174579.php");
     }
 
+    /**
+     * issue 174578
+     * @throws Exception
+     */
+    public void test174578() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174578.php");
+    }
+
     public void testIfElseStatement() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/else_if.php");
     }
