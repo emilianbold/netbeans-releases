@@ -321,7 +321,7 @@ public class UnitDetails extends DetailsPanel {
         if (ue.getUpdateUnit().getInstalled() != null) {
             desc.append(" [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->");
         } else {
-            desc.append(" <span color=\"red\">new!</span> [");
+            desc.append(" <span color=\"red\">" + getBundle("UnitDetails_New_Internal_Update_Mark") + "</span> [");
         }
 
         desc.append(ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion());
