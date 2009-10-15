@@ -57,7 +57,7 @@ public class TimerTaskExecutionServiceTest {
     public void testRegisterTimerTask() {
         System.out.println("registerTimerTask");//NOI18N
 
-        int count = 1200;
+        int count = 1000;
         final List<Worker> workers = new ArrayList<Worker>();
         final List<Future> tasks = Collections.synchronizedList(new ArrayList<Future>());
         final CountDownLatch start = new CountDownLatch(1);
@@ -92,6 +92,32 @@ public class TimerTaskExecutionServiceTest {
 
         start.countDown();
 
+        // Threads creation takes a while - so some tasks may be already called
+        // before others were not even scheduled yet... This will affect
+        // statistics...
+
+        countInvokations = true;
+
+        /*
+         * Will sleep for 5 seconds...
+         * All our threads will be invoked with different interval.
+         * Important thing is that this interval is 1 second MINIMUM.
+         * So every task must be invoked <= 10 times (we used same workers twice!)
+         */
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        // While iteration through all thread (to cancel) some timers can tick
+        // again...
+        // In this case workers may be invoked more than 10 times...
+        // To prevent this will not count invokations after this point.
+
+        countInvokations = false;
+
         try {
             t1.join();
         } catch (InterruptedException ex) {
@@ -100,24 +126,6 @@ public class TimerTaskExecutionServiceTest {
 
         try {
             t2.join();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        // Threads creation takes a while - so some tasks may be already called
-        // before others were not even scheduled yet... This will affect
-        // statistics...
-        countInvokations = true;
-
-        /*
-         * Will sleep for 5 seconds...
-         * All our threads will be invoked with different interval.
-         * Important thing is that this interval is 1 second MINIMUM.
-         * So every task maust be invoked <= 10 times (we used same workers twice!)
-         */
-
-        try {
-            Thread.sleep(5000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -175,6 +183,7 @@ public class TimerTaskExecutionServiceTest {
         }
 
         public void run() {
+
             if (countInvokations) {
                 invokations++;
             }

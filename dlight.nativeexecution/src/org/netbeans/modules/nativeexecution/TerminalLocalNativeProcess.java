@@ -232,9 +232,15 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             resultFile = null;
             throw ex;
         } finally {
-            pidFileFile.delete();
-            envFileFile.delete();
-            shFileFile.delete();
+            if (pidFileFile != null) {
+                pidFileFile.delete();
+            }
+            if (envFileFile != null) {
+                envFileFile.delete();
+            }
+            if (shFileFile != null) {
+                shFileFile.delete();
+            }
         }
     }
 
