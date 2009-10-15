@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
-import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.io.IOException;
