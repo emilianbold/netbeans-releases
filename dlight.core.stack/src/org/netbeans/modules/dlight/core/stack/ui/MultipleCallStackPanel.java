@@ -139,6 +139,16 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
     }
 
+    @Override
+    public void requestFocus() {
+        treeView.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return treeView.requestFocusInWindow();
+    }
+
     public void expandAll() {
         if (manager.getRootContext() == null) {
             return;

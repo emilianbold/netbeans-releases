@@ -109,7 +109,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private OnTimerRefreshVisualizerHandler timerHandler;
     private boolean isEmptyContent;
     private boolean isShown = true;
-    private OutlineView outlineView;
+    private final OutlineView outlineView;
     private final String nodeColumnName;
     private final String nodeRowColumnID;
     private final ExplorerManager explorerManager;
@@ -251,11 +251,21 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         return explorerManager;
     }
 
-@Override
+    @Override
     public void requestFocus() {
-        super.requestFocus();
         if (refresh != null) {
             refresh.requestFocus();
+        } else {
+            outlineView.requestFocus();
+        }
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        if (refresh != null) {
+            return refresh.requestFocusInWindow();
+        } else {
+            return outlineView.requestFocusInWindow();
         }
     }
 
@@ -269,8 +279,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             timerHandler.startTimer();
             return;
         }
-
-
     }
 
     @Override
