@@ -74,7 +74,7 @@ public class SunStudioCompilersInstallationAdvice implements Advice {
 
         URL iconUrl = SunStudioCompilersInstallationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
 
-        if(platform.equals("Linux")) {
+        if(platform.equals("Linux")) { // NOI18N
             return ParallelAdviserAdviceUtils.createAdviceComponent(
                 ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
                 getString("PAT_Sun_Studio_Compilers_Installation_Linux_Title"), // NOI18N
