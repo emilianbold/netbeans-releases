@@ -41,10 +41,15 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import java.io.File;
+import java.util.concurrent.Callable;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.Client;
+import org.netbeans.lib.cvsclient.command.BasicCommand;
+import org.netbeans.lib.cvsclient.command.export.ExportCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
@@ -93,7 +98,8 @@ class CommandRunnable implements Runnable, Cancellable {
                 throw new AuthenticationException(msg, msg);
             }
             Utils.logVCSClientEvent("CVS", "JAVALIB");
-            client.executeCommand(cmd, options);
+            execute();
+
         } catch (Throwable e) {
             failure = e;
         } finally {
@@ -103,6 +109,45 @@ class CommandRunnable implements Runnable, Cancellable {
             } catch (Throwable e) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             }
+        }
+    }
+
+    private void execute() throws Throwable {
+
+        Callable<Object> c = new Callable<Object>() {
+            public Object call() throws Exception {
+                client.executeCommand(cmd, options);
+                return null;
+            }
+        };
+
+        String cmdName = cmd.getCVSCommand();
+        if(cmdName == null) {
+            cmdName = "";
+        }
+
+        boolean blockIndexing = 
+                cmdName.startsWith("update")
+             || cmdName.startsWith("export")
+             || cmdName.startsWith("remove")
+             || cmdName.startsWith("checkout")
+             || cmdName.startsWith("commit");
+
+        File[] files = null;
+        if(blockIndexing) {
+            if(cmd instanceof BasicCommand) {
+                BasicCommand bc = (BasicCommand) cmd;
+                files = bc.getFiles();
+            } else if (cmd instanceof ExportCommand) {
+                ExportCommand ec = (ExportCommand) cmd;
+                files = new File[] { new File(ec.getExportDirectory()) };
+            }
+        }
+        
+        if(blockIndexing) {
+            IndexingBridge.getInstance().runWithoutIndexing(c, files);
+        } else {
+            c.call();
         }
     }
 
