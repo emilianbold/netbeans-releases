@@ -881,7 +881,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     /* test */ void scheduleWork(Iterable<? extends Work> multipleWork) {
         recordCaller();
 
-        boolean canScheduleMultiple = true;
+        boolean canScheduleMultiple;
         synchronized (this) {
             canScheduleMultiple = state == State.INITIAL_SCAN_RUNNING || state == State.ACTIVE;
         }
