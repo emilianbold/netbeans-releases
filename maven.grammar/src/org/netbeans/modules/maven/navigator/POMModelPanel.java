@@ -298,7 +298,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                     List<POMModel> mdls = new ArrayList<POMModel>();
                     POMQNames names = null;
                     while (it.hasNext()) {
-                        File pom = FileUtil.normalizeFile(it.next());
+                        File pom = it.next();
+                        //#163933 just say no to null values..
+                        if (pom == null) continue;
+                        pom = FileUtil.normalizeFile(pom);
                         FileUtil.refreshFor(pom);
                         FileObject fo = FileUtil.toFileObject(pom);
                         if (fo != null) {
