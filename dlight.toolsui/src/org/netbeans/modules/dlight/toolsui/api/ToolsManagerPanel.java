@@ -103,7 +103,7 @@ public class ToolsManagerPanel extends javax.swing.JPanel {
         DLightConfigurationUIWrapper preferredConfiguration = null;
         for (DLightConfigurationUIWrapper dlightConfigurationWrapper : dLightConfigurations) {
             profileConfigurationComboBox.addItem(dlightConfigurationWrapper);
-            if (preferredConfiguration != null && dlightConfigurationWrapper.getDisplayName().equals(preferredConfigurationName)) {
+            if (preferredConfigurationName != null && dlightConfigurationWrapper.getDisplayName().equals(preferredConfigurationName)) {
                 preferredConfiguration = dlightConfigurationWrapper;
             }
         }
