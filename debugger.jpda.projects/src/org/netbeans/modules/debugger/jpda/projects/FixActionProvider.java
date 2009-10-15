@@ -78,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -247,6 +248,15 @@ public class FixActionProvider extends ActionsProviderSupport {
             DataObject dobj = (DataObject)nodes [i].getCookie (DataObject.class);
             if (dobj != null && dobj.isValid())
                 l.add (dobj);
+        }
+        if (l.isEmpty()) {
+            FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+            if (fo != null) {
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    l.add(dobj);
+                } catch (DataObjectNotFoundException ex) {}
+            }
         }
         return Lookups.fixed (l.toArray (new DataObject [l.size ()]));
     }
