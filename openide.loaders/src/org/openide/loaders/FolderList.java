@@ -331,24 +331,22 @@ implements FileChangeListener, DataObject.Container {
                         }
                         // if has been notified
                         // change mode and regenerated children
-                        if (primaryFiles != null) {
-                            // the old children
+                        if (LOG) {
+                            err.fine("changeComparator on " + folder + ": get old");
+                        }
+                        // the old children
+                        List<DataObject> v = getObjects(null);
+                        if (v.size () != 0) {
+                            // the new children - also are stored to be returned next time from getChildrenList ()
+                            order = null;
                             if (LOG) {
-                                err.fine("changeComparator on " + folder + ": get old");
+                                err.fine("changeComparator: get new");
                             }
-                            List<DataObject> v = getObjects(null);
-                            if (v.size () != 0) {
-                                // the new children - also are stored to be returned next time from getChildrenList ()
-                                order = null;
-                                if (LOG) {
-                                    err.fine("changeComparator: get new");
-                                }
-                                List<DataObject> r = getObjects (null);
-                                if (LOG) {
-                                    err.fine("changeComparator: fire change");
-                                }
-                                fireChildrenChange (r, v);
+                            List<DataObject> r = getObjects (null);
+                            if (LOG) {
+                                err.fine("changeComparator: fire change");
                             }
+                            fireChildrenChange (r, v);
                         }
                         synchronized (FolderList.this) {
                             // clean  the task if is my own not assigned by somebody else
