@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -128,6 +129,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
             MemoryMetric.LeaksCountMetric);
     private PerfanDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
+    private final ConcurrentHashMap<FunctionCall, SourceFileInfo> sourceFileInfoCache = new ConcurrentHashMap<FunctionCall, SourceFileInfo>();
     private volatile HotSpotFunctionsFilter filter;
     private volatile TimeIntervalDataFilter timeIntervalDataFilter;
 
@@ -295,6 +297,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         //temporary decision
         //we should get here SourceFileInfoProvider
         if (functionCall instanceof FunctionCallImpl) {
+            if (sourceFileInfoCache.get(functionCall) != null){
+                return sourceFileInfoCache.get(functionCall);
+            }
             FunctionCallImpl functionCallImpl = (FunctionCallImpl) functionCall;
             if (functionCallImpl.hasOffset()) {
                 if (!functionCallImpl.hasSourceFileDefined()) {
@@ -311,7 +316,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
                             return new SourceFileInfo(pathMapper.getLocalPath(functionCallImpl.getSourceFile()), (int) functionCallImpl.getOffset(), 0);
                         }
                     }
-                    return new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
+                    SourceFileInfo result = new SourceFileInfo(functionCallImpl.getSourceFile(), (int) functionCallImpl.getOffset(), 0);
+                    sourceFileInfoCache.put(functionCall, result);
+                    return result;
                 }
             }
         }
@@ -321,6 +328,7 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
             final SourceFileInfo sourceInfo = provider.fileName(functionCall.getFunction().getQuilifiedName(), (int) functionCall.getOffset(), -1, this.serviceInfoStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
+                sourceFileInfoCache.put(functionCall, sourceInfo);
                 return sourceInfo;
             }
         }
