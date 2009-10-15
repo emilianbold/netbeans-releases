@@ -241,6 +241,7 @@ public class FileUtilTest extends NbTestCase {
         assertGC("FileChangeListener not collected.", ref);
     }
 
+    @RandomlyFails // NB-Core-Build #3398
     public void testAddRecursiveListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
