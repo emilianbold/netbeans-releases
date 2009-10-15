@@ -98,7 +98,7 @@ public class ShowTextAnnotationsAction extends SystemAction implements DynamicMe
     }
 
     public String getName() {
-        return NbBundle.getMessage(ShowTextAnnotationsAction.class, "CTL_MenuItem_ShowAnnotations");
+        return NbBundle.getMessage(ShowTextAnnotationsAction.class, "CTL_MenuItem_ShowAnnotations2");
     }
 
     @Override
