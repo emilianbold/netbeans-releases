@@ -62,7 +62,6 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -102,9 +101,7 @@ public final class Utils {
             error = PhpUnit.validateVersion(phpUnit, project);
         }
         if (error != null) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                    error,
-                    NotifyDescriptor.WARNING_MESSAGE));
+            UiUtils.invalidScriptProvided(error, PhpUnit.OPTIONS_SUB_PATH);
             return false;
         }
         return true;
@@ -676,7 +673,7 @@ public final class Utils {
      * Display Options dialog with PHP > General panel preselected.
      */
     public static void showGeneralOptionsPanel() {
-        OptionsDisplayer.getDefault().open(UiUtils.OPTIONS_PATH + "/" + PhpOptionsPanelController.ID); // NOI18N
+        UiUtils.showOptions(PhpOptionsPanelController.ID);
     }
 
     public static class PhpVersionComboBoxModel extends DefaultComboBoxModel {

@@ -128,8 +128,7 @@ class ConfigActionTest extends ConfigAction {
         if (testDirectory == null) {
             return;
         }
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        if (!Utils.validatePhpUnitForProject(phpUnit, project)) {
+        if (!isPhpUnitValid()) {
             return;
         }
 
@@ -143,8 +142,7 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(Lookup context) {
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        if (!Utils.validatePhpUnitForProject(phpUnit, project)) {
+        if (!isPhpUnitValid()) {
             return;
         }
         run(getPhpUnitInfo(context));
@@ -152,11 +150,15 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void debugFile(Lookup context) {
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        if (!Utils.validatePhpUnitForProject(phpUnit, project)) {
+        if (!isPhpUnitValid()) {
             return;
         }
         debug(getPhpUnitInfo(context));
+    }
+
+    private boolean isPhpUnitValid() {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        return Utils.validatePhpUnitForProject(phpUnit, project);
     }
 
     void run(PhpUnitInfo info) {
@@ -241,7 +243,7 @@ class ConfigActionTest extends ConfigAction {
         public ExecutionDescriptor getDescriptor() throws IOException {
             boolean phpUnitValid = PhpUnit.hasValidVersion(phpUnit);
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
-                    .optionsPath(UiUtils.OPTIONS_PATH)
+                    .optionsPath(UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH) // NOI18N
                     .frontWindow(!phpUnitValid)
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .inputVisible(false);
