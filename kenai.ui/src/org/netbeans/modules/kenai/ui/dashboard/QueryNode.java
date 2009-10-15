@@ -128,13 +128,15 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
 
                 for (int i = 0; i < data.size(); i++) {
                     QueryResultHandle qrh = data.get(i);
-                    LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
-                    buttons.add(btn);
-                    panel.add(btn, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                    if (i < data.size() - 1) {
-                        lbl = new TreeLabel("|"); //NOI18N
-                        labels.add(lbl);
-                        panel.add(lbl, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+                    if (qrh.getResultType() == QueryResultHandle.ResultType.NAMED_RESULT) {
+                        LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
+                        buttons.add(btn);
+                        panel.add(btn, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                        if (i < data.size() - 1 && data.get(i+1).getResultType()==QueryResultHandle.ResultType .NAMED_RESULT) {
+                            lbl = new TreeLabel("|"); //NOI18N
+                            labels.add(lbl);
+                            panel.add(lbl, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+                        }
                     }
                 }
 

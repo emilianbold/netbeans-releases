@@ -121,9 +121,12 @@ public class MyProjectNode extends LeafNode {
                     }
                 } else if (QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName())) {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
-                    if (!queryResults.isEmpty()) {
-                        setBugsLater(queryResults.get(queryResults.size()>2?2:0));
-                        return;
+                    for (QueryResultHandle queryResult : queryResults) {
+                        if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                            DashboardImpl.getInstance().myProjectsProgressStarted();
+                            setBugsLater(queryResult);
+                            return;
+                        }
                     }
                 }
             }
@@ -170,16 +173,19 @@ public class MyProjectNode extends LeafNode {
                 post(new Runnable() {
 
                     public void run() {
-                        List<QueryHandle> h = qaccessor.getQueries(project);
-                        if (!h.isEmpty()) {
-                            QueryHandle handle = h.get(h.size()>1?1:0);
+                        DashboardImpl.getInstance().myProjectsProgressStarted();
+                        QueryHandle handle = qaccessor.getAllIssuesQuery(project);
+                        if (handle != null) {
                             handle.addPropertyChangeListener(projectListener);
                             List<QueryResultHandle> queryResults = qaccessor.getQueryResults(handle);
-                            if (!queryResults.isEmpty()) {
-                                setBugsLater(queryResults.get(queryResults.size()>2?2:0));
-                                return;
+                            for (QueryResultHandle queryResult:queryResults) {
+                                if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                                    setBugsLater(queryResult);
+                                    return;
+                                }
                             }
                         }
+                        DashboardImpl.getInstance().myProjectsProgressFinished();
                     }
                 });
 
@@ -211,7 +217,7 @@ public class MyProjectNode extends LeafNode {
         Runnable run = new Runnable() {
 
             public void run() {
-                if (btnBugs == null) {
+                if (btnBugs == null || "0".equals(btnBugs.getText())) {
                     if (leftPar != null) {
                         leftPar.setVisible(b);
                     }
@@ -281,12 +287,18 @@ public class MyProjectNode extends LeafNode {
                 if (btnBugs!=null) {
                     component.remove(btnBugs);
                 }
+                boolean hasMsgs = btnMessages != null && btnMessages.isVisible();
                 btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug));
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
-                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,5,0,0), 0,0) );
-                leftPar.setVisible(true);
-                rightPar.setVisible(true);
+                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                boolean visible = hasMsgs || !"0".equals(bug.getText());
+                leftPar.setVisible(visible);
+                rightPar.setVisible(visible);
+                btnBugs.setVisible(!"0".equals(bug.getText()));
                 component.validate();
+                DashboardImpl instance = DashboardImpl.getInstance();
+                instance.myProjectsProgressFinished();
+                instance.dashboardComponent.repaint();
             }
         });
     }

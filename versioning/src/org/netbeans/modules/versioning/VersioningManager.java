@@ -59,7 +59,6 @@ import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
@@ -159,32 +158,34 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * List of versioning systems changed.
      */
-    private synchronized void refreshVersioningSystems() {
+    private void refreshVersioningSystems() {
         int rs = ++refreshSerial;
         Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
         if (rs != refreshSerial) {
             // TODO: Workaround for Lookup bug #132145, we have to abort here to keep the freshest list of versioning systems
             return;
         }
-        
-        // inline unloadVersioningSystems();
-        for (VersioningSystem system : versioningSystems) {
-            system.removePropertyChangeListener(this);
-        }
-        versioningSystems.clear();
-        localHistory = null;
-        // inline unloadVersioningSystems();
-        
-        // inline loadVersioningSystems(systems);
-        versioningSystems.addAll(systems);
-        for (VersioningSystem system : versioningSystems) {
-            if (localHistory == null && Utils.isLocalHistory(system)) {
-                localHistory = system;
+
+        synchronized(versioningSystems) {
+            // inline unloadVersioningSystems();
+            for (VersioningSystem system : versioningSystems) {
+                system.removePropertyChangeListener(this);
             }
-            system.addPropertyChangeListener(this);
+            versioningSystems.clear();
+            localHistory = null;
+            // inline unloadVersioningSystems();
+
+            // inline loadVersioningSystems(systems);
+            versioningSystems.addAll(systems);
+            for (VersioningSystem system : versioningSystems) {
+                if (localHistory == null && Utils.isLocalHistory(system)) {
+                    localHistory = system;
+                }
+                system.addPropertyChangeListener(this);
+            }
+            // inline loadVersioningSystems(systems);
         }
-        // inline loadVersioningSystems(systems);
-        
+
         flushFileOwnerCache();
         refreshDiffSidebars(null);
         VersioningAnnotationProvider.refreshAllAnnotations();
@@ -199,12 +200,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         DiffSidebarManager.getInstance().refreshSidebars(files);
     }
     
-    private synchronized void flushFileOwnerCache() {
-        folderOwners.clear();        
+    private void flushFileOwnerCache() {
+        synchronized(folderOwners) {
+            folderOwners.clear();
+        }
     }
 
-    synchronized VersioningSystem[] getVersioningSystems() {
-        return versioningSystems.toArray(new VersioningSystem[versioningSystems.size()]);
+    VersioningSystem[] getVersioningSystems() {
+        synchronized(versioningSystems) {
+            return versioningSystems.toArray(new VersioningSystem[versioningSystems.size()]);
+        }
     }
 
     /**
@@ -238,14 +243,19 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @param file a file
      * @return VersioningSystem owner of the file or null if the file is not under version control
      */
-    public synchronized VersioningSystem getOwner(File file) {
+    public VersioningSystem getOwner(File file) {
         LOG.log(Level.FINE, "looking for owner of " + file);
+        
+        
         /**
          * minor speed optimization, file.isFile may last a while
          * if file is a folder then the owner may be acquired from folderOwners directly before file.isFile call
          * otherwise the owner will be acquired after file.isFile call
          */
-        VersioningSystem owner = folderOwners.get(file);
+        VersioningSystem owner = null;
+        synchronized(folderOwners) {
+            owner = folderOwners.get(file);
+        }
         if (owner == NULL_OWNER) {
             LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
             return null;
@@ -254,6 +264,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
             return owner;
         }
+
         File folder = file;
         if (Utils.isFile(file)) {
             folder = file.getParentFile();
@@ -261,9 +272,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 LOG.log(Level.FINE, " null parent");
                 return null;
             }
+            synchronized(folderOwners) {
+                owner = folderOwners.get(folder);
+            }
         }
         
-        owner = folderOwners.get(folder);
         if (owner == NULL_OWNER) {
             LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
             return null;
@@ -274,7 +287,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
         
         File closestParent = null;
-        for (VersioningSystem system : versioningSystems) {
+
+        VersioningSystem[] vs = getVersioningSystems();
+        for (VersioningSystem system : vs) {
             if (system != localHistory) {    // currently, local history is never an owner of a file
                 File topmost = system.getTopmostManagedAncestor(folder);
                 LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
@@ -286,17 +301,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
                 
-        if (owner != null) {
-            LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
-            folderOwners.put(folder, owner);
-        } else {
-            // nobody owns the folder => all parents aren't owned
-            while(folder != null) {
-                LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
-                folderOwners.put(folder, NULL_OWNER);
-                folder = folder.getParentFile();
+        synchronized(folderOwners) {
+            if (owner != null) {
+                LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
+                folderOwners.put(folder, owner);
+            } else {
+                // nobody owns the folder => all parents aren't owned
+                while(folder != null) {
+                    LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
+                    folderOwners.put(folder, NULL_OWNER);
+                    folder = folder.getParentFile();
+                }
             }
         }
+        
         LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
         return owner;
     }
@@ -307,7 +325,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @param file the file to examine
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
-    synchronized VersioningSystem getLocalHistory(File file) {
+    VersioningSystem getLocalHistory(File file) {
         if (localHistory == null) return null;
 
         synchronized(localHistoryFiles) {
@@ -340,7 +358,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }        
     }
 
-    private synchronized void putLocalHistoryFile(Boolean b, File... files) {
+    private void putLocalHistoryFile(Boolean b, File... files) {
         synchronized(localHistoryFiles) {
             if(localHistoryFiles.size() > 1500) {
                 Iterator<File> it = localHistoryFiles.keySet().iterator();

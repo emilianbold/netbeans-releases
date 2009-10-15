@@ -157,8 +157,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         setIconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
         setIconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
         
-        scopeCombo.setModel(new DefaultComboBoxModel(new ProxyAction.Scope[] { ProxyAction.Scope.Form, ProxyAction.Scope.Application}));
-        
         scopeCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -990,6 +988,16 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         this.scopeClasses = scopeClasses;
         this.sourceFile = sourceFile;
         isChanging = false;
+
+        ProxyAction.Scope[] scopes;
+        if (scopeClasses.containsKey(ProxyAction.Scope.Application)) {
+            scopes = new ProxyAction.Scope[] { ProxyAction.Scope.Form, ProxyAction.Scope.Application };
+            scopeCombo.setEnabled(true);
+        } else {
+            scopes = new ProxyAction.Scope[] { ProxyAction.Scope.Form };
+            scopeCombo.setEnabled(false);
+        }
+        scopeCombo.setModel(new DefaultComboBoxModel(scopes));
     }
     
     private void setSelectedAction(ProxyAction act) {
