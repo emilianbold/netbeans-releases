@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor.api.parser;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.Error;
@@ -87,7 +88,7 @@ public class GroovyParserResult extends ParserResult {
         return rootElement;
     }
 
-    public void setErrors(List<? extends Error> errors) {
+    public void setErrors(Collection<? extends Error> errors) {
         this.errors = new ArrayList<Error>(errors);
     }
     
