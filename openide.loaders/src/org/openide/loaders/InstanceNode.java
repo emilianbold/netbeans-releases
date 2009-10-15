@@ -47,6 +47,7 @@ import java.beans.*;
 import java.beans.beancontext.*;
 import java.io.IOException;
 import java.lang.reflect.*;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -112,7 +113,9 @@ final class InstanceNode extends DataNode implements Runnable {
                     fireNameChange(null, null);
                     fireDisplayNameChange(null, null);
                     fireShortDescriptionChange(null, null);
-                    if (isSheetCreated) setSheet(createSheet());
+                    if (isSheetCreated) {
+                        setSheet(createSheet());
+                    }
                 }
             }
         };
@@ -133,10 +136,12 @@ final class InstanceNode extends DataNode implements Runnable {
         if (noBeanInfo) {
             return Children.LEAF;
         }
-        InstanceCookie inst = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
-        if (inst == null) return Children.LEAF;
+        InstanceCookie inst = dobj.getCookie(InstanceCookie.class);
+        if (inst == null) {
+            return Children.LEAF;
+        }
         try {
-            Class clazz = inst.instanceClass();
+            Class<?> clazz = inst.instanceClass();
             if (BeanContext.class.isAssignableFrom(clazz) ||
                 BeanContextProxy.class.isAssignableFrom(clazz)) {
                 return new InstanceChildren ((InstanceDataObject) dobj);
@@ -156,15 +161,18 @@ final class InstanceNode extends DataNode implements Runnable {
     }
     
     private InstanceCookie.Of ic () {
-        return (InstanceCookie.Of) getDataObject().getCookie(InstanceCookie.Of.class);
+        return getDataObject().getCookie(InstanceCookie.Of.class);
     }
 
     /** Find an icon for this node (in the closed state).
     * @param type constant from {@link java.beans.BeanInfo}
     * @return icon to use to represent the node
     */
+    @Override
     public Image getIcon (int type) {
-        if (noBeanInfo) return super.getIcon(type);
+        if (noBeanInfo) {
+            return super.getIcon(type);
+        }
         Image img = null;
         try {
             DataObject dobj = getDataObject();
@@ -174,8 +182,12 @@ final class InstanceNode extends DataNode implements Runnable {
             // no fs, do nothing
         }
         
-        if (img == null) img = initIcon(type);
-        if (img == null) img = super.getIcon(type);
+        if (img == null) {
+            img = initIcon(type);
+        }
+        if (img == null) {
+            img = super.getIcon(type);
+        }
         return img;
     }
 
@@ -185,6 +197,7 @@ final class InstanceNode extends DataNode implements Runnable {
     * @param type constant from {@link java.beans.BeanInfo}
     * @return icon to use to represent the node when open
     */
+    @Override
     public Image getOpenedIcon (int type) {
         return getIcon (type);
     }
@@ -193,7 +206,9 @@ final class InstanceNode extends DataNode implements Runnable {
     private void initPList () {
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return;
+            if (ic == null) {
+                return;
+            }
             BeanInfo info = Utilities.getBeanInfo(ic.instanceClass());
             java.beans.EventSetDescriptor[] descs = info.getEventSetDescriptors();
             Method setter = null;
@@ -216,8 +231,10 @@ final class InstanceNode extends DataNode implements Runnable {
         Image beanInfoIcon = null;
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return null;
-            Class clazz = ic.instanceClass();
+            if (ic == null) {
+                return null;
+            }
+            Class<?> clazz = ic.instanceClass();
             //Fixed bug #5610
             //Class javax.swing.JToolBar$Separator does not have icon
             //we will use temporarily icon from javax.swing.JSeparator
@@ -229,7 +246,7 @@ final class InstanceNode extends DataNode implements Runnable {
                 className.equals ("javax.swing.JSeparator") ||  // NOI18N
                 className.equals ("javax.swing.JToolBar$Separator") // NOI18N
             ) {
-                Class clazzTmp = Class.forName ("javax.swing.JSeparator"); // NOI18N
+                Class<?> clazzTmp = Class.forName ("javax.swing.JSeparator"); // NOI18N
                 bi = Utilities.getBeanInfo (clazzTmp);
             } else {
                 bi = Utilities.getBeanInfo (clazz);
@@ -273,8 +290,10 @@ final class InstanceNode extends DataNode implements Runnable {
     public void run() {
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return;
-            Class clazz = ic.instanceClass();
+            if (ic == null) {
+                return;
+            }
+            Class<?> clazz = ic.instanceClass();
         
         String className = clazz.getName ();
         if (className.equals ("javax.swing.JSeparator") || // NOI18N
@@ -301,11 +320,13 @@ final class InstanceNode extends DataNode implements Runnable {
                 return;
             }
             
-            int amper = name.indexOf ((char) '&');
-            if (amper != -1)
+            int amper = name.indexOf ('&');
+            if (amper != -1) {
                 name = name.substring (0, amper) + name.substring (amper + 1);
-            if (name.endsWith ("...")) // NOI18N
+            }
+            if (name.endsWith ("...")) {// NOI18N
                 name = name.substring (0, name.length () - 3);
+            }
             name = name.trim ();
             setDisplayName (name);
             return;
@@ -327,16 +348,19 @@ final class InstanceNode extends DataNode implements Runnable {
                 return NbBundle.getMessage(InstanceNode.class,
                     "LBL_BrokenSettings"); //NOI18N
             }
-            Class clazz = ic.instanceClass();
+            Class<?> clazz = ic.instanceClass();
             Method nameGetter;
-            Class[] param = new Class [0];
             try {
-                nameGetter = clazz.getMethod ("getName", param); // NOI18N
-                if (nameGetter.getReturnType () != String.class) throw new NoSuchMethodException ();
+                nameGetter = clazz.getMethod ("getName", (Class<?>[]) null); // NOI18N
+                if (nameGetter.getReturnType () != String.class) {
+                    throw new NoSuchMethodException();
+                }
             } catch (NoSuchMethodException e) {
                 try {
-                    nameGetter = clazz.getMethod ("getDisplayName", param); // NOI18N
-                    if (nameGetter.getReturnType () != String.class) throw new NoSuchMethodException ();
+                    nameGetter = clazz.getMethod ("getDisplayName", (Class<?>[]) null); // NOI18N
+                    if (nameGetter.getReturnType () != String.class) {
+                        throw new NoSuchMethodException();
+                    }
                 } catch (NoSuchMethodException ee) {
                     return null;
                 }
@@ -353,27 +377,31 @@ final class InstanceNode extends DataNode implements Runnable {
         Method nameSetter = null;
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return null;
-            Class clazz = ic.instanceClass();
-            Class[] param = new Class[] {String.class};
+            if (ic == null) {
+                return null;
+            }
+            Class<?> clazz = ic.instanceClass();
             // find the setter for the name
             try {
-                nameSetter = clazz.getMethod ("setName", param); // NOI18N
+                nameSetter = clazz.getMethod ("setName", String.class); // NOI18N
             } catch (NoSuchMethodException e) {
-                nameSetter = clazz.getMethod ("setDisplayName", param); // NOI18N
+                nameSetter = clazz.getMethod ("setDisplayName", String.class); // NOI18N
             }
         } catch (Exception ex) {
         }
         return nameSetter;
     }
     
+    @Override
     public void setName(String name) {
         if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) {
             super.setName(name);
             return ;
         }
         String old = getNameImpl();
-        if (old != null && old.equals(name)) return;
+        if (old != null && old.equals(name)) {
+            return;
+        }
         InstanceCookie ic = ic();
         if (ic == null) {
             super.setName(name);
@@ -397,6 +425,7 @@ final class InstanceNode extends DataNode implements Runnable {
      * A filesystem may {@link org.openide.filesystems.FileSystem#getStatus specially alter} this.
      * @return the desired name
     */
+    @Override
     public String getDisplayName () {
         String name = (String) getDataObject().getPrimaryFile().
             getAttribute(InstanceDataObject.EA_NAME);
@@ -427,11 +456,14 @@ final class InstanceNode extends DataNode implements Runnable {
     private String getNameImpl() {
         String name;
         name = getNameForBean();
-        if (name == null) name = getName();
+        if (name == null) {
+            name = getName();
+        }
 
         return name;
     }
     
+    @Override
     protected Sheet createSheet () {
         Sheet orig;
     
@@ -467,7 +499,9 @@ final class InstanceNode extends DataNode implements Runnable {
 
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return;
+            if (ic == null) {
+                return;
+            }
             // properties
             BeanInfo beanInfo = Utilities.getBeanInfo (ic.instanceClass ());
             BeanNode.Descriptor descr = BeanNode.computeProperties (ic.instanceCreate (), beanInfo);
@@ -543,44 +577,62 @@ final class InstanceNode extends DataNode implements Runnable {
     /** Indicate whether the node may be renamed.
      * @return tests {@link DataObject#isRenameAllowed}
      */
+    @Override
     public boolean canRename() {
-        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) return super.canRename();
+        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) {
+            return super.canRename();
+        }
         return getDeclaredSetter() != null;
     }
     
     /** Indicate whether the node may be destroyed.
      * @return tests {@link DataObject#isDeleteAllowed}
      */
+    @Override
     public boolean canDestroy() {
-        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) return super.canDestroy();
+        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) {
+            return super.canDestroy();
+        }
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return true;
-            Class clazz = ic.instanceClass();
+            if (ic == null) {
+                return true;
+            }
+            Class<?> clazz = ic.instanceClass();
             return (!SharedClassObject.class.isAssignableFrom(clazz));
         } catch (Exception ex) {
             return false;
         }
     }
     
+    @Override
     public boolean canCut() {
-        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) return super.canCut();
+        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) {
+            return super.canCut();
+        }
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return false;
-            Class clazz = ic.instanceClass();
+            if (ic == null) {
+                return false;
+            }
+            Class<?> clazz = ic.instanceClass();
             return (!SharedClassObject.class.isAssignableFrom(clazz));
         } catch (Exception ex) {
             return false;
         }
     }
     
+    @Override
     public boolean canCopy() {
-        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) return super.canCopy();
+        if (!getDataObject().getPrimaryFile().hasExt(XML_EXT)) {
+            return super.canCopy();
+        }
         try {
             InstanceCookie ic = ic();
-            if (ic == null) return false;
-            Class clazz = ic.instanceClass();
+            if (ic == null) {
+                return false;
+            }
+            Class<?> clazz = ic.instanceClass();
 //XXX            if (XMLSettingsSupport.BrokenSettings.class.isAssignableFrom(clazz))
 //                return false;
             return (!SharedClassObject.class.isAssignableFrom(clazz));
@@ -590,8 +642,11 @@ final class InstanceNode extends DataNode implements Runnable {
     }
     
     /** Gets the short description of this feature. */
+    @Override
     public String getShortDescription() {
-        if (noBeanInfo) return super.getShortDescription();
+        if (noBeanInfo) {
+            return super.getShortDescription();
+        }
         
         try {
             InstanceCookie ic = ic();
@@ -600,7 +655,7 @@ final class InstanceNode extends DataNode implements Runnable {
                 return getDataObject().getPrimaryFile().toString();
             }
             
-            Class clazz = ic.instanceClass();
+            Class<?> clazz = ic.instanceClass();
             java.beans.BeanDescriptor bd = Utilities.getBeanInfo(clazz).getBeanDescriptor();
             String desc = bd.getShortDescription();
             return (desc.equals(bd.getName()))? getDisplayName(): desc;
@@ -613,6 +668,7 @@ final class InstanceNode extends DataNode implements Runnable {
     }
     
     /* do not want CustomizeBean to be invoked on double-click */
+    @Override
     public Action getPreferredAction() {
         return null;
     }
@@ -636,18 +692,22 @@ final class InstanceNode extends DataNode implements Runnable {
             this.t = t;
         }
 
+        @Override
         public void setName(java.lang.String str) {
             del.setName(str);
         }
 
+        @Override
         public void restoreDefaultValue() throws IllegalAccessException, InvocationTargetException {
             del.restoreDefaultValue();
         }
 
+        @Override
         public void setValue(java.lang.String str, java.lang.Object obj) {
             del.setValue(str, obj);
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return del.supportsDefaultValue();
         }
@@ -656,10 +716,12 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canRead ();
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return del.getPropertyEditor();
         }
 
+        @Override
         public boolean isHidden() {
             return del.isHidden();
         }
@@ -668,6 +730,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.getValue ();
         }
 
+        @Override
         public void setExpert(boolean param) {
             del.setExpert(param);
         }
@@ -679,10 +742,12 @@ final class InstanceNode extends DataNode implements Runnable {
             t.scheduleSave();
         }
 
+        @Override
         public void setShortDescription(java.lang.String str) {
             del.setShortDescription(str);
         }
 
+        @Override
         public boolean isExpert() {
             return del.isExpert();
         }
@@ -691,42 +756,52 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canWrite ();
         }
 
+        @Override
         public Class<T> getValueType() {
             return del.getValueType();
         }
 
+        @Override
         public java.lang.String getDisplayName() {
             return del.getDisplayName();
         }
 
+        @Override
         public java.util.Enumeration<String> attributeNames() {
             return del.attributeNames();
         }
 
+        @Override
         public java.lang.String getShortDescription() {
             return del.getShortDescription();
         }
 
+        @Override
         public java.lang.String getName() {
             return del.getName();
         }
 
+        @Override
         public void setHidden(boolean param) {
             del.setHidden(param);
         }
 
+        @Override
         public void setDisplayName(java.lang.String str) {
             del.setDisplayName(str);
         }
 
+        @Override
         public boolean isPreferred() {
             return del.isPreferred();
         }
 
+        @Override
         public java.lang.Object getValue(java.lang.String str) {
             return del.getValue(str);
         }
 
+        @Override
         public void setPreferred(boolean param) {
             del.setPreferred(param);
         }
@@ -748,18 +823,22 @@ final class InstanceNode extends DataNode implements Runnable {
             this.t = t;
         }
 
+        @Override
         public void setName(java.lang.String str) {
             del.setName(str);
         }
 
+        @Override
         public void restoreDefaultValue() throws IllegalAccessException, InvocationTargetException {
             del.restoreDefaultValue();
         }
 
+        @Override
         public void setValue(java.lang.String str, java.lang.Object obj) {
             del.setValue(str, obj);
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return del.supportsDefaultValue();
         }
@@ -768,10 +847,12 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canRead ();
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return del.getPropertyEditor();
         }
 
+        @Override
         public boolean isHidden() {
             return del.isHidden();
         }
@@ -780,6 +861,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.getValue ();
         }
 
+        @Override
         public void setExpert(boolean param) {
             del.setExpert(param);
         }
@@ -791,10 +873,12 @@ final class InstanceNode extends DataNode implements Runnable {
             t.scheduleSave();
         }
 
+        @Override
         public void setShortDescription(java.lang.String str) {
             del.setShortDescription(str);
         }
 
+        @Override
         public boolean isExpert() {
             return del.isExpert();
         }
@@ -803,42 +887,52 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canWrite ();
         }
 
+        @Override
         public Class<T> getValueType() {
             return del.getValueType();
         }
 
+        @Override
         public java.lang.String getDisplayName() {
             return del.getDisplayName();
         }
 
+        @Override
         public java.util.Enumeration<String> attributeNames() {
             return del.attributeNames();
         }
 
+        @Override
         public java.lang.String getShortDescription() {
             return del.getShortDescription();
         }
 
+        @Override
         public java.lang.String getName() {
             return del.getName();
         }
 
+        @Override
         public void setHidden(boolean param) {
             del.setHidden(param);
         }
 
+        @Override
         public void setDisplayName(java.lang.String str) {
             del.setDisplayName(str);
         }
 
+        @Override
         public boolean isPreferred() {
             return del.isPreferred();
         }
 
+        @Override
         public java.lang.Object getValue(java.lang.String str) {
             return del.getValue(str);
         }
 
+        @Override
         public void setPreferred(boolean param) {
             del.setPreferred(param);
         }
@@ -847,6 +941,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canIndexedRead ();
         }
 
+        @Override
         public Class<InstanceDataObject> getElementType () {
             return del.getElementType ();
         }
@@ -866,6 +961,7 @@ final class InstanceNode extends DataNode implements Runnable {
             t.scheduleSave();
         }
 
+        @Override
         public PropertyEditor getIndexedPropertyEditor () {
             return del.getIndexedPropertyEditor ();
         }
@@ -882,6 +978,7 @@ final class InstanceNode extends DataNode implements Runnable {
             this.dobj = dobj;
         }
         
+        @Override
         protected void addNotify () {
             super.addNotify();
             
@@ -893,9 +990,11 @@ final class InstanceNode extends DataNode implements Runnable {
             propertyChange(null);
         }
         
+        @Override
         protected void removeNotify () {
-            if (contextL != null && bean != null)
-                ((BeanContext) bean).removeBeanContextMembershipListener (contextL);
+            if (contextL != null && bean != null) {
+                ((BeanContext) bean).removeBeanContextMembershipListener(contextL);
+            }
             contextL = null;
             
             PropertyChangeListener p = dobjListener.get();
@@ -910,8 +1009,9 @@ final class InstanceNode extends DataNode implements Runnable {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt != null && !evt.getPropertyName().equals(InstanceDataObject.PROP_COOKIE)) return;
             
-            if (contextL != null && bean != null)
-                ((BeanContext) bean).removeBeanContextMembershipListener (contextL);
+            if (contextL != null && bean != null) {
+                ((BeanContext) bean).removeBeanContextMembershipListener(contextL);
+            }
             
             try {
                 InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
@@ -953,7 +1053,9 @@ final class InstanceNode extends DataNode implements Runnable {
          */
         protected Node[] createNodes(Object key) {
             Object ctx = bean; 
-            if (bean == null) return new Node[0];
+            if (bean == null) {
+                return new Node[0];
+            }
             
             try {
                 if (key instanceof java.beans.beancontext.BeanContextSupport) {
@@ -1042,17 +1144,20 @@ final class InstanceNode extends DataNode implements Runnable {
             }
         }
         private static Children getChildren (Object bean, InstanceDataObject task) {
-            if (bean instanceof BeanContext)
-                return new BeanChildren ((BeanContext)bean, new BeanFactoryImpl(task));
+            if (bean instanceof BeanContext) {
+                return new BeanChildren((BeanContext) bean, new BeanFactoryImpl(task));
+            }
             if (bean instanceof BeanContextProxy) {
                 java.beans.beancontext.BeanContextChild bch = ((BeanContextProxy)bean).getBeanContextProxy();
-                if (bch instanceof BeanContext)
-                    return new BeanChildren ((BeanContext)bch, new BeanFactoryImpl(task));
+                if (bch instanceof BeanContext) {
+                    return new BeanChildren((BeanContext) bch, new BeanFactoryImpl(task));
+                }
             }
             return Children.LEAF;
         }
         
         // #7925
+        @Override
         public boolean canDestroy() {
             return false;
         }
@@ -1067,7 +1172,9 @@ final class InstanceNode extends DataNode implements Runnable {
         PropL() {}
         
         public void propertyChange(PropertyChangeEvent e) {
-            if (doNotListen) return;
+            if (doNotListen) {
+                return;
+            }
             firePropertyChange (e.getPropertyName (), e.getOldValue (), e.getNewValue ());
         }
         
