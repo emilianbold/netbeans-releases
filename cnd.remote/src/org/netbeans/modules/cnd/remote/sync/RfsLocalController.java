@@ -187,20 +187,45 @@ class RfsLocalController implements Runnable {
             }
         });
         for (FileGatheringInfo info : files) {
-            if (info.file.isDirectory()) {
-                String text = String.format("D %s", info.relPath); // NOI18N
-                writer.printf("%s\n", text); // adds LF
-                writer.flush(); //TODO: remove?
-            } else {
-                String text = String.format("%d %s", info.file.length(), info.relPath); // NOI18N
-                writer.printf("%s\n", text); // adds LF
-                writer.flush(); //TODO: remove?
-                fileData.setState(info.file, FileState.TOUCHED);
-            }
+            sendFileInitRequest(writer, info.file, info.relPath);
         }
         writer.printf("\n"); // NOI18N
         writer.flush();
         fileData.store();
+    }
+
+    private void sendFileInitRequest(PrintWriter writer, File file, String relPath) {
+        if (file.isDirectory()) {
+            writer.printf("D %s\n", relPath); //NOI18N
+            writer.flush(); //TODO: remove?
+        } else {
+            FileData.FileInfo info = fileData.getFileInfo(file);
+            FileState newState;
+            switch(info  == null ? FileState.INITIAL : info.state) {
+                case COPIED:
+                case TOUCHED:
+                    if (info.timestamp == file.lastModified()) {
+                        newState = info.state;
+                    } else {
+                        newState = FileState.INITIAL;
+                    }
+                    break;
+                case ERROR: // fall through
+                case INITIAL:
+                    newState = FileState.INITIAL;
+                    break;
+                case UNCONTROLLED:
+                    return;
+                default:
+                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
+                    return;
+            }
+            CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED || newState == FileState.TOUCHED,
+                    "State shouldn't be " + newState); //NOI18N
+            writer.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
+            writer.flush(); //TODO: remove?
+            fileData.setState(file, FileState.TOUCHED);
+        }
     }
 
     private static void gatherFiles(File file, String base, FileFilter filter, List<FileGatheringInfo> files) {

@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -64,6 +65,9 @@ public class FileData {
 
     private final Properties data;
     private final File dataFile;
+
+    private static final String VERSION = "1.0";
+    private static final String VERSION_KEY = "VERSION";
 
     //
     //  Public stuff
@@ -88,13 +92,22 @@ public class FileData {
         if (!Boolean.getBoolean("cnd.remote.timestamps.clear")) {
             try {
                 load();
+                if (!VERSION.equals(data.get(VERSION_KEY))) {
+                    data.clear();
+                }
             } catch (IOException ex) {
+                data.clear();
                 Exceptions.printStackTrace(ex);
             }
         }
     }
 
+    /**
+     * Initial filling
+     * NB: file should be absolute and NORMALIZED!
+     */
     public void addFile(File file) {
+        CndUtils.assertNormalized(file);
         String key = getFileKey(file);
         FileInfo info = getFileInfo(key);
         if (info == null) {
@@ -138,6 +151,7 @@ public class FileData {
         }
         try {
             OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
+            data.setProperty(VERSION_KEY, VERSION);
             data.store(os, null);
             os.close();
         } catch (IOException ex) {
@@ -146,6 +160,9 @@ public class FileData {
         }
     }
 
+    public void clear() {
+        data.clear();
+    }
 
     //
     //  Private stuff
@@ -169,12 +186,8 @@ public class FileData {
         if (strValue != null && strValue.length() > 0) {
             FileState state;
             char prefix = strValue.charAt(0);
-            if (Character.isDigit(prefix)) { // old style: just a timestamp
-                state = FileState.COPIED;
-            } else {
-                state = FileState.fromId(prefix);
-                strValue = strValue.substring(1);
-            }
+            state = FileState.fromId(prefix);
+            strValue = strValue.substring(1);
             try {
                 long timeStamp = Long.parseLong(strValue);
                 return new FileInfo(state, timeStamp);
@@ -187,7 +200,7 @@ public class FileData {
 
     private void setFileInfo(File file, FileState state) {
         String key = getFileKey(file);
-        char prefix = state.getId();
+        char prefix = state.id;
         data.put(key, String.format("%c%d", prefix, file.lastModified())); // NOI18N
     }
 

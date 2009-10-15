@@ -48,6 +48,7 @@ import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -96,6 +97,10 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         public void flush() {
             fileData.store();
         }
+
+        private void clear() {
+            fileData.clear();
+        }
     }
 
     private boolean needsCopying(FileState state) {
@@ -134,6 +139,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             time = System.currentTimeMillis();
         }
         filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
+        if (!HostInfoProvider.fileExists(executionEnvironment, remoteDir)) {
+            filter.clear();
+        }
         // success flag is for tracing only. TODO: should we drop it?
         boolean success = false;
         File zipFile = null;

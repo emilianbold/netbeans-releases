@@ -58,14 +58,10 @@ public enum FileState {
     /** Error occured when touching or copying */
     ERROR('e');
 
-    private final char id;
+    public final char id;
 
     FileState(char id) {
         this.id = id;
-    }
-
-    public char getId() {
-        return id;
     }
 
     public static FileState fromId(char c) {
