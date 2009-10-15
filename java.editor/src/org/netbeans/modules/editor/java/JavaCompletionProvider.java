@@ -1435,7 +1435,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, inImport, insideNew);
                                 }
                             }
-                            if (exs != null) {
+                            if (exs != null && !exs.isEmpty()) {
                                 Elements elements = controller.getElements();
                                 for (TypeMirror ex : exs)
                                     if (ex.getKind() == TypeKind.DECLARED) {
@@ -1461,7 +1461,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     if (tm != null && tm.getKind() == TypeKind.DECLARED)
                                         addMembers(env, tm, ((DeclaredType)tm).asElement(), EnumSet.of(CONSTRUCTOR), null, inImport, insideNew);
                                 }
-                                if (exs != null) {
+                                if (exs != null && !exs.isEmpty()) {
                                     Elements elements = controller.getElements();
                                     for (TypeMirror ex : exs)
                                         if (ex.getKind() == TypeKind.DECLARED) {
