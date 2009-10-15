@@ -50,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 
@@ -113,7 +114,11 @@ final class ReplaceTask implements Runnable {
         
         checkForErrors();
         if (resultStatus == null) {       //the check passed
-            doReplace();
+            FileUtil.runAtomicAction(new Runnable() {
+                public void run() {
+                    doReplace();
+                }
+            });
         }
     }
     

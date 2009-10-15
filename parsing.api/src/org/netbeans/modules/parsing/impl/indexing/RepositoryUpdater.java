@@ -881,7 +881,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
     /* test */ void scheduleWork(Iterable<? extends Work> multipleWork) {
         recordCaller();
 
-        boolean canScheduleMultiple = true;
+        boolean canScheduleMultiple;
         synchronized (this) {
             canScheduleMultiple = state == State.INITIAL_SCAN_RUNNING || state == State.ACTIVE;
         }
@@ -3504,19 +3504,24 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         public FileObject findFileObject(URL url) {
+            FileObject f = null;
             synchronized (cache) {
                 Reference<FileObject> ref = cache.get(url);
-                FileObject f = ref == null ? null : ref.get();
-
-                try {
-                    if (f != null && f.isValid() && url.equals(f.getURL())) {
-                        return f;
-                    }
-                } catch (FileStateInvalidException fsie) {
-                    // ignore
+                if (ref != null) {
+                    f = ref.get();
                 }
+            }
 
-                f = URLMapper.findFileObject(url);
+            try {
+                if (f != null && f.isValid() && url.equals(f.getURL())) {
+                    return f;
+                }
+            } catch (FileStateInvalidException fsie) {
+                // ignore
+            }
+            f = URLMapper.findFileObject(url);
+
+            synchronized (cache) {
                 if (f != null && f.isValid()) {
                     cache.put(url, new WeakReference<FileObject>(f));
                 }
