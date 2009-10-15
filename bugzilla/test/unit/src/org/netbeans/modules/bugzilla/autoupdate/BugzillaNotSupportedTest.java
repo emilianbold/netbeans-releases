@@ -59,8 +59,7 @@ public class BugzillaNotSupportedTest extends BugzillaPluginUCTestCase implement
     }
 
     public void testIsNotSupportedBugzillaVersion() {
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-        assertFalse(jau.checkSupportedBugzillaServerVersion(TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD)));
+        assertFalse(BugzillaAutoupdate.getInstance().checkSupportedBugzillaServerVersion(TestUtil.getRepository("test", REPO_URL, REPO_USER, REPO_PASSWD)));
     }
 
 }

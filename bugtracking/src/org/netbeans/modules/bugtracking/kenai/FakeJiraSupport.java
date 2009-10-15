@@ -59,6 +59,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.kenai.ui.spi.QueryResultHandle.ResultType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
@@ -223,21 +224,24 @@ public class FakeJiraSupport {
                             NbBundle.getMessage(
                                 FakeJiraSupport.class,
                                 "LBL_QueryResultTotal",  // NOI18N
-                                new Object[] {0})));
+                                new Object[] {0}),
+                                ResultType.NAMED_RESULT));
                 results = r;
             }
             return results; 
         }
 
         QueryResultHandle getUnseenResult() {
-            return new FakeJiraQueryResultHandle("0"); // NOI18N
+            return new FakeJiraQueryResultHandle("0", ResultType.ALL_CHANGES_RESULT); // NOI18N
         }
     }
 
     static class FakeJiraQueryResultHandle extends QueryResultHandle implements ActionListener {
         private final String label;
-        public FakeJiraQueryResultHandle(String label) {
+        private final ResultType type;
+        public FakeJiraQueryResultHandle(String label, ResultType type) {
             this.label = label;
+            this.type = type;
         }
         @Override
         public String getText() {
@@ -245,6 +249,10 @@ public class FakeJiraSupport {
         }
         public void actionPerformed(ActionEvent e) {
             FakeJiraSupport.notifyJiraSupport();
+        }
+        @Override
+        public ResultType getResultType() {
+            return type;
         }
     }
 }

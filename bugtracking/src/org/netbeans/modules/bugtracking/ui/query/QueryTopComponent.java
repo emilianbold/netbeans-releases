@@ -119,7 +119,7 @@ public final class QueryTopComponent extends TopComponent
         initComponents();
         Font f = new JLabel().getFont();
         int s = f.getSize();
-        findIssuesLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        findIssuesLabel.setFont(repoLabel.getFont().deriveFont(s * 1.7f));
         int unitIncrement = (int)(s*1.5);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);

@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -95,37 +97,44 @@ public class QueryAccessorTest extends NbTestCase {
 
         QueryHandle h = qa.getAllIssuesQuery(new ProjectHandleImpl(project));
         assertNotNull(h);
-
-        QueryResultHandle r = qa.getAllChangesResult(h);
-        assertNotNull(r);
         
-        Integer.parseInt(r.getText()); // just an integer value without text
+        List<QueryResultHandle> results = qa.getQueryResults(h);
+        assertNotNull(results);
+        assertTrue(results.size() > 0);
+
+        for (QueryResultHandle r : results) {
+            if(r.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                Integer.parseInt(r.getText()); // just an integer value without text
+                return;
+            }
+        }
+        fail("no all changes result");
     }
 
-    public void testGetQueryResults() throws MalformedURLException, CoreException, IOException {
-        QueryAccessorImpl qa = new QueryAccessorImpl();
-        KenaiProject project = Kenai.getDefault().getProject("koliba");
-
-        List<QueryHandle> queries = qa.getQueries(new ProjectHandleImpl(project));
-        assertNotNull(queries);
-
-        assertTrue(queries.size() >= 2);
-
-        QueryHandle qh = getHandleByName(queries, "All Issues");
-        assertNotNull(qh);
-        List<QueryResultHandle> results = qa.getQueryResults(qh);
-        assertNotNull(results);
-        assertTrue(results.size() >= 1);
-        containsHandle(results, "total");
-
-        qh = getHandleByName(queries, "My Issues");
-        assertNotNull(qh);
-        results = qa.getQueryResults(qh);
-        assertNotNull(results);
-        assertTrue(results.size() >= 1);
-        containsHandle(results, "total");
-
-    }
+//    public void testGetQueryResults() throws MalformedURLException, CoreException, IOException {
+//        QueryAccessorImpl qa = new QueryAccessorImpl();
+//        KenaiProject project = Kenai.getDefault().getProject("koliba");
+//
+//        List<QueryHandle> queries = qa.getQueries(new ProjectHandleImpl(project));
+//        assertNotNull(queries);
+//
+//        assertTrue(queries.size() >= 2);
+//
+//        QueryHandle qh = getHandleByName(queries, "All Issues");
+//        assertNotNull(qh);
+//        List<QueryResultHandle> results = qa.getQueryResults(qh);
+//        assertNotNull(results);
+//        assertTrue(results.size() >= 1);
+//        containsHandle(results, "total");
+//
+//        qh = getHandleByName(queries, "My Issues");
+//        assertNotNull(qh);
+//        results = qa.getQueryResults(qh);
+//        assertNotNull(results);
+//        assertTrue(results.size() >= 1);
+//        containsHandle(results, "total");
+//
+//    }
 
     private QueryHandle getHandleByName(List<QueryHandle> queries, String name) {
         for (QueryHandle queryHandle : queries) {
