@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -288,7 +289,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     params.put(JavaRunner.PROP_APPLICATION_ARGS, Arrays.asList(appargs));
                     try {
                         //jvm args, add and for debugging, remove the debugging ones..
-                        params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[2]));
+                        params.put(JavaRunner.PROP_RUN_JVMARGS, extractDebugJVMOptions(args[0]));
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -368,28 +369,54 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             FileObject selected = config.getSelectedFileObject();
             ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
             ClassPath srcs = cpp.getProjectSourcesClassPath(ClassPath.SOURCE);
-            String path = srcs.getResourceName(selected);
             ClassPath[] cps = cpp.getProjectClassPaths(ClassPath.SOURCE);
             ClassPath testcp = ClassPathSupport.createProxyClassPath(cps);
-            if (path != null) {
-                //now we have a source file, need to convert to testSource..
-                String nameExt = selected.getNameExt().replace(".java", "Test.java"); //NOI18N
-                path = path.replace(selected.getNameExt(), nameExt);
-                FileObject testFo = testcp.findResource(path);
-                if (testFo != null) {
-                    selected = testFo;
+            String path = null;
+            if (selected != null) {
+                path = srcs.getResourceName(selected);
+                if (path != null) {
+                    //now we have a source file, need to convert to testSource..
+                    String nameExt = selected.getNameExt().replace(".java", "Test.java"); //NOI18N
+                    path = path.replace(selected.getNameExt(), nameExt);
+                    FileObject testFo = testcp.findResource(path);
+                    if (testFo != null) {
+                        selected = testFo;
+                    } else {
+                        //#160776 only files on source classpath pass through
+                        return true;
+                    }
                 } else {
-                    //#160776 only files on source classpath pass through
-                    return true;
+                    // we have a test source file ?
+                    path = testcp.getResourceName(selected);
+                    if (path == null) {
+                        //#160776 only files on source classpath pass through
+                        return true;
+                    }
                 }
             } else {
-                // we have a test source file ? 
-                path = testcp.getResourceName(selected);
-                if (path == null) {
-                    //#160776 only files on source classpath pass through
-                    return true;
-                }
+               //#173724 we have a custom action now which was not triggered on a file.
+               // we need to find the FileObject/path based on "test" property.. hard and fragile.
+               test = test + ".java";
+               selected = testcp.findResource(test); //just in case the test pattern is full path..
+               if (selected == null) {
+                   List<FileObject> mainSourceRoots = Arrays.asList(srcs.getRoots());
+                   TOP : for (FileObject root : testcp.getRoots()) {
+                       if (mainSourceRoots.contains(root)) continue;
+                       Enumeration<? extends FileObject> fos = root.getData(true);
+                       while (fos.hasMoreElements()) {
+                           FileObject fo = fos.nextElement();
+                           if (fo.getNameExt().equals(test)) {
+                               selected = fo;
+                               break TOP;
+                           }
+                       }
+                   }
+               }
             }
+            if (selected == null) {
+                return true;
+            }
+            
             params.put(JavaRunner.PROP_EXECUTE_FILE, selected);
 
             //make sure to run with the proper jdk

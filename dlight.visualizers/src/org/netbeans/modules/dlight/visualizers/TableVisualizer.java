@@ -65,23 +65,24 @@ import org.netbeans.modules.dlight.visualizers.api.impl.TableVisualizerConfigura
  *
  * @author ak119685
  */
-class TableVisualizer extends JPanel implements
+final class TableVisualizer extends JPanel implements
         Visualizer<TableVisualizerConfiguration>, OnTimerTask, ComponentListener {
 
-    private TableDataProvider provider;
-    private volatile boolean isShown = true;
-    private TableVisualizerConfiguration configuration;
+    private final TableDataProvider provider;
     private final List<DataRow> data = new ArrayList<DataRow>();
+    private final TableVisualizerConfiguration configuration;
+    private final OnTimerRefreshVisualizerHandler timerHandler;
+    private volatile boolean isShown = true;
     private JToolBar buttonsToolbar;
     private JButton refresh;
-    private AbstractTableModel tableModel;
     private JTable table;
+    private AbstractTableModel tableModel;
     private TableSorter tableSorterModel = new TableSorter();
-    private OnTimerRefreshVisualizerHandler timerHandler;
     private boolean isEmptyContent;
 
     TableVisualizer(TableDataProvider provider, final TableVisualizerConfiguration configuration) {
         //timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
+        timerHandler = null;
         this.provider = provider;
         this.configuration = configuration;
         setEmptyContent();
@@ -296,5 +297,8 @@ class TableVisualizer extends JPanel implements
 
     public void componentHidden(ComponentEvent e) {
         isShown = false;
+    }
+
+    public void updateVisualizerConfiguration(TableVisualizerConfiguration configuration) {
     }
 }

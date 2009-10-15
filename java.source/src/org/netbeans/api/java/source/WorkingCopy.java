@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -237,7 +237,7 @@ public class WorkingCopy extends CompilationController {
             throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite non-comment token: " + ts.token().id());
         }
         
-        if (ts.offset() + ts.token().length() <= start + length) {
+        if (ts.offset() + ts.token().length() < start + length) {
             throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite text after comment token. Token end offset: " + (ts.offset() + ts.token().length()) + ", rewrite end offset: " + (start + length));
         }
         

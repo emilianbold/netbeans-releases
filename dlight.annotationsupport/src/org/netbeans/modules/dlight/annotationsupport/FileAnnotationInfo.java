@@ -51,14 +51,26 @@ public class FileAnnotationInfo {
     private String filePath;
     private String tooltip;
     private List<LineAnnotationInfo> lineAnnotationInfo;
+    private List<LineAnnotationInfo> blockAnnotationInfo;
     private boolean annotated;
     private String columnNames[];
     private int maxColumnWidth[];
 
     public FileAnnotationInfo() {
         lineAnnotationInfo = new ArrayList<LineAnnotationInfo>();
+        blockAnnotationInfo = new ArrayList<LineAnnotationInfo>();
         tooltip = null;
         annotated = false;
+    }
+
+    public int getAnnotationLength() {
+        if (lineAnnotationInfo != null && lineAnnotationInfo.size() > 0) {
+            return lineAnnotationInfo.get(0).getAnnotation().length();
+        }
+        if (blockAnnotationInfo != null && blockAnnotationInfo.size() > 0) {
+            return blockAnnotationInfo.get(0).getAnnotation().length();
+        }
+        return 0;
     }
 
     /**
@@ -82,14 +94,14 @@ public class FileAnnotationInfo {
         return lineAnnotationInfo;
     }
 
-    public LineAnnotationInfo getLineAnnotationInfoByLine(int line) {
-        for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
-            if (lineInfo.getLine() == line) {
-                return lineInfo;
-            }
-        }
-        return null;
-    }
+//    public LineAnnotationInfo getLineAnnotationInfoByLine(int line) {
+//        for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
+//            if (lineInfo.getLine() == line) {
+//                return lineInfo;
+//            }
+//        }
+//        return null;
+//    }
 
     public LineAnnotationInfo getLineAnnotationInfoByLineOffset(int offset) {
         for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
@@ -102,8 +114,30 @@ public class FileAnnotationInfo {
         return null;
     }
 
+    public LineAnnotationInfo getBlockAnnotationInfoByLineOffset(int offset) {
+        for (LineAnnotationInfo lineInfo : blockAnnotationInfo) {
+            if (lineInfo.getPosition() != null) {
+                if (lineInfo.getPosition().getOffset() == offset) {
+                    return lineInfo;
+                }
+            }
+        }
+        return null;
+    }
+
     public LineAnnotationInfo getLineAnnotationInfoByYCoordinate(int y) {
         for (LineAnnotationInfo lineInfo : lineAnnotationInfo) {
+            if (lineInfo.getPosition() != null) {
+                if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
+                    return lineInfo;
+                }
+            }
+        }
+        return null;
+    }
+
+    public LineAnnotationInfo getBlockAnnotationInfoByYCoordinate(int y) {
+        for (LineAnnotationInfo lineInfo : blockAnnotationInfo) {
             if (lineInfo.getPosition() != null) {
                 if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
                     return lineInfo;
@@ -191,5 +225,19 @@ public class FileAnnotationInfo {
      */
     public void setColumnNames(String[] columnNames) {
         this.columnNames = columnNames;
+    }
+
+    /**
+     * @return the blockAnnotationInfo
+     */
+    public List<LineAnnotationInfo> getBlockAnnotationInfo() {
+        return blockAnnotationInfo;
+    }
+
+    /**
+     * @param blockAnnotationInfo the blockAnnotationInfo to set
+     */
+    public void setBlockAnnotationInfo(List<LineAnnotationInfo> blockAnnotationInfo) {
+        this.blockAnnotationInfo = blockAnnotationInfo;
     }
 }

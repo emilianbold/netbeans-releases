@@ -187,6 +187,7 @@ public abstract class WebRestSupport extends RestSupport {
             }
             if (needsSave) {
                 webApp.write(ddFO);
+                logResourceCreation(project);
             }
         } catch (IOException ioe) {
             throw ioe;
@@ -239,6 +240,11 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
     }
+    /** log rest resource detection
+     *
+     * @param prj project instance
+     */
+    protected void logResourceCreation(Project prj) {
+    }
 
-    
 }

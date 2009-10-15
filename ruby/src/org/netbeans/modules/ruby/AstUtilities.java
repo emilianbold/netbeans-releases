@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -120,6 +120,8 @@ public class AstUtilities {
 
     private static final String[] ATTR_ACCESSORS = {"attr", "attr_reader", "attr_accessor", "attr_writer",
         "attr_internal", "attr_internal_accessor", "attr_internal_reader", "attr_internal_writer"};
+
+    private static final String[] NAMED_SCOPE = {"named_scope"};
 
     /**
      * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
@@ -253,7 +255,7 @@ public class AstUtilities {
                 offset--;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return comments;
@@ -1050,8 +1052,8 @@ public class AstUtilities {
             break;
 
         case FCALLNODE:
-            if (isAttr(node)) {
-                SymbolNode[] symbols = getAttrSymbols(node);
+            if (isAttr(node) || isNamedScope(node) || isActiveRecordAssociation(node)) {
+                SymbolNode[] symbols = getSymbols(node);
                 for (SymbolNode sym : symbols) {
                     if (name.equals(sym.getName())) {
                         return sym;
@@ -1485,6 +1487,14 @@ public class AstUtilities {
         return isNodeNameIn(node, ATTR_ACCESSORS);
     }
 
+    static boolean isNamedScope(Node node) {
+        if (!isCallNode(node)) {
+            return false;
+        }
+        return isNodeNameIn(node, NAMED_SCOPE);
+    }
+
+
     public static boolean isActiveRecordAssociation(Node node) {
         if (!isCallNode(node)) {
             return false;
@@ -1505,9 +1515,8 @@ public class AstUtilities {
     private static boolean isCallNode(Node node) {
         return node instanceof FCallNode || node instanceof VCallNode;
     }
-    public static SymbolNode[] getAttrSymbols(Node node) {
-        assert isAttr(node);
 
+    static SymbolNode[] getSymbols(Node node) {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
@@ -1526,6 +1535,10 @@ public class AstUtilities {
         }
 
         return new SymbolNode[0];
+    }
+    public static SymbolNode[] getAttrSymbols(Node node) {
+        assert isAttr(node);
+        return getSymbols(node);
     }
 
     public static Node getRoot(final FileObject sourceFO) {
@@ -1783,7 +1796,7 @@ public class AstUtilities {
                                     method = AstUtilities.findMethodAtOffset(root, astOffset);
                                 }
                             } catch (BadLocationException ble) {
-                                Exceptions.printStackTrace(ble);
+                                // do nothing - see #154991
                             }
                         }
                     }
@@ -1897,7 +1910,7 @@ public class AstUtilities {
                             testName[0] = removeLeadingWhiteSpace(sb.toString());
                         }
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        // do nothing - see #154991
                     }
                 }
             });

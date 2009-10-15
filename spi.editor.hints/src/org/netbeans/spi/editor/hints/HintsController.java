@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -68,6 +68,7 @@ public final class HintsController {
      * @param errors to use
      */
     public static void setErrors(final Document doc, final String layer, Collection<? extends ErrorDescription> errors) {
+        assert doc != null;
         final Collection<? extends ErrorDescription> errorsCopy = new ArrayList<ErrorDescription>(errors);
 
         WORKER.post(new Runnable() {

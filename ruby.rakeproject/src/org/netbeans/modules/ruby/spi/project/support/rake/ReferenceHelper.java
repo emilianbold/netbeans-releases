@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1388,7 +1389,25 @@ public final class ReferenceHelper {
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, pub);
         h.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
     }
-    
+
+    /**
+     * Copies the given properties to private.properties.
+     * @param toCopy the properties to copy; may be <code>null</code> in which
+     * case nothing is copied.
+     */
+    public void copyToPrivateProperties(EditableProperties toCopy) {
+        if (toCopy == null) {
+            return;
+        }
+        EditableProperties priv = h.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+        if (priv == null) {
+            return;
+        }
+        for (Entry<String, String> each : toCopy.entrySet()) {
+            priv.put(each.getKey(), each.getValue());
+        }
+        h.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+    }
     /**
      * A raw reference descriptor representing a link to a foreign project
      * and some build artifact used from it.

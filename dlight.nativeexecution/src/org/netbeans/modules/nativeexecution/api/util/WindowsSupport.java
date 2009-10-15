@@ -38,26 +38,23 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Currently remote Windows execution is not considered...
@@ -67,12 +64,22 @@ public final class WindowsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final WindowsSupport instance = new WindowsSupport();
+    private final TasksCachedProcessor<PathConverterParams, String> converter =
+            new TasksCachedProcessor<PathConverterParams, String>(new PathConverter(), false);
+    private final boolean isWindows;
     private ShellType type = ShellType.NO_SHELL;
     private String shell = null;
     private String bin = null;
-    private Properties env = null;
+    private Map<String, String> env = null;
+    private String REG_EXE;
 
     private WindowsSupport() {
+        isWindows = Utilities.isWindows();
+
+        if (!isWindows) {
+            return;
+        }
+
         init();
 
         if (type == ShellType.NO_SHELL) {
@@ -91,6 +98,18 @@ public final class WindowsSupport {
     }
 
     public void init() {
+        String reg_exe = "reg.exe"; // NOI18N
+
+        try {
+            String windir = System.getenv("WINDIR"); // NOI18N
+            File sys32 = new File(windir, "System32"); // NOI18N
+            reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
+        } catch (Throwable th) {
+            System.out.println(th);
+        }
+
+        REG_EXE = reg_exe;
+
         // 1. Try to find cygwin ...
         String cygwinRoot = queryWindowsRegistry(
                 "HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
@@ -102,6 +121,13 @@ public final class WindowsSupport {
                     "HKLM\\SOFTWARE\\cygwin\\setup\\", // NOI18N
                     "rootdir", // NOI18N
                     ".*rootdir.*REG_SZ(.*)"); // NOI18N
+        }
+
+        if (cygwinRoot == null) {
+            cygwinRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", // NOI18N
+                    "native", // NOI18N
+                    ".*native.*REG_SZ(.*)"); // NOI18N
         }
 
         if (cygwinRoot != null) {
@@ -119,6 +145,13 @@ public final class WindowsSupport {
                 "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
                 "Inno Setup: App Path", // NOI18N
                 ".*REG_SZ(.*)"); // NOI18N
+
+        if (msysRoot == null) {
+            msysRoot = queryWindowsRegistry(
+                    "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+                    "Inno Setup: App Path", // NOI18N
+                    ".*REG_SZ(.*)"); // NOI18N
+        }
 
         if (msysRoot != null) {
             File sh = new File(msysRoot + "/bin/sh.exe"); // NOI18N
@@ -183,11 +216,10 @@ public final class WindowsSupport {
         }
     }
 
-    private static String queryWindowsRegistry(String key, String param, String regExpr) {
+    private String queryWindowsRegistry(String key, String param, String regExpr) {
         try {
             ProcessBuilder pb = new ProcessBuilder(
-                    "c:\\windows\\system32\\reg.exe", // NOI18N
-                    "query", key, "/v", param); // NOI18N
+                    REG_EXE, "query", key, "/v", param); // NOI18N
             Process p = pb.start();
             Pattern pattern = Pattern.compile(regExpr);
 
@@ -215,156 +247,92 @@ public final class WindowsSupport {
         return null;
     }
 
+    public String convertToCygwinPath(String winPath) {
+        try {
+            return converter.compute(new PathConverterParams(PathType.WINDOWS, PathType.CYGWIN, winPath, true));
+        } catch (InterruptedException ex) {
+        }
+
+        return winPath;
+    }
+
+    public String convertFromCygwinPath(String cygwinPath) {
+        try {
+            return converter.compute(new PathConverterParams(PathType.CYGWIN, PathType.WINDOWS, cygwinPath, true));
+        } catch (InterruptedException ex) {
+        }
+
+        return cygwinPath;
+    }
+
+    public String convertToMSysPath(String winPath) {
+        try {
+            return converter.compute(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, winPath, true));
+        } catch (InterruptedException ex) {
+        }
+
+        return winPath;
+    }
+
+    public String convertFromMSysPath(String msysPath) {
+        try {
+            return converter.compute(new PathConverterParams(PathType.MSYS, PathType.WINDOWS, msysPath, true));
+        } catch (InterruptedException ex) {
+        }
+
+        return msysPath;
+    }
+
     /**
      * Cygwin is preferrable shell (over msys). So it cygwin is
      * installed we will always use it's for shell
      */
     public String convertToShellPath(String path) {
-        String result = ""; // NOI18N
-
-        if (path == null || path.length() == 0) {
-            return result;
-        }
-
-        switch (type) {
-            case CYGWIN:
-                List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
-
-                if (paths != null) {
-                    result = paths.get(0);
-                }
-
-                break;
-            case MSYS:
-                result = path;
-
-                if (result.charAt(1) == ':') {
-                    result = "/" + result.replaceFirst(":", ""); // NOI18N
-                }
-
-                result = result.replaceAll("\\\\", "/"); // NOI18N
-                break;
-            default:
-            // No shell ...
-        }
-
-        return result;
-    }
-    private final static long CygpathTimeout = 5;
-
-    private List<String> cygpath(String opts, List<String> paths) {
-        File cygpath = new File(bin, "cygpath"); // NOI18N
-        List<String> cmd = new ArrayList<String>();
-        cmd.add(cygpath.getAbsolutePath());
-        cmd.add(opts);
-        cmd.addAll(paths);
-
-        ProcessBuilder pb = new ProcessBuilder(cmd);
         try {
-            Process p = pb.start();
-            StreamReader outReader = new StreamReader(p.getInputStream());
-            StreamReader errReader = new StreamReader(p.getErrorStream());
-
-            Future<List<String>> futureOutput = NativeTaskExecutorService.submit(outReader, "Cygpath output reader"); // NOI18N
-            Future<List<String>> futureError = NativeTaskExecutorService.submit(errReader, "Cygpath error reader"); // NOI18N
-
-            int exitCode = p.waitFor();
-
-            if (exitCode == 0) {
-                try {
-                    return futureOutput.get(CygpathTimeout, TimeUnit.SECONDS);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (TimeoutException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-
-            try {
-                List<String> errorOutput = futureError.get(CygpathTimeout, TimeUnit.SECONDS);
-                log.fine(cygpath.getAbsolutePath() + " failed."); // NOI18N
-                for (String errorLine : errorOutput) {
-                    log.fine("cygpath: " + errorLine); // NOI18N
-                }
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (TimeoutException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            return converter.compute(new PathConverterParams(
+                    PathType.WINDOWS,
+                    type == ShellType.MSYS ? PathType.MSYS : PathType.CYGWIN,
+                    path, true));
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
 
-        return null;
+        return path;
     }
 
     public String convertToWindowsPath(String path) {
-        String result = ""; // NOI18N
-
-        switch (type) {
-            case CYGWIN:
-                List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
-
-                if (paths != null) {
-                    result = paths.get(0);
-                }
-                break;
-            case MSYS:
-                if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
-                    result = path.charAt(1) + ":"; // NOI18N
-                    path = path.substring(2);
-                }
-
-                result = (result + path).replaceAll("/", "\\\\"); // NOI18N
-                break;
-            default:
+        try {
+            return converter.compute(new PathConverterParams(
+                    type == ShellType.MSYS ? PathType.MSYS : PathType.CYGWIN,
+                    PathType.WINDOWS,
+                    path, true));
+        } catch (InterruptedException ex) {
         }
 
-        return result;
+        return path;
     }
 
     public String convertToAllShellPaths(String paths) {
-        if (paths == null) {
-            return ""; // NOI18N
+        try {
+            return converter.compute(new PathConverterParams(
+                    PathType.WINDOWS,
+                    type == ShellType.MSYS ? PathType.MSYS : PathType.CYGWIN,
+                    paths, false));
+        } catch (InterruptedException ex) {
         }
 
-        String[] origPaths = paths.split(";"); // NOI18N
-        List<String> convertedPaths = new ArrayList<String>();
-
-        switch (type) {
-            case CYGWIN:
-                // Will start cygpath only once...
-                convertedPaths.addAll(cygpath("-u", Arrays.asList(origPaths))); // NOI18N
-                break;
-            case MSYS:
-                for (String path : origPaths) {
-                    convertedPaths.add(convertToShellPath(path));
-                }
-                break;
-            default:
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        for (String path : convertedPaths) {
-            sb.append(path).append(':');
-        }
-
-        return sb.toString();
+        return paths;
     }
 
-    public synchronized Properties getEnv() {
-        if (env == null) {
-            env = readEnv();
+    public synchronized Map<String, String> getEnv() {
+        if (env == null && isWindows) {
+            env = Collections.unmodifiableMap(readEnv());
         }
 
         return env;
     }
 
-    private static Properties readEnv() {
-        Properties result = new Properties();
+    private static Map<String, String> readEnv() {
+        Map<String, String> result = new TreeMap<String, String>(new CaseInsensitiveComparator());
 
         try {
             String os = System.getProperty("os.name").toLowerCase(); // NOI18N
@@ -381,9 +349,9 @@ public final class WindowsSupport {
 
             for (String line : out) {
                 int idx = line.indexOf('=');
-                String key = line.substring(0, idx).trim().toUpperCase();
+                String key = line.substring(0, idx).trim();
                 String value = line.substring(idx + 1);
-                result.setProperty(key, value);
+                result.put(key, value);
             }
 
             int exitStatus = -1;
@@ -404,35 +372,210 @@ public final class WindowsSupport {
         return result;
     }
 
-    private static class StreamReader implements Callable<List<String>> {
-
-        private final InputStream is;
-        private final List<String> result;
-
-        public StreamReader(InputStream is) {
-            this.is = is;
-            result = new ArrayList<String>();
-        }
-
-        public List<String> call() throws Exception {
-            try {
-                String s;
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                while ((s = br.readLine()) != null) {
-                    result.add(s);
-                }
-            } catch (IOException ex) {
-            }
-
-            return result;
-        }
-    }
-
     private enum ShellType {
 
         NO_SHELL,
         CYGWIN,
         MSYS,
         UNKNOWN
+    }
+
+    private static class CaseInsensitiveComparator implements Comparator<String>, Serializable {
+
+        public CaseInsensitiveComparator() {
+        }
+
+        public int compare(String s1, String s2) {
+            if (s1 == null && s2 == null) {
+                return 0;
+            }
+
+            if (s1 == null) {
+                return 1;
+            }
+
+            if (s2 == null) {
+                return -1;
+            }
+
+            return s1.toUpperCase().compareTo(s2.toUpperCase());
+        }
+    }
+
+    private enum PathType {
+
+        CYGWIN,
+        MSYS,
+        WINDOWS
+    }
+
+    private static final class PathConverterParams {
+
+        private final PathType srcType;
+        private final PathType trgType;
+        private final String path;
+        private final boolean isSinglePath;
+
+        public PathConverterParams(PathType srcType, PathType trgType, String path, boolean isSinglePath) {
+            this.srcType = srcType;
+            this.trgType = trgType;
+            this.path = path;
+            this.isSinglePath = isSinglePath;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof PathConverterParams)) {
+                return false;
+            }
+
+            PathConverterParams that = (PathConverterParams) obj;
+
+            return this.srcType == that.srcType &&
+                    this.trgType == that.trgType &&
+                    this.isSinglePath == that.isSinglePath &&
+                    this.path.equals(that.path);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 43 * hash + this.srcType.hashCode();
+            hash = 43 * hash + this.trgType.hashCode();
+            hash = 43 * hash + (this.path != null ? this.path.hashCode() : 0);
+            hash = 43 * hash + (this.isSinglePath ? 1 : 0);
+            return hash;
+        }
+    }
+
+    private final class PathConverter implements Computable<PathConverterParams, String> {
+
+        public String compute(final PathConverterParams taskArguments) throws InterruptedException {
+            String path = taskArguments.path;
+
+            if (path == null || path.length() == 0 || !isWindows) {
+                return path;
+            }
+
+            if (taskArguments.isSinglePath) {
+                return convertSingle(taskArguments);
+            } else {
+                return convertMulty(taskArguments);
+            }
+        }
+
+        private String convertSingle(final PathConverterParams taskArguments) {
+            String result = ""; // NOI18N
+            String path = taskArguments.path;
+
+            if (taskArguments.trgType == PathType.WINDOWS) {
+                switch (taskArguments.srcType) {
+                    case CYGWIN:
+                        List<String> paths = cygpath("-w", Arrays.asList(path)); // NOI18N
+
+                        if (paths != null) {
+                            result = paths.get(0);
+                        }
+                        break;
+                    case MSYS:
+                        if (path.startsWith("/") && path.charAt(2) == '/') { // NOI18N
+                            result = path.charAt(1) + ":"; // NOI18N
+                            path = path.substring(2);
+                        }
+
+                        result = (result + path).replaceAll("/", "\\\\"); // NOI18N
+                        break;
+                    default:
+                        result = path;
+                }
+            } else {
+                switch (taskArguments.trgType) {
+                    case CYGWIN:
+                        List<String> paths = cygpath("-u", Arrays.asList(path)); // NOI18N
+
+                        if (paths != null) {
+                            result = paths.get(0);
+                        }
+
+                        break;
+                    case MSYS:
+                        result = path;
+
+                        if (result.charAt(1) == ':') {
+                            result = "/" + result.replaceFirst(":", ""); // NOI18N
+                        }
+
+                        result = result.replaceAll("\\\\", "/"); // NOI18N
+                        break;
+                    default:
+                        result = path;
+                }
+            }
+
+            return result;
+        }
+
+        private String convertMulty(final PathConverterParams taskArguments) {
+            String result = ""; // NOI18N
+            String paths = taskArguments.path;
+
+            if (taskArguments.srcType == PathType.WINDOWS) {
+                String[] origPaths = paths.split(";"); // NOI18N
+                List<String> convertedPaths = new ArrayList<String>();
+
+                switch (taskArguments.trgType) {
+                    case CYGWIN:
+                        // Will start cygpath only once...
+                        convertedPaths.addAll(cygpath("-u", Arrays.asList(origPaths))); // NOI18N
+                        break;
+                    case MSYS:
+                        for (String path : origPaths) {
+                            if (path.trim().length() > 0) {
+                                convertedPaths.add(convertSingle(new PathConverterParams(PathType.WINDOWS, PathType.MSYS, path.trim(), true)));
+                            }
+                        }
+                        break;
+                    default:
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                for (String path : convertedPaths) {
+                    sb.append(path).append(':');
+                }
+
+                result = sb.toString();
+            } else {
+                // NOT USED NOW
+                result = paths;
+            }
+
+            return result;
+        }
+
+        private List<String> cygpath(String opts, List<String> paths) {
+            File cygpath = new File(bin, "cygpath"); // NOI18N
+            List<String> cmd = new ArrayList<String>();
+            cmd.add(cygpath.getAbsolutePath());
+            cmd.add(opts);
+            cmd.addAll(paths);
+
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            try {
+                Process p = pb.start();
+                List<String> result = ProcessUtils.readProcessOutput(p);
+                int exitCode = p.waitFor();
+
+                if (exitCode == 0) {
+                    return result;
+                }
+
+                log.fine(cygpath.getAbsolutePath() + " failed."); // NOI18N
+                ProcessUtils.logError(Level.FINE, log, p);
+            } catch (InterruptedException ex) {
+            } catch (IOException ex) {
+            }
+            return null;
+        }
     }
 }

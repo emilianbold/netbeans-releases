@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -593,6 +593,21 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             if( !isShowing() || null == getParent() || getWidth() < 1 || getHeight() < 1 )
                 return;
             super.scrollToReference(reference);
+        }
+
+        @Override
+        public void layout() {
+            try {
+                super.layout();
+            } catch( ArrayIndexOutOfBoundsException aioobE ) {
+                //HACK - workaround for issue #168988
+                StackTraceElement[] stack = aioobE.getStackTrace();
+                if( stack.length > 0 && stack[0].getClassName().endsWith("BoxView") ) { //NOI18N
+                    Logger.getLogger(SwingBrowser.class.getName()).log(Level.INFO, null, aioobE);
+                } else {
+                    throw aioobE;
+                }
+            }
         }
 
         /**

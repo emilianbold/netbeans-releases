@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,7 +42,6 @@ package org.netbeans.modules.localhistory;
 
 import java.util.HashMap;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -106,10 +105,6 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         return false;
     }
 
-    public void doDelete(File file) throws IOException {
-        // do nothing
-    }
-
     public void afterDelete(File file) {
         if(!toBeDeleted.remove(file)) {
             // do nothing if the file wasn't marked
@@ -148,10 +143,6 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         return false;
     }
 
-    public void doMove(File from, File to) throws IOException {
-        // do nothing
-    }
-
     public void afterMove(File from, File to) {
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
@@ -173,10 +164,6 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     public boolean beforeCreate(File file, boolean isDirectory) {
         toBeCreated.add(file);
         return false;
-    }
-
-    public void doCreate(File file, boolean isDirectory) throws IOException {
-        // do nothing
     }
 
     public void afterCreate(File file) {
@@ -226,6 +213,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     public void afterChange(File file) {
         // just in case
         wasJustCreated.remove(file);
+        LocalHistory.getInstance().touch(file);
     }
 
     private void storeFile(File file) {

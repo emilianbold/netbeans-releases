@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -70,7 +70,6 @@ import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -86,11 +85,16 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.DiffController;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.diff.DiffControllerImpl;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 
 /**
  * Panel that shows differences between two files. The code here was originally distributed among DiffPanel and
@@ -109,7 +113,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private Color colorAdded;
     private Color colorChanged;
     private Color colorLines   = Color.DARK_GRAY;
-    private Color COLOR_READONLY_BG = new Color(240,240,240);
+    private Color COLOR_READONLY_BG = new Color(255,200,200);
 
     private final Difference [] NO_DIFFERENCES = new Difference[0];
     
@@ -244,11 +248,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     }
                     adjustPreferredSizes();
 
-                    int bgRGB = jEditorPane2.getEditorPane().getBackground().getRGB() & 0xFFFFFF;
-                    if (jEditorPane2.getEditorPane().isEditable() && bgRGB == 0xFFFFFF && System.getProperty("netbeans.experimental.diff.ReadonlyBg") == null) {
-                        jEditorPane1.getEditorPane().setBackground(COLOR_READONLY_BG);
+                    JTextComponent leftEditor = jEditorPane1.getEditorPane();
+                    JTextComponent rightEditor = jEditorPane2.getEditorPane();
+                    if (rightEditor.isEditable()) {
+                        setBackgroundColorForNonEditable(leftEditor, rightEditor);
                     }
-                    if (bgRGB == 0) {
+                    if ((rightEditor.getBackground().getRGB() & 0xFFFFFF) == 0) {
                         colorLines   = Color.WHITE;
                     }
                 }
@@ -275,6 +280,44 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         manager = new DiffViewManager(this);
         manager.init();
         refreshDiff(0);
+    }
+
+    private void setBackgroundColorForNonEditable(JTextComponent leftEditor,
+                                                  JTextComponent rightEditor) {
+        String mimeType = DocumentUtilities.getMimeType(leftEditor);
+        if (mimeType == null) {
+            mimeType = "text/plain";                                    //NOI18N
+        }
+
+        Color bgColor = null;
+
+        Lookup lookup = MimeLookup.getLookup(mimeType);
+        if (lookup != null) {
+            FontColorSettings fontColorSettings = lookup.lookup(FontColorSettings.class);
+            if (fontColorSettings != null) {
+                AttributeSet attrSet = fontColorSettings.getFontColors(
+                                          FontColorNames.GUARDED_COLORING);
+                if (attrSet != null) {
+                    Object bgColorObj = attrSet.getAttribute(StyleConstants.Background);
+                    if (bgColorObj instanceof Color) {
+                        bgColor = (Color) bgColorObj;
+                    }
+                }
+            }
+        }
+
+        if (bgColor == null) {
+            /* Fallback to the old routine: */
+            int editableBgColor = rightEditor.getBackground().getRGB() & 0xFFFFFF;
+            if ((editableBgColor == 0xFFFFFF)
+                    && System.getProperty("netbeans.experimental.diff.ReadonlyBg") == null) { //NOI18N
+                bgColor = COLOR_READONLY_BG;
+            }
+        }
+
+        if (bgColor != null) {
+            leftEditor.setBackground(bgColor);
+        }
     }
 
     private void adjustPreferredSizes() {

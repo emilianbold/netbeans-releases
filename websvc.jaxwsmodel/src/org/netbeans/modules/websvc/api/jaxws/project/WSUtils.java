@@ -50,18 +50,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
@@ -96,6 +102,8 @@ public class WSUtils {
     
     private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
     private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
+
+    private static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
     
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
@@ -383,6 +391,47 @@ public class WSUtils {
             return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
         }
         return null;
+    }
+
+    private  static final String ENDORSED = "classpath/endorsed"; //NOI18N
+
+    public static void addJaxWsApiEndorsed(Project project, FileObject srcRoot) throws IOException {
+        ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
+        if (classPath == null || classPath.findResource("javax/xml/ws/Service.class") == null) { //NOI18N
+            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAX_WS_ENDORSED);
+            if (jaxWsApiLib == null) {
+                jaxWsApiLib = createJaxWsApiLibrary();
+            }
+            ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
+        }
+    }
+
+    private static Library createJaxWsApiLibrary() throws IOException {
+        List<URL> apiJars = getJaxWsApiJars();
+        if (apiJars.size() > 0) {
+            Map<String, List<URL>> map = Collections.<String, List<URL>>singletonMap("classpath", apiJars); //NOI18N
+            return LibraryManager.getDefault().createLibrary("j2se", JAX_WS_ENDORSED, map); //NOI18N
+        }
+        return null;
+    }
+
+    private static List<URL> getJaxWsApiJars() throws IOException {
+        List<URL> urls = new ArrayList<URL>();
+        File apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (apiJar != null) {
+            URL url = apiJar.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                urls.add(FileUtil.getArchiveRoot(url));
+            }
+        }
+        apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+        if (apiJar != null) {
+            URL url = apiJar.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                urls.add(FileUtil.getArchiveRoot(url));
+            }
+        }
+        return urls;
     }
     
     public static FileObject findJaxWsFileObject(Project project) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -76,6 +76,7 @@ public class HtmlPrintContainer implements PrintContainer {
     private static final String T_COMMENT_S = "<!--";   //NOI18N
     private static final String T_COMMENT_E = "-->";    //NOI18N
     private static final String ST_BODY = "body";       //NOI18N
+    private static final String ST_PRE = "pre";         //NOI18N
     private static final String ST_TABLE = "table";     //NOI18N
     private static final String ST_BEGIN = "{";        //NOI18N
     private static final String ST_COLOR = "color: "; //NOI18N
@@ -166,6 +167,8 @@ public class HtmlPrintContainer implements PrintContainer {
         result.append (T_COMMENT_S);
         result.append (EOL);
         result.append (createStyle(ST_BODY,null,getDefaultFont(),getDefaultColor(),getDefaultBackgroundColor(),false));
+        result.append (EOL);
+        result.append (createStyle(ST_PRE,null,getDefaultFont(),getDefaultColor(),getDefaultBackgroundColor(),false));
         result.append (EOL);
         result.append (createStyle(ST_TABLE,null,getDefaultFont(),headerForegroundColor,headerBackgroundColor,false));
         result.append (EOL);

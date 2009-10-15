@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -881,7 +881,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 return;
             }
             if (!explicitQuery) {                
-                hideAll();
+                hideCompletion(false);
                 return;
             }
         }
@@ -1684,8 +1684,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 synchronized (CompletionImpl.this) {
                     if (completionResult != null) {
                         if (!isAllResultsFinished(completionResult.getResultSets())) {
-                            layout.showCompletion(Collections.singletonList(PLEASE_WAIT),
-                                    null, -1, CompletionImpl.this, null, null, 0);
+                            pleaseWaitTimer.restart();
                         }
                     }
                 }

@@ -40,17 +40,24 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerAction;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Convenient base class for indicator components.
@@ -59,7 +66,9 @@ import javax.swing.JPanel;
  */
 public class GraphPanel<G extends JComponent, L extends JComponent> extends JLayeredPane {
 
-    private static final int PADDING = 12;
+    private static final Color BORDER_COLOR = DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR);
+    private static final int PADDING = DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_PADDING);
+
     private final G graph;
     private final L legend;
     private final JComponent hAxis;
@@ -87,9 +96,8 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
 
         JPanel topPanel = new JPanel(new BorderLayout());
         JLabel label = new JLabel(title);
-        Font labelFont = label.getFont();
-        label.setFont(labelFont.deriveFont(labelFont.getStyle() | Font.BOLD));
-        label.setForeground(GraphConfig.TEXT_COLOR);
+        label.setFont(DLightUIPrefs.getFont(DLightUIPrefs.INDICATOR_TITLE_FONT));
+        label.setForeground(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_TITLE_FONT_COLOR));
         c = new GridBagConstraints();
         topPanel.add(label, BorderLayout.CENTER);
 
@@ -111,7 +119,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             graphPanel.add(vAxis, c);
         }
 
-        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
+        graph.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
 
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
@@ -121,7 +129,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         graphPanel.add(graph, c);
 
         legend.setBackground(Color.WHITE);
-        legend.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
+        legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.gridwidth = GridBagConstraints.REMAINDER;
@@ -138,7 +146,26 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             graphPanel.add(hAxis, c);
         }
 
+        graphPanel.addMouseListener(new PopupMenuListener());
+
         return graphPanel;
+    }
+
+    private static class PopupMenuListener extends MouseAdapter implements MouseListener {
+        private JPopupMenu pm;
+
+        public PopupMenuListener() {
+            SystemAction action = SystemAction.get(ToolsCustomizerAction.class);
+            pm = new JPopupMenu();
+            pm.add(new JMenuItem(action));
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                pm.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
     }
 
     protected final G getGraph() {

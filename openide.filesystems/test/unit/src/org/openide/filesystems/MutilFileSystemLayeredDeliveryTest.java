@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -71,11 +71,13 @@ public class MutilFileSystemLayeredDeliveryTest extends NbTestCase {
 
     public void testHowManyChanges() throws Exception {
         L l = new L();
+        L l2 = new L();
 
         FileObject fo = FileUtil.createFolder(top.getRoot(), "testMethodValue");
         FileObject mv = FileUtil.createFolder(top.getRoot(), "testMV");
         fo.addFileChangeListener(l);
         mv.addFileChangeListener(l);
+        top.getRoot().addFileChangeListener(l2);
         assertEquals("No children yet", 0, fo.getChildren().length);
         assertNull("No value for ", fo.getAttribute("value1"));
         assertEquals("No children yet", 0, mv.getChildren().length);
@@ -103,9 +105,13 @@ public class MutilFileSystemLayeredDeliveryTest extends NbTestCase {
 
         assertEquals("Ten changes", 20, l.change);
         assertEquals("One Run", 1, l.run);
+        assertEquals("Twenty changes", 20, l2.change);
+        assertEquals("One Run", 1, l2.run);
 
         l.change = 0;
         l.run = 0;
+        l2.change = 0;
+        l2.run = 0;
 
         final FileSystem fs2 = FileUtil.createMemoryFileSystem();
         final FileObject tmv = fs2.getRoot().createFolder("testMethodValue");
@@ -117,6 +123,7 @@ public class MutilFileSystemLayeredDeliveryTest extends NbTestCase {
 
         assertEquals("Two changes", 2, l.change);
         assertEquals("One Run", 1, l.run);
+        assertEquals("One 2Run", 1, l2.run);
     }
 
     private static class L implements FileChangeListener, Runnable {

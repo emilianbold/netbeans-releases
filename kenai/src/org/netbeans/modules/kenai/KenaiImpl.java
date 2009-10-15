@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai;
 
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.kenai.api.KenaiException;
 
@@ -49,6 +50,8 @@ import org.netbeans.modules.kenai.api.KenaiException;
  * @author Jan Becicka
  */
 public abstract class KenaiImpl {
+
+    public abstract URL getUrl();
 
     public abstract Collection<LicensesListData.LicensesListItem> getLicenses() throws KenaiException;
 

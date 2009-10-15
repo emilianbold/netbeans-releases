@@ -82,6 +82,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         refreshTask = rp.create(new RefreshTask());
     }
 
+    @Override
     public boolean beforeDelete(File file) {
         Mercurial.LOG.fine("beforeDelete " + file);
         if (file == null) return false;
@@ -93,6 +94,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         return true;
     }
 
+    @Override
     public void doDelete(File file) throws IOException {
         // XXX runnig hg rm for each particular file when removing a whole firectory might no be neccessery:
         //     just delete it via file.delete and call, group the files in afterDelete and schedule a delete
@@ -109,6 +111,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         }  
     }
 
+    @Override
     public void afterDelete(final File file) {
         Mercurial.LOG.fine("afterDelete " + file);
         if (file == null) return;
@@ -123,6 +126,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         reScheduleRefresh(800, file);
     }
 
+    @Override
     public boolean beforeMove(File from, File to) {
         Mercurial.LOG.fine("beforeMove " + from + "->" + to);
         if (from == null || to == null || to.exists()) return true;
@@ -134,6 +138,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         return super.beforeMove(from, to);
     }
 
+    @Override
     public void doMove(final File from, final File to) throws IOException {
         Mercurial.LOG.fine("doMove " + from + "->" + to);
         if (from == null || to == null || to.exists()) return;
@@ -201,6 +206,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         rp.post(moveImpl);
     }
 
+    @Override
     public void afterMove(final File from, final File to) {
         Mercurial.LOG.fine("afterMove " + from + "->" + to);
         if (from == null || to == null || !to.exists()) return;
@@ -219,6 +225,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
     }
     
+    @Override
     public boolean beforeCreate(final File file, boolean isDirectory) {
         Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
@@ -255,11 +262,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         return false;
     }
 
+    @Override
     public void doCreate(File file, boolean isDirectory) throws IOException {
         Mercurial.LOG.fine("doCreate " + file + " " + isDirectory);
         super.doCreate(file, isDirectory);
     }
 
+    @Override
     public void afterCreate(final File file) {
         Mercurial.LOG.fine("afterCreate " + file);
         if (file.isDirectory()) return;
@@ -269,6 +278,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
     }
     
+    @Override
     public void afterChange(final File file) {
         if (file.isDirectory()) return;
         Mercurial.LOG.log(Level.FINE, "afterChange(): {0}", file);      //NOI18N

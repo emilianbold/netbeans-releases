@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -165,7 +165,8 @@ public class TreeEvaluator {
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;
             } else {
-                throw new InvalidExpressionException(expression.getExpression());
+                throw new InvalidExpressionException(NbBundle.getMessage(
+                    TreeEvaluator.class, "CTL_EvalError_notAValue") + ": " + expression.getExpression());
             }
             //return exprTree.accept(new EvaluatorVisitor(), evaluationContext);
         } catch (IllegalStateException isex) {

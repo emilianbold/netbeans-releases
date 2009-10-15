@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -223,6 +223,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
             class JustPairs implements Enumeration<Pair<T>> {
                 private Pair<T> next;
 
+                @SuppressWarnings("unchecked")
                 private Pair<T> findNext() {
                     for (;;) {
                         if (next != null) {
@@ -234,7 +235,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
                         Object o = all.nextElement();
                         boolean ok;
                         if (o instanceof AbstractLookup.Pair) {
-                            ok = (clazz == null) || ((AbstractLookup.Pair) o).instanceOf(clazz);
+                            ok = (clazz == null) || ((AbstractLookup.Pair<?>) o).instanceOf(clazz);
                         } else {
                             ok = false;
                         }
@@ -366,23 +367,23 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
 
         public Transaction(int ensure, Object currentContent) {
             Integer trashold;
-            Object[] arr;
+            Object[] _arr;
 
             if (currentContent instanceof Integer) {
                 trashold = (Integer) currentContent;
-                arr = null;
+                _arr = null;
             } else {
-                arr = (Object[]) currentContent;
+                _arr = (Object[]) currentContent;
 
-                if (arr[arr.length - 1] instanceof Integer) {
-                    trashold = (Integer) arr[arr.length - 1];
+                if (_arr[_arr.length - 1] instanceof Integer) {
+                    trashold = (Integer) _arr[_arr.length - 1];
                 } else {
                     // nowhere to grow we have reached the limit
                     trashold = null;
                 }
             }
 
-            int maxSize = (trashold == null) ? arr.length : trashold.intValue();
+            int maxSize = (trashold == null) ? _arr.length : trashold.intValue();
 
             if (ensure > maxSize) {
                 throw new UnsupportedOperationException();
@@ -398,19 +399,19 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
 
             if (ensure == -2) {
                 // adding one
-                if (arr == null) {
+                if (_arr == null) {
                     // first time add, let's allocate the array
-                    arr = new Object[2];
-                    arr[1] = trashold;
+                    _arr = new Object[2];
+                    _arr[1] = trashold;
                 } else {
-                    if (arr[arr.length - 1] instanceof AbstractLookup.Pair) {
+                    if (_arr[_arr.length - 1] instanceof AbstractLookup.Pair) {
                         // we are full
                         throw new UnsupportedOperationException();
                     } else {
                         // ensure we have allocated enough space
-                        if (arr.length < 2 || arr[arr.length - 2] != null) {
+                        if (_arr.length < 2 || _arr[_arr.length - 2] != null) {
                             // double the array
-                            int newSize = (arr.length - 1) * 2;
+                            int newSize = (_arr.length - 1) * 2;
                             
                             if (newSize <= 1) {
                                 newSize = 2;
@@ -419,26 +420,26 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
                             if (newSize > maxSize) {
                                 newSize = maxSize;
 
-                                if (newSize <= arr.length) {
+                                if (newSize <= _arr.length) {
                                     // no space to get in
                                     throw new UnsupportedOperationException();
                                 }
 
-                                arr = new Object[newSize];
+                                _arr = new Object[newSize];
                             } else {
                                 // still a lot of space
-                                arr = new Object[newSize + 1];
-                                arr[newSize] = trashold;
+                                _arr = new Object[newSize + 1];
+                                _arr[newSize] = trashold;
                             }
 
                             // copy content of original array without the last Integer into 
                             // the new one
-                            System.arraycopy(currentContent, 0, arr, 0, ((Object[]) currentContent).length - 1);
+                            System.arraycopy(currentContent, 0, _arr, 0, ((Object[]) currentContent).length - 1);
                         }
                     }
                 }
 
-                this.current = arr;
+                this.current = _arr;
                 this.arr = null;
             } else {
                 // allocate array for complete replacement

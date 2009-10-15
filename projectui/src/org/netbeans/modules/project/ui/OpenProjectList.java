@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -727,7 +727,7 @@ public final class OpenProjectList {
         
         try {
             LOAD.enter();
-
+            ProjectUtilities.WaitCursor.show();
         logProjects("close(): closing project: ", projects);
         boolean mainClosed = false;
         boolean someClosed = false;
@@ -806,6 +806,7 @@ public final class OpenProjectList {
         removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
         log(removedRec,"org.netbeans.ui.metrics.projects");
         } finally {
+            ProjectUtilities.WaitCursor.hide();
             LOAD.exit();
     }
     }

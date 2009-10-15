@@ -126,7 +126,8 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         if (syncFactory == null) {
             syncFactory = RemoteSyncFactory.getDefault();
         }
-        ServerRecord rec = ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
+        RemoteServerRecord rec = (RemoteServerRecord) ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
+        rec.setSyncFactory(syncFactory);
         assertNotNull("Null ServerRecord for " + env, rec);
     }
 
@@ -170,7 +171,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     protected void changeProjectHost(File projectDir) throws Exception {
         File nbproject = new File(projectDir, "nbproject");
-        assertTrue("file does not exist: " + projectDir.getAbsolutePath(), nbproject.exists());
+        assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
         File confFile = new File(nbproject, "configurations.xml");
         assertTrue(confFile.exists());
         String text = readFile(confFile);

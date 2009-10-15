@@ -58,7 +58,6 @@ public interface AnnotatedSourceSupport {
      * @param metrics metrics list which were displayed
      * @param functionCallsthe list of function calls with the metrics
      */
-    void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls);
-
+    void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> linesList, List<FunctionCallWithMetric> functionCalls);
 
 }

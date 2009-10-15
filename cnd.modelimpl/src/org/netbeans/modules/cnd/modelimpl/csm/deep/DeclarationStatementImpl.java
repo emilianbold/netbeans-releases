@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -58,8 +58,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
-    private List<CsmDeclaration> declarators;
-
+    private volatile List<CsmDeclaration> declarators;
+    private static final List<CsmDeclaration> EMPTY = Collections.<CsmDeclaration>emptyList();
+    
     public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
@@ -69,8 +70,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     }
 
     public List<CsmDeclaration> getDeclarators() {
-        if (declarators == null) {
-            declarators = new ArrayList<CsmDeclaration>();
+        if (declarators == null || this.declarators == EMPTY) {
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
         }
@@ -90,12 +90,20 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }
 
-    private void render() {
-        AstRenderer renderer = new DSRenderer();
-        renderer.render(getAst(), null, null);
+    private synchronized void render() {
+        if (this.declarators == null) {
+            // assign constant to prevent infinite recusion by calling this method in the same thread
+            this.declarators = EMPTY;
+            DSRenderer renderer = new DSRenderer();
+            renderer.render(getAst(), null, null);
+            // assign should be the latest operation
+            // prevent publishing list before it is completely constructed
+            this.declarators = renderer.declarators;
+        }
     }
 
     private class DSRenderer extends AstRenderer {
+        private List<CsmDeclaration> declarators = new ArrayList<CsmDeclaration>();
 
         public DSRenderer() {
             super((FileImpl) getContainingFile());
@@ -233,7 +241,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                     }
                     case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                     {
-                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), null);
+                        if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
+                            break;
+                        }
+                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 declarators.add(typedef);
@@ -247,8 +258,14 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-            // TODO : implement local forward decls support
-            return null;
+            ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
+            ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, scope, !isRenderingLocalContext());
+            if(fc != null) {
+                declarators.add(fc);
+            }
+            //declarators.add(cfdi);
+            //cfdi.init(ast, scope, !isRenderingLocalContext());
+            return cfdi;
         }
 
 // Never used 

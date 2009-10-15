@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.util.Map;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
@@ -49,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class FunctionBreakpointImpl extends BreakpointImpl {
+public class FunctionBreakpointImpl extends BreakpointImpl<FunctionBreakpoint> {
     
     public FunctionBreakpointImpl(FunctionBreakpoint breakpoint, GdbDebugger debugger) {
         super(breakpoint, debugger);
@@ -58,6 +59,16 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
 
     @Override
     protected String getBreakpointCommand() {
-        return ((FunctionBreakpoint)getBreakpoint()).getFunctionName();
+        return getBreakpoint().getFunctionName();
+    }
+
+    @Override
+    protected void validationUpdate(Map<String, String> map) {
+        try {
+            getBreakpoint().setURL(debugger.getOSPath(map.get("fullname"))); // NOI18N
+            getBreakpoint().setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
+        } catch (Exception ex) {
+            // do nothing
+        }
     }
 }

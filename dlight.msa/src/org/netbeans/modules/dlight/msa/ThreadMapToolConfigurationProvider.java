@@ -40,6 +40,7 @@ package org.netbeans.modules.dlight.msa;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -49,12 +50,12 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.collector.procfs.ProcFSDCConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.msa.support.MSASQLTables;
-import org.netbeans.modules.dlight.procfs.ProcFSDCConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ThreadMapVisualizerConfiguration;
@@ -72,6 +73,7 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/msa/resources/thread_microstates_16.png");//NOI18N
 
         final List<Column> indicatorDataColumns = Arrays.asList(
                 MSASQLTables.prstat.P_SLEEP,
@@ -137,7 +139,6 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
 
         private final static Object lock = IndicatorDataHandler.class.getName() + "Lock"; // NOI18N
         private final List<String> colNames;
-        private final float[] data;
 
         private IndicatorDataHandler(List<Column> indicatorDataColumns) {
             colNames = new ArrayList<String>();
@@ -145,33 +146,36 @@ public class ThreadMapToolConfigurationProvider implements DLightToolConfigurati
             for (Column c : indicatorDataColumns) {
                 colNames.add(c.getColumnName());
             }
-
-            data = new float[colNames.size()];
         }
 
-        public void addDataRow(DataRow row) {
+        @Override
+        public float[] getData(DataRow row) {
             int idx = 0;
+            float[] result = null;
 
             synchronized (lock) {
                 for (String cn : colNames) {
-                    float f = 0;
                     try {
-                        f = row.getFloatValue(cn);
-                    } catch (NumberFormatException ex) {
+                        float f = row.getFloatValue(cn);
+                        if (result == null) {
+                            result = new float[colNames.size()];
+                        }
+                        result[idx] = f;
+                    } catch (RuntimeException ex) {
                         if (log.isLoggable(Level.FINE)) {
                             log.log(Level.FINE, "Will not add this entry", ex); // NOI18N
                         }
-
                     }
-                    data[idx++] = f;
+                    ++idx;
                 }
             }
+
+            return result;
         }
 
-        public void tick(float[] data, Map<String, String> details) {
-            synchronized (lock) {
-                System.arraycopy(this.data, 0, data, 0, data.length);
-            }
+        @Override
+        public Map<String, String> getDetails() {
+            return Collections.emptyMap();
         }
     }
 }

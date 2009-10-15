@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.php.brackets;
 
 import org.netbeans.jellytools.EditorOperator;
@@ -47,57 +46,68 @@ import junit.framework.Test;
 
 /**
  *
- * @author michaelnazarov@netbeans.org
+ * @author  michaelnazarov@netbeans.org
+ * @desc    it's about brackets completion if you are out of scope <??> tags in mixed HTML
  */
+public class Issue144824 extends brackets {
 
-public class Issue144824 extends brackets
-{
-  static final String TEST_PHP_NAME = "PhpProject_brackets_Issue144824";
+    static final String TEST_PHP_NAME = "PhpProject_brackets_Issue144824";
 
-  public Issue144824( String arg0 )
-  {
-    super( arg0 );
-  }
+    public Issue144824(String arg0) {
+        super(arg0);
+    }
 
-  public static Test suite( )
-  {
-    return NbModuleSuite.create(
-      NbModuleSuite.createConfiguration( Issue144824.class ).addTest(
-          "CreateApplication",
-          "Issue144824"
-        )
-        .enableModules( ".*" )
-        .clusters( ".*" )
-        //.gui( true )
-      );
-  }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(Issue144824.class).addTest(
+                "CreateApplication",
+                "Issue144824",
+                "Issue144824_caseWithOneBracketAlradyWritten"
+                ).enableModules(".*").clusters(".*") //.gui( true )
+                );
+    }
 
-  public void CreateApplication( )
-  {
-    startTest( );
+    public void CreateApplication() {
+        startTest();
 
-    CreatePHPApplicationInternal( TEST_PHP_NAME );
+        CreatePHPApplicationInternal(TEST_PHP_NAME);
 
-    endTest( );
-  }
+        endTest();
+    }
 
-  public void Issue144824( )
-  {
-    startTest( );
+    public void Issue144824() {
+        startTest();
 
-    // Get editor
-    EditorOperator eoPHP = new EditorOperator( "index.php" );
-    Sleep( 1000 );
-    // Locate comment
-    eoPHP.setCaretPosition( "// put your code here", false );
-    // Add new line
-    eoPHP.insert( "\n" );
-    Sleep( 1000 );
+        // Get editor
+        EditorOperator eoPHP = new EditorOperator("index.php");
+        Sleep(1000);
+        // Locate comment
+        eoPHP.setCaretPosition("// put your code here", false);
+        // Add new line
+        eoPHP.insert("\n");
+        Sleep(1000);
 
-    // Empty block
-    TypeCode( eoPHP, "{\n" );
-    CheckResult( eoPHP, "}", 1 );
+        // Empty block
+        TypeCode(eoPHP, "{ \n");
+        Sleep(1000);
+        CheckResult(eoPHP, "}", 1);
 
-    endTest( );
-  }
+        endTest();
+    }
+
+    public void Issue144824_caseWithOneBracketAlradyWritten() {
+        startTest();
+        EditorOperator eoPHP = new EditorOperator("index.php");
+        Sleep(1000);
+
+        eoPHP.setCaretPosition("// put your code here", false);
+        Sleep(1000);
+        eoPHP.insert("\n");
+        Sleep(1000);
+
+        TypeCode(eoPHP, "{ \n");
+        Sleep(1000);
+        CheckResult(eoPHP, "}", 1);
+
+    }
 }

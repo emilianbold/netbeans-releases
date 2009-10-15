@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.openide.util.Utilities;
 
 /**
  * An utility class that simplifies usage of Native Execution Support Module
@@ -249,37 +248,31 @@ public final class CommonTasksSupport {
      *
      * @param execEnv  execution environment of the process
      * @param pid  pid of the process
-     * @param signal  signal name, e.g. "KILL", "USR1"
+     * @param signal  signal name, e.g. "SIGKILL", "SIGUSR1"
      * @param error  if not <tt>null</tt> and some error occurs,
      *        an error message will be written to this <tt>Writer</tt>
      * @return a <tt>Future&lt;Integer&gt;</tt> representing exit code
      *         of the signal task. <tt>0</tt> means success, any other value
      *         means failure.
      */
-    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final String signal, final Writer error) {
-        final boolean isWindows = execEnv.isLocal() && Utilities.isWindows();
+    public static Future<Integer> sendSignal(final ExecutionEnvironment execEnv, final int pid, final Signal signal, final Writer error) {
         final String descr = "Sending signal " + signal + " to " + pid; // NOI18N
 
-        if (isWindows) {
-            return NativeTaskExecutorService.submit(new Callable<Integer>() {
+        return NativeTaskExecutorService.submit(new Callable<Integer>() {
 
-                public Integer call() throws Exception {
-                    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                    String winShell = hostInfo.getShell();
-                    if (winShell != null) {
-                        CommandRunner runner = new CommandRunner(execEnv, error, winShell, "-c", "kill", "-s", signal, String.valueOf(pid)); // NOI18N
-                        return runner.call();
-                    } else {
-                        // Will not kill in case no cygwin ??
-                        return -1;
-                    }
+            public Integer call() throws Exception {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                String shell = hostInfo.getShell();
+                if (shell != null) {
+                    String cmd = String.format("kill -%d %d", signal.getID(), pid); // NOI18N
+                    CommandRunner runner = new CommandRunner(execEnv, error, shell, "-c", cmd); // NOI18N
+                    return runner.call();
+                } else {
+                    // Will not kill in case when no cygwin on Windows installed??
+                    return -1;
                 }
-            }, descr);
-        } else {
-            return NativeTaskExecutorService.submit(
-                new CommandRunner(execEnv, error, "kill", "-s", signal, String.valueOf(pid)), // NOI18N
-                descr);
-        }
+            }
+        }, descr);
     }
 
     private static int transferFileContent(File srcFile, OutputStream outStream) {

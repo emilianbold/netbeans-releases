@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -209,6 +209,7 @@ final public class EjbJarProjectProperties {
     
     //DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
+    DefaultListModel ENDORSED_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
@@ -312,6 +313,7 @@ final public class EjbJarProjectProperties {
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( projectProperties.get(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  ) );
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH), null  ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH), null  ) );
+        ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null  ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
@@ -425,6 +427,7 @@ final public class EjbJarProjectProperties {
         String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
+        String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ), null );
                 
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -447,6 +450,7 @@ final public class EjbJarProjectProperties {
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         //Handle platform selection and javac.source javac.target properties
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
@@ -536,11 +540,13 @@ final public class EjbJarProjectProperties {
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH), null  ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH), null  ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null  ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
         // Create set of removed artifacts and remove them
         Set<ClassPathSupport.Item> removed = new HashSet<ClassPathSupport.Item>(oldArtifacts);

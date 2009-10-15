@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -485,14 +485,14 @@ class TaskListTable extends JTable {
                 return; //don't allow the first column to be dragged
             super.setDraggedColumn( aColumn );
         }
-        
+
         @Override
         public void setDefaultRenderer(TableCellRenderer defaultRenderer) {
-            if( !(defaultRenderer instanceof SortingHeaderRenderer) )
+            if( !(defaultRenderer instanceof SortingHeaderRenderer) && !isNimbus() )
                 defaultRenderer = new SortingHeaderRenderer( defaultRenderer );
             super.setDefaultRenderer( defaultRenderer );
         }
-
+        
         @Override
         public void setUI(TableHeaderUI ui) {
             super.setUI(ui);
@@ -619,6 +619,24 @@ class TaskListTable extends JTable {
                 Settings.getDefault().setPreferredColumnWidth( getModelIndex(), isFoldingModel(), ratio );
             }
         }
+
+        @Override
+        public Object getHeaderValue() {
+            Object res = super.getHeaderValue();
+            if( isNimbus() && getModel() instanceof TaskListModel && res instanceof String ) {
+                TaskListModel tlm = (TaskListModel) getModel();
+                if( getModelIndex() == tlm.getSortingColumnn() ) {
+                    String name = res.toString();
+                    if( tlm.isAscendingSort() ) {
+                        name += "  ʌ";
+                    } else {
+                        name += "  v";
+                    }
+                    res = name;
+                }
+            }
+            return res;
+        }
     }
 
     private static class LeftDotRenderer extends DefaultTableCellRenderer {
@@ -680,7 +698,7 @@ class TaskListTable extends JTable {
             return this;
         }
     }
-    
+
     private class SortingHeaderRenderer implements TableCellRenderer, UIResource {
         
         private TableCellRenderer origRenderer;

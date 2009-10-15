@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -118,7 +118,7 @@ public abstract class OperationWizardModel {
         }
         return primaryElements;
     }
-    
+
     public boolean hasRequiredUpdateElements () {
         return ! getRequiredUpdateElements ().isEmpty ();
     }
@@ -262,13 +262,13 @@ public abstract class OperationWizardModel {
 
     public Set<UpdateElement> getAllVisibleUpdateElements () {
         Set <UpdateElement> visible = new HashSet <UpdateElement> ();
-        visible.addAll(getPrimaryVisibleUpdateElements());
+        visible.addAll(getPrimaryVisibleUpdateElements(true));
         visible.addAll(getRequiredVisibleUpdateElements());
         return visible;
     }
-    public Set<UpdateElement> getPrimaryVisibleUpdateElements () {
+    public Set<UpdateElement> getPrimaryVisibleUpdateElements (boolean checkInternalUpdates) {
         Set <UpdateElement> primary = getPrimaryUpdateElements();
-        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation(), true);
+        Set <UpdateElement> visible = getVisibleUpdateElements(primary, false, getOperation(), checkInternalUpdates);
         return visible;
     }
     public Set<UpdateElement> getRequiredVisibleUpdateElements () {
@@ -294,7 +294,7 @@ public abstract class OperationWizardModel {
                     invisible.add(el);
                 }
             }
-            if (OperationType.UPDATE == operationType) {
+            if (OperationType.UPDATE == operationType && checkInternalUpdates) {
                 //filter out eager invisible modules, which are covered by visible
                 List<UpdateElement> realInvisible = new ArrayList<UpdateElement>(invisible);
                 for (UpdateElement v : visible) {
@@ -327,7 +327,7 @@ public abstract class OperationWizardModel {
                 }
 
 
-                if (!realInvisible.isEmpty() && checkInternalUpdates) {
+                if (!realInvisible.isEmpty()) {
                     HashMap<UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
                     //HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(visibleUnits);
                     for (UpdateElement el : realInvisible) {

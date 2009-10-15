@@ -4,7 +4,9 @@ HOSTNAME=`uname -n`
 OS=`uname -s`
 CPUTYPE=`uname -p`
 BITNESS=32
-SH=`/bin/ls /bin/sh 2>/dev/null || /bin/ls /usr/bin/sh 2>/dev/null`
+
+LS=/bin/ls
+SH=`$LS /bin/bash 2>/dev/null || $LS /usr/bin/bash 2>/dev/null || $LS /bin/sh 2>/dev/null || $LS /usr/bin/sh 2>/dev/null`
 OSFAMILY=
 DATETIME=`date -u +'%Y-%m-%d %H:%M:%S'`
 
@@ -19,7 +21,7 @@ if [ "${OS}" = "SunOS" ]; then
    OSBUILD=`head -1 /etc/release | sed -e "s/^ *//"`
    CPUNUM=`/usr/sbin/psrinfo -v | grep "^Status of" | wc -l | sed 's/^ *//'`
 else
-   uname -a | grep x86_64 >/dev/null
+   uname -a | egrep "x86_64|WOW64" >/dev/null
    if [ $? -eq 0 ]; then
       BITNESS=64
    fi
@@ -78,6 +80,16 @@ echo USER=${USER}
 echo SH=${SH}
 echo TMPDIRBASE=${TMPDIRBASE}
 echo DATETIME=${DATETIME}
+
+if [ "$OSFAMILY" != "MACOSX" -a "$OSFAMILY" != "WINDOWS" ]; then
+   TMPFILE=`mktemp -q env.XXXXXX`
+   if [ ! -z "$TMPFILE" ]; then
+      /bin/bash -l -c "echo \$PATH>$TMPFILE" > /dev/null 2>&1
+      PATH=${PATH}:`cat $TMPFILE`
+   fi
+   rm -f $TMPFILE
+fi
+
 echo PATH=${PATH}
 
 exit 0

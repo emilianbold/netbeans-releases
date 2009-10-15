@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -75,6 +76,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
         setToolTipText(NbBundle.getMessage(MemoryViewTopComponent.class, "HINT_MemoryViewTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         taResult.setFont(new Font("Monospaced", Font.PLAIN, taResult.getFont().getSize())); // NOI18N
+        getActionMap().put(DefaultEditorKit.copyAction, new DefaultEditorKit.CopyAction());
     }
 
     /** This method is called from within the constructor to

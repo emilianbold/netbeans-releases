@@ -79,8 +79,6 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -538,6 +536,23 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 
                 return;
             }
+            if (e.getOffset() == region.getFirstRegionEndOffset() && e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() == 0 && region.getFirstRegionLength() == span) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("e.getOffset()=" + e.getOffset());
+                    LOG.fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
+                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
+                    LOG.fine("span= " + span);
+                }
+                
+                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
+                if (jdca != null && !jdca.getNextChar()) {
+                    undo();
+                } else {
+                    release();
+                }
+
+                return;
+            }
         } else {
             //selection/multiple characters removed:
             int removeSpan = e.getLength() + region.getFirstRegionLength();
@@ -578,7 +593,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    release();
 	    e.consume();
 	}
-    }
+        }
 
     public void keyReleased(KeyEvent e) {
     }

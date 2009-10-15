@@ -39,8 +39,11 @@
 package org.netbeans.modules.ide.ergonomics.ant;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,9 +59,17 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.BuildException;
@@ -77,7 +88,10 @@ import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FileNameMapper;
 import org.apache.tools.zip.ZipEntry;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -87,7 +101,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class ExtractLayer extends Task
-implements FileNameMapper {
+implements FileNameMapper, URIResolver, EntityResolver {
     private List<FileSet> moduleSet = new ArrayList<FileSet>();
     public void addConfiguredModules(FileSet fs) {
         moduleSet.add(fs);
@@ -95,11 +109,6 @@ implements FileNameMapper {
     private List<FileSet> entries = new ArrayList<FileSet>();
     public void addConfiguredEntries(FileSet fs) {
         entries.add(fs);
-    }
-
-    private File layer;
-    public void setLayer(File f) {
-        layer = f;
     }
 
     private File output;
@@ -129,9 +138,6 @@ implements FileNameMapper {
         if (moduleSet.isEmpty()) {
             throw new BuildException();
         }
-        if (layer == null) {
-            throw new BuildException();
-        }
         if (output == null) {
             throw new BuildException();
         }
@@ -145,20 +151,111 @@ implements FileNameMapper {
             throw new BuildException("Error reading " + badgeFile, ex);
         }
 
+        Transformer ft;
+        Transformer rt;
+        Transformer et;
+
+
+        try {
+            StreamSource fullpaths;
+            StreamSource relative;
+            StreamSource entryPoints;
+            URL fu = ExtractLayer.class.getResource("full-paths.xsl");
+            URL ru = ExtractLayer.class.getResource("relative-refs.xsl");
+            URL eu = ExtractLayer.class.getResource("entry-points.xsl");
+            fullpaths = new StreamSource(fu.openStream());
+            relative = new StreamSource(ru.openStream());
+            entryPoints = new StreamSource(eu.openStream());
+
+            SAXTransformerFactory fack;
+            fack = (SAXTransformerFactory)TransformerFactory.newInstance();
+            assert Boolean.TRUE.equals(fack.getFeature(SAXTransformerFactory.FEATURE));
+            fack.setURIResolver(this);
+
+            ft = fack.newTransformer(fullpaths);
+            rt = fack.newTransformer(relative);
+            rt.setParameter("cluster.name", clusterName);
+            et = fack.newTransformer(entryPoints);
+            et.setParameter("cluster.name", clusterName);
+        } catch (Exception ex) {
+            throw new BuildException(ex);
+        }
+
+        StringBuilder modules = new StringBuilder();
+        String sep = "\n    ";
+        ByteArrayOutputStream uberLayer = new ByteArrayOutputStream();
+        try {
+            uberLayer.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+            uberLayer.write("<filesystem>\n".getBytes("UTF-8"));
+        } catch (IOException iOException) {
+            throw new BuildException(iOException);
+        }
+        StreamResult uberOut = new StreamResult(uberLayer);
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        f.setValidating(false);
+        f.setNamespaceAware(false);
+        for (FileSet fs : moduleSet) {
+            DirectoryScanner ds = fs.getDirectoryScanner(getProject());
+            File basedir = ds.getBasedir();
+            for (String path : ds.getIncludedFiles()) {
+                File jar = new File(basedir, path);
+                try {
+                    JarFile jf = new JarFile(jar);
+                    try {
+                        Manifest mf = jf.getManifest();
+                        if (mf == null) {
+                            continue;
+                        }
+                        String modname = mf.getMainAttributes().getValue("OpenIDE-Module");
+                        if (modname == null) {
+                            continue;
+                        }
+                        String base = modname.replaceFirst("/[0-9]+$", "");
+                        modules.append(sep).append(base);
+                        sep = ",\\\n    ";
+
+                        String mflayer = mf.getMainAttributes().getValue("OpenIDE-Module-Layer");
+                        if (mflayer != null) {
+                            String n = mflayer.replaceFirst("/[^/]+$", "").replace('/', '.') + ".xml";
+                            et.setParameter("filename", n);
+                            et.transform(createSource(jf, jf.getEntry(mflayer)), uberOut);
+                        }
+                        java.util.zip.ZipEntry generatedLayer = jf.getEntry("META-INF/generated-layer.xml");
+                        if (generatedLayer != null) {
+                            et.setParameter("filename", base + "-generated.xml");
+                            et.transform(createSource(jf, generatedLayer), uberOut);
+                        }
+
+                    } finally {
+                        jf.close();
+                    }
+                } catch (Exception x) {
+                    throw new BuildException("Reading " + jar + ": " + x, x, getLocation());
+                }
+            }
+        }
+
         Pattern concatPattern;
         Pattern copyPattern;
         RegularExpression linePattern = new RegularExpression();
+        String uberText = null;
+        byte[] uberArr = null;
         try {
+            uberLayer.write("</filesystem>\n".getBytes("UTF-8"));
+            uberText = uberLayer.toString("UTF-8");
+            uberArr = uberLayer.toByteArray();
+            log("uberLayer for " + clusterName + "\n" + uberText, Project.MSG_VERBOSE);
+            
             Set<String> concatregs = new TreeSet<String>();
             Set<String> copyregs = new TreeSet<String>();
             Set<String> keys = new TreeSet<String>();
-            parse(layer, concatregs, copyregs, keys);
+            parse(new ByteArrayInputStream(uberArr), concatregs, copyregs, keys);
 
             log("Concats: " + concatregs, Project.MSG_VERBOSE);
             log("Copies : " + copyregs, Project.MSG_VERBOSE);
 
             StringBuilder sb = new StringBuilder();
-            String sep = "";
+            sep = "";
             for (String s : concatregs) {
                 sb.append(sep);
                 sb.append(s);
@@ -184,40 +281,12 @@ implements FileNameMapper {
             }
             linePattern.setPattern("(" + sb + ") *=");
         } catch (Exception ex) {
-            throw new BuildException("Cannot parse " + layer, ex);
+            throw new BuildException("Cannot parse layers", ex);
         }
         Map<String,ResArray> bundles = new HashMap<String,ResArray>();
         bundles.put("", new ResArray());
         ResArray icons = new ResArray();
-        StringBuilder modules = new StringBuilder();
-        String sep = "\n    ";
 
-        for (FileSet fs : moduleSet) {
-            DirectoryScanner ds = fs.getDirectoryScanner(getProject());
-            File basedir = ds.getBasedir();
-            for (String path : ds.getIncludedFiles()) {
-                File jar = new File(basedir, path);
-                try {
-                    JarFile jf = new JarFile(jar);
-                    try {
-                        Manifest mf = jf.getManifest();
-                        if (mf == null) {
-                            continue;
-                        }
-                        String modname = mf.getMainAttributes().getValue("OpenIDE-Module");
-                        if (modname == null) {
-                            continue;
-                        }
-                        modules.append(sep).append(modname.replaceFirst("/[0-9]+$", ""));
-                        sep = ",\\\n    ";
-                    } finally {
-                        jf.close();
-                    }
-                } catch (Exception x) {
-                    throw new BuildException("Reading " + jar + ": " + x, x, getLocation());
-                }
-            }
-        }
         for (FileSet fs : entries == null ? moduleSet : entries) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File basedir = ds.getBasedir();
@@ -311,16 +380,18 @@ implements FileNameMapper {
         copy.execute();
 
         try {
-            URL u = ExtractLayer.class.getResource("relative-refs.xsl");
-            StreamSource xslt = new StreamSource(u.openStream());
+            StreamSource orig = new StreamSource(new ByteArrayInputStream(uberArr));
+            DOMResult tmpRes = new DOMResult();
+            ft.transform(orig, tmpRes);
 
-            TransformerFactory fack = TransformerFactory.newInstance();
-            Transformer t = fack.newTransformer(xslt);
-            t.setParameter("cluster.name", clusterName);
-
-            StreamSource orig = new StreamSource(layer);
-            StreamResult gen = new StreamResult(new File(output, "layer.xml"));
-            t.transform(orig, gen);
+            Node filesystem = tmpRes.getNode().getFirstChild();
+            String n = filesystem.getNodeName();
+            assert n.equals("filesystem") : n;
+            if (filesystem.getChildNodes().getLength() > 0) {
+                DOMSource tmpSrc = new DOMSource(tmpRes.getNode());
+                StreamResult gen = new StreamResult(new File(output, "layer.xml"));
+                rt.transform(tmpSrc, gen);
+            }
         } catch (Exception ex) {
             throw new BuildException(ex);
         }
@@ -328,14 +399,14 @@ implements FileNameMapper {
 
 
     private void parse(
-        final File file,
+        final InputStream is,
         final Set<String> concat, final Set<String> copy,
         final Set<String> additionalKeys
     ) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
         f.setNamespaceAware(false);
-        f.newSAXParser().parse(file, new DefaultHandler() {
+        f.newSAXParser().parse(is, new DefaultHandler() {
             String prefix = "";
             @Override
             public void startElement(String uri, String localName, String qName,  Attributes attributes) throws SAXException {
@@ -401,7 +472,7 @@ implements FileNameMapper {
                         copy.add(".*/" + url);
                         return;
                     } else {
-                        throw new BuildException("Unknown urlvalue in " + file + " was: " + url);
+                        throw new BuildException("Unknown urlvalue was: " + url);
                     }
                 } else {
                     url = url.substring(prfx.length());
@@ -432,6 +503,27 @@ implements FileNameMapper {
     /** Dash instead of slash file mapper */
     public String[] mapFileName(String fileName) {
         return new String[] { fileName.replace('/', '-') };
+    }
+
+    public Source resolve(String href, String base) throws TransformerException {
+        return null;
+    }
+
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        return new InputSource(new ByteArrayInputStream(new byte[0]));
+    }
+
+    private Source createSource(JarFile jf, java.util.zip.ZipEntry entry)  {
+        try {
+            DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
+            f.setValidating(false);
+            DocumentBuilder b = f.newDocumentBuilder();
+            b.setEntityResolver(this);
+            Document doc = b.parse(jf.getInputStream(entry));
+            return new DOMSource(doc);
+        } catch (Exception ex) {
+            throw new BuildException(ex);
+        }
     }
 
     private static final class ResArray extends ArrayList<Resource>

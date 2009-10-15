@@ -41,19 +41,10 @@ package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
@@ -61,6 +52,7 @@ import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Node for a single project's source repository.
@@ -85,17 +77,25 @@ public class MemberNode extends LeafNode {
         if( null == panel ) {
             panel = new JPanel( new BorderLayout() );
             panel.setOpaque(false);
-            lbl = new TreeLabel( user.getDisplayName() );
+            String role = user.getRole();
+            String displayName = role != null
+                    ? NbBundle.getMessage(MemberNode.class, "LBL_MEMBER_FORMAT", user.getDisplayName(), role) // NOI18N
+                    : user.getDisplayName();
+            lbl = new TreeLabel(displayName) {
+                @Override
+                public String getToolTipText() {
+                    return NbBundle.getMessage(UserNode.class, user.isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", user.getDisplayName(), user.getFullName()); // NOI18N
+                }
+            };
             lbl.setIcon(new KenaiUserUI(user.getName()).getIcon());
             panel.add( lbl, BorderLayout.CENTER);
-            if (user.hasMessages()) {
-                btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());
-                panel.add(btn, BorderLayout.EAST);
-                panel.validate();
-                btn.setForeground(foreground);
-            }
-        }
+            btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction());
+            panel.add(btn, BorderLayout.EAST);
+            panel.validate();
+       }
        lbl.setForeground(foreground);
+       btn.setForeground(foreground);
+       btn.setVisible(user.hasMessages());
        return panel;
     }
 
@@ -103,4 +103,10 @@ public class MemberNode extends LeafNode {
     public Action getDefaultAction() {
         return MemberAccessor.getDefault().getStartChatAction(user);
     }
+
+    @Override
+    public Action[] getPopupActions() {
+        return new Action[]{getDefaultAction()};
+    }
+
 }

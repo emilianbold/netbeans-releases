@@ -91,7 +91,6 @@ public final class ModelHandle {
     private boolean modModel = false;
     private boolean modConfig = false;
     private Configuration active;
-    private boolean enabled = true;
     
     static {
         AccessorImpl impl = new AccessorImpl();
@@ -326,14 +325,13 @@ public final class ModelHandle {
      * @param bool
      */
     public void setConfigurationsEnabled(boolean bool) {
-        enabled = true;
     }
     
     /**
      * @deprecated configurations are always enbled now.
      */
     public boolean isConfigurationsEnabled() {
-        return enabled;
+        return true;
     }
     
     public List<Configuration> getConfigurations() {
@@ -341,11 +339,13 @@ public final class ModelHandle {
     }
     
     public void addConfiguration(Configuration config) {
+        assert config != null;
         configurations.add(config);
         modConfig = true;
     }
     
     public void removeConfiguration(Configuration config) {
+        assert config != null;
         configurations.remove(config);
         if (active == config) {
             active = configurations.size() > 0 ? configurations.get(0) : null;
@@ -357,6 +357,8 @@ public final class ModelHandle {
         return active;
     }
     public void setActiveConfiguration(Configuration conf) {
+        assert conf != null;
+        assert configurations.contains(conf);
         active = conf;
     }
     

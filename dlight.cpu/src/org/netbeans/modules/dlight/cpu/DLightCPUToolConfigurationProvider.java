@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.cpu;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -59,11 +60,11 @@ import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration.CollectedInfo;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.tools.LLDataCollectorConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
 import org.netbeans.modules.dlight.visualizers.api.FunctionsListViewVisualizerConfiguration;
@@ -81,8 +82,6 @@ public final class DLightCPUToolConfigurationProvider
     private static final String TOOL_NAME = loc("CPUMonitorTool.ToolName"); // NOI18N
     private static final String DETAILED_TOOL_NAME = loc("CPUMonitorTool.DetailedToolName"); // NOI18N
     private static final boolean CPU_TREE_TABLE = Boolean.valueOf(System.getProperty("cpu.tree.table", "false"));
-    private static final String TIME_DETAIL_ID = "elapsed-time"; // NOI18N
-    private static final int SECONDS_PER_MINUTE = 60;
 
     public DLightToolConfiguration create() {
         final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(ID, TOOL_NAME);
@@ -146,12 +145,16 @@ public final class DLightCPUToolConfigurationProvider
 //            true);
         VisualizerConfiguration detailsVisualizerConfigDtrace = createDTraceBasedVisualizerConfiguration(CpuSamplingSupport.CPU_SAMPLE_TABLE);
 
-        ProcDataProviderConfiguration indicatorProviderConfiguration = new ProcDataProviderConfiguration();
-        toolConfiguration.addIndicatorDataProviderConfiguration(indicatorProviderConfiguration);
+        toolConfiguration.addIndicatorDataProviderConfiguration(
+                new ProcDataProviderConfiguration());
+
+        toolConfiguration.addIndicatorDataProviderConfiguration(
+                new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.CPU));
 
         List<Column> resultColumns = new ArrayList<Column>();
         resultColumns.add(ProcDataProviderConfiguration.USR_TIME);
         resultColumns.add(ProcDataProviderConfiguration.SYS_TIME);
+        resultColumns.addAll(LLDataCollectorConfiguration.CPU_TABLE.getColumns());
         IndicatorMetadata indicatorMetadata = new IndicatorMetadata(resultColumns);
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
@@ -165,8 +168,6 @@ public final class DLightCPUToolConfigurationProvider
                 Arrays.asList(ProcDataProviderConfiguration.USR_TIME),
                 Arrays.asList(ProcDataProviderConfiguration.SYS_TIME)));
         indicatorConfiguration.setActionDisplayName(loc("indicator.action")); // NOI18N
-        indicatorConfiguration.addDetailDescriptors(
-                new DetailDescriptor(TIME_DETAIL_ID, loc("detail.time"), formatTime(0))); // NOI18N
 
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigDtrace);
         indicatorConfiguration.addVisualizerConfiguration(detailsVisualizerConfigSS);
@@ -251,39 +252,39 @@ public final class DLightCPUToolConfigurationProvider
 
         private final List<Column> usrColumns;
         private final List<Column> sysColumns;
-        private int seconds;
-        private int usr;
-        private int sys;
 
         public DataRowToCpu(List<Column> usrColumns, List<Column> sysColumns) {
             this.usrColumns = new ArrayList<Column>(usrColumns);
             this.sysColumns = new ArrayList<Column>(sysColumns);
         }
 
-        public void addDataRow(DataRow row) {
+        @Override
+        public float[] getData(DataRow row) {
+            float[] result = null;
             for (String columnName : row.getColumnNames()) {
                 for (Column usrColumn : usrColumns) {
                     if (usrColumn.getColumnName().equals(columnName)) {
-                        usr = DataUtil.toInt(row.getData(columnName));
+                        if (result == null) {
+                            result = new float[2];
+                        }
+                        result[1] = DataUtil.toInt(row.getData(columnName));
                     }
                 }
                 for (Column sysColumn : sysColumns) {
                     if (sysColumn.getColumnName().equals(columnName)) {
-                        sys = DataUtil.toInt(row.getData(columnName));
+                        if (result == null) {
+                            result = new float[2];
+                        }
+                        result[0] = DataUtil.toInt(row.getData(columnName));
                     }
                 }
             }
+            return result;
         }
 
-        public void tick(float[] data, Map<String, String> details) {
-            ++seconds;
-            data[0] = sys;
-            data[1] = usr;
-            details.put(TIME_DETAIL_ID, formatTime(seconds));
+        @Override
+        public Map<String, String> getDetails() {
+            return Collections.emptyMap();
         }
-    }
-
-    private static String formatTime(int seconds) {
-        return String.format("%d:%02d", seconds / SECONDS_PER_MINUTE, seconds % SECONDS_PER_MINUTE); // NOI18N
     }
 }

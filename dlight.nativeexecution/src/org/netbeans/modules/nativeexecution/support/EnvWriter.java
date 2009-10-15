@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 /**
@@ -56,19 +58,22 @@ public final class EnvWriter {
 
     public void write(final MacroMap env) throws IOException {
         if (!env.isEmpty()) {
-            String val = null;
+            String name = null;
+            String value = null;
             // Very simple sanity check of vars...
-            Pattern pattern = Pattern.compile("[a-zA-Z_]+.*"); // NOI18N
+            Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
-            for (String var : env.keySet()) {
-                if (!pattern.matcher(var).matches()) {
+            for (Entry<String, String> entry : env.entrySet()) {
+                name = entry.getKey().toUpperCase();
+
+                if (!pattern.matcher(name).matches()) {
                     continue;
                 }
 
-                val = env.get(var);
+                value = entry.getValue();
 
-                if (val != null) {
-                    os.write((var + "=\"" + val + "\" && export " + var + "\n").getBytes()); // NOI18N
+                if (value != null) {
+                    os.write((name + "=\"" + value + "\" && export " + name + "\n").getBytes()); // NOI18N
                     os.flush();
                 }
             }

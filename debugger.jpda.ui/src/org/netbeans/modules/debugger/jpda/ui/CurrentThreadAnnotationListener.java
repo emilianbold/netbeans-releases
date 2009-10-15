@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -271,7 +271,22 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             currentPCSet = true; // The annotation is goint to be set
         }
         if (csf != null && sourcePath != null && currentThread != null) {
-            sourcePath.showSource (csf, language);
+            CallStackFrame frameToShow = csf;
+            int lineNumber = frameToShow.getLineNumber(language);
+            if (lineNumber < 1) {
+                for (int x = 0; x < stack.length; x++) {
+                    if (csf.equals(stack[x])) {
+                        for (int xx = x + 1; xx < stack.length; xx++) {
+                            if (stack[xx].getLineNumber(language) >= 1) {
+                                frameToShow = stack[xx];
+                                break;
+                            }
+                        } // for
+                        break;
+                    } // if
+                } // for
+            } // if
+            sourcePath.showSource (frameToShow, language);
         }
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {

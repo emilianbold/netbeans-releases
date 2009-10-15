@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -194,7 +194,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             model.setEnableDevelopmentHostChange(false);
             BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
             bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
-            if (bt.initBuildTools(model, new ArrayList<String>())) {
+            if (bt.initBuildTools(model, new ArrayList<String>(), cs)) {
 //                if (!name.equals(model.getGdbName())) {
 //                    setGdbCommand(model.getGdbName());
 //                }

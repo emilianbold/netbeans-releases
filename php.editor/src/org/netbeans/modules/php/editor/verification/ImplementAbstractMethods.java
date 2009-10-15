@@ -80,17 +80,13 @@ public class ImplementAbstractMethods extends AbstractRule {
         return NbBundle.getMessage(ImplementAbstractMethods.class, "ImplementAbstractMethodsDispName");//NOI18N
     }
 
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) {
+    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, PHPHintsProvider.Kind kind) throws BadLocationException {
         final BaseDocument doc = context.doc;
         final int caretOffset = context.caretOffset;
         int lineBegin = -1;
         int lineEnd = -1;
-        try {
-            lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
-            lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
+        lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
             Collection<? extends TypeScope> allTypes = ModelUtils.getDeclaredTypes(context.fileScope);
             for (FixInfo fixInfo : checkHints(allTypes, lineBegin, lineEnd)) {

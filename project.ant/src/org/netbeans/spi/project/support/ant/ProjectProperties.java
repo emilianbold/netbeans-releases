@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -174,7 +174,8 @@ final class ProjectProperties {
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
             this.helper = helper;
-            FileUtil.addFileChangeListener(this, new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar)));
+            File fl = new File(FileUtil.toFile(dir()), path.replace('/', File.separatorChar));
+            FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(fl));
         }
         
         private FileObject dir() {

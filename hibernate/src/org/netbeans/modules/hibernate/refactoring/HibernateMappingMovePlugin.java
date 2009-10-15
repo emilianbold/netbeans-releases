@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -199,10 +199,13 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
         for (FileObject fo : mappingFiles) {
             String path = fo.getPath();
             String resourceName = path.substring(srcRoot.length() + 1);
-            String packageName = resourceName.substring(0, resourceName.lastIndexOf("/"));
-            if (packageName.equals(targetPkgName)) {
-                fileData.add(new MappingFileData(fo, resourceName, null));
-            }
+            int separator = resourceName.lastIndexOf("/");
+            if (separator > 0) {
+                String packageName = resourceName.substring(0, separator);
+                if (packageName.equals(targetPkgName)) {
+                    fileData.add(new MappingFileData(fo, resourceName, null));
+                }
+            }            
         }
 
         return fileData;

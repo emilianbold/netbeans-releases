@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -233,6 +233,9 @@ public class NbEditorUI extends EditorUI {
         ec.add(scroller);
 
         // Initialize sidebars
+        // Need to clear the cache - it's null at this point when opening file but the sidebars
+        // would be reused during L&F change (see BaseTextUI.UIWatcher) which would not work properly.
+        CustomizableSideBar.resetSideBars(component);
         Map<SideBarPosition, JComponent> sideBars = CustomizableSideBar.getSideBars(component);
         processSideBars(sideBars, ec);
         

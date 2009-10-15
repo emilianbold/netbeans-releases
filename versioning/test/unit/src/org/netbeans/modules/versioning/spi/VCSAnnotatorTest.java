@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import junit.framework.TestCase;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
@@ -48,13 +47,14 @@ import org.openide.filesystems.FileObject;
 
 import java.io.File;
 import java.util.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Versioning SPI unit tests of VCSAnnotator.
  * 
  * @author Maros Sandor
  */
-public class VCSAnnotatorTest extends TestCase {
+public class VCSAnnotatorTest extends NbTestCase {
     
     private File dataRootDir;
 
@@ -64,7 +64,7 @@ public class VCSAnnotatorTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        dataRootDir = getWorkDir();
     }
 
     public void testAnnotator() throws FileStateInvalidException {

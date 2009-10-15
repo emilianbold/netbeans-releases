@@ -23,24 +23,43 @@
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="Release" type="2">
+    <conf name="GNU_Linux" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
       </toolsSet>
       <compileType>
-        <ccTool>
-          <developmentMode>5</developmentMode>
-        </ccTool>
+        <cTool>
+          <developmentMode>0</developmentMode>
+        </cTool>
         <linkerTool>
           <output>prof_agent.so</output>
           <linkerLibItems>
-            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
+            <linkerOptionItem>-pthread</linkerOptionItem>
             <linkerLibStdlibItem>Dynamic Linking</linkerLibStdlibItem>
             <linkerOptionItem>-lrt</linkerOptionItem>
           </linkerLibItems>
           <commandLine>ldscript.txt</commandLine>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="GNU_MacOS" type="2">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>4</platform>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <linkerTool>
+          <output>prof_agent.dylib</output>
+          <linkerLibItems>
+            <linkerOptionItem>-pthread</linkerOptionItem>
+            <linkerLibStdlibItem>Dynamic Linking</linkerLibStdlibItem>
+          </linkerLibItems>
         </linkerTool>
       </compileType>
     </conf>

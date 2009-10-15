@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -677,7 +677,7 @@ interface DrawGraphics {
                 FontMetricsCache.Info fmcInfo = FontMetricsCache.getInfo(font);
                 graphics.setColor(strikeThroughColor);
                 graphics.fillRect(startX,
-                                  (int)(startY + fmcInfo.getStrikethroughOffset(graphics) + lineAscent + 1.5),
+                                  (int)(startY + fmcInfo.getStrikethroughOffset(graphics) + lineAscent),
                                   x - startX,
                                   Math.max(1, Math.round(fmcInfo.getStrikethroughThickness(graphics)))
                                  );
@@ -693,7 +693,7 @@ interface DrawGraphics {
                     int[] xArray = new int[waveLength + 1];
                     int[] yArray = new int[waveLength + 1];
                     
-                    int yBase = (int)(startY + fmcInfo.getUnderlineOffset(graphics) + lineAscent + 1.5);
+                    int yBase = (int)(startY + fmcInfo.getUnderlineOffset(graphics) + lineAscent + 0.5);
                     for (int i=0;i<=waveLength;i++) {
                         xArray[i]=startX + i;
                         yArray[i]=yBase + wf[xArray[i] % 4];                    
@@ -705,8 +705,21 @@ interface DrawGraphics {
             if (underlineColor != null && bottomBorderLineColor == null) { // draw underline
                 FontMetricsCache.Info fmcInfo = FontMetricsCache.getInfo(font);
                 graphics.setColor(underlineColor);
+                // Underline offset points to lower baseline of letters for Monospaced font (Linux, Mac)
+                // -> therefore adding a contant
+                // On Linux the default font is "Monospaced 12"; on Mac it's "Monospaced 13".
+                // When constant == 0 then a line of char '_':
+                //      on Linux it's one pixel above underline line (no space between the lines).
+                //      on Mac it's two pixels below underline line (one pixel space between lines).
+                // When constant == 0.5 then a line of char '_':
+                //      on Linux it's one pixel above underline line.
+                //      on Mac it's one pixel below underline line
+                // When constant == 1.5 then a line of char '_':
+                //      on Linux it's two pixels above underline line.
+                //      on Mac it's the same pixel as underline line
+                // TODO - we should collect other fonts (eg. Lucida Console) and sizes.
                 graphics.fillRect(startX,
-                                  (int)(startY + fmcInfo.getUnderlineOffset(graphics) + lineAscent + 1.5),
+                                  (int)(startY + fmcInfo.getUnderlineOffset(graphics) + lineAscent + 0.5),
                                   x - startX,
                                   Math.max(1, Math.round(fmcInfo.getUnderlineThickness(graphics)))
                                  );
@@ -796,14 +809,14 @@ interface DrawGraphics {
             flush(true);
         }
 
-        private static void drawStringTextLayout(JComponent c, Graphics g, String text, int x, int y) {
+        private static void drawStringTextLayout(JComponent c, Graphics g, String text, int x, int baselineY) {
             if (!(g instanceof Graphics2D)) {
-                g.drawString(text, x, y);
+                g.drawString(text, x, baselineY);
             } else { // Graphics2D available
                 Graphics2D g2d = (Graphics2D)g;
                 FontRenderContext frc = g2d.getFontRenderContext();
                 TextLayout layout = new TextLayout(text, g2d.getFont(), frc);
-                layout.draw(g2d, x, y);
+                layout.draw(g2d, x, baselineY);
             }
         }
 

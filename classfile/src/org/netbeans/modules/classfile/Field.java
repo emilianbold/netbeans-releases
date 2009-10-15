@@ -3,7 +3,7 @@
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -240,7 +240,7 @@ public abstract class Field {
         sb.append(Access.toString(access));
 	loadAnnotations();
 	if (annotations.size() > 0) {
-	    Iterator iter = annotations.values().iterator();
+	    Iterator<Annotation> iter = annotations.values().iterator();
 	    sb.append(", annotations={ ");
 	    while (iter.hasNext()) {
 		sb.append(iter.next().toString());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -119,7 +119,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         updateString(ip,GlassfishModule.DRIVER_DEPLOY_FLAG, "true");  // NOI18N
 
         if(ip.get(GlassfishModule.URL_ATTR) == null) {
-            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, httpPort);
+            String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, adminPort);
             ip.put(URL_ATTR, deployerUrl);
         }
 
@@ -134,9 +134,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
         
-        if(isRunning(hostName, adminPort)) {
             refresh();
-        }
     }
     
 //<<<<<<< local
@@ -361,8 +359,14 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public Future<OperationState> deploy(final OperationStateListener stateListener, 
             final File application, final String name, final String contextRoot) {
+        return deploy(stateListener, application, name, contextRoot, null);
+    }
+
+    public Future<OperationState> deploy(final OperationStateListener stateListener,
+            final File application, final String name, final String contextRoot, Map properties) {
         CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
-        return mgr.deploy(application, name, contextRoot);
+        
+        return mgr.deploy(application, name, contextRoot, properties);
     }
     
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
@@ -497,6 +501,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         int tries = 0;
 
         while(!isReady && tries++ < maxtries) {
+            if (tries > 1) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                     Logger.getLogger("glassfish").log(Level.INFO, null,ex);
+                }
+            }
             long start = System.nanoTime();
             Commands.LocationCommand command = new Commands.LocationCommand();
             try {
@@ -533,7 +544,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                     Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " timed out inside server after " + (end - start)/1000000 + "ms"); // NOI18N
                 }
             } catch(Exception ex) {
-                Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " timed out.", ex); // NOI18N
+                Logger.getLogger("glassfish").log(Level.INFO, command.getCommand() + " timed out.", ex); // NOI18N
                 isReady = false;
                 break;
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -233,7 +233,6 @@ public final class RubyParser extends Parser {
                 
                 return false;
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
                 return false;
             }
         }
@@ -350,7 +349,7 @@ public final class RubyParser extends Parser {
                 }
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return false;

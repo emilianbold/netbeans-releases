@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,6 +55,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -68,7 +69,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -157,6 +157,7 @@ public class Utilities {
 
         List<String> names = new ArrayList<String> ();
         Set<UpdateUnit> coveredByVisible = new HashSet <UpdateUnit> ();
+        Map<UpdateUnit, List<UpdateElement>> coveredByVisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
 
         for (UpdateUnit u : units) {
             UpdateElement el = u.getInstalled ();
@@ -167,15 +168,25 @@ public class Utilities {
                 }
                 coveredByVisible.add(u);
 
+                List<UpdateElement> list = new ArrayList<UpdateElement>();
                 OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
                 OperationInfo<InstallSupport> info = container.add(updates.get(0));
                 Set <UpdateElement> required = info.getRequiredElements();
                 for(UpdateElement ue : required){
-                    coveredByVisible.add(ue.getUpdateUnit());
+                    if(!ue.getUpdateUnit().isPending()) {
+                        coveredByVisible.add(ue.getUpdateUnit());
+                        list.add(ue);
+                    }
                 }
                 for(OperationInfo <InstallSupport> i : container.listAll()) {
-                    coveredByVisible.add((i.getUpdateUnit()));
+                    if(!i.getUpdateUnit().isPending()) {
+                        coveredByVisible.add((i.getUpdateUnit()));
+                        if(!u.equals(i.getUpdateUnit())) {
+                            list.add(i.getUpdateElement());
+                        }
+                    }
                 }
+                //coveredByVisibleMap.put(u,list);
 
                 String catName = el.getCategory();
                 if (names.contains (catName)) {
@@ -206,10 +217,13 @@ public class Utilities {
         }
 
         List<Unit.InternalUpdate> internals = new ArrayList <Unit.InternalUpdate>();
-        HashMap <UpdateUnit, List<UpdateElement>> map = getVisibleModulesDependecyMap(units);
-        if(otherUnits.size() > 0 && !isNbms) {            
+        createVisibleModulesDependecyMap(units, coveredByVisibleMap);
+
+        Set <UpdateUnit> invisibleElementsWithoutVisibleParent = new HashSet <UpdateUnit> ();
+
+        if(otherUnits.size() > 0 && !isNbms) {
             for(UpdateUnit uu : otherUnits) {
-                UpdateUnit u = getVisibleUnitForInvisibleModule(uu, map);
+                UpdateUnit u = getVisibleUnitForInvisibleModule(uu, coveredByVisibleMap);
                 if (u != null) {
                     boolean exist = false;
                     for(Unit.InternalUpdate internal : internals) {
@@ -231,20 +245,45 @@ public class Utilities {
                     }
                 } else {
                     // fallback, show module itself
-                    String catName = uu.getAvailableUpdates().get(0).getCategory();
-                    UnitCategory cat = null;
-
-                    if (names.contains(catName)) {
-                        cat = res.get(names.indexOf(catName));
-                    } else {
-                        cat = new UnitCategory(catName);
-                        res.add(cat);
-                        names.add(catName);
-                    }
-                    cat.addUnit(new Unit.Update(uu, isNbms, cat.getCategoryName()));
+                    invisibleElementsWithoutVisibleParent.add(uu);
                 }
             }            
         }
+
+        Map<UpdateUnit, List<UpdateElement>> coveredByInvisibleMap = new HashMap <UpdateUnit, List<UpdateElement>> ();
+        createVisibleModulesDependecyMap(invisibleElementsWithoutVisibleParent, coveredByInvisibleMap);
+
+        Set <UpdateUnit> coveredByInvisible = new HashSet <UpdateUnit>();
+        for (UpdateUnit invisibleUnit : invisibleElementsWithoutVisibleParent) {
+            boolean add = true;
+            UpdateElement update = invisibleUnit.getAvailableUpdates().get(0);
+            for(UpdateUnit key : coveredByInvisibleMap.keySet()) {
+                if(key.equals(invisibleUnit)) {
+                    continue;
+                }
+                if(coveredByInvisibleMap.get(key).contains(update) && !coveredByInvisible.contains(key)) {
+                    add = false;
+                    break;
+                }
+            }
+            
+            if (add) {
+                String catName = update.getCategory();
+                UnitCategory cat = null;
+
+                if (names.contains(catName)) {
+                    cat = res.get(names.indexOf(catName));
+                } else {
+                    cat = new UnitCategory(catName);
+                    res.add(cat);
+                    names.add(catName);
+                }
+                cat.addUnit(new Unit.Update(invisibleUnit, isNbms, cat.getCategoryName()));
+            } else {
+                coveredByInvisible.add(invisibleUnit);
+            }
+        }
+
         for(Unit.InternalUpdate iu : internals) {
             iu.initState();
         }
@@ -255,10 +294,19 @@ public class Utilities {
 
     public static HashMap<UpdateUnit, List<UpdateElement>> getVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits) {
         HashMap<UpdateUnit, List<UpdateElement>> result = new HashMap <UpdateUnit, List<UpdateElement>>();
+        createVisibleModulesDependecyMap(allUnits, result);
+        return result;
+    }
+
+    private static void createVisibleModulesDependecyMap(Collection<UpdateUnit> allUnits, Map <UpdateUnit, List<UpdateElement>> result) {
         for (UpdateUnit u : allUnits) {
-            if (u.getInstalled() != null && !u.isPending()) {
-                OperationContainer<InstallSupport> container = OperationContainer.createForInternalUpdate();
-                OperationInfo<InstallSupport> info = container.add(u, u.getInstalled());
+            if (u.getInstalled() != null && !u.isPending() && !result.containsKey(u)) {
+
+                OperationContainer<InstallSupport> container = u.getAvailableUpdates().isEmpty() ? 
+                    OperationContainer.createForInternalUpdate() :
+                    OperationContainer.createForUpdate();
+                OperationInfo<InstallSupport> info = container.add(u, 
+                        u.getAvailableUpdates().isEmpty() ? u.getInstalled() : u.getAvailableUpdates().get(0));
 
                 List<UpdateElement> list = new ArrayList<UpdateElement>();
 
@@ -280,11 +328,10 @@ public class Utilities {
                     result.put(u, list);
                 }
             }
-        }
-        return result;
+        }        
     }
 
-    public static UpdateUnit getVisibleUnitForInvisibleModule(UpdateUnit invisible, HashMap<UpdateUnit, List<UpdateElement>> map) {
+    public static UpdateUnit getVisibleUnitForInvisibleModule(UpdateUnit invisible, Map<UpdateUnit, List<UpdateElement>> map) {
         List <UpdateUnit> candidates = new ArrayList<UpdateUnit>();
 
         for(UpdateUnit unit : map.keySet()) {

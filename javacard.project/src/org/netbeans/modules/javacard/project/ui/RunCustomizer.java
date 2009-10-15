@@ -44,6 +44,7 @@ import org.netbeans.modules.javacard.project.JCProjectProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -58,6 +59,7 @@ public class RunCustomizer extends javax.swing.JPanel {
         JPanel outer = new JPanel(new BorderLayout());
         outer.add (pnl, BorderLayout.NORTH);
         add (outer, BorderLayout.CENTER);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

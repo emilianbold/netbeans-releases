@@ -46,7 +46,7 @@ import java.util.Collection;
  */
 public interface DataFilterManager {
     void cleanAllDataFilter();
-    void cleanAllDataFilter(Class clazz);
+    void cleanAllDataFilter(Class<?> clazz);
     boolean removeDataFilter(DataFilter filter);
     public void addDataFilter(DataFilter filter, boolean isAdjusting);
     void addDataFilterListener(DataFilterListener l);

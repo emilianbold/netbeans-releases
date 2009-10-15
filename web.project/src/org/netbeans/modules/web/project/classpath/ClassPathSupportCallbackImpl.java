@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,16 +41,15 @@
 
 package org.netbeans.modules.web.project.classpath;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -77,6 +76,8 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             String property = CommonProjectUtils.getAntPropertyName( item.getReference() );
             String deploymentPath = warIncludesMap.get(property);
             item.setAdditionalProperty(PATH_IN_DEPLOYMENT, deploymentPath);
+            item.setAdditionalProperty(Util.DESTINATION_DIRECTORY,
+                warIncludesMap.get(property+"."+Util.DESTINATION_DIRECTORY));
         }
     }
 
@@ -87,7 +88,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
     private static final String TAG_PATH_IN_WAR = "path-in-war"; //NOI18N
     private static final String TAG_FILE = "file"; //NOI18N
     private static final String TAG_LIBRARY = "library"; //NOI18N
-    private static final String ATTR_FILES = "files"; //NOI18N
+    //private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N
     
     public final static String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
@@ -110,6 +111,12 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                     for (int i = 0; i < ch.getLength(); i++) {
                         if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
                             Element library = (Element) ch.item(i);
+                            String dirs = library.getAttribute(ATTR_DIRS);
+                            if (!Util.DESTINATION_DIRECTORY_ROOT.equals(dirs) &&
+                                !Util.DESTINATION_DIRECTORY_LIB.equals(dirs) &&
+                                !Util.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
+                                dirs = null;
+                            }
                             Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
                             NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR);
                             //remove ${ and } from the beginning and end
@@ -125,8 +132,12 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                                         pathInWar = "";
                                 }
                                 warIncludesMap.put(webFileText, pathInWar);
-                            } else
+                            } else {
                                 warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : PATH_IN_WAR_NONE);
+                            }
+                            if (dirs != null) {
+                                warIncludesMap.put(webFileText+"."+Util.DESTINATION_DIRECTORY, dirs);
+                            }
                         }
                     }
                     return warIncludesMap;
@@ -207,8 +218,10 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             pathInWar.appendChild(doc.createTextNode(item.getAdditionalProperty(PATH_IN_DEPLOYMENT)));
             libraryElement.appendChild(pathInWar);
         }
+        Util.updateDirsAttributeInCPSItem(item, libraryElement);
         return libraryElement;
     }
 
+    
 }
 

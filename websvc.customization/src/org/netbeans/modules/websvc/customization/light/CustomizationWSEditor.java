@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,12 +48,15 @@
  */
 package org.netbeans.modules.websvc.customization.light;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
@@ -160,8 +163,8 @@ public class CustomizationWSEditor implements WSEditor {
         try {
             initializeModels(node);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-            return null;
+            Logger.getLogger(CustomizationWSEditor.class.getName()).log(Level.FINE, 
+                    "Cannot create WSEditor Component", e); //NOI1*N
         }
 
         wsTopComponent = new WSCustomizationTopComponent(node, getWSDLModels(), primaryDefinitions, true);
@@ -178,7 +181,7 @@ public class CustomizationWSEditor implements WSEditor {
     }
     private Map<WSDLModel, Boolean> wsdlModels = new HashMap<WSDLModel, Boolean>();
 
-    private void initializeModels(Node node) throws Exception {
+    private void initializeModels(Node node) throws IOException, CatalogModelException {
         if (wsdlModels.isEmpty()) {
             undoManager = new UndoManager();
             WSDLModel primaryModel = getPrimaryModel(node);
@@ -223,7 +226,7 @@ public class CustomizationWSEditor implements WSEditor {
         return false;
     }
 
-    private void populateAllModels(WSDLModel wsdlModel) throws Exception {
+    private void populateAllModels(WSDLModel wsdlModel) throws CatalogModelException {
         if (modelExists(wsdlModel)) {
             return;
         }
@@ -255,22 +258,25 @@ public class CustomizationWSEditor implements WSEditor {
     }
 
     private WSDLModel getPrimaryModel(Node node)
-            throws MalformedURLException, Exception {
+            throws MalformedURLException, IOException {
         WSDLModel model = null;
         FileObject wsdlFO = null;
+        FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
 
-        if (jaxWsSupport != null) { //its a client
-            wsdlFO =
-                    jaxWsSupport.getWsdlFolder(false).getFileObject(service.getLocalWsdl());
-        } else { //neither a client nor a service, get out of here
-            throw new Exception("Unable to identify node type");
-        }
-
-        if (wsdlFO != null) { //found the wsdl
-            ModelSource ms = Utilities.getModelSource(wsdlFO, true);
-            model = WSDLModelFactory.getDefault().getModel(ms);
-        } else { //wsdl not found, throw an exception
-            throw new Exception("WSDL file not found");
+        if (wsdlFolder != null) {
+            if (jaxWsSupport != null) { //its a client
+                wsdlFO = wsdlFolder.getFileObject(service.getLocalWsdl());
+            } else { //neither a client nor a service, get out of here
+                throw new IOException("Unable to identify node type");
+            }
+            if (wsdlFO != null) { //found the wsdl
+                ModelSource ms = Utilities.getModelSource(wsdlFO, true);
+                model = WSDLModelFactory.getDefault().getModel(ms);
+            } else { //wsdl not found, throw an exception
+                throw new IOException("WSDL file not found");
+            }
+        } else {
+            throw new IOException("WSDL file not found");
         }
         primaryDefinitions = model.getDefinitions();
         return model;

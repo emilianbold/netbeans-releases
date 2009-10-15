@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -116,6 +116,7 @@ public class ProjectOptionsPanel extends JPanel {
         saveCheckBox.setSelected(makeOptions.getSave());
         reuseCheckBox.setSelected(makeOptions.getReuse());
         viewBinaryFilesCheckBox.setSelected(makeOptions.getViewBinaryFiles());
+        showProfilerCheckBox.setSelected(makeOptions.getShowProfiling());
 
         listen = true;
         changed = false;
@@ -131,6 +132,7 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptions.setSave(saveCheckBox.isSelected());
         makeOptions.setReuse(reuseCheckBox.isSelected());
         makeOptions.setViewBinaryFiles(viewBinaryFilesCheckBox.isSelected());
+        makeOptions.setShowProfiling(showProfilerCheckBox.isSelected());
 
         changed = false;
     }
@@ -195,6 +197,7 @@ public class ProjectOptionsPanel extends JPanel {
         dependencyCheckingCheckBox = new javax.swing.JCheckBox();
         viewBinaryFilesCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
+        showProfilerCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -266,7 +269,6 @@ public class ProjectOptionsPanel extends JPanel {
 
         saveCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("SAVE_CHECKBOX_MN").charAt(0));
         saveCheckBox.setText(bundle.getString("SAVE_CHECKBOX_TXT")); // NOI18N
-        saveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -277,7 +279,6 @@ public class ProjectOptionsPanel extends JPanel {
 
         reuseCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REUSE_CHECKBOX_MN").charAt(0));
         reuseCheckBox.setText(bundle.getString("REUSE_CHECKBOX_TXT")); // NOI18N
-        reuseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -288,7 +289,6 @@ public class ProjectOptionsPanel extends JPanel {
 
         dependencyCheckingCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DEPENDENCY_CHECKING_MN").charAt(0));
         dependencyCheckingCheckBox.setText(bundle.getString("DEPENDENCY_CHECKING_TXT")); // NOI18N
-        dependencyCheckingCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         dependencyCheckingCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dependencyCheckingCheckBoxActionPerformed(evt);
@@ -320,12 +320,22 @@ public class ProjectOptionsPanel extends JPanel {
         add(viewBinaryFilesCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jSeparator1, gridBagConstraints);
+
+        showProfilerCheckBox.setMnemonic('j');
+        showProfilerCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_PROFILER_CHECKBOX_TXT")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        add(showProfilerCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
@@ -352,6 +362,7 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JLabel makeOptionsTxt;
     private javax.swing.JCheckBox reuseCheckBox;
     private javax.swing.JCheckBox saveCheckBox;
+    private javax.swing.JCheckBox showProfilerCheckBox;
     private javax.swing.JCheckBox viewBinaryFilesCheckBox;
     // End of variables declaration//GEN-END:variables
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,12 +47,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,8 +78,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -129,17 +129,22 @@ public class JsfElExpression extends ELExpression {
 
     private static final Logger logger = Logger.getLogger(JsfElExpression.class.getName());
     
+    /** defines if the properties are limited to their context (true),
+     * or are available everywhere after the property context end offset (false)
+     */
+    private static final boolean NESTING_AWARE = false;
+
     private WebModule webModule;
     
     protected String bundleName;
-    
+
     public JsfElExpression(WebModule wm, Document doc){
         super(doc);
         this.webModule = wm;
     }
     
     @Override
-    protected int findContext(String expr) {
+    protected int findContext(final String expr) {
         int dotIndex = expr.indexOf('.');
         int bracketIndex = expr.indexOf('[');
         
@@ -167,73 +172,46 @@ public class JsfElExpression extends ELExpression {
                     return EL_JSF_RESOURCE_BUNDLE;
                 }
             }
-            
-            //This part look for variables defined in JSP/JSF code
-            
-            //marek: this is hacky solution, both the original JSP and xhtml as well
-            //the proper way to fix should be to introduce a ContextAwareObject/Factory
-            //which providers are in mime lookup and the generic impl. use
-            //them to get similar way how the ImplicitObjects
+
+            // look through declared jsf variables
+            Source source = Source.create(getDocument());
+            final int offset = getContextOffset();
+            final String[] _value = new String[1];
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result result = resultIterator.getParserResult(offset);
+                        if (result instanceof HtmlParserResult) {
+                            JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
+                            _value[0] = model.resolveExpression(expr, result.getSnapshot().getEmbeddedOffset(offset), NESTING_AWARE);
+                        }
+                    }
+                });
+            } catch (ParseException e) {
+                Exceptions.printStackTrace(e);
+            }
+
+            if(_value[0] != null) {
+                resolvedExpression = _value[0]; //store the resolved variable expression
+                return EL_JSF_BEAN;
+            }
+
+            //try if in a JSP...
             FileObject fileObject = getFileObject();
-            if (fileObject.getMIMEType().equals("text/xhtml")) { //NOI18N
-                //we are in an xhtml file
-                Source source = Source.create(getDocument());
-                final int offset = getContextOffset();
-                final int[] _value = new int[1];
-                final String searchedVarAttributeValue = first;
-                try {
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            Result _result = resultIterator.getParserResult(offset);
-                            if(_result instanceof HtmlParserResult) {
-                                HtmlParserResult result = (HtmlParserResult)_result;
-                                int astOffset = result.getSnapshot().getEmbeddedOffset(offset);
-                                AstNode leaf = result.findLeaf(astOffset);
-
-                                List<AstNode> match = AstNodeUtils.getAncestors(leaf, new AstNode.NodeFilter() {
-                                    public boolean accepts(AstNode node) {
-                                        return node.getAttribute(VALUE_NAME) != null &&
-                                                node.getAttribute(VARIABLE_NAME) != null &&
-                                                node.getAttribute(VARIABLE_NAME).unquotedValue().equals(searchedVarAttributeValue);
-                                    }
-                                });
-
-                                if(!match.isEmpty()) {
-                                    AstNode closestMatch = match.get(0);
-                                    bundleName = closestMatch.getAttribute(VALUE_NAME).unquotedValue();
-                                    _value[0] = EL_JSF_BEAN_REFERENCE;
-                                }
-                            }
-                        }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-                if(_value[0] != 0) {
-                    return _value[0];
-                }
-
-            } else {
-                //try if in a JSP...
-                JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
-                if (contextInfo != null) {
-                    JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
-                    if (result != null) {
-                        Node.Nodes nodes = result.getNodes();
-                        Node node = findValue(nodes, first);
-                        if (node != null) {
-                            String ref_val = node.getAttributeValue(VALUE_NAME);
-                            bundleName = ref_val;
-                            return EL_JSF_BEAN_REFERENCE;
-                        }
+            JspContextInfo contextInfo = JspContextInfo.getContextInfo(fileObject);
+            if (contextInfo != null) {
+                JspParserAPI.ParseResult result = contextInfo.getCachedParseResult(fileObject, false, true);
+                if (result != null) {
+                    Node.Nodes nodes = result.getNodes();
+                    Node node = findValue(nodes, first);
+                    if (node != null) {
+                        String ref_val = node.getAttributeValue(VALUE_NAME);
+                        resolvedExpression = ref_val;
+                        return EL_JSF_BEAN_REFERENCE;
                     }
                 }
             }
-
-
-            //try to resolve composite component attributes
             
             
         } else if (dotIndex == -1 && bracketIndex == -1) {
@@ -265,39 +243,24 @@ public class JsfElExpression extends ELExpression {
         }
         return null;
     }
-    
+
+    /** returns a type name of the resolved expression.
+     * So for example Company.product.name will cause
+     * name property class type being returned.
+     */
     @Override 
     public String getObjectClass(){
-        String beanName = extractBeanName();
-        if (bundleName !=null && bundleName.startsWith("#{")) {//NOI18N
-            /**
-             * @author ads
-             *  The code below is hacky and incorrect.
-             *  I have changed this code to another due issue 
-             *  IZ#172824 - JSF code completion problems
-             */
-            //int pos = bundleName.indexOf(".");
-            //This is very bad idea !! setExpression(getExpression().replaceAll(beanName, bundleName.substring(2,bundleName.length()-1)));
-            /*if (pos != -1) {
-                beanName = bundleName.substring(2,pos);
-            } else {
-                beanName = bundleName.substring(2,bundleName.length()-1);
-            }*/
-            
-            return getIterableTypeName( bundleName.substring(2,bundleName.length()-1) );
-        }
-        
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
-        
-        for (FacesManagedBean bean : beans){
-            if (beanName.equals(bean.getManagedBeanName())){
-                return bean.getManagedBeanClass();
-            }
-        }
-        
-        return null;
+        return getTypeName( getResolvedExpression() );
     }
-    
+
+    /** returns a type name of the expression base bean.
+     * So for example Company.product.name will cause
+     * Company class type being returned.
+     */
+    public String getBaseObjectClass() {
+        return getTypeName(extractBeanName(getResolvedExpression()));
+    }
+
     @Override
     public String getBeanName(){
         String beanName = extractBeanName();
@@ -314,7 +277,7 @@ public class JsfElExpression extends ELExpression {
     /*
      * Appears as fix for IZ#172824 - JSF code completion problems
      */
-    private String getIterableTypeName( final String varType ) {
+    private String getTypeName( final String varType ) {
         Part[] parts = getParts( varType );
         String name = null;
         if ( parts!= null && parts .length >0 ){
@@ -341,6 +304,17 @@ public class JsfElExpression extends ELExpression {
 
             public void run( CompilationController controller ) throws Exception {
                 TypeMirror type = getTypePreceedingCaret(controller, varType);
+                if(type == null) {
+                    //unresolvable type
+                    return ;
+                }
+                if(type.getKind() == TypeKind.DECLARED) {
+                    Element el = ((DeclaredType)type).asElement();
+                    if(el instanceof TypeElement) {
+                        result[0] = ((TypeElement)el).getQualifiedName().toString();
+                    }
+                }
+
                 TypeMirror erasedType = controller.getTypes().erasure(type);
                 TypeMirror iterable = controller.getTypes().erasure( controller.getElements().
                         getTypeElement(Iterable.class.getCanonicalName()).asType());
@@ -372,7 +346,7 @@ public class JsfElExpression extends ELExpression {
             }
         };
         inspectPropertiesTask.execute();
-        return result[0];
+        return result[0] != null ? result[0] : name;
     }
 
     private static final String ATTRS_ATTR_NAME = "attrs"; //NOI18N
@@ -441,15 +415,45 @@ public class JsfElExpression extends ELExpression {
         return items;
     }
 
+    public List<CompletionItem> getAvailableDeclaredVariables(final String prefix) {
+        final List<CompletionItem> items = new ArrayList<CompletionItem>();
+        // look through declared jsf variables
+        Source source = Source.create(getDocument());
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result result = resultIterator.getParserResult(getContextOffset());
+                    if (result instanceof HtmlParserResult) {
+                        JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
+                        List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
+                        for (JsfVariableContext var : contexts) {
+                            if (var.getVariableName().startsWith(prefix)) {
+                                int anchor = getContextOffset() - getReplace().length();
+                                String type = getTypeName(var.getResolvedType());
+                                items.add(new ElCompletionItem.ELProperty(var.getVariableName(), anchor, type));
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            Exceptions.printStackTrace(e);
+        }
+
+        return items;
+    }
+
     //generic properties completion
     private void resolvePropertiesCompletion(List<String> path, Map properties, 
             List<CompletionItem> items,  int anchor) 
     {
-        String expression = getExpression();
-        boolean endsWithDot = expression.length() >0 && 
-            expression.charAt(expression.length() - 1) == '.' ; 
-        boolean startsWithBracket = expression.length() >0 && 
-            expression.charAt(expression.length() - 1) == '[' ; 
+        String expr = getExpression();
+        boolean endsWithDot = expr.length() >0 &&
+            expr.charAt(expr.length() - 1) == '.' ;
+        boolean startsWithBracket = expr.length() >0 &&
+            expr.charAt(expr.length() - 1) == '[' ;
         
         Map m = properties;
         Iterator<String> pathItr = path.iterator();
@@ -699,6 +703,8 @@ public class JsfElExpression extends ELExpression {
             
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
+                // Fix for IZ#173117 - multiplied EL completion items
+                Set<String> addedItems = new HashSet<String>(); 
                 
                 for (ExecutableElement method : ElementFilter.methodsIn(
                         controller.getElements().getAllMembers(bean)))
@@ -712,6 +718,11 @@ public class JsfElExpression extends ELExpression {
                     {
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
+                                // Fix for IZ#173117 - multiplied EL completion items
+                                if ( addedItems.contains( methodName)){
+                                    continue;
+                                }
+                                addedItems.add(methodName);
                                 CompletionItem item = new JsfElCompletionItem.JsfMethod(
                                     methodName, anchor, method.getReturnType().toString());
 
@@ -753,6 +764,10 @@ public class JsfElExpression extends ELExpression {
         protected boolean checkMethod( ExecutableElement method , 
                 CompilationController compilationController)
         {
+            // Fix for IZ#173117 -  multiplied EL completion items
+            if ( super.checkMethod(method, compilationController)){
+                return false;
+            }
             return JsfElExpression.this.checkMethod(method, compilationController);
         }
     }

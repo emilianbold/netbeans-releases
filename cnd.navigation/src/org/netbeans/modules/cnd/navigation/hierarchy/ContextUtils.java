@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -91,13 +91,11 @@ public class ContextUtils {
 
     public static CsmFile findFile(Node activatedNode) {
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
-        if (c != null) {
-            JEditorPane[] panes = c.getOpenedPanes();
-            if (panes != null && panes.length>0) {
-                return CsmUtilities.getCsmFile(activatedNode,false);
-            }
+        if (c != null && CsmUtilities.findRecentEditorPaneInEQ(c) != null) {
+            return CsmUtilities.getCsmFile(activatedNode,false);
+        } else {
+            return null;
         }
-        return null;
     }
 
     public static CsmClass getContextClass(Node[] activatedNodes){
@@ -139,9 +137,9 @@ public class ContextUtils {
     public static CsmDeclaration findDeclaration(Node activatedNode) {
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {
-            JEditorPane[] panes = c.getOpenedPanes();
-            if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getDot();
+            JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
+            if (pane != null ) {
+                int offset = pane.getCaret().getDot();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 if (file != null){
                     return findInnerFileDeclaration(file, offset);
@@ -207,9 +205,9 @@ public class ContextUtils {
     public static CsmScope findScope(Node activatedNode) {
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {
-            JEditorPane[] panes = c.getOpenedPanes();
-            if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getDot();
+            JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
+            if (pane != null ) {
+                int offset = pane.getCaret().getDot();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 if (file != null){
                     return findInnerFileScope(file, offset);

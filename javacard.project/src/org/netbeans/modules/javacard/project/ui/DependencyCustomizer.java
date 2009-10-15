@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.io.File;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -60,6 +61,7 @@ public class DependencyCustomizer extends javax.swing.JPanel implements ActionLi
     public DependencyCustomizer(JCProjectProperties props) {
         initComponents();
         libList.setModel(props.getClassPathModel());
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.DependenciesPanel"); //NOI18N
     }
 
     /** This method is called from within the constructor to

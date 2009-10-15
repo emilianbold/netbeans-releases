@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -140,13 +140,13 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="PHPUnit">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.phpunit.Bundle"/>
             <attr name="position" intvalue="30"/>
             <!-- intentionally not in new file wizard, only in Tools > Templates -->
             <attr name="templateCategory" stringvalue="PHPUnit"/>
             <file name="PHPUnitBootstrap" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitBootstrap.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.phpunit.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitBootstrapDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
@@ -154,7 +154,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="PHPUnitConfiguration.xml" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/PHPUnitConfiguration.xml">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.util.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.phpunit.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPUnitConfigurationDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>

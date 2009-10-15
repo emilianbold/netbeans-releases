@@ -236,11 +236,17 @@ public class VCSHyperlinkSupport {
         private final KenaiUser kenaiUser;
         private final String author;
         private final Style authorStyle;
+        private final String insertToChat;
 
         public AuthorLinker(KenaiUser kenaiUser, Style authorStyle, StyledDocument sd, String author) throws BadLocationException {
+            this(kenaiUser, authorStyle, sd, author, null);
+        }
+
+        public AuthorLinker(KenaiUser kenaiUser, Style authorStyle, StyledDocument sd, String author, String insertToChat) throws BadLocationException {
             this.kenaiUser = kenaiUser;
             this.author = author;
             this.authorStyle = authorStyle;
+            this.insertToChat = insertToChat;
 
             int doclen = sd.getLength();
             int textlen = author.length();
@@ -257,8 +263,10 @@ public class VCSHyperlinkSupport {
             try {
                 Rectangle startr = tui.modelToView(textPane, docstart, Position.Bias.Forward).getBounds();
                 Rectangle endr = tui.modelToView(textPane, docend, Position.Bias.Backward).getBounds();
-                Rectangle bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
-                this.bounds = bounds;
+                if(kenaiUser.getIcon() != null) {
+                    endr.x += kenaiUser.getIcon().getIconWidth();
+                }
+                this.bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -267,7 +275,11 @@ public class VCSHyperlinkSupport {
         @Override
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
-                kenaiUser.startChat();
+                if(insertToChat != null) {
+                    kenaiUser.startChat(insertToChat);
+                } else {
+                    kenaiUser.startChat();
+                }
                 return true;
             }
             return false;

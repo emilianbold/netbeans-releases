@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -300,8 +300,12 @@ public class DataNode extends AbstractNode {
         return obj.isDeleteAllowed ();
     }
 
-    /* Destroyes the node
-    */
+    /**
+     * Removes the node from its parent, deletes it and fires a property change.
+     * Since a DataNode is always bound to a DataObject, which itself is rooted
+     * in a filesystem, destroying a DataNode also implies deleting the associated
+     * FileObject.
+     */
     @Override
     public void destroy () throws IOException {
         if (obj.isDeleteAllowed ()) {

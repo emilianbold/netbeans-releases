@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -316,7 +316,7 @@ public class Call {
 
                 lineStart = Utilities.getRowStart(doc, offset);
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
 
             boolean dotted = false; // is this dotted expression? (e.g. foo.boo.)
@@ -412,7 +412,7 @@ public class Call {
                         String type = RubyUtils.RUBY_PREDEF_VARS_CLASSES.get(lhs);
                          // predefined vars are instances
                         // also if it was a call to a constructor, the call is not static
-                        boolean isStatic = (type == null && constructorCallLength == -1);
+                        boolean isStatic = (type == null && constructorCallLength == -1) || constantExpected;
 
                         boolean isLHSConstant = RubyUtils.isValidConstantFQN(lhs);
                         if (type == null /* not predef. var */ && isLHSConstant) {
@@ -432,7 +432,7 @@ public class Call {
                         return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
+                    // do nothing - see #154991
                 }
             } else {
                 return Call.UNKNOWN;

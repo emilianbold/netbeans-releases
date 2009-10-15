@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -80,7 +80,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
-            String currentConfName = atts.getValue(0);
+            String currentConfName = atts.getValue(NAME_ATTR);
             Configurations confs = configurationDescriptor.getConfs();
             Configuration currentConf = confs.getConf(currentConfName);
 

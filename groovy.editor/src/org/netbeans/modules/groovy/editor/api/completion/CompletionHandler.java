@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,7 +52,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -115,6 +114,7 @@ import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyTypeAnalyzer;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
@@ -132,8 +132,6 @@ import org.openide.util.WeakListeners;
 public class CompletionHandler implements CodeCompletionHandler {
 
     private static final Logger LOG = Logger.getLogger(CompletionHandler.class.getName());
-
-    private final List<String> defaultImports = new ArrayList<String>();
 
     private final PropertyChangeListener docListener;
 
@@ -169,9 +167,6 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         };
         groovySettings.addPropertyChangeListener(WeakListeners.propertyChange(docListener, this));
-
-        Collections.addAll(defaultImports, "java.io", "java.lang", "java.net", // NOI18N
-                "java.util", "groovy.util", "groovy.lang"); // NOI18N
     }
 
     private String getGroovyJavadocBase() {
@@ -1901,7 +1896,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         // First, create a list of default JDK packages. These are reused,
         // so they are defined elsewhere.
 
-        localDefaultImports.addAll(defaultImports);
+        localDefaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
 
         // adding types from default import, optionally filtered by
         // prefix
@@ -1923,11 +1918,11 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        // Adding two single classes per hand
-        addToProposalUsingFilter(addedTypes, proposals, request,
-                new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
-        addToProposalUsingFilter(addedTypes, proposals, request,
-                new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
+        // Adding single classes
+        for (String className : GroovyUtils.DEFAULT_IMPORT_CLASSES) {
+            addToProposalUsingFilter(addedTypes, proposals, request,
+                    new TypeHolder(className, ElementKind.CLASS), onlyInterfaces);
+        }
         return true;
     }
 
@@ -2278,7 +2273,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             // look for all imported types starting with prefix, which have public constructors
             final List<String> localDefaultImports = new ArrayList<String>();
 
-            localDefaultImports.addAll(defaultImports);
+            localDefaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
 
             final JavaSource javaSource = getJavaSourceFromRequest(request);
 

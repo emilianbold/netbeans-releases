@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -322,6 +322,14 @@ public class ReportPanel extends javax.swing.JPanel {
         }
         
         public void showWrongPassword(){
+            jLabel10.setForeground(new java.awt.Color(255, 51, 51));
+            jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel10.text")); // NOI18N
+            jLabel10.setVisible(true);
+        }
+
+        public void showCheckingPassword() {
+            jLabel10.setForeground(new java.awt.Color(51, 51, 255));
+            jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.checking_password")); // NOI18N
             jLabel10.setVisible(true);
         }
         

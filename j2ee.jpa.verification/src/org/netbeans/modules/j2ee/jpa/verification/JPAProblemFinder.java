@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileAttributeEvent;
@@ -99,6 +100,7 @@ public abstract class JPAProblemFinder {
     private final static String PERSISTENCE_SCOPES_LISTENER = "jpa.verification.scopes_listener"; //NOI18N
     private final static Object singleInstanceLock = new Object();
     private static JPAProblemFinder runningInstance = null;
+    private static boolean usgLogged;
     
     public JPAProblemFinder(FileObject file){
         assert file != null;
@@ -256,6 +258,10 @@ public abstract class JPAProblemFinder {
         
         if (context.isJPAClass()){
             context.setAccessType(JPAHelper.findAccessType(javaClass, context.getModelElement()));
+            if(!usgLogged) {
+                usgLogged = true;
+                PersistenceUtils.logUsage(JPAProblemFinder.class, "USG_PERSISTENCE_DETECTED", new String[]{"CLASS"});//NOI18N
+            }
         }
         
         return context;

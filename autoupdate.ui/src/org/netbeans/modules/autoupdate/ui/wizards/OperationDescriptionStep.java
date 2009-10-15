@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +61,6 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -161,9 +161,10 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             body = new OperationDescriptionPanel (tableTitle,
                     preparePluginsForShow (
-                    model.getPrimaryVisibleUpdateElements(),
+                    model.getPrimaryUpdateElements(),
+                    model.getPrimaryVisibleUpdateElements(false),
                         model.getCustomHandledComponents (),
-                        model.getOperation ()),
+                        model.getOperation (), false),
                     "",
                     "",
                     true);
@@ -195,14 +196,18 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 } else {
                     body = new OperationDescriptionPanel (tableTitle,
                             preparePluginsForShow (
-                                model.getPrimaryVisibleUpdateElements(),
+                                model.getPrimaryUpdateElements(),
+                                model.getPrimaryVisibleUpdateElements(true),
                                 model.getCustomHandledComponents (),
-                                model.getOperation ()),
+                                model.getOperation (),
+                                true),
                             dependenciesTitle,
                             preparePluginsForShow (
+                                model.getRequiredUpdateElements(),
                                 model.getRequiredVisibleUpdateElements(),
                                 null,
-                                model.getOperation ()),
+                                model.getOperation (),
+                                true),
                             ! model.getRequiredVisibleUpdateElements().isEmpty ());
                 }
                 final JPanel finalPanel = body;
@@ -359,13 +364,13 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return presentationName == null ? dep : presentationName;
     }
     
-    private String preparePluginsForShow (Set<UpdateElement> allplugins, Set<UpdateElement> customHandled, OperationType type) {
+    private String preparePluginsForShow (Set <UpdateElement> allPlugins, Set<UpdateElement> visiblePlugins, Set<UpdateElement> customHandled, OperationType type,boolean checkInternalUpdates) {
         String s = new String ();
         List<String> names = new ArrayList<String> ();
         List <UpdateUnit> invisibleIncluded = new ArrayList <UpdateUnit>();
         List <UpdateUnit> units = new ArrayList <UpdateUnit>();
         List <UpdateElement> plugins = new ArrayList<UpdateElement>();
-        for(UpdateElement el : allplugins) {
+        for(UpdateElement el : visiblePlugins) {
             boolean internal = false;
             if (OperationWizardModel.OperationType.UPDATE == type && el.getUpdateUnit ().getInstalled () != null) {
                  String oldVersion = el.getUpdateUnit ().getInstalled ().getSpecificationVersion ();
@@ -385,9 +390,15 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             units.add(p.getUpdateUnit());
         }
         //HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes()));
-        HashMap <UpdateUnit, List<UpdateElement>> map = Utilities.getVisibleModulesDependecyMap(units);
+        
 
         if (plugins != null && ! plugins.isEmpty ()) {
+
+            HashMap <UpdateUnit, List<UpdateElement>> map = null;
+            if(checkInternalUpdates) {
+                map = Utilities.getVisibleModulesDependecyMap(units);
+            }
+
             for (UpdateElement el : plugins) {
                 String updatename;
                 updatename = "<b>"  + el.getDisplayName () + "</b> "; // NOI18N
@@ -395,71 +406,83 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                     String oldVersion = el.getUpdateUnit ().getInstalled ().getSpecificationVersion ();
                     String newVersion = el.getSpecificationVersion ();
                     OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
-                    if (oldVersion.equals(newVersion)) {
+                    if (oldVersion.equals(newVersion) && checkInternalUpdates) {
                         //internal update
                         //updatename += getBundle ("OperationDescriptionStep_PluginVersionFormat", oldVersion);
                         OperationContainer<InstallSupport> internalUpdate = OperationContainer.createForInternalUpdate();
                         internalUpdate.add(el);
                         for (OperationInfo<InstallSupport> info : internalUpdate.listAll()) {
                             if (!info.getUpdateElement().equals(el)) {
-                                if (!container.contains(info.getUpdateElement())) {
+                                if (!container.contains(info.getUpdateElement()) && allPlugins.contains(info.getUpdateElement())) {
                                     container.add(info.getUpdateElement());
                                 }
                             }
                             for (UpdateElement r : info.getRequiredElements()) {
-                                if (!container.contains(r) && container.canBeAdded(r.getUpdateUnit(), r)) {
+                                if (!container.contains(r) && container.canBeAdded(r.getUpdateUnit(), r) && allPlugins.contains(r)) {
                                     container.add(r);
                                 }
                             }
                         }
                     } else {
                         updatename += getBundle("OperationDescriptionStep_UpdatePluginVersionFormat", oldVersion, newVersion);
-                        container.add(el);
+                        if(checkInternalUpdates) {
+                            container.add(el);
+                        }
                     }
 
                     
+                    if(checkInternalUpdates) {
+                        List<UpdateElement> list = new ArrayList<UpdateElement>();
+                        for (OperationInfo<InstallSupport> info : container.listAll()) {
 
-                    List<UpdateElement> list = new ArrayList<UpdateElement>();
-                    for (OperationInfo<InstallSupport> info : container.listAll()) {
-
-                        if(!info.getUpdateUnit().equals(el.getUpdateUnit()) &&
-                                info.getUpdateUnit().getInstalled() != null &&
-                                !info.getUpdateUnit().isPending()) {
-                            list.add(info.getUpdateElement());
-                        }
-                        for (UpdateElement upd : info.getRequiredElements()) {
-                            if (upd.getUpdateUnit().getInstalled() != null &&
+                            if(!info.getUpdateUnit().equals(el.getUpdateUnit()) &&
+                                    info.getUpdateUnit().getInstalled() != null &&
                                     !info.getUpdateUnit().isPending()) {
-                                list.add(upd);
+                                list.add(info.getUpdateElement());
+                            }
+                            for (UpdateElement upd : info.getRequiredElements()) {
+                                if (upd.getUpdateUnit().getInstalled() != null &&
+                                        !upd.getUpdateUnit().isPending()) {
+                                    list.add(upd);
+                                }
                             }
                         }
-                    }                    
-                    
-                    for (UpdateElement upd : list) {
-                        UpdateUnit unit = upd.getUpdateUnit();
-                        if(unit.getType().equals(UpdateManager.TYPE.KIT_MODULE) || invisibleIncluded.contains(unit)) {
-                            continue;
+                        
+                        Set<UpdateElement> sorted = new TreeSet<UpdateElement>(new Comparator<UpdateElement>() {
+                            public int compare(UpdateElement o1, UpdateElement o2) {
+                                return o1.getDisplayName().compareTo(o2.getDisplayName());
+                            }
+                        });
+                        sorted.addAll(list);
+
+
+                        for (UpdateElement upd : sorted) {
+                            UpdateUnit unit = upd.getUpdateUnit();
+                            if(unit.getType().equals(UpdateManager.TYPE.KIT_MODULE) || invisibleIncluded.contains(unit)) {
+                                continue;
+                            }
+                            UpdateUnit visibleUnit = Utilities.getVisibleUnitForInvisibleModule(unit, map);
+                            if(visibleUnit!=null && visibleUnit != el.getUpdateUnit()) {
+                                continue;
+                            }
+                            if(!unit.getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
+                                invisibleIncluded.add(unit);
+                            }
+                            if(unit.getInstalled()!=null) {
+                                updatename += "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + upd.getDisplayName() +
+                                    " [" +
+                                    unit.getInstalled().getSpecificationVersion() + " -> " +
+                                    unit.getAvailableUpdates().get(0).getSpecificationVersion() +
+                                    "]";
+                            } else {
+                                updatename += "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + upd.getDisplayName() +
+                                    " [" +
+                                    unit.getAvailableUpdates().get(0).getSpecificationVersion() +
+                                    "]";
+                            }
                         }
-                        UpdateUnit visibleUnit = Utilities.getVisibleUnitForInvisibleModule(unit, map);
-                        if(visibleUnit!=null && visibleUnit != el.getUpdateUnit()) {
-                            continue;
-                        }
-                        if(!unit.getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
-                            invisibleIncluded.add(unit);
-                        }
-                        if(unit.getInstalled()!=null) {
-                            updatename += "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + upd.getDisplayName() +
-                                " [" +
-                                unit.getInstalled().getSpecificationVersion() + " -> " +
-                                unit.getAvailableUpdates().get(0).getSpecificationVersion() +
-                                "]";
-                        } else {
-                            updatename += "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + upd.getDisplayName() +
-                                " [" +
-                                unit.getAvailableUpdates().get(0).getSpecificationVersion() +
-                                "]";
-                        }
-                    }                    
+                        map.remove(el.getUpdateUnit());
+                    }
                 } else {
                     updatename += getBundle ("OperationDescriptionStep_PluginVersionFormat",  // NOI18N
                         el.getSpecificationVersion ());

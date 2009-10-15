@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -68,7 +68,6 @@ import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
@@ -119,6 +118,7 @@ public class PhpStructureScanner implements StructureScanner {
 
             Collection<? extends FunctionScope> declaredFunctions = nameScope.getDeclaredFunctions();
             for (FunctionScope fnc : declaredFunctions) {
+                if (fnc.isAnonymous()) continue;
                 List<StructureItem> variables = new ArrayList<StructureItem>();
                 namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
                 //TODO: #170281 - API for declaring item in Navigator to collapsed/expanded as default

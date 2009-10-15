@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -59,7 +59,6 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.options.CodeStyle;
-import org.openide.util.Exceptions;
 
 /**
  * Formatting and indentation for Ruby.
@@ -612,12 +611,12 @@ public class RubyFormatter implements Formatter {
                             reformatComments(doc, finalStartOffset, finalEndOffset);
                         }
                     } catch (BadLocationException ble) {
-                        Exceptions.printStackTrace(ble);
+                        // do nothing - see #154991
                     }
                 }
             });
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
     }
 
@@ -735,7 +734,7 @@ public class RubyFormatter implements Formatter {
                 offset = endOfLine;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
     }
     

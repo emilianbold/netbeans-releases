@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -107,7 +107,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
     /**
      */
-    public JavaHierarchyModel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
+    public JavaHierarchyModel(FileObject fileObject, Element[] elements) {
         super(null);
         this.fileObject = fileObject;
 
@@ -122,8 +122,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             elementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
         }
-
-        update(elements, compilationInfo);
     }
     
     public void update() {

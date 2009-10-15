@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,9 @@
 package org.netbeans.modules.websvc.core.dev.wizard;
 
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import java.io.IOException;
 import java.util.Collections;
@@ -110,6 +113,16 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         HandlerCreator creator = CreatorProvider.getHandlerCreator(project, wiz);
         if (creator != null) {
             creator.createMessageHandler();
+
+            // logging usage of wizard
+            Object[] params = new Object[5];
+            String creatorClassName = creator.getClass().getName();
+            params[0] = creatorClassName.contains("jaxrpc") ? LogUtils.WS_STACK_JAXRPC : LogUtils.WS_STACK_JAXWS; //NOI18N
+            params[1] = project.getClass().getName();
+            J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
+            params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion(); //NOI18N
+            params[3] = "MESSAGE HANDLER"; //NOI18N
+            LogUtils.logWsWizard(params);
         }
         return Collections.EMPTY_SET;
     }

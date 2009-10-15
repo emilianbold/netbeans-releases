@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -495,9 +495,10 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
     }
     
     public void setBoldText(String cellName, String text) {
-        setText(cellName, text, getColoring(
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()), 
-            FontColorNames.STATUS_BAR_BOLD_COLORING));
+        JTextComponent jtc = editorUI.getComponent();
+        setText(cellName, text, jtc != null ? 
+            getColoring(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(jtc), FontColorNames.STATUS_BAR_BOLD_COLORING) :
+            null);
     }
 
     public void setText(String cellName, String text, Coloring extraColoring) {
@@ -509,10 +510,11 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
         if (cell != null) {
             cell.setText(text);
             if (visible) {
-                Coloring c = getColoring(
-                    org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()),
+                JTextComponent jtc = editorUI.getComponent();
+                Coloring c = jtc != null ? getColoring(
+                    org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(jtc),
                     FontColorNames.STATUS_BAR_COLORING
-                );
+                ) : null;
 
                 if (c != null && extraColoring != null) {
                     c = extraColoring.apply(c);
@@ -549,9 +551,10 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
      * @param importance positive integer having
      */
     public void setText(String text, int importance) {
-        setText(CELL_MAIN, text, getColoring(
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()),
-            FontColorNames.STATUS_BAR_BOLD_COLORING), importance);
+        JTextComponent jtc = editorUI.getComponent();
+        setText(CELL_MAIN, text, jtc != null ? getColoring(
+            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(jtc), FontColorNames.STATUS_BAR_BOLD_COLORING) : null,
+            importance);
     }
 
     /* Refresh the whole panel by removing all the components
@@ -563,9 +566,10 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             Iterator it = cellList.iterator();
             while (it.hasNext()) {
                 JLabel c = (JLabel)it.next();
-                if (c instanceof Cell && editorUI.getComponent()!=null/*#141362 Check editorUI.getComponent() not null*/) {
+                JTextComponent jtc = editorUI.getComponent();
+                if (c instanceof Cell && jtc != null /*#141362 Check editorUI.getComponent() not null*/) {
                     Coloring col = getColoring(
-                        org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()), 
+                        org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(jtc),
                         FontColorNames.STATUS_BAR_COLORING
                     );
                     if (col != null) {
@@ -623,7 +627,7 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             // data would get displayed in the global status bar.
             if (component != null && component == EditorRegistry.lastFocusedComponent()) {
                 if (c != null) {
-                    BaseDocument doc = Utilities.getDocument(editorUI.getComponent());
+                    BaseDocument doc = Utilities.getDocument(component);
                     if (doc != null && doc.getDefaultRootElement().getElementCount()>0) {
                         int pos = c.getDot();
                         String s = Utilities.debugPosition(doc, pos, " | ");

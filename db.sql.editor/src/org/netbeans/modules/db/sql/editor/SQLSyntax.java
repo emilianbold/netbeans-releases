@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -73,6 +73,7 @@ public class SQLSyntax extends Syntax {
     private static final int ISA_LPAREN = 36; //after (
     private static final int ISA_RPAREN = 37; //after )
     private static final int ISA_BACK_SLASH_IN_STRING = 38; // after \ in string
+    private static final int ISA_HASH = 39; // '#' char
 
     private int startQuoteChar = -1;
     /** MySQL data type (#152751). */
@@ -108,7 +109,7 @@ public class SQLSyntax extends Syntax {
                             state = ISA_SLASH;
                             break;
                         case '#':
-                            state = ISI_LINE_COMMENT;
+                            state = ISA_HASH;
                             break;
                         case '=':
                         case '>':
@@ -241,6 +242,17 @@ public class SQLSyntax extends Syntax {
                     }
                     break;
                 
+                //if we are after a #
+                case ISA_HASH:
+                    if (Character.isWhitespace(actChar)) {
+                        // only in MySQL # starts line comment
+                        state = ISI_LINE_COMMENT;
+                    } else {
+                        // otherwise it can be identifier (issue 172904)
+                        state = ISI_IDENTIFIER;
+                    }
+                    break;
+
                 //if we are in the middle of a possible block comment end token
                 case ISA_STAR_I_BLOCK_COMMENT_END:
                     switch (actChar) {

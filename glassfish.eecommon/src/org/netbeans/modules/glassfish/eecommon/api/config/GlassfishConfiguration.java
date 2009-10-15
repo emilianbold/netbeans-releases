@@ -582,6 +582,9 @@ public abstract class GlassfishConfiguration implements
                 RootInterface rootDD = getSunDDRoot(false);
                 if (rootDD instanceof SunWebApp) {
                     contextRoot = ((SunWebApp) rootDD).getContextRoot();
+                    if((contextRoot != null) && (contextRoot.equals("/"))) { //NOI18N
+                        contextRoot = ""; //NOI18N
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
@@ -605,7 +608,11 @@ public abstract class GlassfishConfiguration implements
                             RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
                             if (rootDD instanceof SunWebApp) {
                                 SunWebApp swa = (SunWebApp) rootDD;
-                                swa.setContextRoot(contextRoot);
+                                if (contextRoot == null || contextRoot.trim().length() == 0) {
+                                    swa.setContextRoot("/"); //NOI18N
+                                } else {
+                                    swa.setContextRoot(contextRoot);
+                                }
                                 swa.write(primarySunDDFO);
                             }
                         }

@@ -1,1 +1,4 @@
 83-105:rule STRINGPART failed predicate: {partial}?
+86-86:mismatched input 'Missing' expecting NEWLINE
+94-94:mismatched input 'end' expecting NEWLINE
+98-98:mismatched input 'markers' expecting NEWLINE

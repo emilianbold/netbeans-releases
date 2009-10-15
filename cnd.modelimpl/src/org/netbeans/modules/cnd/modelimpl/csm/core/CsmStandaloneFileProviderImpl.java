@@ -200,8 +200,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (dao != null) {
                 EditorCookie editorCookie = dao.getCookie(EditorCookie.class);
                 if (editorCookie != null) {
-                    JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(editorCookie);
-                    return panes != null && panes.length > 0;
+                    return CsmUtilities.findRecentEditorPaneInEQ(editorCookie) != null;
                 }
             }
         } catch (DataObjectNotFoundException ex) {

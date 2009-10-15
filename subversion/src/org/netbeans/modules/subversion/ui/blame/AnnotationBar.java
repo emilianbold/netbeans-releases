@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -212,6 +212,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return file;
     }
 
+    Document getdDocument() {
+        return doc;
+    }
+    
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
@@ -493,7 +497,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(rollbackMenu);
         rollbackMenu.setEnabled(revisionCanBeRolledBack);
-        
+
+        final int lineNr = al.getLineNum();
         if(isKenai() && al != null) {
             String author = al.getAuthor();
             final KenaiUser ku = kenaiUsersMap.get(author);
@@ -502,7 +507,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        ku.startChat();
+                        ku.startChat(ku.getChatLink(doc, lineNr));
                     }
                 });
                 popupMenu.add(chatMenu);

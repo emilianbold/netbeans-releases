@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,11 +48,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -90,6 +93,7 @@ import org.w3c.dom.Node;
  */
 public final class SpringXMLConfigEditorUtils {
 
+    private static final Logger LOGGER = Logger.getLogger(SpringXMLConfigEditorUtils.class.getName());
     public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
 
     private SpringXMLConfigEditorUtils() {
@@ -178,9 +182,16 @@ public final class SpringXMLConfigEditorUtils {
 
     public static final Tag getDocumentRoot(Document doc) {
         Tag retTag = null;
+        //  Temporary fix for IZ#155008 until Lexer migration
+        XMLSyntaxSupport syntaxSupport = null;
         try {
-            XMLSyntaxSupport syntaxSupport =
-                    (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
+            syntaxSupport = (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
+        } catch (ClassCastException cce) {
+            LOGGER.log(Level.FINE, cce.getMessage());
+            syntaxSupport = new XMLSyntaxSupport(((BaseDocument)doc));
+        }
+        if (syntaxSupport == null) return retTag;
+        try {
             TokenItem tok = syntaxSupport.getTokenChain(0,1);
             if(tok != null) {
                 while(!ContextUtilities.isTagToken(tok)) {

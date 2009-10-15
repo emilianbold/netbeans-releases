@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -506,7 +505,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991;
         }
 
         // Default behavior
@@ -865,7 +864,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     int lineStart = Utilities.getRowStart(doc, ts.offset());
                     line = doc.getText(lineStart, ts.offset()-lineStart).trim();
                 } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
                     return false;
                 }
             } else {
@@ -1186,7 +1184,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             astLineBegin = AstUtilities.getAstOffset(ir, Utilities.getRowStart(doc, lexOffset));
             astLineEnd = AstUtilities.getAstOffset(ir, Utilities.getRowEnd(doc, lexOffset));
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
             return CodeCompletionResult.NONE;
         }
 
@@ -1281,8 +1278,12 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         // TODO: should only include fields etc. down to caret location??? Decide. (Depends on language semantics. Can I have forward referemces?
         if (call.isConstantExpected()) {
-            //addConstants(root, constants);
             RubyConstantCompleter.complete(proposals, request, anchor, caseSensitive, call);
+            RubyClassCompleter.complete(proposals, request, anchor, caseSensitive, call, showSymbols);
+            RubyType type = call.getType();
+            if (type.isKnown() && type.isSingleton()) {
+                RubyMethodCompleter.complete(proposals, request, type.first(), call, anchor, caseSensitive);
+            }
             return completionResult;
         }
         
@@ -2278,7 +2279,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     }
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             } finally {
                 doc.readUnlock();
             }
@@ -2572,7 +2573,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     return QueryType.COMPLETION;
                 }
             } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
+                // do nothing - see #154991
             }
         }
         

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
 
 /**
@@ -52,11 +53,13 @@ public class ImportClassTest extends HintsTestBase {
     public ImportClassTest(String name) {
         super(name);
     }
-    
+
+    @RandomlyFails
     public void testImportHint() throws Exception {
         performTest("ImportTest", "java.util.List", 22, 13);
     }
 
+    @RandomlyFails
     public void testImportHint2() throws Exception {
         performTest("ImportTest2", "java.util.List", 18, 13);
     }

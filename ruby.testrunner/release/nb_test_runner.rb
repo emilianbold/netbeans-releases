@@ -36,14 +36,7 @@
 # 
 # Portions Copyrighted 2008 Sun Microsystems, Inc.
  
-require 'test/unit'
-require 'test/unit/testcase'
-require 'test/unit/testsuite'
-require 'test/unit/autorunner'
-require 'test/unit/ui/testrunnermediator'
-require 'test/unit/ui/testrunnerutilities'
-require File.join(File.expand_path(File.dirname(__FILE__)), "nb_suite_runner")
-
+require File.join(File.expand_path(File.dirname(__FILE__)), "nb_test_helper")
 
 # Test runner that can be used with the rake test task.
 class NbTestRunner

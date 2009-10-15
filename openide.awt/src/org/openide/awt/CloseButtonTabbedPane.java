@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -63,6 +63,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
@@ -98,6 +99,32 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
     CloseButtonTabbedPane() {
         if (!JDK6_OR_LATER) {
             CloseButtonListener.install();
+        } else {
+            // close tab via middle button
+            addMouseListener(new MouseAdapter() {
+                int lastIdx = -1;
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (SwingUtilities.isMiddleMouseButton(e)) {
+                        lastIdx = getUI().tabForCoordinate(CloseButtonTabbedPane.this, e.getX(), e.getY());
+                    }
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    if (SwingUtilities.isMiddleMouseButton(e)) {
+                        int idx = getUI().tabForCoordinate(CloseButtonTabbedPane.this, e.getX(), e.getY());
+                        if (idx >= 0) {
+                            Component comp = getComponentAt(idx);
+                            if (idx == lastIdx && comp != null && !hideCloseButton(comp)) {
+                                fireCloseRequest(comp);
+                            }
+                        }
+                        lastIdx = -1;
+                    }
+                }
+            });
         }
         //Bugfix #28263: Disable focus.
         setFocusable(false);
@@ -575,7 +602,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
 
             switch(e.getID()) {
                 case MouseEvent.MOUSE_PRESSED:
-                    if (r.contains(p) || e.getButton() == MouseEvent.BUTTON2) {
+                    if (r.contains(p) || SwingUtilities.isMiddleMouseButton(e)) {
                         tab.setPressedCloseButtonIndex(index);
                         tab.draggedOut = false;
                         e.consume();
@@ -585,7 +612,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
 
                 case MouseEvent.MOUSE_RELEASED:
                     if ((r.contains(p) && tab.pressedCloseButtonIndex >= 0)
-                            || (e.getButton() == MouseEvent.BUTTON2 && index == tab.pressedCloseButtonIndex)) {
+                            || (SwingUtilities.isMiddleMouseButton(e) && index == tab.pressedCloseButtonIndex)) {
                         
                         Component tc = null;
                         if( tab.pressedCloseButtonIndex >= 0
@@ -593,7 +620,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
                             tc = tab.findTabAt( tab.pressedCloseButtonIndex );
                         }
                         tab.reset();
-                        if( null != tc )
+                        if (null != tc && !tab.hideCloseButton(tc))
                             tab.fireCloseRequest(tc);
                         e.consume();
                         return;
@@ -679,7 +706,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
                 Exceptions.printStackTrace(ex);
             }
         }
-        int index = 0;
+        int index = -1;
         try {
             index = (Integer) indexOfTabComponent.invoke(this, tabComponent);
         } catch (IllegalAccessException ex) {
@@ -730,7 +757,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements ChangeListener 
                 @Override
                 public String getText() {
                     int i = callIndexOfTabComponent(ButtonTab.this);
-                    if (i != -1) {
+                    if (i >= 0) {
                         String tabTitle = getTitleAt(i);
                         if (!super.getText().equals(tabTitle)) {
                             setText(tabTitle);

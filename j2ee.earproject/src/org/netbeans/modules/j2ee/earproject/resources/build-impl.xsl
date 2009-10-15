@@ -104,29 +104,33 @@ is divided into following sections:
             </target>
 
             <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
-                <target name="-init-libraries" depends="pre-init,init-private">
-                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
-                        <property name="libraries.{position()}.path" location="{.}"/>
-                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
-                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
-                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
-                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
-                        </pathconvert>
-                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
-                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
-                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties" encoding="ISO-8859-1">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                                <escapeunicode/>
-                            </filterchain>
-                        </loadproperties>
-                        <loadproperties srcfile="${{libraries.{position()}.path}}" encoding="ISO-8859-1">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                                <escapeunicode/>
-                            </filterchain>
-                        </loadproperties>
-                    </xsl:for-each>
+                <target name="-pre-init-libraries">
+                    <property name="libraries.path">
+                        <xsl:attribute name="location"><xsl:value-of select="/p:project/p:configuration/libs:libraries/libs:definitions"/></xsl:attribute>
+                    </property>
+                    <dirname property="libraries.dir.nativedirsep" file="${{libraries.path}}"/>
+                    <!-- Do not want \ on Windows, since it would act as an escape char: -->
+                    <pathconvert property="libraries.dir" dirsep="/">
+                        <path path="${{libraries.dir.nativedirsep}}"/>
+                    </pathconvert>
+                    <basename property="libraries.basename" file="${{libraries.path}}" suffix=".properties"/>
+                    <available property="private.properties.available" file="${{libraries.dir}}/${{libraries.basename}}-private.properties"/>
+                </target>
+                <target name="-init-private-libraries" depends="-pre-init-libraries" if="private.properties.available">
+                    <loadproperties srcfile="${{libraries.dir}}/${{libraries.basename}}-private.properties" encoding="ISO-8859-1">
+                        <filterchain>
+                            <replacestring from="$${{base}}" to="${{libraries.dir}}"/>
+                            <escapeunicode/>
+                        </filterchain>
+                    </loadproperties>
+                </target>
+                <target name="-init-libraries" depends="pre-init,init-private,-init-private-libraries">
+                    <loadproperties srcfile="${{libraries.path}}" encoding="ISO-8859-1">
+                        <filterchain>
+                            <replacestring from="$${{base}}" to="${{libraries.dir}}"/>
+                            <escapeunicode/>
+                        </filterchain>
+                    </loadproperties>
                 </target>
             </xsl:if>
 
@@ -241,6 +245,10 @@ is divided into following sections:
                         <isset property="app.client"/>
                     </and>
                 </condition>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
 
             <!-- COS feature - used in run-deploy -->
@@ -331,7 +339,6 @@ exists or setup the property manually. For example like this:
 
             <target name="-do-compile-deps">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <xsl:attribute name="if">do.package.not.directory.deploy</xsl:attribute>
 
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
@@ -805,6 +812,7 @@ to simulate
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                 </xsl:if>
+                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                 <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
                 <arg line="${{j2ee.appclient.tool.args}}"/>
@@ -830,6 +838,7 @@ to simulate
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                 </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}},arg=-name,arg={$subprojname}"/>
                     <arg line="${{application.args.param}}"/>
                     <syspropertyset>
@@ -843,6 +852,7 @@ to simulate
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
                     <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                 </xsl:if>
+                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                 <jvmarg line="-Dj2ee.clientName=${{app.client}}"/>
                 <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
@@ -913,6 +923,7 @@ to simulate
                                         <path path="${{platform.bootcp}}"/>
                                     </bootclasspath>
                                 </xsl:if>
+                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                                 <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>

@@ -29,8 +29,14 @@
 
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include "common.h"
+
+// workaround for Mac
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
 
 int msg_levels = -1;
 

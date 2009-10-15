@@ -91,6 +91,14 @@ public class DLightMath {
         }
     }
 
+    /**
+     * @param <T>
+     * @param a
+     * @param b
+     * @return  maximum of <code>a</code> and <code>b</code>,
+     *      <code>null</code> if at least one argument is <code>null</code>
+     *
+     */
     public static<T extends Comparable<? super T>> T max(T a, T b) {
         if (a == null || b == null) {
             return null;
@@ -101,6 +109,14 @@ public class DLightMath {
         }
     }
 
+    /**
+     * @param <T>
+     * @param a
+     * @param b
+     * @return  minimum of <code>a</code> and <code>b</code>,
+     *      <code>null</code> if at least one argument is <code>null</code>
+     *
+     */
     public static<T extends Comparable<? super T>> T min(T a, T b) {
         if (a == null || b == null) {
             return null;
@@ -109,5 +125,9 @@ public class DLightMath {
         } else {
             return b;
         }
+    }
+
+    public static long nextProductOf(long multiplier, long ref) {
+        return (ref / multiplier + 1) * multiplier;
     }
 }

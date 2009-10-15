@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -87,19 +87,14 @@ public class StatusAction extends ContextAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        return HgUtils.isFromHgRepository(context);
     } 
 
     /**
      * Connects to repository and gets recent status.
      */
     public static void executeStatus(final VCSContext context, HgProgressSupport support) {
-
         if (context == null || context.getRootFiles().size() == 0) {
-            return;
-        }
-        File repository = HgUtils.getRootFile(context);
-        if (repository == null) {
             return;
         }
 
@@ -111,6 +106,10 @@ public class StatusAction extends ContextAction {
             Mercurial.LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
 
             for (File root :  context.getRootFiles()) {
+                File repository = Mercurial.getInstance().getRepositoryRoot(root);
+                if (repository == null) {
+                    continue;
+                }
                 refreshFile(root, repository, support, cache);
                 if (support.isCanceled()) {
                     return;

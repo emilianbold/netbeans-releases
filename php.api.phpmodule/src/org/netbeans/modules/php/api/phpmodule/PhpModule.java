@@ -57,12 +57,12 @@ import org.openide.windows.WindowManager;
 public abstract class PhpModule {
 
     /**
-     * {@see ProjectInformation#getName}
+     * See {@link org.netbeans.api.project.ProjectInformation#getName}.
      */
     public abstract String getName();
 
     /**
-     * {@see ProjectInformation#getDisplayName}
+     * See {@link org.netbeans.api.project.ProjectInformation#getDisplayName}.
      */
     public abstract String getDisplayName();
 
@@ -77,6 +77,15 @@ public abstract class PhpModule {
      * @return the test directory, can be <code>null</code> if not set yet
      */
     public abstract FileObject getTestDirectory();
+
+    /**
+     * Get the current {@link PhpModuleProperties properties} of this PHP module.
+     * Please note that caller should not hold this properties because they can
+     * change very often (if user changes Run Configuration).
+     * @return the current {@link PhpModuleProperties properties}
+     * @since 1.19
+     */
+    public abstract PhpModuleProperties getProperties();
 
     /**
      * Gets PHP module for the given {@link FileObject}.

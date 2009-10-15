@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -70,7 +70,7 @@ import org.openide.util.Lookup;
  */
 public final class ServerUtilities {
 
-    public static final int ACTION_TIMEOUT = 10000;
+    public static final int ACTION_TIMEOUT = 15000;
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     public static final String GFV3_VERSION_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N

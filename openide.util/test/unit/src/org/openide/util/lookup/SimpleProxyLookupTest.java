@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,20 +45,16 @@ import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Provider;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 
 /**
  *
  * @author Jan Lahoda
  */
+@SuppressWarnings("unchecked") // XXX ought to be corrected, just a lot of them
 public class SimpleProxyLookupTest extends NbTestCase {
 
     public SimpleProxyLookupTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
     }
 
     public void test69810() throws Exception {

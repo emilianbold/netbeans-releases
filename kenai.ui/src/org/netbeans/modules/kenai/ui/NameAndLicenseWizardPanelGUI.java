@@ -73,6 +73,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -154,6 +155,13 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectNameTextField.getDocument().addDocumentListener(firingDocListener);
         projectTitleTextField.getDocument().addDocumentListener(firingDocListener);
         projectDescTextField.getDocument().addDocumentListener(firingDocListener);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                projectNameTextField.requestFocus();
+            }
+        });
+
 
         setupLicensesListModel();
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
@@ -652,7 +660,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         List<NewKenaiProjectWizardIterator.SharedItem> items = panel.getInitialItems();
         if (prjName == null || "".equals(prjName.trim())) {
             if (items.size() == 1) {
-                setProjectName(items.get(0).getRoot().getName());
+                setProjectName(items.get(0).getRoot().getName().toLowerCase());
             } else {
                 setProjectName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                         "NameAndLicenseWizardPanelGUI.defaultPrjName")); // NOI18N

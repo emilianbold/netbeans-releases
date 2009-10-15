@@ -57,6 +57,7 @@ public final class DualPaneSupport<T> extends JSplitPane {
 
     private JComponent detailsComponent;
     private Renderer<T> detailsRenderer;
+    private final JComponent masterComponent;
 
     /**
      * Creates new <code>DualPaneSupport</code> for given master component.
@@ -70,10 +71,18 @@ public final class DualPaneSupport<T> extends JSplitPane {
         super(HORIZONTAL_SPLIT);
         this.detailsRenderer = detailsRenderer;
         this.detailsComponent = null;
+        this.masterComponent = masterComponent;
         setResizeWeight(0.7);
         setContinuousLayout(true);
         setLeftComponent(masterComponent);
     }
+
+    @Override
+    public void requestFocus() {
+        masterComponent.requestFocus();
+    }
+
+
 
     public void showDetailsFor(T item) {
         boolean keepDividerPos = (detailsComponent == null) == (item == null);

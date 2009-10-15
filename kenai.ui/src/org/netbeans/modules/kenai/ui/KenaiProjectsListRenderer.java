@@ -54,6 +54,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -96,14 +98,22 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
             String description = searchInfo.kenaiProject.getDescription();
             description = description.replaceAll("\n+", " "); // NOI18N
             description = description.replaceAll("\t+", " "); // NOI18N
-            Icon icon = searchInfo.kenaiProject.getProjectIcon(false);
-            if (icon != null) {
-                Image im = ImageUtilities.icon2Image(icon);
-                im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-                iconLabel.setIcon(ImageUtilities.image2Icon(im));
+            Icon icon = null;
+            try { // if server is not properly configured, following operation might fail with exception
+                icon = searchInfo.kenaiProject.getProjectIcon();
+            } catch (KenaiException ex) {
+                Logger.getLogger(KenaiProjectsListRenderer.class.getName()).log(Level.INFO, "There are problems with getting a project icon - maybe see http://www.netbeans.org/issues/show_bug.cgi?id=172649", ex); //NOI18N
             }
+            Image im = null;
+            if (icon != null) {
+                im = ImageUtilities.icon2Image(icon);
+            } else {
+                im = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/default.jpg"); //NOI18N
+            }
+            im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            iconLabel.setIcon(ImageUtilities.image2Icon(im));
             projectDescLabel.setText(description);
-            projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length()/100 + 1);
+            projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length() / 100 + 1);
             String tags = searchInfo.kenaiProject.getTags();
             if (tags.length() > 60) {
                 int k = tags.indexOf(' ', 60);

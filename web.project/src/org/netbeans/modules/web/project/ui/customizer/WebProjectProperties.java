@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -227,6 +227,7 @@ final public class WebProjectProperties {
     ClassPathTableModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
+    DefaultListModel ENDORSED_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
@@ -355,6 +356,7 @@ final public class WebProjectProperties {
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES) );
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
+        ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.ENDORSED_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
@@ -635,6 +637,7 @@ final public class WebProjectProperties {
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] war_includes = cs.encodeToStrings( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
+        String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ), null );
 
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
@@ -673,6 +676,7 @@ final public class WebProjectProperties {
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         

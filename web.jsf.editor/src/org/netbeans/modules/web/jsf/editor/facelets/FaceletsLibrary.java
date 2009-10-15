@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,6 +75,15 @@ public abstract class FaceletsLibrary {
     public String getDisplayName() {
         return getAssociatedTLDLibrary() != null ? getAssociatedTLDLibrary().getDisplayName() : getNamespace();
     }
+
+    @Override
+    public String toString() {
+        return "FaceletsLibrary(namespace=" + getNamespace() +
+                ", default prefix= " + getDefaultPrefix() +
+                ", tld library= " + getAssociatedTLDLibrary(); //NOI18N
+    }
+
+
 
      @Override
     public boolean equals(Object obj) {

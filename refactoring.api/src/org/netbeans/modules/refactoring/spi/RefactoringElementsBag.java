@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -97,6 +97,7 @@ public final class RefactoringElementsBag {
      */
     public Problem add(AbstractRefactoring refactoring, RefactoringElementImplementation el) {
         Problem p = null;
+        if (el == null) throw new NullPointerException ();
         //isQuery should be used
         if (isReadOnly(el) && !(refactoring instanceof WhereUsedQuery)) {
             FileObject file = el.getParentFile();
@@ -189,6 +190,9 @@ public final class RefactoringElementsBag {
     }    
     
     private boolean isReadOnly(RefactoringElementImplementation rei) {
+        FileObject fileObject = rei.getParentFile();
+        if (fileObject == null)
+            throw new NullPointerException ("null parent file: " + rei.getClass ().getName ());
         return !rei.getParentFile().canWrite();
     }
     

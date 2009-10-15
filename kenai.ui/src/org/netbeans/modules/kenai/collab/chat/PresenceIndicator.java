@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,7 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -48,19 +49,11 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
@@ -68,6 +61,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiUser;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -91,7 +85,17 @@ public class PresenceIndicator {
         label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
         if (status!=Kenai.Status.ONLINE) {
             label.setText(""); // NOI18N
-            label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
+        }
+        switch (status) {
+            case OFFLINE:
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline_Tooltip")); // NOI18N
+                break;
+            case LOGGED_IN:
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedInButNotOnChat_Tooltip")); // NOI18N
+                break;
+            case ONLINE:
+                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip")); // NOI18N
+                break;
         }
             label.setVisible(status!=Kenai.Status.OFFLINE);
     }
@@ -109,10 +113,10 @@ public class PresenceIndicator {
 
     
     private PresenceIndicator() {
-        label = new JLabel(OFFLINE, JLabel.HORIZONTAL);
+        label = new JLabel(); //OFFLINE, JLabel.HORIZONTAL);
         label.setVisible(false);
         label.setBorder(new EmptyBorder(0, 5, 0, 5));
-        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
+//        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline")); // NOI18N
         helper = new MouseL();
         label.addMouseListener(helper);
         Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
@@ -123,19 +127,20 @@ public class PresenceIndicator {
         });
     }
 
-    void showPopup() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ToolTipManager tooltipManager = ToolTipManager.sharedInstance();
-                int initialDelay = tooltipManager.getInitialDelay();
-                tooltipManager.setInitialDelay(0);
-                tooltipManager.mouseMoved(new MouseEvent(label, 0, 0, 0, 0, 0, 0, false));
-                tooltipManager.setInitialDelay(initialDelay);
-            }
-        });
-    }
-
     private class MouseL extends MouseAdapter {
+
+            private Cursor oldCursor;
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                oldCursor = label.getCursor();
+                label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                label.setCursor(oldCursor);
+            }
         @Override
         public void mouseClicked(MouseEvent event) {
               Kenai.Status s = Kenai.getDefault().getStatus();
@@ -146,6 +151,8 @@ public class PresenceIndicator {
             } else {
                 if (s!=Kenai.Status.OFFLINE) {
                     JPopupMenu menu = new JPopupMenu();
+                    final JMenuItem contactListMenu = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_WhoIsOnlineAction"));
+                    menu.add(contactListMenu);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
@@ -173,75 +180,25 @@ public class PresenceIndicator {
                             kenai.logout();
                         }
                     });
-                    menu.show(label, 0, 0);
+
+                    contactListMenu.addActionListener(new WhoIsOnlineAction());
+                    menu.show(label, event.getPoint().x, event.getPoint().y);
                 }
             }
         }
     }
 
-    private static RequestProcessor presenceUpdater = new RequestProcessor();
-
-
     public static class PresenceListener implements PacketListener {
-        private RequestProcessor.Task task;
-        public PresenceListener() {
-            task = presenceUpdater.create(new Runnable() {
-
-                private String getDisplayName(MultiUserChat muc) {
-                       String chatName = StringUtils.parseName(muc.getRoom());
-                        try {
-                            String displayName = Kenai.getDefault().getProject(chatName).getDisplayName();
-                            return displayName;
-                        } catch (KenaiException kenaiException) {
-                            return chatName;
-                        }
-                }
-
-                public void run() {
-                    HashSet<String> onlineUsers = new HashSet<String>();
-                    StringBuffer tipBuffer = new StringBuffer();
-                    tipBuffer.append("<html><body>"); // NOI18N
-
-                    List<MultiUserChat> chats = KenaiConnection.getDefault().getChats();
-                    Collections.sort(chats, new Comparator() {
-                        public int compare(Object o1, Object o2) {
-                            return getDisplayName((MultiUserChat) o1).compareTo(getDisplayName((MultiUserChat)o2));
-                        }
-                    });
-                    for (MultiUserChat muc : chats) {
-                        String chatName = StringUtils.parseName(muc.getRoom());
-                        assert chatName!=null: "muc.getRoom() = " + muc.getRoom(); // NOI18N
-                        tipBuffer.append("<font color=gray>" + getDisplayName(muc) + "</font><br>"); // NOI18N
-                        Iterator<String> i = muc.getOccupants();
-                        ArrayList<String> occupants = new ArrayList<String>();
-                        ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
-                        while (i.hasNext()) {
-                            String uname = StringUtils.parseResource(i.next());
-                            occupants.add(uname);
-                        }
-                        Collections.sort(occupants);
-                        for (String uname:occupants) {
-                            onlineUsers.add(uname);
-                            tipBuffer.append("&nbsp;&nbsp;" + uname + "<br>"); // NOI18N
-                        }
-                    }
-                    tipBuffer.append("</body></html>"); // NOI18N
-                    if (onlineUsers.size() == 0) {
-                        PresenceIndicator.getDefault().setStatus(Kenai.Status.OFFLINE);
-                    } else {
-                        PresenceIndicator.getDefault().label.setToolTipText(tipBuffer.toString());
-                        PresenceIndicator.getDefault().label.setText(String.valueOf(onlineUsers.size()));
-                    }
-
-                }
-            });
-        }
-
         /**
          * @param packet
          */
         public void processPacket(Packet packet) {
-            task.schedule(100);
+            PresenceIndicator.getDefault().label.setText(String.valueOf(KenaiUser.getOnlineUserCount()));
+            for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
+                String chatName = StringUtils.parseName(muc.getRoom());
+                assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N
+                ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
+            }
         }
     }
 }

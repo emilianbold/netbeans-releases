@@ -27,11 +27,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <malloc.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "common.h"
+
+#ifdef HAVE_PTHREAD_SPINLOCK
 
 static long mem_min(int threads, work_t* works) {
     int i;
@@ -84,7 +86,7 @@ static volatile int done;
 static pthread_barrier_t start;
 static pthread_spinlock_t spinlock;
 
-static void* threadfunc(void *p) {
+static void* spinlock_threadfunc(void *p) {
     pthread_barrier_wait(&start);
     work_t* work = (work_t*) p;
     while (!done) {
@@ -106,7 +108,7 @@ void spinlock_demo(int threads, work_t* works, int seconds) {
     pthread_spin_init(&spinlock, PTHREAD_PROCESS_PRIVATE);
     pthread_barrier_init(&start, NULL, threads + 1);
     for (i = 0; i < threads; ++i) {
-        pthread_create(&t[i], NULL, &threadfunc, &works[i]);
+        pthread_create(&t[i], NULL, &spinlock_threadfunc, &works[i]);
     }
     pthread_barrier_wait(&start);
     usleep(seconds * MICROS_PER_SECOND);
@@ -118,3 +120,12 @@ void spinlock_demo(int threads, work_t* works, int seconds) {
     }
     free(t);
 }
+
+#else
+
+void spinlock_demo(int threads, work_t* works, int seconds) {
+    EXPLAIN("Spinlocks are not supported on this platform\n");
+    PAUSE("Press [Enter] to skip...\n");
+}
+
+#endif

@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -541,9 +542,9 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
         for (IndexedFunction func : functions) {
             for (int i = 0; i < func.getParameters().size() && i < refParam.length; i++) {
-                String param = func.getParameters().get(i);
-
-                if (param.startsWith("&")) {
+                Parameter param = func.getParameters().get(i);
+                final String name = param.getName();
+                if (name.startsWith("&")) {
                     refParam[i] = true;
                 }
             }

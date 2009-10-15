@@ -64,6 +64,11 @@ public class KenaiREST extends KenaiImpl {
 
     private URL baseURL;
 
+    @Override
+    public URL getUrl() {
+        return baseURL;
+    }
+
     private static final Logger TIMER = Logger.getLogger("TIMER.kenai");
 
     public KenaiREST(URL baseURL) {

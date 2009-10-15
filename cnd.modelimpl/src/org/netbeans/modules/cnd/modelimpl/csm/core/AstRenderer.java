@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -886,7 +886,7 @@ public class AstRenderer {
                                 if (cfdi != null) {
                                     typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
                                 } else if (classifier != null) {
-                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, scope);
+                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
                                 } else if (results.getEnclosingClassifier() != null) {
                                     typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
                                 }
@@ -926,7 +926,7 @@ public class AstRenderer {
         return new TypedefImpl(ast, file, container, type, name, !isRenderingLocalContext());
     }
 
-    public static boolean renderForwardClassDeclaration(
+    public boolean renderForwardClassDeclaration(
             AST ast,
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container,
             FileImpl file,
@@ -947,11 +947,7 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL_class:
             case CPPTokenTypes.LITERAL_struct:
             case CPPTokenTypes.LITERAL_union:
-                ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext);
-                if (container != null) {
-                    container.addDeclaration(cfdi);
-                }
-                cfdi.init(ast, currentNamespace, !isRenderingLocalContext);
+                createForwardClassDeclaration(ast, container, file, currentNamespace);
                 return true;
         }
 

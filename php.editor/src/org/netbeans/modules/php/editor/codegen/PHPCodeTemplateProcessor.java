@@ -56,8 +56,8 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -78,6 +78,8 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
     private final static String NEW_VAR_NAME = "newVarName"; // NOI18N
     private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_NAME = "variableFromNextAssignmentName"; //NOI18N
     private final static String VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE = "variableFromNextAssignmentType"; //NOI18N
+    private static final String VARIABLE_FROM_PREVIOUS_ASSIGNMENT = "variableFromPreviousAssignment"; //NOI18N
+    private static final String INSTANCE_OF = "instanceof"; //NOI18N
 
     private final CodeTemplateInsertRequest request;
     // @GuardedBy("this")
@@ -104,38 +106,23 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         // No op.
     }
 
-    private String getNextVariableType(final String variableName) {
-        int offset = request.getComponent().getCaretPosition();
-        Model model = ((PHPParseResult)info).getModel();
-        VariableScope varScope = model.getVariableScope(offset);
-        String varName = variableName;
-        if (varName == null) {
-            varName = getNextVariableName();
-        }
-        if (varName == null ||  varScope == null) {
+    private String getNextVariableType() {
+        final int offset = request.getComponent().getCaretPosition();
+        Collection<? extends VariableName> declaredVariables = getDeclaredVariables(offset);
+        String varName = getNextVariableName();
+        if (varName == null || declaredVariables == null) {
             return null;
         }
         if (varName.charAt(0) != '$') {
             varName = "$" + varName; //NOI18N
         }
 
-        List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), varName);
+        List<? extends VariableName> variables = ModelUtils.filter(declaredVariables, varName);
         VariableName first = ModelUtils.getFirst(variables);
         if (first != null) {
-            ArrayList<String> uniqueTypeNames = new ArrayList<String>();
-            for(TypeScope type : first.getTypes(offset)) {
-                if (!uniqueTypeNames.contains(type.getName())) {
-                    uniqueTypeNames.add(type.getName());
-                }
-            }
-            String typeNames = "";
-            for(String typeName : uniqueTypeNames) {
-                typeNames =  typeNames + "|" + typeName;
-            }
-            if (typeNames.length() > 0) {
-                typeNames = typeNames.substring(1);
-            } else {
-                typeNames = "type";//NOI18N
+            String typeNames = StringUtils.implode(getUniqueTypeNames(first, offset), "|"); // NOI18N
+            if (!StringUtils.hasText(typeNames)) {
+                return null;
             }
             return typeNames;
         }
@@ -143,19 +130,36 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
     }
 
     private String getProposedValue(CodeTemplateParameter param) {
-        String variableName = null;
+        String def = null;
+        boolean newVarName = false;
+        boolean previousVariable = false;
+        String type = null;
         for (Entry<String, String> entry : param.getHints().entrySet()) {
             String hintName = entry.getKey();
-            if (NEW_VAR_NAME.equals(hintName)) {
-                return newVarName(param.getValue());
+            // XXX constant anywhere?
+            if ("default".equals(hintName)) { // NOI18N
+                assert def == null : "default already set to " + def;
+                def = param.getValue();
+            } else if (NEW_VAR_NAME.equals(hintName)) {
+                assert !newVarName : "newVarName already set";
+                newVarName = true;
+            } else if (VARIABLE_FROM_NEXT_ASSIGNMENT_NAME.equals(hintName)) {
+                return getNextVariableName();
+            } else if (VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE.equals(hintName)) {
+                return getNextVariableType();
+            } else if (VARIABLE_FROM_PREVIOUS_ASSIGNMENT.equals(hintName)) {
+                assert !previousVariable : "previousVariable already set";
+                previousVariable = true;
+            } else if (INSTANCE_OF.equals(hintName)) {
+                assert type == null : "type already set to " + type;
+                type = entry.getValue();
             }
-            else if (VARIABLE_FROM_NEXT_ASSIGNMENT_NAME.equals(hintName)) {
-                variableName = getNextVariableName();
-                return variableName;
-            }
-            else if (VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE.equals(hintName)) {
-                return getNextVariableType(variableName);
-            }
+        }
+
+        if (newVarName) {
+            return newVarName(def);
+        } else if (previousVariable) {
+            return getPreviousVariable(type);
         }
         return null;
     }
@@ -167,10 +171,8 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         final int caretOffset = request.getComponent().getCaretPosition();
         VariableName var = null;
-        Model model = ((PHPParseResult)info).getModel();
-        VariableScope varScope = model.getVariableScope(caretOffset);
-        if (varScope != null) {
-            Collection<? extends VariableName> allVariables = varScope.getDeclaredVariables();
+        Collection<? extends VariableName> allVariables = getDeclaredVariables(caretOffset);
+        if (allVariables != null) {
             for (VariableName variableName : allVariables) {
                 if (var == null) {
                     var = variableName;
@@ -185,6 +187,56 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
 
         return var != null ? var.getName().substring(1) : null;
+    }
+
+    private String getPreviousVariable(String type) {
+        if (!initParsing()) {
+            return null;
+        }
+        final int caretOffset = request.getComponent().getCaretPosition();
+        VariableName var = null;
+        Collection<? extends VariableName> allVariables = getDeclaredVariables(caretOffset);
+        if (allVariables != null) {
+            for (VariableName variableName : allVariables) {
+                int newDiff = variableName.getNameRange().getStart() - caretOffset;
+                if (newDiff < 0) {
+                    if (!hasType(variableName, caretOffset, type)) {
+                        continue;
+                    }
+                    // variable is defined before and has correct type
+                    if (var == null) {
+                        var = variableName;
+                        continue;
+                    }
+                    int oldDiff = var.getNameRange().getStart() - caretOffset;
+                    assert oldDiff < 0;
+                    if (newDiff > oldDiff) {
+                        // variable is closer
+                        var = variableName;
+                    }
+                }
+            }
+        }
+
+        return var != null ? var.getName() : null;
+    }
+
+    private boolean hasType(VariableName variableName, int offset, String type) {
+        if (type == null) {
+            return true;
+        }
+        // XXX fix this, radek ;)
+        return variableName.getTypeNames(offset).contains(type);
+    }
+
+    private List<String> getUniqueTypeNames(VariableName variableName, int offset) {
+        List<String> uniqueTypeNames = new ArrayList<String>();
+        for (TypeScope type : variableName.getTypes(offset)) {
+            if (!uniqueTypeNames.contains(type.getName())) {
+                uniqueTypeNames.add(type.getName());
+            }
+        }
+        return uniqueTypeNames;
     }
 
     private String newVarName(final String proposed) {
@@ -235,6 +287,15 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
 
         return true;
+    }
+
+    private Collection<? extends VariableName> getDeclaredVariables(final int caretOffset) {
+        Model model = ((PHPParseResult) info).getModel();
+        VariableScope varScope = model.getVariableScope(caretOffset);
+        if (varScope != null) {
+            return varScope.getDeclaredVariables();
+        }
+        return null;
     }
 
     public static final class Factory implements CodeTemplateProcessorFactory {

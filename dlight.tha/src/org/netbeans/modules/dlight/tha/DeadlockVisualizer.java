@@ -51,7 +51,6 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.visualizers.api.DefaultVisualizerContainer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -60,8 +59,11 @@ import org.openide.util.RequestProcessor.Task;
  * @author Alexey Vladykin
  */
 public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerConfiguration> {
+
     public final static Image deadlockImage = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"); // NOI18N
-    public final static Icon deadlockIcon  = ImageUtilities.image2Icon(deadlockImage);
+    public final static Icon deadlockIcon = ImageUtilities.image2Icon(deadlockImage);
+    public final static Icon deadlockRequestIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver1.png", false);//NOI18N
+    public final static Icon deadlockHeldIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/deadlock_request_ver2.png", false);//NOI18N
     private final DeadlockVisualizerConfiguration configuration;
     private final ThreadAnalyzerDataProvider dataProvider;
     private MasterSlaveView<Deadlock, DeadlockTHANodeFactory> msview;
@@ -85,7 +87,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     }
 
     public VisualizerContainer getDefaultContainer() {
-        return DefaultVisualizerContainer.getInstance();
+        return THAVisulaizerContainerTopComponent.findInstance();
     }
 
     public synchronized void refresh() {
@@ -108,6 +110,9 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
+    public void updateVisualizerConfiguration(DeadlockVisualizerConfiguration configuration) {
+    }
+
     private class DeadlockRenderer implements Renderer {
 
         private List<DeadlockThreadSnapshot> snapshots;
@@ -128,12 +133,17 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
 
         public Component getComponent() {
-            MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
+            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
             for (DeadlockThreadSnapshot dts : snapshots) {
-                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockIcon , dts.getHeldLockCallStack());//NOI18N
-                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), deadlockIcon, dts.getRequestedLockCallStack());//NOI18N
+                stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockHeldIcon, dts.getHeldLockCallStack());//NOI18N
+                stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), deadlockRequestIcon, dts.getRequestedLockCallStack());//NOI18N
             }
-            stackPanel.expandAll();
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    stackPanel.expandAll();
+                }
+            }, 500);
             return stackPanel;
 //            return StackPanelFactory.newStackPanel(stack);
         }

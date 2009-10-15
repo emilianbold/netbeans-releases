@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -103,6 +103,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
+        <change id="endorsed-classpath">
+            <api name="java-api-common"/>
+            <summary>Add support for endorsed libraries</summary>
+            <version major="1" minor="11"/>
+            <date day="7" month="10" year="2009"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Add ability to create bootclasspath with given endorsed libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupportFactory"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupport"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <issue number="172952"/>
+        </change>
         <change id="java-code-refactoring">
             <api name="java-api-common"/>
             <summary>Refactor reusable code from J2SE project type and make it available

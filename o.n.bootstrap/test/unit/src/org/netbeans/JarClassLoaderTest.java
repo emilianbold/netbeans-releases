@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,10 +51,12 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.Permission;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.test.TestFileUtils;
@@ -189,5 +191,94 @@ public class JarClassLoaderTest extends NbTestCase {
             dis.close();
         }
         assertEquals(new String(data), content);
+    }
+
+    public void interruptImpl(int toInterrupt) throws Exception {
+        File jar = new File(getWorkDir(), "interrupted-reading.jar");
+        TestFileUtils.writeZipFile(jar, "resource.txt:content");
+        final JarClassLoader jcl = new JarClassLoader(Collections.singletonList(jar), new ProxyClassLoader[0]);
+        jcl.releaseJars();
+        // now we have a JarClassLoader with no jars open, let't catch
+        // him opening a jar
+
+        final Semaphore controlSemaphore = new Semaphore(0);
+        final Object[] results = new Object[2];
+
+        Semaphore readSemaphore = new Semaphore(0);
+        BlockingSecurityManager.initialize(jar.toString(), readSemaphore);
+
+        class Tester extends Thread {
+            int slot;
+
+            Tester(int slot) throws Exception {
+                this.slot = slot;
+                start();
+                controlSemaphore.acquire();
+            }
+
+            public void run() {
+                controlSemaphore.release(); // we're about to start blocking
+                try {
+                    URL url = jcl.getResource("resource.txt");
+                    assertNotNull(url);
+                    results[slot] = url;
+                } catch (Throwable t) {
+                    results[slot] = t;
+                }
+            }
+        };
+
+        Thread[] threads = new Thread[] { new Tester(0), new Tester(1) };
+        // threads[0] has reached the blocking point while opening the jar
+        // threads[1] is blocking in callGet()
+
+        Thread.sleep(100); // for sure
+
+        threads[toInterrupt].interrupt(); // interrupt the selected thread
+        readSemaphore.release(1000); // let the read proceed
+
+        // wait for them to finish the work
+        for (Thread t : threads) t.join();
+
+        assertTrue("Should be URL: " + results[0], results[0] instanceof URL);
+        assertTrue("Should be URL: " + results[1], results[1] instanceof URL);
+    }
+
+    public void testCanInterruptOpeningThread() throws Exception {
+        interruptImpl(0); // try interrupting the opening thread
+    }
+
+    public void testCanInterruptWaitingThread() throws Exception {
+        interruptImpl(1); // try interrupting the waiting thread
+    }
+
+    private static class BlockingSecurityManager extends SecurityManager {
+        private static String path;
+        private static Semaphore sync;
+    
+        public static void initialize(String path, Semaphore sync) {
+            BlockingSecurityManager.path = path;
+            BlockingSecurityManager.sync = sync;
+            if (System.getSecurityManager() instanceof BlockingSecurityManager) {
+            // ok
+            } else {
+                System.setSecurityManager(new BlockingSecurityManager());
+            }
+        }
+    
+        public @Override void checkRead(String file) {
+            if (file.equals(path)) {
+                sync.acquireUninterruptibly();
+            }
+        }
+
+        public @Override void checkRead(String file, Object context) {
+            checkRead(file);
+        }
+
+    
+        public @Override void checkPermission(Permission perm) {}
+
+        public @Override void checkPermission(Permission perm, Object ctx) {}
     }
 }

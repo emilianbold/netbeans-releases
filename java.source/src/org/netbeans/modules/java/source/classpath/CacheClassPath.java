@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -131,10 +131,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 for (URL sourceUrl : sourceUrls) {
                     try {
                         File cacheFolder = JavaIndex.getClassFolder(sourceUrl);
-                        URL cacheUrl = cacheFolder.toURI().toURL();
-                        if (!cacheFolder.exists()) {                                
-                            cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
-                        }
+                        URL cacheUrl = FileUtil.urlForArchiveOrDir(cacheFolder);
                         _cache.add(ClassPathSupport.createResource(cacheUrl));
                     } catch (IOException ioe) {
                         if (log.isLoggable(Level.SEVERE))
@@ -168,9 +165,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 }
                 try {
                     File sigs = JavaIndex.getClassFolder(url);
-                    URL orl = sigs.toURI ().toURL ();
-                    if (!orl.toExternalForm ().endsWith ("/"))
-                        orl = new URL (orl.toExternalForm () + "/");
+                    URL orl = FileUtil.urlForArchiveOrDir(sigs);
                     _cache.add (ClassPathSupport.createResource(orl));
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);

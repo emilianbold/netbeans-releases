@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,7 @@ package org.netbeans.editor;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -237,6 +238,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
         component.setCaretColor(Color.black); // will be changed by settings later
         component.setCaret(caret);
         component.putClientProperty(PROP_DEFAULT_CARET_BLINK_RATE, defaultCaret.getBlinkRate());
+        component.setKeymap(kit.getKeymap());
         
         // assign blink rate
         int br = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, -1);
@@ -276,10 +278,6 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
             getEditorUI().uninstallUI(comp);
             Registry.removeComponent(comp);
         }
-        
-        // Clear the editorUI so it will be recreated according to the kit
-        // of the component for which the installUI() is called
-        editorUI = null;
     }
     
     public int getYFromPos(int pos) throws BadLocationException {
@@ -592,7 +590,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     static class UIWatcher implements PropertyChangeListener {
         
         private Class uiClass;
-        
+
         UIWatcher(Class uiClass) {
             this.uiClass = uiClass;
         }
@@ -607,7 +605,22 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                 if (kit instanceof BaseKit) {
                     // BaseKit but not BaseTextUI -> restore BaseTextUI
                     try {
-                        c.setUI((BaseTextUI)uiClass.newInstance());
+                        BaseTextUI newUI = (BaseTextUI) uiClass.newInstance();
+                        c.setUI(newUI);
+                        if (evt.getOldValue() instanceof BaseTextUI) {
+                            BaseTextUI oldUI = (BaseTextUI) evt.getOldValue();
+                            if (oldUI.getEditorUI().hasExtComponent()) {
+                                // Remove and re-parent the new ext component in place of original one.
+                                JComponent oldExtComponent = oldUI.getEditorUI().getExtComponent();
+                                Container parent = oldExtComponent.getParent();
+                                if (parent != null) {
+                                    // According to CloneableEditor's code add as BorderLayout.CENTER
+                                    parent.remove(oldExtComponent);
+                                    parent.add(newUI.getEditorUI().getExtComponent());
+                                }
+                            }
+                        }
+
                     } catch (InstantiationException e) {
                     } catch (IllegalAccessException e) {
                     }

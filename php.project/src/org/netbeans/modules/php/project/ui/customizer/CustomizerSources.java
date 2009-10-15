@@ -423,7 +423,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         org.openide.awt.Mnemonics.setLocalizedText(phpVersionLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(phpVersionInfoLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.text")); // NOI18N
-        phpVersionInfoLabel.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(shortTagsCheckBox, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_ShortTagsEnabled")); // NOI18N
 

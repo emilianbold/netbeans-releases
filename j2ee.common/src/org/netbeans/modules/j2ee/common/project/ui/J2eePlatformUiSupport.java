@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -250,13 +250,12 @@ public class J2eePlatformUiSupport {
         private J2eePlatformComboBoxItem selectedJ2eeSpecVersion;
     
         public J2eeSpecVersionComboBoxModel(Profile j2eeProfile) {
-            initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeProfile);
+            initialJ2eeSpecVersion = j2eeProfile != null ? new J2eePlatformComboBoxItem(j2eeProfile) : null;
             
             List<J2eePlatformComboBoxItem> orderedListItems = new ArrayList<J2eePlatformComboBoxItem>();
             orderedListItems.add(new J2eePlatformComboBoxItem(Profile.JAVA_EE_5));
             orderedListItems.add(new J2eePlatformComboBoxItem(Profile.J2EE_14));
-            if (!(Profile.JAVA_EE_5 == initialJ2eeSpecVersion.getProfile()) &&
-                    !(Profile.J2EE_14 == initialJ2eeSpecVersion.getProfile())) {
+            if (!(Profile.JAVA_EE_5 == j2eeProfile) && !(Profile.J2EE_14 == j2eeProfile)) {
                 orderedListItems.add(0, new J2eePlatformComboBoxItem(Profile.J2EE_13));
             }
             

@@ -56,7 +56,7 @@ final class OnTimerRefreshVisualizerHandler
     private final OnTimerTask task;
     private final long period;
     private final TimeUnit unit;
-    private Future scheduledTask;
+    private Future<?> scheduledTask;
     private SessionState currentSessionState = null;
 
     protected OnTimerRefreshVisualizerHandler(OnTimerTask task, long period, TimeUnit unit) {

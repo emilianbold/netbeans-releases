@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -246,15 +246,17 @@ public abstract class CsmFileTaskFactory {
 
     private static CsmFile getCsmFile(FileObject fo, boolean allowStandalone) {
         CsmFile csmFile = null;
-        Document doc = CsmUtilities.getDocument(fo);
-        if (doc != null) {
-            csmFile = CsmUtilities.getCsmFile(doc, false);
-        }
-        if (csmFile == null) {
-            csmFile = CsmUtilities.getCsmFile(fo, false);
-        }
-        if (allowStandalone && csmFile == null) {
-            csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
+        if (fo != null) {
+            Document doc = CsmUtilities.getDocument(fo);
+            if (doc != null) {
+                csmFile = CsmUtilities.getCsmFile(doc, false);
+            }
+            if (csmFile == null) {
+                csmFile = CsmUtilities.getCsmFile(fo, false);
+            }
+            if (allowStandalone && csmFile == null) {
+                csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
+            }
         }
         return csmFile;
     }

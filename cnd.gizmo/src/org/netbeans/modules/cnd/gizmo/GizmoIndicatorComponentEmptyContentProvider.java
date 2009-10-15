@@ -52,6 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class GizmoIndicatorComponentEmptyContentProvider implements IndicatorComponentEmptyContentProvider {
 
     public List<Indicator<?>> getEmptyContent() {
-        return DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("Gizmo"); // NOI18N
+        return DefaultIndicatorComponentEmptyContentProvider.getInstance().getEmptyContent("GizmoDTraceExtended"); // NOI18N
     }
 }

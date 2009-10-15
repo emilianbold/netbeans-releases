@@ -39,10 +39,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.WeakSet;
 
 /**
  * Copied from Java Debugger
@@ -50,8 +50,10 @@ import org.openide.util.WeakSet;
  */
 public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
-    private Set<Object> expandedNodes = new WeakSet<Object>();
-    private Set<Object> collapsedNodes = new WeakSet<Object>();
+    // CND debugger support re-creates all variables each step
+    // so we can not use weakset here
+    private Set<String> expandedNodes = new HashSet<String>();
+    private Set<String> collapsedNodes = new HashSet<String>();
 
     /**
      * Defines default state (collapsed, expanded) of given node.
@@ -61,11 +63,15 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
      */
     public boolean isExpanded (Object node)
     throws UnknownTypeException {
+        if (!(node instanceof AbstractVariable)) {
+            return false;
+        }
+        AbstractVariable var = (AbstractVariable)node;
         synchronized (this) {
-            if (expandedNodes.contains(node)) {
+            if (expandedNodes.contains(var.getFullName(true))) {
                 return true;
             }
-            if (collapsedNodes.contains(node)) {
+            if (collapsedNodes.contains(var.getFullName(true))) {
                 return false;
             }
         }
@@ -78,9 +84,13 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
      * @param node a expanded node
      */
     public void nodeExpanded (Object node) {
+        if (!(node instanceof AbstractVariable)) {
+            return;
+        }
+        AbstractVariable var = (AbstractVariable)node;
         synchronized (this) {
-            expandedNodes.add(node);
-            collapsedNodes.remove(node);
+            expandedNodes.add(var.getFullName(true));
+            collapsedNodes.remove(var.getFullName(true));
         }
     }
 
@@ -90,9 +100,13 @@ public class VariablesTreeExpansionModel implements TreeExpansionModel {
      * @param node a collapsed node
      */
     public void nodeCollapsed (Object node) {
+        if (!(node instanceof AbstractVariable)) {
+            return;
+        }
+        AbstractVariable var = (AbstractVariable)node;
         synchronized (this) {
-            collapsedNodes.add(node);
-            expandedNodes.remove(node);
+            collapsedNodes.add(var.getFullName(true));
+            expandedNodes.remove(var.getFullName(true));
         }
     }
 }

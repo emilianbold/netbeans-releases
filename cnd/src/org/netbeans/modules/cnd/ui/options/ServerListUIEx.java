@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
@@ -58,13 +62,16 @@ public abstract class ServerListUIEx extends ServerListUI {
      * Allows to add, remove or modify servers in the list
      * @return true in the case user pressed OK, otherwise
      */
-    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager);
+    protected abstract boolean showServerListDialogImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv);
 
-    public static boolean showServerListDialog(ToolsCacheManager cacheManager) {
+    /** For use as custom editors */
+    protected abstract JComponent getServerListComponentImpl(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv);
+
+    public static boolean showServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
         ServerListUI displayer = Lookup.getDefault().lookup(ServerListUI.class);
         if (displayer != null) {
             if (displayer instanceof ServerListUIEx) {
-                return ((ServerListUIEx) displayer).showServerListDialogImpl(cacheManager);
+                return ((ServerListUIEx) displayer).showServerListDialogImpl(cacheManager, selectedEnv);
             } else {
                 Logger.getLogger("cnd.remote.logger").warning( //NOI18N
                         displayer.getClass().getName() + "should extend " + //NOI18N
@@ -77,4 +84,24 @@ public abstract class ServerListUIEx extends ServerListUI {
             return false;
         }
     }
+
+    public static JComponent getServerListComponent(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
+        ServerListUI displayer = Lookup.getDefault().lookup(ServerListUI.class);
+        if (displayer != null) {
+            if (displayer instanceof ServerListUIEx) {
+                return ((ServerListUIEx) displayer).getServerListComponentImpl(cacheManager, selectedEnv);
+            } else {
+                Logger.getLogger("cnd.remote.logger").warning( //NOI18N
+                        displayer.getClass().getName() + "should extend " + //NOI18N
+                        ServerListUIEx.class.getSimpleName());
+                return new JPanel();
+            }
+        } else {
+            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
+                    "Can not find " + ServerListUIEx.class.getSimpleName()); //NOI18N
+            return new JPanel();
+        }
+    }
+
+
 }

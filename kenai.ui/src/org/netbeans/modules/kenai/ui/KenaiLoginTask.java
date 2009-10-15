@@ -55,7 +55,7 @@ public class KenaiLoginTask implements Runnable {
     @SuppressWarnings("deprecation")
     public void run() {
         synchronized (monitor) {
-            UIUtils.tryLogin();
+            UIUtils.tryLogin(false);
             isFinished = true;
             monitor.notify();
         }

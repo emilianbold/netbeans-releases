@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -187,11 +188,8 @@ public final class THAActionsProvider {
         };
         suspendDataCollection.putValue("command", SUSPEND_COMMAND); // NOI18N
         suspendDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THASuspendDataCollection")); // NOI18N
-        suspendDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Pause24.gif"); // NOI18N
-        suspendDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Pause24.gif", false),
-                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment.png", false), 10, 10)); // NOI18N
-        suspendDataCollection.putValue("disabledIcon", ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Pause24_disabled.gif", false),
-                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment_disabled.png", false), 10, 10)); // NOI18N
+        //suspendDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/suspend_data_collection24.png"); // NOI18N
+        suspendDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/suspend_data_collection24.png", false)); // NOI18N
         suspendDataCollection.setEnabled(false);
         resumeDataCollection = new AbstractAction() {
 
@@ -204,11 +202,8 @@ public final class THAActionsProvider {
         };
         resumeDataCollection.putValue("command", RESUME_COMMAND); // NOI18N
         resumeDataCollection.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAResumeDataCollection")); // NOI18N
-        resumeDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Continue24.gif"); // NOI18N
-        resumeDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Continue24.gif", false),
-                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment.png", false), 10, 10)); // NOI18N
-        resumeDataCollection.putValue("disabledIcon", ImageUtilities.mergeImages(ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/Continue24_disabled.gif", false),
-                ImageUtilities.loadImage("org/netbeans/modules/cnd/tha/resources/experiment_disabled.png", false), 10, 10)); // NOI18N
+//        resumeDataCollection.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/resume_data_collection24.png"); // NOI18N
+        resumeDataCollection.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/resume_data_collection24.png", false)); // NOI18N
         resumeDataCollection.setEnabled(false);
 
         stop = new AbstractAction() {
@@ -226,8 +221,8 @@ public final class THAActionsProvider {
         stop.setEnabled(false);
         stop.putValue("command", STOP_COMMAND); // NOI18N
         stop.putValue(Action.SHORT_DESCRIPTION, loc("HINT_THAStopDataCollection")); // NOI18N
-        stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/Kill24.gif"); // NOI18N
-        stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/Kill24.gif", false)); // NOI18N       
+        stop.putValue("iconBase", "org/netbeans/modules/cnd/tha/resources/stop_data_collection24.png"); // NOI18N
+        stop.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/tha/resources/stop_data_collection24.png", false)); // NOI18N
     }
 
     private static String loc(String key, String... params) {
@@ -297,12 +292,12 @@ public final class THAActionsProvider {
     void sendSignal() {
         if (0 < pid) {
             if (!EventQueue.isDispatchThread()){
-                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
             }else{
                 DLightExecutorService.submit(new Runnable() {
 
                     public void run() {
-                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, "USR1", null); // NOI18N
+                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
                     }
                 }, "Send signal USR1 to pid " + pid + " from THAActionsProvider.sendSignal()");//NOI18N
             }

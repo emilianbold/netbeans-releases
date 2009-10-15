@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -101,7 +101,7 @@ public abstract class BaseFileObj extends FileObject {
     
     protected BaseFileObj(final File file, final FileNaming name) {
         this.fileName = name;
-        versioningWeakListener = (FileChangeListener) WeakListeners.create(FileChangeListener.class, FileChangeListener.class, versioningListener, this);
+        versioningWeakListener = WeakListeners.create(FileChangeListener.class, FileChangeListener.class, versioningListener, this);
         addFileChangeListener(versioningWeakListener);
 
     }
@@ -301,7 +301,7 @@ public abstract class BaseFileObj extends FileObject {
         //TODO: no lock used
         FileObjectFactory fs = getFactory();
 
-        synchronized (fs.AllFactories) {
+        synchronized (FileObjectFactory.AllFactories) {
             FileNaming[] allRenamed = NamingFactory.rename(getFileName(), newNameExt, handler);
             if (allRenamed == null) {
                 FileObject parentFo = getExistingParent();
@@ -370,7 +370,7 @@ public abstract class BaseFileObj extends FileObject {
         fireFileAttributeChangedEvent(attrName, oldValue, value);
     }
 
-    public final java.util.Enumeration getAttributes() {
+    public final java.util.Enumeration<String> getAttributes() {
         return BaseFileObj.attribs.attributes(getFileName().getFile().getAbsolutePath().replace('\\', '/'));//NOI18N
     }
 
@@ -392,7 +392,7 @@ public abstract class BaseFileObj extends FileObject {
         removeFileChangeListener(fcl);
     }
 
-    private Enumeration getListeners() {
+    private Enumeration<FileChangeListener> getListeners() {
         if (eventSupport == null) {
             return Enumerations.empty();
         }
@@ -464,7 +464,7 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.start();
 
         final BaseFileObj parent = getExistingParent();
-        Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
         
         assert this.isValid() : this.toString();
         FileEventImpl parentFe = null;
@@ -489,7 +489,7 @@ public abstract class BaseFileObj extends FileObject {
         
         
         final BaseFileObj parent = getExistingParent();
-        Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
 
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
@@ -512,7 +512,7 @@ public abstract class BaseFileObj extends FileObject {
         
         FileObject p = getExistingParent();
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
-        Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
         
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
@@ -535,7 +535,7 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.start();
         FileObject p = getExistingParent();
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
-        Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
+        Enumeration<FileChangeListener> pListeners = (parent != null) ?parent.getListeners() : null;
         
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
@@ -558,7 +558,7 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.start();
         
         final BaseFileObj parent = getExistingParent();
-        Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
 
         fireFileRenamedEvent(getListeners(), new FileRenameEvent(this, originalName, originalExt));
 
@@ -571,7 +571,7 @@ public abstract class BaseFileObj extends FileObject {
 
     final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
         final BaseFileObj parent = getExistingParent();
-        Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
+        Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
 
         fireFileAttributeChangedEvent(getListeners(), new FileAttributeEvent(this, this, attrName, oldValue, newValue));
 
@@ -609,7 +609,9 @@ public abstract class BaseFileObj extends FileObject {
         final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;
         final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
 
-        if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+        if (mutexPrivileged != null) {
+            mutexPrivileged.enterWriteAccess();
+        }
         try {
             if (!checkLock(lock)) {
                 FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N                

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -78,7 +78,7 @@ public final class DiagnosticTask implements Runnable {
         LOG.info(diagInfo);
         logEnv();
         if (Boolean.getBoolean("netbeans.full.hack")) {
-            LOG.warning("Using netbeans.full.hack=true; see http://wiki.netbeans.org/DevFaqNetBeansFullHack");
+            LOG.info("Using netbeans.full.hack=true; see http://wiki.netbeans.org/DevFaqNetBeansFullHack");
         }
         executed = true;
     }

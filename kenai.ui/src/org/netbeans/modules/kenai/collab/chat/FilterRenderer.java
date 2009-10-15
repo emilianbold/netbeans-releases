@@ -60,6 +60,7 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
     public FilterRenderer() {
         initComponents();
         setOpaque(true);
+        groupLabel.setOpaque(true);
     }
 
     /** This method is called from within the constructor to

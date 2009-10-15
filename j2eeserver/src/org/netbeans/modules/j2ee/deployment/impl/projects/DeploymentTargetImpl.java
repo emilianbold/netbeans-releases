@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -90,10 +90,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     /**
      * This will return url to invoke webbrowser for web client.
-     * If there is no webclient, null will be returned. 
-     *
-     * Caution: this call does not attempt to detect whehter the client specified 
-     * by clientName is app client.
+     * If there is no webclient, null will be returned.
      */
     public String getClientUrl(String partUrl) {
         // determine client module
@@ -119,18 +116,22 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         } else {
             clientModule = moduleProvider.getJ2eeModule();
         }
-        
-        url = findWebUrl(clientModule);
-        if (url != null) {
-            if (partUrl.startsWith("/"))
-                return (url + partUrl);
-            else
-                return (url + "/" + partUrl); //NOI18N
-        } else {
-            return null;
+
+        if (clientModule != null && clientModule.getType().equals(J2eeModule.Type.WAR)) {
+            url = findWebUrl(clientModule);
+            if (url != null) {
+                if (partUrl.startsWith("/")) { // NOI18N
+                    return (url + partUrl);
+                } else {
+                    return (url + "/" + partUrl); //NOI18N
+                }
+            } else {
+                return null;
+            }
         }
+        return null;
     }
-    
+
     private J2eeModuleProvider getChildModuleProvider(J2eeModuleProvider jmp, String uri) {
         if (uri == null)
             return null;
