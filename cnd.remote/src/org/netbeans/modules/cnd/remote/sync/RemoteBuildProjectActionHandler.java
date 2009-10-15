@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,11 +48,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
@@ -92,8 +87,8 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private File privProjectStorageDir;
     private String remoteDir;
 
-    private NativeProcess remoteControllerProcess = null;
-    private TimestampAndSharabilityFilter filter;
+    private NativeProcess remoteControllerProcess;
+    private RfsLocalController localController;
     
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -158,18 +153,14 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
-        filter = new TimestampAndSharabilityFilter(privProjectStorageDir, execEnv);
-
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
-        RfsLocalController localController = new RfsLocalController(
+        localController = new RfsLocalController(
                 execEnv, localDir,  remoteDir, rcInputStream,
-                rcOutputStream, err, filter);
+                rcOutputStream, err, new FileData(privProjectStorageDir, execEnv));
 
-        filter.setMode(FileTimeStamps.Mode.CREATION);
-        feedFiles(rcOutputStream);
-        filter.flush();
-        filter.setMode(FileTimeStamps.Mode.COPYING);
+        localController.feedFiles(rcOutputStream, new SharabilityFilter());
+        
         //try { rcOutputStream.flush(); Thread.sleep(10000); } catch (InterruptedException e) {}
 
         // read port
@@ -243,6 +234,9 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
     private void shutdownRfs() {
         remoteControllerCleanup();
+        if (localController != null) {
+            localController.shutdown();
+        }
     }
 
     @Override
@@ -295,78 +289,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
             err.printf("%s\n", message); // NOI18N
         }
-    }
-
-    private static class FileInfo {
-        public final File file;
-        public final String relPath;
-        public FileInfo(File file, String relPath) {
-            this.file = file;
-            this.relPath = relPath;
-        }
-        @Override
-        public String toString() {
-            return relPath;
-        }
-    }
-
-    /**
-     * Feeds remote controller with the list of files and their lengths
-     * @param rcOutputStream
-     */
-    private void feedFiles(OutputStream rcOutputStream) {
-        PrintWriter writer = new PrintWriter(rcOutputStream);
-        List<FileInfo> files = new ArrayList<FileInfo>(512);
-        File[] children = localDir.listFiles(filter);
-        for (File child : children) {
-            feedFilesImpl(child, null, filter, files);
-        }
-        Collections.sort(files, new Comparator<FileInfo>() {
-            public int compare(FileInfo f1, FileInfo f2) {
-                if (f1.file.isDirectory() || f2.file.isDirectory()) {
-                    if (f1.file.isDirectory() && f2.file.isDirectory()) {
-                        return f1.relPath.compareTo(f2.relPath);
-                    } else {
-                        return f1.file.isDirectory() ? -1 : +1;
-                    }
-                } else {
-                    long delta = f1.file.lastModified() - f2.file.lastModified();
-                    return (delta == 0) ? 0 : ((delta < 0) ? -1 : +1); // signum(delta)
-                }
-            }
-        });
-        for (FileInfo info : files) {
-            if (info.file.isDirectory()) {
-                // adds LF
-                String text = String.format("D %s\n", info.relPath); // NOI18N
-                writer.printf(text); 
-                writer.flush(); //TODO: remove?
-            } else {
-                // adds LF!
-                String text = String.format("%d %s\n", info.file.length(), info.relPath); // NOI18N
-                writer.printf(text); 
-                writer.flush(); //TODO: remove?
-            }
-        }
-        writer.printf("\n"); // NOI18N
-        writer.flush();
-    }
-
-    private static void feedFilesImpl(File file, String base, FileFilter filter, List<FileInfo> files) {
-        // it is assumed that the file itself was already filtered
-        String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
-        files.add(new FileInfo(file, fileName));
-        if (file.isDirectory()) {
-            File[] children = file.listFiles(filter);
-            for (File child : children) {
-                String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
-                feedFilesImpl(child, newBase, filter, files);
-            }
-        }
-    }
-
-    private static boolean isEmpty(String s) {
-        return s == null || s.length() == 0;
     }
 
     private static class ErrorReader implements Runnable {
