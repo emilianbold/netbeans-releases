@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -67,6 +68,16 @@ public class FileData {
     //
     //  Public stuff
     //
+
+    public static class FileInfo {
+        public final long timestamp;
+        public final FileState state;
+
+        public FileInfo(FileState mode, long timestamp) {
+            this.state = mode;
+            this.timestamp = timestamp;
+        }
+    }
 
     public FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         data = new Properties();
@@ -101,59 +112,25 @@ public class FileData {
                     // nothing
                     break;
                 default:
-                    throw new IllegalArgumentException("Unexpecetd state: " + info.state); //NOI18N
+                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
+                    setFileInfo(file, FileState.INITIAL);
             }
         }
     }
 
-    public void clear() {
-        data.clear();
-    }
-
-    public boolean needsCopying(File file) {
+    public FileState getState(File file) {
         FileInfo info = getFileInfo(file);
-        if (info == null) {
-            return false;
-        } else {
-            switch (info.state) {
-                case COPIED:
-                    return file.lastModified() != info.timestamp;
-                case TOUCHED:
-                    return true;
-                case INITIAL:
-                    return true;
-                case UNCONTROLLED:
-                    return false;
-                default:
-                    throw new IllegalArgumentException("Unexpecetd state: " + info.state); //NOI18N
-            }
-        }
-    }
-
-    public boolean needsCreating(File file) {
-        FileInfo info = getFileInfo(file);
-        if (info == null) {
-            return false;
-        } else {
-            switch (info.state) {
-                case COPIED:
-                    return file.lastModified() != info.timestamp;
-                case TOUCHED:
-                    return file.lastModified() != info.timestamp;
-                case INITIAL:
-                    return true;
-                case UNCONTROLLED:
-                    return false;
-                default:
-                    throw new IllegalArgumentException("Unexpecetd state: " + info.state); //NOI18N
-            }
-        }
+        return (info == null) ? FileState.UNCONTROLLED : info.state;
     }
 
     public void setState(File file, FileState state) {
         setFileInfo(file, state);
     }
 
+    public FileInfo getFileInfo(File file) {
+        return getFileInfo(getFileKey(file));
+    }
+    
     public void store()  {
         File dir = dataFile.getParentFile();
         if (!dir.exists()) {
@@ -187,10 +164,6 @@ public class FileData {
         }
     }
 
-    private FileInfo getFileInfo(File file) {
-        return getFileInfo(getFileKey(file));
-    }
-
     private FileInfo getFileInfo(String fileKey) {
         String strValue = data.getProperty(fileKey, null);
         if (strValue != null && strValue.length() > 0) {
@@ -220,15 +193,5 @@ public class FileData {
 
     private String getFileKey(File file) {
         return file.getAbsolutePath();
-    }
-
-    private static class FileInfo {
-        public final long timestamp;
-        public final FileState state;
-
-        public FileInfo(FileState mode, long timestamp) {
-            this.state = mode;
-            this.timestamp = timestamp;
-        }
     }
 }

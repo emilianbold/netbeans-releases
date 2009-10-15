@@ -50,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -69,11 +70,11 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 
     private class TimestampAndSharabilityFilter implements FileFilter {
 
-        private final FileData timeStamps;
+        private final FileData fileData;
         private final SharabilityFilter delegate;
 
         public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-            timeStamps = new FileData(privProjectStorageDir, executionEnvironment);
+            fileData = new FileData(privProjectStorageDir, executionEnvironment);
             delegate = new SharabilityFilter();
         }
 
@@ -81,9 +82,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         public boolean accept(File file) {
             boolean accepted = delegate.accept(file);
             if (accepted && ! file.isDirectory()) {
-                accepted = timeStamps.needsCopying(file);
+                accepted = needsCopying(fileData.getState(file));
                 if (accepted) {
-                    timeStamps.setState(file, FileState.COPIED);
+                    fileData.setState(file, FileState.COPIED);
                 } else {
                     accepted = false;
                 }
@@ -93,7 +94,20 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         }
 
         public void flush() {
-            timeStamps.store();
+            fileData.store();
+        }
+    }
+
+    private boolean needsCopying(FileState state) {
+        switch (state) {
+            case INITIAL:       return true;
+            case TOUCHED:       return true;
+            case COPIED:        return false;
+            case ERROR:         return true;
+            case UNCONTROLLED:  return false;
+            default:
+                CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
+                return false;
         }
     }
 

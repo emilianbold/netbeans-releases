@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
@@ -75,10 +76,11 @@ class RfsLocalController implements Runnable {
                 } else {
                     processedFiles.add(remoteFile);
                 }
-                if (remoteFile.startsWith(remoteDir)) {
+                if (remoteFile.startsWith(remoteDir)) { // FIXUP: change startsWith(remoteDir) with more smart code
                     File localFile = new File(localDir, remoteFile.substring(remoteDir.length()));
                     if (localFile.exists() && !localFile.isDirectory()) {
-                        if (fileData.needsCopying(localFile)) {
+                        FileState state = fileData.getState(localFile);
+                        if (needsCopying(localFile)) {
                             RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
                             long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 511, err);
@@ -119,14 +121,37 @@ class RfsLocalController implements Runnable {
         fileData.store();
     }
 
+    public boolean needsCopying(File file) {
+        FileData.FileInfo info = fileData.getFileInfo(file);
+        if (info == null) {
+            return false;
+        } else {
+            switch (info.state) {
+                case COPIED:
+                    return file.lastModified() != info.timestamp;
+                case TOUCHED:
+                    return true;
+                case INITIAL:
+                    return true;
+                case UNCONTROLLED:
+                    return false;
+                case ERROR:
+                    return true; // TODO: ???
+                default:
+                    CndUtils.assertTrue(false, "Unexpecetd state: " + info.state); //NOI18N
+                    return false;
+            }
+        }
+    }
+
     void shutdown() {
         fileData.store();
     }
 
-    private static class FileInfo {
+    private static class FileGatheringInfo {
         public final File file;
         public final String relPath;
-        public FileInfo(File file, String relPath) {
+        public FileGatheringInfo(File file, String relPath) {
             this.file = file;
             this.relPath = relPath;
         }
@@ -142,13 +167,13 @@ class RfsLocalController implements Runnable {
      */
     void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
         PrintWriter writer = new PrintWriter(rcOutputStream);
-        List<FileInfo> files = new ArrayList<FileInfo>(512);
+        List<FileGatheringInfo> files = new ArrayList<FileGatheringInfo>(512);
         File[] children = localDir.listFiles(filter);
         for (File child : children) {
             gatherFiles(child, null, filter, files);
         }
-        Collections.sort(files, new Comparator<FileInfo>() {
-            public int compare(FileInfo f1, FileInfo f2) {
+        Collections.sort(files, new Comparator<FileGatheringInfo>() {
+            public int compare(FileGatheringInfo f1, FileGatheringInfo f2) {
                 if (f1.file.isDirectory() || f2.file.isDirectory()) {
                     if (f1.file.isDirectory() && f2.file.isDirectory()) {
                         return f1.relPath.compareTo(f2.relPath);
@@ -161,7 +186,7 @@ class RfsLocalController implements Runnable {
                 }
             }
         });
-        for (FileInfo info : files) {
+        for (FileGatheringInfo info : files) {
             if (info.file.isDirectory()) {
                 String text = String.format("D %s", info.relPath); // NOI18N
                 writer.printf("%s\n", text); // adds LF
@@ -178,10 +203,10 @@ class RfsLocalController implements Runnable {
         fileData.store();
     }
 
-    private static void gatherFiles(File file, String base, FileFilter filter, List<FileInfo> files) {
+    private static void gatherFiles(File file, String base, FileFilter filter, List<FileGatheringInfo> files) {
         // it is assumed that the file itself was already filtered
         String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
-        files.add(new FileInfo(file, fileName));
+        files.add(new FileGatheringInfo(file, fileName));
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
             for (File child : children) {

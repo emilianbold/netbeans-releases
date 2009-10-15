@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.utils.CndUtils;
+
 public enum FileState {
 
     /** New on local host */
@@ -72,6 +74,7 @@ public enum FileState {
                 return state;
             }
         }
-        throw new IllegalArgumentException("unexpected FileData.Mode char: " + c);
+        CndUtils.assertTrue(false, "Unexpected state char: " + c); //NOI18N
+        return INITIAL;
     }
 }
