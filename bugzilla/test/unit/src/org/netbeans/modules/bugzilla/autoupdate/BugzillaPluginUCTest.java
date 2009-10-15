@@ -134,70 +134,61 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "9.9.9");
         populateCatalog(contents);
 
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-        assertTrue(jau.checkNewBugzillaPluginAvailable());
+        assertTrue(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
+        assertTrue(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testNewBugzillaNotAvailable() throws Throwable {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "0.0.0");
         populateCatalog(contents);
 
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-        assertFalse(jau.checkNewBugzillaPluginAvailable());
+        assertFalse(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testBugzillaIsNotAtUCAvailable() throws Throwable {
         String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0");
         populateCatalog(contents);
 
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-        assertFalse(jau.checkNewBugzillaPluginAvailable());
+        assertFalse(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
     }
 
     public void testIsSupported() {
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-        assertTrue(jau.isSupportedVersion(BugzillaVersion.MIN_VERSION));
-        assertTrue(jau.isSupportedVersion(BugzillaVersion.BUGZILLA_3_2));
-        assertTrue(jau.isSupportedVersion(new BugzillaVersion("3.2.1")));
-        assertTrue(jau.isSupportedVersion(getLower(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
+        assertTrue(BugzillaAutoupdate.getInstance().isSupportedVersion(BugzillaVersion.MIN_VERSION));
+        assertTrue(BugzillaAutoupdate.getInstance().isSupportedVersion(BugzillaVersion.BUGZILLA_3_2));
+        assertTrue(BugzillaAutoupdate.getInstance().isSupportedVersion(new BugzillaVersion("3.2.1")));
+        assertTrue(BugzillaAutoupdate.getInstance().isSupportedVersion(getLower(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
     }
 
     public void testIsNotSupported() {
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-        assertFalse(jau.isSupportedVersion(getHigherMicro(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
-        assertFalse(jau.isSupportedVersion(getHigherMinor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
-        assertFalse(jau.isSupportedVersion(getHigherMajor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
+        assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(getHigherMicro(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
+        assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(getHigherMinor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
+        assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(getHigherMajor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
     }
 
     public void testCheckedToday() {
 
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
+        assertFalse(BugzillaAutoupdate.getInstance().wasCheckedToday(-1));                           // never
 
-        assertFalse(jau.wasCheckedToday(-1));                           // never
-
-        assertFalse(jau.wasCheckedToday(1L));                           // a long long time ago
+        assertFalse(BugzillaAutoupdate.getInstance().wasCheckedToday(1L));                           // a long long time ago
 
         Calendar c = Calendar.getInstance();
         c.add(Calendar.HOUR, -24);                                      // yesterday
-        assertFalse(jau.wasCheckedToday(c.getTime().getTime()));
+        assertFalse(BugzillaAutoupdate.getInstance().wasCheckedToday(c.getTime().getTime()));
 
-        assertTrue(jau.wasCheckedToday(System.currentTimeMillis()));    // now
+        assertTrue(BugzillaAutoupdate.getInstance().wasCheckedToday(System.currentTimeMillis()));    // now
     }
 
     public void testGetVersion() {
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
-
-        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
-        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
-        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1").toString());
-        assertEquals(new BugzillaVersion("1.1.1").toString(), jau.getVersion("version 1.1.1").toString());
-        assertEquals(new BugzillaVersion("1.1").toString(), jau.getVersion("version 1.1").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), BugzillaAutoupdate.getInstance().getVersion("test version 1.1.1 test").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), BugzillaAutoupdate.getInstance().getVersion("test version 1.1.1 test").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), BugzillaAutoupdate.getInstance().getVersion("test version 1.1.1").toString());
+        assertEquals(new BugzillaVersion("1.1.1").toString(), BugzillaAutoupdate.getInstance().getVersion("version 1.1.1").toString());
+        assertEquals(new BugzillaVersion("1.1").toString(), BugzillaAutoupdate.getInstance().getVersion("version 1.1").toString());
     }
     
     public void testGotVersion() {
-        BugzillaAutoupdate jau = new BugzillaAutoupdate();
         String desc = NbBundle.getBundle("org/netbeans/modules/bugzilla/Bundle").getString("OpenIDE-Module-Long-Description");
-        BugzillaVersion version = jau.getVersion(desc);
+        BugzillaVersion version = BugzillaAutoupdate.getInstance().getVersion(desc);
         assertNotNull(version);
         assertEquals(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString(), version.toString());
     }

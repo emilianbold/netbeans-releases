@@ -119,19 +119,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
     }
 
     @Override
-    public QueryResultHandle getAllChangesResult(QueryHandle query) {
-        if(query instanceof QueryHandleImpl) {
-            QueryHandleImpl qhi = (QueryHandleImpl) query;
-            qhi.refreshIfNeeded();
-            return QueryResultHandleImpl.getAllChangedResult(qhi.getQuery());
-        } else if (query instanceof FakeJiraQueryHandle) {
-            FakeJiraQueryHandle qh = (FakeJiraQueryHandle) query;
-            return qh.getUnseenResult();
-        }
-        return null;
-    }
-
-    @Override
     public List<QueryHandle> getQueries(ProjectHandle project) {
         Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {

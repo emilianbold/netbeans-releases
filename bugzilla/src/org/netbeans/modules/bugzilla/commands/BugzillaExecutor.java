@@ -159,13 +159,13 @@ public class BugzillaExecutor {
         BugzillaConfiguration conf = repository.getConfiguration();
         if(conf.isValid()) {
             BugzillaVersion version = conf.getInstalledVersion();
-            BugzillaVersion v34 = new BugzillaVersion("3.4");
+            BugzillaVersion v34 = new BugzillaVersion("3.4");                   // NOI18N
             if(version.compareTo(v34) >= 0) {
+                boolean ua = BugzillaAutoupdate.getInstance().isUpdateAvailable(repository);
                 notifyErrorMessage(
-                        NbBundle.getMessage(
-                            BugzillaExecutor.class,
-                            "MSG_BUGZILLA_VERSION_WARNING",                     // NOI18N
-                            new Object[] {version, status.getMessage()}));
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N
+                        (ua ? NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING2") + "\n\n" : "\n") +   // NOI18N
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));     // NOI18N
                 return;
             }
         }
@@ -396,8 +396,7 @@ public class BugzillaExecutor {
 
     private void checkAutoupdate() {
         try {
-            BugzillaAutoupdate jau = new BugzillaAutoupdate();
-            jau.checkAndNotify(repository);
+            BugzillaAutoupdate.getInstance().checkAndNotify(repository);
         } catch (Throwable t) {
             Bugzilla.LOG.log(Level.SEVERE, "Exception in Bugzilla autoupdate check.", t);
         }
