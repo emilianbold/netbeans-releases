@@ -118,6 +118,14 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         return new MultipleCallStackPanel(sourceFileInfoDataProvider);
     }
 
+    @Override
+    public boolean requestFocus(boolean temporary) {
+        if (treeView != null) {
+            return treeView.requestFocus(temporary);
+        }
+         return super.requestFocus(temporary);
+    }
+
     public void clean() {
         rootNode.removeAll();
         treeView.setRootVisible(false);

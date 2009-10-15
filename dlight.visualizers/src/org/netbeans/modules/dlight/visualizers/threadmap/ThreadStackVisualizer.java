@@ -242,6 +242,14 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         return CallStackTopComponent.findInstance();
     }
 
+    @Override
+    public boolean requestFocus(boolean temporary) {
+        if (stackPanel != null) {
+            return stackPanel.requestFocus(temporary);
+        }
+        return super.requestFocus(temporary);
+    }
+
     public void refresh() {
         synchronized (lock) {
             if (!needUpdate) {
