@@ -169,7 +169,7 @@ public class ParallelAdviserHintsProvider extends CsmErrorProvider {
             if (!outdatedTips.contains(advice)) {
                 if (advice instanceof LoopParallelizationAdvice) {
                     CsmLoopStatement loop = ((LoopParallelizationAdvice) advice).getLoop();
-                    if (loop.getContainingFile() == file) {
+                    if (loop != null && loop.getContainingFile() == file) {
                         res.add(new LoopParallelizationInfo(loop));
                     }
                 }
@@ -291,7 +291,7 @@ public class ParallelAdviserHintsProvider extends CsmErrorProvider {
             for (Advice advice : tips) {
                 if (advice instanceof LoopParallelizationAdvice) {
                     CsmLoopStatement loop = ((LoopParallelizationAdvice) advice).getLoop();
-                    if (changedFiles.contains(loop.getContainingFile())) {
+                    if (loop != null && changedFiles.contains(loop.getContainingFile())) {
                         outdatedTips.add(advice);
                     }
                 }

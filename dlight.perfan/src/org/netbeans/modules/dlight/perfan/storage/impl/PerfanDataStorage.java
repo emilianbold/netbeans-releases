@@ -156,7 +156,7 @@ public final class PerfanDataStorage implements DataStorage {
         FunctionStatistic result = null;
 
         try {
-            result = er_print.getFunctionStatistic(function, true);
+            result = er_print.getFunctionStatistic(function, false);
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {
@@ -170,7 +170,7 @@ public final class PerfanDataStorage implements DataStorage {
         FunctionStatistic result = null;
 
         try {
-            result = er_print.getFunctionStatistic(functionCall, true);
+            result = er_print.getFunctionStatistic(functionCall, false);
         } catch (InterruptedIOException ex) {
             // it was terminated while getting functions list...
         } catch (IOException ex) {

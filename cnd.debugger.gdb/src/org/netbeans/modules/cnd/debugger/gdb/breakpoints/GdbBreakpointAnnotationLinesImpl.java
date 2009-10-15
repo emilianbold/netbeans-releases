@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.BreakpointAnnotationLinesProvider;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.openide.filesystems.FileObject;
 
 /**
- * Implementation of breakpoint on function.
  *
- * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
+ * @author Egor Ushakov
  */
-public class FunctionBreakpointImpl extends BreakpointImpl<FunctionBreakpoint> {
-    
-    public FunctionBreakpointImpl(FunctionBreakpoint breakpoint, GdbDebugger debugger) {
-        super(breakpoint, debugger);
-        set();
+public class GdbBreakpointAnnotationLinesImpl implements BreakpointAnnotationLinesProvider {
+    public int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo) {
+        final GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
+        for (BreakpointImpl<?> breakpointImpl : gdbDebugger.getBreakpointList().values()) {
+            if (breakpointImpl.getBreakpoint() == b) {
+                return getBreakpointImplAnnotationLines(breakpointImpl, fo);
+            }
+        }
+        return null;
     }
 
-    @Override
-    protected String getBreakpointCommand() {
-        return getBreakpoint().getFunctionName();
+    private int[] getBreakpointImplAnnotationLines(BreakpointImpl<?> bptImpl, FileObject fo) {
+        if (bptImpl instanceof FunctionBreakpointImpl) {
+            if (fo.getPath().equals(bptImpl.getFullname())) {
+                return new int[] {bptImpl.getLine()};
+            }
+        } else if (bptImpl instanceof AddressBreakpointImpl) {
+            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+            if (disProvider != null) {
+                int res = disProvider.getAddressLine(bptImpl.getAddress());
+                if (res >= 0) {
+                    return new int[] {res};
+                }
+            }
+        }
+        return null;
     }
 }

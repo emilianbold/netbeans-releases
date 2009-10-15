@@ -64,15 +64,29 @@ import org.openide.windows.OutputWriter;
  */
 public class SunStudioCompilersInstallationAdvice implements Advice {
 
+    private final String platform;
+
+    public SunStudioCompilersInstallationAdvice(String platform) {
+        this.platform = platform;
+    }
+
     public JComponent getComponent() {
 
         URL iconUrl = SunStudioCompilersInstallationAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
 
-        return ParallelAdviserAdviceUtils.createAdviceComponent(
+        if(platform.equals("Linux")) { // NOI18N
+            return ParallelAdviserAdviceUtils.createAdviceComponent(
                 ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
-                getString("PAT_Sun_Studio_Compilers_Installation_Title"), // NOI18N
-                getString("PAT_Sun_Studio_Compilers_Installation_Body"), // NOI18N
+                getString("PAT_Sun_Studio_Compilers_Installation_Linux_Title"), // NOI18N
+                getString("PAT_Sun_Studio_Compilers_Installation_Linux_Body"), // NOI18N
                 800), null); // NOI18N
+        } else {
+            return ParallelAdviserAdviceUtils.createAdviceComponent(
+                ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                getString("PAT_Sun_Studio_Compilers_Installation_Solaris_Title"), // NOI18N
+                getString("PAT_Sun_Studio_Compilers_Installation_Solaris_Body"), // NOI18N
+                800), null); // NOI18N
+        }
     }
 
     public void addNotification(OutputWriter writer) {
