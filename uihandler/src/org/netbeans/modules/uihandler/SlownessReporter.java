@@ -58,6 +58,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -148,11 +149,14 @@ class SlownessReporter {
 
         NotifySnapshot(SlownessData data) {
             this.data = data;
+            NotificationDisplayer.Priority priority = Priority.SILENT;
+            // in dev builds use higher priority
+            assert (priority = Priority.LOW) != null;
             note = NotificationDisplayer.getDefault().notify(
                     NbBundle.getMessage(NotifySnapshot.class, "TEQ_LowPerformance"),
                     ImageUtilities.loadImageIcon("org/netbeans/modules/uihandler/vilik.png", true),
                     createPanel(), createPanel(),
-                    NotificationDisplayer.Priority.LOW);
+                    priority);
             if (CLEAR > 0) {
                 Installer.RP.post(new Runnable() {
 

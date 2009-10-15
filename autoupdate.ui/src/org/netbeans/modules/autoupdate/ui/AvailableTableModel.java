@@ -51,6 +51,8 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,9 +91,15 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         Unit.Available u = (Unit.Available) getUnitAtRow(row);
         assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
         boolean beforeMarked = u.isMarked();
-        u.setMarked(!beforeMarked);
-        if (u.isMarked() != beforeMarked) {
-            fireButtonsChange();
+        if ((Boolean) anValue != beforeMarked) {
+            u.setMarked(! beforeMarked);
+            if (u.isMarked() != beforeMarked) {
+                fireButtonsChange();
+            } else {
+                //TODO: message should contain spec.version
+                String message = getBundle ("NotificationAlreadyPreparedToIntsall", u.getDisplayName ()); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }
 
@@ -241,8 +249,8 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         return res;
     }
         
-    private static String getBundle (String key) {
-        return NbBundle.getMessage (AvailableTableModel.class, key);
+    private String getBundle (String key, Object... params) {
+        return NbBundle.getMessage (this.getClass (), key, params);
     }
 
     @Override
