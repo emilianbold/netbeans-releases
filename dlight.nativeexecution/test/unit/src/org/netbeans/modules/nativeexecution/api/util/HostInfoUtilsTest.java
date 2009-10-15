@@ -43,9 +43,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CancellationException;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -90,39 +87,12 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        setHandlers();
-    }
-
-    private static void setHandlers() {
-        // FIXIP: [VK] a dirty hack that allows to get all messages during test run;
-        // otherwise FINE and FINEST are never shown, even if correspondent loggers
-        // has Level.FINEST or Level.ALL
-        Handler handler = new Handler() {
-
-            @Override
-            public void close() throws SecurityException {
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void publish(LogRecord record) {
-                System.err.printf("%s [%s]: %s\n", record.getLevel(), record.getLoggerName(), record.getMessage());
-            }
-        };
-        Logger parent = Logger.getAnonymousLogger().getParent();
-        final Handler[] handlers = parent.getHandlers();
-        for (Handler h : handlers) {
-            parent.removeHandler(h);
-        }
-        parent.addHandler(handler);
     }
 
     @After
     @Override
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
 //    @ForAllEnvironments(section = "dlight.nativeexecution.hostinfo")
@@ -135,6 +105,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //            Exceptions.printStackTrace(ex);
 //        }
 //    }
+
     /**
      * This test assures that only first call to getHostInfo does the job.
      * So any subsequent call should return cached result.
@@ -144,6 +115,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
      * Note: in case of some error during getHostInfo() the result should not be
      * stored in a cache. So subsequent calls WILL initiate data re-fetching.
      */
+    @org.junit.Test
     public void testMultipleGetInfo() {
         System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "true"); // NOI18N
 
@@ -173,7 +145,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
             // As SlowHostInfoProviderEnabled we know that fetching info will
             // take at least 3 seconds. From the other hand it should not take
-            // more than 10 seconds (as we are on localhost). 
+            // more than 10 seconds (as we are on the localhost).
 
             int count = 20;
 
@@ -309,10 +281,10 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "dlight.nativeexecution.hostinfo")
     public void testRemoteSearchFile() throws Exception {
 
-        System.out.println("Test testRemoteSearchFile()"); // NOI18N
         ExecutionEnvironment env = getTestExecutionEnvironment();
-        HostInfo info = HostInfoUtils.getHostInfo(env);
+        System.out.println("Test testRemoteSearchFile(" + env.toString() + ")"); // NOI18N
 
+        HostInfo info = HostInfoUtils.getHostInfo(env);
         assertNotNull(info);
 
         HostInfoUtils.dumpInfo(info, System.out);
@@ -320,14 +292,16 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
         String testDir = info.getTempDir() + "/some dir"; // NOI18N
         String testFileName = "some (" + new Random().nextInt() + ") file"; // NOI18N
-        CommonTasksSupport.mkDir(env, testDir, null);
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.getEnvironment().appendPathVariable("PATH", "/bin"); // NOI18N
-        npb.getEnvironment().appendPathVariable("PATH", "/usr/bin"); // NOI18N
-        npb.setExecutable("touch").setArguments(testDir + "/" + testFileName); // NOI18N
-        npb.call().waitFor();
-
         System.out.println("Use file '" + testFileName + "' in '" + testDir + "' for testing"); // NOI18N
+
+        int mkDirResult = CommonTasksSupport.mkDir(env, testDir, null).get();
+        assertTrue(mkDirResult == 0);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("touch").setArguments(testDir + "/" + testFileName); // NOI18N
+        int touchResult = npb.call().waitFor();
+        assertTrue(touchResult == 0);
+
         try {
             String result = null;
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrong Path", testDir, "/usr/bin"), testFileName, true); // NOI18N

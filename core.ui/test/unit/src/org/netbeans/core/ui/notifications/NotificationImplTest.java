@@ -37,57 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.core.ui.notifications;
 
-import java.io.File;
-import org.netbeans.modules.cnd.remote.sync.FileTimeStamps.Mode;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import junit.framework.TestCase;
+import org.openide.awt.NotificationDisplayer.Priority;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class TimestampAndSharabilityFilter extends SharabilityFilter {
-
-    private final FileTimeStamps timeStamps;
-    private FileTimeStamps.Mode mode;
-
-    public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
-        timeStamps = new FileTimeStamps(privProjectStorageDir, executionEnvironment);
-        mode = FileTimeStamps.Mode.COPYING;
-        if (Boolean.getBoolean("cnd.remote.timestamps.clear")) {
-            timeStamps.clear();
-        }
+public class NotificationImplTest extends TestCase {
+    
+    public NotificationImplTest(String testName) {
+        super(testName);
     }
 
-    public void setMode(Mode mode) {
-        this.mode = mode;
+    public void testSilentMeansNoBalloon() {
+        NotificationImpl instance = new NotificationImpl();
+        instance.init("Title", null, Priority.SILENT, null, null);
+        assertFalse("No balloon", instance.showBallon());
     }
 
-    @Override
-    public boolean acceptImpl(File file) {
-        boolean accept = super.acceptImpl(file);
-        if (accept && ! file.isDirectory()) {
-            accept = (mode == Mode.CREATION) ? timeStamps.needsCreating(file) : timeStamps.needsCopying(file);
-            if (accept) {
-                if (mode == Mode.CREATION) {
-                    timeStamps.rememberCreationTimestamp(file);
-                } else { // mode == Mode.COPYING
-                    timeStamps.rememberCopyTimestamp(file);
-                }
-            } else {
-                //System.out.printf("FILE %s UNCHANGED\n", file.getAbsolutePath());
-                accept = false;
-            }
-        }
-        return accept;
-    }
-
-    public void flush() {
-        timeStamps.flush();
-    }
-
-    public void dropTimestamp(File file) {
-        timeStamps.dropTimestamp(file);
-    }
 }

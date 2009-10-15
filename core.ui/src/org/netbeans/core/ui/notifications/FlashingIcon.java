@@ -57,6 +57,7 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
+import org.openide.awt.NotificationDisplayer.Priority;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -250,7 +251,8 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
 
     public void propertyChange(PropertyChangeEvent evt) {
         if( NotificationDisplayerImpl.PROP_NOTIFICATION_ADDED.equals(evt.getPropertyName()) ) {
-            setNotification( (NotificationImpl)evt.getNewValue(), true );
+            final NotificationImpl ni = (NotificationImpl) evt.getNewValue();
+            setNotification( ni, ni.showBallon() );
             PopupList.dismiss();
         } else if( NotificationDisplayerImpl.PROP_NOTIFICATION_REMOVED.equals(evt.getPropertyName()) ) {
             NotificationImpl removed = (NotificationImpl)evt.getNewValue();

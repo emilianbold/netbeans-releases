@@ -84,6 +84,7 @@ class WSTransformer extends DefaultTreePathVisitor {
         // TODO: check formatting boundaries here
 
         if (getPath().get(0) instanceof NamespaceDeclaration){
+            super.visit(node);
             return;
         }
         

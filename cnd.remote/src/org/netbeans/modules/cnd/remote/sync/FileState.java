@@ -36,22 +36,41 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+package org.netbeans.modules.cnd.remote.sync;
 
-/**
- * @author Alexey Vladykin
- */
-public class NativeExecutionTest extends NativeExecutionBaseTestSuite {
+import org.netbeans.modules.cnd.utils.CndUtils;
 
-    public NativeExecutionTest() {
-        super("Native Execution");
-        addTest(HostInfoTestCase.class);
+public enum FileState {
+
+    /** New on local host */
+    INITIAL('i'),
+
+    /** Created ant touched on remote */
+    TOUCHED('t'),
+
+    /** Copied to remote */
+    COPIED('c'),
+
+    /** Is not controlled  */
+    UNCONTROLLED('u'),
+
+    /** Error occured when touching or copying */
+    ERROR('e');
+
+    public final char id;
+
+    FileState(char id) {
+        this.id = id;
     }
 
-    public static Test suite() {
-        return new NativeExecutionTest();
+    public static FileState fromId(char c) {
+        for (FileState state : FileState.values()) {
+            if (state.id == c) {
+                return state;
+            }
+        }
+        CndUtils.assertTrue(false, "Unexpected state char: " + c); //NOI18N
+        return INITIAL;
     }
 }

@@ -114,10 +114,16 @@ public class HtmlStructureScanner implements StructureScanner {
                         int[] logicalRange = node.getLogicalRange();
                         int from = logicalRange[0];
                         int to = logicalRange[1];
+
                         
                         int so = documentPosition(from, info.getSnapshot());
                         int eo = documentPosition(to, info.getSnapshot());
                         
+                        if(so == -1 || eo == -1) {
+                            //cannot be mapped back properly
+                            return ;
+                        }
+
                         if (eo > doc.getLength()) {
                             eo = doc.getLength();
                             if (so > eo) {

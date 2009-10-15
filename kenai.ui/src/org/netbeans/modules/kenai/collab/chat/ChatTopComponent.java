@@ -179,7 +179,7 @@ public class ChatTopComponent extends TopComponent {
         chats.addChangeListener(changeListener);
         chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName()) && (evt.getNewValue() instanceof ChatPanel)) {
                     removeChat(((ChatPanel) evt.getNewValue()));
                 }
             }

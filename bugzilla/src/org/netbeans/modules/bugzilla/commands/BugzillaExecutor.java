@@ -100,9 +100,9 @@ public class BugzillaExecutor {
             if(cmd instanceof PerformQueryCommand) {
                 PerformQueryCommand pqc = (PerformQueryCommand) cmd;
                 IStatus status = pqc.getStatus();
-                if(status != null && !status.isOK()) {
+                if(status != null) {
                     Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
-                    handleKOStatus(status);
+                    handleKOStatus(status, handleExceptions);
                     return;
                 }
             }
@@ -151,11 +151,13 @@ public class BugzillaExecutor {
         }
     }
 
-    private void handleKOStatus(IStatus status) throws CoreException {
+    private void handleKOStatus(IStatus status, boolean handleExceptions) throws CoreException {
         if (status.getException() instanceof CoreException) {
             throw (CoreException) status.getException();
         }
-
+        if(!handleExceptions) {
+            return;
+        }
         BugzillaConfiguration conf = repository.getConfiguration();
         if(conf.isValid()) {
             BugzillaVersion version = conf.getInstalledVersion();

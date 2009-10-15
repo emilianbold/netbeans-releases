@@ -197,6 +197,13 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
 //        testIndentInFile("testfiles/indent/qa/issues/173900.php");
 //    }
 
+    /**
+     * 173937 issue
+     * @throws
+     */
+    public void test173937_1() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/173937_1.php");
+    }
 
 
     @Override
