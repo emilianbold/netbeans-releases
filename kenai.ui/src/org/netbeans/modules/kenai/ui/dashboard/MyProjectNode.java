@@ -122,7 +122,7 @@ public class MyProjectNode extends LeafNode {
                 } else if (QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName())) {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
                     if (!queryResults.isEmpty()) {
-                        setBugsLater(queryResults.get(queryResults.size()>2?2:0));
+                        setBugsLater(queryResults.get(0));
                         return;
                     }
                 }
@@ -170,15 +170,11 @@ public class MyProjectNode extends LeafNode {
                 post(new Runnable() {
 
                     public void run() {
-                        List<QueryHandle> h = qaccessor.getQueries(project);
-                        if (!h.isEmpty()) {
-                            QueryHandle handle = h.get(h.size()>1?1:0);
+                        QueryHandle handle = qaccessor.getAllIssuesQuery(project);
+                        if (handle != null) {
                             handle.addPropertyChangeListener(projectListener);
-                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(handle);
-                            if (!queryResults.isEmpty()) {
-                                setBugsLater(queryResults.get(queryResults.size()>2?2:0));
-                                return;
-                            }
+                            QueryResultHandle queryResult = qaccessor.getAllChangesResult(handle);
+                            setBugsLater(queryResult);
                         }
                     }
                 });
@@ -287,6 +283,7 @@ public class MyProjectNode extends LeafNode {
                 leftPar.setVisible(true);
                 rightPar.setVisible(true);
                 component.validate();
+                DashboardImpl.getInstance().dashboardComponent.repaint();
             }
         });
     }
