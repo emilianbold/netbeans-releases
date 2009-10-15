@@ -118,7 +118,7 @@ public final class CreateTestsAction extends NodeAction {
 
     @Override
     public boolean asynchronous() {
-        return false;
+        return true;
     }
 
     @Override
