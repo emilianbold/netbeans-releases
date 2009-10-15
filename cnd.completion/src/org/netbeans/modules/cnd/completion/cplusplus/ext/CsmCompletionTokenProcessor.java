@@ -446,6 +446,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
                                     case LPAREN:
                                     case SCOPE:
                                     case LBRACKET:
+                                    case DOT:
+                                    case ARROW:
                                         break;
                                     default:
                                         popExp();
