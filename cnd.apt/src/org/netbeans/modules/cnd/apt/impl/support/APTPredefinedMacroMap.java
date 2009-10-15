@@ -67,7 +67,9 @@ public class APTPredefinedMacroMap implements APTMacroMap {
          CharSequenceKey.create("__LINE__"),  // NOI18N
          CharSequenceKey.create("__DATE__"),  // NOI18N
          CharSequenceKey.create("__TIME__"),  // NOI18N
-         CharSequenceKey.create("__FUNCTION__")  // NOI18N
+         CharSequenceKey.create("__FUNCTION__"),  // NOI18N
+         CharSequenceKey.create("_Pragma"),  // NOI18N
+         CharSequenceKey.create("__pragma")  // NOI18N
     };
 
     public APTPredefinedMacroMap() {
@@ -84,7 +86,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     public boolean isDefined(CharSequence token) {
         int i;
         
-        if (token.length() < 2 || token.charAt(0) != '_' || token.charAt(1) != '_') {
+        if (token.length() < 2 || token.charAt(0) != '_' || (token.charAt(1) != '_' && token.charAt(1) != 'P')) {
             return false;
         }
         CharSequence tokenText = CharSequenceKey.create(token);
@@ -147,6 +149,10 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         }
 
         public boolean isFunctionLike() {
+            if ("_Pragma".contentEquals(macro.getTextID()) ||
+                    "__pragma".contentEquals(macro.getTextID())) { // NOI18N
+                return true;
+            }
             return false;
         }
 
@@ -165,11 +171,15 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         public TokenStream getBody() {
             APTToken tok = APTUtils.createAPTToken(macro, APTTokenTypes.STRING_LITERAL);
             
-            if (!"__LINE__".contentEquals(macro.getTextID())) { // NOI18N
-                tok.setType(APTTokenTypes.STRING_LITERAL);
-            } else {
+            if ("__LINE__".contentEquals(macro.getTextID())) { // NOI18N
                 tok.setType(APTTokenTypes.DECIMALINT);
                 tok.setText("" + macro.getLine()); // NOI18N
+            } else if("_Pragma".contentEquals(macro.getTextID()) ||
+                    "__pragma".contentEquals(macro.getTextID())) {
+                tok.setType(APTTokenTypes.COMMENT);
+                tok.setText(""); // NOI18N
+            } else {
+                tok.setType(APTTokenTypes.STRING_LITERAL);
             }
                         
             return new TokenBasedTokenStream(tok);
@@ -179,8 +189,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         public String toString() {
             StringBuilder retValue = new StringBuilder();
             retValue.append("<P>"); // NOI18N     
-            retValue.append(getName());                       
-            return retValue.toString(); 
+            retValue.append(getName());
+            return retValue.toString();
         }
     }
     
