@@ -290,14 +290,9 @@ public final class Log extends Handler {
         }
 
         messages.append(sb.toString());
-        messages.append ('\n');
 
         if (messages.length() > 40000) {
             messages.delete(0, 20000);
-        }
-
-        if (ps != null && record.getThrown() != null) {
-            record.getThrown().printStackTrace(ps);
         }
     }
 
