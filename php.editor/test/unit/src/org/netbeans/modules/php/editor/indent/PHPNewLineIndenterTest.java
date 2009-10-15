@@ -180,9 +180,18 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test173966() throws Exception{
         testIndentInFile("testfiles/indent/qa/issues/173966.php");
     }
+
+    /**
+     * 167087 issue
+     * @throws Exceptioneviem
+     */
+    public void test167087() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/167087.php");
+    }
+
     /**
      * 13900 issue
-     * @throws Exception
+     * @throws Exceptionace
      */
 //    public void test173900() throws Exception{
 //        testIndentInFile("testfiles/indent/qa/issues/173900.php");
