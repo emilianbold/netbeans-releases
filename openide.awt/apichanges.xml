@@ -47,6 +47,20 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Notification.SILENT">
+        <api name="awt"/>
+        <summary>Support for silent notifications</summary>
+        <version major="7" minor="17"/>
+        <date day="16" month="10" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            New priority to show a notification but without its details initially.
+            The user can display the details baloon manually later.
+        </description>
+        <class package="org.openide.awt" name="NotificationDisplayer"/>
+        <issue number="174183"/>
+    </change>
     <change id="AlwaysEnabledAction.CheckBox">
         <api name="awt"/>
         <summary>AlwaysEnabledAction can represent a boolean key in Preferences.</summary>

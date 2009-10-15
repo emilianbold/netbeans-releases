@@ -556,6 +556,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
          */
         @Override
         protected void componentActivated() {
+            super.componentActivated();
             ((BaseJspEditorSupport) cloneableEditorSupport()).restartParserTask();
             //allow resumed parser to perform parsing of the webproject
             taglibParseSupport.setEditorOpened(true);
