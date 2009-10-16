@@ -116,7 +116,7 @@ import org.openide.util.NbBundle;
      */
     protected abstract void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException;
 
-    protected String getRemoteSyncRoot() {
+    protected final String getRemoteSyncRoot() {
         String root;
         root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
         if (root != null) {
@@ -131,7 +131,7 @@ import org.openide.util.NbBundle;
         MacroExpander expander = MacroExpanderFactory.getExpander(local);
         String localHostID = local.getHost();
         try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}");
+            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
