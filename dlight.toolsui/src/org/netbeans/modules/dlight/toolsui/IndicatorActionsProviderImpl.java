@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider;
-import org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
