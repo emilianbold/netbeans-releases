@@ -140,12 +140,9 @@ final class RfsSyncWorker extends ZipSyncWorker {
                 }
                 RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
                 if (Utilities.isWindows()) {
-                    mapper.addMapping("C:/", remoteParent + "/C");
-                    mapper.addMapping("D:/", remoteParent + "/D");
-                    mapper.addMapping("E:/", remoteParent + "/E");
-                    mapper.addMapping("Z:/", remoteParent + "/Z");
+                    mapper.addMapping("C:/", remoteParent + "/C"); // NOI18N
                 } else {
-                    mapper.addMapping("/", remoteParent);
+                    mapper.addMapping("/", remoteParent); // NOI18N
                 }
                 synchronizeImpl(remoteParent);
 //            }

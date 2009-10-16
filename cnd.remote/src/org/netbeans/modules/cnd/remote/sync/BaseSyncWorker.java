@@ -131,7 +131,7 @@ import org.openide.util.NbBundle;
         MacroExpander expander = MacroExpanderFactory.getExpander(local);
         String localHostID = local.getHost();
         try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}");
+            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
