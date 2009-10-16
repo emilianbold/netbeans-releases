@@ -253,6 +253,11 @@ public class JpaControllerSetupPanelVisual extends javax.swing.JPanel implements
                     wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
                     return false;
                 }
+                catch (java.lang.UnsupportedClassVersionError err)
+                {
+//                    wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ERR_UserTransactionJavaVersion"));
+//                    return false;
+                }
             }
         
 //            Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
