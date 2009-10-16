@@ -306,7 +306,7 @@ public class CompilerSetManager {
      * Get the MSys base directory from MinGW.xml (toolchain definition, which users the Windows registry) or the user's path
      */
     public static String getMSysBase() {
-        if (msysBase == null) {
+        if (msysBase == null && Utilities.isWindows()) {
             ToolchainManagerImpl tcm = ToolchainManager.getImpl();
             for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
                 if (td != null) {
