@@ -133,11 +133,6 @@ public class FetchAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
             logger.output(""); // NOI18N
-            Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
-                public void run() {
-                    FileUtil.refreshFor(root); // fetch just might have changed the file layout...
-                }
-            });
         }
     }
 
