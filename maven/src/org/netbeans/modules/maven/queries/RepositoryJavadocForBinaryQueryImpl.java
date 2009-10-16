@@ -99,7 +99,7 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
                 //once we have the final bits for 6, we can chnage the condiotion to endsWith.
                 if (jarFile.getPath().contains("javax/javaee-api/6") ||
                     jarFile.getPath().contains("javax/javaee-web-api/6")) { //NOI18N
-                    return new Javaee5Result();
+                    return new Javaee6Result();
                 }
 
 //                String name = jarFile.getName();
@@ -199,10 +199,10 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         
     }
 
-    private class Javaee5Result implements JavadocForBinaryQuery.Result {
+    private class Javaee6Result implements JavadocForBinaryQuery.Result {
         private final List<ChangeListener> listeners;
 
-        Javaee5Result() {
+        Javaee6Result() {
             listeners = new ArrayList<ChangeListener>();
         }
         public void addChangeListener(ChangeListener changeListener) {
