@@ -103,6 +103,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
                     lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
                     lineAnnotationInfo.setColumns(new String[metrics.size()]);
+                    lineAnnotationInfo.setNotFormattedColumns(new String[metrics.size()]);
                     boolean below = true;
                     int col = 0;
                     for (Column column : metrics) {
@@ -113,6 +114,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                             below = false;
                         }
                         lineAnnotationInfo.getColumns()[col] = metricValString;
+                        lineAnnotationInfo.getNotFormattedColumns()[col] = metricVal + "";
                         int metricValLength = metricValString.length();
                         if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
                             fileAnnotationInfo.getMaxColumnWidth()[col] = metricValLength;
