@@ -559,6 +559,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 ver = 6.7;
             } else if (msg.contains("6.8")) { // NOI18N
                 ver = 6.8;
+            } else if (msg.contains("7.0")) { // NOI18N
+                ver = 7.0;
             } else {
                 log.warning("GdbDebugger: Failed to guess version string");
             }
