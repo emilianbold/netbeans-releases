@@ -166,7 +166,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             while (iterator.hasNext()) {
                 Object caop = iterator.next();
                 if (caop instanceof IndicatorActionsProvider) {
-                    List<Action> list = ((IndicatorActionsProvider)caop).getIndicatorActions();
+                    List<Action> list = ((IndicatorActionsProvider)caop).getIndicatorActions(null); // FIXUP: add DLightConfiguration, DLightTool, ... to lookup
                     for (Action action : list) {
                         pm.add(new JMenuItem(action));
                     }
