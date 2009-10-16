@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,14 +49,13 @@ import org.openide.loaders.DataObject;
 import java.util.*;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
-import org.openide.util.Lookup;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
 
     private static final String PLATFORM_STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
+    private static final String DEFAULT_PLATFORM_ATTR = "default-platform"; //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private FileObject storage;
@@ -117,9 +116,13 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     
     public JavaPlatform getDefaultPlatform() {
         if (this.defaultPlatform == null) {
+            defaultPlatform = getDefaultPlatformByHint();
+            if (defaultPlatform != null) {
+                return defaultPlatform;
+            }
             JavaPlatform[] allPlatforms = this.getInstalledPlatforms();
             for (int i=0; i< allPlatforms.length; i++) {
-                if ("default_platform".equals(allPlatforms[i].getProperties().get("platform.ant.name"))) {  //NOI18N
+                if (isDefaultPlatform(allPlatforms[i])) {  //NOI18N
                     defaultPlatform = allPlatforms[i];
                     break;
                 }
@@ -162,6 +165,35 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
 
     private void firePropertyChange () {
         pcs.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
-    }       
+    }
+
+    private final boolean isDefaultPlatform(final JavaPlatform platform) {
+        return "default_platform".equals(platform.getProperties().get("platform.ant.name"));    //NOI18N
+    }
+
+    private final JavaPlatform getDefaultPlatformByHint() {
+        if (storage == null) return null;
+        for (final FileObject defFile : storage.getChildren()) {
+            if (defFile.getAttribute(DEFAULT_PLATFORM_ATTR) == Boolean.TRUE) {
+                try {
+                    DataObject dobj = DataObject.find(defFile);
+                    //xxx: Using old good DO.getCookie as Lookup does not work.
+                    final InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
+                    if (ic != null) {
+                        final Object instance = ic.instanceCreate();
+                        if (instance instanceof JavaPlatform && isDefaultPlatform((JavaPlatform)instance)) {
+                            return (JavaPlatform) instance;
+                        }
+                    }
+                } catch (IOException e) {
+                    //pass -> return null
+                } catch (ClassNotFoundException e) {
+                    //pass -> return null
+                }
+                return null;
+            }
+        }
+        return null;
+    }
     
 }

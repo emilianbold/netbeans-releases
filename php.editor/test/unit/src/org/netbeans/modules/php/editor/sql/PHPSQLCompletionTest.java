@@ -174,6 +174,14 @@ public class PHPSQLCompletionTest extends ParserTestBase {
                 "NOW;\n ?>", "select * from $foo\n");
     }
 
+    /** #156915 - Tests unfinished NOWDOC. */
+    public void testNowDoc_002() {
+        checkPHPSQLStatement("<?php\n" +
+                "$var = <<<'NOW'\n" +
+                "select * from |\n" +
+                "?>", "select * from \n?>\n");
+    }
+
     // Taking some real-life examples from Google code search
     public void testRealSourceCode_001() {
         checkPHPSQLStatement("<?php echo \"SELECT mid FROM \".$xoopsDB->prefix('modules').\" WHERE dirname='\".$modversion['dirname'].\"' AND |\" ?>",

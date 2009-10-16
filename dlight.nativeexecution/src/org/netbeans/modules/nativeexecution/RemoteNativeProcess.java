@@ -14,10 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
-import org.netbeans.modules.nativeexecution.support.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 
 public final class RemoteNativeProcess extends AbstractNativeProcess {
 
@@ -44,13 +46,15 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             final ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
             final String sh = hostInfo.getShell();
-            final MacroMap envVars = info.getEnvVariables();
+            final MacroMap envVars = info.getEnvironment().clone();
 
             // Setup LD_PRELOAD to load unbuffer library...
-            UnbufferSupport.initUnbuffer(info, envVars);
+            if (info.isUnbuffer()) {
+                UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), envVars);
+            }
 
-            // Always prepend /bin and /usr/bin to PATH
-//            envVars.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
+            // Always append /bin and /usr/bin to PATH
+            envVars.appendPathVariable("PATH", hostInfo.getPath() + ":/bin:/usr/bin"); // NOI18N
 
             if (isInterrupted()) {
                 throw new InterruptedException();
@@ -153,11 +157,25 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
-//          NativeTaskSupport.kill(execEnv, 9, getPID());
             }
-
         }
 
+        // Sometimes jsch fails to kill the remote process ...
+        // try to do force kill
+
+        int pid = -1;
+
+        try {
+            pid = getPID();
+        } catch (IOException ex) {
+        }
+
+        if (pid == -1) {
+            // This means that we are cancelling process that was not started
+            return;
+        }
+
+        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null); // NOI18N
     }
 
     private ChannelStreams execCommand(

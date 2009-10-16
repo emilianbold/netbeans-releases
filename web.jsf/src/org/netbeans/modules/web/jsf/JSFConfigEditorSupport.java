@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -210,9 +211,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         // the listener add only when the document is move to memory
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                StyledDocument doc = getDocument();
                 if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())
-                        && isDocumentLoaded() && getDocument() != null) {
-                    getDocument().addDocumentListener(docListener);
+                        && isDocumentLoaded() && doc != null) {
+                    doc.addDocumentListener(docListener);
                 }
             }
         });

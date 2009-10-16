@@ -3,7 +3,7 @@
  *
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -128,18 +128,18 @@ public final class ConstantPool {
      *
      * @param type   the constant pool type to return.
      */
-    public final Collection getAllConstants(Class classType) {        
+    public final <T extends CPEntry> Collection<? extends T> getAllConstants(Class<T> classType) {
         return Collections.unmodifiableCollection(
 		   getAllConstantsImpl(classType));
     }
 
-    private Collection<CPEntry> getAllConstantsImpl(Class classType) {
+    private <T extends CPEntry> Collection<? extends T> getAllConstantsImpl(Class<T> classType) {
         int n = cpEntries.length;
-        Collection<CPEntry> c = new ArrayList<CPEntry>(n);
+        Collection<T> c = new ArrayList<T>(n);
         for (int i = CONSTANT_POOL_START; i < n; i++) {
             if (cpEntries[i] != null && 
                 cpEntries[i].getClass().equals(classType)) {
-                c.add(cpEntries[i]);
+                c.add(classType.cast(cpEntries[i]));
             }
         }
         return c;
@@ -153,12 +153,12 @@ public final class ConstantPool {
      * as all class references cannot be reliably determined from just
      * the constant pool structure.
      */
-    public final Set getAllClassNames() {
+    public final Set<ClassName> getAllClassNames() {
         Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants
-        Collection c = getAllConstantsImpl(CPClassInfo.class);
-        for (Iterator i = c.iterator(); i.hasNext();) {
+        Collection<? extends CPEntry> c = getAllConstantsImpl(CPClassInfo.class);
+        for (Iterator<? extends CPEntry> i = c.iterator(); i.hasNext();) {
             CPClassInfo ci = (CPClassInfo)i.next();
             set.add(ci.getClassName());
         }

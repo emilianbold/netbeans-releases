@@ -624,6 +624,14 @@ public class BugzillaIssue extends Issue {
         a.setValue(value);
     }
 
+    void setFieldValues(IssueField f, List<String> ccs) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        if(a == null) {
+            a = new TaskAttribute(data.getRoot(), f.key);
+        }
+        a.setValues(ccs);
+    }
+    
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
             TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
@@ -960,7 +968,7 @@ public class BugzillaIssue extends Issue {
         return seenAtributes;
     }
 
-    private String getSeenValue(IssueField f) {
+    String getSeenValue(IssueField f) {
         Map<String, String> attr = getSeenAttributes();
         String seenValue = attr != null ? attr.get(f.key) : null;
         if(seenValue == null) {

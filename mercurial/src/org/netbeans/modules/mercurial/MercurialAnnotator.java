@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -405,8 +405,8 @@ public class MercurialAnnotator extends VCSAnnotator {
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        File root = HgUtils.getRootFile(ctx);
-        boolean noneVersioned = root == null;
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        boolean noneVersioned = (roots == null || roots.size() == 0);
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
@@ -424,9 +424,11 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(new ImportDiffAction(loc.getString("CTL_PopupMenuItem_ImportDiff"), ctx)); // NOI18N
 
             actions.add(null);
-            if (root != null) {
-                actions.add(new CloneAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal",  // NOI18N
-                        root.getName()), ctx));
+            if (!noneVersioned) {
+                String name = roots.size() == 1 ?
+                                NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal", roots.iterator().next().getName()) :
+                                NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneRepository");
+                actions.add(new CloneAction(name, ctx));
             }
             actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
             actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N

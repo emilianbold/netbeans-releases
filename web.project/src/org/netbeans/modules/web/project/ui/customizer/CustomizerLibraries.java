@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -216,6 +216,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         DefaultListModel[] models = new DefaultListModel[]{
             uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
             uiProperties.JAVAC_TEST_CLASSPATH_MODEL,
+            uiProperties.ENDORSED_CLASSPATH_MODEL,
             uiProperties.RUN_TEST_CLASSPATH_MODEL
            };
         for (int i = 0; i < models.length; i++) {
@@ -263,6 +264,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         DefaultListModel[] models = new DefaultListModel[] {
             uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
             uiProperties.JAVAC_TEST_CLASSPATH_MODEL,
+            uiProperties.ENDORSED_CLASSPATH_MODEL,
             uiProperties.RUN_TEST_CLASSPATH_MODEL,
         };
         
@@ -775,6 +777,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
                 updateJars(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel());
                 updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
+                updateJars(uiProperties.ENDORSED_CLASSPATH_MODEL);
                 updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
                 switchLibrary();
                 cleanupOldLibraryReferences();
@@ -797,6 +800,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
         collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+        collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
         libs.add("CopyLibs"); // NOI18N
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);

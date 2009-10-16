@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -259,7 +259,7 @@ public final class Log extends Handler {
         Log.initialMessages = Log.messages.length();
     }
 
-    private PrintStream getLog(LogRecord record) {
+    private PrintStream getLog() {
         if (log != null) {
             PrintStream ps = log.get();
             if (ps == null) {
@@ -268,7 +268,7 @@ public final class Log extends Handler {
                 logger.removeHandler(this);
             }
 
-            return ps == null ? System.err : ps;
+            return ps;
         }
 
         NbTestCase c = current;
@@ -280,23 +280,19 @@ public final class Log extends Handler {
             return;
         }
         StringBuffer sb = NbModuleLogHandler.toString(record);
-        try {
-            getLog(record).println(sb.toString());
-        } catch (LinkageError err) {
-            // prevent circular references
+        PrintStream ps = getLog();
+        if (ps != null) {
+            try {
+                ps.println(sb.toString());
+            } catch (LinkageError err) {
+                // prevent circular references
+            }
         }
 
         messages.append(sb.toString());
-        messages.append ('\n');
 
         if (messages.length() > 40000) {
             messages.delete(0, 20000);
-        }
-
-
-        
-        if (record.getThrown() != null) {
-            record.getThrown().printStackTrace(getLog(record));
         }
     }
 

@@ -174,14 +174,17 @@ public abstract class Issue {
             public void run() {
                 final IssueTopComponent tc = IssueTopComponent.find(issueId);
                 final boolean tcOpened = tc.isOpened();
+                final Issue[] issue = new Issue[1];
+                issue[0] = tc.getIssue();
+                if (issue[0] == null) {
+                    tc.initNoIssue(issueId);
+                }
                 if(!tcOpened) {
                     tc.open();
                 }
                 tc.requestActive();
                 rp.post(new Runnable() {
                     public void run() {
-                        final Issue[] issue = new Issue[1];
-                        issue[0] = tc.getIssue();
                         ProgressHandle handle = null;
                         try {
                             if (issue[0] != null) {

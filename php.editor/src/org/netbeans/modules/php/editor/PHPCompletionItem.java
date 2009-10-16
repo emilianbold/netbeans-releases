@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -629,6 +630,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         void doNotInsertDollarPrefix(){
             insertDollarPrefix = false;
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            Completion.get().showToolTip();
+            return super.getCustomInsertTemplate();
+        }
     }
 
     /**
@@ -852,7 +859,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         public List<String> getInsertParams() {
             List<String> insertParams = new LinkedList<String>();
-            String parameters[] = getFunction().getParameters().toArray(new String[0]);
+            Parameter parameters[] = getFunction().getParameters().toArray(new Parameter[0]);
             boolean paramsToSkip[] = new boolean[parameters.length];
             int optionalArgList[] = getFunction().getOptionalArgs();
 
@@ -863,10 +870,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             }
 
             for (int i = 0; i < parameters.length; i++) {
-                String param = parameters[i];
+                Parameter param = parameters[i];
 
                 if (!paramsToSkip[i]){
-                    insertParams.add(param);
+                    insertParams.add(param.getName());
                 }
             }
 
@@ -880,7 +887,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         private void appendParamsStr(HtmlFormatter formatter){
-            String parameters[] = getFunction().getParameters().toArray(new String[0]);
+            Parameter parameters[] = getFunction().getParameters().toArray(new Parameter[0]);
             int optionalArgList[] = getFunction().getOptionalArgs();
             boolean paramsToSkip[] = new boolean[parameters.length];
             boolean optionalArgs[] = new boolean[parameters.length];
@@ -897,9 +904,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
             for (int i = 0; i < parameters.length; i++) {
                 if (!paramsToSkip[i]) {
-                    String param = parameters[i];
-                    if (param.startsWith("&")) {//NOI18N
-                        param = param.substring(1);
+                    Parameter param = parameters[i];
+                    String paramName = param.getName();
+                    if (paramName.startsWith("&")) {//NOI18N
+                        paramName = paramName.substring(1);
                     }
 
                     if (firstParam) {
@@ -909,10 +917,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     }
 
                     if (optionalArgs[i]) {
-                        formatter.appendText(param);
+                        formatter.appendText(paramName);
                     } else {
                         formatter.emphasis(true);
-                        formatter.appendText(param);
+                        formatter.appendText(paramName);
                         formatter.emphasis(false);
                     }
                 }
@@ -942,7 +950,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            final String functionSignature = getFunction().getFunctionSignature();
+            final String functionSignature = getFunction().getFunctionSignature(true);
             template.append(" ").append(functionSignature);//NOI18N
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N
@@ -958,7 +966,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (isIface) {
                 template.append("${cursor};\n");//NOI18N
             } else {
-                String functionSignature = getFunction().getFunctionSignature();
+                String functionSignature = getFunction().getFunctionSignature(false);
                 template.append("${cursor}parent::"+ functionSignature.replace("&$", "$") +";\n");//NOI18N
             }
             return template.toString();

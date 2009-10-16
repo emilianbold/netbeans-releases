@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
@@ -57,6 +58,8 @@ public class PUDataLoader extends UniFileLoader {
     
     public PUDataLoader() {
         super(PUDataObject.class.getName());
+        //PUDataLoader is created once for a project when persistence.xml is detected, log uusage
+        PersistenceUtils.logUsage(PUDataLoader.class, "USG_PERSISTENCE_DETECTED", new String[]{"XML"});//NOI18N
     }
     
     protected void initialize() {

@@ -49,13 +49,13 @@ import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
@@ -100,7 +100,7 @@ public final class CommandUtils {
             return PhpUnit.getDefault();
         } catch (InvalidPhpProgramException ex) {
             if (showCustomizer) {
-                Utils.showGeneralOptionsPanel();
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);
             }
         }
         return null;

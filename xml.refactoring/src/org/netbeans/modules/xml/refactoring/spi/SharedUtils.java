@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -124,8 +124,7 @@ public class SharedUtils {
     public static final String SOURCES_TYPE_JAVA = "java";
     public static final String TYPE_DOC_ROOT = "doc_root";
     public static final String TYPE_WEB_INF = "web_inf";
-      
-    
+
     public static void renameTarget(Nameable target, String newName) throws IOException {
         if ( target.getModel() == null) return;
         Model model =target.getModel();
@@ -141,14 +140,10 @@ public class SharedUtils {
                 model.endTransaction();
             }
         }
-        
-       // request.setRenamedTarget(request.getNameableTarget());
     }
-    
         
      public static void deleteTarget(NamedReferenceable target) throws IOException {
         if (target == null || getModel(target) == null) return;
-        //System.out.println("DeleteTarget called");
         Model model = getModel(target);
         boolean startTransaction = ! model.isIntransaction();
         try {
@@ -161,11 +156,8 @@ public class SharedUtils {
                 model.endTransaction();
             }
         }
-        //request.setDone(true);
     }
 
-    
-    
     public static List<ErrorItem> addCascadeDeleteErrors(List<Model> models, Class<? extends Model> referencingModelType) {
         List<ErrorItem> errors = new ArrayList<ErrorItem>();
         for (Model model:models) {
@@ -177,8 +169,7 @@ public class SharedUtils {
         }
         return errors;
     }
-    
-    
+
     public static boolean isWritable(FileObject fo) {
         boolean canLock = false;
         FileLock lock = null;
@@ -194,8 +185,7 @@ public class SharedUtils {
     public static String getURI(FileObject fo) {
         return FileUtil.toFile(fo).toURI().toString();
     }
-    
-   
+
     public static ProjectCatalogSupport getCatalogSupport(FileObject file) {
         Project p = FileOwnerQuery.getOwner(file);
         if (p != null) {
@@ -203,8 +193,6 @@ public class SharedUtils {
         } 
         return null;
     }
-    
-    
 
     public static FileObject renameFile(FileObject fo, String newName) throws IOException {
         String extension = fo.getExt();
@@ -234,9 +222,7 @@ public class SharedUtils {
         return null;
        
     }
-    
-    
-       
+
     protected static List<SourceGroup> getSourceGroups(Referenceable ref) {
             List<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
             Project project = RefactoringUtil.findCurrentProject(ref);
@@ -271,7 +257,6 @@ public class SharedUtils {
         return files;
     }
     
-        
     public static Model getModel(Referenceable ref) {
         if (ref instanceof Model) {
             return (Model) ref;
@@ -282,7 +267,7 @@ public class SharedUtils {
         }
     }
     
-     public static String calculateNewLocationString(String currentLocationString, RenameRefactoring request) {
+    public static String calculateNewLocationString(String currentLocationString, RenameRefactoring request) {
         StringBuilder sb = new StringBuilder();
         int i = currentLocationString.lastIndexOf('/');
         if (i > -1) {
@@ -312,14 +297,7 @@ public class SharedUtils {
          sb.append(ofo.getNameExt());
          return sb.toString();
      }
-     
-   /*  public static String calculateNewLocationString(ModelSource source, ModelSource target) throws Exception {
-         FileObject sourceFO = source.getLookup().lookup(FileObject.class);
-         FileObject referencedFO = target.getLookup().lookup(FileObject.class);
-         DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
-         return (catalogSupport.getReferenceURI(sourceFO, referencedFO)).toString();
-     }*/
-     
+
      public static Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements){
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
         for(RefactoringElementImplementation element:elements){
@@ -333,7 +311,7 @@ public class SharedUtils {
                elementsInModel.add(element);
         }
         return results;
-    }
+     }
      
      public static void silentDeleteRefactor(NamedReferenceable target, boolean failsOnUsage) throws CannotRefactorException, IOException {
          SafeDeleteRefactoring refactoring = new SafeDeleteRefactoring(Lookups.singleton(target));
@@ -395,7 +373,7 @@ public class SharedUtils {
         session.doRefactoring(true);
     }
      
-      public static void showRefactoringUI(AbstractRefactoring request) {
+     public static void showRefactoringUI(AbstractRefactoring request) {
         Referenceable target = request.getRefactoringSource().lookup(Referenceable.class);
         org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = null;
         if(target instanceof Model && request instanceof RenameRefactoring)
@@ -413,7 +391,7 @@ public class SharedUtils {
         }
     }
       
-      public static void showDeleteRefactoringUI(final NamedReferenceable target) {
+     public static void showDeleteRefactoringUI(final NamedReferenceable target) {
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new DeleteRefactoringUI(target);
@@ -427,13 +405,13 @@ public class SharedUtils {
                 }
             }
           });
-    }
+      }
       
       public static void showRenameRefactoringUI(Nameable target) {
           showRenameRefactoringUI(target, null);
-    }
+      }
       
-       public static void showRenameRefactoringUI(final Nameable target, final String newName) {
+      public static void showRenameRefactoringUI(final Nameable target, final String newName) {
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new RenameRefactoringUI(target, newName);
@@ -447,7 +425,7 @@ public class SharedUtils {
                 }
             }
           });
-    }
+      }
       
       public static void showFileRenameRefactoringUI(final Model target) {
           SwingUtilities.invokeLater(new Runnable() {
@@ -481,11 +459,6 @@ public class SharedUtils {
           });
     }
       
-       /**
-     * @param fobj a FileObject
-     * @returns Image  java.awt.Image for the FileObject
-     *
-     */
     public static Image getImage(FileObject fobj){
         try {
             return DataObject.find(fobj).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
@@ -494,13 +467,12 @@ public class SharedUtils {
         }
         return null;
     }
-    
-    
-     public static FileObject getFileObject(final Component xamComp){
+
+    public static FileObject getFileObject(final Component xamComp){
         return (FileObject)xamComp.getModel().getModelSource().getLookup().lookup(FileObject.class);
     }
      
-        public static String getXmlFileType(FileObject fobj){
+    public static String getXmlFileType(FileObject fobj){
         if (fobj.getExt().equals(AnalysisConstants.SCHEMA_FILE_EXTENSION)){
             return AnalysisConstants.SCHEMA_FILE_TYPE;
         }
@@ -528,14 +500,7 @@ public class SharedUtils {
         return "";  //NOI18N
         
     }
-    
-     
-    /**
-     * Check for the ReferenceableProvider Node.Cookie in node 0
-     * 
-     * @returns NamedReferenceable instance of null if the node does
-     *          not have the provider cookie
-     */
+
     public static Referenceable getReferenceable(final org.openide.nodes.Node[] nodes) {
         Referenceable referenceable = null;
         ReferenceableProvider provider =
@@ -681,56 +646,15 @@ public class SharedUtils {
         FileObject origRelativeTo = model2.getModelSource().getLookup().lookup(FileObject.class);
         return getRelativePath(origFile, origRelativeTo);
     }
-    
-     /*public  static String getRelativePath(FileObject origFile, FileObject origRelativeTo) throws IOException {
-        File file = FileUtil.toFile(origFile);
-        File relativeTo = FileUtil.toFile(origRelativeTo);
-        List filePathStack = new ArrayList();
-        List relativeToPathStack = new ArrayList();
-        // build the path stack info to compare it afterwards
-        file = file.getCanonicalFile();
-        while (file!=null) {
-            filePathStack.add(0, file);
-            file = file.getParentFile();
-        }
-        relativeTo = relativeTo.getCanonicalFile();
-        while (relativeTo!=null) {
-            relativeToPathStack.add(0, relativeTo);
-            relativeTo = relativeTo.getParentFile();
-        }
-        // compare as long it goes
-        int count = 0;
-        file = (File)filePathStack.get(count);
-        relativeTo = (File)relativeToPathStack.get(count);
-        while ( (count < filePathStack.size()-1) && (count <relativeToPathStack.size()-1) && file.equals(relativeTo)) {
-            count++;
-            file = (File)filePathStack.get(count);
-            relativeTo = (File)relativeToPathStack.get(count);
-        }
-        if (file.equals(relativeTo)) count++;
-        // up as far as necessary
-        
-        StringBuffer relString = new StringBuffer();
-        for (int i = count; i < relativeToPathStack.size(); i++) {
-             relString.append(".."+File.separatorChar);
-        }
-        // now back down to the file
-        for (int i = count; i <filePathStack.size()-1; i++) {
-            relString.append(((File)filePathStack.get(i)).getName()+File.separatorChar);
-        }
-            relString.append(((File)filePathStack.get(filePathStack.size()-1)).getName());
-        return relString.toString();
-        }    
-    */
-        
-     public static List<String> getSourceGroups() {
+
+    public static List<String> getSourceGroups() {
         List<String> srcGroups = new ArrayList<String>();
         srcGroups.add(SOURCES_TYPE_JAVA);
         srcGroups.add(SOURCES_TYPE_XML);
         return srcGroups;
     }
      
-     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+    public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
@@ -742,7 +666,7 @@ public class SharedUtils {
         return null;
     }
      
-     public static URI getReferenceURI(FileObject source, FileObject target) throws URISyntaxException, IOException {
+    public static URI getReferenceURI(FileObject source, FileObject target) throws URISyntaxException, IOException {
         Project targetProject = FileOwnerQuery.getOwner(target);
         Project project = FileOwnerQuery.getOwner(source);
         FileObject sourceFolder = getSourceFolder(project, source);
@@ -783,11 +707,15 @@ public class SharedUtils {
         }
     }
      
-     public static String getRelativePath(FileObject source, FileObject target) {
+    public static String getRelativePath(FileObject source, FileObject target) {
         File sourceLocationFile = FileUtil.toFile(source);
         File targetLocationFile = FileUtil.toFile(target);
         String sourceLocation = sourceLocationFile.toURI().toString();
         String targetLocation = targetLocationFile.toURI().toString();
+        return getRelativePath(sourceLocation, targetLocation);
+    }
+
+    public static String getRelativePath(String sourceLocation, String targetLocation) {
         StringTokenizer st1 = new StringTokenizer(sourceLocation,"/");
         StringTokenizer st2 = new StringTokenizer(targetLocation,"/");
         String relativeLoc = "";
@@ -820,8 +748,7 @@ public class SharedUtils {
         }
         return relativeLoc;
     }
-     
-         
+
     private static String[] sourceTypes = new String[] {
         SOURCES_TYPE_XML,
         SOURCES_TYPE_JAVA,
@@ -829,7 +756,7 @@ public class SharedUtils {
         TYPE_WEB_INF
     };
     
-      public static FileObject getSourceFolder(Project project, FileObject source) {
+    public static FileObject getSourceFolder(Project project, FileObject source) {
         Sources sources = ProjectUtils.getSources(project);
         assert sources !=null;
         ArrayList<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
@@ -856,8 +783,7 @@ public class SharedUtils {
     }
     
     private static String getUsableProjectName(Project project) {
-        return  PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation
-                (project).getName()).replace('.','_');
+        return  PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(project).getName()).replace('.','_');
     }
     
     public static FileObject getFileObject(Model model, URI uri ){
@@ -868,27 +794,22 @@ public class SharedUtils {
             URI sourceFileObjectURI = sourceFile.toURI();
             URI resultURI = sourceFileObjectURI.resolve(uri);
             try{
-            	result = new File(resultURI);
+                result = new File(resultURI);
                 if(result.isFile()){
                     return FileUtil.toFileObject(result);
                 }
             } catch(Exception e){
-            		//do nothing
+                    //do nothing
            }
         }
         return null;
      }
     
     public static boolean inSameProject(FileObject source, FileObject target)  {
-        Project targetProject = FileOwnerQuery.getOwner(target);
-        Project project = FileOwnerQuery.getOwner(source);
-        return (targetProject == project);
+        return FileOwnerQuery.getOwner(target) == FileOwnerQuery.getOwner(source);
     }
     
     public static Set getProjectReferences(Project project) {
-        SubprojectProvider provider = (SubprojectProvider)project.getLookup().
-                lookup(SubprojectProvider.class);
-        return provider.getSubprojects();
+        return ((SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class)).getSubprojects();
     }
-
-   }
+}

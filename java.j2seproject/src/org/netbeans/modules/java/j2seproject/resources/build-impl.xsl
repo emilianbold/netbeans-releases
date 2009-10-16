@@ -116,29 +116,33 @@ is divided into following sections:
             </target>
 
             <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
-                <target name="-init-libraries" depends="-pre-init,-init-private">
-                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
-                        <property name="libraries.{position()}.path" location="{.}"/>
-                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
-                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
-                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
-                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
-                        </pathconvert>
-                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
-                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
-                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties" encoding="ISO-8859-1">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                                <escapeunicode/>
-                            </filterchain>
-                        </loadproperties>
-                        <loadproperties srcfile="${{libraries.{position()}.path}}" encoding="ISO-8859-1">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                                <escapeunicode/>
-                            </filterchain>
-                        </loadproperties>
-                    </xsl:for-each>
+                <target name="-pre-init-libraries">
+                    <property name="libraries.path">
+                        <xsl:attribute name="location"><xsl:value-of select="/p:project/p:configuration/libs:libraries/libs:definitions"/></xsl:attribute>
+                    </property>
+                    <dirname property="libraries.dir.nativedirsep" file="${{libraries.path}}"/>
+                    <!-- Do not want \ on Windows, since it would act as an escape char: -->
+                    <pathconvert property="libraries.dir" dirsep="/">
+                        <path path="${{libraries.dir.nativedirsep}}"/>
+                    </pathconvert>
+                    <basename property="libraries.basename" file="${{libraries.path}}" suffix=".properties"/>
+                    <available property="private.properties.available" file="${{libraries.dir}}/${{libraries.basename}}-private.properties"/>
+                </target>
+                <target name="-init-private-libraries" depends="-pre-init-libraries" if="private.properties.available">
+                    <loadproperties srcfile="${{libraries.dir}}/${{libraries.basename}}-private.properties" encoding="ISO-8859-1">
+                        <filterchain>
+                            <replacestring from="$${{base}}" to="${{libraries.dir}}"/>
+                            <escapeunicode/>
+                        </filterchain>
+                    </loadproperties>
+                </target>
+                <target name="-init-libraries" depends="-pre-init,-init-private,-init-private-libraries">
+                    <loadproperties srcfile="${{libraries.path}}" encoding="ISO-8859-1">
+                        <filterchain>
+                            <replacestring from="$${{base}}" to="${{libraries.dir}}"/>
+                            <escapeunicode/>
+                        </filterchain>
+                    </loadproperties>
                 </target>
             </xsl:if>
 
@@ -278,6 +282,7 @@ is divided into following sections:
                 <property name="javadoc.preview" value="true"/>
                 <property name="application.args" value=""/>
                 <property name="source.encoding" value="${{file.encoding}}"/>
+                <property name="runtime.encoding" value="${{source.encoding}}"/>
                 <condition property="javadoc.encoding.used" value="${{javadoc.encoding}}">
                     <and>
                         <isset property="javadoc.encoding"/>
@@ -293,11 +298,9 @@ is divided into following sections:
                 <condition property="do.depend.true">
                     <istrue value="${{do.depend}}"/>
                 </condition>
-                <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
-                    <and>
-                        <isset property="jaxws.endorsed.dir"/>
-                        <available file="nbproject/jaxws-build.xml"/>
-                    </and>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
             </target>
             
@@ -417,7 +420,8 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
                     </sequential>
@@ -528,6 +532,7 @@ is divided into following sections:
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                         </junit>
                     </sequential>
@@ -633,10 +638,11 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
-                            <jvmarg value="-Dfile.encoding=${{source.encoding}}"/>
-                            <redirector inputencoding="${{source.encoding}}" outputencoding="${{source.encoding}}" errorencoding="${{source.encoding}}"/>
+                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
+                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -673,8 +679,9 @@ is divided into following sections:
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <jvmarg value="-Dfile.encoding=${{source.encoding}}"/>
-                            <redirector inputencoding="${{source.encoding}}" outputencoding="${{source.encoding}}" errorencoding="${{source.encoding}}"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
+                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>

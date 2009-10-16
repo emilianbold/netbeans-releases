@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -140,7 +140,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null,null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
@@ -741,6 +741,16 @@ public class Reformatter implements ReformatTask {
                         String ind = getIndent();
                         if (!ind.equals(text))
                             addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                    } else if (tokens.movePrevious()) {
+                        if (tokens.token().id() == LINE_COMMENT) {
+                            tokens.moveNext();
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                        } else {
+                            tokens.moveNext();
+                        }
                     }
                 }
                 tokens.moveNext();
@@ -1251,6 +1261,16 @@ public class Reformatter implements ReformatTask {
                             String ind = getIndent();
                             if (!ind.equals(text))
                                 addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        } else if (tokens.movePrevious()) {
+                            if (tokens.token().id() == LINE_COMMENT) {
+                                tokens.moveNext();
+                                String ind = getIndent();
+                                if (!ind.equals(text))
+                                    addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                            } else {
+                                tokens.moveNext();
+                            }
                         }
                     }
                     tokens.moveNext();
@@ -2315,12 +2335,13 @@ public class Reformatter implements ReformatTask {
             spaces(count, false);
         }
         
-        private void spaces(int count, boolean preserveNewline) {
+        private boolean spaces(int count, boolean preserveNewline) {
             Token<JavaTokenId> lastWSToken = null;
+            boolean containedNewLine = false;
             int after = 0;
             do {
                 if (tokens.offset() >= endPos)
-                    return;
+                    return containedNewLine;
                 switch(tokens.token().id()) {
                     case WHITESPACE:
                         lastWSToken = tokens.token();
@@ -2332,10 +2353,11 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : SPACE;
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                int idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            int idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     lastBlankLines = 1;
                                     lastBlankLinesTokenIndex = tokens.index();
@@ -2364,10 +2386,11 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : SPACE;
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                int idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            int idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
                                     lastBlankLines = 1;
@@ -2408,10 +2431,11 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : SPACE;
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
                                     lastBlankLines = 1;
@@ -2452,10 +2476,11 @@ public class Reformatter implements ReformatTask {
                                 ? getNewlines(1) + getIndent()
                                 : getSpaces(count);
                         if (lastWSToken != null) {
-                            if (preserveNewline) {
-                                String text = lastWSToken.text().toString();
-                                idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                            String text = lastWSToken.text().toString();
+                            idx = text.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                containedNewLine = true;
+                                if (preserveNewline) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
                                     lastBlankLines = 1;
@@ -2472,9 +2497,10 @@ public class Reformatter implements ReformatTask {
                             col = indent;
                         else
                             col += count;
-                        return;
+                        return containedNewLine;
                 }
             } while(tokens.moveNext());
+            return containedNewLine;
         }
 
         private void newline() {
@@ -2834,6 +2860,9 @@ public class Reformatter implements ReformatTask {
                     }
                     break;
                 case WRAP_NEVER:
+                    index = tokens.index();
+                    c = col;
+                    d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
                     if (alignIndent >= 0)
                         indent = alignIndent;
@@ -2846,7 +2875,22 @@ public class Reformatter implements ReformatTask {
                         lastBlankLinesTokenIndex = -1;
                         tokens.moveNext();
                     }
-                    spaces(spacesCnt);
+                    if (spaces(spacesCnt, false)) {
+                        rollback(index, c, d);
+                        old = indent;
+                        if (alignIndent >= 0)
+                            indent = alignIndent;
+                        newline();
+                        indent = old;
+                        ret = col;
+                        if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+                            col += tokens.token().length();
+                            lastBlankLines = -1;
+                            lastBlankLinesTokenIndex = -1;
+                            tokens.moveNext();
+                        }
+                        spaces(spacesCnt);
+                    }
                     scan(tree, null);
                     break;
             }

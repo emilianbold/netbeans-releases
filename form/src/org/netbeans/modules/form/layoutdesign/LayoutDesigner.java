@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -2286,18 +2286,24 @@ public class LayoutDesigner implements LayoutConstants {
                                 dim);
                 LayoutComponent container = comp.getParent();
                 if (container != null && root.getSubIntervalCount() == 0) {
-                    // Empty root - eliminate if it is an additional layer or
-                    // default layer with just one additional (which then
-                    // becomes default).
-                    // Hack #127988: don't remove layout roots during resizing
-                    // (resized component stays in additional layer - unlike moved).
-                    boolean resizing = (dragger != null && dragger.isResizing());
-                    if (root == getActiveLayoutRoots(container)[dim]
-                            && (container.getLayoutRootCount() != 2 || resizing)) {
-                        propEmptyContainer(root, dim);
-                    } else if (!resizing) {
+                    // Empty root - eliminate the layer if appropriate.
+                    // Beware of #127988, #130186.
+                    // Default layer eliminated if the component goes away from
+                    // the container and there's just one additional layer.
+                    // Additional layer eliminated if the component goes away or
+                    // is moved within container (going to default layer).
+                    if (root == getActiveLayoutRoots(container)[dim]) {
+                        // default layer empty
+                        if (container.getLayoutRootCount() == 2
+                                && (dragger == null || dragger.getTargetContainer() != container)) {
+                            layoutModel.removeLayoutRoots(container, root);
+                        } else { // no layer to be made default or component removed just temporarily
+                            propEmptyContainer(root, dim);
+                        }
+                    } else if (dragger == null || !dragger.isResizing()) {
+                        // additional layer empty
                         layoutModel.removeLayoutRoots(container, root);
-                    }
+                    } // (resized component stays in its layer)
                 }
             }
         }
@@ -4206,6 +4212,22 @@ public class LayoutDesigner implements LayoutConstants {
                     layoutModel.addInterval(gap, seq, -1);
                     layoutModel.setIntervalAlignment(seqIntT, DEFAULT);
                     operations.addContent(seqIntT, seq, -1);
+                }
+
+                // merging sequencies may cause only one remains in parent
+                if (parent.getSubIntervalCount() == 1 && parent.getParent() != null) { // last interval in parallel group
+                    // cancel the group and move the interval up
+                    LayoutInterval remaining = parent.getSubInterval(0);
+                    layoutModel.removeInterval(remaining);
+                    layoutModel.setIntervalAlignment(remaining, parent.getAlignment());
+                    LayoutInterval superParent = parent.getParent();
+                    int i = layoutModel.removeInterval(parent);
+                    operations.addContent(remaining, superParent, i);
+                    if (remaining.isSequential() && superParent.isSequential()) {
+                        // eliminate possible directly consecutive gaps
+                        // [this could be done by the addContent method directly]
+                        eliminateConsecutiveGaps(superParent, i, dimension);
+                    }
                 }
             }
         }

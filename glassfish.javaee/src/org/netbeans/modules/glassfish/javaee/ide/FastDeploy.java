@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -172,11 +172,10 @@ public class FastDeploy extends IncrementalDeployment {
                 appChangeDescriptor.manifestChanged() ||
                 appChangeDescriptor.serverDescriptorChanged();
         
-        // this will not be a 100% catch.. but should help..
-        File[] changedFiles = appChangeDescriptor.getChangedFiles();
-        if (null != changedFiles && changedFiles.length > 0 && null != changedFiles[0])
-            ResourceRegistrationHelper.deployResources(changedFiles[0],dm);
-
+        File dir = getDirectoryForModule(targetModuleID);
+        if (null != dir) {
+            ResourceRegistrationHelper.deployResources(dir, dm);
+        }
         if (restart) {
             restartObject.addProgressListener(new ProgressListener() {
 
@@ -242,7 +241,12 @@ public class FastDeploy extends IncrementalDeployment {
             if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
                throw new IllegalStateException();
             }
-            dest = new File(dest, "gfdeploy");  // NOI18N
+            String moduleName = Utils.computeModuleID(app, null, null);
+            String dirName = "gfdeploy"; // NOI18N
+            if (null != moduleName) {
+                dirName += "/"+moduleName; // NOI18N
+            }
+            dest = new File(dest, dirName);
             boolean retval = true;
             if (!dest.exists()) {
                 retval = dest.mkdirs();

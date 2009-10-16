@@ -45,9 +45,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -55,8 +58,9 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.support.RemoteException;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -83,7 +87,8 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private File privProjectStorageDir;
     private String remoteDir;
 
-    private NativeProcess remoteControllerProcess = null;
+    private NativeProcess remoteControllerProcess;
+    private RfsLocalController localController;
     
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -98,7 +103,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         this.execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
     }
 
-    private void initRfsIfNeed() throws IOException, InterruptedException, ExecutionException {
+    private void initRfsIfNeed() throws IOException, InterruptedException, ExecutionException, RemoteException {
         if (RfsSyncFactory.ENABLE_RFS) {            
             if (execEnv.isRemote()) {
                 if (ServerList.get(execEnv).getSyncFactory().getID().equals(RfsSyncFactory.ID)) {
@@ -116,43 +121,50 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
     }
 
-    private void remoteControllerCleanup() {
+    private synchronized void remoteControllerCleanup() {
         // nobody calls this concurrently => no synchronization
         if (remoteControllerProcess != null) {
             remoteControllerProcess.destroy();
-            // until #170502 is fixed
-            try {
-                RemoteCommandSupport.run(execEnv, "kill", ""+remoteControllerProcess.getPID()); // NOI18N
-            } catch (IOException e) {
-                RemoteUtil.LOGGER.warning("Can't get PID: " + e.getMessage()); //NOI18N
-            }
             remoteControllerProcess = null;
         }
     }
 
-    private void initRfs() throws IOException, InterruptedException, ExecutionException {
+    private void initRfs() throws IOException, InterruptedException, ExecutionException, RemoteException {
 
         final Env env = pae.getProfile().getEnvironment();
 
-        String remoteControllerPath = RfsSetupProvider.getController(execEnv);
-        if (remoteControllerPath == null) {
-            return;
+        String remoteControllerPath;
+        String ldLibraryPath;
+        try {
+            remoteControllerPath = RfsSetupProvider.getControllerPath(execEnv);
+            CndUtils.assertTrue(remoteControllerPath != null);
+            ldLibraryPath = RfsSetupProvider.getLdLibraryPath(execEnv);
+            CndUtils.assertTrue(ldLibraryPath != null);
+        } catch (ParseException ex) {
+            throw new ExecutionException(ex);
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
         // nobody calls this concurrently => no synchronization
         remoteControllerCleanup(); // just in case
         pb.setExecutable(remoteControllerPath); //I18N
+        pb.setWorkingDirectory(remoteDir);
         remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
 
-        final InputStream rcStream = remoteControllerProcess.getInputStream();
-        RfsLocalController localController = new RfsLocalController(
-                execEnv, localDir,  remoteDir, rcStream,
-                remoteControllerProcess.getOutputStream(), err, privProjectStorageDir);
+        final InputStream rcInputStream = remoteControllerProcess.getInputStream();
+        final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
+        localController = new RfsLocalController(
+                execEnv, localDir,  remoteDir, rcInputStream,
+                rcOutputStream, err, new FileData(privProjectStorageDir, execEnv));
+
+        localController.feedFiles(rcOutputStream, new SharabilityFilter());
+        
+        //try { rcOutputStream.flush(); Thread.sleep(10000); } catch (InterruptedException e) {}
+
         // read port
-        String line = new BufferedReader(new InputStreamReader(rcStream)).readLine();
+        String line = new BufferedReader(new InputStreamReader(rcInputStream)).readLine();
         String port;
         if (line != null && line.startsWith("PORT ")) { // NOI18N
             port = line.substring(5);
@@ -168,24 +180,31 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         RemoteUtil.LOGGER.fine("Remote Controller listens port " + port); // NOI18N
         RequestProcessor.getDefault().post(localController);
 
-
-        String preload = RfsSetupProvider.getPreload(execEnv);
-        assert preload != null;
+        String preload = RfsSetupProvider.getPreloadName(execEnv);
+        CndUtils.assertTrue(preload != null);
         // to be able to trace what we're doing, first put it all to a map
         Map<String, String> env2add = new HashMap<String, String>();
 
+        //Alas, this won't work
+        //MacroMap mm = MacroMap.forExecEnv(execEnv);
+        //mm.prependPathVariable("LD_LIBRARY_PATH", ldLibraryPath);
+        //mm.prependPathVariable("LD_PRELOAD", preload); // NOI18N
+
         env2add.put("LD_PRELOAD", preload); // NOI18N
+        String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
+        String oldLdLibPath = RemoteUtil.getEnv(execEnv, ldLibPathVar);
+        if (oldLdLibPath != null) {
+            ldLibraryPath += ":" + oldLdLibPath; // NOI18N
+        }
+        env2add.put(ldLibPathVar, ldLibraryPath); // NOI18N
         env2add.put("RFS_CONTROLLER_DIR", remoteDir); // NOI18N
         env2add.put("RFS_CONTROLLER_PORT", port); // NOI18N
-        
-        String preloadLog = System.getProperty("cnd.remote.fs.preload.log");
-        if (preloadLog != null) {
-            env2add.put("RFS_PRELOAD_LOG", preloadLog); // NOI18N
-        }
-        String controllerLog = System.getProperty("cnd.remote.fs.controller.log");
-        if (controllerLog != null) {
-            env2add.put("RFS_CONTROLLER_LOG", controllerLog); // NOI18N
-        }
+
+        addRemoteEnv(env2add, "cnd.rfs.preload.sleep", "RFS_PRELOAD_SLEEP"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
         for (Map.Entry<String, String> entry : env2add.entrySet()) {
@@ -206,8 +225,18 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         });
     }
 
+    private void addRemoteEnv(Map<String, String> env2add, String localJavaPropertyName, String remoteEnvVarName) {
+        String value = System.getProperty(localJavaPropertyName, null);
+        if (value != null) {
+            env2add.put(remoteEnvVarName, value);
+        }
+    }
+
     private void shutdownRfs() {
         remoteControllerCleanup();
+        if (localController != null) {
+            localController.shutdown();
+        }
     }
 
     @Override
@@ -241,21 +270,24 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         } catch (InterruptedIOException ex) {
             // reporting does not make sense, just return false
             RemoteUtil.LOGGER.finest(ex.getMessage());
+        } catch (RemoteException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+            printErr(ex, io);
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
-            if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage()));
-            }
+            printErr(ex, io);
         } catch (ExecutionException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
-            if (err != null) {
-                String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying",
-                        remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
-                io.getErr().printf("%s\n", message); // NOI18N
-                io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
-                err.printf("%s\n", message); // NOI18N
-            }
+            printErr(ex, io);
+        }
+    }
+
+    private void printErr(Exception ex, InputOutput io) throws MissingResourceException {
+        if (err != null) {
+            String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying", remoteDir, ServerList.get(execEnv).toString(), ex.getLocalizedMessage());
+            io.getErr().printf("%s\n", message); // NOI18N
+            io.getErr().printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
+            err.printf("%s\n", message); // NOI18N
         }
     }
 

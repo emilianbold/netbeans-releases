@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -98,7 +98,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private static final String PLATFORM_HARNESS_DIR_SUFFIX = ".harness.dir"; // NOI18N
     public static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
     
-    private static Set<NbPlatform> platforms;
+    private static volatile Set<NbPlatform> platforms;
     
     private final PropertyChangeSupport pcs;
     private final SourceRootsSupport srs;
@@ -162,46 +162,72 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     /**
      * Get a set of all registered platforms.
      */
-    public static synchronized Set<NbPlatform> getPlatforms() {
-        return new HashSet<NbPlatform>(getPlatformsInternal());
+    public static Set<NbPlatform> getPlatforms() {
+        Set<NbPlatform> plafs = getPlatformsInternal();
+        synchronized (plafs) {
+            return new HashSet<NbPlatform>(plafs);
+        }
     }
 
+    private static final Object lock = new Object();
+    /**
+     * Returns lazily initialized set of known platforms.
+     * Returned set is synchronized, so you must synchronize on it when iterating, like this:
+     * <pre>
+     * Set&lt;NbPlatform&gt; plafs = getPlatformsInternal();
+     * synchronized (plafs) {
+     *   for (NbPlatform plaf : plafs) {
+     *     // ...
+     *   }
+     * }</pre>
+     * Note: do not pass returned set outside of NbPlatform class
+     * @return
+     */
     private static Set<NbPlatform> getPlatformsInternal() {
+        Map<String,String> p = null;
         if (platforms == null) {
-            platforms = new HashSet<NbPlatform>();
-            Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
-            if (p == null) { // #115909
-                p = Collections.emptyMap();
-            }
-            boolean foundDefault = false;
-            for (Map.Entry<String,String> entry : p.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_DEST_DIR_SUFFIX)) {
-                    String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
-                    String label = p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
-                    String destdir = entry.getValue();
-                    String harnessdir = p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
-                    String sources = p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
-                    String javadoc = p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
-                    File destdirF = FileUtil.normalizeFile(new File(destdir));
-                    File harness;
-                    if (harnessdir != null) {
-                        harness = FileUtil.normalizeFile(new File(harnessdir));
-                    } else {
-                        harness = findHarness(destdirF);
+            // evaluator and prop. provider must be obtained outside of synchronized section,
+            // as it acquires PM.mutex() read lock internally and can deadlock
+            // when getPlatformsInternal() is called from PM.mutex() write lock;
+            // see issue #173345
+            p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
+        }
+        synchronized (lock) {
+            if (platforms == null) {
+                platforms = Collections.synchronizedSet(new HashSet<NbPlatform>());
+                if (p == null) { // #115909
+                    p = Collections.emptyMap();
+                }
+                boolean foundDefault = false;
+                for (Map.Entry<String, String> entry : p.entrySet()) {
+                    String key = entry.getKey();
+                    if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_DEST_DIR_SUFFIX)) {
+                        String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
+                        String label = p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
+                        String destdir = entry.getValue();
+                        String harnessdir = p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
+                        String sources = p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
+                        String javadoc = p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
+                        File destdirF = FileUtil.normalizeFile(new File(destdir));
+                        File harness;
+                        if (harnessdir != null) {
+                            harness = FileUtil.normalizeFile(new File(harnessdir));
+                        } else {
+                            harness = findHarness(destdirF);
+                        }
+                        platforms.add(new NbPlatform(id, label, destdirF, harness, Util.findURLs(sources), Util.findURLs(javadoc)));
+                        foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
                     }
-                    platforms.add(new NbPlatform(id, label, destdirF, harness, Util.findURLs(sources), Util.findURLs(javadoc)));
-                    foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
                 }
-            }
-            if (!foundDefault) {
-                File loc = defaultPlatformLocation();
-                if (loc != null) {
-                    platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, findHarness(loc), new URL[0], new URL[0]));
+                if (!foundDefault) {
+                    File loc = defaultPlatformLocation();
+                    if (loc != null) {
+                        platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, findHarness(loc), new URL[0], new URL[0]));
+                    }
                 }
-            }
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("NbPlatform initial list: " + platforms);
+                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    Util.err.log("NbPlatform initial list: " + platforms);
+                }
             }
         }
         return platforms;
@@ -256,7 +282,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * @param id an ID (as in {@link #getID})
      * @return the platform with that ID, or null
      */
-    public static synchronized NbPlatform getPlatformByID(String id) {
+    public static NbPlatform getPlatformByID(String id) {
         for (NbPlatform p : getPlatformsInternal()) {
             if (p.getID().equals(id)) {
                 return p;
@@ -274,13 +300,16 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * @param the installation directory (as in {@link #getDestDir})
      * @return the platform with that destination directory
      */
-    public static synchronized NbPlatform getPlatformByDestDir(File destDir) {
-        for (NbPlatform p : getPlatformsInternal()) {
-            // DEBUG only
-            int dif = p.getDestDir().compareTo(destDir);
-           
-            if (p.getDestDir().equals(destDir)) {
-                return p;
+    public static NbPlatform getPlatformByDestDir(File destDir) {
+        Set<NbPlatform> plafs = getPlatformsInternal();
+        synchronized (plafs) {
+            for (NbPlatform p : plafs) {
+                // DEBUG only
+//                int dif = p.getDestDir().compareTo(destDir);
+
+                if (p.getDestDir().equals(destDir)) {
+                    return p;
+                }
             }
         }
         URL[] sources = new URL[0];
@@ -326,12 +355,15 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * Returns whether the platform within the given directory is already
      * registered.
      */
-    public static synchronized boolean contains(File destDir) {
+    public static boolean contains(File destDir) {
         boolean contains = false;
-        for (NbPlatform p : getPlatformsInternal()) {
-            if (p.getDestDir().equals(destDir)) {
-                contains = true;
-                break;
+        Set<NbPlatform> plafs = getPlatformsInternal();
+        synchronized (plafs) {
+            for (NbPlatform p : plafs) {
+                if (p.getDestDir().equals(destDir)) {
+                    contains = true;
+                    break;
+                }
             }
         }
         return contains;
@@ -382,9 +414,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         }
         NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir), harness,
                 Util.findURLs(null), Util.findURLs(null));
-        synchronized (NbPlatform.class) {
-            getPlatformsInternal().add(plaf);
-        }
+        getPlatformsInternal().add(plaf);
         if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             Util.err.log("NbPlatform added: " + plaf);
         }
@@ -423,9 +453,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        synchronized (NbPlatform.class) {
-            getPlatformsInternal().remove(plaf);
-        }
+        getPlatformsInternal().remove(plaf);
         if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             Util.err.log("NbPlatform removed: " + plaf);
         }

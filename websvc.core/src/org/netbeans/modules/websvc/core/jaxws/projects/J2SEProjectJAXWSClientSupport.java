@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,7 +44,8 @@ package org.netbeans.modules.websvc.core.jaxws.projects;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -93,8 +94,6 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     private static final String HTTPS_PROXY_PORT_OPTION="-Dhttps.proxyPort"; //NOI18N
     private static final String HTTPS_NON_PROXY_HOSTS_OPTION="-Dhttps.nonProxyHosts"; //NOI18N
     private static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
-    private static final String JAXWS_ENDORSED = "jaxws.endorsed.dir"; // NOI18N
-    private static final String ENDORSED_OPTION = "-Djava.endorsed.dirs=\"${jaxws.endorsed.dir}\""; //NOI18N
     
     /** Creates a new instance of J2SEProjectJAXWSClientSupport */
     public J2SEProjectJAXWSClientSupport(Project project) {
@@ -117,6 +116,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         return null;
     }
 
+    @Override
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
         
         // call the super.addServiceClient();
@@ -136,6 +136,14 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
             ClassPath compileClassPath = ClassPath.getClassPath(srcRoot,ClassPath.COMPILE);
             ClassPath bootClassPath = ClassPath.getClassPath(srcRoot,ClassPath.BOOT);
             classPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{compileClassPath, bootClassPath});
+
+            // add JAX-WS Endorsed Classpath
+            try {
+                addJaxWsApiEndorsed(srcRoot);
+            } catch (IOException ex) {
+                Logger.getLogger(J2SEProjectJAXWSClientSupport.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
+            }
+
         }
         FileObject webServiceClass=null;
         if (classPath!=null) {
@@ -180,11 +188,10 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
-                
-                boolean endorsedModif = modifyEndorsedOption(ep,ep1);
+
                 boolean proxyModif = addJVMProxyOptions(ep);
                 
-                if (endorsedModif || proxyModif)
+                if (proxyModif)
                 try {
                     WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);                
                     ProjectManager.getDefault().saveProject(project);
@@ -248,90 +255,14 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         }
         return modif;
     }
-    
-    // add/remove java.endorsed.dirs JVM Options
-    private boolean modifyEndorsedOption(EditableProperties projectProp, EditableProperties privateProp) {
-        assert projectProp != null;
-        assert privateProp != null;
-        String java_version = System.getProperty("java.version"); //NOI18N
-        if (java_version == null) return false;
-        String endorsed = privateProp.getProperty(JAXWS_ENDORSED);
-        boolean modif = false;
-        if (isOldJdk16(java_version) && endorsed != null) { //NOI18N
-            // create or modify JVM options
-            String jvmOptions = projectProp.getProperty(RUN_JVM_ARGS);
-            if (jvmOptions == null) {                   
-                modif = true;
-                jvmOptions = ENDORSED_OPTION;
-            } else if (jvmOptions.indexOf("-Djava.endorsed.dirs") == -1) { //NOI18N
-                // specify the endorsed property only if not already specified
-                jvmOptions = ENDORSED_OPTION + " "+ jvmOptions;
-                modif = true;
 
-            }
-            if (modif) {
-                projectProp.setProperty(RUN_JVM_ARGS,jvmOptions); 
-            }
-        } else {
-            // remove endorsed option from JVM Options  
-            String jvmOptions = projectProp.getProperty(RUN_JVM_ARGS);
-            if (jvmOptions != null) {
-                if (jvmOptions.indexOf(ENDORSED_OPTION) >=0) {
-                    // remove JVMOption
-                    StringTokenizer options = new StringTokenizer(jvmOptions);
-                    StringBuffer newJvmOptions = new StringBuffer();
-                    boolean first = true;
-                    while (options.hasMoreTokens()) {
-                        String token = options.nextToken();
-                        if (!ENDORSED_OPTION.equals(token)) {
-                            if (!first) {
-                                newJvmOptions.append(" "); // options must be separated by space
-                            }
-                            newJvmOptions.append(token);
-                            first = false;
-                        }
-                    }
-                    projectProp.setProperty(RUN_JVM_ARGS,newJvmOptions.toString());
-                    modif = true;
-                }
-            }
-        }
-        return modif;
-    }
-    
-    /** test if jdk version is 1.6 and older than jdk1.6.0_04 
-     * 
-     * @param java_version
-     * @return
-     */
-    private boolean isOldJdk16(String java_version) {
-        if (java_version.startsWith("1.6.0")) { //NOI18N
-            int index = java_version.indexOf("_");
-            if (index > 0) {
-                String releaseVersion = java_version.substring(index+1);
-                StringTokenizer tokens = new StringTokenizer(releaseVersion,"-_. "); //NOI18N
-                String updateVersion = tokens.nextToken();
-                if (updateVersion != null) {
-                    try {
-                        Integer rv = Integer.valueOf(updateVersion);
-                        if (rv >=4) return false;
-                        else return true;
-                    } catch (NumberFormatException ex) {
-                        // return true for some strange jdk versions
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            } else {
-                // return true for some strange jdk versions
-                return false;
-            }
-        } else {
-            return false;
+    public void addJaxWsApiEndorsed(FileObject srcRoot) throws IOException {
+        String java_version = System.getProperty("java.version"); //NOI18N
+        if (java_version.compareTo("1.6") >= 0) {
+            WSUtils.addJaxWsApiEndorsed(project, srcRoot);
         }
     }
-      
+     
      /** Returns the default value for the http.nonProxyHosts system property. <br>
      *  PENDING: should be a user settable property
      * @return sensible default for non-proxy hosts, including 'localhost'

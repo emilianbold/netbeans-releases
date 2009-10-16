@@ -84,6 +84,7 @@ public class KenaiTest extends NbTestCase implements TestConstants {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        System.setProperty("kenai.com.url","https://testkenai.com");
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();
@@ -121,7 +122,7 @@ public class KenaiTest extends NbTestCase implements TestConstants {
                 dateString = "";
             }
 
-            String url = "/buglist.cgi?query_format=advanced&product=golden-project-1";
+            String url = "/buglist.cgi?query_format=advanced&product=koliba";
             IRepositoryQuery query = new RepositoryQuery(repository.getConnectorKind(), "");
             query.setUrl(url);
             final List<TaskData> collectedData = new ArrayList<TaskData>();

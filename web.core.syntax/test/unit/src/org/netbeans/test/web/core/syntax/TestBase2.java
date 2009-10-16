@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,6 +42,7 @@
 package org.netbeans.test.web.core.syntax;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
@@ -107,7 +109,16 @@ public class TestBase2 extends CslTestBase {
     }
 
     public final ClassPath createServletAPIClassPath() throws MalformedURLException, IOException {
+        return createClassPath("web.project.jars");
+    }
+    
+    public final ClassPath createClassPath(String property) 
+        throws MalformedURLException, IOException 
+    {
         String path = System.getProperty("web.project.jars");
+        if ( path == null ){
+            path = "";
+        }
         String[] st = PropertyUtils.tokenizePath(path);
         List<FileObject> fos = new ArrayList<FileObject>();
         for (int i=0; i<st.length; i++) {
@@ -120,5 +131,32 @@ public class TestBase2 extends CslTestBase {
             fos.add(FileUtil.getArchiveRoot(fo));
         }
         return ClassPathSupport.createClassPath(fos.toArray(new FileObject[fos.size()]));
+    }
+    
+    protected void assertFileContentsMatches(String relFilePath, String newFileName,
+            String content ) throws Exception 
+    {
+        File file = getDataFile(relFilePath);
+        if (!file.exists()) {
+            NbTestCase.fail("File " + file + " not found.");
+        }
+
+        File goldenFile = getDataFile( newFileName );
+        if (!goldenFile.exists()) {
+            if (!goldenFile.createNewFile()) {
+                NbTestCase.fail("Cannot create file " + goldenFile);
+            }
+            FileWriter fw = new FileWriter(goldenFile);
+            try {
+                fw.write(content);
+            }
+            finally{
+                fw.close();
+            }
+            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+        }
+
+        String expected = readFile(goldenFile);
+        assertEquals(expected.trim(), content.trim());
     }
 }

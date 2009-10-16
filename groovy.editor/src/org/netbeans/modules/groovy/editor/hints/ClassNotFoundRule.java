@@ -39,11 +39,8 @@
 package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
@@ -65,19 +62,16 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author schmidtm
+ * @author schmidtm, Petr Hejl
  */
 public class ClassNotFoundRule extends GroovyErrorRule {
 
     public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName()); // NOI18N
     private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription");
     private final FixImportsHelper helper = new FixImportsHelper();
-    private final Map<String,Set<Integer>> notfoundMap = new HashMap<String,Set<Integer>>();
-    private int lastCompilationRun = 0;
 
     public ClassNotFoundRule() {
-        // LOG.setLevel(Level.FINEST);
-        LOG.log(Level.FINEST, "Constructor");
+        super();
     }
 
     public Set<GroovyCompilerErrorID> getCodes() {
@@ -105,14 +99,6 @@ public class ClassNotFoundRule extends GroovyErrorRule {
             return;
         }
 
-        int thisCompilationRun = context.parserResult.hashCode();
-        LOG.log(Level.FINEST, "context.compilationInfo = {0}", thisCompilationRun);
-
-        if (thisCompilationRun != lastCompilationRun) {
-            notfoundMap.clear();
-            lastCompilationRun = thisCompilationRun;
-        }
-
         // FIXME parsing API
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
 
@@ -133,12 +119,6 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         int lineEnd = 0;
 
         try {
-            // get line number
-            Integer lineno = Integer.valueOf(Utilities.getLineOffset(context.doc, error.getStartPosition()));
-
-            if (hasBeenMarkedBefore(missingClassName, lineno)) {
-                return;
-            }
 
             lineStart = Utilities.getRowStart(context.doc, error.getStartPosition());
             lineEnd = Utilities.getRowEnd(context.doc, error.getEndPosition());
@@ -163,39 +143,6 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         }
 
         return;
-    }
-
-    boolean hasBeenMarkedBefore(String missingClassName, Integer lineno) {
-
-        // FIXME: test whether this combination is in the Map:
-        // This could be done in one go ...
-
-        for (String name : notfoundMap.keySet()) {
-            if (name.equals(missingClassName)) {
-                Set<Integer> setOfLines = notfoundMap.get(name);
-
-                for (Iterator it = setOfLines.iterator(); it.hasNext();) {
-                    Integer number = (Integer) it.next();
-                    if (number.equals(lineno)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        Set<Integer> setOfLines;
-
-        if (notfoundMap.containsKey(missingClassName)) {
-            setOfLines = notfoundMap.get(missingClassName);
-            setOfLines.add(lineno);
-        } else {
-            setOfLines = new HashSet<Integer>();
-            setOfLines.add(lineno);
-            notfoundMap.put(missingClassName, setOfLines);
-        }
-
-        return false;
-
     }
 
     public boolean appliesTo(RuleContext context) {

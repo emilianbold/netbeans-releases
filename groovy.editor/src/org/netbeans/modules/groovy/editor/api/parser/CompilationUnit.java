@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -68,6 +68,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.groovy.editor.java.ElementSearch;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.openide.util.Exceptions;
 
@@ -137,11 +138,8 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
 //                }
                 Task<CompilationController> task = new Task<CompilationController>() {
                     public void run(CompilationController controller) throws Exception {
-                        Elements elemnts = controller.getElements();
-                        TypeElement typeElement = elemnts.getTypeElement(name);
-                        if (typeElement == null) {
-                            typeElement = getInnerClass(elemnts, name);
-                        }
+                        Elements elements = controller.getElements();
+                        TypeElement typeElement = ElementSearch.getClass(elements, name);
 
                         synchronized (cache) {
                             if (typeElement != null) {
@@ -166,43 +164,6 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             synchronized (cache) {
                 return cache.get(name);
             }
-        }
-
-        private TypeElement getInnerClass(Elements elements, String name) {
-            int index = name.indexOf("$"); // NOI18N
-            TypeElement typeElement = null;
-            if (index > 0 && name.length() > index + 1) {
-                TypeElement enclosingElement = elements.getTypeElement(name.substring(0, index));
-
-                int nextIndex = index;
-                while (enclosingElement != null && nextIndex >= 0) {
-                    String subName = name.substring(nextIndex + 1);
-                    int subIndex = subName.indexOf("$"); // NOI18N
-                    if (subIndex >= 0) {
-                        subName = subName.substring(0, subIndex);
-                        nextIndex = nextIndex + 1 + subIndex;
-                    } else {
-                        nextIndex = -1;
-                    }
-
-                    boolean found = false;
-                    for (TypeElement elem : ElementFilter.typesIn(enclosingElement.getEnclosedElements())) {
-                        Name elemName = elem.getSimpleName();
-
-                        if (elemName.toString().equals(subName)) {
-                            enclosingElement = elem;
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        enclosingElement = null;
-                    }
-                }
-                typeElement = enclosingElement;
-            }
-            return typeElement;
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {

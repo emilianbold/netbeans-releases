@@ -40,8 +40,10 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -75,6 +77,7 @@ public class InsertLinkAction extends AbstractAction {
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         if (insertLineNumber) {
             putValue(NAME, fo.getNameExt() + ":" + line);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));
         } else {
             putValue(NAME, fo.getNameExt());
         }

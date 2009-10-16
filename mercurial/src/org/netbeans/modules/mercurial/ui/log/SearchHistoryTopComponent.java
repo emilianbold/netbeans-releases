@@ -48,8 +48,6 @@ import java.util.*;
 import java.io.File;
 import java.awt.BorderLayout;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  * @author Maros Sandor
@@ -64,14 +62,13 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
     
-    public SearchHistoryTopComponent(VCSContext context) {
-        this(context, null, null, null, null);
+    public SearchHistoryTopComponent(File[] files) {
+        this(files, null, null, null, null);
     }
 
-    public SearchHistoryTopComponent(VCSContext context, String commitMessage, String username, Date from, Date to) {
+    public SearchHistoryTopComponent(File[] files, String commitMessage, String username, Date from, Date to) {
         this();
-        File[] roots = context.getRootFiles().toArray(new File[0]);
-        initComponents(roots, commitMessage, username, from, to);
+        initComponents(files, commitMessage, username, from, to);
     }
 
     /**

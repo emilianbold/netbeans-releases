@@ -127,7 +127,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
 
         THAProjectSupport support = new THAProjectSupport(project);
 
-        ProjectConfigurationProvider pcp = project.getLookup().lookup(ProjectConfigurationProvider.class);
+        ProjectConfigurationProvider<?> pcp = project.getLookup().lookup(ProjectConfigurationProvider.class);
 
         if (pcp != null) {
             pcp.addPropertyChangeListener(support);
@@ -156,7 +156,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return false;
         }
 
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
 
         if (instrSupport == null || !instrSupport.isSupported()) {
             return false;
@@ -166,7 +166,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
     }
 
     public boolean isConfiguredForInstrumentation(THAConfiguration configuration) {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(true);
 
         if (instrSupport == null){// || !instrSupport.isSupported()) {
             // should be be possible call method in UI thread
@@ -184,17 +184,23 @@ public final class THAProjectSupport implements PropertyChangeListener {
                 return true;
             }
         }
-        if ((!mc.getCRequired().getValue() || (mc.getCRequired().getValue() &&  mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions())))  &&
-                (!mc.getCppRequired().getValue() || (mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) &&
-                mc.getLinkerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getLinkerOptions())) {
-            return true;
-        }
-
-        return false;
+	if ((mc.getCRequired().getValue() && !mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
+	    return false;
+	}
+	if ((mc.getCppRequired().getValue() && !mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
+	    return false;
+	}
+	if ((mc.getFortranRequired().getValue() && !mc.getFortranCompilerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getCompilerOptions()))) {
+	    return false;
+	}
+	if (!(mc.getLinkerConfiguration().getCommandLineConfiguration().getValue().contains(instrSupport.getLinkerOptions()))) {
+	    return false;
+	}
+        return true;
     }
 
     private boolean isConfiguredForInstrumentationMakefile() {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
         String args = ReconfigureProvider.getDefault().getLastFlags(project);
         if (args != null && args.indexOf(instrSupport.getCompilerOptions())>=0) {
             return true;
@@ -266,7 +272,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return doInstrumentationMakefile();
         }
 
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
 
         String linkerOptions = mc.getLinkerConfiguration().getCommandLineConfiguration().getValue();
 
@@ -288,20 +294,27 @@ public final class THAProjectSupport implements PropertyChangeListener {
             }
         }
 
+	if (mc.getFortranRequired().getValue()) {
+            String fortranOptions = mc.getFortranCompilerConfiguration().getCommandLineConfiguration().getValue();
+            if (!fortranOptions.contains(instrSupport.getCompilerOptions())) {
+                mc.getFortranCompilerConfiguration().getCommandLineConfiguration().setValue(fortranOptions + " " + instrSupport.getCompilerOptions()); // NOI18N
+            }
+        }
+
         setModified();
 
         return true;
     }
 
     private boolean doInstrumentationMakefile() {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(false);
         ReconfigureProvider.getDefault().reconfigure(project, "-g "+instrSupport.getCompilerOptions(), // NOI18N
                 "-g "+instrSupport.getCompilerOptions(), instrSupport.getLinkerOptions()); // NOI18N
-        return false;
+        return true;
     }
 
     public List<String> undoInstrumentation() {
-        THAInstrumentationSupport instrSupport = getInstrumentationSupport();
+        THAInstrumentationSupport instrSupport = getInstrumentationSupport(true);
 
         if (instrSupport == null){// || !instrSupport.isSupported()) {
             return Collections.<String>emptyList();
@@ -335,11 +348,21 @@ public final class THAProjectSupport implements PropertyChangeListener {
         }
 
         if (mc.getCppRequired().getValue()) {
-            String ccOptions = mc.getCCompilerConfiguration().getCommandLineConfiguration().getValue();
+            String ccOptions = mc.getCCCompilerConfiguration().getCommandLineConfiguration().getValue();
             String ccInstrOption = instrSupport.getCompilerOptions();
             idx = ccOptions.indexOf(ccInstrOption);
             if (idx >= 0) {
                 mc.getCCCompilerConfiguration().getCommandLineConfiguration().setValue(ccOptions.replaceAll(ccInstrOption, "")); // NOI18N
+                changed = true;
+            }
+        }
+
+	if (mc.getFortranRequired().getValue()) {
+            String fortranOptions = mc.getFortranCompilerConfiguration().getCommandLineConfiguration().getValue();
+            String fortranInstrOption = instrSupport.getCompilerOptions();
+            idx = fortranOptions.indexOf(fortranInstrOption);
+            if (idx >= 0) {
+                mc.getFortranCompilerConfiguration().getCommandLineConfiguration().setValue(fortranOptions.replaceAll(fortranInstrOption, "")); // NOI18N
                 changed = true;
             }
         }
@@ -352,7 +375,8 @@ public final class THAProjectSupport implements PropertyChangeListener {
             setModified();
         }
         if (changed) {
-            List<String> res = new ArrayList<String>(2);
+            List<String> res = new ArrayList<String>(3);
+            res.add("save"); // NOI18N
             res.add("clean"); // NOI18N
             res.add("build"); // NOI18N
             return res;
@@ -412,9 +436,11 @@ public final class THAProjectSupport implements PropertyChangeListener {
         listeners.remove(listener);
     }
 
-    private THAInstrumentationSupport getInstrumentationSupport() {
-        if (!activeCompilerIsSunStudio()) {
-            return null;
+    private THAInstrumentationSupport getInstrumentationSupport(boolean force) {
+        if (!force) {
+            if (!activeCompilerIsSunStudio()) {
+                return null;
+            }
         }
 
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);

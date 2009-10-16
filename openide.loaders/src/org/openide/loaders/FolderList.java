@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -317,7 +317,9 @@ implements FileChangeListener, DataObject.Container {
     */
     private synchronized void changeComparator () {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("changeComparator on " + folder);
+        if (LOG) {
+            err.fine("changeComparator on " + folder);
+        }
         final RequestProcessor.Task previous = comparatorTask;
         final RequestProcessor.Task[] COMP = new RequestProcessor.Task[1];
         synchronized (COMP) {
@@ -329,18 +331,22 @@ implements FileChangeListener, DataObject.Container {
                         }
                         // if has been notified
                         // change mode and regenerated children
-                        if (primaryFiles != null) {
-                            // the old children
-                            if (LOG) err.fine("changeComparator on " + folder + ": get old");
-                            List<DataObject> v = getObjects(null);
-                            if (v.size () != 0) {
-                                // the new children - also are stored to be returned next time from getChildrenList ()
-                                order = null;
-                                if (LOG) err.fine("changeComparator: get new");
-                                List<DataObject> r = getObjects (null);
-                                if (LOG) err.fine("changeComparator: fire change");
-                                fireChildrenChange (r, v);
+                        if (LOG) {
+                            err.fine("changeComparator on " + folder + ": get old");
+                        }
+                        // the old children
+                        List<DataObject> v = getObjects(null);
+                        if (v.size () != 0) {
+                            // the new children - also are stored to be returned next time from getChildrenList ()
+                            order = null;
+                            if (LOG) {
+                                err.fine("changeComparator: get new");
                             }
+                            List<DataObject> r = getObjects (null);
+                            if (LOG) {
+                                err.fine("changeComparator: fire change");
+                            }
+                            fireChildrenChange (r, v);
                         }
                         synchronized (FolderList.this) {
                             // clean  the task if is my own not assigned by somebody else
@@ -367,7 +373,9 @@ implements FileChangeListener, DataObject.Container {
         }
         final long now = System.currentTimeMillis();
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("refresh on " + folder + " @" + now);
+        if (LOG) {
+            err.fine("refresh on " + folder + " @" + now);
+        }
         synchronized (this) {
             if (refreshTask == null) {
                 refreshTask = PROCESSOR.post (new Runnable () {
@@ -378,7 +386,9 @@ implements FileChangeListener, DataObject.Container {
                             t.waitFinished ();
                         }
                         
-                        if (LOG) err.fine("-- refresh on " + folder + ": now=" + now);
+                        if (LOG) {
+                            err.fine("-- refresh on " + folder + ": now=" + now);
+                        }
                         if (primaryFiles != null) {
                             // list of children is created, recreate it for new files
                             createBoth (null, true);
@@ -427,7 +437,9 @@ implements FileChangeListener, DataObject.Container {
      */
     public void fileChanged (FileEvent fe) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("fileChanged: " + fe);
+        if (LOG) {
+            err.fine("fileChanged: " + fe);
+        }
         
         FileObject fo = fe.getFile ();
         
@@ -469,7 +481,9 @@ implements FileChangeListener, DataObject.Container {
     */
     public void fileDeleted (FileEvent fe) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("fileDeleted: " + fe);
+        if (LOG) {
+            err.fine("fileDeleted: " + fe);
+        }
         //    boolean debug = fe.getFile().toString().equals("P"); // NOI18N
         //if (debug) System.out.println ("fileDeleted: " + fe.getFile ()); // NOI18N
         //if (debug) System.out.println ("fileList: " + fileList + " file: " + fileList.get (fe.getFile ())); // NOI18N
@@ -489,7 +503,9 @@ implements FileChangeListener, DataObject.Container {
     */
     public void fileDataCreated (FileEvent fe) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("fileDataCreated: " + fe);
+        if (LOG) {
+            err.fine("fileDataCreated: " + fe);
+        }
         refresh();
     }
 
@@ -501,7 +517,9 @@ implements FileChangeListener, DataObject.Container {
     */
     public void fileFolderCreated (FileEvent fe) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("fileFolderCreated: " + fe);
+        if (LOG) {
+            err.fine("fileFolderCreated: " + fe);
+        }
         refresh();
     }
 
@@ -511,7 +529,9 @@ implements FileChangeListener, DataObject.Container {
     */
     public void fileRenamed (FileRenameEvent fe) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("fileRenamed: " + fe);
+        if (LOG) {
+            err.fine("fileRenamed: " + fe);
+        }
         refresh();
         // Typically order may change as a result (#13820):
         changeComparator();
@@ -523,7 +543,9 @@ implements FileChangeListener, DataObject.Container {
     */
     public void fileAttributeChanged(FileAttributeEvent fe) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("fileAttributeChanged: " + fe);
+        if (LOG) {
+            err.fine("fileAttributeChanged: " + fe);
+        }
         // update list when attrs defining order were changed
         if (fe.getFile() == folder) {
             /** Means one of attributes were changed*/
@@ -556,7 +578,9 @@ implements FileChangeListener, DataObject.Container {
     */
     private List<DataObject> getObjects (FolderListListener f) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("getObjects on " + folder);
+        if (LOG) {
+            err.fine("getObjects on " + folder);
+        }
         List<DataObject> res;
         if (primaryFiles == null) {
             res = createBoth (f, false);
@@ -592,7 +616,9 @@ implements FileChangeListener, DataObject.Container {
      */
     private List<DataObject> carefullySort(List<DataObject> l, FolderOrder c) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("carefullySort on " + folder);
+        if (LOG) {
+            err.fine("carefullySort on " + folder);
+        }
         Collections.sort (l, c);
         Map<FileObject,DataObject> files = new LinkedHashMap<FileObject,DataObject>(l.size());
         for (DataObject d : l) {
@@ -603,7 +629,9 @@ implements FileChangeListener, DataObject.Container {
                 files.put(f, d);
             }
         }
-        if (LOG) err.fine("carefullySort before getOrder");
+        if (LOG) {
+            err.fine("carefullySort before getOrder");
+        }
         List<FileObject> sorted = FileUtil.getOrder(files.keySet(), true);
         List<DataObject> dobs = new ArrayList<DataObject>(sorted.size());
         for (FileObject f : sorted) {
@@ -644,8 +672,6 @@ implements FileChangeListener, DataObject.Container {
             err.fine("createObjects on " + folder);
         }
         int size = order.size ();
-
-        Iterator it = order.iterator ();
 
         List<DataObject> res = new ArrayList<DataObject> (size);
         for (FileObject fo: order) {
@@ -717,7 +743,9 @@ implements FileChangeListener, DataObject.Container {
      */
     private List<DataObject> createBoth (FolderListListener filter, boolean notify) {
         final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) err.fine("createBoth on " + folder);
+        if (LOG) {
+            err.fine("createBoth on " + folder);
+        }
         // map for (FileObject, DataObject)
         final HashMap<FileObject,Reference<DataObject>> file = 
                 new HashMap<FileObject, Reference<DataObject>> ();
@@ -942,7 +970,9 @@ implements FileChangeListener, DataObject.Container {
         
         private void computeResult() {
             final boolean LOG = err.isLoggable(Level.FINE);
-            if (LOG) err.fine("ListTask.run 1 on " + folder);
+            if (LOG) {
+                err.fine("ListTask.run 1 on " + folder);
+            }
             // invokes the refresh task before we do anything else
             if (comparatorTask != null) {
                 comparatorTask.waitFinished ();

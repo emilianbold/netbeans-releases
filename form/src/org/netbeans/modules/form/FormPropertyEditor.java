@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -63,6 +63,8 @@ public class FormPropertyEditor implements PropertyEditor,
 
     private Object value = BeanSupport.NO_VALUE;
     private boolean valueEdited;
+    private static final boolean SUPPRESS_FORM_EDITORS = 
+            Boolean.getBoolean("nb.form.suppress.editors"); //NOI18N
 
     private FormProperty property;
     private WeakReference<PropertyEnv> propertyEnv;
@@ -335,6 +337,9 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     synchronized PropertyEditor[] getAllEditors() {
+        if (SUPPRESS_FORM_EDITORS) {
+            return new PropertyEditor[] { property.getCurrentEditor() };
+        }
         if (allEditors != null) {
             // the current property editor might have changed and so not
             // present among the cached editors

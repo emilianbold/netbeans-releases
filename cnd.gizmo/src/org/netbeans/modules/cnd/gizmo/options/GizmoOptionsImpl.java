@@ -41,18 +41,17 @@
 package org.netbeans.modules.cnd.gizmo.options;
 
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
@@ -64,63 +63,133 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
-
-    private static enum DataProvidersCollection {
-
-        DEFAULT,
-        LINUX,
-        WINDOWS
-    }
     public static final String PROFILE_ID = "gizmo_options"; // NOI18N
+    public static final String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
+    public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
+    public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
+    private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
+    private static final String GIZMO_SIMPLE_CONFIGURATION = "GizmoSimple"; // NOI18N
+    private static final String GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION = "GizmoSunStudioStandard"; // NOI18N
+    private static final String GIZMO_DTRACE_STANDARD_CONFIGURATION = "GizmoDTraceStandard"; // NOI18N
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
-//    // Profile on Run
     private BooleanConfiguration profileOnRun;
-    public static final String PROFILE_ON_RUN_PROP = "profileOnRun"; // NOI18N
-    private final Map<String, BooleanConfiguration> toolConfigurations;
-    private final Map<String, String> toolDescriptions;
-    // Data Provider
-//    public static final int SUN_STUDIO = 0;
-//    public static final int DTRACE = 1;
-//    public static final int SIMPLE = 2;
-    private static final String[] DATA_PROVIDER_NAMES = {
-        getString("SunStudio"),
-        getString("DTrace"),
-        getString("Simple")
-    };
-    private static final String[] LINUX_DATA_PROVIDER_NAMES = {
-        getString("Simple"),
-        getString("SunStudio")
-    };
-    private static final String[] WINDOWS_DATA_PROVIDER_NAMES = {
-        getString("Simple")
-    };
-    private IntConfiguration dataProvider;
-    private DataProvidersCollection currentDPCollection = DataProvidersCollection.DEFAULT;
-    public static final String DATA_PROVIDER_PROP = "dataProvider"; // NOI18N
+    private GizmoStringConfiguration dlightConfigurationName;
+    private String preferredConfigurationName = null;
+    private boolean initialized = false;
+
+//    private String[] configurationNames;
+//    private DLightConfiguration[] configurations;
+//    private IntConfiguration gizmoConfigurations = null;
+    private MakeConfiguration makeConfiguration = null;
 
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
-        toolConfigurations = new HashMap<String, BooleanConfiguration>();
-        toolDescriptions = new HashMap<String, String>();
-        profileOnRun = new BooleanConfiguration(null, true, null, null);
-        dataProvider = new IntConfiguration(null, 0, DATA_PROVIDER_NAMES, null);
-        currentDPCollection = DataProvidersCollection.DEFAULT;
+        profileOnRun = new BooleanConfiguration(null, MakeProjectOptions.getShowIndicatorsOnRun(), null, null);
+        dlightConfigurationName = new GizmoStringConfiguration(this, null, GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION);
+    }
+
+    public DLightConfiguration getDLightConfiguration() {
+        List<DLightConfiguration> list = getValidConfigurations();
+        if (list == null) {
+            return null;
+        }
+        DLightConfiguration conf = getConfigurationByDisplayName(list, dlightConfigurationName.getValue());
+        if (conf == null) {
+            setInitialized(false);
+            init(getMakeConfiguration());
+            conf = getConfigurationByDisplayName(list, dlightConfigurationName.getValue());
+        }
+        if (conf == null) {
+            conf = getConfigurationByName(list, GIZMO_SIMPLE_CONFIGURATION);
+        }
+//        System.out.println("===================== " + conf.getDisplayedName());
+        return conf;
+    }
+
+    public void setPreferredDLightConfiguration(String name) {
+        preferredConfigurationName = name;
+    }
+
+    public DLightConfiguration getConfigurationByName(List<DLightConfiguration> list, String name) {
+        for (DLightConfiguration dlightConf : list) {
+            if (dlightConf.getConfigurationName().equals(name)) {
+                return dlightConf;
+            }
+        }
+        return null;
+    }
+
+    public DLightConfiguration getConfigurationByDisplayName(List<DLightConfiguration> list, String displayName) {
+        for (DLightConfiguration dlightConf : list) {
+            if (dlightConf.getDisplayedName().equals(displayName)) {
+                return dlightConf;
+            }
+        }
+        return null;
+    }
+
+    public List<String> getValidConfigurationDisplayNames() {
+        List<DLightConfiguration> list = getValidConfigurations();
+        return getConfigurationDisplayNames(list);
+    }
+
+    public List<String> getValidConfigurationNames() {
+        List<DLightConfiguration> list = getValidConfigurations();
+        return getConfigurationNames(list);
+    }
+
+    public List<String> getConfigurationDisplayNames(List<DLightConfiguration> list) {
+        List<String> namelist = new ArrayList<String>();
+        for (DLightConfiguration dlightConf : list) {
+            namelist.add(dlightConf.getDisplayedName());
+        }
+        return namelist;
+    }
+
+    public List<String> getConfigurationNames(List<DLightConfiguration> list) {
+        List<String> namelist = new ArrayList<String>();
+        for (DLightConfiguration dlightConf : list) {
+            namelist.add(dlightConf.getConfigurationName());
+        }
+        return namelist;
+    }
+
+    public List<DLightConfiguration> getValidConfigurations() {
+        if (getMakeConfiguration() == null || getMakeConfiguration().getDevelopmentHost() == null) {
+            return null;
+        }
+        String platform = getMakeConfiguration().getDevelopmentHost().getBuildPlatformDisplayName();
+
+        List<DLightConfiguration> confs = new ArrayList<DLightConfiguration>();
+        for (DLightConfiguration dlightConfiguration : DLightConfigurationManager.getInstance().getConfigurationsByCategoryName(GIZMO_CATEGORY)) {
+            if (dlightConfiguration.getPlatforms() != null){
+                List<String> platforms = dlightConfiguration.getPlatforms();
+                for (String supportedPlatform : platforms){
+                    if (platform.indexOf(supportedPlatform) != -1){
+                        confs.add(dlightConfiguration);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (confs.size() == 0) {
+            DLightConfiguration config = DLightConfigurationManager.getInstance().getConfigurationByName(GIZMO_SIMPLE_CONFIGURATION); // NOI18N
+            confs.add(config);
+        }
+
+        return confs;
     }
 
     public void init(Configuration conf) {
-        MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
-        ExecutionEnvironment execEnv = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
-        List<DLightTool> tools = gizmoConfiguration.getToolsSet();
-        for (DLightTool tool : tools) {
-            String toolName = tool.getID();
-            boolean oldValue = toolConfigurations.get(toolName) == null ? tool.isEnabled() : toolConfigurations.get(toolName).getValue();
-            toolConfigurations.put(toolName, new BooleanConfiguration(null, oldValue, toolName, toolName));
-            toolDescriptions.put(toolName, tool.getDetailedName());
+        if (isInitialized()) {
+            return;
         }
+        setMakeConfiguration((MakeConfiguration) conf);
+        ExecutionEnvironment execEnv = getMakeConfiguration().getDevelopmentHost().getExecutionEnvironment();
 
         //if we have sun studio compiler along compiler collections presentedCompiler
         CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(execEnv);
@@ -133,46 +202,108 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             }
         }
         String platform = makeConfiguration.getDevelopmentHost().getBuildPlatformDisplayName();
-        int index = getDataProvider().getValue();
-        //if there is no SS in toolchain
-        if (platform.indexOf("Linux") != -1 || platform.equals("MacOS")) {//NOI18N
-            dataProvider = new IntConfiguration(null, 0, LINUX_DATA_PROVIDER_NAMES, null);
-            currentDPCollection = DataProvidersCollection.LINUX;
-            switch (index) {
-                case 0:
-                    setDataProviderValue(DataProvider.SIMPLE);
-                    break;
-                case 1:
-                    setDataProviderValue(DataProvider.SUN_STUDIO);
-                    break;
-                default:
-                    setDataProviderValue(DataProvider.SIMPLE);
-                    break;
-            }
-        } else if (platform.indexOf("Solaris") != -1) {//NOI18N
-            dataProvider = new IntConfiguration(null, 0, DATA_PROVIDER_NAMES, null);
-            currentDPCollection = DataProvidersCollection.DEFAULT;
-            switch (index) {
-                case 0:
-                    setDataProviderValue(DataProvider.SUN_STUDIO);
-                    break;
-                case 1:
-                    setDataProviderValue(DataProvider.DTRACE);
-                    break;
-                default:
-                    setDataProviderValue(DataProvider.SIMPLE);
-                    break;
-            }
-        } else {//Windows or Whatever else //NOI18N
-            dataProvider = new IntConfiguration(null, 0, WINDOWS_DATA_PROVIDER_NAMES, null);
-            currentDPCollection = DataProvidersCollection.WINDOWS;
-            setDataProviderValue(DataProvider.SIMPLE);
 
-        }
+        // check whether list has changed
+//        if (gizmoConfigurations != null) {
+//            List<DLightConfiguration> newConfList = new ArrayList<DLightConfiguration>();
+//            for (DLightConfiguration dlightConfiguration : DLightConfigurationManager.getInstance().getConfigurationsByCategoryName(GIZMO_CATEGORY)) {
+//                if (dlightConfiguration.getPlatforms() != null){
+//                    List<String> platforms = dlightConfiguration.getPlatforms();
+//                    for (String supportedPlatform : platforms){
+//                        if (platform.indexOf(supportedPlatform) != -1){
+//                            newConfList.add(dlightConfiguration);
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//            int i = 0;
+//            for (DLightConfiguration dlc : newConfList) {
+//                if (!dlc.getConfigurationName().equals(configurations[i++].getConfigurationName())) {
+//                    // List has changed. Re-create but keep current selection.
+//                    preferredConfigurationName = configurations[gizmoConfigurations.getValue()].getConfigurationName();
+//                    gizmoConfigurations = null; // Will trigger new list to be created
+//                    break;
+//                }
+//            }
+//        }
+
+//        // Gizmo configurations
+//        if (gizmoConfigurations == null || configurationNames.length == 0) {
+//            List<String> names = new ArrayList<String>();
+//            List<DLightConfiguration> confs = new ArrayList<DLightConfiguration>();
+//            for (DLightConfiguration dlightConfiguration : DLightConfigurationManager.getInstance().getConfigurationsByCategoryName(GIZMO_CATEGORY)) {
+//                    if (dlightConfiguration.getPlatforms() != null){
+//                        List<String> platforms = dlightConfiguration.getPlatforms();
+//                        for (String supportedPlatform : platforms){
+//                            if (platform.indexOf(supportedPlatform) != -1){
+//                                names.add(dlightConfiguration.getDisplayedName());
+//                                confs.add(dlightConfiguration);
+//                                break;
+//                            }
+//                        }
+//                    }
+//
+//            }
+//
+//            if (names.size() == 0) {
+//                DLightConfiguration config = DLightConfigurationManager.getInstance().getConfigurationByName(GIZMO_SIMPLE_CONFIGURATION); // NOI18N
+//                names.add(config.getDisplayedName());
+//                confs.add(config);
+//            }
+//
+//            configurationNames = names.toArray(new String[names.size()]);
+//            configurations = confs.toArray(new DLightConfiguration[confs.size()]);
+            // Figure out default;
+            List<DLightConfiguration> list = getValidConfigurations();
+            DLightConfiguration defConf = null;
+//            int defConf = -1;
+            if (preferredConfigurationName != null) {
+                defConf = getConfigurationByName(list, preferredConfigurationName);
+                preferredConfigurationName = null;
+            }
+            if (defConf == null) {
+                if (platform.indexOf("Solaris") >= 0 || platform.indexOf("Linux") >= 0) { // NOI18N
+                    if (hasSunStudio || platform.indexOf("Linux") >= 0) { // NOI18N
+                        defConf = getConfigurationByName(list, GIZMO_SUNSTUDIO_STANDARD_CONFIGURATION);
+                    } else {
+                        defConf = getConfigurationByName(list, GIZMO_DTRACE_STANDARD_CONFIGURATION);
+                    }
+                } else {
+                    defConf = getConfigurationByName(list, GIZMO_SIMPLE_CONFIGURATION); // NOI18N
+                }
+            }
+//            if (defConf == -1) {
+//                defConf = 0;
+//            }
+//            gizmoConfigurations = new IntConfiguration(null, defConf, configurationNames, null);
+//        }
+        dlightConfigurationName.setValue(defConf.getDisplayedName());
+        setInitialized(true);
     }
 
+//    private int getConfigurationIndexByName(String name) {
+//        int index = 0;
+//        for (DLightConfiguration dlightConfiguration : configurations) {
+//            if (dlightConfiguration.getConfigurationName().equals(name)) {
+//                return index;
+//            }
+//            index++;
+//        }
+//        return -1;
+//    }
+
+//    public String getConfiurationNameValue() {
+//        return configurations[getGizmoConfigurations().getValue()].getConfigurationName();
+//    }
+
     public Collection<String> getNames() {
-        return toolConfigurations.keySet();
+        List<DLightTool> tools = new ArrayList<DLightTool>(getDLightConfiguration().getToolsSet());
+        Collection<String> result = new ArrayList<String>();
+        for (DLightTool tool : tools){
+            result.add(tool.getID());
+        }
+        return result;
     }
 
     public void initialize() {
@@ -226,100 +357,20 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldValue, getProfileOnRunValue());
     }
 
-    public BooleanConfiguration getConfigurationByName(String toolName) {
-        return toolConfigurations.get(toolName);
-    }
 
-    public boolean isConfigurationModified(String toolName) {
-        DLightConfiguration gizmoConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("Gizmo");//NOI18N
-        //in case different from the default
-        DLightTool tool = gizmoConfiguration.getToolByID(toolName);
-        if (toolConfigurations.get(toolName) != null &&  tool != null && (tool.isEnabled() != toolConfigurations.get(toolName).getValue())){
-            return true;
-        }
-        return false;
-    }
-
-    public String getDescriptionByName(String toolName) {
-        return toolDescriptions.get(toolName);
-    }
-
-    public boolean getValueByName(String toolName) {
-        return toolConfigurations.get(toolName).getValue();
-    }
-
-    public void setByName(String toolName, BooleanConfiguration value) {
-        toolConfigurations.put(toolName, value);
-    }
-
-    public void setValueByName(String toolName, boolean value) {
-        BooleanConfiguration confguration = toolConfigurations.get(toolName);
-        boolean oldValue = confguration == null ? false : confguration.getValue();
-        if (confguration == null) {
-            confguration = new BooleanConfiguration(null, true, toolName, toolName);
-            toolConfigurations.put(toolName, confguration);
-        }
-        confguration.setValue(value);
-        checkPropertyChange(toolName, oldValue, value);
-    }
-
-    /**
-     * Data Provider
-     */
-    public IntConfiguration getDataProvider() {
-        return dataProvider;
-    }
-
-    public DataProvider getDataProviderValue() {
-        if (currentDPCollection == DataProvidersCollection.DEFAULT) {
-            if (getDataProvider().getValue() == 0) {
-                return DataProvider.SUN_STUDIO;
-            } else if (getDataProvider().getValue() == 1) {
-                return DataProvider.DTRACE;
-            } else if (getDataProvider().getValue() == 2) {
-                return DataProvider.SIMPLE;
-            }
-        } else if (currentDPCollection == DataProvidersCollection.LINUX) {
-            if (getDataProvider().getValue() == 0) {
-                return DataProvider.SIMPLE;
-            } else if (getDataProvider().getValue() == 1) {
-                return DataProvider.SUN_STUDIO;
-            }
-        } else {
-            return DataProvider.SIMPLE;
-        }
-        assert true;
-        return GizmoOptions.DataProvider.SIMPLE;
-    }
-
-    public void setDataProvider(IntConfiguration dataProvider) {
-        this.dataProvider = dataProvider;
-    }
-
-    public void setDataProviderValue(DataProvider dataProvider) {
-        int value = 0;
-        if (currentDPCollection == DataProvidersCollection.DEFAULT) {
-            if (dataProvider == DataProvider.SUN_STUDIO) {
-                value = 0;
-            } else if (dataProvider == DataProvider.DTRACE) {
-                value = 1;
-            } else if (dataProvider == DataProvider.SIMPLE) {
-                value = 2;
-            }
-        } else if (currentDPCollection == DataProvidersCollection.LINUX) {
-            if (dataProvider == DataProvider.SUN_STUDIO) {
-                value = 1;
-            } else if (dataProvider == DataProvider.SIMPLE) {
-                value = 0;
-            }
-        } else {
-            value = 0;
-        }
-
-        DataProvider oldValue = getDataProviderValue();
-        getDataProvider().setValue(value);
-        checkPropertyChange(DATA_PROVIDER_PROP, oldValue, getDataProviderValue());
-    }
+//    /**
+//     * @return the gizmoConfigurations
+//     */
+//    public IntConfiguration getGizmoConfigurations() {
+//        return gizmoConfigurations;
+//    }
+//
+//    /**
+//     * @param gizmoConfigurations the gizmoConfigurations to set
+//     */
+//    public void setGizmoConfigurations(IntConfiguration gizmoConfigurations) {
+//        this.gizmoConfigurations = gizmoConfigurations;
+//    }
 
     public boolean shared() {
         return false;
@@ -345,37 +396,41 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
 
     public void assign(ConfigurationAuxObject auxObject) {
         boolean oldBoolValue;
-        DataProvider oldDValue;
         GizmoOptionsImpl gizmoOptions = (GizmoOptionsImpl) auxObject;
 
         oldBoolValue = getProfileOnRun().getValue();
         getProfileOnRun().assign(gizmoOptions.getProfileOnRun());
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldBoolValue, getProfileOnRunValue());
-        Set<String> keys = toolConfigurations.keySet();
-        for (String key : keys) {
-            BooleanConfiguration conf = toolConfigurations.get(key);
-            oldBoolValue = conf.getValue();
-            conf.assign(gizmoOptions.getConfigurationByName(key));
-            checkPropertyChange(key, oldBoolValue, getValueByName(key));
+        getDlightConfigurationName().assign(gizmoOptions.getDlightConfigurationName());
+        setMakeConfiguration(gizmoOptions.getMakeConfiguration());
+
+//        if (getGizmoConfigurations() != null) {
+//            getGizmoConfigurations().assign(gizmoOptions.getGizmoConfigurations());
+//        }
+//        else {
+//            preferredConfigurationName = gizmoOptions.getConfiurationNameValue();
+//        }
+
+//        gizmoConfigurations = null;
+        preferredConfigurationName = null;
+        List<DLightConfiguration> list = getValidConfigurations();
+        DLightConfiguration conf = getConfigurationByDisplayName(list, getDlightConfigurationName().getValue());
+        if (conf != null) {
+            preferredConfigurationName = conf.getConfigurationName();
         }
-        oldDValue = getDataProviderValue();
-        getDataProvider().assign(gizmoOptions.getDataProvider());
-        checkPropertyChange(DATA_PROVIDER_PROP, oldDValue, getDataProviderValue());
     }
 
     @Override
     public GizmoOptionsImpl clone(Configuration c) {
         init(c);
         GizmoOptionsImpl clone = new GizmoOptionsImpl(getBaseDir(), null);
-        clone.init(c);
+//        clone.init(c);
         clone.setProfileOnRun(getProfileOnRun().clone());
-        Set<String> keys = toolConfigurations.keySet();
-        for (String key : keys) {
-            BooleanConfiguration conf = toolConfigurations.get(key);
-            clone.setByName(key, conf.clone());
-        }
+        clone.setDlightConfigurationName(getDlightConfigurationName());
+        clone.setMakeConfiguration((MakeConfiguration)c);
+        clone.setInitialized(true);
 
-        clone.setDataProvider(getDataProvider().clone());
+//        clone.setGizmoConfigurations(getGizmoConfigurations().clone());
         return clone;
     }
 
@@ -390,5 +445,47 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             bundle = NbBundle.getBundle(GizmoOptionsImpl.class);
         }
         return bundle.getString(s);
+    }
+
+    /**
+     * @return the dlightConfigurationName
+     */
+    public GizmoStringConfiguration getDlightConfigurationName() {
+        return dlightConfigurationName;
+    }
+
+    /**
+     * @param dlightConfigurationName the dlightConfigurationName to set
+     */
+    public void setDlightConfigurationName(GizmoStringConfiguration dlightConfigurationName) {
+        this.dlightConfigurationName = dlightConfigurationName;
+    }
+
+    /**
+     * @return the makeConfiguration
+     */
+    public MakeConfiguration getMakeConfiguration() {
+        return makeConfiguration;
+    }
+
+    /**
+     * @param makeConfiguration the makeConfiguration to set
+     */
+    public void setMakeConfiguration(MakeConfiguration makeConfiguration) {
+        this.makeConfiguration = makeConfiguration;
+    }
+
+    /**
+     * @return the initialized
+     */
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    /**
+     * @param initialized the initialized to set
+     */
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
 }

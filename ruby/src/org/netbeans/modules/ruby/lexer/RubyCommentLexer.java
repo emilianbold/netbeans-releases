@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -248,11 +248,22 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
                     if (input.read() == 't') {
                         if (input.read() == 't') {
                             if (input.read() == 'p') {
-                                if (input.read() == ':') {
-                                    foundLinkBegin = true;
-                                } else {
-                                    input.backup(4);
-                                }
+				int next = input.read();
+				switch (next) {
+				    case ':':
+                                        foundLinkBegin = true;
+                                        break;
+				    case 's':
+                                        if (input.read() == ':') {
+                                            foundLinkBegin = true;
+                                        } else {
+                                            input.backup(5);
+                                        }
+					break;
+                                   default:
+                                        input.backup(4);
+                                        break;
+				}
                             } else {
                                 input.backup(3);
                             }

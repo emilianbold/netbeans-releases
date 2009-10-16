@@ -44,7 +44,7 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.procfs</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.collector.procfs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

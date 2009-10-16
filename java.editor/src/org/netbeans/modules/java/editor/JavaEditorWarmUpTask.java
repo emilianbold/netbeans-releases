@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -148,7 +148,9 @@ public class JavaEditorWarmUpTask implements Runnable{
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
-        
+
+                // initialize empty doc
+                emptyDoc = javaKit.createDefaultDocument();
 
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
@@ -185,7 +187,6 @@ public class JavaEditorWarmUpTask implements Runnable{
             case STATUS_CREATE_DOCUMENTS:
 
                 // Have two documents - one empty and another one filled with many lines
-                emptyDoc = javaKit.createDefaultDocument();
                 longDoc = pane.getDocument();
 
                 try {

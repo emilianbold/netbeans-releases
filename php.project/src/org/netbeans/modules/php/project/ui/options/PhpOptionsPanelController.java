@@ -45,9 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.util.PhpUnit;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -82,8 +80,6 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         phpOptionsPanel.setDebuggerSessionId(getPhpOptions().getDebuggerSessionId());
         phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
 
-        phpOptionsPanel.setPhpUnit(getPhpOptions().getPhpUnit());
-
         changed = false;
     }
 
@@ -99,8 +95,6 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
 
         getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
-
-        getPhpOptions().setPhpUnit(phpOptionsPanel.getPhpUnit());
 
         changed = false;
     }
@@ -171,21 +165,6 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         String warning = PhpInterpreter.validate(phpOptionsPanel.getPhpInterpreter());
         if (warning != null) {
             phpOptionsPanel.setWarning(warning);
-            return true;
-        }
-
-        PhpUnit.resetVersion();
-        PhpUnit phpUnit = null;
-        try {
-            phpUnit = PhpUnit.getCustom(phpOptionsPanel.getPhpUnit());
-        } catch (InvalidPhpProgramException ex) {
-            phpOptionsPanel.setWarning(ex.getLocalizedMessage());
-            return true;
-        }
-        assert phpUnit != null;
-        if (!phpUnit.supportedVersionFound()) {
-            phpOptionsPanel.setWarning(NbBundle.getMessage(
-                    PhpOptionsPanelController.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)));
             return true;
         }
 

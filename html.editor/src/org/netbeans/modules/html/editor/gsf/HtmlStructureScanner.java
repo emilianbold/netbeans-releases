@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -114,10 +114,16 @@ public class HtmlStructureScanner implements StructureScanner {
                         int[] logicalRange = node.getLogicalRange();
                         int from = logicalRange[0];
                         int to = logicalRange[1];
+
                         
                         int so = documentPosition(from, info.getSnapshot());
                         int eo = documentPosition(to, info.getSnapshot());
                         
+                        if(so == -1 || eo == -1) {
+                            //cannot be mapped back properly
+                            return ;
+                        }
+
                         if (eo > doc.getLength()) {
                             eo = doc.getLength();
                             if (so > eo) {

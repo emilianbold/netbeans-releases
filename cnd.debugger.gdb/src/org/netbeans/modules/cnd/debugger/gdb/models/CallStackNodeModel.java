@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 
 /**
@@ -71,6 +72,7 @@ public class CallStackNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
     public static final String CURRENT_CALL_STACK =
         "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
+    private static final int POINTER_CLASS_MAX_LENGTH = 8;
 
     private final GdbDebugger debugger;
     private final Session session;
@@ -183,7 +185,21 @@ public class CallStackNodeModel implements NodeModel {
                     GdbVariable arg = iter.next();
                     sb.append(arg.getName());
                     sb.append('=');
-                    sb.append(arg.getValue());
+                    String value = ValuePresenter.getValue(arg.getValue());
+                    // collapse structures
+                    if (value != null && value.length() > 2 &&
+                            value.charAt(0) == '{' && value.charAt(value.length()-1) == '}') {
+                        value = "{...}"; //NOI18N
+                    }
+                    // collapse long pointer descriptions
+                    if (value != null && value.length() > POINTER_CLASS_MAX_LENGTH &&
+                            value.charAt(0) == '(') {
+                        int end = GdbUtils.findMatchingParen(value, 0);
+                        if (end != -1 && end < value.length()-1) {
+                            value = value.substring(end+1);
+                        }
+                    }
+                    sb.append(value.trim());
                     if (iter.hasNext()) {
                         sb.append(',');
                     }

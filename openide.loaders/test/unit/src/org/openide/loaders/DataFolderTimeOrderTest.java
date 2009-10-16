@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -54,12 +54,13 @@ import org.openide.util.Enumerations;
 
 /** Does a change in order on folder fire the right properties?
  *
- * @author  Jaroslav Tulach
+ * @author  Jaroslav Tulach, Jiri Skrivanek
  */
-public class DataFolderTimeOrderTest extends NbTestCase 
-implements PropertyChangeListener {
+public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChangeListener {
+
     private DataFolder aa;
     private ArrayList<String> events = new ArrayList<String>();
+    private static FileSystem lfs;
     
     public DataFolderTimeOrderTest (String name) {
         super (name);
@@ -76,12 +77,12 @@ implements PropertyChangeListener {
             "AA/Y.txt",
         };
         
-        FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir (), fsstruct);
+        lfs = TestUtilHid.createLocalFileSystem (getWorkDir (), fsstruct);
 
         aa = DataFolder.findFolder (lfs.findResource ("AA"));
         aa.addPropertyChangeListener (this);
     }
-    
+
     @Override
     protected void tearDown () throws Exception {
         final DataLoader l = DataLoader.getLoader(DataObjectInvalidationTest.SlowDataLoader.class);
@@ -92,39 +93,38 @@ implements PropertyChangeListener {
     public void testLastModifiedOrderUpdatedAfterFileIsTouched() throws Exception {
         aa.setSortMode(DataFolder.SortMode.LAST_MODIFIED);
 
-        DataObject[] arr = aa.getChildren ();
         Node n = aa.getNodeDelegate().cloneNode();
         Node[] nodes = n.getChildren().getNodes(true);
-        assertEquals ("Two objects", 2, arr.length);
         assertEquals ("Two nodes", 2, nodes.length);
 
-        Thread.sleep(100);
-        
-        assertEquals("Sort mode changed: " + events, 1, events.size());
-        assertEquals("sortMode", events.get(0));
+        waitEvents();
+        assertEquals("Sort mode not changed and children not refreshed: " + events, 2, events.size());
+        assertTrue(DataFolder.PROP_SORT_MODE + " change not fired", events.contains(DataFolder.PROP_SORT_MODE));
+        assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));
         events.clear();
         
-        OutputStream os = arr[1].getPrimaryFile().getOutputStream();
+        OutputStream os = lfs.findResource("AA/Y.txt").getOutputStream();
         os.write("Ahoj".getBytes());
         os.close();
-        
-        synchronized (this) {
-            if (events.isEmpty()) {
-                wait(5000);
+
+        waitEvents();
+        assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));
+
+        Node[] newNodes = n.getChildren().getNodes(true);
+        assertEquals("Node " + nodes[1].getName() + " expected first.", newNodes[0], nodes[1]);
+        assertEquals("Node " + nodes[0].getName() + " expected second.", newNodes[1], nodes[0]);
+    }
+
+    /** Wait for events list not empty. */
+    private void waitEvents() throws Exception {
+        for (int delay = 1; delay < 3000; delay *= 2) {
+            Thread.sleep(delay);
+            if (!events.isEmpty()) {
+                break;
             }
         }
-        assertFalse("At least one event delivered: " + events, events.isEmpty());
-
-        DataObject[] newArr = aa.getChildren();
-        Node[] newNodes = n.getChildren().getNodes(true);
-
-        assertEquals("Reverted 1", arr[0], newArr[1]);
-        assertEquals("Reverted 2", arr[1], newArr[0]);
-
-        assertEquals("Reverted node 1", nodes[0], newNodes[1]);
-        assertEquals("Reverted node 2", nodes[1], newNodes[0]);
     }
-    
+
     public synchronized void propertyChange (PropertyChangeEvent evt) {
         events.add (evt.getPropertyName ());
     }

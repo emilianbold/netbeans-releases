@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 final class ChooseDependencyKindPanelVisual extends JPanel {
@@ -56,6 +57,7 @@ final class ChooseDependencyKindPanelVisual extends JPanel {
         initComponents();
         projectButton.putClientProperty(DEP_KIND_CLIENT_PROP, InitialDepKind.PROJECT);
         jarfileButton.putClientProperty(DEP_KIND_CLIENT_PROP, InitialDepKind.JAR_FILE);
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.DependenciesPanel"); //NOI18N
     }
 
     @Override

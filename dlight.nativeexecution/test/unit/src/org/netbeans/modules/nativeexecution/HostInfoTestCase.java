@@ -38,15 +38,15 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import static org.junit.Assert.*;
 
 public class HostInfoTestCase extends NativeExecutionBaseTestCase {
 
@@ -58,19 +58,25 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         super(name, execEnv);
     }
 
-    @Test
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(HostInfoTestCase.class);
+    }
+
+    @org.junit.Test
     public void testGetHostInfoLocal() throws Exception {
         HostInfo hi = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
         assertNotNull(hi);
     }
 
-    @Test @ForAllEnvironments(section="remote.platforms")
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testGetHostInfo() throws Exception {
         HostInfo hi = HostInfoUtils.getHostInfo(getTestExecutionEnvironment());
         assertNotNull(hi);
     }
 
-    @Test @ForAllEnvironments(section="remote.platforms")
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testGetOS() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         String mspec = NativeExecutionTestSupport.getMspec(execEnv);
@@ -84,6 +90,9 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         } else if (mspec.endsWith("-Linux")) {
             assertTrue(hi.getOS().getName().startsWith("Linux"));
             assertEquals(HostInfo.OSFamily.LINUX, hi.getOSFamily());
+        } else if (mspec.endsWith("-MacOSX")) {
+            assertTrue(hi.getOS().getName().startsWith("MacOSX"));
+            assertEquals(HostInfo.OSFamily.MACOSX, hi.getOSFamily());
         } else {
             fail("Could not guess OS from mspec " + mspec);
         }
@@ -97,7 +106,7 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
         }
     }
 
-    @Test
+    @org.junit.Test
     public void testFileExistsLocal() throws Exception {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
@@ -110,25 +119,25 @@ public class HostInfoTestCase extends NativeExecutionBaseTestCase {
             existentFile = "/etc/passwd";
             nonexistentFile = "/etc/passwdx";
         }
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, true));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, true));
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, false));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, false));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
     }
 
-
-    @Test @ForAllEnvironments(section="remote.platforms")
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testFileExists() throws Exception {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         String existentFile = "/etc/passwd";
         String nonexistentFile = "/etc/passwdx";
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, true));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, true));
-        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile, false));
-        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile, false));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
+        assertTrue(HostInfoUtils.fileExists(execEnv, existentFile));
+        assertFalse(HostInfoUtils.fileExists(execEnv, nonexistentFile));
     }
 
-    @Test
+    @org.junit.Test
     public void testIsLocalhost() {
         assertTrue(HostInfoUtils.isLocalhost("localhost"));
         assertTrue(HostInfoUtils.isLocalhost("127.0.0.1"));

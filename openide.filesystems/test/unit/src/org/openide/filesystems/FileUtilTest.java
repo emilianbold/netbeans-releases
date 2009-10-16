@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -56,6 +57,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
@@ -389,5 +391,65 @@ public class FileUtilTest extends NbTestCase {
         } catch (NullPointerException npe) {
             // OK
         }
+    }
+
+    /** Tests that refreshAll runs just once in time (see #170556). */
+    public void testRefreshConcurrency() throws Exception {
+        Logger logger = Logger.getLogger(FileUtil.class.getName());
+        logger.setLevel(Level.FINE);
+        final AtomicInteger concurrencyCounter = new AtomicInteger(0);
+        final AtomicInteger maxConcurrency = new AtomicInteger(0);
+        final AtomicInteger calledCounter = new AtomicInteger(0);
+        logger.addHandler(new Handler() {
+
+            private boolean concurrentStarted = false;
+
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().equals("refreshAll - started")) {
+                    calledCounter.incrementAndGet();
+                    concurrencyCounter.incrementAndGet();
+                    if (!concurrentStarted) {
+                        concurrentStarted = true;
+                        new Thread("Concurrent refresh") {
+
+                            @Override
+                            public void run() {
+                                FileUtil.refreshAll();
+                            }
+                        }.start();
+                        synchronized (this) {
+                            try {
+                                wait(500);
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                } else if (record.getMessage().equals("refreshAll - scheduled")) {
+                    if (concurrentStarted) {
+                        synchronized (this) {
+                            notifyAll();
+                        }
+                    }
+                } else if (record.getMessage().equals("refreshAll - finished")) {
+                    concurrencyCounter.decrementAndGet();
+                    if (concurrencyCounter.get() > maxConcurrency.get()) {
+                        maxConcurrency.set(concurrencyCounter.get());
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        FileUtil.refreshAll();
+        assertEquals("FileUtil.refreshAll should not be called concurrently.", 0, maxConcurrency.get());
+        assertEquals("FileUtil.refreshAll not called.", 2, calledCounter.get());
     }
 }

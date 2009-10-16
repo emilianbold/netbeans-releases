@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -213,6 +213,7 @@ public final class EarProjectProperties {
     // CustomizerLibraries
     Document SHARED_LIBRARIES_MODEL;
     DefaultListModel DEBUG_CLASSPATH_MODEL;
+    DefaultListModel ENDORSED_CLASSPATH_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     
     // CustomizerJarContent
@@ -276,6 +277,7 @@ public final class EarProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         DEBUG_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.RUN_CLASSPATH ), null ) );
+        ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.ENDORSED_CLASSPATH ), null ) );
         CLASS_PATH_LIST_RENDERER = ClassPathListCellRenderer.createClassPathListRenderer(evaluator, project.getProjectDirectory());
 
         // CustomizerJarContent
@@ -341,6 +343,7 @@ public final class EarProjectProperties {
         // Encode all paths (this may change the project properties)
         String[] debug_cp = cs.encodeToStrings(ClassPathUiSupport.getList(DEBUG_CLASSPATH_MODEL), null );
         String[] additional_content = cs.encodeToStrings(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()), TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+        String[] endorsed_cp = cs.encodeToStrings(ClassPathUiSupport.getList(ENDORSED_CLASSPATH_MODEL), null );
 
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
@@ -353,6 +356,7 @@ public final class EarProjectProperties {
         // Save all paths
         projectProperties.setProperty( ProjectProperties.RUN_CLASSPATH, debug_cp );
         projectProperties.setProperty( JAR_CONTENT_ADDITIONAL, additional_content );
+        projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         // Set new server instance ID
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
@@ -1014,12 +1018,14 @@ public final class EarProjectProperties {
         // Create a set of old and new artifacts.
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll(cs.itemsList(projectProperties.get(DEBUG_CLASSPATH), null));
+        oldArtifacts.addAll(cs.itemsList(projectProperties.get(RUN_CLASSPATH), null));
         oldArtifacts.addAll(cs.itemsList(projectProperties.get(JAR_CONTENT_ADDITIONAL), null));
+        oldArtifacts.addAll(cs.itemsList(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null));
 
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll(ClassPathUiSupport.getList( DEBUG_CLASSPATH_MODEL));
         newArtifacts.addAll(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
+        newArtifacts.addAll(ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL));
 
         projectProperties = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         updateContentDependency(project,

@@ -70,7 +70,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Becicka
  */
 public class ChatTopComponent extends TopComponent {
-    private static final String KENAI_OPEN_CHATS_PREF = "kenai.open.chats.";
+    private static final String KENAI_OPEN_CHATS_PREF = ".open.chats.";
     private static ChatTopComponent instance;
 
     /** path to the icon used by the component and its open action */
@@ -162,8 +162,14 @@ public class ChatTopComponent extends TopComponent {
                 int index = chats.getSelectedIndex();
                 if (index>=0) {
                     chats.setForegroundAt(index, Color.BLACK);
-                    if (!initInProgress)
-                        ChatNotifications.getDefault().removeGroup(chats.getComponentAt(index).getName());
+                    if (!initInProgress) {
+                        String name = chats.getComponentAt(index).getName();
+                        if (name!=null) {
+                            ChatNotifications.getDefault().removeGroup(name);
+                            name = name.substring(name.indexOf('.') + 1);
+                            ChatNotifications.getDefault().removePrivate(name);
+                        }
+                    }
                     chats.getComponentAt(index).requestFocus();
                 }
             }
@@ -173,7 +179,7 @@ public class ChatTopComponent extends TopComponent {
         chats.addChangeListener(changeListener);
         chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName()) && (evt.getNewValue() instanceof ChatPanel)) {
                     removeChat(((ChatPanel) evt.getNewValue()));
                 }
             }
@@ -321,6 +327,14 @@ public class ChatTopComponent extends TopComponent {
         }
     }
 
+    public void insertToActiveChat(String message) {
+        Component selectedComponent = chats.getSelectedComponent();
+        if (selectedComponent instanceof ChatPanel) {
+            ChatPanel chatPanel = (ChatPanel) selectedComponent;
+            chatPanel.insertToInputArea(message);
+        }
+    }
+
     public static final String createPrivateName(String name) {
         return "private." + name;
     }
@@ -387,7 +401,7 @@ public class ChatTopComponent extends TopComponent {
             ChatPanel chatPanel = new ChatPanel(next);
             addChat(chatPanel);
         } else if (chs.size()!=0) {
-            String s = prefs.get(KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
+            String s = prefs.get(Kenai.getDefault().getName()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
             if (s.length() > 1) {
                 ChatPanel chatPanel = null;
                 for (String chat : s.split(",")) { // NOI18N
@@ -672,6 +686,10 @@ public class ChatTopComponent extends TopComponent {
         });
     }
 
+    void switchToContactList() {
+        chats.setSelectedIndex(0);
+    }
+
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -691,7 +709,7 @@ public class ChatTopComponent extends TopComponent {
                 b.append(","); // NOI18N
             }
         }
-        prefs.put(KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
+        prefs.put(Kenai.getDefault().getName()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
     }
 
     final class KenaiL implements PropertyChangeListener {
@@ -700,7 +718,10 @@ public class ChatTopComponent extends TopComponent {
             if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, e.getNewValue()==null?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat"));
+                        Kenai.Status s = Kenai.getDefault().getStatus();
+                        if (s != Kenai.Status.ONLINE) {
+                            loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, s==Kenai.Status.OFFLINE?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat")); // NOI18N
+                        }
                     }
                 });
             } else if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {

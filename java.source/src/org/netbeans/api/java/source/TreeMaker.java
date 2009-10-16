@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,7 +48,10 @@ import static com.sun.source.tree.Tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -2651,6 +2654,7 @@ public final class TreeMaker {
         Scope scope = copy.getTrees().getScope(TreePath.getPath(copy.getCompilationUnit(), method));
         treeUtils.attributeTree(body, scope);
         mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
+        new TreePosCleaner().scan(body, null);
         return (BlockTree) body;
     }
 
@@ -2681,6 +2685,7 @@ public final class TreeMaker {
         StatementTree body = copy.getTreeUtilities().parseStatement(bodyText, positions);
         assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
         mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
+        new TreePosCleaner().scan(body, null);
         return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, (BlockTree) body, defaultValue);
     }
     
@@ -2722,5 +2727,15 @@ public final class TreeMaker {
                 }
             }
         }*/
+    }
+
+    private static class TreePosCleaner extends TreeScanner<Void, Void> {
+
+        @Override
+        public Void scan(Tree tree, Void p) {
+            if (tree != null) ((JCTree) tree).pos = PositionEstimator.NOPOS;
+            return super.scan(tree, p);
+        }
+
     }
 }

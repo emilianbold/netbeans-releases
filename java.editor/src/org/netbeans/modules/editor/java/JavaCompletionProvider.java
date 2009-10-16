@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -400,7 +400,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     CompilationUnitTree root = env.getRoot();
                     SourcePositions sourcePositions = env.getSourcePositions();
                     int startPos = lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset;
-                    List<Tree> argTypes = getArgumentsUpToPos(env, mi.getArguments(), (int)sourcePositions.getEndPosition(root, mi.getMethodSelect()), startPos);
+                    List<Tree> argTypes = getArgumentsUpToPos(env, mi.getArguments(), (int)sourcePositions.getEndPosition(root, mi.getMethodSelect()), startPos, false);
                     if (argTypes != null) {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
@@ -479,7 +479,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     SourcePositions sourcePositions = env.getSourcePositions();
                     int startPos = lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset;
                     int pos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
-                    List<Tree> argTypes = getArgumentsUpToPos(env, nc.getArguments(), pos, startPos);
+                    List<Tree> argTypes = getArgumentsUpToPos(env, nc.getArguments(), pos, startPos, false);
                     if (argTypes != null) {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeMirror[] types = new TypeMirror[argTypes.size()];
@@ -2941,7 +2941,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             TreePath path = env.getPath();
             CompilationUnitTree root = env.getRoot();
             SourcePositions sourcePositions = env.getSourcePositions();
-            List<Tree> argTypes = getArgumentsUpToPos(env, mit.getArguments(), (int)sourcePositions.getEndPosition(root, mit.getMethodSelect()), env.getOffset());
+            List<Tree> argTypes = getArgumentsUpToPos(env, mit.getArguments(), (int)sourcePositions.getEndPosition(root, mit.getMethodSelect()), env.getOffset(), true);
             if (argTypes != null) {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeMirror[] types = new TypeMirror[argTypes.size()];
@@ -3026,7 +3026,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             TreePath path = env.getPath();
             CompilationUnitTree root = env.getRoot();
             SourcePositions sourcePositions = env.getSourcePositions();
-            List<Tree> argTypes = getArgumentsUpToPos(env, nct.getArguments(), (int)sourcePositions.getEndPosition(root, nct.getIdentifier()), env.getOffset());
+            List<Tree> argTypes = getArgumentsUpToPos(env, nct.getArguments(), (int)sourcePositions.getEndPosition(root, nct.getIdentifier()), env.getOffset(), true);
             if (argTypes != null) {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeMirror[] types = new TypeMirror[argTypes.size()];
@@ -3716,7 +3716,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         MethodInvocationTree mi = (MethodInvocationTree)tree;
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
-                        List<Tree> argTypes = getArgumentsUpToPos(env, mi.getArguments(), (int)sourcePositions.getEndPosition(root, mi.getMethodSelect()), lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
+                        List<Tree> argTypes = getArgumentsUpToPos(env, mi.getArguments(), (int)sourcePositions.getEndPosition(root, mi.getMethodSelect()), lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset, true);
                         if (argTypes != null) {
                             TypeMirror[] args = new TypeMirror[argTypes.size()];
                             int j = 0;
@@ -3792,7 +3792,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             idEndPos = (int)sourcePositions.getStartPosition(root, nc);
                         if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
-                        argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
+                        argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset, true);
                         if (argTypes != null) {
                             TypeMirror[] args = new TypeMirror[argTypes.size()];
                             int j = 0;
@@ -4055,23 +4055,31 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
-        private List<Tree> getArgumentsUpToPos(Env env, Iterable<? extends ExpressionTree> args, int startPos, int position) {
+        private List<Tree> getArgumentsUpToPos(Env env, Iterable<? extends ExpressionTree> args, int startPos, int position, boolean strict) {
             List<Tree> ret = new ArrayList<Tree>();
             CompilationUnitTree root = env.getRoot();
             SourcePositions sourcePositions = env.getSourcePositions();
             for (ExpressionTree e : args) {
                 int pos = (int)sourcePositions.getEndPosition(root, e);
-                if (pos != Diagnostic.NOPOS && position > pos) {
+                if (pos != Diagnostic.NOPOS && (position > pos || !strict && position == pos)) {
                     startPos = pos;
                     ret.add(e);
+                } else {
+                    break;
                 }
             }
             if (startPos < 0)
                 return ret;
-            if (position > startPos) {
+            if (position >= startPos) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, position);
-                if (last != null && (last.token().id() == JavaTokenId.LPAREN || last.token().id() == JavaTokenId.COMMA))
+                if (last == null) {
+                    if (!strict && !ret.isEmpty()) {
+                        ret.remove(ret.size() - 1);
+                        return ret;
+                    }
+                } else if (last.token().id() == JavaTokenId.LPAREN || last.token().id() == JavaTokenId.COMMA) {
                     return ret;
+                }
             }
             return null;
         }

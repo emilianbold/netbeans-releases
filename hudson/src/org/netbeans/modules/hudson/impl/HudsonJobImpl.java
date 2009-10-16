@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,6 +55,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Implementation of the HudsonJob
@@ -71,14 +72,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     
     private Sheet.Set set;
 
-    /**
-     * Creates a new instance of Job
-     *
-     * @param name
-     * @param url
-     * @param color
-     */
-    public HudsonJobImpl(HudsonInstanceImpl instance) {
+    HudsonJobImpl(HudsonInstanceImpl instance) {
         this.instance = instance;
     }
     
@@ -160,11 +154,11 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         }
     }
 
-    public synchronized Collection<HudsonView> getViews() {
+    public Collection<HudsonView> getViews() {
         return views;
     }
     
-    public synchronized void addView(HudsonView view) {
+    void addView(HudsonView view) {
         views.add(view);
     }
     
@@ -215,25 +209,25 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         
         final HudsonJobImpl j = (HudsonJobImpl) o;
         
-        if (getDisplayName() != j.getDisplayName() &&
-                (getDisplayName() == null || !getDisplayName().equals(j.getDisplayName())))
+        if (!Utilities.compareObjects(getDisplayName(), j.getDisplayName())) {
             return false;
-        if (getName() != j.getName() &&
-                (getName() == null || !getName().equals(j.getName())))
+        }
+        if (!Utilities.compareObjects(getName(), j.getName())) {
             return false;
-        if (getUrl() != j.getUrl() &&
-                (getUrl() == null || !getUrl().equals(j.getUrl())))
+        }
+        if (!Utilities.compareObjects(getUrl(), j.getUrl())) {
             return false;
-        if (getColor() != j.getColor() &&
-                (getColor() == null || !getColor().equals(j.getColor())))
+        }
+        if (!Utilities.compareObjects(getColor(), j.getColor())) {
             return false;
+        }
         if (isInQueue() != j.isInQueue())
             return false;
         if (isBuildable() != j.isBuildable())
             return false;
-        if (this.getViews() != j.getViews() &&
-                (this.getViews() == null || !this.getViews().equals(j.getViews())))
+        if (!Utilities.compareObjects(views, j.views)) {
             return false;
+        }
         if (getLastCompletedBuild() != j.getLastCompletedBuild()) {
             return false;
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1228,13 +1228,10 @@ public class Annotations implements DocumentListener {
 
             //Order by priority
             Collections.sort(annosVisible);
-
+            
             // update the active annotation
-            if (annosVisible.indexOf(active) == -1) {
-                if (annosVisible.size() > 0)
+            if (annosVisible.size() > 0) {
                     active = annosVisible.get(0);
-                else
-                    active = null;
             }
         }
 

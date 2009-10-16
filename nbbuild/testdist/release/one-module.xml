@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
             </sequential>
         </macrodef>
         <property name="test.config" value="default"/>
-        <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx256m"/>
+        <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m"/>
         <property name="test.config.default.includes" value="**/*Test.class"/>
         <property name="test.config.${test.config}.includes" value="NOTHING"/>
         <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>

@@ -130,8 +130,9 @@ public final class RubyProcessCreator implements Callable<Process> {
         }
 
         for (String arg : args) {
-            builder = builder.addArgument(arg);
-
+            if (arg != null) {
+                builder = builder.addArgument(arg);
+            }
         }
         if (descriptor.getPwd() != null) {
             builder = builder.workingDirectory(descriptor.getPwd());
@@ -162,6 +163,8 @@ public final class RubyProcessCreator implements Callable<Process> {
 
             String javaMemory = "-Xmx512m"; // NOI18N
             String javaStack = "-Xss1024k"; // NOI18N
+            // use the client mode by default
+            String jvmMode = "-client";
 
             String[] jvmArgs = descriptor == null ? null : descriptor.getJVMArguments();
             if (jvmArgs != null) {
@@ -172,10 +175,16 @@ public final class RubyProcessCreator implements Callable<Process> {
                     if (arg.contains("-Xss")) { // NOI18N
                         javaStack = null;
                     }
+                    if ("-client".equals(arg) || "-server".equals(arg)) { //NOI18N
+                        jvmMode = null;
+                    }
                     argvList.add(arg);
                 }
             }
 
+            if (jvmMode != null) {
+                argvList.add(1, jvmMode);
+            }
             if (javaMemory != null) {
                 argvList.add(javaMemory);
             }

@@ -117,29 +117,33 @@ made subject to such option by the copyright holder.
             </target>
             
             <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
-                <target name="-init-libraries" depends="-pre-init,-init-private">
-                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
-                        <property name="libraries.{position()}.path" location="{.}"/>
-                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
-                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
-                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
-                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
-                        </pathconvert>
-                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
-                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
-                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties" encoding="ISO-8859-1">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                                <escapeunicode/>
-                            </filterchain>
-                        </loadproperties>
-                        <loadproperties srcfile="${{libraries.{position()}.path}}" encoding="ISO-8859-1">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                                <escapeunicode/>
-                            </filterchain>
-                        </loadproperties>
-                    </xsl:for-each>
+                <target name="-pre-init-libraries">
+                    <property name="libraries.path">
+                        <xsl:attribute name="location"><xsl:value-of select="/p:project/p:configuration/libs:libraries/libs:definitions"/></xsl:attribute>
+                    </property>
+                    <dirname property="libraries.dir.nativedirsep" file="${{libraries.path}}"/>
+                    <!-- Do not want \ on Windows, since it would act as an escape char: -->
+                    <pathconvert property="libraries.dir" dirsep="/">
+                        <path path="${{libraries.dir.nativedirsep}}"/>
+                    </pathconvert>
+                    <basename property="libraries.basename" file="${{libraries.path}}" suffix=".properties"/>
+                    <available property="private.properties.available" file="${{libraries.dir}}/${{libraries.basename}}-private.properties"/>
+                </target>
+                <target name="-init-private-libraries" depends="-pre-init-libraries" if="private.properties.available">
+                    <loadproperties srcfile="${{libraries.dir}}/${{libraries.basename}}-private.properties" encoding="ISO-8859-1">
+                        <filterchain>
+                            <replacestring from="$${{base}}" to="${{libraries.dir}}"/>
+                            <escapeunicode/>
+                        </filterchain>
+                    </loadproperties>
+                </target>
+                <target name="-init-libraries" depends="-pre-init,-init-private,-init-private-libraries">
+                    <loadproperties srcfile="${{libraries.path}}" encoding="ISO-8859-1">
+                        <filterchain>
+                            <replacestring from="$${{base}}" to="${{libraries.dir}}"/>
+                            <escapeunicode/>
+                        </filterchain>
+                    </loadproperties>
                 </target>
             </xsl:if>
             
@@ -276,6 +280,10 @@ made subject to such option by the copyright holder.
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
+                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                </condition>
             </target>
             
             <target name="-post-init">
@@ -398,6 +406,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
@@ -449,6 +458,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                         </junit>
                     </sequential>
@@ -473,6 +483,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
                             <classpath>
@@ -602,6 +613,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
                             </xsl:if>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{run.jvmargs.param}}"/>
@@ -648,6 +660,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                         <path path="${{platform.bootcp}}"/>
                                     </bootclasspath>
                                 </xsl:if>
+                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                                 <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
@@ -854,20 +867,29 @@ exists or setup the property manually. For example like this:
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <copyfiles todir="${{dist.ear.dir}}">
+                    <copyfiles>
+                        <xsl:attribute name="todir">${dist.ear.dir}</xsl:attribute>
+                        <xsl:if test="//carproject:included-library[@dirs]">
+                            <xsl:if test="(@dirs = 200)">
+                                <xsl:attribute name="todir">${dist.ear.dir}/lib</xsl:attribute>
+                            </xsl:if>
+                            <xsl:if test="(@dirs = 300)">
+                                <xsl:attribute name="todir">${build.classes.dir}/META-INF/lib</xsl:attribute>
+                            </xsl:if>
+                        </xsl:if>
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
-                       <xsl:attribute name="manifestproperty">
+<!--                       <xsl:attribute name="manifestproperty">
                            <xsl:value-of select="concat('manifest.', $included.prop.name)"/>
-                       </xsl:attribute>
+                       </xsl:attribute> -->
                     </copyfiles>
                 </xsl:for-each>
                 
-                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF"/>
+<!--                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//carproject:included-library">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
-                                <!-- cp elements for included libraries and files -->
                                 <xsl:for-each select="//carproject:included-library">
                                     <xsl:variable name="included.prop.name">
                                         <xsl:value-of select="."/>
@@ -877,7 +899,7 @@ exists or setup the property manually. For example like this:
                             </xsl:attribute>
                         </attribute>
                     </xsl:if>
-                </manifest>
+                </manifest> -->
                 
             </target>
             
@@ -1063,6 +1085,7 @@ exists or setup the property manually. For example like this:
                     <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                         <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                     </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
                     <jvmarg line="${{run.jvmargs.param}}"/>
                     <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->
@@ -1090,6 +1113,7 @@ exists or setup the property manually. For example like this:
                     <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                         <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                     </xsl:if>
+                    <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                     <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}${{client.jar}}"/>
                     <jvmarg line="${{run.jvmargs.param}}"/>
                     <!--<arg line="${{j2ee.appclient.mainclass.args}}"/>-->

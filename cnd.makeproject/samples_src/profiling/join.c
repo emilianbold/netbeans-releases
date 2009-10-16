@@ -27,9 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <malloc.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "join.h"
 
@@ -54,7 +54,7 @@ static void join_demo_header(int threads, work_t* works) {
 
 static pthread_barrier_t start;
 
-static void* threadfunc(void *p) {
+static void* join_threadfunc(void *p) {
     pthread_barrier_wait(&start);
     work_t* work = (work_t*) p;
     work_run(work, 5 * (1 + work->id) * MICROS_PER_SECOND);
@@ -67,7 +67,7 @@ void join_demo(int threads, work_t* works) {
     t = calloc(threads, sizeof (pthread_t));
     pthread_barrier_init(&start, NULL, threads + 1);
     for (i = 0; i < threads; ++i) {
-        pthread_create(&t[i], NULL, &threadfunc, &works[i]);
+        pthread_create(&t[i], NULL, &join_threadfunc, &works[i]);
     }
     pthread_barrier_wait(&start);
     for (i = 0; i < threads; ++i) {

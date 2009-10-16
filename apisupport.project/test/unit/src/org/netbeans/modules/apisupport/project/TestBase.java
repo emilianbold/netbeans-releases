@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -85,7 +85,7 @@ import org.openide.util.Lookup;
 
     public static final String CLUSTER_IDE = "ide12";
     public static final String CLUSTER_PLATFORM = "platform11";
-    public static final String CLUSTER_ENTERPRISE = "enterprise5";
+    public static final String CLUSTER_ENTERPRISE = "enterprise6";
     public static final String CLUSTER_APISUPPORT = "apisupport1";
     public static final String CLUSTER_JAVA = "java3";
 

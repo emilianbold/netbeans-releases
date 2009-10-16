@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,6 +53,7 @@ public class ModifiedHTMLIndexerKit extends HTMLIndexerKit {
     }
     public class ModifiedHTMLParserCallback extends HTMLIndexerKit.HTMLParserCallback {
         private IndexerKit kit;
+        @SuppressWarnings("unchecked") // tagMap is untyped
         public ModifiedHTMLParserCallback (IndexerKit kit) {
             super(kit);
             this.kit = kit;
@@ -61,7 +62,7 @@ public class ModifiedHTMLIndexerKit extends HTMLIndexerKit {
         }
 
         class MetaAction extends HiddenAction {
-            public void start(HTML.Tag t, MutableAttributeSet a) {
+            public @Override void start(HTML.Tag t, MutableAttributeSet a) {
                 super.start(t, a);
                 Object attr = a.getAttribute(HTML.Attribute.NAME);
                 if (attr != null)

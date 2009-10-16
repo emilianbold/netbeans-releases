@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.ui.options;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Frame;
@@ -48,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,67 +56,53 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.Document;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.windows.WindowManager;
 
 /** Display the "Tools Default" panel */
-public final class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
+public final class ToolsPanel extends JPanel implements ActionListener,
         ListSelectionListener, ItemListener {
 
+    private static enum ValidState {
+        VALID,
+        INVALID,
+        UNKNOWN
+    }
+
     // The following are constants so I can do == rather than "equals"
-    private final String MAKE_NAME = "make"; // NOI18N
-    private final String DEBUGGER_NAME = "debugger"; // NOI18N
-    private final String C_NAME = "C"; // NOI18N
-    private final String CPP_NAME = "C++"; // NOI18N
-    private final String FORTRAN_NAME = "Fortran"; // NOI18N
-    private final String ASSEMBLER_NAME = "Assembler"; // NOI18N
-    private final String QMAKE_NAME = "QMake"; // NOI18N
-    private final String CMAKE_NAME = "CMake"; // NOI18N
     public static final String PROP_VALID = "valid"; // NOI18N
     private boolean initialized = false;
     private boolean changed;
     private boolean changingCompilerSet;
     private boolean updating;
-    private boolean valid;
+    private ValidState valid = ValidState.UNKNOWN;
     private ToolsPanelModel model = null;
-    private Color tfColor = null;
     private boolean customizeDebugger;
     private ExecutionEnvironment execEnv;
     private static ToolsPanel instance = null;
@@ -131,11 +115,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     public ToolsPanel() {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
-        cbDebuggerRequired.setName("debugger"); // NOI18N
-        cbCRequired.setName("c"); // NOI18N
-        cbCppRequired.setName("c++"); // NOI18N
-        cbFortranRequired.setName("fortran"); // NOI18N
-        cbAsRequired.setName("assembler"); // NOI18N
         changed = false;
         instance = this;
         currentCompilerSet = null;
@@ -161,9 +140,16 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         this.model = model;
     }
 
-
     private void initializeLong() {
         csm = cacheManager.getCompilerSetManagerCopy(execEnv, true);
+    }
+
+    ToolsPanelModel getModel(){
+        return model;
+    }
+
+    ExecutionEnvironment getExecutionEnvironment(){
+        return execEnv;
     }
 
     private void initializeUI() {
@@ -173,10 +159,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         changingCompilerSet = true;
         if (model == null) {
             model = new GlobalToolsPanelModel();
-        }
-        if (!model.showRequiredTools()) {
-            requiredToolsLabel.setVisible(false); // Required Tools label!
-            requiredToolsPanel.setVisible(false); // Required Tools panel!
         }
         cbDevHost.removeItemListener(this);
 
@@ -207,42 +189,14 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         execEnv = getSelectedRecord().getExecutionEnvironment();
-
-        btBaseDirectory.setEnabled(false);
-        btCBrowse.setEnabled(false);
-        btCppBrowse.setEnabled(false);
-        btFortranBrowse.setEnabled(false);
-        btAsBrowse.setEnabled(false);
-        btMakeBrowse.setEnabled(false);
-        btDebuggerBrowse.setEnabled(false);
         btVersions.setEnabled(false);
-        tfMakePath.setEditable(false);
-        tfDebuggerPath.setEditable(false);
-        tfQMakePath.setEditable(false);
-        tfCMakePath.setEditable(false);
-        btVersions.setEnabled(false);
+        initCustomizableDebugger();
 
-        if (model.enableRequiredCompilerCB()) {
-            cbCRequired.setEnabled(true);
-            cbCppRequired.setEnabled(true);
-            cbFortranRequired.setEnabled(true);
-            cbAsRequired.setEnabled(true);
-        } else {
-            cbCRequired.setEnabled(false);
-            cbCppRequired.setEnabled(false);
-            cbFortranRequired.setEnabled(false);
-            cbAsRequired.setEnabled(false);
-        }
+        getToolCollectionPanel().initializeUI();
+    }
 
-        customizeDebugger = isCustomizableDebugger();
-
-        // Initialize Required tools. Can't do it in constructor because there is no model then.
-        cbMakeRequired.setSelected(model.isMakeRequired());
-        cbDebuggerRequired.setSelected(model.isDebuggerRequired());
-        cbCRequired.setSelected(model.isCRequired());
-        cbCppRequired.setSelected(model.isCppRequired());
-        cbFortranRequired.setSelected(model.isFortranRequired());
-        cbAsRequired.setSelected(model.isAsRequired());
+    private ToolCollectionPanel getToolCollectionPanel(){
+        return (ToolCollectionPanel) toolCollectionPanel;
     }
 
     private void addCompilerSet() {
@@ -329,17 +283,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             } else if (index > 0) {
                 update(false, csm.getCompilerSets().get(index - 1));
             } else {
-                tfBaseDirectory.setText(""); // NOI18N
-                btBaseDirectory.setEnabled(false);
-                lbFamilyValue.setText(""); // NOI18N
-                tfCPath.setText(""); // NOI18N
-                tfCppPath.setText(""); // NOI18N
-                tfFortranPath.setText(""); // NOI18N
-                tfAsPath.setText(""); // NOI18N
-                tfMakePath.setText(""); // NOI18N
-                tfDebuggerPath.setText(""); // NOI18N
-                tfQMakePath.setText(""); // NOI18N
-                tfCMakePath.setText(""); // NOI18N
+                getToolCollectionPanel().removeCompilerSet();
                 update(false);
             }
             changed = true;
@@ -354,143 +298,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
 
     }
 
-    private void setMakePathField(String path) {
-        tfMakePath.setText(path); // Validation happens automatically
-    }
-
-    private void validateMakePathField() {
-        setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath) && supportedMake(tfMakePath));
-        dataValid();
-    }
-
-    private void setGdbPathField(String path) {
-        tfDebuggerPath.setText(path); // Validation happens automatically
-    }
-
-    private void validateGdbPathField() {
-        setPathFieldValid(tfDebuggerPath, isPathFieldValid(tfDebuggerPath));
-        dataValid();
-    }
-
-    private void setCPathField(String path) {
-        tfCPath.setText(path); // Validation happens automatically
-    }
-
-    private void validateCPathField() {
-        setPathFieldValid(tfCPath, isPathFieldValid(tfCPath));
-        dataValid();
-    }
-
-    private void setCppPathField(String path) {
-        tfCppPath.setText(path); // Validation happens automatically
-    }
-
-    private void validateCppPathField() {
-        setPathFieldValid(tfCppPath, isPathFieldValid(tfCppPath));
-        dataValid();
-    }
-
-    private void setFortranPathField(String path) {
-        tfFortranPath.setText(path); // Validation happens automatically
-    }
-
-    private void validateFortranPathField() {
-        setPathFieldValid(tfFortranPath, isPathFieldValid(tfFortranPath));
-        dataValid();
-    }
-
-    private void setAsPathField(String path) {
-        tfAsPath.setText(path); // Validation happens automatically
-    }
-
-    private void validateAsPathField() {
-        setPathFieldValid(tfAsPath, isPathFieldValid(tfAsPath));
-        dataValid();
-    }
-
-    private void setQMakePathField(String path) {
-        tfQMakePath.setText(path); // Validation happens automatically
-    }
-
-    private void validateQMakePathField() {
-        setPathFieldValid(tfQMakePath, isPathFieldValid(tfQMakePath));
-        dataValid();
-    }
-
-    private void setCMakePathField(String path) {
-        tfCMakePath.setText(path); // Validation happens automatically
-    }
-
-    private void validateCMakePathField() {
-        setPathFieldValid(tfCMakePath, isPathFieldValid(tfCMakePath));
-        dataValid();
-    }
-
     public static boolean supportedMake(String name) {
         name = IpeUtils.getBaseName(name);
         return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
-    }
-
-    private boolean supportedMake(JTextField field) {
-        String txt = field.getText();
-        if (txt.length() == 0) {
-            return false;
-        }
-        return supportedMake(txt);
-    }
-
-    private boolean isPathFieldValid(JTextField field) {
-        String txt = field.getText();
-        if (txt.length() == 0) {
-            return false;
-        }
-
-        if (execEnv.isLocal()) {
-            File file = new File(txt);
-            boolean ok = false;
-            if (Utilities.isWindows()) {
-                if (txt.endsWith(".lnk")) { // NOI18N
-                    ok = false;
-                } else {
-                    ok = (file.exists() || new File(txt + ".lnk").exists()) && !file.isDirectory(); // NOI18N
-                }
-            } else {
-                ok = file.exists() && !file.isDirectory();
-            }
-            if (!ok) {
-                // try users path
-                ArrayList<String> paths = Path.getPath();
-                for (String p : paths) {
-                    file = new File(p + File.separatorChar + txt);
-                    ok = file.exists() && !file.isDirectory();
-                    if (ok) {
-                        break;
-                    }
-                }
-            }
-            return ok;
-        } else {
-            // TODO this method must be called out of EDT, because it's time consuming
-            // we need to remember once calculated "valid" state and reuse it
-            // instead of check on each unrelated action
-            // with remote support it became even more visible in UI freezing
-            return true;
-//            if (SwingUtilities.isEventDispatchThread()) {
-//                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
-//                // always return true in remote mode, instead of call to very expensive operation
-//                return true;
-//            } else {
-//                return serverList.isValidExecutable(execEnv, txt);
-//            }
-        }
-    }
-
-    private void setPathFieldValid(JTextField field, boolean valid) {
-        if (valid) {
-            field.setForeground(tfColor);
-        } else {
-            field.setForeground(Color.RED);
-        }
     }
 
     /** Update the display */
@@ -523,16 +333,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private void updateUI(boolean doInitialize, CompilerSet selectedCS){
-        lbDebuggerCommand.setVisible(customizeDebugger);
-        tfDebuggerPath.setVisible(customizeDebugger);
-        btDebuggerBrowse.setVisible(customizeDebugger);
-
-        cbMakeRequired.setVisible(model.showRequiredBuildTools());
-        cbDebuggerRequired.setVisible(model.showRequiredDebugTools() && customizeDebugger);
-        cbCppRequired.setVisible(model.showRequiredBuildTools());
-        cbCRequired.setVisible(model.showRequiredBuildTools());
-        cbFortranRequired.setVisible(model.showRequiredBuildTools());
-        cbAsRequired.setVisible(model.showRequiredBuildTools());
+        getToolCollectionPanel().updateUI(doInitialize, selectedCS);
 
         if (doInitialize) {
             // Set Default
@@ -574,7 +375,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         initialized = true;
     }
 
-    private boolean isRemoteHostSelected() {
+    boolean isRemoteHostSelected() {
         return ((ServerRecord) cbDevHost.getSelectedItem()).isRemote();
     }
 
@@ -587,12 +388,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
     }
 
     private void changeCompilerSet(CompilerSet cs) {
-        if (cs != null) {
-            tfBaseDirectory.setText(cs.getDirectory());
-            btBaseDirectory.setEnabled(!isRemoteHostSelected());
-            lbFamilyValue.setText(cs.getCompilerFlavor().toString());
-        } else {
-            lbFamilyValue.setText(""); // NOI18N
+        getToolCollectionPanel().preChangeCompilerSet(cs);
+        if (cs == null) {
             String errorMsg = "";
             if (!cacheManager.isDevHostValid(execEnv)) {
                 errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString());
@@ -602,68 +399,11 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             return;
         }
         if (currentCompilerSet != null && currentCompilerSet != cs) {
-            Tool tool;
-            tool = currentCompilerSet.findTool(Tool.CCompiler);
-            tool.setPath(tfCPath.getText());
-            tool = currentCompilerSet.findTool(Tool.CCCompiler);
-            tool.setPath(tfCppPath.getText());
-            tool = currentCompilerSet.findTool(Tool.FortranCompiler);
-            tool.setPath(tfFortranPath.getText());
-            tool = currentCompilerSet.findTool(Tool.Assembler);
-            tool.setPath(tfAsPath.getText());
-            tool = currentCompilerSet.findTool(Tool.MakeTool);
-            tool.setPath(tfMakePath.getText());
-            tool = currentCompilerSet.findTool(Tool.DebuggerTool);
-            tool.setPath(tfDebuggerPath.getText());
-            tool = currentCompilerSet.findTool(Tool.QMakeTool);
-            tool.setPath(tfQMakePath.getText());
-            tool = currentCompilerSet.findTool(Tool.CMakeTool);
-            tool.setPath(tfCMakePath.getText());
+            getToolCollectionPanel().updateCompilerSet(currentCompilerSet, false);
         }
-
 
         changingCompilerSet = true;
-
-        Tool cSelection = cs.getTool(Tool.CCompiler);
-        Tool cppSelection = cs.getTool(Tool.CCCompiler);
-        Tool fortranSelection = cs.getTool(Tool.FortranCompiler);
-        Tool asSelection = cs.getTool(Tool.Assembler);
-        Tool makeToolSelection = cs.getTool(Tool.MakeTool);
-        Tool debuggerToolSelection = cs.getTool(Tool.DebuggerTool);
-        Tool qmakeToolSelection = cs.getTool(Tool.QMakeTool);
-        Tool cmakeToolSelection = cs.getTool(Tool.CMakeTool);
-        if (cSelection != null) {
-            setCPathField(cSelection.getPath());
-        } else {
-            tfCPath.setText("");
-        }
-        if (cppSelection != null) {
-            setCppPathField(cppSelection.getPath());
-        } else {
-            tfCppPath.setText("");
-        }
-        if (fortranSelection != null) {
-            setFortranPathField(fortranSelection.getPath());
-        } else {
-            tfFortranPath.setText("");
-        }
-        if (asSelection != null) {
-            setAsPathField(asSelection.getPath());
-        } else {
-            tfAsPath.setText("");
-        }
-        if (qmakeToolSelection != null) {
-            setQMakePathField(qmakeToolSelection.getPath());
-        } else {
-            tfQMakePath.setText("");
-        }
-        if (cmakeToolSelection != null) {
-            setCMakePathField(cmakeToolSelection.getPath());
-        } else {
-            tfCMakePath.setText("");
-        }
-        setMakePathField(makeToolSelection.getPath());
-        setGdbPathField(debuggerToolSelection.getPath());
+        getToolCollectionPanel().changeCompilerSet(cs);
         changingCompilerSet = false;
         currentCompilerSet = cs;
         fireCompilerSetChange();
@@ -682,39 +422,14 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
             changed = false;
             if (cs != null) {
-                cs.getTool(Tool.MakeTool).setPath(tfMakePath.getText());
-                cs.getTool(Tool.DebuggerTool).setPath(tfDebuggerPath.getText());
-                cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
-                cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
-                cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
-                cs.getTool(Tool.Assembler).setPath(tfAsPath.getText());
-                cs.getTool(Tool.QMakeTool).setPath(tfQMakePath.getText());
-                cs.getTool(Tool.CMakeTool).setPath(tfCMakePath.getText());
+                getToolCollectionPanel().updateCompilerSet(cs, true);
                 model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
                 model.setSelectedCompilerSetName(cs.getName());
             }
             currentCompilerSet = cs;
             cacheManager.applyChanges((ServerRecord) cbDevHost.getSelectedItem());
         }
-
-        if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
-            // the following don't set changed if changed
-            if (model.isDebuggerRequired() != cbDebuggerRequired.isSelected()) {
-                model.setDebuggerRequired(cbDebuggerRequired.isSelected());
-            }
-            if (model.isCRequired() != cbCRequired.isSelected()) {
-                model.setCRequired(cbCRequired.isSelected());
-            }
-            if (model.isCppRequired() != cbCppRequired.isSelected()) {
-                model.setCppRequired(cbCppRequired.isSelected());
-            }
-            if (model.isFortranRequired() != cbFortranRequired.isSelected()) {
-                model.setFortranRequired(cbFortranRequired.isSelected());
-            }
-            if (model.isAsRequired() != cbAsRequired.isSelected()) {
-                model.setAsRequired(cbAsRequired.isSelected());
-            }
-        }
+        getToolCollectionPanel().applyChanges();
         instance = null; // remove the global instance
     }
 
@@ -738,6 +453,14 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return currentCompilerSet;
     }
 
+    CompilerSetManager getCompilerSetManager(){
+        return csm;
+    }
+
+    boolean isUpdatindOrChangingCompilerSet(){
+        return updating || changingCompilerSet;
+    }
+
     /**
      * Lets NB know if the data in the panel is valid and OK should be enabled
      *
@@ -745,9 +468,9 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     public boolean dataValid() {
         if (csm.getCompilerSets().size() == 0) {
-            if (valid) {
-                valid = false;
-                firePropertyChange(PROP_VALID, !valid, valid);
+            if (valid != ValidState.INVALID) {
+                valid = ValidState.INVALID;
+                firePropertyChange(PROP_VALID, true, false);
             }
             return false;
         }
@@ -755,53 +478,29 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
             return true;
         } else {
             boolean csmValid = csm.getCompilerSets().size() > 0;
-            boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) && supportedMake(tfMakePath) : true;
-            boolean debuggerValid = cbDebuggerRequired.isSelected() ? isPathFieldValid(tfDebuggerPath) : true;
-            boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
-            boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
-            boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
-            boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
-
+            boolean isToolsValid = getToolCollectionPanel().isToolsValid();
             boolean devhostValid = cacheManager.isDevHostValid(execEnv);
 
-            if (!initialized) {
-                valid = !(csmValid && makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid && devhostValid);
-            }
-
-            if (valid != (csmValid && makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid && devhostValid)) {
-                valid = !valid;
-                firePropertyChange(PROP_VALID, !valid, valid);
+            if (csmValid && isToolsValid && devhostValid) {
+                if (valid != ValidState.VALID) {
+                    valid = ValidState.VALID;
+                    firePropertyChange(PROP_VALID, false, true);
+                }
+            } else {
+                if (valid != ValidState.INVALID) {
+                    valid = ValidState.INVALID;
+                    firePropertyChange(PROP_VALID, true, false);
+                }
             }
 
             // post errors in error text area
             lblErrors.setText("<html>"); // NOI18N
-            if (!valid) {
+            if (valid == ValidState.INVALID) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (!devhostValid) {
                     errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString()));
                 }
-                if (cbMakeRequired.isSelected() && !makeValid) {
-                    if (!isPathFieldValid(tfMakePath)) {
-                        errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
-                    } else {
-                        errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
-                    }
-                }
-                if (cbCRequired.isSelected() && !cValid) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCCompiler"));
-                }
-                if (cbCppRequired.isSelected() && !cppValid) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCppCompiler"));
-                }
-                if (cbDebuggerRequired.isSelected() && !debuggerValid && customizeDebugger) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedDebugger"));
-                }
-                if (cbFortranRequired.isSelected() && !fortranValid) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedFortranCompiler"));
-                }
-                if (cbAsRequired.isSelected() && !asValid) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedAssembler"));
-                }
+                getToolCollectionPanel().getErrors(errors);
                 StringBuilder errorString = new StringBuilder();
                 for (int i = 0; i < errors.size(); i++) {
                     errorString.append(errors.get(i));
@@ -815,42 +514,19 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 repaint();
             }
 
-            boolean baseDirValid = new File(tfBaseDirectory.getText()).exists();
+            boolean baseDirValid = getToolCollectionPanel().isBaseDirValid();
             boolean enableText = baseDirValid || (isRemoteHostSelected() && isHostValidForEditing());
             boolean enableBrowse = baseDirValid && !isRemoteHostSelected();
             boolean enableVersions = (baseDirValid || isRemoteHostSelected()) && isHostValidForEditing();
             updateToolsControls(enableText, enableBrowse, enableVersions, false);
 
-            return valid;
+            return valid == ValidState.VALID;
         }
     }
 
     private void updateToolsControls(boolean enableText, boolean enableBrowse, boolean enableVersions, boolean cleanText) {
-        btCBrowse.setEnabled(enableBrowse);
-        btCppBrowse.setEnabled(enableBrowse);
-        btFortranBrowse.setEnabled(enableBrowse);
-        btAsBrowse.setEnabled(enableBrowse);
-        btMakeBrowse.setEnabled(enableBrowse);
-        btDebuggerBrowse.setEnabled(enableBrowse);
-        btQMakeBrowse.setEnabled(enableBrowse);
-        btCMakeBrowse.setEnabled(enableBrowse);
         btVersions.setEnabled(enableVersions);
-        updateTextField(tfMakePath, enableText, cleanText);
-        updateTextField(tfDebuggerPath, enableText, cleanText);
-        updateTextField(tfBaseDirectory, enableText, cleanText);
-        updateTextField(tfCPath, enableText, cleanText);
-        updateTextField(tfCppPath, enableText, cleanText);
-        updateTextField(tfFortranPath, enableText, cleanText);
-        updateTextField(tfAsPath, enableText, cleanText);
-        updateTextField(tfQMakePath, enableText, cleanText);
-        updateTextField(tfCMakePath, enableText, cleanText);
-    }
-
-    private void updateTextField(JTextField tf, boolean editable, boolean cleanText) {
-        if (cleanText) {
-            tf.setText("");
-        }
-        tf.setEditable(editable);
+        getToolCollectionPanel().updateToolsControls(enableText, enableBrowse, enableVersions, cleanText);
     }
 
     /**
@@ -862,38 +538,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         return changed;
     }
 
-    String getToolVersion(Tool tool, JTextField tf) {
-        StringBuilder version = new StringBuilder();
-        version.append(tool.getDisplayName() + ": "); // NOI18N
-        if (isPathFieldValid(tf)) {
-            String path = tf.getText();
-            if (!IpeUtils.isPathAbsolute(path)) {
-                path = Path.findCommand(path);
-            }
-            String v = postVersionInfo(tool, path);
-            if (v != null) {
-                version.append(v);
-            } else {
-                version.append(getString("TOOL_VERSION_NOT_FOUND")); // NOI18N
-            }
-        } else {
-            version.append(getString("TOOL_NOT_FOUND")); // NOI18N
-        }
-        return version.toString();
+    public void setChanged(boolean changed) {
+        this.changed = changed;
     }
 
-    /**
-     * Display version information for a program pointed to by "path".
-     *
-     * @param tool  tool description
-     * @param path  absolute path of the tool
-     */
-    private String postVersionInfo(Tool tool, String path) {
-        if (path == null) {
-            return null;
-        }
-        return new VersionCommand(tool, path).getVersion();
-    }
     static Set<ChangeListener> listenerChanged = new HashSet<ChangeListener>();
 
     public static void addCompilerSetChangeListener(ChangeListener l) {
@@ -974,13 +622,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
                 editDevHosts();
             } else if (o == btDefault) {
                 setSelectedAsDefault();
-            } else {
-                if (o == btMakeBrowse) {
-                } else if (o == btDebuggerBrowse) {
-                } else if (o == btCBrowse) {
-                } else if (o == btCppBrowse) {
-                } else if (o == btFortranBrowse) {
-                }
             }
         }
     }
@@ -991,43 +632,8 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         if (!updating) {
             if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED) {
                 onNewDevHostSelected();
-            } else if (o instanceof JCheckBox && !changingCompilerSet) {
-                dataValid();
             }
         }
-    }
-
-    // implement DocumentListener
-    public void changedUpdate(DocumentEvent ev) {
-    }
-
-    public void insertUpdate(DocumentEvent ev) {
-        if (!updating) {
-            changed = true;
-        }
-        Document doc = ev.getDocument();
-        String title = (String) doc.getProperty(Document.TitleProperty);
-        if (title.equals(MAKE_NAME)) {
-            validateMakePathField();
-        } else if (title.equals(DEBUGGER_NAME)) {
-            validateGdbPathField();
-        } else if (title.equals(C_NAME)) {
-            validateCPathField();
-        } else if (title.equals(CPP_NAME)) {
-            validateCppPathField();
-        } else if (title.equals(FORTRAN_NAME)) {
-            validateFortranPathField();
-        } else if (title.equals(ASSEMBLER_NAME)) {
-            validateAsPathField();
-        } else if (title.equals(QMAKE_NAME)) {
-            validateQMakePathField();
-        } else if (title.equals(CMAKE_NAME)) {
-            validateCMakePathField();
-        }
-    }
-
-    public void removeUpdate(DocumentEvent ev) {
-        insertUpdate(ev);
     }
 
     // Implement List SelectionListener
@@ -1046,7 +652,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
      */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
-        if (ServerListUIEx.showServerListDialog(cacheManager)) {
+        if (ServerListUIEx.showServerListDialog(cacheManager, null)) {
             changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
@@ -1075,53 +681,6 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         java.awt.GridBagConstraints gridBagConstraints;
 
         lbToolCollections = new javax.swing.JLabel();
-        lbMakeCommand = new javax.swing.JLabel();
-        tfMakePath = new javax.swing.JTextField();
-        tfMakePath.getDocument().putProperty(Document.TitleProperty, MAKE_NAME);
-        tfMakePath.getDocument().addDocumentListener(this);
-        btMakeBrowse = new javax.swing.JButton();
-        btMakeBrowse.addActionListener(this);
-        lbDebuggerCommand = new javax.swing.JLabel();
-        tfDebuggerPath = new javax.swing.JTextField();
-        tfDebuggerPath.getDocument().putProperty(Document.TitleProperty, DEBUGGER_NAME);
-        tfDebuggerPath.getDocument().addDocumentListener(this);
-        btDebuggerBrowse = new javax.swing.JButton();
-        btDebuggerBrowse.addActionListener(this);
-        lbCCommand = new javax.swing.JLabel();
-        tfCPath = new javax.swing.JTextField();
-        tfCPath.getDocument().putProperty(Document.TitleProperty, C_NAME);
-        tfCPath.getDocument().addDocumentListener(this);
-        btCBrowse = new javax.swing.JButton();
-        btCBrowse.addActionListener(this);
-        lbCppCommand = new javax.swing.JLabel();
-        tfCppPath = new javax.swing.JTextField();
-        tfCppPath.getDocument().putProperty(Document.TitleProperty, CPP_NAME);
-        tfCppPath.getDocument().addDocumentListener(this);
-        btCppBrowse = new javax.swing.JButton();
-        btCppBrowse.addActionListener(this);
-        lbFortranCommand = new javax.swing.JLabel();
-        tfFortranPath = new javax.swing.JTextField();
-        tfFortranPath.getDocument().putProperty(Document.TitleProperty, FORTRAN_NAME);
-        tfFortranPath.getDocument().addDocumentListener(this);
-        btFortranBrowse = new javax.swing.JButton();
-        btFortranBrowse.addActionListener(this);
-        lbFamily = new javax.swing.JLabel();
-        requiredToolsLabel = new javax.swing.JLabel();
-        requiredToolsPanel = new javax.swing.JPanel();
-        cbMakeRequired = new javax.swing.JCheckBox();
-        cbDebuggerRequired = new javax.swing.JCheckBox();
-        cbDebuggerRequired.addItemListener(this);
-        cbCRequired = new javax.swing.JCheckBox();
-        cbCRequired.addItemListener(this);
-        cbCppRequired = new javax.swing.JCheckBox();
-        cbCppRequired.addItemListener(this);
-        cbFortranRequired = new javax.swing.JCheckBox();
-        cbFortranRequired.addItemListener(this);
-        cbAsRequired = new javax.swing.JCheckBox();
-        cbFortranRequired.addItemListener(this);
-        lbBaseDirectory = new javax.swing.JLabel();
-        tfBaseDirectory = new javax.swing.JTextField();
-        btBaseDirectory = new javax.swing.JButton();
         buttomPanel = new javax.swing.JPanel();
         lblErrors = new javax.swing.JLabel();
         btVersions = new javax.swing.JButton();
@@ -1143,23 +702,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         cbDevHost.addItemListener(this);
         btEditDevHost = new javax.swing.JButton();
         btEditDevHost.addActionListener(this);
-        lbAsCommand = new javax.swing.JLabel();
-        tfAsPath = new javax.swing.JTextField();
-        tfAsPath.getDocument().putProperty(Document.TitleProperty, ASSEMBLER_NAME);
-        tfAsPath.getDocument().addDocumentListener(this);
-        btAsBrowse = new javax.swing.JButton();
-        btFortranBrowse.addActionListener(this);
-        lbFamilyValue = new javax.swing.JLabel();
-        lbQMakePath = new javax.swing.JLabel();
-        lbCMakePath = new javax.swing.JLabel();
-        tfQMakePath = new javax.swing.JTextField();
-        tfQMakePath.getDocument().putProperty(Document.TitleProperty, QMAKE_NAME);
-        tfQMakePath.getDocument().addDocumentListener(this);
-        tfCMakePath = new javax.swing.JTextField();
-        tfCMakePath.getDocument().putProperty(Document.TitleProperty, CMAKE_NAME);
-        tfCMakePath.getDocument().addDocumentListener(this);
-        btQMakeBrowse = new javax.swing.JButton();
-        btCMakeBrowse = new javax.swing.JButton();
+        toolCollectionPanel = new ToolCollectionPanel(this);
 
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
@@ -1172,314 +715,11 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
         add(lbToolCollections, gridBagConstraints);
         lbToolCollections.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DirlistLabel")); // NOI18N
         lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DirlistLabel")); // NOI18N
-
-        lbMakeCommand.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_MakeCommand").charAt(0));
-        lbMakeCommand.setLabelFor(tfMakePath);
-        lbMakeCommand.setText(bundle.getString("LBL_MakeCommand")); // NOI18N
-        lbMakeCommand.setToolTipText(bundle.getString("HINT_MakeCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 0);
-        add(lbMakeCommand, gridBagConstraints);
-        lbMakeCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_MakeCommand")); // NOI18N
-        lbMakeCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MakeCommand")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 2, 0, 0);
-        add(tfMakePath, gridBagConstraints);
-        tfMakePath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfMakePath.AccessibleContext.accessibleDescription")); // NOI18N
-
-        btMakeBrowse.setText(bundle.getString("LBL_MakeVersion")); // NOI18N
-        btMakeBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btMakeBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
-        add(btMakeBrowse, gridBagConstraints);
-        btMakeBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btMakeVersion.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lbDebuggerCommand.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_GdbCommand").charAt(0));
-        lbDebuggerCommand.setLabelFor(tfDebuggerPath);
-        lbDebuggerCommand.setText(bundle.getString("LBL_GdbCommand")); // NOI18N
-        lbDebuggerCommand.setToolTipText(bundle.getString("HINT_GdbCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbDebuggerCommand, gridBagConstraints);
-        lbDebuggerCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_GdbCommand")); // NOI18N
-        lbDebuggerCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_GdbCommand")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfDebuggerPath, gridBagConstraints);
-        tfDebuggerPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfGdbPath.AccessibleContext.accessibleDescription")); // NOI18N
-
-        btDebuggerBrowse.setText(bundle.getString("LBL_GdbVersion")); // NOI18N
-        btDebuggerBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btDebuggerBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btDebuggerBrowse, gridBagConstraints);
-        btDebuggerBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btGdbVersion.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lbCCommand.setLabelFor(tfCPath);
-        lbCCommand.setText(bundle.getString("LBL_CCommand")); // NOI18N
-        lbCCommand.setToolTipText(bundle.getString("HINT_CCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbCCommand, gridBagConstraints);
-        lbCCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CCommand")); // NOI18N
-        lbCCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CCommand")); // NOI18N
-
-        tfCPath.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfCPath, gridBagConstraints);
-
-        btCBrowse.setText(bundle.getString("LBL_CVersion")); // NOI18N
-        btCBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btCBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btCBrowse, gridBagConstraints);
-        btCBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btCVersion.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lbCppCommand.setLabelFor(tfCppPath);
-        lbCppCommand.setText(bundle.getString("LBL_CppCommand")); // NOI18N
-        lbCppCommand.setToolTipText(bundle.getString("HINT_CppCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbCppCommand, gridBagConstraints);
-        lbCppCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CppCommand")); // NOI18N
-        lbCppCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CppCommand")); // NOI18N
-
-        tfCppPath.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfCppPath, gridBagConstraints);
-
-        btCppBrowse.setText(bundle.getString("LBL_CppVersion")); // NOI18N
-        btCppBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btCppBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btCppBrowse, gridBagConstraints);
-        btCppBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btCppVersion.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lbFortranCommand.setLabelFor(tfFortranPath);
-        lbFortranCommand.setText(bundle.getString("LBL_FortranCommand")); // NOI18N
-        lbFortranCommand.setToolTipText(bundle.getString("HINT_FortranCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbFortranCommand, gridBagConstraints);
-        lbFortranCommand.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_FortranCommand")); // NOI18N
-        lbFortranCommand.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_FortranCommand")); // NOI18N
-
-        tfFortranPath.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfFortranPath, gridBagConstraints);
-
-        btFortranBrowse.setText(bundle.getString("LBL_FortranVersion")); // NOI18N
-        btFortranBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btFortranBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btFortranBrowse, gridBagConstraints);
-        btFortranBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btFortranVersion.AccessibleContext.accessibleDescription")); // NOI18N
-
-        lbFamily.setText(bundle.getString("LBL_CompilerCollection")); // NOI18N
-        lbFamily.setToolTipText(bundle.getString("HINT_CompilerCollection")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
-        add(lbFamily, gridBagConstraints);
-        lbFamily.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CompilerCollection")); // NOI18N
-        lbFamily.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CompilerCollection")); // NOI18N
-
-        requiredToolsLabel.setLabelFor(cbMakeRequired);
-        requiredToolsLabel.setText(bundle.getString("LBL_RequiredTools")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 10, 0, 0);
-        add(requiredToolsLabel, gridBagConstraints);
-
-        requiredToolsPanel.setLayout(new java.awt.GridBagLayout());
-
-        cbMakeRequired.setSelected(true);
-        cbMakeRequired.setText(bundle.getString("LBL_RequiredMake")); // NOI18N
-        cbMakeRequired.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        requiredToolsPanel.add(cbMakeRequired, gridBagConstraints);
-
-        cbDebuggerRequired.setText(bundle.getString("LBL_RequiredGdb")); // NOI18N
-        cbDebuggerRequired.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        requiredToolsPanel.add(cbDebuggerRequired, gridBagConstraints);
-
-        cbCRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CCompiler_CB").charAt(0));
-        cbCRequired.setText(bundle.getString("LBL_RequiredCompiler_C")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        requiredToolsPanel.add(cbCRequired, gridBagConstraints);
-
-        cbCppRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_CppCompiler_CB").charAt(0));
-        cbCppRequired.setText(bundle.getString("LBL_RequiredCompiler_Cpp")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        requiredToolsPanel.add(cbCppRequired, gridBagConstraints);
-
-        cbFortranRequired.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_FortranCompiler_CB").charAt(0));
-        cbFortranRequired.setText(bundle.getString("LBL_RequiredCompiler_Fortran")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        requiredToolsPanel.add(cbFortranRequired, gridBagConstraints);
-
-        cbAsRequired.setText(bundle.getString("ToolsPanel.cbAsRequired.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        requiredToolsPanel.add(cbAsRequired, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 15;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 6);
-        add(requiredToolsPanel, gridBagConstraints);
-
-        lbBaseDirectory.setLabelFor(tfBaseDirectory);
-        lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbBaseDirectory.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbBaseDirectory, gridBagConstraints);
-
-        tfBaseDirectory.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
-        add(tfBaseDirectory, gridBagConstraints);
-        tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
-
-        btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.text")); // NOI18N
-        btBaseDirectory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btBaseDirectoryActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 6);
-        add(btBaseDirectory, gridBagConstraints);
-        btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
         buttomPanel.setOpaque(false);
         buttomPanel.setLayout(new java.awt.GridBagLayout());
@@ -1638,7 +878,7 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         lbDevHost.setToolTipText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "HINT_DevelopmentHosts")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
         add(lbDevHost, gridBagConstraints);
@@ -1646,10 +886,10 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         cbDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(cbDevHost, gridBagConstraints);
 
@@ -1657,120 +897,19 @@ public final class ToolsPanel extends JPanel implements ActionListener, Document
         btEditDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
         btEditDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btEditDevHost, gridBagConstraints);
-
-        lbAsCommand.setLabelFor(tfFortranPath);
-        lbAsCommand.setText(bundle.getString("ToolsPanel.lbAsCommand.text")); // NOI18N
-        lbAsCommand.setToolTipText(bundle.getString("ToolsPanel.lbAsCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbAsCommand, gridBagConstraints);
-
-        tfAsPath.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfAsPath, gridBagConstraints);
-
-        btAsBrowse.setText(bundle.getString("ToolsPanel.btAsBrowse.text")); // NOI18N
-        btAsBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btAsBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btAsBrowse, gridBagConstraints);
-
-        lbFamilyValue.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lbFamilyValue.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        add(lbFamilyValue, gridBagConstraints);
-
-        lbQMakePath.setLabelFor(tfQMakePath);
-        lbQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_QMakeCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbQMakePath, gridBagConstraints);
-
-        lbCMakePath.setLabelFor(tfCMakePath);
-        lbCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_CMakeCommand")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
-        add(lbCMakePath, gridBagConstraints);
-
-        tfQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfQMakePath.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfQMakePath, gridBagConstraints);
-
-        tfCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.tfCMakePath.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
-        add(tfCMakePath, gridBagConstraints);
-
-        btQMakeBrowse.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btQMakeBrowse.text")); // NOI18N
-        btQMakeBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btQMakeBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btQMakeBrowse, gridBagConstraints);
-
-        btCMakeBrowse.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btCMakeBrowse.text")); // NOI18N
-        btCMakeBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btCMakeBrowseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
-        add(btCMakeBrowse, gridBagConstraints);
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(toolCollectionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
@@ -1779,32 +918,9 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     RequestProcessor.getDefault().post(new Runnable() {
 
         public void run() {
-            ProgressHandle handle = ProgressHandleFactory.createHandle(getString("LBL_VersionInfo_Progress")); // NOI18N
-            handle.start(customizeDebugger ? 8 : 7);
+            String versions = getToolCollectionPanel().getVersion(currentCompilerSet);
 
-            StringBuilder versions = new StringBuilder();
-            int i = 0;
-            versions.append("\n"); // NOI18N
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath)).append("\n"); // NOI18N
-            handle.progress(++i);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath)).append("\n"); // NOI18N
-            handle.progress(++i);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath)).append("\n"); // NOI18N
-            handle.progress(++i);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.Assembler), tfAsPath)).append("\n"); // NOI18N
-            handle.progress(++i);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath)).append("\n"); // NOI18N
-            if (customizeDebugger) {
-                handle.progress(++i);
-                versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfDebuggerPath)).append("\n"); // NOI18N
-            }
-            handle.progress(++i);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.QMakeTool), tfQMakePath)).append("\n"); // NOI18N
-            handle.progress(++i);
-            versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CMakeTool), tfCMakePath)).append("\n"); // NOI18N
-            handle.finish();
-
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
+            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
             nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
 
@@ -1818,75 +934,13 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     });
 }//GEN-LAST:event_btVersionsActionPerformed
 
-private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
-    String seed = null;
-    if (tfBaseDirectory.getText().length() > 0) {
-        seed = tfBaseDirectory.getText();
-    } else if (FileChooser.getCurrectChooserFile() != null) {
-        seed = FileChooser.getCurrectChooserFile().getPath();
-    } else {
-        seed = System.getProperty("user.home"); // NOI18N
-    }
-    FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-    int ret = fileChooser.showOpenDialog(this);
-    if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
-    }
-    String dirPath = fileChooser.getSelectedFile().getPath();
-    tfBaseDirectory.setText(dirPath);
-
-    CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
-    csm.reInitCompilerSet(cs, dirPath);
-    changed = true;
-    update(false);
-
-}//GEN-LAST:event_btBaseDirectoryActionPerformed
-
-    private boolean selectCompiler(JTextField tf, Tool tool) {
-        String seed = tfBaseDirectory.getText();
-        FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return false;
-        }
-        if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
-            NotifyDescriptor nb = new NotifyDescriptor.Message(getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nb);
-            return false;
-        }
-        String aPath = fileChooser.getSelectedFile().getPath();
-        if (Utilities.isWindows()) {
-            if (aPath.endsWith(".lnk")) { // NOI18N
-                aPath = aPath.substring(0, aPath.length() - 4);
-            }
-        }
-        tf.setText(aPath);
-        tool.setPath(tf.getText());
-        fireCompilerSetChange();
-        fireCompilerSetModified();
-        return true;
-    }
-
-    private boolean selectTool(JTextField tf) {
-        String seed = tf.getText();
-        FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return false;
-        }
-        String aPath = fileChooser.getSelectedFile().getPath();
-        if (Utilities.isWindows()) {
-            if (aPath.endsWith(".lnk")) { // NOI18N
-                aPath = aPath.substring(0, aPath.length() - 4);
-            }
-        }
-        tf.setText(aPath);
-        return true;
-    }
-
-    private boolean isCustomizableDebugger() {
+    private void initCustomizableDebugger() {
         ToolsPanelGlobalCustomizer customizer = Lookup.getDefault().lookup(ToolsPanelGlobalCustomizer.class);
-        return customizer == null ? true : customizer.isDebuggerCustomizable();
+        customizeDebugger = customizer == null ? true : customizer.isDebuggerCustomizable();
+    }
+
+    boolean isCustomizableDebugger() {
+        return customizeDebugger;
     }
 
     static class MyCellRenderer extends DefaultListCellRenderer {
@@ -1915,26 +969,6 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
             return label;
         }
     }
-
-private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
-    selectCompiler(tfCPath, currentCompilerSet.getTool(Tool.CCompiler));
-}//GEN-LAST:event_btCBrowseActionPerformed
-
-private void btCppBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppBrowseActionPerformed
-    selectCompiler(tfCppPath, currentCompilerSet.getTool(Tool.CCCompiler));
-}//GEN-LAST:event_btCppBrowseActionPerformed
-
-private void btFortranBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranBrowseActionPerformed
-    selectCompiler(tfFortranPath, currentCompilerSet.getTool(Tool.FortranCompiler));
-}//GEN-LAST:event_btFortranBrowseActionPerformed
-
-private void btMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeBrowseActionPerformed
-    selectTool(tfMakePath);
-}//GEN-LAST:event_btMakeBrowseActionPerformed
-
-private void btDebuggerBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btDebuggerBrowseActionPerformed
-    selectTool(tfDebuggerPath);
-}//GEN-LAST:event_btDebuggerBrowseActionPerformed
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
@@ -2033,78 +1067,39 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, null, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 
-private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed
-    selectCompiler(tfAsPath, currentCompilerSet.getTool(Tool.Assembler));
-}//GEN-LAST:event_btAsBrowseActionPerformed
-
-private void btQMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btQMakeBrowseActionPerformed
-    selectTool(tfQMakePath);
-}//GEN-LAST:event_btQMakeBrowseActionPerformed
-
-private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCMakeBrowseActionPerformed
-    selectTool(tfCMakePath);
-}//GEN-LAST:event_btCMakeBrowseActionPerformed
-
-    private static String getString(String key) {
+    static String getString(String key) {
         return NbBundle.getMessage(ToolsPanel.class, key);
     }
 
-    private static String getString(String key, Object param) {
+    static String getString(String key, Object param) {
         return NbBundle.getMessage(ToolsPanel.class, key, param);
     }
+
+    static String getString(String key, Object param1, Object param2) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param1, param2);
+    }
+
+    static String getString(String key, Object param1, Object param2, Object param3) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param1, param2, param3);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;
-    private javax.swing.JButton btAsBrowse;
-    private javax.swing.JButton btBaseDirectory;
-    private javax.swing.JButton btCBrowse;
-    private javax.swing.JButton btCMakeBrowse;
-    private javax.swing.JButton btCppBrowse;
-    private javax.swing.JButton btDebuggerBrowse;
     private javax.swing.JButton btDefault;
     private javax.swing.JButton btDuplicate;
     private javax.swing.JButton btEditDevHost;
-    private javax.swing.JButton btFortranBrowse;
-    private javax.swing.JButton btMakeBrowse;
-    private javax.swing.JButton btQMakeBrowse;
     private javax.swing.JButton btRemove;
     private javax.swing.JButton btRestore;
     private javax.swing.JButton btVersions;
     private javax.swing.JPanel buttomPanel;
     private javax.swing.JPanel buttonPanel;
-    private javax.swing.JCheckBox cbAsRequired;
-    private javax.swing.JCheckBox cbCRequired;
-    private javax.swing.JCheckBox cbCppRequired;
-    private javax.swing.JCheckBox cbDebuggerRequired;
     private javax.swing.JComboBox cbDevHost;
-    private javax.swing.JCheckBox cbFortranRequired;
-    private javax.swing.JCheckBox cbMakeRequired;
-    private javax.swing.JLabel lbAsCommand;
-    private javax.swing.JLabel lbBaseDirectory;
-    private javax.swing.JLabel lbCCommand;
-    private javax.swing.JLabel lbCMakePath;
-    private javax.swing.JLabel lbCppCommand;
-    private javax.swing.JLabel lbDebuggerCommand;
     private javax.swing.JLabel lbDevHost;
-    private javax.swing.JLabel lbFamily;
-    private javax.swing.JLabel lbFamilyValue;
-    private javax.swing.JLabel lbFortranCommand;
-    private javax.swing.JLabel lbMakeCommand;
-    private javax.swing.JLabel lbQMakePath;
     private javax.swing.JLabel lbToolCollections;
     private javax.swing.JLabel lblErrors;
     private javax.swing.JList lstDirlist;
-    private javax.swing.JLabel requiredToolsLabel;
-    private javax.swing.JPanel requiredToolsPanel;
     private javax.swing.JScrollPane spDirlist;
-    private javax.swing.JTextField tfAsPath;
-    private javax.swing.JTextField tfBaseDirectory;
-    private javax.swing.JTextField tfCMakePath;
-    private javax.swing.JTextField tfCPath;
-    private javax.swing.JTextField tfCppPath;
-    private javax.swing.JTextField tfDebuggerPath;
-    private javax.swing.JTextField tfFortranPath;
-    private javax.swing.JTextField tfMakePath;
-    private javax.swing.JTextField tfQMakePath;
+    private javax.swing.JPanel toolCollectionPanel;
     // End of variables declaration//GEN-END:variables
 }

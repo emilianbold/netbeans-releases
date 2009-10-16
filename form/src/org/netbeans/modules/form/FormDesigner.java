@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1039,7 +1039,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void repaintSelection() {
-        handleLayer.repaint();
+        if (handleLayer != null) { // Issue 174373
+            handleLayer.repaint();
+        }
     }
 
     private void updateDesignerActions() {
@@ -1062,6 +1064,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void updateResizabilityActions() {
         Collection componentIds = componentIds();
+        Action[] actions = getResizabilityActions().toArray(new Action[2]);
+
+        RADComponent top = getTopDesignComponent();
+        if (top == null || componentIds.contains(top.getId())) {
+            for (Action a : actions) {
+                a.setEnabled(false);
+            }
+            return;
+        }
+
         LayoutModel layoutModel = getFormModel().getLayoutModel();
         LayoutDesigner layoutDesigner = getLayoutDesigner();
         Iterator iter = componentIds.iterator();
@@ -1085,7 +1097,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             match = resizable[i];
             miss = nonResizable[i];
             getResizabilityButtons()[i].setSelected(!miss && match);
-            ((ResizabilityAction)getResizabilityActions().toArray()[i]).setEnabled(match || miss);
+            actions[i].setEnabled(match || miss);
 //                getResizabilityButtons()[i].setPaintDisabledIcon(match && miss);
         }
     }

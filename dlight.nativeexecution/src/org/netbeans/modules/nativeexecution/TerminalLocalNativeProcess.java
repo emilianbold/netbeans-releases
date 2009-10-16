@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -51,20 +52,22 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,11 +87,11 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         File dorunScriptFile = fl.locate("bin/nativeexecution/dorun.sh", null, false); // NOI18N
 
-        if (dorunScriptFile != null) {
+        if (dorunScriptFile == null) {
+            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
+        } else if (!Utilities.isWindows()) {
             CommonTasksSupport.chmod(ExecutionEnvironmentFactory.getLocal(),
                     dorunScriptFile.getAbsolutePath(), 0755, null);
-        } else {
-            log.severe("Unable to locate bin/nativeexecution/dorun.sh file!"); // NOI18N
         }
 
         dorunScript = dorunScriptFile;
@@ -106,6 +109,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     protected void create() throws Throwable {
+        File pidFileFile = null;
+        File envFileFile = null;
+        File shFileFile = null;
+
         try {
             if (dorunScript == null) {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
@@ -126,14 +133,23 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 workingDirectory = new File(wDir).getAbsolutePath();
             }
 
-            File pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
-            File envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
-            pidFileFile.deleteOnExit();
+            pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
+            envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
+            shFileFile = new File(pidFileFile.getAbsoluteFile() + ".sh"); // NOI18N
+            resultFile = new File(shFileFile.getAbsolutePath() + ".res"); // NOI18N
+
+            resultFile.deleteOnExit();
 
             String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getAbsolutePath()) : pidFileFile.getAbsolutePath();
             String envFile = pidFile + ".env"; // NOI18N
+            String shFile = pidFile + ".sh"; // NOI18N
 
-            resultFile = new File(pidFileFile.getAbsolutePath() + ".res"); // NOI18N
+            FileWriter shWriter = new FileWriter(shFileFile);
+            shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
+            shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
+            shWriter.write("cd \"" + workingDirectory + "\" || exit $?\n"); // NOI18N
+            shWriter.write("exec " + commandLine + "\n"); // NOI18N
+            shWriter.close();
 
             final ExternalTerminalAccessor terminalInfo =
                     ExternalTerminalAccessor.getDefault();
@@ -146,12 +162,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             terminalArgs.addAll(Arrays.asList(
                     dorunScript.getAbsolutePath(),
-                    "-w", workingDirectory, // NOI18N
-                    "-e", envFile, // NOI18N
-                    "-p", pidFile, // NOI18N
-                    "-x", terminalInfo.getPrompt(terminal))); // NOI18N
-
-            terminalArgs.addAll(info.getCommandListForShell());
+                    "-p", terminalInfo.getPrompt(terminal), // NOI18N
+                    "-x", shFile)); // NOI18N
 
             List<String> command = terminalInfo.wrapCommand(
                     info.getExecutionEnvironment(),
@@ -166,7 +178,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 LOG.log(Level.FINEST, "Working directory: {0}", wDir);
             }
 
-            final MacroMap env = info.getEnvVariables();
+            final MacroMap env = info.getEnvironment().clone();
 
             // setup DISPLAY variable for MacOS...
             if (isMacOS) {
@@ -186,18 +198,16 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 pb.environment().put("DISPLAY", display); // NOI18N
             }
 
+            env.appendPathVariable("PATH", hostInfo.getPath()); // NOI18N
+
             if (!env.isEmpty()) {
                 // TODO: FIXME (?)
                 // Do PATH normalization on Windows....
                 // Problem here is that this is done for PATH env. variable only!
 
                 if (isWindows) {
-                    String path = env.get("PATH"); // NOI18N
-                    env.put("PATH", WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
+                    env.put("PATH", "/bin:/usr/bin:" + WindowsSupport.getInstance().convertToAllShellPaths(env.get("PATH"))); // NOI18N
                 }
-
-                // Always prepend /bin and /usr/bin to PATH
-//                env.put("PATH", "/bin:/usr/bin:$PATH"); // NOI18N
 
                 OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos);
@@ -205,84 +215,77 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 fos.close();
 
                 if (LOG.isLoggable(Level.FINEST)) {
-                    for (String var : env.keySet()) {
-                        LOG.log(Level.FINEST, "Environment: {0}={1}", new Object[]{var, env.get(var)});
-                    }
+                    env.dump(System.err);
                 }
             }
 
             processError = new ByteArrayInputStream(new byte[0]);
 
-            waitPID(pb.start(), pidFileFile);
+            Process terminalProcess = pb.start();
+
+            creation_ts = System.nanoTime();
+
+            waitPID(terminalProcess, pidFileFile);
         } catch (Throwable ex) {
             String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
             processError = new ByteArrayInputStream(msg.getBytes());
             resultFile = null;
             throw ex;
+        } finally {
+            if (pidFileFile != null) {
+                pidFileFile.delete();
+            }
+            if (envFileFile != null) {
+                envFileFile.delete();
+            }
+            if (shFileFile != null) {
+                shFileFile.delete();
+            }
         }
+    }
+
+    private int getPIDNoException() {
+        int pid = -1;
+
+        try {
+            pid = getPID();
+        } catch (Exception ex) {
+        }
+
+        return pid;
     }
 
     @Override
     public void cancel() {
-        sendSignal(15);
-    }
-
-    private synchronized int sendSignal(int signal) {
-        int result = 1;
-        int pid = -1;
-
-        try {
-            pid = getPID();
-        } catch (IOException ex) {
-        }
+        int pid = getPIDNoException();
 
         if (pid < 0) {
-            return -1;
+            // Process even was not started ...
+            return;
         }
 
-        try {
-            ProcessBuilder pb;
-            List<String> command = new ArrayList<String>();
-
-            if (isWindows) {
-                command.add(hostInfo.getShell());
-                command.add("-c"); // NOI18N
-                command.add("kill -" + signal + " " + getPID()); // NOI18N
-            } else {
-                command.add("/bin/kill"); // NOI18N
-                command.add("-" + signal); // NOI18N
-                command.add("" + getPID()); // NOI18N
-            }
-
-            pb = new ProcessBuilder(command);
-            Process killProcess = pb.start();
-            result = killProcess.waitFor();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (InterruptedIOException ex) {
-            Thread.currentThread().interrupt();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return result;
+        CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGTERM, null);
     }
 
     @Override
     public int waitResult() throws InterruptedException {
-        int pid = -1;
-
-        try {
-            pid = getPID();
-        } catch (IOException ex) {
-        }
+        int pid = getPIDNoException();
 
         if (pid < 0) {
+            // Process was not even started
             return -1;
         }
 
         if (isWindows || isMacOS) {
-            while (sendSignal(0) == 0) {
+            int rc = 0;
+            while (rc == 0) {
+                try {
+                    rc = CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.NULL, null).get();
+                } catch (ExecutionException ex) {
+                    log.log(Level.FINEST, "", ex); // NOI18N
+                    rc = -1;
+                }
+
                 Thread.sleep(300);
             }
         } else {
@@ -302,7 +305,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         BufferedReader statusReader = null;
 
         try {
-            resultFile.deleteOnExit();
             int attempts = 10;
             while (attempts-- > 0) {
                 if (resultFile.exists() && resultFile.length() > 0) {

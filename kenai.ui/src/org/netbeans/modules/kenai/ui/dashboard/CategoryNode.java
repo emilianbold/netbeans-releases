@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui.dashboard;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -57,34 +58,64 @@ import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 public class CategoryNode extends LeafNode {
 
     private JPanel panel;
-    private JLabel lblUser;
+    private JLabel name;
+    private JLabel progress;
     private String categoryName;
+    private Icon icon;
 
     private final Object LOCK = new Object();
+    private int loadingCounter = 0;
 
-    public CategoryNode( DashboardImpl dashboard, String name ) {
+    public CategoryNode( DashboardImpl dashboard, String name, Icon icon ) {
         super( null );
         this.categoryName = name;
+        this.icon = icon;
     }
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        synchronized (LOCK) {
             if (null == panel) {
                 panel = new JPanel(new BorderLayout());
                 panel.setBorder(new EmptyBorder(0, 0, 0, 0));
                 panel.setOpaque(false);
 
-                lblUser = new TreeLabel(categoryName);
-                panel.add(lblUser, BorderLayout.WEST);
-                lblUser.setFont(lblUser.getFont().deriveFont(Font.BOLD));
+                if (icon != null) {
+                    panel.add(new JLabel(icon), BorderLayout.EAST);
+                }
+                name = new TreeLabel(categoryName);
+                name.setBorder(new EmptyBorder(0,0,0,5));
+                panel.add(name, BorderLayout.WEST);
+                progress = createProgressLabel("");
+                panel.add(progress, BorderLayout.CENTER);
+                name.setFont(name.getFont().deriveFont(Font.BOLD));
             }
+
+
+        synchronized (LOCK) {
             if (isSelected) {
-                lblUser.setForeground(ColorManager.getDefault().getDisabledColor().darker().darker());
+                name.setForeground(ColorManager.getDefault().getDisabledColor().darker().darker());
             } else {
-                lblUser.setForeground(ColorManager.getDefault().getDefaultBackground());
+                name.setForeground(ColorManager.getDefault().getDefaultBackground());
             }
+            progress.setVisible(loadingCounter > 0);
+        }
             return panel;
+    }
+
+    void loadingStarted() {
+        synchronized( LOCK ) {
+            loadingCounter++;
+            fireContentChanged();
         }
     }
+
+    void loadingFinished() {
+        synchronized( LOCK ) {
+            loadingCounter--;
+            if( loadingCounter < 0 )
+                loadingCounter = 0;
+            fireContentChanged();
+        }
+    }
+
 }

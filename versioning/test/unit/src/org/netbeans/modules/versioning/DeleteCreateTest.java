@@ -66,8 +66,9 @@ public class DeleteCreateTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        dataRootDir = getWorkDir();
         dataRootDir.mkdirs();
+        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
         // ping
         File file = new File("dil");
         file = FileUtil.normalizeFile(file);                

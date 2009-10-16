@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -243,6 +243,7 @@ public final class SourceUtils {
     private static final String VM_INITIALIZER_SIG = "<clinit>"; // NOI18N
     private static final String[] APPLET_CLASSES = new String[]{"java.applet.Applet", "javax.swing.JApplet"}; // NOI18N
     private static final String[] TEST_CLASSES = new String[]{"junit.framework.TestCase", "junit.framework.TestSuite"}; // NOI18N
+    private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.testng.annotations.Test"}; // NOI18N
     private static final DeclaredTypeResolver declaredTypeResolver = new DeclaredTypeResolver();
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -492,7 +493,7 @@ public final class SourceUtils {
      * @param annotationName
      * @return
      */
-    public static boolean hasAnnotation(final FileObject fo, final String annotationName) {
+    public static boolean hasAnnotation(final FileObject fo, final String[] annotationNames) {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean result = new AtomicBoolean(false);
 
@@ -522,7 +523,16 @@ public final class SourceUtils {
                             if (tm != null) {
                                 TypeElement annType = (TypeElement) controller.getTypes().asElement(tm);
                                 if (annType != null) {
-                                    result.set(result.get() || annotationName.equals(ElementUtilities.getBinaryName(annType)));
+                                    boolean res = result.get();
+                                    if (!res) {
+                                        for (String ann : annotationNames) {
+                                            if (ann.equals(ElementUtilities.getBinaryName(annType))) {
+                                                res = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    result.set(res);
                                 }
                             }
                             return null;
@@ -790,7 +800,7 @@ public final class SourceUtils {
     }
 
     public static boolean isTest(FileObject fo) {
-        return isJavaFile(fo) && (hasAnnotation(fo, "org.junit.Test") || isInstanceOf(fo, TEST_CLASSES, false)); // NOI18N
+        return isJavaFile(fo) && (hasAnnotation(fo, TEST_ANNOTATIONS) || isInstanceOf(fo, TEST_CLASSES, false)); // NOI18N
     }
 
     public static String getToplevelClassName(FileObject profiledClassFile) {

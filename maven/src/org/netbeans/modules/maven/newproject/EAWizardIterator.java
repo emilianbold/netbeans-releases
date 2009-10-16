@@ -50,6 +50,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -77,10 +79,10 @@ public class EAWizardIterator implements WizardDescriptor.ProgressInstantiatingI
     }
 
     
-    private WizardDescriptor.Panel[] createPanels() {
+    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(false),
-            new EAWizardPanel()
+            new BasicWizardPanel(vg, false),
+            new EAWizardPanel(vg)
         };
     }
     
@@ -104,7 +106,8 @@ public class EAWizardIterator implements WizardDescriptor.ProgressInstantiatingI
         this.wiz = wiz;
         index = 0;
         this.wiz.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, ArchetypeWizardUtils.EA_ARCH);
-        panels = createPanels();
+        ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
+        panels = createPanels(vg);
         updateSteps();
     }
     

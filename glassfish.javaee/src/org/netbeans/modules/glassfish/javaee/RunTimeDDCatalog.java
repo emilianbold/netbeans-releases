@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -139,7 +139,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     };
     
     private static final String JavaEE6TypeToURLMap[] = {
-        "-//Sun Microsystems, Inc.//DTD GlassFish v3 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
     };
 
         /*******NetBeans 3.6 is NOT ready yet to support schemas for code completion... What a pity!:        */

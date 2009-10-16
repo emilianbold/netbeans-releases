@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.threadmap.dataprovider;
 
+import java.awt.event.ActionEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
@@ -358,8 +361,8 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
         Range<Long> interval = intervals.iterator().next().getInterval();
         ResultSet rset = null;
         try {
-            querySummaryStatement.setLong(1, interval.getStartMilliSeconds());
-            querySummaryStatement.setLong(2, interval.getEndMilliSeconds());
+            querySummaryStatement.setLong(1, interval.getStart());
+            querySummaryStatement.setLong(2, interval.getEnd());
 
             rset = querySummaryStatement.executeQuery();
 
@@ -426,5 +429,22 @@ public class ThreadMapDataProviderImpl implements ThreadMapDataProvider {
                 return result;
             }
         };
+    }
+
+    public List<ThreadNameDetails> getThreadNameDetails(final int threadID) {
+        // empty stub implementation
+        List<ThreadNameDetails> res = new ArrayList<ThreadNameDetails>();
+        res.add(new ThreadNameDetails() {
+            public String getName() {
+                return "Thread"+threadID; // NOI18N
+            }
+            public Action goToSource() {
+                return new AbstractAction(){
+                    public void actionPerformed(ActionEvent e) {
+                    }
+                };
+            }
+        });
+        return res;
     }
 }

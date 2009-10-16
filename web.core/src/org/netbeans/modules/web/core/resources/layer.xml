@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -58,11 +58,6 @@ made subject to such option by the copyright holder.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJspIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
-      </file>
-      <!-- Facelet -->
-      <file name="JSP.xhtml" url="templates/simpleFacelets.template">
-          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-          <attr name="position" intvalue="0"/>
       </file>
       <!--  JSP Document --> 
       <file name="JSPX.jspx" url="templates/JSPDoc.template">
@@ -175,7 +170,7 @@ made subject to such option by the copyright holder.
         <attr name="position" intvalue="0"/>
       </file>
       <!-- Filters --> 
-      <file name="SimpleFilter.java" url="templates/SimpleFilter.template">
+      <file name="Filter.java" url="templates/SimpleFilter.template">
         <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

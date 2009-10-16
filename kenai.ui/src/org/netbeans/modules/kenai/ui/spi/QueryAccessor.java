@@ -25,6 +25,15 @@ public abstract class QueryAccessor {
     }
 
     /**
+     * Retrieve the handle for a query listing all new or changed issues in
+     * the given project
+     *
+     * @param project
+     * @return a QueryHandle or null if not available
+     */
+    public abstract QueryHandle getAllIssuesQuery( ProjectHandle project );
+
+    /**
      * Retrieve the list of queries defined for given project.
      * @param project
      * @return

@@ -46,10 +46,12 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -95,6 +97,16 @@ public class BugzillaExecutor {
 
             cmd.execute();
 
+            if(cmd instanceof PerformQueryCommand) {
+                PerformQueryCommand pqc = (PerformQueryCommand) cmd;
+                IStatus status = pqc.getStatus();
+                if(status != null) {
+                    Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
+                    handleKOStatus(status, handleExceptions);
+                    return;
+                }
+            }
+            
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
 
@@ -137,6 +149,41 @@ public class BugzillaExecutor {
                 Bugzilla.LOG.log(Level.SEVERE, null, re);
             }
         }
+    }
+
+    private void handleKOStatus(IStatus status, boolean handleExceptions) throws CoreException {
+        if (status.getException() instanceof CoreException) {
+            throw (CoreException) status.getException();
+        }
+        if(!handleExceptions) {
+            return;
+        }
+        BugzillaConfiguration conf = repository.getConfiguration();
+        if(conf.isValid()) {
+            BugzillaVersion version = conf.getInstalledVersion();
+            BugzillaVersion v34 = new BugzillaVersion("3.4");                   // NOI18N
+            if(version.compareTo(v34) >= 0) {
+                boolean ua = BugzillaAutoupdate.getInstance().isUpdateAvailable(repository);
+                notifyErrorMessage(
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N
+                        (ua ? NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING2") + "\n\n" : "\n") +   // NOI18N
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));     // NOI18N
+                return;
+            }
+        }
+        notifyErrorMessage(status.getMessage());
+    }
+
+    static void notifyErrorMessage(String msg) {
+        NotifyDescriptor nd =
+                new NotifyDescriptor(
+                    msg,
+                    NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
     }
 
     public boolean handleIOException(IOException io) {
@@ -293,19 +340,7 @@ public class BugzillaExecutor {
             html = html.replaceAll("Please press \\<b\\>Back\\</b\\> and try again.", ""); // NOI18N
 
             return html;
-        }
-
-        static void notifyErrorMessage(String msg) {
-            NotifyDescriptor nd =
-                    new NotifyDescriptor(
-                        msg,
-                        NbBundle.getMessage(BugzillaExecutor.class, "LBLError"),    // NOI18N
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        new Object[] {NotifyDescriptor.OK_OPTION},
-                        NotifyDescriptor.OK_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
-        }
+        }        
 
         private static class LoginHandler extends ExceptionHandler {
             public LoginHandler(CoreException ce, String msg, BugzillaExecutor executor, BugzillaRepository repository) {
@@ -363,8 +398,7 @@ public class BugzillaExecutor {
 
     private void checkAutoupdate() {
         try {
-            BugzillaAutoupdate jau = new BugzillaAutoupdate();
-            jau.checkAndNotify(repository);
+            BugzillaAutoupdate.getInstance().checkAndNotify(repository);
         } catch (Throwable t) {
             Bugzilla.LOG.log(Level.SEVERE, "Exception in Bugzilla autoupdate check.", t);
         }

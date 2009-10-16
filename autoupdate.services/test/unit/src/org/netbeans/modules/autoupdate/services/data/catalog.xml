@@ -1557,18 +1557,18 @@ long as there is an accompanying notice indicating the source.
   <license name="mof-license.txt"><![CDATA[Software: Meta-Object Facility
 License:
 
-Copyright 1997-1999, DSTC (Cooperative Research Centre for Enterprise Distributed Systems 
+Copyright 1997-2009, DSTC (Cooperative Research Centre for Enterprise Distributed Systems 
 Technology)
-Copyright 1997-1999, Electronic Data Systems
-Copyright 1997-1999, IBM Corporation
-Copyright 1997-1999, International Computers Limited
-Copyright 1997-1999, Objectivity Inc.
-Copyright 2000-2001, Object Management Group
-Copyright 1997-1999, Oracle Corporation
-Copyright 1997-1999, Platinum Technology Inc.
-Copyright 1997-1999, Rational Software Corporation
-Copyright 1997-1999, System Software Associates
-Copyright 1997-1999, Unisys Corporation
+Copyright 1997-2009, Electronic Data Systems
+Copyright 1997-2009, IBM Corporation
+Copyright 1997-2009, International Computers Limited
+Copyright 1997-2009, Objectivity Inc.
+Copyright 2000-2009, Object Management Group
+Copyright 1997-2009, Oracle Corporation
+Copyright 1997-2009, Platinum Technology Inc.
+Copyright 1997-2009, Rational Software Corporation
+Copyright 1997-2009, System Software Associates
+Copyright 1997-2009, Unisys Corporation
 
 The companies listed above have granted to the Object Management Group, Inc.
 (OMG) a nonexclusive, royalty-free, paid up, worldwide license to copy and distribute
@@ -5963,7 +5963,7 @@ For the included DocBook XML DTD:
 Use of DocBook XML DTD version 4.3 is governed by the terms of the license
 below:
 
-Copyright 1992-2002 HaL Computer Systems, Inc.,
+Copyright 1992-2009 HaL Computer Systems, Inc.,
 
 O'Reilly & Associates, Inc., ArborText, Inc., Fujitsu Software
 Corporation, Norman Walsh, Sun Microsystems, Inc., and the

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,11 +48,10 @@ import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 public class AsmDataLoaderBeanInfo extends SimpleBeanInfo {
     /*package*/static final String IMAGE_ICON_BASE = 
-                "org/netbeans/modules/asm/core/resources/file_asm_16.png"; // NOI18N
+                "org/netbeans/modules/cnd/asm/core/resources/file_asm_16.png"; // NOI18N
     
     @Override
     public BeanInfo[] getAdditionalBeanInfo() {

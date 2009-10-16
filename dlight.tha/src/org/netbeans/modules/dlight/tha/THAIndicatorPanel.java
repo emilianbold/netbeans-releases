@@ -46,17 +46,10 @@ package org.netbeans.modules.dlight.tha;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,7 +81,6 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
-        titleLabel = new javax.swing.JLabel();
         deadlocksLabel = new javax.swing.JLabel();
         racesLabel = new javax.swing.JLabel();
         deadlocksDetails = new javax.swing.JLabel();
@@ -98,7 +90,7 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(jEditorPane1);
 
-        titleLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.titleLabel.text")); // NOI18N
+        setBackground(java.awt.Color.white);
 
         deadlocksLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"))); // NOI18N
         deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksLabel.text")); // NOI18N
@@ -109,8 +101,10 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         racesLabel.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive16.png"))); // NOI18N
 
         deadlocksDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksDetails.text")); // NOI18N
+        deadlocksDetails.setName("deadlocksDetails"); // NOI18N
 
         racesDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.racesDetails.text")); // NOI18N
+        racesDetails.setName("racesDetails"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -120,32 +114,22 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(deadlocksLabel)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(77, 77, 77)
-                                .add(titleLabel))
-                            .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(deadlocksDetails))))
-                    .add(layout.createSequentialGroup()
                         .add(racesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(racesDetails)))
-                .addContainerGap(194, Short.MAX_VALUE))
+                        .add(racesDetails))
+                    .add(layout.createSequentialGroup()
+                        .add(deadlocksLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(deadlocksDetails)))
+                .addContainerGap(174, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(28, 28, 28)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(deadlocksLabel)
-                            .add(deadlocksDetails)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(titleLabel)))
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deadlocksLabel)
+                    .add(deadlocksDetails))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(racesLabel)
@@ -161,7 +145,6 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel racesDetails;
     private javax.swing.JLabel racesLabel;
-    private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
 
     void setDeadlocks(int deadlocks) {

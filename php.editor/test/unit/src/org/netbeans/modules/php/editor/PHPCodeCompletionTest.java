@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -565,7 +565,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "protected f^", false);
     }
     public void testInsideClassAdv_3() throws Exception {
-        checkCompletion("testfiles/completion/lib/insideClass2.php", "$bVa^", false);
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "/**/$bVa^", false);
     }
     public void testInsideClassAdv_4() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass2.php", "$aVar->^", false);
@@ -701,7 +701,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testVarTypeCommentVariable02() throws Exception {
-        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/* @var $hell^", false);
+        checkCompletion("testfiles/completion/lib/varTypeComment.php", "/*second comment*//* @var $hello^", false);
     }
 
     public void testVarTypeCommentType02() throws Exception {

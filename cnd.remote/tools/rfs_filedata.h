@@ -46,14 +46,18 @@
 extern "C" {
 #endif
 
-typedef enum file_state {
-    file_state_pending = 0,
-    file_state_ok = 1,
-    file_state_error = -1
-} file_state;
+enum file_state {
+    INITIAL = 'i',
+    TOUCHED = 't',
+    COPIED = 'c',
+    UNCONTROLLED = 'u',
+    ERROR = 'e',
+    DIRECTORY = 'D',
+    PENDING = 'p'
+};
 
 typedef struct file_data {
-    volatile file_state state;
+    volatile enum file_state state;
     pthread_mutex_t cond_mutex;
     pthread_cond_t cond;
     struct file_data *left;
@@ -66,10 +70,14 @@ typedef struct file_data {
 
 /**
  * Finds file_data for the given file name;
- * if it does not exist, creates one, inserts it into the tree and
- * returns a reference to the newly inserted one
  */
 file_data *find_file_data(const char* filename);
+
+/**
+ * Inserts file_data for the given file name;
+ * returns a reference to the newly inserted one
+ */
+file_data *insert_file_data(const char* filename, enum file_state state);
 
 /**
  * Visits all file_data elements - calls function passed as a 1-st parameter

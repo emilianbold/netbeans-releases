@@ -84,6 +84,7 @@ class WSTransformer extends DefaultTreePathVisitor {
         // TODO: check formatting boundaries here
 
         if (getPath().get(0) instanceof NamespaceDeclaration){
+            super.visit(node);
             return;
         }
         
@@ -142,8 +143,8 @@ class WSTransformer extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ForStatement node) {
-        int start = node.getInitializers().get(0).getStartOffset();
-        int end = node.getUpdaters().get(0).getStartOffset();
+        int start = node.getStartOffset();
+        int end = node.getBody().getStartOffset();
 
         unbreakableRanges.add(new CodeRange(start, end));
 

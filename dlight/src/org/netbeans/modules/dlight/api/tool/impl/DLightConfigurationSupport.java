@@ -72,9 +72,26 @@ public final class DLightConfigurationSupport {
         return DLightConfigurationManagerAccessor.getDefault().registerTool(DLightConfigurationManager.getInstance(), configurationName, dlightTool);
     }
 
+    public boolean registerTool(String configurationName, String toolID, boolean isOnByDefault) {
+        return DLightConfigurationManagerAccessor.getDefault().registerTool(configurationName, toolID, isOnByDefault);
+    }
+
+
     public boolean deleteTool(String configurationName, DLightTool dlightTool) {
         DLightConfiguration configuration = DLightConfigurationManagerAccessor.getDefault().getDefaultConfiguration(DLightConfigurationManager.getInstance());
         return DLightConfigurationManagerAccessor.getDefault().deleteTool(DLightConfigurationManager.getInstance(), configurationName, dlightTool);
 
+    }
+
+    public DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators){
+        return DLightConfigurationManagerAccessor.getDefault().registerConfiguration(DLightConfigurationManager.getInstance(), configurationName, displayedName, category, platforms, collector, indicators);
+    }
+
+    public boolean removeConfiguration(String configurationName){
+        return DLightConfigurationManagerAccessor.getDefault().removeConfiguration(configurationName);
+    }
+
+    public boolean canRemoveConfiguration(String configurationName){
+        return DLightConfigurationManagerAccessor.getDefault().canRemoveConfiguration(configurationName);
     }
 }

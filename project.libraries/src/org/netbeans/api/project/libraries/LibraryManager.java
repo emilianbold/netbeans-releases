@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -68,6 +68,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -161,7 +162,7 @@ public final class LibraryManager {
      * @return library or null if the library is not found
      */
     public Library getLibrary(String name) {
-        assert name != null;
+        Parameters.notNull("name", name);   //NOI18N
         Library[] libs = this.getLibraries();
         for (int i = 0; i < libs.length; i++) {
             if (name.equals(libs[i].getName())) {
@@ -256,7 +257,7 @@ public final class LibraryManager {
      */
     @Deprecated
     public void addLibrary (final Library library) throws IOException, IllegalArgumentException {
-        assert library != null;
+        Parameters.notNull("library", library); //NOI18N
         if (LibrariesSupport.getLibraryTypeProvider(library.getType()) == null) {
             throw new IllegalArgumentException ("Trying to add a library of unknown type: " + library.getType()); //NOI18N
         }
@@ -350,7 +351,7 @@ public final class LibraryManager {
      * @since org.netbeans.modules.project.libraries/1 1.14
      */
     public void removeLibrary (final Library library) throws IOException, IllegalArgumentException {
-        assert library != null;
+        Parameters.notNull("library", library); //NOI18N
         if (area == null) {
             final Collection<? extends WritableLibraryProvider> providers = Lookup.getDefault().lookupAll(WritableLibraryProvider.class);
             assert providers.size() == 1;
@@ -367,7 +368,7 @@ public final class LibraryManager {
      * @param listener to be notified
      */
     public void addPropertyChangeListener (PropertyChangeListener listener) {
-        assert listener != null;
+        Parameters.notNull("listener", listener);  //NOI18N
         this.listeners.addPropertyChangeListener (listener);
     }
 
@@ -376,7 +377,7 @@ public final class LibraryManager {
      * @param listener
      */
     public void removePropertyChangeListener (PropertyChangeListener listener) {
-        assert listener != null;
+        Parameters.notNull("listener", listener);   //NOI18N
         this.listeners.removePropertyChangeListener (listener);
     }
 
@@ -462,7 +463,7 @@ public final class LibraryManager {
      * @param listener to be notified
      */
     public static synchronized void addOpenManagersPropertyChangeListener (PropertyChangeListener listener) {
-        assert listener != null;
+        Parameters.notNull("listener", listener);   //NOI18N
         if (areaProvidersLookupResult == null) {
             areaProvidersLookupResult = Lookup.getDefault().lookupResult(ArealLibraryProvider.class);
             attachListeners(areaProvidersLookupResult.allInstances());
@@ -490,7 +491,7 @@ public final class LibraryManager {
      * @param listener
      */
     public static void removeOpenManagersPropertyChangeListener (PropertyChangeListener listener) {
-        assert listener != null;
+        Parameters.notNull("listener", listener);   //NOI18N
         openLibraryManagerListListeners.removePropertyChangeListener (listener);
     }
     

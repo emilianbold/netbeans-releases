@@ -48,7 +48,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,28 +88,25 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -251,13 +247,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (context == CompletionContext.NONE) {
                 return CodeCompletionResult.NONE;
             }
-            if (!context.equals(CompletionContext.PHPDOC)) {
-                prefix = prefix.startsWith("@") ? prefix.substring(1) : prefix;//NOI18N
-            }
-
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
-            request.anchor = caretOffset - prefix.length();
+            
+            request.anchor = caretOffset
+                    // can't just use 'prefix.getLength()' here cos it might have been calculated with
+                    // the 'upToOffset' flag set to false
+                    - getPrefix(info, caretOffset, true).length();
+
             request.result = result;
             request.info = info;
             request.prefix = prefix;
@@ -1056,104 +1053,33 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         boolean globalContext;
     }
 
-    private LocalVariables getLocalVariables(PHPParseResult context, String namePrefix, int position, String localFileURL){
+    private LocalVariables getLocalVariables(final PHPParseResult context, final String namePrefix, final int position, final String localFileURL) {
         Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
-        boolean globalContext = true;
-        ASTNode varScopeNode = context.getProgram();
-
-        ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(context.getProgram(), lexerToASTOffset(context, position));
-
-        //getNodeHierarchyAtOffset obviously return null
-        if (hierarchy == null) {
-            LocalVariables result = new LocalVariables();
-            result.globalContext = globalContext;
-            result.vars = localVars.values();
-            return result;
-        }
-        for (ASTNode node : hierarchy){
-            if (node instanceof FunctionDeclaration){
-                varScopeNode = node;
-                break;
-            }
-        }
-
-        if (varScopeNode instanceof FunctionDeclaration) {
-            FunctionDeclaration functionDeclaration = (FunctionDeclaration) varScopeNode;
-            globalContext = false;
-            // add parameters to the result
-
-            Map<String, String> typeByParamName = new TreeMap<String, String>();
-            Comment comment = Utils.getCommentForNode(context.getProgram(), functionDeclaration);
-
-            if (comment instanceof PHPDocBlock) {
-                PHPDocBlock phpDoc = (PHPDocBlock) comment;
-
-                for (PHPDocTag tag : phpDoc.getTags()){
-                    if (tag.getKind() == PHPDocTag.Type.PARAM){
-                        PHPDocParamTagData paramData = new PHPDocParamTagData(tag.getValue());
-                        typeByParamName.put(paramData.name, paramData.type);
-                    }
-                }
-            }
-
-            for (FormalParameter param : functionDeclaration.getFormalParameters()) {
-                Expression parameterName = param.getParameterName();
-
-                if (parameterName instanceof Reference) {
-                    Reference ref = (Reference) parameterName;
-                    parameterName = ref.getExpression();
-                }
-
-                if (parameterName instanceof Variable) {
-                    String varName = CodeUtils.extractVariableName((Variable) parameterName);
-                    if (varName != null) {
-                        String type = CodeUtils.extractUnqualifiedTypeName(param);
-
-                        if (type == null){
-                            type = typeByParamName.get(varName);
-                        }
-
-                        if (isPrefix(varName, namePrefix)) {
-                            IndexedConstant ic = new IndexedConstant(varName, null,
-                                    null, localFileURL, -1, 0, type);
-
-                            localVars.put(varName, ic);
-                        }
-                    }
-                }
-            }
-
-            varScopeNode = functionDeclaration.getBody();
-        }
-
-        VarFinder varFinder = new VarFinder(localVars, namePrefix, localFileURL);
-        varScopeNode.accept(varFinder);
-
-        // resolve global variable types
-        if (varFinder.foundGlobals){
-            Map<String, IndexedConstant> globalVars = new HashMap<String, IndexedConstant>();
-            VarFinder topLevelVars = new VarFinder(globalVars, namePrefix, localFileURL);
-            context.getProgram().accept(topLevelVars);
-
-            for (IndexedConstant localVar : localVars.values()){
-                if (GLOBAL_VAR_MARKER.equals(localVar.getTypeName())){
-                    String typeName = null;
-
-                    IndexedConstant globalVar = globalVars.get(localVar.getName());
-
-                    if (globalVar != null){
-                        typeName = globalVar.getTypeName();
-                    }
-
-                    localVar.setTypeName(typeName);
-                }
-            }
-        }
-
         LocalVariables result = new LocalVariables();
-        result.globalContext = globalContext;
         result.vars = localVars.values();
-
+        Model model = context.getModel();
+        VariableScope variableScope = model.getVariableScope(position);
+        if (variableScope != null) {
+            result.globalContext = variableScope instanceof NamespaceScope;
+            Collection<? extends VariableName> declaredVariables = ModelUtils.filter(variableScope.getDeclaredVariables(), QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, namePrefix);
+            final int caretOffset = position + namePrefix.length();
+            for (VariableName varName : declaredVariables) {
+                if (varName.getNameRange().getEnd() < caretOffset) {
+                    final String name = varName.getName();
+                    String notDollaredName = name.startsWith("$") ? name.substring(1) : name;
+                    if (PredefinedSymbols.SUPERGLOBALS.contains(notDollaredName)) {
+                        continue;
+                    }
+                    final Collection<? extends String> typeNames = varName.getTypeNames(position);
+                    String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames);//NOI18N
+                    if (typeName != null && typeName.contains("@")) {//NOI18N
+                        typeName = null;
+                    }
+                    IndexedConstant ic = new IndexedConstant(name, null, null, localFileURL, -1, 0, typeName);
+                    localVars.put(name, ic);
+                }
+            }
+        }
         return result;
     }
 
@@ -1281,10 +1207,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
                     }
 
-                    /*if ("\\".equals(prefix)){ //NOI18N
-                        prefix = ""; //NOI18N
-                    }*/
-
+                    if (prefix != null && prefix.startsWith("@")) {//NOI18N
+                        final TokenHierarchy<?> tokenHierarchy = info.getSnapshot().getTokenHierarchy();
+                        TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, caretOffset) : null;
+                        if (tokenSequence != null) {
+                            tokenSequence.move(caretOffset);
+                            if (tokenSequence.moveNext() && tokenSequence.movePrevious()) {
+                                Token<PHPTokenId> token = tokenSequence.token();
+                                PHPTokenId id = token.id();
+                                if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_TOKEN)) {
+                                    prefix = prefix.substring(1);
+                                }
+                            }
+                        }
+                    }
                     return prefix;
                 }
             } finally {

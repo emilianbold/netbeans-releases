@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,6 +52,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -114,13 +115,13 @@ public class SemanticUtils {
         String mime = (fo == null) ? "" : fo.getMIMEType();
         if (MIMENames.isHeaderOrCppOrC(mime)) {
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            JEditorPane[] panes = ec.getOpenedPanes();
             Document doc = ec.getDocument();
 
             int position = CaretAwareCsmFileTaskFactory.getLastPosition(dobj.getPrimaryFile());
             int goTo = findOccurrencePosition(next, doc, position);
             if (goTo > 0) {
-                panes[0].setCaretPosition(goTo);
+                JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+                pane.setCaretPosition(goTo);
             } else {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SemanticUtils.class, "cpp-no-marked-occurrence"));
             }

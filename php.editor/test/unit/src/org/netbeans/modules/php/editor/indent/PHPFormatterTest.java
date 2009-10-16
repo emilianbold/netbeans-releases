@@ -39,15 +39,20 @@
 package org.netbeans.modules.php.editor.indent;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPFormatterTest extends PHPTestBase {
+    private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
+    private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
 
     public PHPFormatterTest(String testName) {
         super(testName);
@@ -73,15 +78,84 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/real_life/spacesAfterObjectReferences.php");
     }
 
-//      *** These are test cases for known problems, they were never passing ***
+    /**
+     * issue 160996
+     * @throws Exception
+     */
       
-//    public void testStatementsWithoutSpaces() throws Exception {
-//        reformatFileContents("testfiles/formatting/real_life/statementsWithoutSpaces.php");
-//    }
+    public void testStatementsWithoutSpaces() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/160996.php");
+    }
 
-//    public void testCommentsInStatements() throws Exception {
-//        reformatFileContents("testfiles/formatting/real_life/comments_in_statements.php");
-//    }
+    /**
+     * issue 162320
+     * @throws Exception
+     */
+
+    public void testCommentsInStatements() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/162320.php");
+    }
+
+    /**
+     * issue 162586
+     * @throws Exception
+     */
+
+    public void testCommentsFormattingMixedWithHTML() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/162586.php");
+    }
+
+    /**
+     * issue 173899
+     * @throws Exception
+     */
+
+    public void test173899() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173899.php");
+    }
+    /**
+     * issue 173903
+     * @throws Exception
+     */
+    public void test173903() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173903.php");
+    }
+
+    /**
+     * issue 173906
+     * @throws Exception
+     */
+    public void test173906_1() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173906_1.php");
+    }
+    public void test173906_2() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173906_2.php");
+    }
+
+
+     /**
+     * issue 173908
+     * @throws Exception
+     */
+    public void test173908() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/173908.php");
+    }
+
+    /**
+     * issue 174579
+     * @throws Exception
+     */
+    public void test174579() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174579.php");
+    }
+
+    /**
+     * issue 174578
+     * @throws Exception
+     */
+    public void test174578() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174578.php");
+    }
 
     public void testIfElseStatement() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/else_if.php");
@@ -154,7 +228,6 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue171309.php");
     }
 
-
     public void test162126() throws Exception {
         reformatFileContents("testfiles/formatting/issue162126.php");
     }
@@ -187,7 +260,53 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue162320.php");
     }
 
+    public void test164381() throws Exception {
+        reformatFileContents("testfiles/formatting/issue164381.php");
+    }
+
+    public void test174544() throws Exception {
+        reformatFileContents("testfiles/formatting/issue174544.php");
+    }
+
+    public void test174563() throws Exception {
+        reformatFileContents("testfiles/formatting/issue174563.php");
+    }
+
+    public void test173352() throws Exception {
+        reformatFileContents("testfiles/formatting/issue173352.php");
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
+    }
+
+    @Override
+    protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        BaseDocument doc = getDocument(fo);
+        assertNotNull(doc);
+        String fullTxt = doc.getText(0, doc.getLength());
+        int formatStart = 0;
+        int formatEnd = doc.getLength();
+        int startMarkPos = fullTxt.indexOf(FORMAT_START_MARK);
+
+        if (startMarkPos >= 0){
+            formatStart = startMarkPos + FORMAT_START_MARK.length();
+            formatEnd = fullTxt.indexOf(FORMAT_END_MARK);
+
+            if (formatEnd == -1){
+                throw new IllegalStateException();
+            }
+        }
+
+        Formatter formatter = getFormatter(preferences);
+        //assertNotNull("getFormatter must be implemented", formatter);
+
+        setupDocumentIndentation(doc, preferences);
+        format(doc, formatter, formatStart, formatEnd, false);
+
+        String after = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, after, false, ".formatted");
     }
 }

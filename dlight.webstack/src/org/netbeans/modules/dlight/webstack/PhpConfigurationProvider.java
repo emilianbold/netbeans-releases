@@ -34,11 +34,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.webstack;
 
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
@@ -51,7 +52,6 @@ import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
 import org.netbeans.modules.dlight.indicators.BarIndicatorConfiguration;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
-import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.visualizers.api.TableVisualizerConfiguration;
 import org.openide.util.NbBundle;
 
@@ -66,7 +66,7 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
   public DLightToolConfiguration create() {
     final String toolName = getMessage("PhpTool.Name"); // NOI18N
-    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration(toolName);
+    final DLightToolConfiguration toolConfiguration = new DLightToolConfiguration("php.id", toolName); // NOI18N
     List<Column> indicatorColumns = Arrays.asList(
             new Column("utime", Double.class, getMessage("Column.UserTime"), null), // NOI18N
             new Column("stime", Double.class, getMessage("Column.SystemTime"), null), // NOI18N
@@ -91,8 +91,8 @@ public final class PhpConfigurationProvider implements DLightToolConfigurationPr
 
 /// "`pgrep -x mysqld`"
     final DataTableMetadata phpDatatableMetadata = new DataTableMetadata("php", phpColumns, null); // NOI18N
-    DTDCConfiguration dcConfiguration = new DTDCConfiguration(Util.copyResource(PhpConfigurationProvider.class,
-            "org/netbeans/modules/dlight/webstack/resources/script.d"), Arrays.asList(phpDatatableMetadata)); // NOI18N
+    final URL scriptUrl = getClass().getResource("resources/script.d"); // NOI18N
+    DTDCConfiguration dcConfiguration = new DTDCConfiguration(scriptUrl, Arrays.asList(phpDatatableMetadata)); // NOI18N
     dcConfiguration.setRequiredDTracePrivileges(Arrays.asList(DTDCConfiguration.DTRACE_KERNEL, DTDCConfiguration.DTRACE_PROC, DTDCConfiguration.DTRACE_USER, "proc_owner")); // NOI18N
     toolConfiguration.addDataCollectorConfiguration(dcConfiguration);
     cpuIndicator.addVisualizerConfiguration(new TableVisualizerConfiguration(phpDatatableMetadata));

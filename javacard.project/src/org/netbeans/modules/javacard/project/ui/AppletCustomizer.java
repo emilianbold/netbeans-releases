@@ -72,6 +72,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -107,6 +108,7 @@ public class AppletCustomizer extends AllClassesOfTypeExplorerPanel implements N
         aIDPanel1.addChangeListener(this);
         displayNameField.getDocument().addDocumentListener(this);
         instancesList.setSelectionModel(new NullSelectionModel());
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.SettingApplets"); //NOI18N
     }
     AppletXmlModel fromFile;
     boolean locked;

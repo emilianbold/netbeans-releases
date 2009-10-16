@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -175,15 +175,21 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         FileObject fo = folder.getPrimaryFile ();
         String classNameEnc = className.replace ('.', '-');
 
-        Enumeration en = fo.getChildren(false);
+        Enumeration<? extends FileObject> en = fo.getChildren(false);
         FileObject newFile;
         while (en.hasMoreElements()) {
-            newFile = (FileObject) en.nextElement();
-            if (!newFile.hasExt(INSTANCE)) continue;
+            newFile = en.nextElement();
+            if (!newFile.hasExt(INSTANCE)) {
+                continue;
+            }
             if (name != null) {
-                if (!name.equals(getName(newFile))) continue;
+                if (!name.equals(getName(newFile))) {
+                    continue;
+                }
             } else {
-                if (!classNameEnc.equals(getName(newFile))) continue;
+                if (!classNameEnc.equals(getName(newFile))) {
+                    continue;
+                }
             }
             if (className.equals(InstanceDataObject.Ser.getClassName(newFile))) {
                 return newFile;
@@ -195,7 +201,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /** get data object name from specified file object */
     private static String getName(FileObject fo) {
         String superName = (String) fo.getAttribute(EA_NAME);
-        if (superName != null) return superName;
+        if (superName != null) {
+            return superName;
+        }
 
         superName = fo.getName();
         int bracket = superName.indexOf (OPEN);
@@ -354,9 +362,13 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     os.write(buf.toByteArray());
                     os.close();
                 } finally {
-                    if (flock != null) flock.releaseLock();
+                    if (flock != null) {
+                        flock.releaseLock();
+                    }
                 }
-            } else attachWithSave = true;
+            } else {
+                attachWithSave = true;
+            }
 
             ido = (InstanceDataObject)DataObject.find (newFile);
             // attachToConvertor will store the object
@@ -382,8 +394,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         FileLock lock = null;
         try {
             FileObject fileToRemove = findFO (folder, name, className);
-            if (fileToRemove == null) // file not found
+            if (fileToRemove == null) {// file not found
                 return false;
+            }
             lock = fileToRemove.lock();
             fileToRemove.delete(lock);
         } catch (IOException exc) {
@@ -413,12 +426,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /* Help context for this object.
     * @return help context
     */
+    @Override
     public HelpCtx getHelpCtx () {
         HelpCtx test = InstanceSupport.findHelp (this);
-        if (test != null)
+        if (test != null) {
             return test;
-        else
+        } else {
             return HelpCtx.DEFAULT_HELP;
+        }
     }
 
     /* Provides node that should represent this data object. When a node for representation
@@ -431,6 +446,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @return the node representation for this data object
     * @see DataNode
     */
+    @Override
     protected Node createNodeDelegate () {
         if (getPrimaryFile().hasExt(XML_EXT)) {
             un = new UpdatableNode(createNodeDelegateImpl());
@@ -482,8 +498,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (null == getCookieFromEP(InstanceCookie.class)) {
                 return new CookieAdjustingFilter(new UnrecognizedSettingNode());
             }
-            Node n = (Node) getCookieFromEP(Node.class);
-            if (n != null) return new CookieAdjustingFilter(n);
+            Node n = getCookieFromEP(Node.class);
+            if (n != null) {
+                return new CookieAdjustingFilter(n);
+            }
         }
 
         // Instances of Node or Node.Handle should be used as is.
@@ -517,21 +535,27 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             setShortDescription(InstanceDataObject.this.getPrimaryFile().toString());
         }
 
+        @Override
         public boolean canDestroy() {
             return true;
         }
+        @Override
         public boolean canCut() {
             return false;
         }
+        @Override
         public boolean canCopy() {
             return false;
         }
+        @Override
         public boolean canRename() {
             return false;
         }
+        @Override
         public void destroy() throws IOException {
             InstanceDataObject.this.delete();
         }
+        @Override
         protected SystemAction[] createActions() {
             return new SystemAction[] {SystemAction.get(DeleteAction.class)};
         }
@@ -553,13 +577,16 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         
         // If this node is used as the root of a new Explorer window etc.,
         // just save the real underlying node; no need to make it a CAF later.
+        @Override
         public Node.Handle getHandle() {
             return getOriginal().getHandle();
         }
         // #17920: Index cookie works only when equality works
+        @Override
         public boolean equals(Object o) {
             return this == o || getOriginal().equals(o) || (o != null && o.equals(getOriginal()));
         }
+        @Override
         public int hashCode() {
             return getOriginal().hashCode();
         }
@@ -594,13 +621,19 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             // #24683 fix: do not return any cookie until the .settings file is written
             // successfully; PROP_COOKIE is fired when cookies are available.
             String filename = getPrimaryFile().getPath();
-            if (createdIDOs.contains(filename)) return null;
+            if (createdIDOs.contains(filename)) {
+                return null;
+            }
 
             Object res = getCookieFromEP(clazz);
             supe = res instanceof Node.Cookie ? clazz.cast(res) : null;
-            if (InstanceCookie.class.isAssignableFrom(clazz)) return supe;
+            if (InstanceCookie.class.isAssignableFrom(clazz)) {
+                return supe;
+            }
         }
-        if (supe == null) supe = super.getCookie(clazz);
+        if (supe == null) {
+            supe = super.getCookie(clazz);
+        }
         return supe;
     }
 
@@ -610,7 +643,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             // #24683 fix: do not return any cookie until the .settings file is written
             // successfully; PROP_COOKIE is fired when cookies are available.
             String filename = getPrimaryFile().getPath();
-            if (createdIDOs.contains(filename)) return;
+            if (createdIDOs.contains(filename)) {
+                return;
+            }
 
             Object res = getCookieFromEP(clazz);
             if (res != null) {
@@ -664,8 +699,12 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             } 
         }
         
-        if (nodeResult != null) nodeResult.allItems();
-        if (cookieResult != null) cookieResult.allItems();
+        if (nodeResult != null) {
+            nodeResult.allItems();
+        }
+        if (cookieResult != null) {
+            cookieResult.allItems();
+        }
         
         if (change) {
             firePropertyChange(PROP_COOKIE, null, null);
@@ -714,7 +753,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         //return ser;
         InstanceCookie.Of ic = null;
         if (getPrimaryFile().hasExt(XML_EXT)) {
-            ic = (InstanceCookie.Of) getCookieFromEP(InstanceCookie.Of.class);
+            ic = getCookieFromEP(InstanceCookie.Of.class);
         } else {
             ic = ser;
         }
@@ -728,7 +767,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     */
     public String instanceName () {
         InstanceCookie delegateIC = delegateIC ();
-        if (delegateIC == null) return this.getName();
+        if (delegateIC == null) {
+            return this.getName();
+        }
         return delegateIC.instanceName ();
     }
 
@@ -743,7 +784,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     public Class<?> instanceClass ()
     throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();
-        if (delegateIC == null) return this.getClass();
+        if (delegateIC == null) {
+            return this.getClass();
+        }
         try {
             return delegateIC.instanceClass ();
         } catch (ClassNotFoundException ex) {
@@ -761,7 +804,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     */
     public boolean instanceOf (Class<?> type) {
         InstanceCookie.Of delegateIC = delegateIC ();
-        if (delegateIC == null) return type.isAssignableFrom(this.getClass());
+        if (delegateIC == null) {
+            return type.isAssignableFrom(this.getClass());
+        }
         return delegateIC.instanceOf (type);
     }
 
@@ -773,7 +818,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     public Object instanceCreate ()
     throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();
-        if (delegateIC == null) return this;
+        if (delegateIC == null) {
+            return this;
+        }
         return delegateIC.instanceCreate ();
     }
     
@@ -788,6 +835,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /* Overriden to return only first part till the bracket */
+    @Override
     public String getName () {
         if (nameCache != null) {
             return nameCache;
@@ -825,6 +873,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     // [PENDING] probably setName also needs to be overridden!
     /* Renames all entries and changes their files to new ones.
      */
+    @Override
     protected FileObject handleRename (String name) throws IOException {
         FileObject fo = getPrimaryFile();
         fo.setAttribute(EA_NAME, name);
@@ -854,9 +903,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 // Hex escape.
                 escaped.append ('#');
                 String hex = Integer.toString(c, 16).toUpperCase(Locale.ENGLISH);
-                if (hex.length () < 4) escaped.append ('0');
-                if (hex.length () < 3) escaped.append ('0');
-                if (hex.length () < 2) escaped.append ('0');
+                if (hex.length () < 4) {
+                    escaped.append('0');
+                }
+                if (hex.length () < 3) {
+                    escaped.append('0');
+                }
+                if (hex.length () < 2) {
+                    escaped.append('0');
+                }
                 escaped.append (hex);
             } else {
                 escaped.append (c);
@@ -904,7 +959,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         int maxLen = MAX_FILENAME_LENGTH;
 
         String ename = escape(name);
-        if (ename.length() <= maxLen)  return ename;
+        if (ename.length() <= maxLen) {
+            return ename;
+        }
         String hash = Integer.toHexString(ename.hashCode()).toUpperCase(Locale.ENGLISH);
         maxLen = (maxLen > hash.length()) ? (maxLen-hash.length()) / 2 :1;
         String start = ename.substring(0, maxLen);
@@ -931,7 +988,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /** try to lock the primary file; may return <code>null</code> */
     private FileLock doFileLock() {
         synchronized (getLock()) {
-            if (fileLock != null) return fileLock;
+            if (fileLock != null) {
+                return fileLock;
+            }
             try {
                 fileLock = getPrimaryFile().lock();
             } catch (IOException ex) {
@@ -953,12 +1012,13 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     /* Creates new object from template.
     * @exception IOException
     */
+    @Override
     protected DataObject handleCreateFromTemplate (
         DataFolder df, String name
     ) throws IOException {
         try {
             if (getPrimaryFile().hasExt(XML_EXT)) {
-                InstanceCookie ic = (InstanceCookie)this.getCookie(InstanceCookie.class);
+                InstanceCookie ic = this.getCookie(InstanceCookie.class);
                 Object obj = ic.instanceCreate();
 
                 DataObject d = createSettingsFile(df, name, obj);
@@ -967,7 +1027,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 return d;
             } else if ( (!getPrimaryFile().hasExt(INSTANCE)) &&
                         Serializable.class.isAssignableFrom( instanceClass()) ) {
-                InstanceCookie ic = (InstanceCookie)this.getCookie(InstanceCookie.class);
+                InstanceCookie ic = this.getCookie(InstanceCookie.class);
                 Object obj = ic.instanceCreate();
 
                 return DataObject.find( createSerFile( df, name, obj ) );
@@ -985,11 +1045,12 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
      * what the user is accustomed to seeing (for ServiceType's especially).
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=16278">Issue #16278</a>
      */
+    @Override
     protected DataObject handleCopy(DataFolder df) throws IOException {
         if (getPrimaryFile ().getFileSystem().isDefault()) {
             try {
                 if (getPrimaryFile ().hasExt(XML_EXT)) {
-                    InstanceCookie ic = (InstanceCookie)getCookie(InstanceCookie.class);
+                    InstanceCookie ic = getCookie(InstanceCookie.class);
                     if (ic != null) {
                         Object obj = ic.instanceCreate();
                         InstanceDataObject ido = createSettingsFile(
@@ -999,7 +1060,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     }
                 } else if ( (!getPrimaryFile().hasExt(INSTANCE)) &&
                             Serializable.class.isAssignableFrom(instanceClass()) ) {
-                    InstanceCookie ic = (InstanceCookie)getCookie(InstanceCookie.class);
+                    InstanceCookie ic = getCookie(InstanceCookie.class);
                     if (ic != null) {
                         Object obj = ic.instanceCreate();
                         return DataObject.find(createSerFile(
@@ -1029,9 +1090,11 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
             relaseFileLock();
         } else if (getPrimaryFile().hasExt(XML_EXT)) {
-            SaveCookie s = (SaveCookie) getCookie(SaveCookie.class);
+            SaveCookie s = getCookie(SaveCookie.class);
             try {
-                if (s != null) s.save();
+                if (s != null) {
+                    s.save();
+                }
             } catch (IOException ex) {
                 //ignore
             }
@@ -1039,6 +1102,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         super.dispose();
     }
 
+    @Override
     protected void handleDelete() throws IOException {
         savingCanceled = true;
         if (getPrimaryFile().hasExt(XML_EXT)) {
@@ -1048,14 +1112,16 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         if (ser != null) {
             RequestProcessor.Task task = ser.getSaveTask();
             task.cancel();
-            if (ser.isSaving() && !task.isFinished()) task.waitFinished();
+            if (ser.isSaving() && !task.isFinished()) {
+                task.waitFinished();
+            }
         }
         relaseFileLock();
         super.handleDelete();
     }
 
     private void handleDeleteSettings() throws IOException {
-        SaveCookie s = (SaveCookie) getCookie(SaveCookie.class);
+        SaveCookie s = getCookie(SaveCookie.class);
         try {
             if (s != null) s.save();
         } catch (IOException ex) {
@@ -1075,7 +1141,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             ServiceType sr = (ServiceType) obj;
             name = name == null? sr.getName(): name;
             String stName = name;
-            ServiceType.Registry r = (ServiceType.Registry)Lookup.getDefault().lookup(ServiceType.Registry.class);
+            ServiceType.Registry r = Lookup.getDefault().lookup(ServiceType.Registry.class);
             for (int i = 1; r.find(stName) != null; i++) {
                 stName = new StringBuffer(name.length() + 2).
                     append(name).append('_').append(i).toString();
@@ -1118,7 +1184,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
 
             newFile = fo.getFileObject (name, SER_EXT);
-            if (newFile == null) newFile = fo.createData (name, SER_EXT);
+            if (newFile == null) {
+                newFile = fo.createData(name, SER_EXT);
+            }
 
             lock = newFile.lock ();
             ostream = newFile.getOutputStream(lock);
@@ -1127,10 +1195,12 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             p.writeObject(obj);
             p.flush();
         } finally {
-            if (ostream != null)
+            if (ostream != null) {
                 ostream.close();
-            if (lock != null)
+            }
+            if (lock != null) {
                 lock.releaseLock ();
+            }
         }
         return newFile;
     }
@@ -1168,6 +1238,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
         }
 
+        @Override
         public String instanceName () {
             // try the life object if any
             FileObject fo = entry ().getFile ();
@@ -1352,7 +1423,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
             try {
                 FileLock lock = dobj.doFileLock();
-                if (lock == null) return;
+                if (lock == null) {
+                    return;
+                }
                 ObjectOutputStream oos = new ObjectOutputStream (
                     entry ().getFile ().getOutputStream (lock)
                 );
@@ -1501,7 +1574,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private static ByteArrayOutputStream storeThroughConvertor(Object inst, FileObjectContext ctx) throws IOException {
         FileObject fo = resolveConvertor(inst);
         Object convertor = fo.getAttribute("settings.convertor"); // NOI18N
-        if (convertor == null) throw new IOException("missing attribute settings.convertor"); // NOI18N
+        if (convertor == null) {
+            throw new IOException("missing attribute settings.convertor"); // NOI18N
+        }
         ByteArrayOutputStream b = new ByteArrayOutputStream(1024);
         Writer w = new OutputStreamWriter(b, "UTF-8"); // NOI18N
         convertorWriteMethod(convertor, new WriterProvider(w, ctx), inst);
@@ -1540,7 +1615,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         String prefix = "xml/memory"; //NOI18N
         
         FileObject memContext = FileUtil.getConfigFile(prefix);
-        if (memContext == null) throw new FileNotFoundException("SFS:xml/memory while converting a " + obj.getClass().getName()); //NOI18N
+        if (memContext == null) {
+            throw new FileNotFoundException("SFS:xml/memory while converting a " + obj.getClass().getName()); //NOI18N
+        }
         
         Class clazz = obj.getClass();
         Class c = clazz;
@@ -1633,6 +1710,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         Collections.synchronizedList(new ArrayList<String>(1));
 
     /** Clear name cache */
+    @Override
     void notifyAttributeChanged(org.openide.filesystems.FileAttributeEvent fae) {
         nameCache = null;
         super.notifyAttributeChanged(fae);

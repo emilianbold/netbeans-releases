@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,7 +51,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -251,9 +250,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return fastCheckProblem;
         }
         
-        if (kind.isClass() && !((TypeElement) element).getNestingKind().isNested()) {
+        if ((kind.isClass() || kind.isInterface()) && !((TypeElement) element).getNestingKind().isNested()) {
+            TypeElement typeElement = (TypeElement) element;
+            FileObject primFile = SourceUtils.getFile(typeElement, info.getClasspathInfo());
+            FileObject folder = primFile.getParent();
             if (doCheckName) {
-                String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
+                String oldfqn = typeElement.getQualifiedName().toString();
                 String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
                 
                 String pkgname = oldfqn;
@@ -263,9 +265,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 else
                     pkgname = "";
                 
-                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
-                FileObject fo = treePathHandle.getFileObject();
-                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
+//                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                 if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
                     String msg = new MessageFormat(getString("ERR_ClassClash")).format(
                             new Object[] {newName, pkgname}
@@ -273,10 +274,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     fastCheckProblem = createProblem(fastCheckProblem, true, msg);
                     return fastCheckProblem;
                 }
-                FileObject parentFolder = fo.getParent();
-                Enumeration enumeration = parentFolder.getFolders(false);
+                Enumeration<? extends FileObject> enumeration = folder.getFolders(false);
                 while (enumeration.hasMoreElements()) {
-                    FileObject subfolder = (FileObject) enumeration.nextElement();
+                    FileObject subfolder = enumeration.nextElement();
                     if (subfolder.getName().equals(newName)) {
                         String msg = new MessageFormat(getString("ERR_ClassPackageClash")).format(
                             new Object[] {newName, pkgname}
@@ -286,8 +286,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                 }
             }
-            FileObject primFile = treePathHandle.getFileObject();
-            FileObject folder = primFile.getParent();
             FileObject existing = folder.getFileObject(newName, primFile.getExt());
             if (existing != null && primFile != existing) {
                 // primFile != existing is check for case insensitive filesystems; #136434

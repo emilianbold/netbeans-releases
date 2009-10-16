@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -76,7 +76,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.debugger.common.utils.IOProxy;
-import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -91,7 +90,6 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
-import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -105,6 +103,9 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -181,8 +182,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
     private final List<GdbVariable> localVariables = new ArrayList<GdbVariable>();
-    private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
-    private final Map<Integer, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl>());
+    private final Map<Integer, BreakpointImpl<?>> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl<?>>();
+    private final Map<Integer, BreakpointImpl<?>> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl<?>>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
     private final Set<Integer> runAfterTokens = Collections.synchronizedSet(new HashSet<Integer>());
     private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
@@ -283,6 +284,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }, 30000);
             }
             String gdbCommand = profile.getGdbPath(pae.getConfiguration(), false);
+            if (gdbCommand == null) {
+                throw new GdbErrorException("Gdb command is empty, exiting"); //NOI18N;
+            }
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             } else if (gdbCommand.toLowerCase().contains("mingw")) { // NOI18N
@@ -291,10 +295,10 @@ public class GdbDebugger implements PropertyChangeListener {
             String cspath = getCompilerSetPath(pae);
             // see IZ 158224, gdb should be run with the default environment
             // see IZ 170287, PATH should be set on Windows
+            // see IZ 166812, on windows we should add all defined env variables
             String[] debuggerEnv = new String[0];
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                String path = pae.getProfile().getEnvironment().getenvEntry("Path"); //NOI18N
-                debuggerEnv = new String[]{path}; //NOI18N
+               debuggerEnv = pae.getProfile().getEnvironment().getenv();
             }
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
             // we should not continue until gdb version is initialized
@@ -400,14 +404,12 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.file_exec_and_symbols(pathMap.getRemotePath(pae.getExecutable().replace("\\", "/"), true)); // NOI18N
                 //gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
 
-                String[] env = pae.getProfile().getEnvironment().getenv();
-                Map<String, String> mapEnv = new HashMap<String, String>(env.length);
-                EnvUtils.appendEnv(mapEnv, env);
+                MacroMap macroMap = MacroMap.forExecEnv(execEnv);
+                macroMap.putAll(pae.getProfile().getEnvironment().getenvAsMap());
                 
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, pae.getExecutable())) {
-                        EnvUtils.appendPath(mapEnv, EnvUtils.getKey(envEntry), EnvUtils.getValue(envEntry));
-                    }
+                    UnbufferSupport.initUnbuffer(execEnv, macroMap);
+                    
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS && !isUnitTest()) {
                         ioProxy = IOProxy.create(execEnv, iotab);
@@ -415,7 +417,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
 
                 // set project environment
-                for (Map.Entry<String, String> entry : mapEnv.entrySet()) {
+                for (Map.Entry<String, String> entry : macroMap.entrySet()) {
                     gdb.gdb_set("environment", entry.getKey() + '=' + entry.getValue()); // NOI18N
                 }
 
@@ -594,11 +596,11 @@ public class GdbDebugger implements PropertyChangeListener {
         return System.getProperty("gdb.testsuite") != null; // NOI18N
     }
 
-    private String win2UnixPath(String path) {
+    public String win2UnixPath(String path) {
         if (isCygwin()) {
-            return WinPath.win2cyg(path);
+            return WindowsSupport.getInstance().convertToCygwinPath(path);
         } else if (isMinGW()) {
-            return WinPath.win2ming(path);
+            return WindowsSupport.getInstance().convertToMSysPath(path);
         }
         return path.replace('\\', '/');
     }
@@ -800,7 +802,7 @@ public class GdbDebugger implements PropertyChangeListener {
             if (line.contains("Reading symbols from ") || // NOI18N
                     (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
                 line = line.substring(21, line.length() - 8);
-                if (GdbUtils.compareExePaths(platform, line, exepath)) {
+                if (compareExePaths(line, exepath)) {
                     return true;
                 }
             } else if (line.contains("Loaded symbols for ") && comparePaths(exepath, line.substring(19))) { // NOI18N
@@ -811,13 +813,59 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public boolean comparePaths(String path1, String path2) {
-        return GdbUtils.comparePaths(platform, path1, path2);
+        path1 = path1.trim();
+        path2 = path2.trim();
+
+        if (path1.equals(path2)) {
+            return true;
+        }
+        
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            path1 = path1.toLowerCase();
+            path2 = path2.toLowerCase();
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+
+            // we need to convert paths to unix-like style, so that normalization works correctly
+            if (cygwin) {
+                path1 = WindowsSupport.getInstance().convertToCygwinPath(path1).toLowerCase();
+                path2 = WindowsSupport.getInstance().convertToCygwinPath(path2).toLowerCase();
+            } else if (mingw) {
+                path1 = WindowsSupport.getInstance().convertToMSysPath(path1).toLowerCase();
+                path2 = WindowsSupport.getInstance().convertToMSysPath(path2).toLowerCase();
+            }
+
+            if (path1.equals(path2)) {
+                return true;
+            }
+        }
+        return GdbUtils.compareUnixPaths(path1, path2);
+    }
+
+    private boolean compareExePaths(String exe1, String exe2) {
+        exe1 = exe1.trim();
+        exe2 = exe2.trim();
+
+        if (exe1.equals(exe2)) {
+            return true;
+        }
+
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            exe1 = GdbUtils.removeExe(exe1);
+            exe2 = GdbUtils.removeExe(exe2);
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            exe1 = exe1.toLowerCase();
+            exe2 = exe2.toLowerCase();
+        }
+        return comparePaths(exe1, exe2);
     }
 
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
-                return GdbUtils.compareExePaths(platform, line.substring(15, line.length() - 3), exepath);
+                return compareExePaths(line.substring(15, line.length() - 3), exepath);
             }
         }
         return false;
@@ -1117,7 +1165,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 int end = msg.indexOf('.', start); // NOI18N
                 if (end != -1) {
                     String breakpoinIdx = msg.substring(start, end).trim();
-                    BreakpointImpl breakpoint = findBreakpoint(breakpoinIdx);
+                    BreakpointImpl<?> breakpoint = findBreakpoint(breakpoinIdx);
                     if (breakpoint != null) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
@@ -1125,7 +1173,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
-                BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
+                BreakpointImpl<?> breakpoint = pendingBreakpointMap.remove(token);
                 if (breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
@@ -1608,11 +1656,7 @@ public class GdbDebugger implements PropertyChangeListener {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
                 map = GdbUtils.createMapFromString(frame);
-                String fullname = map.get("fullname"); // NOI18N
-                String line = map.get("line"); // NOI18N
-                if (fullname != null && line != null) {
-                    lastStop = fullname + ":" + line; // NOI18N
-                }
+                updateLastStop(map);
             }
             setLoading();
             return;
@@ -1646,7 +1690,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
-                BreakpointImpl impl = findBreakpoint(map.get("bkptno")); // NOI18N
+                BreakpointImpl<?> impl = findBreakpoint(map.get("bkptno")); // NOI18N
                 if (impl == null) {
                     int idx = temporaryBreakpoints.indexOf(map.get("bkptno")); // NOI18N
                     if (idx >= 0) {
@@ -1693,11 +1737,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
-                    String fullname = map.get("fullname"); // NOI18N
-                    String line = map.get("line"); // NOI18N
-                    if (fullname != null && line != null) {
-                        lastStop = fullname + ":" + line; // NOI18N
-                    }
+                    updateLastStop(map);
                 }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
                 GdbTimer.getTimer("Startup").report("Startup1"); // NOI18N
@@ -1710,12 +1750,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
                     map = GdbUtils.createMapFromString(frame);
-                    String fullname = map.get("fullname"); // NOI18N
-                    fullname = checkCygwinLibs(fullname);
-                    String line = map.get("line"); // NOI18N
-                    if (fullname != null && line != null) {
-                        lastStop = fullname + ":" + line; // NOI18N
-                    }
+                    updateLastStop(map);
                 }
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
                     GdbTimer.getTimer("Step").stop("Step1");// NOI18N
@@ -1747,15 +1782,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    public String checkCygwinLibs(String path) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS && isCygwin() && path != null && path.charAt(0) == '/') {
-            if (path.length() >= 5 && path.startsWith("/usr/")) { // NOI18N
-                return CompilerSetManager.getCygwinBase() + path.substring(4);
-            } else {
-                return CompilerSetManager.getCygwinBase() + path;
-            }
+    private void updateLastStop(Map<String, String> map) {
+        String fullname = map.get("fullname"); // NOI18N
+        String line = map.get("line"); // NOI18N
+        if (fullname != null && line != null) {
+            lastStop = fullname + ":" + line; // NOI18N
         }
-        return path;
     }
 
     private void signalReceived(Map<String, String> map) {
@@ -1766,6 +1798,11 @@ public class GdbDebugger implements PropertyChangeListener {
                 resume();
                 return;
             } else if ("SIGINT".equals(signal)) { // NOI18N
+                gdb.stack_list_frames();
+                setStopped();
+                return;
+            } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
+                // see IZ 172855 (On windows we need to skip SIGTRAP)
                 gdb.stack_list_frames();
                 setStopped();
                 return;
@@ -1957,12 +1994,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private String getOSPath(String path) {
+    public String getOSPath(String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin()) { // NOI18N
-                return WinPath.cyg2win(path);
+                return WindowsSupport.getInstance().convertFromCygwinPath(path);
             } else if (isMinGW()) {
-                return WinPath.ming2win(path); // NOI18N
+                return WindowsSupport.getInstance().convertFromMSysPath(path);
             }
         } 
         return path;
@@ -1984,7 +2021,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * @param reason a reason why program is stopped
      */
     private boolean breakpointValidation(int token, Object o) {
-        BreakpointImpl impl = pendingBreakpointMap.get(token);
+        BreakpointImpl<?> impl = pendingBreakpointMap.get(token);
 
         if (impl != null) { // impl is null for the temporary bp set at main during startup
             if (o instanceof String) {
@@ -2061,7 +2098,10 @@ public class GdbDebugger implements PropertyChangeListener {
             conf = (MakeConfiguration)conf.cloneConf();
             conf.setDevelopmentHost(new DevelopmentHostConfiguration(exEnv));
 
-            String path = getExecutableOrSharedLibrary(pinfo, conf);
+            String path = getBuildResult(pinfo, conf);
+            if (target.checkExecutable() && !isExecutableOrSharedLibrary(conf, path)) {
+                path = null;
+            }
 
             if (path != null) {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
@@ -2087,11 +2127,6 @@ public class GdbDebugger implements PropertyChangeListener {
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
             }
         }
-    }
-
-    private static String getExecutableOrSharedLibrary(ProjectInformation pinfo, MakeConfiguration conf) {
-        String buildResult = getBuildResult(pinfo, conf);
-        return isExecutableOrSharedLibrary(conf, buildResult) ? buildResult : null;
     }
 
     /**
@@ -2282,6 +2317,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
             }
         }
+        if (getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+            response = GdbUtils.mackHack(response);
+        }
         return response.length() > 0 ? response : null;
     }
 
@@ -2409,7 +2447,7 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.set_unwindonsignal("off"); // NOI18N
         ArrayList<Integer> ids = new ArrayList<Integer>();
         synchronized (breakpointList) {
-            for (Map.Entry<Integer, BreakpointImpl> entry : breakpointList.entrySet()) {
+            for (Map.Entry<Integer, BreakpointImpl<?>> entry : breakpointList.entrySet()) {
                 if (entry.getValue().getBreakpoint().isEnabled()) {
                     ids.add(entry.getKey());
                 }
@@ -2490,11 +2528,11 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    public Map<Integer, BreakpointImpl> getBreakpointList() {
+    public Map<Integer, BreakpointImpl<?>> getBreakpointList() {
         return breakpointList;
     }
 
-    private BreakpointImpl findBreakpoint(String id) {
+    private BreakpointImpl<?> findBreakpoint(String id) {
         try {
             return breakpointList.get(Integer.valueOf(id));
         } catch (NumberFormatException nfe) {
@@ -2595,7 +2633,7 @@ public class GdbDebugger implements PropertyChangeListener {
         pcs.firePropertyChange(name, o, n);
     }
 
-    private boolean isCygwin() {
+    public boolean isCygwin() {
         return cygwin;
     }
 

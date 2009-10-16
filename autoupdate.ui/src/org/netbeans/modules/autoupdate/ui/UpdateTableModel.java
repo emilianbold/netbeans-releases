@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -89,13 +89,15 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         Unit u = getUnitAtRow(row);
         assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
         boolean beforeMarked = u.isMarked();
-        u.setMarked(!beforeMarked);
-        if (u.isMarked() != beforeMarked) {
-            fireButtonsChange();
-        } else {
-            //TODO: message should contain spec.version
-            String message = NbBundle.getMessage(UpdateTableModel.class, "NotificationAlreadyPreparedToIntsall", u.getDisplayName()); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+        if ((Boolean) anValue != beforeMarked) {
+            u.setMarked(! beforeMarked);
+            if (u.isMarked() != beforeMarked) {
+                fireButtonsChange();
+            } else {
+                //TODO: message should contain spec.version
+                String message = NbBundle.getMessage(UpdateTableModel.class, "NotificationAlreadyPreparedToIntsall", u.getDisplayName()); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -74,8 +74,33 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.w3c.dom.Element;
 
 public class Util {
+
+    public static final String ENDORSED_LIBRARY_NAME = "javaee-endorsed-api-6.0"; // NOI18N
+    public static final String ENDORSED_LIBRARY_CLASSPATH = "${libs."+ENDORSED_LIBRARY_NAME+".classpath}"; // NOI18N
+
+    public static final String DESTINATION_DIRECTORY = "destinationDirectory";
+    public static final String DESTINATION_DIRECTORY_ROOT = "100";
+    public static final String DESTINATION_DIRECTORY_LIB = "200";
+    public static final String DESTINATION_DIRECTORY_DO_NOT_COPY = "300";
+
+    public static void updateDirsAttributeInCPSItem(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item item,
+            Element element) {
+        String dirs = item.getAdditionalProperty(Util.DESTINATION_DIRECTORY);
+        if (dirs == null) {
+            dirs = Util.DESTINATION_DIRECTORY_LIB;
+            if (item.getType() == org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item.TYPE_ARTIFACT && !item.isBroken()) {
+                if (item.getArtifact() != null && item.getArtifact().getProject() != null &&
+                    item.getArtifact().getProject().getLookup().lookup(J2eeModuleProvider.class) != null) {
+                    dirs = Util.DESTINATION_DIRECTORY_ROOT;
+                }
+
+            }
+        }
+        element.setAttribute("dirs", dirs); // NOI18N
+    }
     
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel

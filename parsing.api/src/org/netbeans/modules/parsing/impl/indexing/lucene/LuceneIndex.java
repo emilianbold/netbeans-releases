@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -70,17 +71,22 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexImpl;
+import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndex implements IndexImpl {
+public class LuceneIndex implements IndexImpl, Evictable {
+
+    private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(),1);
 
     // -----------------------------------------------------------------------
     // IndexImpl implementation
@@ -133,11 +139,11 @@ public class LuceneIndex implements IndexImpl {
         }
     }
 
-    public void store() throws IOException {
+    public void store() throws IOException {        
         LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
             public Void run() throws IOException {
                 checkPreconditions();
-
+                
                 final List<LuceneDocument> toAdd;
                 final List<String> toRemove;
 
@@ -171,11 +177,11 @@ public class LuceneIndex implements IndexImpl {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-
+        
         return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
             public List<IndexDocumentImpl> run() throws IOException {
                 checkPreconditions();
-                
+
                 final IndexReader r = getReader();
                 if (r != null) {
                     // index exists
@@ -205,7 +211,7 @@ public class LuceneIndex implements IndexImpl {
             return new LinkedList<String>(staleFiles);
         }
     }
-
+    
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
@@ -299,6 +305,27 @@ public class LuceneIndex implements IndexImpl {
             }
         });
     }
+        
+    //<editor-fold desc="Implementation of Evictable interface">
+    public void evicted() {
+        //Threading: The called may own the LIM.readAccess, perform by dedicated worker to prevent deadlock
+        RP.post(new Runnable() {
+            public void run () {
+                try {
+                    LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
+                        public Void run() throws IOException {
+                            _closeReader();
+                            LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            return null;
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
+    ///</editor-fold>
 
     // -----------------------------------------------------------------------
     // Private implementation
@@ -325,6 +352,15 @@ public class LuceneIndex implements IndexImpl {
     private final List<LuceneDocument> toAdd = new LinkedList<LuceneDocument>();
     private final List<String> toRemove = new LinkedList<String>();
     private final Set<String> staleFiles = new HashSet<String>();
+
+    private void _hit() {
+        try {
+            final URL url = this.indexFolder.toURI().toURL();
+            IndexCacheFactory.getDefault().getCache().put(url, this);
+        } catch (MalformedURLException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
 
     // called under LuceneIndexManager.writeAccess
     private void _clear() throws IOException {
@@ -559,6 +595,7 @@ public class LuceneIndex implements IndexImpl {
         LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
             assert LuceneIndexManager.getDefault().holdsWriteLock();
+            _hit();
             boolean exists = IndexReader.indexExists(this.directory);
             final IndexWriter out = new IndexWriter(
                 directory, // index directory
@@ -618,6 +655,9 @@ public class LuceneIndex implements IndexImpl {
                     refreshReader();
                 }
             }
+        } catch (final LockObtainFailedException e) {
+            final String msg = "Valid: " + valid + " Locks: " + getOrphanLock();    //NOI18N
+            throw Exceptions.attachMessage(e, msg);
         } finally {
             LOGGER.log(Level.FINE, "Index flushed: {0}", indexFolder); //NOI18N
         }
@@ -631,24 +671,27 @@ public class LuceneIndex implements IndexImpl {
     }
 
     // called under LuceneIndexManager.readAccess or LuceneIndexManager.writeAccess
-    private synchronized IndexReader getReader() throws IOException {
-        IndexReader r = reader;
-        if (r == null) {
-            boolean exists = IndexReader.indexExists(this.directory);
-            if (exists) {
-                //Issue #149757 - logging
-                try {
-                    //It's important that no Query will get access to original IndexReader
-                    //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                    r = reader = new NoNormsReader(IndexReader.open(this.directory));
-                } catch (IOException ioe) {
-                    throw annotateException(ioe, indexFolder);
+    private IndexReader getReader() throws IOException {
+        _hit();
+        synchronized (this) {
+            IndexReader r = reader;
+            if (r == null) {
+                boolean exists = IndexReader.indexExists(this.directory);
+                if (exists) {
+                    //Issue #149757 - logging
+                    try {
+                        //It's important that no Query will get access to original IndexReader
+                        //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
+                        r = reader = new NoNormsReader(IndexReader.open(this.directory));
+                    } catch (IOException ioe) {
+                        throw annotateException(ioe, indexFolder);
+                    }
+                } else {
+                    LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
                 }
-            } else {
-                LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
             }
-        }        
-        return r;
+            return r;
+        }
     }
 
     private synchronized void refreshReader() throws IOException {

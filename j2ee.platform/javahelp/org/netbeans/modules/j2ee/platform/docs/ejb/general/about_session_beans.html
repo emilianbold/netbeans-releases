@@ -58,10 +58,21 @@
   the session bean's modules through its local interfaces. Modules that are not 
   in the same enterprise application must access the bean's methods through its 
   remote interfaces.</p>
-<ul class="notes">
-    <li>In Java EE 6 applications, session beans are not required to have a business interface.
-    if the implementation class is only accessed by local clients.</li>
+<ul class="note">
+    <li>In Java EE 6 applications, session beans are not required to have an interface
+    if the implementation class is only accessed by local clients.
+    A local client can access the session bean via a no-interface view or via a local interface.</li>
 </ul>
+
+<p>For more infomation about the working with session beans, see Chapter 13 Enterprise Beans in
+ the Java EE Tutorial:</p>
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://java.sun.com/javaee/6/docs/tutorial/doc/">
+    <param name="text" value="<html><u>http://java.sun.com/javaee/6/docs/tutorial/doc/</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object></p>
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="about_entity_beans.html">About Entity Beans</a></dd>

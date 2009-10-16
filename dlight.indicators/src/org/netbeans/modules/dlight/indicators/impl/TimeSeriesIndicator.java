@@ -41,7 +41,6 @@ package org.netbeans.modules.dlight.indicators.impl;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -55,9 +54,9 @@ import javax.swing.JEditorPane;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
+import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
-import org.netbeans.modules.dlight.indicators.graph.GraphConfig;
 import org.netbeans.modules.dlight.indicators.graph.GraphPanel;
 import org.netbeans.modules.dlight.indicators.graph.Legend;
 import org.netbeans.modules.dlight.indicators.graph.RepairPanel;
@@ -66,10 +65,12 @@ import org.netbeans.modules.dlight.indicators.graph.TimeSeriesPlot;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
+import org.netbeans.modules.dlight.indicators.graph.TimeSeriesDataContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.util.UIUtilities;
+import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 
 /**
  * Indicator capable of drawing one or more time series.
@@ -82,35 +83,44 @@ public final class TimeSeriesIndicator
 
     private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
     private final DataRowToTimeSeries dataRowHandler;
+    private final TimeSeriesDataContainer data;
     private final GraphPanel<TimeSeriesPlot, Legend> panel;
     private final TimeSeriesPlot graph;
     private final Legend legend;
     private final JButton button;
     private final int graphCount;
+    private int tickCounter;
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
-        this.graph = createGraph(configuration);
+        this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
+        this.data = new TimeSeriesDataContainer(accessor.getGranularity(configuration), accessor.getAggregation(configuration), graphCount, accessor.getLastNonNull(configuration));
+        this.data.put(0, new float[graphCount]);
+        this.graph = createGraph(configuration, data);
         this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
         this.button = new JButton(getDefaultAction());
-        button.setPreferredSize(new Dimension(120, 2 * button.getFont().getSize()));
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph, legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
-        this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
     }
 
-    private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration) {
+    private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration, TimeSeriesDataContainer data) {
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-        TimeSeriesPlot graph = new TimeSeriesPlot(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration));
-        graph.setBorder(BorderFactory.createLineBorder(GraphConfig.BORDER_COLOR));
-        Dimension graphSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        TimeSeriesPlot graph = new TimeSeriesPlot(accessor.getGraphScale(configuration), accessor.getLabelRenderer(configuration), accessor.getTimeSeriesDescriptors(configuration), data);
+        graph.setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
+        Dimension graphSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_GRAPH_HEIGHT));
         graph.setMinimumSize(graphSize);
         graph.setPreferredSize(graphSize);
-        Dimension valueAxisSize = new Dimension(GraphConfig.VERTICAL_AXIS_WIDTH, GraphConfig.GRAPH_HEIGHT);
+        Dimension valueAxisSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_Y_AXIS_HEIGHT));
         graph.getVerticalAxis().setMinimumSize(valueAxisSize);
         graph.getVerticalAxis().setPreferredSize(valueAxisSize);
-        Dimension timeAxisSize = new Dimension(GraphConfig.GRAPH_WIDTH, GraphConfig.HORIZONTAL_AXIS_HEIGHT);
+        Dimension timeAxisSize = new Dimension(
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_X_AXIS_WIDTH),
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_X_AXIS_HEIGHT));
         graph.getHorizontalAxis().setMinimumSize(timeAxisSize);
         graph.getHorizontalAxis().setPreferredSize(timeAxisSize);
         return graph;
@@ -160,9 +170,9 @@ public final class TimeSeriesIndicator
                 }
             });
         } else {
-            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()), false, GraphConfig.TEXT_COLOR);
+            final JEditorPane label = UIUtilities.createJEditorPane(getRepairActionProvider().getMessage(getRepairActionProvider().getValidationStatus()),
+                    false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
             UIThread.invoke(new Runnable() {
-
                 public void run() {
                     panel.setOverlay(label);
                 }
@@ -172,34 +182,38 @@ public final class TimeSeriesIndicator
 
     @Override
     protected void tick() {
-        float[] plotData = new float[graphCount];
-        Map<String, String> details = new HashMap<String, String>();
-        dataRowHandler.tick(plotData, details);
-        if (plotData != null) {
-            int oldLimit = graph.getUpperLimit();
-            int newLimit = graph.calculateUpperLimit(plotData);
-            while (oldLimit < newLimit) {
-                oldLimit *= 2;
-            }
-            graph.setUpperLimit(oldLimit);
-            graph.addData(plotData);
-        }
-        for (Map.Entry<String, String> entry : details.entrySet()) {
-            legend.updateDetail(entry.getKey(), entry.getValue());
-        }
+        ++tickCounter;
+        this.data.grow(tickCounter);
+        refresh();
     }
 
     @Override
-    public void updated(List<DataRow> data) {
-        for (DataRow row : data) {
+    public void updated(List<DataRow> rows) {
+        for (DataRow row : rows) {
             try {
-                dataRowHandler.addDataRow(row);
+                float[] plotData = dataRowHandler.getData(row);
+                if (plotData != null) {
+                    long realTimestamp = DataUtil.getTimestamp(row);
+                    this.data.put(0 <= realTimestamp? realTimestamp : 1000000000L * tickCounter, plotData);
+                }
             } catch (Exception ex) {
                 if (log.isLoggable(Level.WARNING)) {
                     log.log(Level.WARNING, "Exception while updating indicator", ex); // NOI18N
                 }
             }
         }
+    }
+
+    @Override
+    public void suggestRepaint() {
+        refresh();
+    }
+
+    private void refresh() {
+        for (Map.Entry<String, String> entry : dataRowHandler.getDetails().entrySet()) {
+            legend.updateDetail(entry.getKey(), entry.getValue());
+        }
+        graph.repaintAll();
     }
 
     @Override

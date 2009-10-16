@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -71,10 +71,13 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
@@ -200,7 +203,7 @@ public final class EarProjectGenerator {
                     ep.setProperty(EarProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
                     h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
                     ProjectManager.getDefault().saveProject(p);
-                    copyRequiredLibraries(h, refHelper, serverInstanceID, serverLibraryName);
+                    copyRequiredLibraries(h, refHelper, serverInstanceID, serverLibraryName, j2eeProfile);
                     return null;
                 }
             });
@@ -215,7 +218,7 @@ public final class EarProjectGenerator {
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh,
-            String serverInstanceId, String serverlibraryName) throws IOException {
+            String serverInstanceId, String serverlibraryName, Profile j2eeProfile) throws IOException {
 
         if (!h.isSharableProject()) {
             return;
@@ -225,6 +228,11 @@ public final class EarProjectGenerator {
 
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
+        }
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
+            }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
      }
@@ -652,6 +660,10 @@ public final class EarProjectGenerator {
                 "${"+EarProjectProperties.JAVAC_CLASSPATH+"}::${"+ // NOI18N
                 EarProjectProperties.JAR_CONTENT_ADDITIONAL+"}:${"+ // NOI18N
                 EarProjectProperties.RUN_CLASSPATH+"}"); // NOI18N
+
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
+        }
         
         EditableProperties privateEP = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 

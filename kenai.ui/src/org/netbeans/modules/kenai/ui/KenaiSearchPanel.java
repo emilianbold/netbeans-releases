@@ -55,7 +55,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
@@ -180,6 +184,13 @@ public class KenaiSearchPanel extends JPanel {
         } else {
             setBrowsePanels();
         }
+        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                kenaiFeaturedProjectsList=null;
+                kenaiRecentProjectsList=null;
+            }
+        });
     }
 
     private void setOpenPanels() {
@@ -706,6 +717,7 @@ public class KenaiSearchPanel extends JPanel {
         private Iterator<KenaiProject> projects;
         private String pattern;
         private JList kpList;
+        private static final int MAX_PROJECT_COUNT = 100;
 
         private boolean itemSelected = false;
 
@@ -720,9 +732,15 @@ public class KenaiSearchPanel extends JPanel {
 
         public void run() {
             if (projects != null) {
-                while(projects.hasNext()) {
+                int count=0;
+                while(projects.hasNext() && count<MAX_PROJECT_COUNT) {
                     KenaiProject project = projects.next();
-                    project.fetchProjectImage(false); // a project image will be needed, prepare it in advance
+                    count++;
+                    try {
+                        project.getProjectIcon(); // a project image will be needed, prepare it in advance
+                    } catch (KenaiException ex) { // problem with icon loading
+                        Logger.getLogger(KenaiSearchPanel.class.getName()).log(Level.INFO, "There are problems with getting a project icon - maybe see http://www.netbeans.org/issues/show_bug.cgi?id=172649", ex); //NOI18N
+                    }
                     if (PanelType.OPEN.equals(panelType)) {
                         addElementLater(new KenaiProjectSearchInfo(project, pattern));
                     } else if (PanelType.BROWSE.equals(panelType)) {

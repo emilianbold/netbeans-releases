@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  * @author  Tomas Mysik
  */
 public class PhpOptionsPanel extends JPanel {
-    private static final long serialVersionUID = 1092136352492432078L;
+    private static final long serialVersionUID = 109856412432078L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -88,7 +88,6 @@ public class PhpOptionsPanel extends JPanel {
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
         debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
-        phpUnitTextField.getDocument().addDocumentListener(documentListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -175,14 +174,6 @@ public class PhpOptionsPanel extends JPanel {
         stopAtTheFirstLineCheckBox.setSelected(debuggerStoppedAtTheFirstLine);
     }
 
-    public String getPhpUnit() {
-        return phpUnitTextField.getText();
-    }
-
-    public void setPhpUnit(String phpUnit) {
-        phpUnitTextField.setText(phpUnit);
-    }
-
     public String getPhpGlobalIncludePath() {
         String[] paths = GlobalIncludePathSupport.getInstance().encodeToStrings(
                 PathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
@@ -243,13 +234,6 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdLabel = new JLabel();
         debuggerSessionIdTextField = new JTextField();
         stopAtTheFirstLineCheckBox = new JCheckBox();
-        unitTestingSeparator = new JSeparator();
-        unitTestingLabel = new JLabel();
-        phpUnitLabel = new JLabel();
-        phpUnitTextField = new JTextField();
-        phpUnitBrowseButton = new JButton();
-        phpUnitSearchButton = new JButton();
-        phpUnitInfoLabel = new JLabel();
         globalIncludePathSeparator = new JSeparator();
         globalIncludePathLabel = new JLabel();
         useTheFollowingPathByDefaultLabel = new JLabel();
@@ -301,28 +285,7 @@ public class PhpOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(debuggerSessionIdLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(stopAtTheFirstLineCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_StopAtTheFirstLine"));
-        Mnemonics.setLocalizedText(unitTestingLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.unitTestingLabel.text"));
-        phpUnitLabel.setLabelFor(phpUnitTextField);
-
-
-        Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(phpUnitBrowseButton, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitBrowseButton.text"));
-        phpUnitBrowseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                phpUnitBrowseButtonActionPerformed(evt);
-            }
-        });
-        Mnemonics.setLocalizedText(phpUnitSearchButton, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitSearchButton.text"));
-        phpUnitSearchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                phpUnitSearchButtonActionPerformed(evt);
-            }
-        });
-        Mnemonics.setLocalizedText(phpUnitInfoLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitIncludePathInfo"));
-        phpUnitInfoLabel.setEnabled(false);
-
-
-        Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath")); // NOI18N
+        Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath"));
         useTheFollowingPathByDefaultLabel.setLabelFor(includePathList);
 
         Mnemonics.setLocalizedText(useTheFollowingPathByDefaultLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault")); // NOI18N
@@ -373,7 +336,7 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
+                .addContainerGap()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(stopAtTheFirstLineCheckBox)
                     .add(layout.createSequentialGroup()
@@ -398,34 +361,14 @@ public class PhpOptionsPanel extends JPanel {
                     .add(useTheFollowingPathByDefaultLabel)))
             .add(errorLabel)
             .add(layout.createSequentialGroup()
-                .add(unitTestingLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(unitTestingSeparator, GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
                 .add(globalIncludePathLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(phpUnitLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(phpUnitInfoLabel)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(phpUnitTextField, GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(phpUnitBrowseButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(phpUnitSearchButton))))
         );
 
         layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
 
         layout.linkSize(new Component[] {phpInterpreterBrowseButton, phpInterpreterSearchButton}, GroupLayout.HORIZONTAL);
-
-        layout.linkSize(new Component[] {phpUnitBrowseButton, phpUnitSearchButton}, GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
@@ -459,25 +402,13 @@ public class PhpOptionsPanel extends JPanel {
                 .add(stopAtTheFirstLineCheckBox)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(unitTestingLabel)
-                    .add(unitTestingSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(phpUnitLabel)
-                    .add(phpUnitTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(phpUnitSearchButton)
-                    .add(phpUnitBrowseButton))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpUnitInfoLabel)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
                     .add(globalIncludePathLabel)
                     .add(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(useTheFollowingPathByDefaultLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(addFolderButton)
                         .addPreferredGap(LayoutStyle.RELATED)
@@ -520,15 +451,6 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        unitTestingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.unitTestingLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitTextField.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        phpUnitSearchButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitSearchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleDescription")); // NOI18N
         globalIncludePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleName")); // NOI18N
         globalIncludePathLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleDescription")); // NOI18N
         useTheFollowingPathByDefaultLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.useTheFollowingPathByDefaultLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -580,38 +502,6 @@ public class PhpOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_phpInterpreterSearchButtonActionPerformed
 
-    private void phpUnitBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitBrowseButtonActionPerformed
-        Utils.browsePhpUnit(this, phpUnitTextField);
-    }//GEN-LAST:event_phpUnitBrowseButtonActionPerformed
-
-    private void phpUnitSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpUnitSearchButtonActionPerformed
-        String phpUnit = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
-
-            public List<String> detect() {
-                return PhpEnvironment.get().getAllPhpUnits();
-            }
-
-            public String getWindowTitle() {
-                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsTitle");
-            }
-
-            public String getListTitle() {
-                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnits");
-            }
-
-            public String getPleaseWaitPart() {
-                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpUnitsPleaseWaitPart");
-            }
-
-            public String getNoItemsFound() {
-                return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpUnitsFound");
-            }
-        });
-        if (phpUnit != null) {
-            phpUnitTextField.setText(phpUnit);
-        }
-    }//GEN-LAST:event_phpUnitSearchButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addFolderButton;
@@ -637,15 +527,8 @@ public class PhpOptionsPanel extends JPanel {
     private JLabel phpInterpreterLabel;
     private JButton phpInterpreterSearchButton;
     private JTextField phpInterpreterTextField;
-    private JButton phpUnitBrowseButton;
-    private JLabel phpUnitInfoLabel;
-    private JLabel phpUnitLabel;
-    private JButton phpUnitSearchButton;
-    private JTextField phpUnitTextField;
     private JButton removeButton;
     private JCheckBox stopAtTheFirstLineCheckBox;
-    private JLabel unitTestingLabel;
-    private JSeparator unitTestingSeparator;
     private JLabel useTheFollowingPathByDefaultLabel;
     private JCheckBox webBrowserCheckBox;
     // End of variables declaration//GEN-END:variables

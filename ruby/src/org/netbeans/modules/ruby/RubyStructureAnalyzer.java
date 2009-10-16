@@ -93,6 +93,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
+import org.netbeans.modules.ruby.elements.AstDynamicMethodElement;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstMethodElement;
@@ -117,6 +118,8 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyStructureAnalyzer implements StructureScanner {
+
+    private static final String ACTIVE_RECORD_NAMED_SCOPE = "ActiveRecord::NamedScope::Scope";//NOI18N
     
     private Set<AstClassElement> haveAccessModifiers;
     private List<AstElement> structure;
@@ -714,6 +717,44 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 requires.add(require.toString());
                             }
                         }
+                    }
+                }
+            } else if (AstUtilities.isNamedScope(node)) {
+                SymbolNode[] symbols = AstUtilities.getSymbols(node);
+                if (symbols.length > 0) {
+                    SymbolNode method = symbols[0];
+                    method.getName();
+                    AstDynamicMethodElement co = new AstDynamicMethodElement(result, method);
+                    co.setIn(in);
+                    co.setModifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC));
+                    // the return type of named scopes is a proxy
+                    if (in != null && in.length() > 0 && Character.isUpperCase(in.charAt(0))) {
+                        co.setType(new RubyType(ACTIVE_RECORD_NAMED_SCOPE, in)); //NOI18N
+                    }
+                    co.setHidden(true);
+                    if (parent != null) {
+                        parent.addChild(co);
+                    } else {
+                        structure.add(co);
+                    }
+                }
+            } else if (AstUtilities.isActiveRecordAssociation(node)) {
+                SymbolNode[] symbols = AstUtilities.getSymbols(node);
+                if (symbols.length > 0) {
+                    SymbolNode method = symbols[0];
+                    method.getName();
+                    AstDynamicMethodElement co = new AstDynamicMethodElement(result, method);
+                    co.setIn(in);
+                    co.setModifiers(EnumSet.of(Modifier.PUBLIC));
+                    String type = ActiveRecordAssociationFinder.getClassNameFor(node, method);
+                    if (type != null && type.length() > 0) {
+                        co.setType(RubyType.create(type)); //NOI18N
+                    }
+                    co.setHidden(true);
+                    if (parent != null) {
+                        parent.addChild(co);
+                    } else {
+                        structure.add(co);
                     }
                 }
             } else if ((includes != null) && name.equals("include")) {
@@ -1474,7 +1515,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 return content;
             }
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            // do nothing - see #154991
         }
 
         return DEFAULT_LABEL;

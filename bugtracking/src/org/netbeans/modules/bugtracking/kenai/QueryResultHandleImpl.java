@@ -61,21 +61,28 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
 
     private final Query query;
     private final String label;
-    private Filter filter;
+    private final Filter filter;
+    private final ResultType type;
 
     private static MessageFormat totalFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal"));       // NOI18N
     private static MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
     private static MessageFormat newFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNew"));           // NOI18N
 
-    QueryResultHandleImpl(Query query, String label, Filter filter) {
+    QueryResultHandleImpl(Query query, String label, Filter filter, ResultType type) {
         this.query = query;
         this.label = label;
         this.filter = filter;
+        this.type = type;
     }
 
     @Override
     public String getText() {
         return label;
+    }
+
+    @Override
+    public ResultType getResultType() {
+        return type;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -99,7 +106,8 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 return new QueryResultHandleImpl(
                         query,
                         totalFormat.format(new Object[] {issues != null ? issues.length : 0}, new StringBuffer(), null).toString(),
-                        Filter.getAllFilter(query));
+                        Filter.getAllFilter(query),
+                        ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NOT_SEEN:
 
@@ -113,7 +121,11 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 StringBuffer label = new StringBuffer();
                 unseenFormat.format(new Object[] {notIssues}, label, null);
                 
-                return new QueryResultHandleImpl(query, label.toString(), Filter.getNotSeenFilter());
+                return new QueryResultHandleImpl(
+                        query,
+                        label.toString(),
+                        Filter.getNotSeenFilter(),
+                        ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NEW:
 
@@ -127,11 +139,27 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 label = new StringBuffer();
                 newFormat.format(new Object[] {newIssues}, label, null);
 
-                return new QueryResultHandleImpl(query, label.toString(), Filter.getNewFilter(query));
+                return new QueryResultHandleImpl(
+                        query,
+                        label.toString(),
+                        Filter.getNewFilter(query),
+                        ResultType.NAMED_RESULT);
 
             default:
                 throw new IllegalStateException("wrong status value [" + status + "]"); // NOI18N
         }
+    }
+
+    static QueryResultHandle getAllChangedResult(Query query) {
+        int notIssues = 0;
+        Issue[] issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
+        notIssues = issues != null ? issues.length : 0;
+        
+        return new QueryResultHandleImpl(
+                query,
+                Integer.toString(notIssues),
+                Filter.getNotSeenFilter(),
+                ResultType.ALL_CHANGES_RESULT);
     }
 
 }

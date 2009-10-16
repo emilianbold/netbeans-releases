@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1998,10 +1998,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //        }
 //        //clearNativeFileContainer();
 //    }
+    private int preventMultiplyDiagnosticExceptionsGlobalNamespace = 0;
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
-        if (ns == null) {
+        if (ns == null && preventMultiplyDiagnosticExceptionsGlobalNamespace < 5) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get global namespace by key " + globalNamespaceUID)); // NOI18N
+            preventMultiplyDiagnosticExceptionsGlobalNamespace++;
         }
         return ns != null ? ns : FAKE_GLOBAL_NAMESPACE;
     }
@@ -2765,6 +2767,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private WeakReference<DeclarationContainer> weakDeclarationContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<DeclarationContainer>(null) : null;
+    private int preventMultiplyDiagnosticExceptionsDeclarationsSorage = 0;
     DeclarationContainer getDeclarationsSorage() {
         DeclarationContainer dc = null;
         WeakReference<DeclarationContainer> weak = null;
@@ -2778,8 +2781,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
-        if (dc == null && isValid()) {
+        if (dc == null && isValid() && preventMultiplyDiagnosticExceptionsDeclarationsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+            preventMultiplyDiagnosticExceptionsDeclarationsSorage++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
             weakDeclarationContainer = new WeakReference<DeclarationContainer>(dc);
@@ -2788,6 +2792,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private WeakReference<FileContainer> weakFileContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<FileContainer>(null) : null;
+    private int preventMultiplyDiagnosticExceptionsFileContainer = 0;
     FileContainer getFileContainer() {
         FileContainer fc = null;
         WeakReference<FileContainer> weak = null;
@@ -2801,8 +2806,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-        if (fc == null && isValid()) {
+        if (fc == null && isValid() && preventMultiplyDiagnosticExceptionsFileContainer < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
+            preventMultiplyDiagnosticExceptionsFileContainer++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && fc != null && weakFileContainer != null) {
             weakFileContainer = new WeakReference<FileContainer>(fc);
@@ -2811,6 +2817,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private WeakReference<GraphContainer> weakGraphContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<GraphContainer>(null) : null;
+    private int preventMultiplyDiagnosticExceptionsGraphStorage = 0;
     public final GraphContainer getGraphStorage() {
         GraphContainer gc = null;
         WeakReference<GraphContainer> weak = null;
@@ -2824,8 +2831,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
-        if (gc == null && isValid()) {
+        if (gc == null && isValid() && preventMultiplyDiagnosticExceptionsGraphStorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
+            preventMultiplyDiagnosticExceptionsGraphStorage++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && gc != null && weakGraphContainer != null) {
             weakGraphContainer = new WeakReference<GraphContainer>(gc);
@@ -2834,6 +2842,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private WeakReference<ClassifierContainer> weakClassifierContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<ClassifierContainer>(null) : null;
+    private int preventMultiplyDiagnosticExceptionsClassifierSorage = 0;
     final ClassifierContainer getClassifierSorage() {
         ClassifierContainer cc = null;
         WeakReference<ClassifierContainer> weak = null;
@@ -2847,8 +2856,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         cc = (ClassifierContainer) RepositoryUtils.get(classifierStorageKey);
-        if (cc == null && isValid()) {
+        if (cc == null && isValid() && preventMultiplyDiagnosticExceptionsClassifierSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
             DiagnosticExceptoins.register(new IllegalStateException("Failed to get ClassifierSorage by key " + classifierStorageKey)); // NOI18N
+            preventMultiplyDiagnosticExceptionsClassifierSorage++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && cc != null && weakClassifierContainer != null) {
             weakClassifierContainer = new WeakReference<ClassifierContainer>(cc);

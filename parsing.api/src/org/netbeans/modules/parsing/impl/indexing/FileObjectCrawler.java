@@ -102,15 +102,15 @@ public final class FileObjectCrawler extends Crawler {
                 }
                 for(FileObject parent : clusters.keySet()) {
                     Set<FileObject> cluster = clusters.get(parent);
-                    String relativePath = FileUtil.getRelativePath(root, parent);
-                    finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, new StringBuilder(relativePath));
+                    StringBuilder relativePath = getRelativePath(root, parent);
+                    finished = collect(cluster.toArray(new FileObject[cluster.size()]), root, resources, allResources, stats, entry, relativePath);
                     if (!finished) {
                         break;
                     }
                 }
             } else if (files.length == 1) {
-                String relativePath = FileUtil.getRelativePath(root, files[0].getParent());
-                finished = collect(files, root, resources, allResources, stats, entry, new StringBuilder(relativePath));
+                StringBuilder relativePath = getRelativePath(root, files[0].getParent());
+                finished = collect(files, root, resources, allResources, stats, entry, relativePath);
             }
         } else {
             finished = collect(root.getChildren(), root, resources, allResources, stats, entry, new StringBuilder());
@@ -149,9 +149,6 @@ public final class FileObjectCrawler extends Crawler {
             final Stats stats, final ClassPath.Entry entry,
             final StringBuilder relativePathBuilder)
     {
-        if (relativePathBuilder.length() > 0) {
-            relativePathBuilder.append('/'); //NOI18N
-        }
         int parentPathEnd = relativePathBuilder.length();
 
         for (FileObject fo : fos) {
@@ -163,12 +160,15 @@ public final class FileObjectCrawler extends Crawler {
                 continue;
             }
 
-            String relativePath = relativePathBuilder.append(fo.getNameExt()).toString();
+            relativePathBuilder.append(fo.getNameExt());
+            boolean folder = fo.isFolder();
+            if (folder) relativePathBuilder.append('/');
+            String relativePath = relativePathBuilder.toString();
             try {
                 if (entry != null && !entry.includes(relativePath)) {
                     continue;
                 }
-                if (fo.isFolder()) {
+                if (folder) {
                     if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, relativePathBuilder)) {
                         return false;
                     }
@@ -190,6 +190,14 @@ public final class FileObjectCrawler extends Crawler {
         }
 
         return true;
+    }
+
+    private StringBuilder getRelativePath(FileObject folder, FileObject fo) {
+        StringBuilder relativePath = new StringBuilder(FileUtil.getRelativePath(folder, fo));
+        if (relativePath.length() > 0) {
+            relativePath.append('/'); //NOI18N
+        }
+        return relativePath;
     }
 
     private static final class Stats {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,20 +41,16 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -67,7 +63,6 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,7 +70,7 @@ import org.openide.util.NbBundle;
  * @author Martin Adamek
  */
 
-public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIterator {
+public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
@@ -135,6 +130,20 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
     }
     
     public Set instantiate() throws java.io.IOException {
+        assert true : "should never be called, instantiate(ProgressHandle) should be called instead";
+        return null;
+    }
+
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        try {
+            handle.start();
+            return instantiateWProgress(handle);
+        } finally {
+            handle.finish();
+        }
+    }
+
+    private Set instantiateWProgress(ProgressHandle handle) throws IOException {
         PersistenceUnit punit = null;
         PUDataObject pud = null;
         LOG.fine("Instantiating...");
@@ -145,16 +154,18 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 Provider selectedProvider=descriptor.getSelectedProvider();
                 lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
+                    handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                     Util.addLibraryToProject(project, lib);
                 }
             }
         } else {
             lib = PersistenceLibrarySupport.getLibrary(descriptor.getSelectedProvider());
             if (lib != null){
+                handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                 Util.addLibraryToProject(project, lib);
             }
         }
-        //
+        handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_CreatePU"));
         String version = lib!=null ? PersistenceUtils.getJPAVersion(lib) : null;
         try{
             LOG.fine("Retrieving PUDataObject");

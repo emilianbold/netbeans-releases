@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -447,7 +447,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     public void treeCollapsed(TreeExpansionEvent event) {
         assert SwingUtilities.isEventDispatchThread();
 
-        log ("treeExpanded", event);
+        log ("treeCollapsed", event);
         
         //FixedHeightLayoutCache tests if the event is null.
         //Don't know how it could be, but there's probably a reason...

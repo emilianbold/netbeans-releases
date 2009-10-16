@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -61,11 +61,13 @@ import java.util.prefs.Preferences;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -73,6 +75,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -93,6 +96,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.MimeTypeInitializer;
@@ -107,6 +111,8 @@ import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightsLayerFilter;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -930,6 +936,30 @@ public class NbEditorKit extends ExtKit implements Callable {
         if (defaultColoring != null) {
             defaultColoring.getFont().getMaxCharBounds(new FontRenderContext(null, true, true));
         }
+
+        // initialize HighlightsLayers (#172381)
+        Document doc = createDefaultDocument();
+        JEditorPane pane = new JEditorPane() {
+            public @Override void updateUI() {
+                // use fake UI, which will not attempt to install anything - see issue #174408
+                setUI(new BaseTextUI() {
+                    public @Override void installUI(JComponent c) {
+                        // ignore
+                    }
+                    public @Override void uninstallUI(JComponent c) {
+                        // ignore
+                    }
+                });
+            }
+        };
+        pane.setDocument(doc);
+        HighlightingManager.getInstance().getHighlights(pane, HighlightsLayerFilter.IDENTITY);
+
+        // initialize FoldHierarchy (#172381)
+        FoldHierarchy.get(pane).getRootFold();
+
+        // initialize popup menu actions providers (#174175)
+        PopupMenuActionsProvider.getPopupMenuItems(getContentType());
 
         return null;
     }

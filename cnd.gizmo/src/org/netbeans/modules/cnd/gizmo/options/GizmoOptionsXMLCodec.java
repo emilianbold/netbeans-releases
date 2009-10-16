@@ -54,6 +54,7 @@ import org.xml.sax.Attributes;
 /**
  * Version history:
  *
+ * 3: tools not stored. New configuration name CONFIGURATION_NAME_ELEMENT
  * 2: storing tool ids instead of toolnames
  * 1: initial version
  */
@@ -65,13 +66,14 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
 //    private final static String CPU_ELEMENT = "cpu"; // NOI18N
 //    private final static String MEMORY_ELEMENT = "memory"; // NOI18N
 //    private final static String SYNCHRONIZATION_ELEMENT = "synchronization"; // NOI18N
-    private final static String DATA_PROVIDER_ELEMENT = "dataprovider"; // NOI18N
-    private final static String TOOL_ELEMENT = "tool"; // NOI18N
-    private final static String TOOL_NAME_ATTRIBUTE = "name";//NOI18N
-    private final static String TOOL_ENABLED_ATTRIBUTE = "enabled";//NOI18N
+//    private final static String DATA_PROVIDER_ELEMENT = "dataprovider"; // NOI18N
+    private final static String CONFIGURATION_NAME_ELEMENT = "configurationname"; // NOI18N
+//    private final static String TOOL_ELEMENT = "tool"; // NOI18N
+//    private final static String TOOL_NAME_ATTRIBUTE = "name";//NOI18N
+//    private final static String TOOL_ENABLED_ATTRIBUTE = "enabled";//NOI18N
     public final static String TRUE_VALUE = "true"; // NOI18N
     public final static String FALSE_VALUE = "false"; // NOI18N
-    private final static int thisversion = 2;
+    private final static int thisversion = 3;
     private int version = 0; // version of read gizmo xml descriptor
 
     public GizmoOptionsXMLCodec(GizmoOptionsImpl gizmoOptions) {
@@ -100,42 +102,42 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         gizmoOptions.clearChanged();
     }
 
-    private String mapOldNameToId(String name) {
-        String id = name;
-        if (name.equals("Thread Microstates") || name.equals("ThreadMap Tool")) { // NOI18N
-            id = "dlight.tool.threadmap"; // NOI18N
-        }
-        if (name.equals("Thread usage") || name.equals("Thread Usage") || name.equals("Sync Tool")) { // NOI18N
-            id = "dlight.tool.sync"; // NOI18N
-        }
-        else if (name.equals("CPU Monitor") || name.equals("CPU Usage")) { // NOI18N
-            id = "dlight.tool.cpu"; // NOI18N
-        }
-        else if (name.equals("I/O usage") || name.equals("Read/Write Monitor Tool")) { // NOI18N
-            id = "dlight.tool.fops"; // NOI18N
-        }
-        else if (name.equals("Memory Usage") || name.equals("Memory Tool")) { // NOI18N
-            id = "dlight.tool.mem"; // NOI18N
-        }
-        else if (name.equals("Thread Analysis Tool") || name.equals("Thread Analisys Tool")) { // NOI18N
-            id = "dlight.tool.tha"; // NOI18N
-        }
-        return id;
-    }
+//    private String mapOldNameToId(String name) {
+//        String id = name;
+//        if (name.equals("Thread Microstates") || name.equals("ThreadMap Tool")) { // NOI18N
+//            id = "dlight.tool.threadmap"; // NOI18N
+//        }
+//        if (name.equals("Thread usage") || name.equals("Thread Usage") || name.equals("Sync Tool")) { // NOI18N
+//            id = "dlight.tool.sync"; // NOI18N
+//        }
+//        else if (name.equals("CPU Monitor") || name.equals("CPU Usage")) { // NOI18N
+//            id = "dlight.tool.cpu"; // NOI18N
+//        }
+//        else if (name.equals("I/O usage") || name.equals("Read/Write Monitor Tool")) { // NOI18N
+//            id = "dlight.tool.fops"; // NOI18N
+//        }
+//        else if (name.equals("Memory Usage") || name.equals("Memory Tool")) { // NOI18N
+//            id = "dlight.tool.mem"; // NOI18N
+//        }
+//        else if (name.equals("Thread Analysis Tool") || name.equals("Thread Analisys Tool")) { // NOI18N
+//            id = "dlight.tool.tha"; // NOI18N
+//        }
+//        return id;
+//    }
 
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
         if (log.isLoggable(Level.FINEST)) {
             log.log(Level.FINEST, "start element with the name " + element);//NOI18N
         }
-        if (element.equals(TOOL_ELEMENT)) {
-            String toolName = atts.getValue(TOOL_NAME_ATTRIBUTE);
-            boolean b = atts.getValue(TOOL_ENABLED_ATTRIBUTE).equals(TRUE_VALUE);
-            if (version == 1) {
-                toolName = mapOldNameToId(toolName);
-            }
-            gizmoOptions.setValueByName(toolName, b);
-        }
+//        if (element.equals(TOOL_ELEMENT)) {
+//            String toolName = atts.getValue(TOOL_NAME_ATTRIBUTE);
+//            boolean b = atts.getValue(TOOL_ENABLED_ATTRIBUTE).equals(TRUE_VALUE);
+//            if (version == 1) {
+//                toolName = mapOldNameToId(toolName);
+//            }
+//            gizmoOptions.setValueByName(toolName, b);
+//        }
     }
 
     // interface XMLDecoder
@@ -146,10 +148,15 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         if (element.equals(PROFILE_ON_RUN_ELEMENT)) {
             boolean b = currentText.equals(TRUE_VALUE);
             gizmoOptions.getProfileOnRun().setValue(b);
-        }else if (element.equals(DATA_PROVIDER_ELEMENT)) {
-            int i = new Integer(currentText).intValue();
-            gizmoOptions.getDataProvider().setValue(i);
         }
+        else if (element.equals(CONFIGURATION_NAME_ELEMENT)) {
+            String confName = currentText;
+            gizmoOptions.setPreferredDLightConfiguration(confName);
+        }
+//        else if (element.equals(DATA_PROVIDER_ELEMENT)) {
+//            int i = new Integer(currentText).intValue();
+//            gizmoOptions.getDataProvider().setValue(i);
+//        }
     }
     
 
@@ -158,19 +165,22 @@ public class GizmoOptionsXMLCodec extends XMLDecoder implements XMLEncoder {
         if (gizmoOptions.getProfileOnRun().getModified()) {
             xes.element(PROFILE_ON_RUN_ELEMENT, "" + gizmoOptions.getProfileOnRun().getValue()); // NOI18N
         }
-        for (String toolName : gizmoOptions.getNames()) {
-            BooleanConfiguration conf = gizmoOptions.getConfigurationByName(toolName);
-           //if (!gizmoOptions.isDefaultValue(toolName) &&  conf.getModified()) {
-            if (gizmoOptions.isConfigurationModified(toolName)){
-                AttrValuePair[] attributes = new AttrValuePair[2];
-                attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
-                attributes[1] = new AttrValuePair(TOOL_ENABLED_ATTRIBUTE, "" + conf.getValue());
-                xes.element(TOOL_ELEMENT, attributes);
-          }
+        if (gizmoOptions.getDLightConfiguration() != null) {
+            xes.element(CONFIGURATION_NAME_ELEMENT, "" + gizmoOptions.getDLightConfiguration().getConfigurationName()); // NOI18N
         }
-        if (gizmoOptions.getDataProvider().getModified()) {
-            xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N
-        }
+//        for (String toolName : gizmoOptions.getNames()) {
+//            BooleanConfiguration conf = gizmoOptions.getConfigurationByName(toolName);
+//           //if (!gizmoOptions.isDefaultValue(toolName) &&  conf.getModified()) {
+//            if (gizmoOptions.isConfigurationModified(toolName)){
+//                AttrValuePair[] attributes = new AttrValuePair[2];
+//                attributes[0] = new AttrValuePair(TOOL_NAME_ATTRIBUTE, toolName);
+//                attributes[1] = new AttrValuePair(TOOL_ENABLED_ATTRIBUTE, "" + conf.getValue());
+//                xes.element(TOOL_ELEMENT, attributes);
+//          }
+//        }
+//        if (gizmoOptions.getDataProvider().getModified()) {
+//            xes.element(DATA_PROVIDER_ELEMENT, "" + gizmoOptions.getDataProvider().getValue()); // NOI18N
+//        }
         xes.elementClose(GizmoOptionsImpl.PROFILE_ID);
     }
 

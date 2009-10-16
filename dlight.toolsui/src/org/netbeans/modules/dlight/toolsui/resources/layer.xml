@@ -3,10 +3,9 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Tools">
-            <file name="org-netbeans-modules-dlight-toolsui-ToolsCustomizerAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.libraries.resources.Bundle"/>
-                <attr name="delegate" newvalue="org.netbeans.modules.dlight.toolsui.ToolsCustomizerAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.toolsui.Bundle#CTL_ProfilerToolsAction"/>
+            <file name="org-netbeans-modules-dlight-toolsui-api-ToolsCustomizerAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.toolsui.api.Bundle#CTL_ProfilerToolsAction1"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="true"/>
             </file>
@@ -16,7 +15,7 @@
     <folder name="Menu">
         <folder name="Tools">
             <file name="ToolsCustomizerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-dlight-toolsui-ToolsCustomizerAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-dlight-toolsui-api-ToolsCustomizerAction.instance"/>
                 <attr name="position" intvalue="501"/>
             </file>
         </folder>

@@ -178,6 +178,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             CompileWorker.ParsingOutput compileResult = null;
                             for (CompileWorker w : WORKERS) {
                                 compileResult = w.compile(compileResult, context, javaContext, toCompile);
+                                if (compileResult == null || context.isCancelled()) {
+                                    return null; // cancelled, IDE is sutting down
+                                }
                                 if (compileResult.success) {
                                     break;
                                 }
@@ -190,7 +193,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             _rt.removeAll(compileResult.addedTypes);
                             compileResult.addedTypes.retainAll(removedTypes); //Changed types
 
-                            if (!context.isSupplementaryFilesIndexing()) {
+                            if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
                                 compileResult.modifiedTypes.addAll(_rt);
                                 Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
                                 Set<URL> urls = root2Rebuild.get(context.getRootURI());
@@ -263,7 +266,13 @@ public class JavaCustomIndexer extends CustomIndexer {
             try {
                 File file = new File(indexable.getURL().toURI().getPath());
                 return new CompileTuple(FileObjects.fileFileObject(file, root, null, javaContext.encoding), indexable);
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            } catch (AssertionError ae) {
+                //Add more debug messages
+                throw Exceptions.attachMessage(ae, "Root FileObject: " + FileUtil.getFileDisplayName(context.getRoot()) +   //NOI18N
+                                                   " Indexable URL: " + indexable.getURL() +    //NOI18N
+                                                   " Normalized root: " + FileUtil.normalizeFile(root).getAbsolutePath());  //NOI18N
+            }
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
         return fo != null ? new CompileTuple(SourceFileObject.create(fo, context.getRoot()), indexable) : null;

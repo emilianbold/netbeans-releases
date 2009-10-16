@@ -107,8 +107,10 @@ made subject to such option by the copyright holder.
     <xsd:complexType name="libraryType">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
-        <!-- #134642 below two attributes are obsolete since NB 6.5
-             and can be removed in after 6.5 release; see issue for more details -->
+        <!-- below two attributes are obsolete in releases NB 6.5 to NB 6.7.1 (issue #134642)
+             but from NB 6.8 'dirs' attribute is used again to resolve issue #163971.
+             in next version of project.xml both these attributes should be removed
+             and #163971 should be resolved by introducing a dedicated field for it -->
                 <xsd:attribute name="files" use="optional" type="xsd:integer"/>
                 <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
             </xsd:extension>

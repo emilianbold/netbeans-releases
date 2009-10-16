@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -99,14 +99,14 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public boolean canWrite(File file) {
-        if (file.canWrite()) {
+        if (Utils.canWrite(file)) {
             return true;
         }
-        if (!file.exists()) {
+        if (!Utils.exists(file)) {
             return false;
         }
         // can be optimized by taking out local history from the search
-        return getInterceptor(file, false).isMutable(file);
+        return getInterceptor(file, false, "isMutable").isMutable(file);        // NOI18N
     }
 
     @Override
@@ -114,7 +114,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName) ||           
            ATTRIBUTE_REFRESH.equals(attrName))
         {
-            return getInterceptor(file, file.isDirectory()).getAttribute(attrName);
+            return getInterceptor(file, file.isDirectory(), "getAttribute").getAttribute(attrName); // NOI18N
         } else if (ATTRIBUTE_VCS_MANAGED.equals(attrName)) {
             return master.getOwner(file) != null;
         } else {
@@ -128,11 +128,20 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     public void fileChanged(FileEvent fe) {
         removeFromDeletedFiles(fe.getFile());
-        getInterceptor(fe).afterChange();
+        getInterceptor(fe, "afterChange").afterChange();
     }
 
     public void beforeChange(FileObject fo) {
-        getInterceptor(FileUtil.toFile(fo), fo.isFolder()).beforeChange();
+        getInterceptor(FileUtil.toFile(fo), fo.isFolder(), "beforeChange").beforeChange(); // NOI18N
+    }
+
+    private boolean needsLH(String... methodNames) {
+        for (String methodName : methodNames) {
+            if(master.needsLocalHistory(methodName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ==================================================================================================
@@ -155,13 +164,13 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     public DeleteHandler getDeleteHandler(File file) {
         removeFromDeletedFiles(file);
-        DelegatingInterceptor dic = getInterceptor(file, false);
+        DelegatingInterceptor dic = getInterceptor(file, false, "beforeDelete", "doDelete"); // NOI18N
         return dic.beforeDelete() ? dic : null;
     }
 
     public void fileDeleted(FileEvent fe) {
         removeFromDeletedFiles(fe.getFile());
-        getInterceptor(fe).afterDelete();
+        getInterceptor(fe, "afterDelete").afterDelete(); // NOI18N
     }
 
     // ==================================================================================================
@@ -178,7 +187,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         File file = FileUtil.toFile(parent);
         if (file == null) return;
         file = new File(file, name);
-        DelegatingInterceptor dic = getInterceptor(file, isFolder);
+        DelegatingInterceptor dic = getInterceptor(file, isFolder, "beforeCreate"); // NOI18N
         if (dic.beforeCreate()) {
             filesBeingCreated.put(new FileEx(parent, name, isFolder), dic);
         }
@@ -205,7 +214,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
         removeFromDeletedFiles(fe.getFile());
         if(interceptor == null) {
-            interceptor = getInterceptor(fe);
+            interceptor = getInterceptor(fe, "afterCreate");                    // NOI18N
         }   
         interceptor.afterCreate();
     }
@@ -215,7 +224,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     // ==================================================================================================
 
     public IOHandler getMoveHandler(File from, File to) {
-        DelegatingInterceptor dic = getInterceptor(from, to);
+        DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
         return dic.beforeMove() ? dic : null;
     }
 
@@ -226,7 +235,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     public void fileRenamed(FileRenameEvent fe) {
         removeFromDeletedFiles(fe.getFile());
-        getInterceptor(fe).afterMove();
+        getInterceptor(fe, "afterMove").afterMove();                            // NOI18N
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -240,17 +249,17 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      * @param fo a FileObject
      */
     public void fileLocked(FileObject fo) {
-        getInterceptor(new FileEvent(fo)).beforeEdit();
+        getInterceptor(new FileEvent(fo), "beforeEdit").beforeEdit();           // NOI18N
     }
 
-    private DelegatingInterceptor getInterceptor(FileEvent fe) {
+    private DelegatingInterceptor getInterceptor(FileEvent fe, String... forMethods) {
         if (master == null) return nullDelegatingInterceptor;
         FileObject fo = fe.getFile();
         if (fo == null) return nullDelegatingInterceptor;
         File file = FileUtil.toFile(fo);
         if (file == null) return nullDelegatingInterceptor;
 
-        VersioningSystem lh = master.getLocalHistory(file);
+        VersioningSystem lh = needsLH(forMethods) ? master.getLocalHistory(file) : null;
         VersioningSystem vs = master.getOwner(file);
 
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : null;
@@ -276,25 +285,25 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
     }
 
-    private DelegatingInterceptor getInterceptor(File file, boolean isDirectory) {
+    private DelegatingInterceptor getInterceptor(File file, boolean isDirectory, String... forMethods) {
         if (file == null || master == null) return nullDelegatingInterceptor;
 
         VersioningSystem vs = master.getOwner(file);
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullVCSInterceptor;
 
-        VersioningSystem lhvs = master.getLocalHistory(file);
+        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file) : null;
         VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullVCSInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
     }
 
-    private DelegatingInterceptor getInterceptor(File from, File to) {
+    private DelegatingInterceptor getInterceptor(File from, File to, String... forMethods) {
         if (from == null || to == null) return nullDelegatingInterceptor;
 
         VersioningSystem vs = master.getOwner(from);
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullVCSInterceptor;
 
-        VersioningSystem lhvs = master.getLocalHistory(from);
+        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(from) : null;
         VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullVCSInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);
@@ -473,7 +482,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
                             }
                         }
                     }
-                    if (file.exists()) {
+                    if (Utils.exists(file)) {
                         deletedFiles.add(file);
                     } else {
                         deletedFiles.remove(file);

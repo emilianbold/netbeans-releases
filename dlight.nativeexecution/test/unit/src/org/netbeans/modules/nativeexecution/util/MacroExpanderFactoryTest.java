@@ -41,18 +41,22 @@ package org.netbeans.modules.nativeexecution.util;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,16 +65,16 @@ import org.openide.util.Exceptions;
  */
 public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
-    public static Test suite() {
-        return new NativeExecutionBaseTestSuite(MacroExpanderFactoryTest.class);
-    }
-
     public MacroExpanderFactoryTest(String name) {
         super(name);
     }
 
     public MacroExpanderFactoryTest(String name, ExecutionEnvironment env) {
         super(name, env);
+    }
+
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(MacroExpanderFactoryTest.class);
     }
 
     @BeforeClass
@@ -94,9 +98,11 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     /**
      * Test of getExpander method, of class MacroExpanderFactory.
      */
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
-        System.out.println("getExpander"); // NOI18N
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
 
         Map<String, String> myenv = new HashMap<String, String>();
@@ -109,28 +115,63 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
         System.out.println(myenv.toString());
 
+        String mspec = NativeExecutionTestSupport.getMspec(execEnv);
+        
+        String os;
+
+        int mpos = mspec.indexOf('-');
+        
+        if (mpos > 0) {
+            os = mspec.substring(mpos + 1);
+            if (os.equals("S2")) {
+                os = "SunOS";
+            }
+        } else {
+            os = "Cannot guess OS from mspec";
+        }
+
         try {
-            System.out.println("$osname-${platform}$_isa -> " + expander.expandPredefinedMacros("$osname-$platform$_isa")); // NOI18N
+            String pattern = "$osname-${platform}$_isa";
+            String result = expander.expandPredefinedMacros(pattern);
+            System.out.println(pattern + " -> " + result); // NOI18N
+            assertTrue(result + " should be started with " + os, result.startsWith(os));
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-//    @Test
+    @org.junit.Test
     public void testPath() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost"); // NOI18N
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 0); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable("/bin/env"); // NOI18N
-        npb.addEnvironmentVariable("PATH", "/firstPath:$PATH:${ZZZ}_${platform}"); // NOI18N
-        npb.addEnvironmentVariable("PATH", "$PATH:/secondPath"); // NOI18N
-        npb.addEnvironmentVariable("XXX", "It WORKS!"); // NOI18N
+        MacroMap env = npb.getEnvironment();
+        env.prependPathVariable("PATH", "/firstPath"); // NOI18N
+        env.appendPathVariable("PATH", "${ZZZ}_${platform}"); // NOI18N
+        env.appendPathVariable("PATH", "/secondPath"); // NOI18N
+        env.put("XXX", "It WORKS!"); // NOI18N
 
         try {
             Process p = npb.call();
-            String pout = ProcessUtils.readProcessOutputLine(p);
-            System.out.println("Output is: " + pout); // NOI18N
             int result = p.waitFor();
             assertEquals(0, result);
+
+            List<String> pout = ProcessUtils.readProcessOutput(p);
+            int ok = 0;
+
+            for (String line : pout) {
+                if (line.startsWith("PATH")) {
+                    if (line.contains("firstPath") && line.contains("secondPath")) {
+                        ok++;
+                    }
+                } else if (line.startsWith("XXX")) {
+                    if (line.contains("It WORKS!")) {
+                        ok++;
+                    }
+                }
+            }
+
+            assertEquals(2, ok);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {

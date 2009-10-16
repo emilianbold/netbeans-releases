@@ -40,10 +40,9 @@ package org.netbeans.modules.dlight.fops;
 
 import java.awt.Color;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
@@ -54,13 +53,14 @@ import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.ui.StackRenderer;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
+import org.netbeans.modules.dlight.indicators.Aggregation;
 import org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.dlight.util.BytesFormatter;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
-import org.netbeans.modules.dlight.util.ValueFormatter;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,16 +73,6 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
 
     private static final int INDICATOR_POSITION = 400;
 
-    private static final int BINARY_ORDER = 1024;
-    private static final int DECIMAL_ORDER = 1000;
-    private static final String[] SUFFIXES = {"b", "K", "M", "G", "T"};//NOI18N
-
-    private static final NumberFormat INT_FORMAT = NumberFormat.getIntegerInstance(Locale.US);
-    private static final NumberFormat FRAC_FORMAT = NumberFormat.getNumberInstance(Locale.US);
-    static {
-        FRAC_FORMAT.setMaximumFractionDigits(1);
-    }
-
     public FopsToolConfigurationProvider() {
     }
 
@@ -90,7 +80,7 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         final String toolName = getMessage("Tool.Name"); // NOI18N
         final DLightToolConfiguration toolConfiguration =
                 new DLightToolConfiguration(ID, toolName);
-
+        toolConfiguration.setIcon("org/netbeans/modules/dlight/fops/resources/i_o_usage_16.png");//NOI18N
         Column opColumn = new Column("operation", String.class, getMessage("Column.OpType"), null); // NOI18N
         Column fileColumn = new Column("file", String.class, getMessage("Column.Filename"), null); // NOI18N
         Column sizeColumn = new Column("size", Long.class, getMessage("Column.Size"), null); // NOI18N
@@ -148,20 +138,18 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         TimeSeriesIndicatorConfiguration indicatorConfiguration = new TimeSeriesIndicatorConfiguration(
                 indicatorMetadata, INDICATOR_POSITION);
         indicatorConfiguration.setTitle(getMessage("Indicator.Title")); // NOI18N
-        indicatorConfiguration.setGraphScale(BINARY_ORDER);
+        indicatorConfiguration.setGraphScale(1024);
         indicatorConfiguration.addTimeSeriesDescriptors(
                 new TimeSeriesDescriptor(new Color(0xE7, 0x6F, 0x00), getMessage("Indicator.Write"), TimeSeriesDescriptor.Kind.LINE), // NOI18N
                 new TimeSeriesDescriptor(new Color(0xFF, 0xC7, 0x26), getMessage("Indicator.Read"), TimeSeriesDescriptor.Kind.LINE)); // NOI18N
         indicatorConfiguration.setDataRowHandler(
                 new DataRowToFops(opColumn, sizeColumn, fileCountColumn));
+        indicatorConfiguration.setAggregation(Aggregation.SUM);
+        indicatorConfiguration.setLastNonNull(false);
         indicatorConfiguration.addDetailDescriptors(
                 new DetailDescriptor(FILE_COUNT_ID, getMessage("Indicator.FileCount"), String.valueOf(0))); // NOI18N
         indicatorConfiguration.setActionDisplayName(getMessage("Indicator.Action")); // NOI18N
-        indicatorConfiguration.setLabelFormatter(new ValueFormatter() {
-            public String format(int value) {
-                return formatValue(value);
-            }
-        });
+        indicatorConfiguration.setLabelFormatter(new BytesFormatter());
 
         AdvancedTableViewVisualizerConfiguration tableConfiguration =
                 new AdvancedTableViewVisualizerConfiguration(detailsMetadata, fileColumn.getColumnName(), fileColumn.getColumnName());
@@ -182,28 +170,11 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
         return NbBundle.getMessage(FopsToolConfigurationProvider.class, name);
     }
 
-    private static String formatValue(long value) {
-        double dbl = value;
-        int i = 0;
-        while (BINARY_ORDER <= dbl && i + 1 < SUFFIXES.length) {
-            dbl /= BINARY_ORDER;
-            ++i;
-        }
-        if (DECIMAL_ORDER <= dbl && i + 1 < SUFFIXES.length) {
-            dbl /= BINARY_ORDER;
-            ++i;
-        }
-        NumberFormat nf = dbl < 10? FRAC_FORMAT : INT_FORMAT;
-        return nf.format(dbl) + SUFFIXES[i];
-    }
-
     private static class DataRowToFops implements DataRowToTimeSeries {
 
         private final String opColumn;
         private final String sizeColumn;
         private final String fileCountColumn;
-        private long reads;
-        private long writes;
         private long fileCount;
 
         public DataRowToFops(Column opColumn, Column sizeColumn, Column fileCountColumn) {
@@ -212,8 +183,14 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
             this.fileCountColumn = fileCountColumn.getColumnName();
         }
 
-        public synchronized void addDataRow(DataRow row) {
+        @Override
+        public float[] getData(DataRow row) {
             String op = row.getStringValue(opColumn);
+            if (op == null) {
+                return null;
+            }
+            int reads = 0;
+            int writes = 0;
             if ("read".equals(op) || "write".equals(op)) { // NOI18N
                 int bytes = DataUtil.toInt(row.getData(sizeColumn));
                 if ("read".equals(op)) { // NOI18N
@@ -226,14 +203,12 @@ public class FopsToolConfigurationProvider implements DLightToolConfigurationPro
             if (0 <= newFileCount) {
                 fileCount = newFileCount;
             }
+            return new float[]{writes, reads};
         }
 
-        public synchronized void tick(float[] data, Map<String,String> details) {
-            data[0] = writes;
-            data[1] = reads;
-            details.put(FILE_COUNT_ID, String.valueOf(fileCount));
-            writes = 0;
-            reads = 0;
+        @Override
+        public Map<String, String> getDetails() {
+            return Collections.singletonMap(FILE_COUNT_ID, String.valueOf(fileCount));
         }
     }
 }

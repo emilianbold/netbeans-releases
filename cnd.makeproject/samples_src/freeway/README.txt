@@ -39,10 +39,14 @@ Description:
 
 Supported Platforms:
     Solaris:
-        The primary platform during the GTK port was Solaris 10. A verification
-        build was done on a prerelease version of Solaris 11. All required include
-        directories and libraries should be included in Solaris.
+        The primary platform during the GTK port was Solaris 10. 
+        GtkFreeway builds with either Sun Studio or GNU tool chains.
 
+    OpenSolaris:
+	 Additional required packages:
+          SUNWgnome-common-devel
+          SUNWxinc
+          SUNWxorg-headers
         GtkFreeway builds with either Sun Studio or GNU tool chains.
 
     Linux:

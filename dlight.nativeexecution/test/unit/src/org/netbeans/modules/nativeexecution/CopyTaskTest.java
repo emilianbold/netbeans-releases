@@ -44,13 +44,17 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import junit.framework.Test;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,6 +67,14 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         super(name);
     }
 
+    public CopyTaskTest(String name, ExecutionEnvironment execEnv) {
+        super(name, execEnv);
+    }
+
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(CopyTaskTest.class);
+    }
+
     @BeforeClass
     public static void setUpClass() throws Exception {
     }
@@ -71,11 +83,13 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
     public static void tearDownClass() throws Exception {
     }
 
+    @Before
     @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @After
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -84,8 +98,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
     /**
      * Test of uploadFile method, of class CopyTask.
      */
-    @Test
-    public void testCopyToLocal() throws Exception {
+    public void __testCopyToLocal() throws Exception {
         System.out.println("copyTo"); // NOI18N
         File srcFile = createTempFile("src", null, false); // NOI18N
         writeFile(srcFile, "123\n456\n789"); // NOI18N
@@ -113,157 +126,12 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         if (result != 0) {
             System.out.println("Error: " + err.toString()); // NOI18N
         }
-
-
-//        boolean showProgress = false;
-//        Integer result = -1;
-//            StringBuilder err = new StringBuilder();
-//
-//            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
-//                    getTestExecutionEnvironment(), srcFileName, dstFileName, 700, err);
-//
-////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
-////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
-//            if (task == null) {
-//                System.out.println("ERROR: " + err);
-//                return;
-//            }
-//
-//            task.submit(true, false);
-//
-//            try {
-//                result = task.get();
-//            } catch (ExecutionException ex) {
-////                Exceptions.printStackTrace(ex);
-//            }
-//            System.out.println("RESULT == " + result);
-//
-//            if (result != 0) {
-//                System.out.println("ERROR is '" + err + "'");
-//            }
-//        CopyTask task = null;
-//
-//        try {
-////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//
-//            try {
-//                result = task.get();
-//            } catch (ExecutionException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//            System.out.println("DONE!!!! " + result);
-//
-//            if (result != 0) {
-//                System.out.println(task.getError());
-//            }
-//        } catch (FileNotFoundException ex) {
-//            ex.printStackTrace();
-//        }
-//        CopyTask task = null;
-//
-//        try {
-////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//
-//            try {
-//                result = task.get();
-//            } catch (ExecutionException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//            System.out.println("DONE!!!! " + result);
-//
-//            if (result != 0) {
-//                System.out.println(task.getError());
-//            }
-//        } catch (FileNotFoundException ex) {
-//            ex.printStackTrace();
-//        }
-//        Thread.sleep(500);
-    // TODO review the generated test code and remove the default call to fail.
-//    fail("The test case is a prototype.");
-
-
-//        boolean showProgress = false;
-//        Integer result = -1;
-//            StringBuilder err = new StringBuilder();
-//
-//            NativeTask task = CommonTasksSupport.getCopyLocalFileTask(
-//                    getTestExecutionEnvironment(), srcFileName, dstFileName, 700, err);
-//
-////            CommonTasksSupport.CommonTask task = CommonTasksSupport.getCopyLocalFileTask(
-////                    new ExecutionEnvironment(), srcFileName, dstFileName, 700);
-//            if (task == null) {
-//                System.out.println("ERROR: " + err);
-//                return;
-//            }
-//
-//            task.submit(true, false);
-//
-//            try {
-//                result = task.get();
-//            } catch (ExecutionException ex) {
-////                Exceptions.printStackTrace(ex);
-//            }
-
-//            System.out.println("RESULT == " + result);
-//
-//            if (result != 0) {
-//                System.out.println("ERROR is '" + err + "'");
-//            }
-
-//        CopyTask task = null;
-//
-//        try {
-////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//
-//            try {
-//                result = task.get();
-//            } catch (ExecutionException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//            System.out.println("DONE!!!! " + result);
-//
-//            if (result != 0) {
-//                System.out.println(task.getError());
-//            }
-//        } catch (FileNotFoundException ex) {
-//            ex.printStackTrace();
-//        }
-
-//        CopyTask task = null;
-//
-//        try {
-////        task = CopyTask.uploadFile(getTestExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//            task = CopyTask.uploadFile(new ExecutionEnvironment(), srcFileName, dstFileName, 700, showProgress);
-//
-//            try {
-//                result = task.get();
-//            } catch (ExecutionException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//            System.out.println("DONE!!!! " + result);
-//
-//            if (result != 0) {
-//                System.out.println(task.getError());
-//            }
-//        } catch (FileNotFoundException ex) {
-//            ex.printStackTrace();
-//        }
-
-//        Thread.sleep(500);
-    // TODO review the generated test code and remove the default call to fail.
-//    fail("The test case is a prototype.");
     }
 
-    @Test
+    @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testCopyToRemote() throws Exception {
-        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2"); // NOI18N
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         assertNotNull(execEnv);
         File src = createTempFile("test-upload-1", null, false); // NOI18N
         writeFile(src, "qwe/nasd/nzxc"); // NOI18N
@@ -272,5 +140,8 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         Future<Integer> upload = CommonTasksSupport.uploadFile(src.getAbsolutePath(), execEnv, dst, 0755, new PrintWriter(System.err));
         int rc = upload.get();
         assertEquals(0, rc);
+        assertTrue(HostInfoUtils.fileExists(execEnv, dst));
+        Future<Integer> res = CommonTasksSupport.rmFile(execEnv, dst, null);
+        assertEquals(0, res.get().intValue());
     }
 }

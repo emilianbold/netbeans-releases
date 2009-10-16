@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,12 +49,12 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormEditor;
@@ -102,8 +102,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     public ActionEditor() {
         actionNames = new ArrayList<String>();
         actionMap = new HashMap<ProxyAction.Scope,List<ProxyAction>>();
-        actionMap.put(ProxyAction.Scope.Application,new ArrayList<ProxyAction>());
-        actionMap.put(ProxyAction.Scope.Form,new ArrayList<ProxyAction>());
     }
     
     // property editor impl
@@ -175,7 +173,10 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         FileObject srcFile = getSourceFile();
         Map<ProxyAction.Scope, String> scopeMap = new HashMap<ProxyAction.Scope, String>();
         scanForActions();
-        scopeMap.put(ProxyAction.Scope.Application, AppFrameworkSupport.getApplicationClassName(srcFile));
+        String appCls = AppFrameworkSupport.getApplicationClassName(srcFile);
+        if (appCls != null) {
+            scopeMap.put(ProxyAction.Scope.Application, AppFrameworkSupport.getApplicationClassName(srcFile));
+        }
         scopeMap.put(ProxyAction.Scope.Form, AppFrameworkSupport.getClassNameForFile(srcFile));
         panel.resetFields();
         if (action != null) {
@@ -312,7 +313,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         appActions.add(null);
         actionNames.clear();
         actionNames.add("null"); // NOI18N
-        
+
         // grab all of the form scope actions
         List<ProxyAction> actions = getClassActions();
         for(ProxyAction act : actions) {
@@ -341,7 +342,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
 
     private List<ProxyAction> getApplicationActions() {
         String appClassName = AppFrameworkSupport.getApplicationClassName(getSourceFile());
-        assert(appClassName != null);
+        if (appClassName == null) {
+            return Collections.emptyList();
+        }
         FileObject appSourceFile = AppFrameworkSupport.getFileForClass(getSourceFile(), appClassName);
         return ActionManager.getActions(appSourceFile, !scannedOnce);
     }
@@ -562,7 +565,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     
 
     private boolean isAppFramework() {
-        return AppFrameworkSupport.isFrameworkEnabledProject(getSourceFile());
+        return ActionManager.canHaveActions(getSourceFile());
     }
 
 }

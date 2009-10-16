@@ -65,7 +65,6 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.dlight.visualizers.FunctionsListViewVisualizer.FunctionCallChildren;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.TreeTableVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.TreeTableVisualizerConfigurationAccessor;
@@ -335,7 +334,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                    sourceSupport.updateSource(dataProvider, metricsList, list, null);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }
@@ -348,7 +347,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                    sourceSupport.updateSource(dataProvider, metricsList, list, null);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }

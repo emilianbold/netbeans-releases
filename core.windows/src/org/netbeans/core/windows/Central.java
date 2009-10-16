@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -1759,6 +1759,15 @@ final class Central implements ControllerHandler {
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(mode, 
                 View.CHANGE_TOPCOMPONENT_ACTIVATED, null, tc));
+
+            //restore floating windows if iconified
+            if( mode.getState() == Constants.MODE_STATE_SEPARATED ) {
+                Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, tc);
+                if( null != frame && frame != WindowManagerImpl.getInstance().getMainWindow()
+                        && (frame.getExtendedState() & Frame.ICONIFIED) > 0 ) {
+                    frame.setExtendedState(frame.getExtendedState() - Frame.ICONIFIED );
+                }
+            }
         }
         
         // Notify registry.

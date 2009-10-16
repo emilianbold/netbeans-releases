@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.java.api.common.classpath;
 
-import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -113,7 +111,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     protected String[] getExtensibleClassPathTypes (SourceGroup sg) {
         return new String[] {
             ClassPath.COMPILE,
-            ClassPath.EXECUTE
+            ClassPath.EXECUTE,
+            ClassPathSupport.ENDORSED,
         };
     }
 

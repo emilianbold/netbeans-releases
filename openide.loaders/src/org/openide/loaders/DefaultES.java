@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -109,7 +109,13 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
 
         removeSaveCookie();
     }
-
+    
+    @Override
+    protected boolean asynchronousOpen() {
+        // hopefully temporary:
+        return false;
+    }
+    
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
         DataObject obj = getDataObject();

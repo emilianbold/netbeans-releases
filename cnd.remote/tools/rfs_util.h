@@ -38,38 +38,34 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <limits.h>
 
 enum {
     true = 1,
     false = 0
 };
 
+void report_error(const char *format, ...);
+
+static void report_unresolved_path(const char* path) {
+    char pwd[PATH_MAX];
+    getcwd(pwd, sizeof pwd);
+    report_error("Can not resolve path: %s  cwd: %s: %s\n", path, pwd);
+}
+
 #if TRACE
-FILE *trace_file;
-void trace_startup(const char* env_var) {
-    char *file_name = getenv(env_var);
-    if (file_name) {        
-        trace_file = fopen(file_name, "a");
-        if (trace_file) {
-            fprintf(stderr, "Redirecting trace to %s\n", file_name);
-            fprintf(trace_file, "\n\n--------------------\n");
-            fflush(trace_file);
-        } else {
-            fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
-            trace_file = stderr;
-        }
-    } else {
-        trace_file = stderr;
+    void trace(const char *format, ...);
+    void trace_startup(const char* prefix, const char* env_var, const char* binary);
+    void trace_shutdown();
+    static void trace_unresolved_path(const char* path) {
+        char pwd[PATH_MAX];
+        getcwd(pwd, sizeof pwd);
+        trace("Can not resolve path: %s  pwd: %s: %s\n", path, pwd);
     }
-}
-void trace_shutdown() {
-    if (trace_file && trace_file != stderr) {
-        fclose(trace_file);
-    }
-}
-#define trace(args...) { fprintf(trace_file, "!RFS> "); fprintf(trace_file, ## args); fflush(trace_file); }
 #else
-#define trace_startup(...)
-#define trace(...) 
-#define trace_shutdown()
+    #define trace_startup(...)
+    #define trace(...)
+    #define trace_shutdown()
+    #define trace_unresolved_path(...)
 #endif

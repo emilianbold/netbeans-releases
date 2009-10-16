@@ -9,18 +9,15 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
-import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchTask;
+import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchSupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
@@ -36,10 +33,9 @@ public final class HostInfoUtils {
     public static final String LOCALHOST = "127.0.0.1"; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final List<String> myIPAdresses = new ArrayList<String>();
-    private static final Map<String, Boolean> filesExistenceHash =
-            Collections.synchronizedMap(new WeakHashMap<String, Boolean>());
     private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
             new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
+
 
     static {
         NetworkInterface iface = null;
@@ -78,16 +74,13 @@ public final class HostInfoUtils {
             stream.println("shell to use  : " + hostinfo.getShell()); // NOI18N
             stream.println("tmpdir to use : " + hostinfo.getTempDir()); // NOI18N
             stream.println("tmpdir (file) to use : " + hostinfo.getTempDirFile().toString()); // NOI18N
+            stream.println("PATH          : " + hostinfo.getPath()); // NOI18N
         }
         stream.println("------------"); // NOI18N
     }
 
     /**
      * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
-     * Calling this method equals to calling
-     * <pre>
-     * fileExists(execEnv, fname, true)
-     * </pre>
      * If execEnv referes to remote host that is not connected yet, a
      * <tt>ConnectException</tt> is thrown.
      *
@@ -95,39 +88,12 @@ public final class HostInfoUtils {
      *        in.
      * @param fname name of file to check for
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     *
      * @throws ConnectException if host, identified by this execution
      * environment is not connected.
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname) throws IOException {
-        return fileExists(execEnv, fname, true);
-    }
-
-    /**
-     * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt>.
-     * If execEnv referes to remote host that is not connected yet, a
-     * <tt>ConnectException</tt> is thrown.
-     *
-     * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
-     *        in.
-     * @param fname name of file to check for
-     * @param useCache if <tt>true</tt> then subsequent tests for same files
-     * in the same environment will not be actually performed, but result from
-     * hash will be returned.
-     * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws ConnectException if host, identified by this execution
-     * environment is not connected.
-     */
-    public static boolean fileExists(final ExecutionEnvironment execEnv,
-            final String fname, final boolean useCache)
+            final String fname)
             throws IOException {
-        String key = execEnv.toString() + fname;
-
-        if (useCache && filesExistenceHash.containsKey(key)) {
-            return filesExistenceHash.get(key);
-        }
-
         boolean fileExists = false;
 
         if (execEnv.isLocal()) {
@@ -147,21 +113,16 @@ public final class HostInfoUtils {
             }
         }
 
-        filesExistenceHash.put(key, fileExists);
-
         return fileExists;
     }
 
     public static String searchFile(ExecutionEnvironment execEnv,
             List<String> searchPaths, String file, boolean searchInUserPaths) {
-
-        FileSearchParams fileSearchParams = new FileSearchParams(execEnv,
-                searchPaths, file, searchInUserPaths);
-
         String result = null;
 
         try {
-            result = new FileSearchTask().compute(fileSearchParams);
+            result = new FileSearchSupport().searchFile(new FileSearchParams(execEnv,
+                    searchPaths, file, searchInUserPaths));
         } catch (InterruptedException ex) {
         }
 

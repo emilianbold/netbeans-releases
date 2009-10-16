@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
@@ -97,6 +98,7 @@ public class WsTesterPageAction extends NodeAction {
                                     || HttpURLConnection.HTTP_BAD_METHOD == responseCode) {
                                 connectionOK = true;
                             }
+
                         } catch (java.io.IOException ex) {
                             Logger.getLogger(WsTesterPageAction.class.getName()).log(Level.INFO, "URLConnection problem", ex); //NOI18N
                         } finally {
@@ -104,6 +106,12 @@ public class WsTesterPageAction extends NodeAction {
                                 httpConnection.disconnect();
                             }
                         }
+                        
+                        // logging usage of action
+                        Object[] params = new Object[2];
+                        params[0] = LogUtils.WS_STACK_JAXWS;
+                        params[1] = "TEST"; // NOI18N
+                        LogUtils.logWsAction(params);
                     }
 
                 } catch (IOException ex) {

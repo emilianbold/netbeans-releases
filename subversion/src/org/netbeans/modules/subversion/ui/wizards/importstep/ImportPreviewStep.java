@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,6 +52,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.PanelProgressSupport;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
@@ -69,6 +71,7 @@ public class ImportPreviewStep extends AbstractStep {
     private Context context;
     private CommitTable table;
     private PanelProgressSupport support;
+    private String importMessage;
     
     public ImportPreviewStep(Context context) {
         this.context = context;
@@ -115,13 +118,22 @@ public class ImportPreviewStep extends AbstractStep {
         }        
     }    
 
-    public void setup(final String repositoryPath, final String rootLocalPath, SVNUrl repository) {
-        support = new PanelProgressSupport(previewPanel.progressPanel) {
+    /**
+     * Prepares files for commit and optionally starts the commit itself
+     * @param repositoryPath
+     * @param rootLocalPath
+     * @param repository
+     * @param importMessage 
+     * @param startCommitWhenFinished if true then commit task will be started upon this task's finish and progress will be displayed in the progress bar
+     */
+    public void setup(final String repositoryPath, final String rootLocalPath, final SVNUrl repository, String importMessage, final boolean startCommitWhenFinished) {
+        this.importMessage = importMessage;
+        support = new PanelProgressSupport(startCommitWhenFinished ? null : previewPanel.progressPanel) {
             @Override
             protected void perform() {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
-                
+
                 if (files.length == 0 || isCanceled()) {
                     return;
                 }
@@ -153,6 +165,9 @@ public class ImportPreviewStep extends AbstractStep {
                             }
                         });
                         validateUserInput();
+                        if (startCommitWhenFinished) {
+                            startCommitTask(repository);
+                        }
                     }
                 });
             }
@@ -174,5 +189,17 @@ public class ImportPreviewStep extends AbstractStep {
         //SvnModuleConfig.getDefault().setImportTableSorter(table.getSorter());        
     }
 
+    /**
+     * Starts commit task
+     * @param repository repository url
+     */
+    public void startCommitTask (SVNUrl repository) {
+        SvnProgressSupport commitTask = new SvnProgressSupport() {
+            public void perform() {
+                CommitAction.performCommit(importMessage, getCommitFiles(), context, this, true);
+            }
+        };
+        commitTask.start(Subversion.getInstance().getRequestProcessor(repository), repository, org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "LBL_Import_Progress")); //NOI18N
+    }
 }
 

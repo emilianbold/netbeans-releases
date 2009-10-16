@@ -51,7 +51,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
@@ -80,13 +79,11 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
-    //not used. HTMLKit coveres this functionality
     @Override
     public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
-    //not used. HTMLKit coveres this functionality
     @Override
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
@@ -148,7 +145,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
         //add the text nodes into the ast due to performance reasons
         Document doc = info.getSnapshot().getSource().getDocument(true);
         TokenHierarchy<Document> hierarchy = TokenHierarchy.get(doc);
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc);
+        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
         if(ts == null) {
             return Collections.emptyList();
         }

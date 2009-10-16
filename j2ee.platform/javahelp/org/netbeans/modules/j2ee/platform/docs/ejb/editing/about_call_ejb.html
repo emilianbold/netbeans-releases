@@ -21,12 +21,10 @@
         <p>Calling an enterprise bean is the process of getting a reference to the enterprise 
         bean so that you can call its methods. To call an enterprise bean's methods,
         you need to create an instance of the bean's local or remote interface, then call
-        methods of the interface.</p>
-        <p>You can automatically generate lookup code for an enterprise bean, including any 
-        deployment descriptor configuration code, by right-clicking a Java file and choosing 
-        Insert Code &gt; Call Enterprise Bean. See <a href="call_ejb.html">
+        methods of the interface. See <a href="call_ejb.html">
         Calling an Enterprise Bean</a> for more information.</p>
-        <p>The process of calling an enterprise bean differs for Java EE 5 applications
+        
+        <p>The process of calling an enterprise bean differs for Java EE 5/Java EE 6 applications
         and J2EE 1.4 applications.</p>
         <ul>
             <li>
@@ -39,12 +37,17 @@ private MyEJBInterface newMyEJB;
                 <p>If you are calling an enterprise bean in a different project, you also
                 have to add the EJB project to the classpath of the project that is
                 calling the enterprise bean.</p>
+                <p>In Java EE 6 applications, local interfaces are optional because local clients
+                    can access an EJB via a no-interface view.</p>
             </li>
             <li>
                 <b>J2EE 1.4 Specification.</b> You use JNDI lookup to locate the bean and retrieve
                 an instance of the local or remote interface. Each enterprise bean is given a unique
-                JNDI name in its deployment descriptor. You use a lookup method similar to the following
-                to locate the enterprise bean:
+                JNDI name in its deployment descriptor.
+                You can automatically generate lookup code for an enterprise bean, including any
+                deployment descriptor configuration code, by right-clicking a Java file and choosing
+                Insert Code &gt; Call Enterprise Bean.
+                <p>You use a lookup method similar to the following to locate the enterprise bean:</p>
                 <pre>private MySessionRemote lookupMySessionBean() {
     try {
         Context c = new InitialContext();

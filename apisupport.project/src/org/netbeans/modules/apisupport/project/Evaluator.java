@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -60,6 +60,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,11 +103,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
     private PropertyEvaluator delegate;
-    private boolean loadedModuleList = false;
+    private volatile boolean loadedModuleList = false;
     
     /** See issue #69440 for more details. */
     private boolean runInAtomicAction;
-    
+    private boolean pendingReset = false;   // issue #173792
+
     private static class TestClasspath {
         
         private final String compile;
@@ -173,10 +175,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
 
     private boolean isModuleListDependentProperty(String p) {
         return p.equals("module.classpath") || // NOI18N
-                p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra") || // NOI18N
-                p.equals("cluster") || // NOI18N
-                // MODULENAME.dir, but not module.jar.dir or the like:
-                (p.endsWith(".dir") && p.lastIndexOf('.', p.length() - 5) == -1); // NOI18N
+                p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra"); // NOI18N
     }
     
     private static final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
@@ -204,13 +203,13 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private PropertyEvaluator delegatingEvaluator(final boolean reset) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<PropertyEvaluator>() {
             public PropertyEvaluator run() {
-                synchronized (Evaluator.this) {
-                    if (reset && !loadedModuleList) {
-                        reset();
-                        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                            Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
-                        }
+                if (reset && !loadedModuleList) {
+                    reset();
+                    if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                        Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
                     }
+                }
+                synchronized (Evaluator.this) {
                     return delegate;
                 }
             }
@@ -233,10 +232,10 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     delegate.removePropertyChangeListener(Evaluator.this);
                     delegate = createEvaluator(moduleList);
                     delegate.addPropertyChangeListener(Evaluator.this);
-                    // XXX better to compute diff between previous and new values and fire just those
-                    pcs.firePropertyChange(null, null, null);
-                    return null;
                 }
+                // XXX better to compute diff between previous and new values and fire just those
+                pcs.firePropertyChange(null, null, null);
+                return null;
             }
         });
     }
@@ -252,8 +251,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
-        if (!runInAtomicAction && ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            reset();
+        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
+            if (runInAtomicAction)
+                pendingReset = true;
+            else
+                reset();
         }
     }
     
@@ -263,7 +265,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     /** See issue #69440 for more details. */
     public void setRunInAtomicAction(boolean runInAtomicAction) {
+        assert runInAtomicAction != this.runInAtomicAction : "Nested calls not supported";
         this.runInAtomicAction = runInAtomicAction;
+        if (! runInAtomicAction && pendingReset) {
+            reset();
+        }
+        pendingReset = false;
     }
     
     /** See issue #69440 for more details. */
@@ -287,6 +294,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Map<String,String> stock = new HashMap<String,String>();
         File dir = project.getProjectDirectoryFile();
         NbModuleProvider.NbModuleType type = typeProvider.getModuleType();
+        PropertyProvider privateProperties = project.getHelper().getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        PropertyProvider projectProperties = project.getHelper().getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         File nbroot;
         if (type == NbModuleProvider.NETBEANS_ORG) {
             nbroot = ModuleList.findNetBeansOrg(dir);
@@ -299,6 +308,13 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             Map<String,String> clusterProperties = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.propertiesFilePropertyProvider(
                     new File(nbroot, "nbbuild/cluster.properties"))).getProperties(); // NOI18N
             if (clusterProperties != null) {
+                StringBuilder allValsB = new StringBuilder();
+                for (PropertyProvider pp : new PropertyProvider[] {privateProperties, projectProperties}) {
+                    for (String val : pp.getProperties().values()) {
+                        allValsB.append(val);
+                    }
+                }
+                String allVals = allValsB.toString();
                 for (Map.Entry<String,String> dirEntry : clusterProperties.entrySet()) {
                     String key = dirEntry.getKey();
                     if (!key.endsWith(".dir")) { // NOI18N
@@ -310,30 +326,43 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         continue;
                     }
                     for (String module : modules.split(",")) { // NOI18N
-                        stock.put((module + ".dir").intern(), clusterDir); // NOI18N
+                        String dirProp = module + ".dir";
+                        if (allVals.contains(dirProp)) {
+                            stock.put(dirProp.intern(), clusterDir); // NOI18N
+                        } // #172203: otherwise don't waste space on it
                     }
                 }
             }
         } else {
             nbroot = null;
         }
-        String codeNameBase = project.getCodeNameBase();
-        if (ml != null) {
-            ModuleEntry thisEntry = ml.getEntry(codeNameBase);
-            if (thisEntry != null) { // can be null e.g. for a broken suite component module
-                assert nbroot == null ^ thisEntry.getNetBeansOrgPath() != null : thisEntry;
-                File clusterDir = thisEntry.getClusterDirectory();
-                stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
-            }
-        }
+
         List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
         // XXX should listen to changes in values of properties which refer to property files:
         if (type == NbModuleProvider.SUITE_COMPONENT) {
             providers.add(project.getHelper().getPropertyProvider("nbproject/private/suite-private.properties")); // NOI18N
             providers.add(project.getHelper().getPropertyProvider("nbproject/suite.properties")); // NOI18N
-            PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
-            String suiteDirS = baseEval.getProperty("suite.dir"); // NOI18N
+        }
+
+        // 'cluster' prop. evaluation without scanned ModuleList
+        String codeNameBase = project.getCodeNameBase();
+        String clusterDir = null;
+        PropertyEvaluator suiteEval = null;
+        try {
+            clusterDir = ModuleList.findClusterLocation(dir, nbroot, type);
+        } catch (IOException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
+        }
+        if (type == NbModuleProvider.SUITE_COMPONENT) {
+            suiteEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
+            clusterDir = FileUtil.normalizeFile(new File(suiteEval.evaluate(clusterDir))).getAbsolutePath();
+        }
+        if (clusterDir != null)
+            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("cluster", clusterDir)));
+
+        if (type == NbModuleProvider.SUITE_COMPONENT) {
+            String suiteDirS = suiteEval.getProperty("suite.dir"); // NOI18N
             if (suiteDirS != null) {
                 File suiteDir = PropertyUtils.resolveFile(dir, suiteDirS);
                 providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
@@ -374,8 +403,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         }
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
         providers.add(new NbJdkProvider(baseEval));
-        providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        providers.add(privateProperties);
+        providers.add(projectProperties);
         Map<String,String> defaults = new HashMap<String,String>();
         if (codeNameBase != null) { // #121856
             defaults.put("code.name.base.dashes", codeNameBase.replace('.', '-')); // NOI18N

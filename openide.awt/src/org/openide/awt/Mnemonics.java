@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -80,6 +80,7 @@ public final class Mnemonics extends Object {
 
         int i = findMnemonicAmpersand(text);
 
+        setMnemonicIndex(item, -1);
         if (i < 0) {
             // no '&' - don't set the mnemonic
             setText(item, text);

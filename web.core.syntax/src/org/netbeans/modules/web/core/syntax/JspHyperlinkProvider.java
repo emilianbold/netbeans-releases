@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,10 +43,8 @@ package org.netbeans.modules.web.core.syntax;
 
 
 import java.awt.Toolkit;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.servlet.jsp.tagext.TagFileInfo;
@@ -55,9 +53,8 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
@@ -66,7 +63,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
@@ -366,25 +362,35 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                     // is ti declaration of userBean?
                     while (tokenSequence.token().id() != JspTokenId.TAG && 
                             !"jsp:useBean".equals(tokenSequence.token().text().toString()) 
-                            && tokenSequence.movePrevious());
+                            && tokenSequence.movePrevious()) {
+                        //do nothing, just skip the tokens
+                    }
 
                     if (tokenSequence.index() != -1 && tokenSequence.token().id() 
                             == JspTokenId.TAG)
                     {
                         //we are in useBean
-                        String className = token.text().toString().substring(1, 
+                        final String className = token.text().toString().substring(1,
                                 token.length()-1).trim();
 
-                        GoToTypeDefTask gotoTask = new GoToTypeDefTask(className);
-
+                        //compute the type off awt
                         ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
                         JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
 
-                        try{
-                            source.runUserActionTask(gotoTask, true);
-                        } catch (IOException e){
-                            logger.log(Level.SEVERE, e.getMessage(), e);
+                        TypeElement typeElement = RunOffAWT.computeOffAWT(new RunOffAWT.Worker<TypeElement>() {
+                            public TypeElement process(CompilationInfo info) {
+                                return info.getElements().getTypeElement(className);
+                            }
+                        }, NbBundle.getMessage(JspHyperlinkProvider.class, "MSG_goto-source"), source, Phase.ELEMENTS_RESOLVED);
+
+                        //if resolved in time limit, open it
+                        if(typeElement != null) {
+                            if (!UiUtils.open(cpInfo, typeElement)){
+                                gotoSourceFailed();
+                            }
                         }
+                        
+
                     }
 
                     tokenSequence.move(offset);//reset tokenSequence
@@ -543,26 +549,4 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
         Toolkit.getDefaultToolkit().beep();
     }
     
-    private class GoToTypeDefTask implements CancellableTask<CompilationController>{
-        private String className;
-        
-        GoToTypeDefTask(String className){
-            this.className = className;
-        }
-        
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-            TypeElement type = parameter.getElements().getTypeElement(className);
-            
-            if (type != null){
-                if (!UiUtils.open(parameter.getClasspathInfo(), type)){
-                    gotoSourceFailed();
-                }
-            } else{
-                logger.fine("could not resolve " + className); //NOI18N
-            }
-        }
-        
-        public void cancel(){};
-    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.Advice;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider;
 import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderListener;
@@ -65,25 +66,36 @@ import org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProviderL
  *
  * @author Nick Krasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.paralleladviser.spi.ParallelAdviserTipsProvider.class)
 public class UnnecessaryThreadsTipsProvider implements ParallelAdviserTipsProvider {
 
     private final static List<UnnecessaryThreadsAdvice> tips = new ArrayList<UnnecessaryThreadsAdvice>();
-
     private final static List<WeakReference<ParallelAdviserTipsProviderListener>> listeners = new ArrayList<WeakReference<ParallelAdviserTipsProviderListener>>();
 
     public static void addTip(UnnecessaryThreadsAdvice tip) {
         for (UnnecessaryThreadsAdvice advice : tips) {
-            if(advice.equals(tip)) {
+            if (advice.equals(tip)) {
                 tips.remove(advice);
                 break;
             }
         }
         tips.add(tip);
+        notifyListeners();
     }
 
     public static void clearTips() {
         tips.clear();
+    }
+
+    public static void clearTipsForProject(CsmProject project) {
+        List<UnnecessaryThreadsAdvice> newTips = new ArrayList<UnnecessaryThreadsAdvice>();
+        for (UnnecessaryThreadsAdvice tip : tips) {
+            if (tip.getProject() != null && !tip.getProject().equals(project)) {
+                newTips.add(tip);
+            }
+        }
+        tips.clear();
+        tips.addAll(newTips);
     }
 
     public Collection<Advice> getTips() {
@@ -105,7 +117,12 @@ public class UnnecessaryThreadsTipsProvider implements ParallelAdviserTipsProvid
 
     private static void notifyListeners() {
         for (WeakReference<ParallelAdviserTipsProviderListener> ref : listeners) {
-            ref.get().tipsChanged();
+            ParallelAdviserTipsProviderListener provider = ref.get();
+            if (provider != null) {
+                provider.tipsChanged();
+            } else {
+                listeners.remove(ref);
+            }
         }
     }
 }

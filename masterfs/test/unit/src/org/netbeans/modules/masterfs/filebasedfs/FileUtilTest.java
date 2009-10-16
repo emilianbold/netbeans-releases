@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
@@ -63,6 +62,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * @author Jiri Skrivanek
@@ -113,6 +113,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests FileChangeListener on File.
      * @see FileUtil#addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3392
     public void testAddFileChangeListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -208,8 +209,7 @@ public class FileUtilTest extends NbTestCase {
         assertTrue(fileF.createNewFile());
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was created.", 1, fcl.check(EventType.DATA_CREATED));
-        Thread.sleep(1000); // make sure timestamp changes
-        new FileOutputStream(fileF).close();
+        TestFileUtils.touch(fileF, null);
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
         assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
@@ -222,7 +222,8 @@ public class FileUtilTest extends NbTestCase {
         // disk changes #66444
         for (int cntr = 0; cntr < 50; cntr++) {
             dirF.mkdir();
-            new FileOutputStream(fileF).close();
+            fileF.createNewFile();
+            TestFileUtils.touch(fileF, null);
             FileUtil.refreshAll();
             assertEquals("Event not fired when file was created; count=" + cntr, 1, fcl.check(EventType.DATA_CREATED));
             fileF.delete();
@@ -235,11 +236,12 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("No other events should be fired in removed listener.", 0, fcl2.checkAll());
 
         // weakness
-        WeakReference ref = new WeakReference(fcl);
+        WeakReference<FileChangeListener> ref = new WeakReference<FileChangeListener>(fcl);
         fcl = null;
         assertGC("FileChangeListener not collected.", ref);
     }
 
+    @RandomlyFails // NB-Core-Build #3398
     public void testAddRecursiveListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -344,8 +346,7 @@ public class FileUtilTest extends NbTestCase {
         assertTrue(newfile.createNewFile());
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was created.", 1, fcl.check(EventType.FOLDER_CREATED));
-        Thread.sleep(1000); // make sure timestamp changes
-        new FileOutputStream(newfile).close();
+        TestFileUtils.touch(newfile, null);
         FileUtil.refreshAll();
         assertEquals("Event not fired when file was modified.", 1, fcl.check(EventType.CHANGED));
         assertEquals("Attribute change event not fired (see #129178).", 3, fcl.check(EventType.ATTRIBUTE_CHANGED));
@@ -358,7 +359,8 @@ public class FileUtilTest extends NbTestCase {
         File fileX = new File(subdir, "oscilating.file");
         for (int cntr = 0; cntr < 50; cntr++) {
             fileX.getParentFile().mkdirs();
-            new FileOutputStream(fileX).close();
+            fileX.createNewFile();
+            TestFileUtils.touch(fileX, null);
             FileUtil.refreshAll();
             assertEquals("Event not fired when file was created; count=" + cntr, 1, fcl.check(EventType.DATA_CREATED));
             fileX.delete();
@@ -370,7 +372,7 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("No other events should be fired in removed listener.", 0, fcl2.checkAll());
 
         // weakness
-        WeakReference ref = new WeakReference(fcl);
+        WeakReference<FileChangeListener> ref = new WeakReference<FileChangeListener>(fcl);
         fcl = null;
         assertGC("FileChangeListener not collected.", ref);
     }
@@ -457,6 +459,7 @@ public class FileUtilTest extends NbTestCase {
      * {@link FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File) }.
      * It is expected that all events from sub folders are delivered just once.
      */
+    @RandomlyFails
     public void testAddRecursiveListenerToFileFolder() throws Exception {
         checkFolderRecursiveListener(true);
     }
@@ -608,10 +611,9 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("Wrong number of Attribute change events (see #129178).", 1, fcl.check(EventType.ATTRIBUTE_CHANGED));
         assertEquals("No other events should be fired.", 0, fcl.checkAll());
 
-        Thread.sleep(1000); // make sure timestamp changes
-        new FileOutputStream(subsubfileF).close();
-        new FileOutputStream(subfileF).close();
-        new FileOutputStream(fileF).close();
+        TestFileUtils.touch(subsubfileF, null);
+        TestFileUtils.touch(subfileF, null);
+        TestFileUtils.touch(fileF, null);
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
         assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
@@ -727,8 +729,7 @@ public class FileUtilTest extends NbTestCase {
         assertTrue(fileF.createNewFile());
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
-        Thread.sleep(1000); // make sure timestamp changes
-        new FileOutputStream(fileF).close();
+        TestFileUtils.touch(fileF, null);
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 1, fcl.check(EventType.CHANGED));
         assertEquals("Attribute change event not fired (see #129178).", 2, fcl.check(EventType.ATTRIBUTE_CHANGED));
@@ -741,7 +742,8 @@ public class FileUtilTest extends NbTestCase {
         // disk changes #66444
         for (int cntr = 0; cntr < 50; cntr++) {
             dirF.mkdir();
-            new FileOutputStream(fileF).close();
+            fileF.createNewFile();
+            TestFileUtils.touch(fileF, null);
             FileUtil.refreshAll();
             assertEquals("Event not fired when file was created; count=" + cntr, 1, fcl.check(EventType.DATA_CREATED));
             fileF.delete();
@@ -754,7 +756,7 @@ public class FileUtilTest extends NbTestCase {
         assertEquals("No other events should be fired in removed listener.", 0, fcl2.checkAll());
 
         // weakness
-        WeakReference ref = new WeakReference(fcl);
+        WeakReference<FileChangeListener> ref = new WeakReference<FileChangeListener>(fcl);
         fcl = null;
         assertGC("FileChangeListener not collected.", ref);
     }

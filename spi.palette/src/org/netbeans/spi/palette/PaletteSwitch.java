@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,9 +44,8 @@ package org.netbeans.spi.palette;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -63,8 +62,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 /**
@@ -85,8 +84,9 @@ final class PaletteSwitch implements Runnable, LookupListener {
     private PropertyChangeSupport propertySupport;
     
     private PaletteController currentPalette;
-//    private boolean isGroupOpen = false;
     private Lookup.Result lookupRes;
+
+    private Object currentToken;
     
     /** Creates a new instance of PaletteSwitcher */
     private PaletteSwitch() {
@@ -139,43 +139,29 @@ final class PaletteSwitch implements Runnable, LookupListener {
             SwingUtilities.invokeLater( this );
             return;
         }
-        final PaletteController oldPalette = currentPalette;
-        currentPalette = findPalette();
 
-        showHidePaletteTopComponent( oldPalette, currentPalette );
-
-        propertySupport.firePropertyChange( PROP_PALETTE_CONTENTS, oldPalette, currentPalette );
-    }
-
-    private PaletteController findPalette() {
+        currentToken = new Object();
         TopComponent.Registry registry = TopComponent.getRegistry();
-        
-        PaletteController palette;
-        TopComponent activeTc = registry.getActivated();
-        palette = getPaletteFromTopComponent( activeTc, true );
-        
-        ArrayList<PaletteController> availablePalettes = new ArrayList<PaletteController>(3);
-        if( null == palette ) {
-            Set openedTcs = registry.getOpened();
-            for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
-                TopComponent tc = (TopComponent)i.next();
-                
-                palette = getPaletteFromTopComponent( tc, true );
-                if( null != palette ) {
-                    availablePalettes.add( palette );
-                }
+        final TopComponent activeTc = registry.getActivated();
+        Set<TopComponent> opened = registry.getOpened();
+        final Set<TopComponent> openedEditors = new HashSet<TopComponent>(opened.size());
+        for( TopComponent tc : opened ) {
+            if( WindowManager.getDefault().isEditorTopComponent(tc) ) {
+                openedEditors.add( tc );
             }
-            if( null != currentPalette && (availablePalettes.contains( currentPalette ) || isPaletteMaximized()) )
-                palette = currentPalette;
-            else if( availablePalettes.size() > 0 )
-                palette = availablePalettes.get( 0 );
         }
-        return palette;
+        final PaletteController existingPalette = currentPalette;
+        final boolean isMaximized = isPaletteMaximized();
+        final Object token = currentToken;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                findNewPalette(existingPalette, activeTc, openedEditors, isMaximized, token);
+            }
+        });
     }
-    
+
     private boolean isPaletteMaximized() {
         boolean isMaximized = true;
-        boolean currentPaletteStillAvailable = false;
         TopComponent.Registry registry = TopComponent.getRegistry();
         Set openedTcs = registry.getOpened();
         for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
@@ -186,26 +172,16 @@ final class PaletteSwitch implements Runnable, LookupListener {
                 isMaximized = false;
                 break;
             }
-            if( !currentPaletteStillAvailable ) {
-                //check whether the window with the current palette controller wasn't closed
-                PaletteController palette = getPaletteFromTopComponent( tc, false );
-                if( null != palette && palette == currentPalette ) {
-                    currentPaletteStillAvailable = true;
-                }
-            }
         }
-        return isMaximized && currentPaletteStillAvailable;
+        return isMaximized;
     }
     
-    PaletteController getPaletteFromTopComponent( TopComponent tc, boolean mustBeShowing ) {
+    PaletteController getPaletteFromTopComponent( TopComponent tc, boolean mustBeShowing, boolean isOpened ) {
         if( null == tc || (!tc.isShowing() && mustBeShowing) )
             return null;
         
-        if( !WindowManager.getDefault().isEditorTopComponent( tc ) )
-            return null;
-        
         PaletteController pc = (PaletteController)tc.getLookup().lookup( PaletteController.class );
-        if( null == pc && tc.isOpened() ) {
+        if( null == pc && isOpened ) {
             //check if there's any palette assigned to TopComponent's mime type
             Node[] activeNodes = tc.getActivatedNodes();
             if( null != activeNodes && activeNodes.length > 0 ) {
@@ -241,10 +217,10 @@ final class PaletteSwitch implements Runnable, LookupListener {
     }
     
     private void showHidePaletteTopComponent( PaletteController prevPalette, PaletteController newPalette ) {
-        if( prevPalette == newPalette && null != newPalette 
-            || (null == prevPalette && null == newPalette) )
+        if( prevPalette == newPalette && null != newPalette )
             return;
-        
+        PaletteController oldPalette = currentPalette;
+        currentPalette = newPalette;
         WindowManager wm = WindowManager.getDefault();
         TopComponent palette = wm.findTopComponent("CommonPalette"); // NOI18N
         if( null == palette ) {
@@ -262,25 +238,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
             if( palette.isOpened() )
                 palette.close();
         }
-    }
-    
-    //the group might be already opened at startup time which we won't know about
-    //so let's make a 'real' check
-    private boolean isGroupOpenHack( TopComponentGroup group ) {
-        try {
-            for( Method m : group.getClass().getDeclaredMethods() ) {
-                if( m.getName().equals( "isOpened" ) ) {
-                    m.setAccessible( true );
-                    Object res = m.invoke( group, new Object[0] );
-                    if( res instanceof Boolean ) {
-                        return ((Boolean)res).booleanValue();
-                    }
-                }
-            }
-        } catch( Exception e ) {
-            //ignore
-        }
-        return false;
+
+        propertySupport.firePropertyChange( PROP_PALETTE_CONTENTS, oldPalette, currentPalette );
     }
     
     /**
@@ -363,5 +322,45 @@ final class PaletteSwitch implements Runnable, LookupListener {
         return res;
     }
             
-            
+    private void findNewPalette( final PaletteController existingPalette, TopComponent activeTc,
+                Set<TopComponent> openedTcs, boolean paletteIsMaximized, final Object token ) {
+        PaletteController palette;
+        palette = getPaletteFromTopComponent( activeTc, true, true );
+
+        paletteIsMaximized &= isCurrentPaletteAvailable(existingPalette, openedTcs);
+
+        ArrayList<PaletteController> availablePalettes = new ArrayList<PaletteController>(3);
+        if( null == palette ) {
+            for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
+                TopComponent tc = (TopComponent)i.next();
+
+                palette = getPaletteFromTopComponent( tc, true, true );
+                if( null != palette ) {
+                    availablePalettes.add( palette );
+                }
+            }
+            if( null != existingPalette && (availablePalettes.contains( existingPalette ) || paletteIsMaximized) )
+                palette = existingPalette;
+            else if( availablePalettes.size() > 0 )
+                palette = availablePalettes.get( 0 );
+        }
+        final PaletteController newPalette = palette;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if( currentToken == token )
+                    showHidePaletteTopComponent(existingPalette, newPalette);
+            }
+        });
+    }
+
+    private boolean isCurrentPaletteAvailable( PaletteController existingPalette, Set<TopComponent> openedTcs ) {
+        for( TopComponent tc : openedTcs ) {
+            //check whether the window with the current palette controller wasn't closed
+            PaletteController palette = getPaletteFromTopComponent( tc, false, true );
+            if( null != palette && palette == existingPalette ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

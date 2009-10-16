@@ -46,8 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.kenai.KenaiRepositoryUtils;
+import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -80,10 +80,7 @@ public class KenaiUtil {
      * @return
      */
     public static boolean isKenai(String url) {
-        try {
-            return KenaiProject.forRepository(url) != null;
-        } catch (KenaiException ex) { }
-        return false;
+        return KenaiProject.getNameForRepository(url) != null;
     }
 
     /**
@@ -196,6 +193,10 @@ public class KenaiUtil {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    public static String getChatLink(Issue issue) {
+        return "ISSUE:" + issue.getID(); // NOI18N
     }
 
     private static KenaiProject getKenaiProject(String url) {

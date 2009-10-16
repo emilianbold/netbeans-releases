@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,14 +48,16 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
-import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutionEngine;
@@ -96,7 +98,37 @@ public class NativeExecutor implements Runnable {
     private PrintWriter out;
     private PrintWriter err;
     private Writer outputListener;
+    private Project project;
     
+    /**
+     * The real constructor. This class is used to manage native execution, but run and build.
+     */
+    public NativeExecutor(
+	    Project project,
+	    ExecutionEnvironment execEnv,
+            String runDir,
+            String executable,
+            String arguments,
+            String[] envp,
+            String tabName,
+            String actionName,
+            boolean parseOutputForErrors,
+            boolean showInput,
+            boolean unbuffer) {
+	this.project = project;
+        this.execEnv = execEnv;
+        this.runDir = runDir;
+        executable = LinkSupport.resolveWindowsLink(executable);
+        this.executable = executable;
+        this.arguments = arguments;
+        this.envp = envp;
+        this.tabName = tabName;
+        this.actionName = actionName;
+        this.parseOutputForErrors = parseOutputForErrors;
+        this.showInput = showInput;
+        this.unbuffer = unbuffer;
+    }
+
     /**
      * The real constructor. This class is used to manage native execution, but run and build.
      */
@@ -111,19 +143,9 @@ public class NativeExecutor implements Runnable {
             boolean parseOutputForErrors,
             boolean showInput,
             boolean unbuffer) {
-        this.execEnv = execEnv;
-        this.runDir = runDir;
-        executable = LinkSupport.resolveWindowsLink(executable);
-        this.executable = executable;
-        this.arguments = arguments;
-        this.envp = envp;
-        this.tabName = tabName;
-        this.actionName = actionName;
-        this.parseOutputForErrors = parseOutputForErrors;
-        this.showInput = showInput;
-        this.unbuffer = unbuffer;
+	this(null, execEnv, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput, unbuffer);
     }
-    
+
     /** targets may be null to indicate default target */
     /*@Deprecated*/
     public NativeExecutor(
@@ -197,11 +219,11 @@ public class NativeExecutor implements Runnable {
     }
 
     private final String[] prepareEnvironment() {
-        List<String> envpList = new ArrayList<String>();
+        MacroMap macroMap = MacroMap.forExecEnv(execEnv);
         if (envp != null) {
-            envpList.addAll(Arrays.asList(envp));
+            macroMap.putAll(envp);
         }
-        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        macroMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
         if (unbuffer) {
             try {
@@ -211,14 +233,18 @@ public class NativeExecutor implements Runnable {
                     //try to resolve from the root
                     exeFile = new File(executable);
                 }
-                for (String envEntry : Unbuffer.getUnbufferEnvironment(execEnv, exeFile.getAbsolutePath())) {
-                    envpList.add(envEntry);
-                }
+                UnbufferSupport.initUnbuffer(execEnv, macroMap);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return envpList.toArray(new String[envpList.size()]);
+        Set<Map.Entry<String, String>> entries = macroMap.entrySet();
+        String[] res = new String[entries.size()];
+        int idx = 0;
+        for (Map.Entry<String, String> entry : entries) {
+            res[idx++] = entry.getKey() + '=' + entry.getValue();
+        }
+        return res;
     }
     
     /**
@@ -239,7 +265,7 @@ public class NativeExecutor implements Runnable {
             originalWriter = new OutputWriterProxy(originalWriter, outputListener);
         }
         if (parseOutputForErrors) {
-            out = new PrintWriter(new OutputWindowWriter(execEnv, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(project,execEnv, originalWriter, FileUtil.toFileObject(runDirFile), parseOutputForErrors));
         } else {
             out = originalWriter;
         }

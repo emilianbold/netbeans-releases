@@ -92,7 +92,7 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             public Void run() {
                 if (preprovider != null) {
-                    predefs = new HashMap<String,String>(preprovider.getProperties()); // defensive copying
+                    predefs = copyAndCompact(preprovider.getProperties());
                     // XXX defer until someone is listening?
                     preprovider.addChangeListener(WeakListeners.change(SequentialPropertyEvaluator.this, preprovider));
                 } else {
@@ -100,7 +100,7 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
                 }
                 orderedDefs = new ArrayList<Map<String, String>>(providers.length);
                 for (PropertyProvider pp : providers) {
-                    orderedDefs.add(new HashMap<String,String>(pp.getProperties()));
+                    orderedDefs.add(copyAndCompact(pp.getProperties()));
                     pp.addChangeListener(WeakListeners.change(SequentialPropertyEvaluator.this, pp));
                 }
                 return null;
@@ -159,7 +159,7 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
     public void stateChanged(ChangeEvent e) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         PropertyProvider pp = (PropertyProvider) e.getSource();
-        Map<String, String> nue = new HashMap<String,String>(pp.getProperties());
+        Map<String,String> nue = copyAndCompact(pp.getProperties());
         if (pp == preprovider) {
             if (predefs.equals(nue)) {
                 return;
@@ -340,7 +340,14 @@ final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeList
                 }
             }
         }
-        return m;
+        return copyAndCompact(m);
+    }
+
+    private static final float COMPACT_LOAD_FACTOR = 0.95f; // #172203: try to minimize heap usage
+    private static <K,V> Map<K,V> copyAndCompact(Map<K,V> m) {
+        Map<K,V> m2 = new HashMap<K,V>((int) (m.size() / COMPACT_LOAD_FACTOR) + 1, COMPACT_LOAD_FACTOR);
+        m2.putAll(m);
+        return m2;
     }
 
 }

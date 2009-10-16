@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,14 +42,15 @@
 package org.netbeans.modules.j2ee.clientproject.classpath;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -65,7 +66,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
     public final static String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
     public static final String INCLUDE_IN_DEPLOYMENT = "includeInDeployment";
     
-    private static final String ATTR_FILES = "files"; //NOI18N
+//    private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N
     
     private AntProjectHelper antProjectHelper;
@@ -80,7 +81,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
      * Returns a list with the classpath items which are to be included 
      * in deployment.
      */
-    private static List<String> getIncludedLibraries( AntProjectHelper antProjectHelper, String includedLibrariesElement ) {
+    private static List<String> getIncludedLibraries( AntProjectHelper antProjectHelper, String includedLibrariesElement, Map<String, String> destination) {
         assert antProjectHelper != null;
         assert includedLibrariesElement != null;
         
@@ -90,7 +91,14 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
             // appclient is different from other j2ee projects - it stores reference without ${ and }
-            libraries.add( "${"+findText( item )+"}"); // NOI18N
+            String ref = "${"+findText( item )+"}";
+            libraries.add(ref); // NOI18N
+            String dirs = item.getAttribute(ATTR_DIRS);
+            if (Util.DESTINATION_DIRECTORY_ROOT.equals(dirs) ||
+                Util.DESTINATION_DIRECTORY_LIB.equals(dirs) ||
+                Util.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
+                destination.put(ref, dirs);
+            }
         }
         return libraries;
     }
@@ -128,6 +136,7 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
         Element libraryElement = doc.createElementNS( AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         // appclient is different from other j2ee projects - it stores reference without ${ and }
         libraryElement.appendChild( doc.createTextNode( CommonProjectUtils.getAntPropertyName(item.getReference()) ) );
+        Util.updateDirsAttributeInCPSItem(item, libraryElement);
         return libraryElement;
     }
        
@@ -149,9 +158,15 @@ public class ClassPathSupportCallbackImpl implements ClassPathSupport.Callback {
     }
 
     public void readAdditionalProperties(List<Item> items, String projectXMLElement) {
-        List<String> l = getIncludedLibraries(antProjectHelper, projectXMLElement);
+        Map<String, String> destination = new HashMap<String, String>();
+        List<String> l = getIncludedLibraries(antProjectHelper, projectXMLElement, destination);
         for (Item item : items) {
-            item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, Boolean.toString(l.contains(item.getReference())));
+            boolean b = l.contains(item.getReference());
+            item.setAdditionalProperty(INCLUDE_IN_DEPLOYMENT, Boolean.toString(b));
+            String dest = destination.get(item.getReference());
+            if (b && dest != null) {
+                item.setAdditionalProperty(Util.DESTINATION_DIRECTORY, dest);
+            }
         }
     }
 

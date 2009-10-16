@@ -44,6 +44,7 @@ import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.MissingResourceException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
 import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.CurrentUserFilter;
@@ -55,6 +56,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -120,9 +122,10 @@ public class KenaiRepository extends JiraRepository {
     @Override
     protected Object[] getLookupObjects() {
         Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 1];
+        Object[] obj2 = new Object[obj.length + 2];
         System.arraycopy(obj, 0, obj2, 0, obj.length);
-        obj2[obj.length] = kenaiProject;
+        obj2[obj2.length - 1] = kenaiProject;
+        obj2[obj2.length - 2] = Jira.getInstance().getKenaiSupport();
         return obj2;
     }
     
@@ -157,28 +160,32 @@ public class KenaiRepository extends JiraRepository {
             }
             queries.add(myIssues);
         }
+        Query ai = getAllIssuesQuery(configuration);
+        if(ai != null) {
+            queries.add(ai);
+        }
+        return queries.toArray(new Query[queries.size()]);
+    }
 
-        // all issues
-        if(allIssues == null) {
+    Query getAllIssuesQuery() throws MissingResourceException {
+        JiraConfiguration configuration = getConfiguration();
+        if(configuration == null) {
+            return null;
+        }
+        return getAllIssuesQuery(configuration);
+    }
+
+    private Query getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+        if (allIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
-            if(p != null) {
+            if (p != null) {
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
                 fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
-                allIssues =
-                    new KenaiQuery(
-                        NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), // NOI18N
-                        this,
-                        fd,
-                        projectName,
-                        true,
-                        true);
-            } else {
-                // XXX warning
-            }
+                allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, fd, projectName, true, true);
+            } 
         }
-        if(allIssues != null) queries.add(allIssues);
-        return queries.toArray(new Query[queries.size()]);
+        return allIssues;
     }
 
     private JiraStatus[] getOpenStatuses() {

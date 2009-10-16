@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -128,7 +128,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      */
     static void unregister (JComponent comp) {
         assert INSTANCE != null : "Unregister asymmetrically called";
-        if (INSTANCE.detachFrom (comp) == 0) {
+        if (INSTANCE != null && INSTANCE.detachFrom(comp) == 0) {
             INSTANCE.hide();
             INSTANCE = null;
         }
@@ -147,7 +147,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         assert comp instanceof JTree || comp instanceof JList;
         comp.removeMouseMotionListener (this);
         comp.removeMouseListener (this);
-        return refcount--;
+        return --refcount;
     }
     
     public void mouseMoved(MouseEvent e) {
@@ -165,10 +165,12 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         hide();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         hide();
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         hide();
     }
@@ -408,8 +410,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             // run with the above line switch and 
             // -J-Dnb.explorer.hw.cocoahack=true
             
-            PopupFactory result = (PopupFactory) Lookup.getDefault().lookup (
-                    PopupFactory.class);
+            PopupFactory result = Lookup.getDefault().lookup (PopupFactory.class);
             return result == null ? PopupFactory.getSharedInstance() : result;
         } else {
             return PopupFactory.getSharedInstance();
@@ -541,6 +542,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             setImage (nue);
         }
         
+        @Override
         public Rectangle getBounds() {
             Dimension dd = getPreferredSize();
             return new Rectangle (0, 0, dd.width, dd.height);
@@ -551,6 +553,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             d = null;
         }
         
+        @Override
         public Dimension getPreferredSize() {
             if (d == null) {
                 d = new Dimension (img.getWidth(), img.getHeight());
@@ -558,10 +561,12 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             return d;
         }
         
+        @Override
         public Dimension getSize() {
             return getPreferredSize();
         }
         
+        @Override
         public void paint (Graphics g) {
             Graphics2D g2d = (Graphics2D) g;
             g2d.drawRenderedImage (img, at);
@@ -575,9 +580,13 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             }
         }
         
+        @Override
         public void firePropertyChange (String s, Object a, Object b) {}
+        @Override
         public void invalidate() {}
+        @Override
         public void validate() {}
+        @Override
         public void revalidate() {}
     }
     

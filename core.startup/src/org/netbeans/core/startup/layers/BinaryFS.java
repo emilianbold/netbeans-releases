@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -970,12 +970,13 @@ final class BinaryFS extends FileSystem {
         }
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof FileMap) {
-                if (fo.equals(((FileMap)obj).fo)) {
-                    return true;
-                }
+            if (!(obj instanceof Map)) {
+                return false;
             }
-            return super.equals(obj);
+            if (obj instanceof FileMap) {
+                return fo.equals(((FileMap)obj).fo);
+            }
+            return obj.equals(this);
         }
         @Override
         public int hashCode() {

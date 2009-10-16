@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -288,6 +288,15 @@ public class AnalyzeModel implements DiscoveryProvider {
             PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
             boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
             Item[] items = makeConfigurationDescriptor.getProjectItems();
+            Map<String,Item> projectSearchBase = new HashMap<String,Item>();
+            for (int i = 0; i < items.length; i++){
+                if (isStoped) {
+                    break;
+                }
+                Item item = items[i];
+                String path = item.getNormalizedFile().getAbsolutePath();
+                projectSearchBase.put(path, item);
+            }
             for (int i = 0; i < items.length; i++){
                 if (isStoped) {
                     break;
@@ -297,7 +306,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     Language lang = item.getLanguage();
                     if (lang == Language.C || lang == Language.CPP){
                         CsmFile langFile = langProject.findFile(item);
-                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, pkgConfig, preferLocal);
+                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
                         res.add(source);
                     }
                 }

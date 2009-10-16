@@ -53,7 +53,8 @@ public class LocalProcReader extends ProcReaderImpl {
     private final File statusFile;
     private final File lwpDir;
 
-    public LocalProcReader(int pid) {
+    public LocalProcReader(int pid, boolean bigendian) {
+        super(bigendian);
         usageFile = new File("/proc/" + pid + "/usage"); // NOI18N
         statusFile = new File("/proc/" + pid + "/status"); // NOI18N
         lwpDir = new File("/proc/" + pid + "/lwp"); // NOI18N

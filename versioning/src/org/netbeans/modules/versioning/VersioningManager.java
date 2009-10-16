@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.versioning;
 
+import java.lang.reflect.Method;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -55,6 +56,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -126,11 +128,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning");
 
     /**
-     * What folders are managed by local history. 
+     * What files or folders are managed by local history.
      * TODO: use SoftHashMap if there is one available in APIs
      */
-    private Map<File, Boolean> localHistoryFolders = new HashMap<File, Boolean>(200);
-    
+    private final Map<File, Boolean> localHistoryFiles = new LinkedHashMap<File, Boolean>(200);
+
+    /**
+     * Holds methods intercepted by a specific vcs. See {@link #needsLocalHistory(methodName)}
+     */
+    private Map<String, Set<String>> interceptedMethods = new HashMap<String, Set<String>>();
+
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
     };
     
@@ -151,32 +158,34 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * List of versioning systems changed.
      */
-    private synchronized void refreshVersioningSystems() {
+    private void refreshVersioningSystems() {
         int rs = ++refreshSerial;
         Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
         if (rs != refreshSerial) {
             // TODO: Workaround for Lookup bug #132145, we have to abort here to keep the freshest list of versioning systems
             return;
         }
-        
-        // inline unloadVersioningSystems();
-        for (VersioningSystem system : versioningSystems) {
-            system.removePropertyChangeListener(this);
-        }
-        versioningSystems.clear();
-        localHistory = null;
-        // inline unloadVersioningSystems();
-        
-        // inline loadVersioningSystems(systems);
-        versioningSystems.addAll(systems);
-        for (VersioningSystem system : versioningSystems) {
-            if (localHistory == null && Utils.isLocalHistory(system)) {
-                localHistory = system;
+
+        synchronized(versioningSystems) {
+            // inline unloadVersioningSystems();
+            for (VersioningSystem system : versioningSystems) {
+                system.removePropertyChangeListener(this);
             }
-            system.addPropertyChangeListener(this);
+            versioningSystems.clear();
+            localHistory = null;
+            // inline unloadVersioningSystems();
+
+            // inline loadVersioningSystems(systems);
+            versioningSystems.addAll(systems);
+            for (VersioningSystem system : versioningSystems) {
+                if (localHistory == null && Utils.isLocalHistory(system)) {
+                    localHistory = system;
+                }
+                system.addPropertyChangeListener(this);
+            }
+            // inline loadVersioningSystems(systems);
         }
-        // inline loadVersioningSystems(systems);
-        
+
         flushFileOwnerCache();
         refreshDiffSidebars(null);
         VersioningAnnotationProvider.refreshAllAnnotations();
@@ -191,13 +200,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         DiffSidebarManager.getInstance().refreshSidebars(files);
     }
     
-    private synchronized void flushFileOwnerCache() {
-        folderOwners.clear();
-        localHistoryFolders.clear();
+    private void flushFileOwnerCache() {
+        synchronized(folderOwners) {
+            folderOwners.clear();
+        }
     }
 
-    synchronized VersioningSystem[] getVersioningSystems() {
-        return versioningSystems.toArray(new VersioningSystem[versioningSystems.size()]);
+    VersioningSystem[] getVersioningSystems() {
+        synchronized(versioningSystems) {
+            return versioningSystems.toArray(new VersioningSystem[versioningSystems.size()]);
+        }
     }
 
     /**
@@ -231,14 +243,19 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @param file a file
      * @return VersioningSystem owner of the file or null if the file is not under version control
      */
-    public synchronized VersioningSystem getOwner(File file) {
+    public VersioningSystem getOwner(File file) {
         LOG.log(Level.FINE, "looking for owner of " + file);
+        
+        
         /**
          * minor speed optimization, file.isFile may last a while
          * if file is a folder then the owner may be acquired from folderOwners directly before file.isFile call
          * otherwise the owner will be acquired after file.isFile call
          */
-        VersioningSystem owner = folderOwners.get(file);
+        VersioningSystem owner = null;
+        synchronized(folderOwners) {
+            owner = folderOwners.get(file);
+        }
         if (owner == NULL_OWNER) {
             LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
             return null;
@@ -247,16 +264,19 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
             return owner;
         }
+
         File folder = file;
-        if (file.isFile()) {
+        if (Utils.isFile(file)) {
             folder = file.getParentFile();
             if (folder == null) {
                 LOG.log(Level.FINE, " null parent");
                 return null;
             }
+            synchronized(folderOwners) {
+                owner = folderOwners.get(folder);
+            }
         }
         
-        owner = folderOwners.get(folder);
         if (owner == NULL_OWNER) {
             LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
             return null;
@@ -267,7 +287,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
         
         File closestParent = null;
-        for (VersioningSystem system : versioningSystems) {
+
+        VersioningSystem[] vs = getVersioningSystems();
+        for (VersioningSystem system : vs) {
             if (system != localHistory) {    // currently, local history is never an owner of a file
                 File topmost = system.getTopmostManagedAncestor(folder);
                 LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
@@ -279,17 +301,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
                 
-        if (owner != null) {
-            LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
-            folderOwners.put(folder, owner);
-        } else {
-            // nobody owns the folder => all parents aren't owned
-            while(folder != null) {
-                LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
-                folderOwners.put(folder, NULL_OWNER);
-                folder = folder.getParentFile();
+        synchronized(folderOwners) {
+            if (owner != null) {
+                LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
+                folderOwners.put(folder, owner);
+            } else {
+                // nobody owns the folder => all parents aren't owned
+                while(folder != null) {
+                    LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
+                    folderOwners.put(folder, NULL_OWNER);
+                    folder = folder.getParentFile();
+                }
             }
         }
+        
         LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
         return owner;
     }
@@ -300,29 +325,54 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @param file the file to examine
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
-    synchronized VersioningSystem getLocalHistory(File file) {
+    VersioningSystem getLocalHistory(File file) {
         if (localHistory == null) return null;
+
+        synchronized(localHistoryFiles) {
+            Boolean isManagedByLocalHistory = localHistoryFiles.get(file);
+            if (isManagedByLocalHistory != null && isManagedByLocalHistory) {
+                return localHistory;
+            }
+        }
         File folder = file;
-        if (file.isFile()) {
+        if (Utils.isFile(file)) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
-        
-        Boolean isManagedByLocalHistory = localHistoryFolders.get(folder);
-        if (isManagedByLocalHistory != null) {
-            return isManagedByLocalHistory ? localHistory : null;
+
+        synchronized(localHistoryFiles) {
+            Boolean isManagedByLocalHistory = localHistoryFiles.get(folder);
+            if (isManagedByLocalHistory != null) {
+                return isManagedByLocalHistory ? localHistory : null;
+            }
         }
-                
+
         boolean isManaged = localHistory.getTopmostManagedAncestor(folder) != null;            
         if (isManaged) {
-            localHistoryFolders.put(folder, Boolean.TRUE);
+            putLocalHistoryFile(Boolean.TRUE, folder);
             return localHistory;
         } else {
-            localHistoryFolders.put(folder, Boolean.FALSE);
+            isManaged = localHistory.getTopmostManagedAncestor(file) != null;
+            putLocalHistoryFile(isManaged, file, folder);
             return null;
         }        
     }
-    
+
+    private void putLocalHistoryFile(Boolean b, File... files) {
+        synchronized(localHistoryFiles) {
+            if(localHistoryFiles.size() > 1500) {
+                Iterator<File> it = localHistoryFiles.keySet().iterator();
+                for (int i = 0; i < 150; i++) {
+                    it.next();
+                    it.remove();
+                }
+            }
+            for (File file : files) {
+                localHistoryFiles.put(file, b);
+            }
+        }
+    }
+
     public void resultChanged(LookupEvent ev) {
         refreshVersioningSystems();
     }
@@ -339,12 +389,49 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            flushFileOwnerCache();
-            refreshDiffSidebars(null);
+            if(evt.getSource() == localHistory) {
+                synchronized(localHistoryFiles) {
+                    localHistoryFiles.clear();
+                }
+            } else {
+                flushFileOwnerCache();
+                refreshDiffSidebars(null);
+            }
         }
     }
 
     public void preferenceChange(PreferenceChangeEvent evt) {
         VersioningAnnotationProvider.instance.refreshAnnotations(null);
+    }
+
+    /**
+     * Determines if the given methodName is implemented by local histories {@link VCSInterceptor}
+     *
+     * @param methodName
+     * @return <code>true</code> if the given methodName is implemented by local histories {@link VCSInterceptor}
+     * otherwise <code>false</code>
+     */
+    boolean needsLocalHistory(String methodName) {
+        boolean ret = false;
+        try {
+            if(localHistory == null) {
+                return ret;
+}
+            Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
+            if(s == null) {
+                s = new HashSet<String>();
+                Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
+                for (Method method : m) {
+                    if((method.getModifiers() & Modifier.PUBLIC) != 0) {
+                        s.add(method.getName());
+                    }
+                }
+                interceptedMethods.put(localHistory.getClass().getName(), s);
+            }
+            ret = s.contains(methodName);
+            return ret;
+        } finally {
+            LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
+        }
     }
 }

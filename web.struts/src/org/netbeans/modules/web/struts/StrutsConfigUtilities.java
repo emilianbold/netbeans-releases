@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -155,7 +155,10 @@ public class StrutsConfigUtilities {
     }
 
     private static void addActions(List list, StrutsConfig sConfig) {
-        ActionMappings mappings = sConfig.getActionMappings();
+        ActionMappings mappings = null;
+        if (sConfig != null) {
+            mappings = sConfig.getActionMappings();
+        }
         if (mappings==null) return;
         Action [] actions = mappings.getAction();
         for (int j = 0; j < actions.length; j++)

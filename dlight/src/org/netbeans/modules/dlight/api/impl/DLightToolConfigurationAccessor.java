@@ -85,6 +85,8 @@ public abstract class DLightToolConfigurationAccessor {
   public abstract String getToolName(DLightToolConfiguration conf);
 
   public abstract String getDetailedToolName(DLightToolConfiguration conf) ;
+
+  public abstract String getToolDescription(DLightToolConfiguration conf) ;
   
   public abstract String getIconPath(DLightToolConfiguration conf);
 

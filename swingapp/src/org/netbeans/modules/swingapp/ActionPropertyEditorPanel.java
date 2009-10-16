@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -156,8 +156,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         iconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
         setIconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
         setIconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
-        
-        scopeCombo.setModel(new DefaultComboBoxModel(new ProxyAction.Scope[] { ProxyAction.Scope.Form, ProxyAction.Scope.Application}));
         
         scopeCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -990,6 +988,16 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         this.scopeClasses = scopeClasses;
         this.sourceFile = sourceFile;
         isChanging = false;
+
+        ProxyAction.Scope[] scopes;
+        if (scopeClasses.containsKey(ProxyAction.Scope.Application)) {
+            scopes = new ProxyAction.Scope[] { ProxyAction.Scope.Form, ProxyAction.Scope.Application };
+            scopeCombo.setEnabled(true);
+        } else {
+            scopes = new ProxyAction.Scope[] { ProxyAction.Scope.Form };
+            scopeCombo.setEnabled(false);
+        }
+        scopeCombo.setModel(new DefaultComboBoxModel(scopes));
     }
     
     private void setSelectedAction(ProxyAction act) {

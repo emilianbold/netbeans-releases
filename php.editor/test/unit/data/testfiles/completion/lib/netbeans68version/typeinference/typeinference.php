@@ -20,11 +20,6 @@ class clsA {
         $methodA2 = $this->methodA2();
         return $methodA2;
     }
-    /**
-     * @return clsA
-     */
-    function methodA3() {
-    }
     function methodA4() {
         return $this;
     }

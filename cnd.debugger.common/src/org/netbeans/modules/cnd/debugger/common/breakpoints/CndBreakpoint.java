@@ -164,7 +164,8 @@ public abstract class CndBreakpoint extends Breakpoint {
                 if (url.charAt(0) == '/') { // NOI18N
                     url = "file:" + url; // NOI18N
                 } else {
-                    url = "file:/" + url; // NOI18N
+                    // on windows capitalize drive letter
+                    url = "file:/" + Character.toUpperCase(url.charAt(0)) + url.substring(1); // NOI18N
                 }
             }
             // We need consistent slashes for compairing an existing breakpoint's url

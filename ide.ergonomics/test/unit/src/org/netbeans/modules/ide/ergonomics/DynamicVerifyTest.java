@@ -46,6 +46,8 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
+import org.netbeans.modules.ide.ergonomics.fod.FoDUpdateUnitProvider;
+import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.project.ProjectFactory;
 import org.openide.util.Lookup;
 
@@ -64,11 +66,13 @@ public class DynamicVerifyTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().
             addTest(DynamicVerifyTest.class).
             addTest(ProjectTemplatesCheck.class).
+            addTest(LayersCheck.class).
             addTest(FilesAndAttributesCheck.class, "testGetAllTemplates", "testCheckAllTemplatesPretest").
             addTest(DebuggerAttachTypesCheck.class, "testGetAllDebuggers").
             addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersReal").
             addTest(ServersNodeActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(MenuProfileActionsCheck.class, "testGetAll", "testCheckAllPretest").
+            addTest(LibrariesCheck.class, "testGetLibraries", "testCheckLibrariesPretest").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -84,6 +88,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(AvailableJ2EEServerCheck.class, "testGetAllJ2eeServersErgo").
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
+            addTest(LibrariesCheck.class, "testCheckLibrariesReal").
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -92,9 +97,22 @@ public class DynamicVerifyTest extends NbTestCase {
         );
 
         all.addTest(full);
+        all.addTest(new WarningsCheck("testEnable"));
         all.addTest(ergonomics);
+        all.addTest(new WarningsCheck("testNoWarnings"));
 
         return all;
+    }
+
+    public void testNoUserDefinedFeaturesInStandardBuild() throws Exception {
+        FoDUpdateUnitProvider instance = new FoDUpdateUnitProvider();
+        Map<String, UpdateItem> items = instance.getUpdateItems();
+
+        assertNull("No user installed modules should be in standard build. If this happens,\n" +
+                "like in case of http://openide.netbeans.org/issues/show_bug.cgi?id=174052\n" +
+                "then you probably added new module and did not categorize it properly,\n" +
+                "or you have additional modules (not part of regular build) " +
+                "in your installation.", items.get("fod.user.installed"));
     }
 
     public void testGetAllProjectFactories() throws Exception {

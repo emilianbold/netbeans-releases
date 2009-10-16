@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -76,10 +76,10 @@ public class GeneralTipsProvider implements ParallelAdviserTipsProvider {
         String os = System.getProperty("os.name"); // NOI18N
         if(os.contains("SunOS")) { // NOI18N
             tips.add(new SunStudioCompilersAdvice());
-//            tips.add(new SunStudioCompilersInstallationAdvice());
+            tips.add(new SunStudioCompilersInstallationAdvice("SunOS")); // NOI18N
         } else if(os.contains("Linux")) { // NOI18N
             tips.add(new SunStudioCompilersAdvice());
-            tips.add(new SunStudioCompilersInstallationAdvice());
+            tips.add(new SunStudioCompilersInstallationAdvice("Linux")); // NOI18N
         } else {
             tips.add(new SunStudioCompilersAdvice());
         }

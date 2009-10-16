@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,11 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.debugger.common.utils.WinPath;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Various miscelaneous static methods.
@@ -235,7 +232,6 @@ public class GdbUtils {
     private static void processString(String info, PairProcessor processor) {
         int len = info.length();
         int i = 0;
-        boolean isWindows = Utilities.isWindows();
         
         mainLoop: while (i < len) {
             int tstart = i++;
@@ -272,9 +268,6 @@ public class GdbUtils {
 
             // put the value in the map and prepare for the next property
             String value = info.substring(i, tend);
-            if (isWindows && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.toUpperCase().charAt(10) + ":" + value.substring(11); // NOI18N
-            }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
                 value = gdbToUserEncoding(value); // possibly convert multi-byte fields
             }
@@ -493,7 +486,7 @@ public class GdbUtils {
                     }
                 } else if (ch == '\'') {
                     inSingleQuote = true;
-                } else if (ch == 'n' && !isSlashBefore(info, idx)) {
+                } else if (ch == 'n' && isSlashBefore(info, idx)) {
                     s.deleteCharAt(s.length() - 1);
                     ch = 0;
                 } else if (info.substring(idx).startsWith("members of ")) { // NOI18N
@@ -833,14 +826,17 @@ public class GdbUtils {
         return cur.getName() + ':' + Long.toString(cur.getId());
     }
 
-    public static boolean comparePaths(int platform, String path1, String path2) {
-        path1 = path1.trim();
-        path2 = path2.trim();
-        // we need to convert paths to unix-like style, so that normalization works correctly
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            path1 = WinPath.win2cyg(path1).toLowerCase();
-            path2 = WinPath.win2cyg(path2).toLowerCase();
+    public static boolean compareUnixPaths(String path1, String path2) {
+        assert path1.equals(path1.trim()) : "Only trimmed paths allowed"; //NOI18N
+        assert path2.equals(path2.trim()) : "Only trimmed paths allowed"; //NOI18N
+
+        assert path1.charAt(0) == '/' : "Only unix paths supported"; //NOI18N
+        assert path2.charAt(0) == '/' : "Only unix paths supported"; //NOI18N
+
+        if (path1.equals(path2)) {
+            return true;
         }
+        
         // see isssue 152489, normalization is required to correctly compare paths with ..
         try {
             String norPath1 = new URI(path1).normalize().getPath();
@@ -854,29 +850,7 @@ public class GdbUtils {
         return path1.equals(path2);
     }
 
-    /**
-     * Compare the executable path from gdb (via the <i>info files</i> command to the executable path
-     * from the project data. This comparison is <b>very</b> system dependent. For MacOS, all compares
-     * are done in lower case. For Unix, they're done as-is. The most difficult platform is Windows,
-     * where, depending on the gdb provider, I can see a Cygwin name, either forward or backward slashes,
-     * either single or double backslashes (MinGW). The ".exe" may also be missing in some cases.
-     *
-     * @param exe1 The first path
-     * @param exe2 The second path
-     * @return True if exe1 and exe2 resolve to the same executable
-     */
-    public static boolean compareExePaths(int platform, String exe1, String exe2) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-            exe1 = removeExe(exe1);
-            exe2 = removeExe(exe2);
-        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
-            exe1 = exe1.toLowerCase();
-            exe2 = exe2.toLowerCase();
-        }
-        return comparePaths(platform, exe1, exe2);
-    }
-
-    private static String removeExe(String exe) {
+    public static String removeExe(String exe) {
         if (exe.endsWith(".exe")) { // NOI18N
             return exe.substring(0, exe.length() - 4);
         }

@@ -54,14 +54,15 @@ public interface DataRowToTimeSeries {
      * it gets from indicator data provider.
      *
      * @param row  new data row
+     * @return time series data for the indicator,
+     *      or <code>null</code> if the DataRow is not recognized
      */
-    public void addDataRow(DataRow row);
+    public float[] getData(DataRow row);
 
     /**
-     * Indicator calls this every second to request new data to draw.
+     * Indicator calls this every second to update details.
      *
-     * @param data  implementation should fill this array with new data
-     * @param details  implementation should fill the map with new details
+     * @return the map with new details
      */
-    public void tick(float[] data, Map<String, String> details);
+    public Map<String, String> getDetails();
 }

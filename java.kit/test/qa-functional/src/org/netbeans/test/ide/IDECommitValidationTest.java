@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,17 +41,12 @@
 
 package org.netbeans.test.ide;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.ide.CountingSecurityManager.Mode;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -70,10 +65,8 @@ public class IDECommitValidationTest extends IDEValidation {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDECommitValidationTest.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
-        /* XXX: Enable as soon as there are no warnings during start
-                and exceptions are not that common
         .failOnException(Level.INFO)
-        .failOnMessage(Level.WARNING)*/;
+        .failOnMessage(Level.SEVERE);
         
         
         CountingSecurityManager.initWrites();

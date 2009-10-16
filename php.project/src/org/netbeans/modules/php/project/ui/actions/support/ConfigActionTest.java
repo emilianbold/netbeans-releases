@@ -63,10 +63,9 @@ import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
-import org.netbeans.modules.php.project.util.PhpUnit;
-import org.netbeans.modules.php.project.util.PhpUnit.ConfigFiles;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -129,11 +128,7 @@ class ConfigActionTest extends ConfigAction {
         if (testDirectory == null) {
             return;
         }
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        if (phpUnit == null || !phpUnit.supportedVersionFound()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit)),
-                    NotifyDescriptor.WARNING_MESSAGE));
+        if (!isPhpUnitValid()) {
             return;
         }
 
@@ -147,12 +142,23 @@ class ConfigActionTest extends ConfigAction {
 
     @Override
     public void runFile(Lookup context) {
+        if (!isPhpUnitValid()) {
+            return;
+        }
         run(getPhpUnitInfo(context));
     }
 
     @Override
     public void debugFile(Lookup context) {
+        if (!isPhpUnitValid()) {
+            return;
+        }
         debug(getPhpUnitInfo(context));
+    }
+
+    private boolean isPhpUnitValid() {
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        return Utils.validatePhpUnitForProject(phpUnit, project);
     }
 
     void run(PhpUnitInfo info) {
@@ -235,12 +241,13 @@ class ConfigActionTest extends ConfigAction {
         }
 
         public ExecutionDescriptor getDescriptor() throws IOException {
+            boolean phpUnitValid = PhpUnit.hasValidVersion(phpUnit);
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
-                    .optionsPath(UiUtils.OPTIONS_PATH)
-                    .frontWindow(!phpUnit.supportedVersionFound())
+                    .optionsPath(UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH) // NOI18N
+                    .frontWindow(!phpUnitValid)
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .inputVisible(false);
-            if (phpUnit.supportedVersionFound()) {
+            if (phpUnitValid) {
                 executionDescriptor = executionDescriptor
                         .preExecution(new Runnable() {
                             public void run() {
@@ -268,7 +275,7 @@ class ConfigActionTest extends ConfigAction {
 
             ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                     .workingDirectory(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.workingDirectory)))
-                    .addArgument(PhpUnit.PARAM_XML_LOG)
+                    .addArgument(phpUnit.getXmlLogParam())
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
             if (configFiles.bootstrap != null) {

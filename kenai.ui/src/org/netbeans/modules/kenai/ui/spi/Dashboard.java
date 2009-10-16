@@ -45,7 +45,7 @@ public abstract class Dashboard {
      * @param isMemberProject True if current kenai user is project's owner or observer.
      * @see ProjectAccessor#getOpenNonMemberProjectAction()
      */
-    public abstract void addProject( ProjectHandle project, boolean isMemberProject );
+    public abstract void addProject( ProjectHandle project, boolean isMemberProject, boolean select );
 
     public abstract void removeProject( ProjectHandle project );
 

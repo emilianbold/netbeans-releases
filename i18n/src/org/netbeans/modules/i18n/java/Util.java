@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -63,8 +63,13 @@ final class Util {
      * {@link org.netbeans.modules.properties.PropertiesStructure#getItem(java.lang.String)
      * here}.
      * @param key a key string.
+     * @return An unescaped Java string, or {@code null} if the {@code key} is
+     * {@code null}.
      */
     static String getUnescapedKey(String key) {
+        if(key == null) { // #173245
+            return null;
+        }
         String unescapedKey =
         // #168798
                 key.replace(" ", "\\ "); // NOI18N

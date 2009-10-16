@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -71,7 +71,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
 		implements PropertyChangeListener, DebuggerManagerListener {
     
     private final GdbDebugger         debugger;
-    private final Map<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
+    private final Map<Breakpoint, BreakpointImpl<?>> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl<?>>();
 
     private static final Logger log = Logger.getLogger("gdb.breakpoints.logger"); // NOI18N
 
@@ -129,7 +129,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         if (breakpointToImpl.containsKey(b)) {
 	    return;
 	}
-        BreakpointImpl impl = null;
+        BreakpointImpl<?> impl = null;
         if (b instanceof LineBreakpoint) {
             impl = new LineBreakpointImpl((LineBreakpoint) b, debugger);
         } else if (b instanceof FunctionBreakpoint) {
@@ -152,7 +152,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
 
     private void removeBreakpointImpl(Breakpoint b) {
-        BreakpointImpl impl = breakpointToImpl.remove(b);
+        BreakpointImpl<?> impl = breakpointToImpl.remove(b);
         if (impl != null) {
             impl.remove();
             log.finer("BreakpointsEngineListener: removed impl " + impl + " for " + b);
@@ -168,7 +168,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     private void sharedLibLoaded() {
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (bp.getValidity() == Breakpoint.VALIDITY.INVALID) {
-                BreakpointImpl impl = breakpointToImpl.get(bp);
+                BreakpointImpl<?> impl = breakpointToImpl.get(bp);
                 if (impl != null) {
                     impl.revalidate();
                 }

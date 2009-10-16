@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.annotationsupport;
 
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
@@ -127,7 +126,7 @@ public class LineAnnotationInfo {
      * @return the annotation
      */
     public String getAnnotation() {
-        if (annotation == null) {
+//        if (annotation == null) {
             annotation = "";
             int col = 0;
             for (String metric : getColumns()) {
@@ -139,7 +138,7 @@ public class LineAnnotationInfo {
                 annotation += formattedMetric;
                 col++;
             }
-        }
+//        }
         return annotation;
     }
 
@@ -217,5 +216,10 @@ public class LineAnnotationInfo {
     public void setY(int y1, int y2) {
         this.y1 = y1;
         this.y2 = y2;
+    }
+
+    @Override
+    public String toString() {
+        return getTooltip() ;
     }
 }

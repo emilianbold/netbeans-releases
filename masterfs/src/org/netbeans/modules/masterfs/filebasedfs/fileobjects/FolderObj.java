@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -49,7 +49,6 @@ import java.io.OutputStream;
 import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,6 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.FSCallable;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
@@ -78,8 +76,6 @@ import org.openide.util.Mutex;
  */
 public final class FolderObj extends BaseFileObj {    
     static final long serialVersionUID = -1022430210876356809L;
-    private static final Mutex.Privileged mp = new Mutex.Privileged();
-    private static final Mutex mutex = new Mutex(FolderObj.mp);
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
@@ -120,23 +116,22 @@ public final class FolderObj extends BaseFileObj {
 
   
     public final FileObject[] getChildren() {
-        final List results = new ArrayList();
+        final List<FileObject> results = new ArrayList<FileObject>();
 
         final ChildrenCache childrenCache = getChildrenCache();
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
 
         mutexPrivileged.enterWriteAccess();
 
-        Set fileNames;
+        Set<FileNaming> fileNames;
         try {
-            fileNames = new HashSet(childrenCache.getChildren(false));
+            fileNames = new HashSet<FileNaming>(childrenCache.getChildren(false));
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
 
         final FileObjectFactory lfs = getFactory();        
-        for (Iterator iterator = fileNames.iterator(); iterator.hasNext();) {
-            final FileNaming fileName = (FileNaming) iterator.next();
+        for (FileNaming fileName : fileNames) {
             FileInfo fInfo = new FileInfo (fileName.getFile(), 1);
             fInfo.setFileNaming(fileName);
             
@@ -145,7 +140,7 @@ public final class FolderObj extends BaseFileObj {
                 results.add(fo);
             }
         }
-        return (FileObject[]) results.toArray(new FileObject[0]);
+        return results.toArray(new FileObject[0]);
     }
 
     public final FileObject createFolderImpl(final String name) throws java.io.IOException {
@@ -264,7 +259,7 @@ public final class FolderObj extends BaseFileObj {
 
         if (retVal != null) {            
             if (retVal instanceof FileObj) {
-                ((FileObj)retVal).setLastModified(file2Create.lastModified());
+                retVal.setLastModified(file2Create.lastModified());
             }
             retVal.fireFileDataCreatedEvent(false);
         } else {
@@ -296,7 +291,7 @@ public final class FolderObj extends BaseFileObj {
 
     @Override
     public void delete(final FileLock lock, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
-        final LinkedList all = new LinkedList();
+        final LinkedList<FileObject> all = new LinkedList<FileObject>();
 
         final File file = getFileName().getFile();
         if (!deleteFile(file, all, getFactory(), deleteHandler)) {
@@ -313,7 +308,9 @@ public final class FolderObj extends BaseFileObj {
             final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;            
             if (childrenCache != null) {
                 final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                if (mutexPrivileged != null) {
+                    mutexPrivileged.enterWriteAccess();
+                }
                 try {      
                     if (deleteHandler != null) {
                         childrenCache.removeChild(toDel.getFileName());
@@ -323,7 +320,9 @@ public final class FolderObj extends BaseFileObj {
                     
                     
                 } finally {
-                    if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();                    
+                    if (mutexPrivileged != null) {
+                        mutexPrivileged.exitWriteAccess();
+                    }
                 }
             }                
             toDel.setValid(false);
@@ -336,19 +335,18 @@ public final class FolderObj extends BaseFileObj {
         final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
         final long previous = keeper == null ? -1 : keeper.childrenLastModified();
 
-        Set oldChildren = null;
-        Map refreshResult = null;
+        Set<FileNaming> oldChildren = null;
+        Map<FileNaming, Integer> refreshResult = null;
         mutexPrivileged.enterWriteAccess();
         try {
-            oldChildren = new HashSet(cache.getCachedChildren());
+            oldChildren = new HashSet<FileNaming>(cache.getCachedChildren());
             refreshResult = cache.refresh();
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
 
         oldChildren.removeAll(refreshResult.keySet());
-        for (Iterator iterator = oldChildren.iterator(); iterator.hasNext();) {
-            final FileName child = (FileName) iterator.next();
+        for (final FileNaming child : oldChildren) {
             final BaseFileObj childObj = getFactory().getCachedOnly(child.getFile());
             if (childObj != null && childObj.isData()) {
                 ((FileObj) childObj).refresh(expected);
@@ -356,13 +354,11 @@ public final class FolderObj extends BaseFileObj {
         }
 
         final FileObjectFactory factory = getFactory();
-        final Iterator iterator = refreshResult.entrySet().iterator();
-        while (iterator.hasNext()) {
-            final Map.Entry entry = (Map.Entry) iterator.next();
-            final FileName child = (FileName) entry.getKey();
-            final Integer operationId = (Integer) entry.getValue();
+        for (final Map.Entry<FileNaming, Integer> entry : refreshResult.entrySet()) {
+            final FileNaming child = entry.getKey();
+            final Integer operationId = entry.getValue();
 
-            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj) factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Others) : factory.getCachedOnly(child.getFile());
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Others) : factory.getCachedOnly(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 
@@ -427,7 +423,7 @@ public final class FolderObj extends BaseFileObj {
     }
     
     //TODO: rewrite partly and check FileLocks for existing FileObjects
-    private boolean deleteFile(final File file, final LinkedList all, final FileObjectFactory factory, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
+    private boolean deleteFile(final File file, final LinkedList<FileObject> all, final FileObjectFactory factory, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
         final boolean ret = (deleteHandler != null) ? deleteHandler.delete(file) : file.delete();
 
         if (ret) {
@@ -534,7 +530,7 @@ public final class FolderObj extends BaseFileObj {
         public final ChildrenSupport ch = new ChildrenSupport();
 
 
-        public final Set getChildren(final boolean rescan) {
+        public final Set<FileNaming> getChildren(final boolean rescan) {
             return ch.getChildren(getFileName(), rescan);
         }
 
@@ -542,12 +538,12 @@ public final class FolderObj extends BaseFileObj {
             return ch.getChild(childName, getFileName(), rescan);
         }
 
-        public final Map refresh() {
+        public final Map<FileNaming, Integer> refresh() {
             return ch.refresh(getFileName());
         }
 
         public final Mutex.Privileged getMutexPrivileged() {
-            return FolderObj.mp;
+            return ch.getMutexPrivileged();
         }
 
         @Override
@@ -559,7 +555,7 @@ public final class FolderObj extends BaseFileObj {
             ch.removeChild(getFileName(), childName);
         }
 
-        public Set getCachedChildren() {
+        public Set<FileNaming> getCachedChildren() {
             return ch.getCachedChildren();
         }
 

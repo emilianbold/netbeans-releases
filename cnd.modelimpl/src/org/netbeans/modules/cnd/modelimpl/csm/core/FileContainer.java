@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -85,6 +84,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 /*package-local*/ 
 class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
+
     private static final class Lock {}
     private final Object lock = new Lock();
     private final Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
@@ -300,13 +300,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     public static CharSequence getFileKey(File file, boolean sharedText) {
-        if (CndUtils.isDebugMode()) {
-            File normFile = CndFileUtils.normalizeFile(file);
-            if (!file.equals(normFile)) {
-                CndUtils.assertTrueInConsole(false, "Parameter file was not " + // NOI18N
-                            "normalized. Was " + file + " instead of " + normFile); // NOI18N
-            }
-        }
+        CndUtils.assertNormalized(file);
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {
             try {

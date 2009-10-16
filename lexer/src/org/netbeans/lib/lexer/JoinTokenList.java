@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -605,12 +605,15 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
 
     private EmbeddedTokenList<T> initTokenList(int tokenListIndex, int joinTokenCount) {
         EmbeddedTokenList<T> tokenList = tokenList(tokenListIndex);
-        if (!tokenList.embedding().joinSections()) {
-            throw new IllegalStateException(
-                    "Embedding " + tokenList.embedding() + " not declared to join sections. " +
-                    tokenList.dumpInfo(null)
-            );
-        }
+        // Removed following code since there may be mixture of embeddings with joinSections either true or false.
+        // Some token lists might be created with joinSections==false and then a custom joining embedding
+        // might be created.
+//        if (!tokenList.embedding().joinSections()) {
+//            throw new IllegalStateException(
+//                    "Embedding " + tokenList.embedding() + " not declared to join sections. " +
+//                    tokenList.dumpInfo(null)
+//            );
+//        }
                 
         if (tokenList.tokenCountCurrent() > 0) {
             // Clear all tokens so that it can be initialized by joined lexing.

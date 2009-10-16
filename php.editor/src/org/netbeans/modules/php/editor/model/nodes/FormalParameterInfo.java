@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
+import org.netbeans.modules.php.editor.model.impl.ParameterImpl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

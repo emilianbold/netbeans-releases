@@ -52,6 +52,7 @@ import java.util.TreeSet;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -76,7 +77,6 @@ public class PredefinedSymbols {
         IndexedFunction ifnc = new MagicIndexedFunction(fncName, 
                 NbBundle.getMessage(PredefinedSymbols.class, "MagicMethod"), //NOI18N
                 null, null, arguments, 0, flags, ElementKind.METHOD);
-        ifnc.setOptionalArgs(new int[0]);
         return ifnc;
     }
     static class MagicIndexedFunction extends IndexedFunction {

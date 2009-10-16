@@ -93,7 +93,6 @@ mkdir -p $DIST/zip
 mkdir -p $LOGS
 
 #LOGS
-CVS_CHECKOUT_LOG=$LOGS/$BASENAME-cvs-checkout.log
 IDE_BUILD_LOG=$LOGS/$BASENAME-build-ide.log
 MOBILITY_BUILD_LOG=$LOGS/$BASENAME-build-mobility.log
 VISUALWEB_BUILD_LOG=$LOGS/$BASENAME-build-visualweb.log

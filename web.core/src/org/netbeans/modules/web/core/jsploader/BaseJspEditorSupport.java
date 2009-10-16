@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -170,7 +170,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                     if (evt.getNewValue() != null) {
                         //document loaded
                         restartParserTask();
-                        getDocument().addDocumentListener(DOCUMENT_LISTENER);
+                        ((Document)evt.getNewValue()).addDocumentListener(DOCUMENT_LISTENER);
                     } else {
                         //document closed
                         ((Document)evt.getOldValue()).removeDocumentListener(DOCUMENT_LISTENER);
@@ -556,6 +556,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
          */
         @Override
         protected void componentActivated() {
+            super.componentActivated();
             ((BaseJspEditorSupport) cloneableEditorSupport()).restartParserTask();
             //allow resumed parser to perform parsing of the webproject
             taglibParseSupport.setEditorOpened(true);

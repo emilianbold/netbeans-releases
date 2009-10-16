@@ -251,18 +251,20 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @NonNull
     String getSuperClassName() {
         List<? extends ClassScope> retval = null;
-        retval = superClass.hasSecond() ? superClass.second() : null;
-        if (retval == null) {
-            assert superClass.hasFirst();
-            String superClasName = superClass.first();
-            if (superClasName != null) {
-                return superClasName;
+        if (superClass != null) {
+            retval = superClass.hasSecond() ? superClass.second() : null;
+            if (retval == null) {
+                assert superClass.hasFirst();
+                String superClasName = superClass.first();
+                if (superClasName != null) {
+                    return superClasName;
 
-            }
-        } else if (retval.size() > 0) {
-            ClassScope cls = ModelUtils.getFirst(retval);
-            if (cls != null) {
-                return cls.getName();
+                }
+            } else if (retval.size() > 0) {
+                ClassScope cls = ModelUtils.getFirst(retval);
+                if (cls != null) {
+                    return cls.getName();
+                }
             }
         }
         return null;//NOI18N
@@ -307,7 +309,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     public String getDefaultConstructorIndexSignature() {
         StringBuilder sb = new StringBuilder();
         sb.append(getName()).append(";");//NOI18N
-        sb.append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         sb.append(";");//NOI18N
         sb.append(";");//NOI18N

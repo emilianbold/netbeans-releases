@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -47,9 +47,23 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Notification.SILENT">
+        <api name="awt"/>
+        <summary>Support for silent notifications</summary>
+        <version major="7" minor="17"/>
+        <date day="16" month="10" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            New priority to show a notification but without its details initially.
+            The user can display the details baloon manually later.
+        </description>
+        <class package="org.openide.awt" name="NotificationDisplayer"/>
+        <issue number="174183"/>
+    </change>
     <change id="AlwaysEnabledAction.CheckBox">
         <api name="awt"/>
-        <summary>AwlaysEnabledAction can represent a boolean key in Preferences.</summary>
+        <summary>AlwaysEnabledAction can represent a boolean key in Preferences.</summary>
         <version major="7" minor="15"/>
         <date day="24" month="8" year="2009"/>
         <author login="mmetelka"/>
@@ -159,8 +173,9 @@ made subject to such option by the copyright holder.
         <version major="7" minor="10"/>
         <date day="1" month="7" year="2009"/>
         <author login="jtulach"/>
-        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="incompatible" deprecation="no" deletion="no" modification="no"/>
         <description>
+            <p>
             Two new factory methods for creating
             <a href="@TOP@/org/openide/awt/Actions.html#context(java.lang.Class,%20boolean,%20boolean,%20org.openide.util.ContextAwareAction,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
             context</a>
@@ -170,6 +185,26 @@ made subject to such option by the copyright holder.
             actions and bunch of
             <a href="@TOP@/org/netbeans/api/actions/package-summary.html">
             context interfaces</a>.
+            </p>
+
+            <p>
+            As part of introduction of the
+            <a href="@TOP@/org/netbeans/api/actions/package-summary.html">
+            context interfaces</a>, several already existing interfaces
+            (usually carrying <em>Cookie</em> suffix in their name) were
+            retrofitted to extend these new
+            <a href="@TOP@/org/netbeans/api/actions/package-summary.html">alternatives</a>.
+            This is binary and semantically compatible (as the methods closure
+            remains the same) and <a href="@org-openide-nodes@/overview-summary.html">the module</a>
+            providing <em>cookies</em> already had a runtime dependency on
+            <a href="@org-openide-awt@/overview-summary.html">org.openide.awt</a>
+            module. However this change can cause problems during compilation.
+            Those who compiled against
+            <a href="@org-openide-nodes@/overview-summary.html">Nodes API</a> only
+            and implemented one of the <em>cookie</em> interfaces need to add
+            (compile time) dependency on 
+            <a href="@org-openide-awt@/overview-summary.html">org.openide.awt</a> as well.
+            </p>
         </description>
         <class package="org.openide.awt" name="Actions"/>
         <class package="org.netbeans.api.actions" name="Openable"/>

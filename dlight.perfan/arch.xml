@@ -30,7 +30,7 @@
     <answer id="arch-overall">
         <p>
             
-      This module provides implemenatation of D-Light Toolkit
+      This module provides implemenatation of DLight Toolkit
             <api name="DataCollectorSPI" group="java" type="import" category="devel"></api> implementation
             which   uses  <a href="http://developers.sun.com/sunstudio/overview/topics/analyzer_index.html">Sun Studio Performance Analyzer</a> collect to collect information for Java and Native code.
             <br></br>
@@ -39,7 +39,7 @@
     <i>Functions list with the synchronization metrics:  Sync. Wait Time and Sync. Wait Count</i><br></br>
     <i>Functoins list containing memory leaks</i><br></br>
 
-        See <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a> for more details about D-Light Toolkit.
+        See <a href="http://wiki.netbeans.org/DLightToolkitDesign">DLight Toolkit</a> for more details about DLight Toolkit.
        This modules provides  <api name="SunStudioDCConfiguration" group="java" type="export" category="devel"></api> which
        can be used to create own tools using this collector.
        
@@ -107,7 +107,7 @@
     <answer id="arch-usecases">
         <p>
             <usecase name="Gizmo: Observability Tool for C/C++ Pack" id="DLightGizmoSunStudioDataCollectorUseCase">
-               Gizmo will use toll built on the base of existing tools provided by D-Light Toolkit.
+               Gizmo will use toll built on the base of existing tools provided by DLight Toolkit.
                One of the tool provided is CPU monitor which uses either SunStudio Data Collector
                (see <a href="http://developers.sun.com/sunstudio/overview/topics/analyzer_index.html">Sun Studio Performance Analyzer</a>) to collect and
                show information about Hotspot functions or Dtrace (if dtrace is not available on the target platform checks
@@ -161,8 +161,8 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
 -->
     <answer id="arch-what">
         <p>
-    This modules provides implementation which can be used to create and use D-Light DataCollector which uses SunStudio Performance Analyzer
-    collect tool. See  <a href="http://wiki.netbeans.org/DLightToolkitDesign">D-Light Toolkit</a> documentation for more details.
+    This modules provides implementation which can be used to create and use DLight DataCollector which uses SunStudio Performance Analyzer
+    collect tool. See  <a href="http://wiki.netbeans.org/DLightToolkitDesign">DLight Toolkit</a> documentation for more details.
         </p>
     </answer>
 
@@ -586,7 +586,7 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
 -->
     <answer id="exec-process">
         <p>
-   Yes, external  SunStudio Performance Analyzer utilities <code>collect</code> and <code>er_print</code> are executed using D-Light Native Execution Support modules API.
+   Yes, external  SunStudio Performance Analyzer utilities <code>collect</code> and <code>er_print</code> are executed using DLight Native Execution Support modules API.
    The result cannot be the same on different platforms as this is really  OS dependent utilitites.
    Output of er_print is parsed. 
         </p>
@@ -784,7 +784,7 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
     <answer id="lookup-register">
         <p>
    yes, using a declarative annotation such as <code>@ServiceProvider</code>.
-   D-Light Toolkit infrastructure is supposed to find component registered
+   DLight Toolkit infrastructure is supposed to find component registered
         </p>
     </answer>
 
@@ -915,7 +915,7 @@ public final class DLightCPUToolConfigurationProvider implements DLightToolConfi
 -->
     <answer id="perf-progress">
         <p>
-   Execution  uses D-Light NativeExecution Support module which performs tasks in in non-AWT thread
+   Execution  uses DLight NativeExecution Support module which performs tasks in in non-AWT thread
         </p>
     </answer>
 

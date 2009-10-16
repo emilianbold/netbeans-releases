@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -459,7 +459,7 @@ public class BinaryAnalyser {
 
             //2. Add filed usages 
             final ConstantPool constantPool = classFile.getConstantPool();
-            Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);            
+            Collection<? extends CPFieldInfo> fields = constantPool.getAllConstants(CPFieldInfo.class);
             for (CPFieldInfo field : fields) {
                 ClassName name = ClassFileUtil.getType(constantPool.getClass(field.getClassID()));
                 if (name != null) {
@@ -679,7 +679,7 @@ public class BinaryAnalyser {
                 ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
                     ClassPathSupport.createClassPath(new URL[0]),
                     ClassPathSupport.createClassPath(new URL[0]));
-                final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null,null);
+                final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null);
                 TreeLoader.preRegister(jt.getContext(), cpInfo);
                 TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
                 if (jc != null) {

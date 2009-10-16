@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -753,7 +753,7 @@ public final class TopLogging {
      */
     private static final class LgStream extends PrintStream implements Runnable {
         private Logger log;
-        private final StringBuffer sb = new StringBuffer();
+        private final StringBuilder sb = new StringBuilder();
         private static RequestProcessor RP = new RequestProcessor("StdErr Flush");
         private RequestProcessor.Task flush = RP.create(this, true);
 
@@ -770,7 +770,9 @@ public final class TopLogging {
             if (unwantedMessages != null && unwantedMessages.matcher(s).find()) {
                 new Exception().printStackTrace(DEBUG);
             }
-            sb.append(s);
+            synchronized (sb) {
+                sb.append(s);
+            }
             checkFlush();
         }
 
@@ -782,7 +784,9 @@ public final class TopLogging {
             if (RP.isRequestProcessorThread()) {
                 return;
             }
-            sb.append((char)b);
+            synchronized (sb) {
+                sb.append((char)b);
+            }
             checkFlush();
         }
 
@@ -835,20 +839,28 @@ public final class TopLogging {
             for (;;) {
                 String toLog;
                 synchronized (sb) {
-                    int first = sb.indexOf("\n"); // NOI18N
-                    if (first < 0) {
+                    if (sb.length() == 0) {
                         break;
                     }
-                    if (first == 0) {
-                        sb.delete(0, 1);
-                        toLog = "\n";
-                    } else {
-                        toLog = sb.substring(0, first + 1);
-                        sb.delete(0, first + 1);
+                    int last = -1;
+                    for (int i = sb.length() - 1; i >=0; i--) {
+                        if (sb.charAt(i) == '\n') {
+                            last = i;
+                            break;
+                        }
                     }
+                    if (last == -1) {
+                        break;
+                    }
+                    toLog = sb.substring(0, last + 1);
+                    sb.delete(0, last + 1);
                 }
-                //if (DEBUG != null) DEBUG.println("delegating: " + toLog); // NOI18N
-                log.log(Level.INFO, toLog);
+                int begLine = 0;
+                while (begLine < toLog.length()) {
+                    int endLine = toLog.indexOf('\n', begLine);
+                    log.log(Level.INFO, toLog.substring(begLine, endLine + 1));
+                    begLine = endLine + 1;
+                }
             }
         }
     } // end of LgStream

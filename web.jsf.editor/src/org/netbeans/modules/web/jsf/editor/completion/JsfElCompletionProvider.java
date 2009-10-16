@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,7 +48,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
@@ -87,21 +86,21 @@ public class JsfElCompletionProvider implements CompletionProvider{
             this.creationCaretOffset = caretOffset;
         }
         
-        protected void query(CompletionResultSet resultSet, Document doc, int offset) {
+        protected void query(CompletionResultSet resultSet, Document doc, final int offset) {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = null;
             if (fObject != null)
                 wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                JsfElExpression elExpr = new JsfElExpression (wm, doc);
-                ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
+                final JsfElExpression elExpr = new JsfElExpression (wm, doc);
+                final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
 
                 int elParseType = elExpr.parse(offset);
-                int anchor = offset - elExpr.getReplace().length();
+                final int anchor = offset - elExpr.getReplace().length();
                 
                 switch (elParseType){
                     case JsfElExpression.EL_START:
-                        String replace = elExpr.getReplace();
+                        final String replace = elExpr.getReplace();
 
                         // check managed beans
                         List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
@@ -123,6 +122,10 @@ public class JsfElCompletionProvider implements CompletionProvider{
                                                 bundle.getBaseName()));
                             }
                         }
+
+                        //add all declared local variables
+                        complItems.addAll(elExpr.getAvailableDeclaredVariables(replace));
+
                         break;
                     case JsfElExpression.EL_JSF_BEAN:
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(
@@ -157,6 +160,7 @@ public class JsfElCompletionProvider implements CompletionProvider{
             resultSet.finish();
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }

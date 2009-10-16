@@ -164,7 +164,12 @@ public class SymfonyOptionsPanel extends JPanel {
         symfonyLabel.setLabelFor(symfonyTextField);
 
 
-        Mnemonics.setLocalizedText(symfonyLabel,NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text")); // NOI18N
+
+
+
+
+
+        Mnemonics.setLocalizedText(symfonyLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.text"));
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.browseButton.text"));
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -178,12 +183,6 @@ public class SymfonyOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(symfonyScriptUsageLabel, "HINT");
-        symfonyScriptUsageLabel.setEnabled(false);
-
-
-
-
-
         Mnemonics.setLocalizedText(runningInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.runningInfoLabel.text"));
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.noteLabel.text"));
         Mnemonics.setLocalizedText(includePathInfoLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.includePathInfoLabel.text"));
@@ -220,7 +219,7 @@ public class SymfonyOptionsPanel extends JPanel {
                                     .add(symfonyScriptUsageLabel)
                                     .addContainerGap())
                                 .add(layout.createSequentialGroup()
-                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                                    .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                                     .addPreferredGap(LayoutStyle.RELATED)
                                     .add(browseButton)
                                     .addPreferredGap(LayoutStyle.RELATED)
@@ -230,15 +229,15 @@ public class SymfonyOptionsPanel extends JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(includePathInfoLabel)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addContainerGap(138, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(installationInfoLabel)
-                .addContainerGap(159, Short.MAX_VALUE))
+                .addContainerGap(206, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(learnMoreLabel)
-                .addContainerGap(462, Short.MAX_VALUE))
+                .addContainerGap(509, Short.MAX_VALUE))
         );
 
         layout.linkSize(new Component[] {browseButton, searchButton}, GroupLayout.HORIZONTAL);
@@ -312,14 +311,12 @@ public class SymfonyOptionsPanel extends JPanel {
     }//GEN-LAST:event_learnMoreLabelMouseEntered
 
     private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
-        URL url = null;
         try {
-            url = new URL("http://www.symfony-project.org/installation"); // NOI18N
+            URL url = new URL("http://www.symfony-project.org/installation"); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-        assert url != null;
-        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
 

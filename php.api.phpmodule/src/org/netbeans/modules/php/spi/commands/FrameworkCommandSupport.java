@@ -110,6 +110,14 @@ public abstract class FrameworkCommandSupport {
     protected abstract String getOptionsPath();
 
     /**
+     * Get the plugin directory to which a {@link FileChangeListener} is added
+     * (commands are refreshed if any change in this directory happens).
+     * @return the plugin directory or <code>null</code> if the framework does not have such directory
+     * @since 1.18
+     */
+    protected abstract File getPluginsDirectory();
+
+    /**
      * Get the process builder for running framework commands or <code>null</code> if something is wrong.
      * The default implmentation returns {@link ExternalProcessBuilder process builder}
      * with default {@link PhpInterpreter#getDefault() PHP interpreter}
@@ -195,12 +203,15 @@ public abstract class FrameworkCommandSupport {
     final void refreshFrameworkCommands() {
         List<FrameworkCommand> freshCommands = getFrameworkCommandsInternal();
 
-        synchronized (this) {
-            if (pluginListener == null) {
-                pluginListener = new PluginListener();
-                File folder = FileUtil.toFile(phpModule.getSourceDirectory());
-                // weakly referenced + hardcoded for now
-                FileUtil.addFileChangeListener(pluginListener, new File(folder, "plugins")); // NOI18N
+        File plugins = getPluginsDirectory();
+        if (plugins != null) {
+            // intentionally used isFile() because directory does not need to exist
+            assert !plugins.isFile() : "Plugins is expected to be a directory: " + plugins;
+            synchronized (this) {
+                if (pluginListener == null) {
+                    pluginListener = new PluginListener();
+                    FileUtil.addFileChangeListener(pluginListener, plugins);
+                }
             }
         }
         synchronized (COMMANDS_CACHE) {

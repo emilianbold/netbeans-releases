@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,8 @@
  */
 package org.netbeans.junit.internal;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -112,10 +114,11 @@ public final class NbModuleLogHandler extends Handler {
         sb.append(txt);
         Throwable t = record.getThrown();
         if (t != null) {
-            for (StackTraceElement s : t.getStackTrace()) {
-                sb.append("\n  ").append(s.toString());
-            }
+            StringWriter w = new StringWriter();
+            t.printStackTrace(new PrintWriter(w));
+            sb.append(w.toString().replace("\tat ", "  ").replace("\t... ", "  ... "));
         }
+        sb.append('\n');
         return sb;
     }
 
@@ -132,11 +135,11 @@ public final class NbModuleLogHandler extends Handler {
 
         if (record.getThrown() != null) {
             if (exc.intValue() <= record.getLevel().intValue()) {
-                t.append(toString(record)).append('\n');
+                t.append(toString(record));
             }
         } else {
             if (msg.intValue() <= record.getLevel().intValue()) {
-                t.append(toString(record)).append('\n');
+                t.append(toString(record));
             }
         }
     }
@@ -147,6 +150,25 @@ public final class NbModuleLogHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
+    }
+
+    public static void checkFailures(TestCase test, TestResult res) {
+        StringBuffer t = text;
+        if (t == null) {
+            return;
+        }
+        synchronized (t) {
+            if (t.length() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("NbModuleSuite has been started with failOnMessage(");
+                sb.append(msg);
+                sb.append(") and failOnException(").append(exc);
+                sb.append("). The following failures have been captured:\n");
+                sb.append(text);
+                res.addFailure(test, new AssertionFailedError(sb.toString()));
+                t.setLength(0);
+            }
+        }
     }
 
     private static final class FailOnException extends TestCase {
@@ -165,15 +187,7 @@ public final class NbModuleLogHandler extends Handler {
 
         @Override
         public void run(TestResult res) {
-            if (text.length() > 0) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("NbModuleSuite has been started with failOnMessage(");
-                sb.append(msg);
-                sb.append(") and failOnException(").append(exc);
-                sb.append("). The following failures have been captured:\n");
-                sb.append(text);
-                res.addFailure(this, new AssertionFailedError(sb.toString()));
-            }
+            checkFailures(this, res);
         }
 
     }
