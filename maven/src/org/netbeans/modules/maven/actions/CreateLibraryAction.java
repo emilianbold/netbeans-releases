@@ -109,7 +109,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         final MavenProject project = lookup.lookup(MavenProject.class);
         final CreateLibraryPanel pnl = new CreateLibraryPanel(root);
         DialogDescriptor dd = new DialogDescriptor(pnl,  NbBundle.getMessage(CreateLibraryPanel.class, "LBL_CreateLibrary"));
-        pnl.setLineSupport(dd.createNotificationLineSupport(), dd);
+        pnl.createValidations(dd);
 
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
