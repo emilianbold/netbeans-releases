@@ -36,53 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui.api;
 
-import org.netbeans.modules.dlight.toolsui.ToolsManagerPanel;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+package org.netbeans.modules.dlight.indicators.spi;
 
-public final class ToolsCustomizerAction extends SystemAction implements ActionListener {
+import java.util.List;
+import javax.swing.Action;
 
-    public void actionPerformed(ActionEvent e) {
-        showCustomizer();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction2");
-    }
-
-    /**
-     * Shows libraries customizer displaying all currently open library managers.
-     * @return true if user pressed OK and libraries were sucessfully modified
-     */
-    private static boolean showCustomizer () {
-        ToolsManagerPanel customizer = new ToolsManagerPanel();
-        DialogDescriptor descriptor = new DialogDescriptor (customizer,
-                NbBundle.getMessage(ToolsCustomizerAction.class, "TXT_ToolsCustomizer"));
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            dlg.setVisible(true);
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                return customizer.apply();
-            } else {
-                return false;
-            }
-        } finally {
-            dlg.dispose();
-        }
-    }
-
+/**
+ *
+ * @author thp
+ */
+public interface IndicatorActionsProvider {
+    List<Action> getIndicatorActions();
 }
