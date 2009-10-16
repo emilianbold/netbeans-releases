@@ -205,6 +205,7 @@ public class EditorContextBridge {
         }
     }
 
+    /*
     public static Object annotate (
         LineBreakpoint b
     ) {
@@ -323,6 +324,7 @@ public class EditorContextBridge {
             return annotations.toArray();
         }
     }
+     */
     
     private static String[] getClassURLs(String className) {
         SourcePathProvider spp = SourcePath.getDefaultContext();
