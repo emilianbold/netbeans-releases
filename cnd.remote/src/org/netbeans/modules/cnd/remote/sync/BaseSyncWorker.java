@@ -116,7 +116,7 @@ import org.openide.util.NbBundle;
      */
     protected abstract void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException;
 
-    protected String getRemoteSyncRoot() {
+    protected final String getRemoteSyncRoot() {
         String root;
         root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
         if (root != null) {

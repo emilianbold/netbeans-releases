@@ -40,33 +40,38 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-class RfsSyncWorker extends ZipSyncWorker {
+final class RfsSyncWorker extends ZipSyncWorker {
 
     private static Parameters lastParameters;
     private static final boolean allAtOnce = false;
     
-    /*package*/ static class Parameters {
-        public final File localDir;
+    /*package*/ static final class Parameters {
+        public final File[] localDirs;
         public final String remoteDir;
         public final ExecutionEnvironment executionEnvironment;
         public final PrintWriter out;
         public final PrintWriter err;
         public final File privProjectStorageDir;
-        public Parameters(File localDir, String remoteDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-            this.localDir = localDir;
+        public Parameters(File[] localDirs, String remoteDir, ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir) {
+            this.localDirs = localDirs;
             this.remoteDir = remoteDir;
             this.executionEnvironment = executionEnvironment;
             this.out = out;
@@ -95,7 +100,75 @@ class RfsSyncWorker extends ZipSyncWorker {
         if (mkDir.get() != 0) {
             throw new IOException("Can not create directory " + remoteDir); //NOI18N
         }
-        lastParameters = new Parameters(topLocalDir, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
+        lastParameters = new Parameters(localDirs, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
         // no actual sinc here - only store parameters
+    }
+
+    @Override
+    public boolean synchronize() {
+        // Later we'll allow user to specify where to copy project files to
+        String remoteParent = getRemoteSyncRoot();
+        if (remoteParent == null) {
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
+            }
+            return false; // TODO: error processing
+        }
+//        if (topLocalDir == null) {
+//            if (err != null) {
+//                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
+//            }
+//        }
+//        String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
+
+        boolean success = false;
+        try {
+//            boolean same;
+//            try {
+//                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, topLocalDir);
+//            } catch (InterruptedException e) {
+//                return false;
+//            }
+//            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
+//                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + topLocalDir.getAbsolutePath() + //NOI18N
+//                        (same ? " are same - skipping" : " arent same - copying")); //NOI18N
+//            }
+//            if (!same) {
+                if (out != null) {
+                    out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                            remoteParent, ServerList.get(executionEnvironment).toString()));
+                }
+                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
+                if (Utilities.isWindows()) {
+                    mapper.addMapping("C:/", remoteParent + "/C");
+                    mapper.addMapping("D:/", remoteParent + "/D");
+                    mapper.addMapping("E:/", remoteParent + "/E");
+                    mapper.addMapping("Z:/", remoteParent + "/Z");
+                } else {
+                    mapper.addMapping("/", remoteParent);
+                }
+                synchronizeImpl(remoteParent);
+//            }
+            success = true;
+        } catch (InterruptedException ex) {
+            // reporting does not make sense, just return false
+            RemoteUtil.LOGGER.finest(ex.getMessage());
+        } catch (InterruptedIOException ex) {
+            // reporting does not make sense, just return false
+            RemoteUtil.LOGGER.finest(ex.getMessage());
+        } catch (ExecutionException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteParent, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+            }
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                        remoteParent, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
+            }
+        }
+        return success;
     }
 }
