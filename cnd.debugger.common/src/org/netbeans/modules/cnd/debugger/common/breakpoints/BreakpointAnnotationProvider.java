@@ -190,6 +190,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                     RequestProcessor.getDefault().post(new AnnotationRefresh((CndBreakpoint)breakpoint, true, true));
                 }
             }
+            return;
         }
 
         if ( (!CndBreakpoint.PROP_ENABLED.equals(propertyName)) &&
@@ -253,7 +254,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                !((CndBreakpoint) b).isHidden();
     }
     
-    private static String getAnnotationType(CndBreakpoint b, boolean isConditional) {
+    private static String getAnnotationType(CndBreakpoint b) {
+        String condition = b.getCondition();
+        boolean isConditional = (condition != null) && condition.trim().length() > 0;
         boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
         String annotationType;
         if (b instanceof LineBreakpoint) {
@@ -314,9 +317,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             return;
         }
         log.fine("BreakpointAnnotationProvider.addAnnotationTo: " + b.getPath() + ":" + b.getLineNumber());
-        String condition = b.getCondition();
-        boolean isConditional = (condition != null) && condition.trim().length() > 0;
-        String annotationType = getAnnotationType(b, isConditional);
+        String annotationType = getAnnotationType(b);
         DataObject dataObject;
         try {
             dataObject = DataObject.find(fo);
