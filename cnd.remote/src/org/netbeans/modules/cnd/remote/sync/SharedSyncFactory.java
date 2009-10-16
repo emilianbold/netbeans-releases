@@ -83,5 +83,9 @@ public class SharedSyncFactory extends RemoteSyncFactory {
         return ! RemoteUtil.isForeign(execEnv);
     }
 
+    @Override
+    public boolean isPathMappingCustomizable() {
+        return true;
+    }
 
 }
