@@ -36,22 +36,17 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+package org.netbeans.modules.dlight.toolsui.api;
+
+import org.netbeans.modules.dlight.toolsui.ToolsManagerPanel;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author thp
  */
-public class NativeExecutionTest extends NativeExecutionBaseTestSuite {
-
-    public NativeExecutionTest() {
-        super("Native Execution");
-        addTest(HostInfoTestCase.class);
-    }
-
-    public static Test suite() {
-        return new NativeExecutionTest();
+public class ToolsCustomizerPanelFactory {
+    public static PanelWithApply getCustomizerByName(String name) {
+        return new ToolsManagerPanel(name);
     }
 }

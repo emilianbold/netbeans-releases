@@ -38,9 +38,9 @@
  */
 package org.netbeans.modules.nativeexecution.support.filesearch.impl;
 
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -81,52 +81,37 @@ public class RemoteFileSearcherImpl implements FileSearcher {
             List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
 
             if (fileSearchParams.isSearchInUserPaths()) {
-                sp.addAll(getPaths(execEnv, shell));
+                sp.addAll(Arrays.asList(hostInfo.getPath().split(":"))); // NOI18N
             }
-
-            StringBuilder cmd = new StringBuilder();
-
-            for (Iterator<String> i = sp.iterator(); i.hasNext();) {
-                String path = i.next();
-                if (path.indexOf('"') < 0) { // Will not use paths with "
-                    cmd.append("/bin/ls \"").append(path); // NOI18N
-                    cmd.append("/" + fileSearchParams.getFilename() + "\""); // NOI18N
-                    if (i.hasNext()) {
-                        cmd.append(" || "); // NOI18N
-                    }
-                }
-            }
-
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(shell).setArguments("-c", cmd.toString()); // NOI18N
+            npb.setExecutable(shell).setArguments("-s"); // NOI18N
 
             Process p = npb.call();
-            String line = ProcessUtils.readProcessOutputLine(p);
-            p.waitFor();
 
-            return (line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
+            OutputStreamWriter os = new OutputStreamWriter(p.getOutputStream());
+            for (String path : sp) {
+                if (path.indexOf('"') >= 0) { // Will not use paths with "
+                    continue;
+                }
+
+                os.append("/bin/ls \"").append(path); // NOI18N
+                os.append("/" + fileSearchParams.getFilename() + "\" 2>/dev/null || \\\n"); // NOI18N
+            }
+
+            os.append("(echo \"Not Found\" && exit 1)\n"); // NOI18N
+            os.append("exit $?\n"); // NOI18N
+
+            os.flush();
+
+            String line = ProcessUtils.readProcessOutputLine(p);
+            int result = p.waitFor();
+
+            return (result != 0 || line == null || "".equals(line.trim())) ? null : line.trim(); // NOI18N
         } catch (Throwable th) {
             log.log(Level.FINE, "Execption in UnixFileSearcherImpl:", th); // NOI18N
         }
 
         return null;
-    }
-
-    private List<String> getPaths(ExecutionEnvironment execEnv, String shell) {
-        List<String> result = new ArrayList<String>();
-
-        try {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(shell).setArguments("-c", "echo $PATH"); // NOI18N
-
-            Process p = npb.call();
-            result.addAll(Arrays.asList(ProcessUtils.readProcessOutputLine(p).split(":"))); // NOI18N
-            p.waitFor();
-        } catch (Throwable ex) {
-            log.log(Level.FINE, "Execption in UnixFileSearcherImpl.getPaths():", ex); // NOI18N
-        }
-
-        return result;
     }
 }

@@ -47,7 +47,8 @@ import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.List;
-import org.netbeans.modules.dlight.toolsui.api.ToolsManagerPanel;
+import org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerPanelFactory;
+import org.netbeans.modules.dlight.toolsui.api.PanelWithApply;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
@@ -170,7 +171,7 @@ public class GizmoStringNodeProp extends Node.Property<String> {
 
     private class IntEditor extends PropertyEditorSupport implements ExPropertyEditor, VetoableChangeListener {
         private PropertyEnv env;
-        private ToolsManagerPanel toolsManagerPanel = null;
+        private PanelWithApply toolsManagerPanel = null;
 
         @Override
         public String getJavaInitializationString() {
@@ -202,7 +203,7 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         public Component getCustomEditor() {
             env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             env.addVetoableChangeListener(this);
-            toolsManagerPanel = new ToolsManagerPanel(getAsText());
+            toolsManagerPanel = ToolsCustomizerPanelFactory.getCustomizerByName(getAsText());
             return toolsManagerPanel;
         }
 
