@@ -43,6 +43,7 @@ package org.netbeans.modules.form.layoutdesign.support;
 
 import java.awt.Component;
 import java.util.*;
+import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 
@@ -129,12 +130,15 @@ public class SwingLayoutUtils {
     }
 
     private static int getSpecialStatus(Component component) {
+        // hack: labels and buttons with html text are resizable (#73255)
+        String htmlText = null;
         if (component instanceof JLabel) {
-            // hack: labels with html text are resizable (#73255)
-            String text = ((JLabel)component).getText();
-            if (text != null && text.length() >= 6 && text.trim().toLowerCase().startsWith("<html>")) { // NOI18N
-                return STATUS_RESIZABLE;
-            }
+            htmlText = ((JLabel)component).getText();
+        } else if (component instanceof AbstractButton) {
+            htmlText = ((AbstractButton)component).getText();
+        }
+        if (htmlText != null && htmlText.length() >= 6 && htmlText.trim().toLowerCase().startsWith("<html>")) { // NOI18N
+            return STATUS_RESIZABLE;
         }
         return STATUS_UNKNOWN;
     }
