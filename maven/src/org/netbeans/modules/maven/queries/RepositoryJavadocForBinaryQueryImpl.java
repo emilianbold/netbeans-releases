@@ -95,8 +95,10 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
         if (jarFO != null) {
             File jarFile = FileUtil.toFile(jarFO);
             if (jarFile != null) {
-                //hack for javaee5 jar docs which we ship with netbeans and which are not in any maven repository
-                if (jarFile.getPath().endsWith("javaee/javaee-api/5/javaee-api-5.jar")) { //NOI18N
+                //hack for javaee6 jar docs which we ship with netbeans and which are not in any maven repository
+                //once we have the final bits for 6, we can chnage the condiotion to endsWith.
+                if (jarFile.getPath().contains("javax/javaee-api/6") ||
+                    jarFile.getPath().contains("javax/javaee-web-api/6")) { //NOI18N
                     return new Javaee5Result();
                 }
 
