@@ -99,10 +99,7 @@ public class BugzillaExecutor {
 
             if(cmd instanceof PerformQueryCommand) {
                 PerformQueryCommand pqc = (PerformQueryCommand) cmd;
-                IStatus status = pqc.getStatus();
-                if(status != null) {
-                    Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
-                    handleKOStatus(status, handleExceptions);
+                if(handleStatus(pqc, handleExceptions)) {
                     return;
                 }
             }
@@ -151,13 +148,31 @@ public class BugzillaExecutor {
         }
     }
 
-    private void handleKOStatus(IStatus status, boolean handleExceptions) throws CoreException {
+    /**
+     * Returnes true if the given commands status != ok
+     * @param cmd
+     * @param handleExceptions
+     * @return
+     * @throws CoreException
+     */
+    private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
+        IStatus status = cmd.getStatus();
+        if(status == null || status.isOK()) {
+            return false;
+        }
+        Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
+
         if (status.getException() instanceof CoreException) {
             throw (CoreException) status.getException();
         }
+        
+        cmd.setErrorMessage(status.getMessage());
+        cmd.setFailed(true);
+
         if(!handleExceptions) {
-            return;
+            return true;
         }
+
         BugzillaConfiguration conf = repository.getConfiguration();
         if(conf.isValid()) {
             BugzillaVersion version = conf.getInstalledVersion();
@@ -168,10 +183,11 @@ public class BugzillaExecutor {
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N
                         (ua ? NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING2") + "\n\n" : "\n") +   // NOI18N
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));     // NOI18N
-                return;
+                return true;
             }
         }
-        notifyErrorMessage(status.getMessage());
+        notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));
+        return true;
     }
 
     static void notifyErrorMessage(String msg) {
