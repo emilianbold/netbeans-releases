@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="vcs-indexing-bridge">
+      <api name="ParsingAPI"/>
+      <summary>IndexingManager extended to support integration with VCS</summary>
+      <version major="1" minor="24"/>
+      <date day="1" month="10" year="2009"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="yes"/>
+      <description>
+          <p>
+              Added <code>IndexingManager.refreshAllIndices(boolean fullRescan, boolean wait, File... filesOrFolders)</code>,
+              <code>&lt;T&gt; T IndexingManager.runProtected(Callable&lt;T&gt; operation)</code>
+          </p>
+      </description>
+      <issue number="167098"/>
+  </change>
   <change id="IndexingManager.refreshAllIndices">
       <api name="ParsingAPI"/>
       <summary>Added IndexingManager.refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders)</summary>
@@ -170,7 +185,7 @@ is the proper place.
       <version major="1" minor="19"/>
       <date day="12" month="8" year="2009"/>
       <author login="tzezula"/>
-      <compatibility source="incompatible" binary="incompatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
       <description>
           <p>
               Modified <code>CustomIndexerFactory</code>, <code>EmbeddingIndexerFactory</code> and <code>BinaryIndexerFactory</code>
@@ -192,7 +207,13 @@ is the proper place.
               to have methods <code>filesDeleted(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>
               and <code>filesDirty(Iterable&lt;? extends Indexable&gt; deleted, Context context);</code>.
           </p>
+          <p>
+              These two methods supersede thier older version, which accepted <code>Collection</code> rather
+              than <code>Iterable</code>. The new methods allow the infrastructure to optimize files crawling
+              and improve the overall performance of scanning.
+          </p>
       </description>
+      <issue number="166340"/>
   </change>
 
   <change id="adding-context-isSourceForBinaryRootIndexing">

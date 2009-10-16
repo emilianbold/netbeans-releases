@@ -155,11 +155,6 @@ public class ImportDiffAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
             logger.output(""); // NOI18N
-            Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
-                public void run() {
-                    FileUtil.refreshFor(repository); // import just might have changed the file layout...
-                }
-            });
         }
     }
 }

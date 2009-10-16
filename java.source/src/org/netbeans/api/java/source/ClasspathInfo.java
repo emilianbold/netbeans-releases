@@ -93,7 +93,6 @@ public final class ClasspathInfo {
         } catch (ClassNotFoundException ex) {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, ex.getMessage(), ex);
-//            ErrorManager.getDefault().notify (ex);
         }
     }    
     
