@@ -46,7 +46,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import java.util.logging.Logger;

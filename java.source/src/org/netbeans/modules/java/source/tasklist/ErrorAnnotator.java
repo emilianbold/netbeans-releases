@@ -62,7 +62,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -81,6 +80,8 @@ import static org.openide.util.NbBundle.getMessage;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class, position=100)
 public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
+
+    private static final Logger LOG = Logger.getLogger(ErrorAnnotator.class.getName());
 
     private static final String ERROR_BADGE_URL = "org/netbeans/modules/java/source/resources/icons/error-badge.gif";
     
@@ -189,7 +190,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                 }
             }
         } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
         }
     }
     
@@ -209,7 +210,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                     }
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, e.getMessage(), e);
             }
         }
     }
@@ -220,7 +221,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         try {
             fireFileStatusChanged(new FileStatusEvent(fos.iterator().next().getFileSystem(), fos, true, false));
         } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            LOG.log(Level.INFO, ex.getMessage(), ex);
         }
     }
     

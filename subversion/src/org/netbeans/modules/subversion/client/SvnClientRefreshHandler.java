@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 
@@ -56,8 +55,6 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 public class SvnClientRefreshHandler implements ISVNNotifyListener {
 
     private final Set<File>  filesToRefresh = new HashSet<File>();
-    private int delayBeforeRefresh = -1;
-    private static final int DEFAULT_DELAY = 100;
 
     public void setCommand(int arg0)                { /* boring */ }
     public void logCommandLine(String arg0)         { /* boring */ }
@@ -86,16 +83,16 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
         }
     }
 
-    /**
-     * Refresh the nb filesystem and the cache for all given files
-     * @param files files to be refreshed
-     */
-    public void refreshImediately(File... files) {
-        for (int i = 0; i < files.length; i++) {
-            files[i] = FileUtil.normalizeFile(files[i]); // I saw "./"
-        }
-        refresh(files);
-    }
+//    /**
+//     * Refresh the nb filesystem and the cache for all given files
+//     * @param files files to be refreshed
+//     */
+//    public void refreshImediately(File... files) {
+//        for (int i = 0; i < files.length; i++) {
+//            files[i] = FileUtil.normalizeFile(files[i]); // I saw "./"
+//        }
+//        refresh(files);
+//    }
 
     /**
      * Refreshes all yet notified files
@@ -122,47 +119,48 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
         }
         // refresh the filesystems first as the following cache refesh might fire events
         // which are intercepted by the nb filesystem - it has to be aware about possible changes made
-        refreshFS(files);
+//        refreshFS(files); // XXX hm. this hapens asynchronoulsy now
+
         // async cache refesh - notifications from the svnclientadapter may be caused
         // by a synchronously handled FS event. If we want to (have to) prevent
         // reentrant calls on the FS api
         Subversion.getInstance().getStatusCache().refreshAsync(files);
     }
 
-    /**
-     * All parents from the given files and their children will be refreshed
-     * @param files files to refresh
-     */
-    private void refreshFS(File... files) {
-        final Set<File> parents = new HashSet<File>();
-        for (File f : files) {
-            File parent = f.getParentFile();
-            if (parent != null) {
-                parents.add(parent);
-                Subversion.LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
-            }
-        }
-        if (parents.size() > 0) {
-            // let's give the filesystem some time to wake up and to realize that the file has really changed
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
-                }
-            }, getDelay());
-        }
-    }
-
-    private int getDelay() {
-        if (delayBeforeRefresh == -1) {
-            String delayProp = System.getProperty("subversion.SvnClientRefreshHandler.delay", Integer.toString(DEFAULT_DELAY)); //NOI18N
-            int delay = DEFAULT_DELAY;
-            try {
-                delay = Integer.parseInt(delayProp);
-            } catch (NumberFormatException e) {
-                Subversion.LOG.log(Level.FINE, null, e);
-            }
-            delayBeforeRefresh = delay;
-        }
-        return delayBeforeRefresh;
-    }
+//    /**
+//     * All parents from the given files and their children will be refreshed
+//     * @param files files to refresh
+//     */
+//    private void refreshFS(File... files) {
+//        final Set<File> parents = new HashSet<File>();
+//        for (File f : files) {
+//            File parent = f.getParentFile();
+//            if (parent != null) {
+//                parents.add(parent);
+//                Subversion.LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
+//            }
+//        }
+//        if (parents.size() > 0) {
+//            // let's give the filesystem some time to wake up and to realize that the file has really changed
+//            RequestProcessor.getDefault().post(new Runnable() {
+//                public void run() {
+//                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+//                }
+//            }, getDelay());
+//        }
+//    }
+//
+//    private int getDelay() {
+//        if (delayBeforeRefresh == -1) {
+//            String delayProp = System.getProperty("subversion.SvnClientRefreshHandler.delay", Integer.toString(DEFAULT_DELAY)); //NOI18N
+//            int delay = DEFAULT_DELAY;
+//            try {
+//                delay = Integer.parseInt(delayProp);
+//            } catch (NumberFormatException e) {
+//                Subversion.LOG.log(Level.FINE, null, e);
+//            }
+//            delayBeforeRefresh = delay;
+//        }
+//        return delayBeforeRefresh;
+//    }
 }

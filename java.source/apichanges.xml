@@ -144,6 +144,7 @@ is the proper place.
                  These methods are not needed anymore and will be removed.
              </description>
              <class package="org.netbeans.api.java.source" name="JavaSource"/>
+             <issue number="169974"/>
         </change>
         <change id="TreeMaker.Method">
              <api name="general"/>
