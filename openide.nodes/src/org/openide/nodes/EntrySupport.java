@@ -382,6 +382,10 @@ abstract class EntrySupport {
             // empty the list of nodes so it has to be recreated again
             clearNodes();
             notifyRemove(nodes, current);
+
+            // extra call for case when removed Infos were already GCed and their
+            // finalizers called (#174741)
+            finalizeNodes();
         }
 
         /** Updates the order of entries.

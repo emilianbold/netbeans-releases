@@ -49,7 +49,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.Map;
 import javax.swing.*;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -173,10 +172,7 @@ final class CommandManager implements ActionListener {
     }
     
     public void toggleTransparency( int tabIndex ) {
-        if( isCompSlided() ) {
-            TabbedContainer container = (TabbedContainer)getSlidedComp();
-            container.setTransparent( !container.isTransparent() );
-        }
+        //do nothing, the TabbedContainer will take care of the transparency
     }
     
     public void showPopup(MouseEvent mouseEvent, int tabIndex) {
