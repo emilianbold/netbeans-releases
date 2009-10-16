@@ -1497,7 +1497,12 @@ public class TreeModelNode extends AbstractNode {
         
         @Override
         public PropertyEditor getPropertyEditor () {
-            return columnModel.getPropertyEditor ();
+            PropertyEditor pe = columnModel.getPropertyEditor ();
+            if (pe == null) {
+                return super.getPropertyEditor();
+            } else {
+                return pe;
+            }
         }
     }
     
