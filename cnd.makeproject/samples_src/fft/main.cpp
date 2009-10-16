@@ -36,14 +36,20 @@
 
 using namespace std;
 
+
+// Main function
+
 int main(int argc, char** argv) {
 
-    printf("It's NetBeans C++ sample.\n");
-    printf("It's transforms 24 bit BMPs with FFT.\n");
+    printf("This NetBeans C++ sample transforms 24 bit BMPs with\n");
+    printf("a Fast Fourier transform algorithm.  It can be used to\n");
+    printf("demonstrate the Parallel Adviser feature on multicore\n");
+    printf("machines.\n\n");
 
     string inputBitmapFileName;
     string outputBitmapFileName;
 
+    // Analyzing arguments
     if (argc == 1) {
         printf("No input params.\n");
         printf("Usage: fft input.bmp output.bmp\n");
@@ -63,6 +69,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Bitmap loading
     printf("Loading bitmap.\n");
     Bitmap bmp(inputBitmapFileName);
     bmp.PrintInfo();
@@ -71,10 +78,12 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Transformation
     FastFourierTransform fft;
     printf("FFT:\n");
     fft.Transform(bmp);
 
+    // Bitmap saiving
     printf("Saving bitmap.\n");
     bmp.Save(outputBitmapFileName);
 
