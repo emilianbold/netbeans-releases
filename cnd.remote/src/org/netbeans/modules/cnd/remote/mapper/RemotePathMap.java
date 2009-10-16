@@ -61,7 +61,7 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
-public class RemotePathMap extends PathMap {
+public final class RemotePathMap extends PathMap {
 
     private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> pmtable =
             new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
