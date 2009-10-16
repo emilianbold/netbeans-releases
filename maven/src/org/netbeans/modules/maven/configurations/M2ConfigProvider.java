@@ -262,6 +262,19 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         writeAuxiliaryData(aux, false, nonshared);
         this.shared = shared;
         this.nonshared = nonshared;
+        //#174637
+        if (active != null) {
+            if (shared.contains(active)) {
+                M2Configuration newActive = shared.get(shared.indexOf(active));
+                //can have different content
+                active = newActive;
+            }
+            if (nonshared.contains(active)) {
+                M2Configuration newActive = nonshared.get(nonshared.indexOf(active));
+                //can have different content
+                active = newActive;
+            }
+        }
         this.profiles = null;
         firePropertyChange();
     }
