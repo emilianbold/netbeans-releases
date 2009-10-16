@@ -78,6 +78,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
+import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.Element;
@@ -1444,19 +1445,24 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private void indexAttribute(AstElement child, IndexDocument document, boolean nodoc) {
-            String attribute = child.getName();
+            
+            AstAttributeElement attributeElement = (AstAttributeElement) child;
+            String attribute = attributeElement.getName();
 
-            boolean isDocumented = isDocumented(child.getNode());
+            boolean isDocumented = isDocumented(attributeElement.getNode());
 
             int flags = isDocumented ? IndexedMethod.DOCUMENTED : 0;
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-
-            char first = IndexedElement.flagToFirstChar(flags);
-            char second = IndexedElement.flagToSecondChar(flags);
+            boolean isStatic = AstUtilities.isCAttr(attributeElement.getCreationNode());
+            if (isStatic) {
+                flags |= IndexedElement.STATIC;
+            }
             
-            if (isDocumented) {
+            if (isDocumented || isStatic) {
+                char first = IndexedElement.flagToFirstChar(flags);
+                char second = IndexedElement.flagToSecondChar(flags);
                 attribute = attribute + (";" + first) + second;
             }
             
