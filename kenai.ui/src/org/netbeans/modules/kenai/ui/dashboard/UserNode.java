@@ -105,7 +105,7 @@ public class UserNode extends LeafNode {
             btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
                     dashboard.createLoginAction());
             lblUser = new TreeLabel();
-            lblProgress = createProgressLabel(NbBundle.getMessage(UserNode.class, "LBL_Authenticating")); //NOI18N
+            lblProgress = createProgressLabel(""); //NOI18N
             btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_kenai_project.png", true), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
             btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"));
             btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/new_kenai_project.png", true), ProjectAccessor.getDefault().getNewKenaiProjectAction()); //NOI18N
@@ -150,8 +150,9 @@ public class UserNode extends LeafNode {
         return panel;
     }
 
-    void loadingStarted() {
+    void loadingStarted(String title) {
         synchronized( LOCK ) {
+            lblProgress.setText(title);
             loadingCounter++;
             fireContentChanged();
         }
