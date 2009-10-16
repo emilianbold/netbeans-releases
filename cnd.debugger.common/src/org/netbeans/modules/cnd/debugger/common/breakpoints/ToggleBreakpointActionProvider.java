@@ -125,7 +125,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
                 }
             } else if (inDis && b instanceof AddressBreakpoint) {
                 AddressBreakpoint ab = (AddressBreakpoint)b;
-                if (disProvider.getAddressLine(ab.getAddress()) == lineNumber) {
+                if (disProvider.getBreakpointLine(ab) == lineNumber) {
                     return ab;
                 }
             }
