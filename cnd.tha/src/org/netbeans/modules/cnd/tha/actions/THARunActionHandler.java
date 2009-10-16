@@ -50,9 +50,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -117,11 +114,6 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
 
         String executable = pae.getExecutable();
         String runDirectory = pae.getProfile().getRunDirectory();
-        if (execEnv.isRemote()) {
-            PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            executable = RemoteBinaryService.getRemoteBinary(execEnv, executable);
-            runDirectory = mapper.getRemotePath(runDirectory, true);
-        }
 
         targetConf.setExecutionEnvironment(execEnv);
 

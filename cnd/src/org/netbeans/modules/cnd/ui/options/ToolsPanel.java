@@ -74,10 +74,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -1044,6 +1044,9 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             }
             if (selectedName != null) {
                 selectedCS[0] = csm.getCompilerSet(selectedName);
+            }
+            if (execEnv.isLocal()) {
+                WindowsSupport.getInstance().init();
             }
             log.finest("Restored defaults\n");
         }
