@@ -218,6 +218,16 @@ public class NodeFactorySupport {
             }
             return ns;
         }
+
+        public @Override int getNodesCount(boolean optimalResult) {
+            int cnt = super.getNodesCount(optimalResult);
+            RequestProcessor.Task _task = task;
+            if (optimalResult && _task != null) {
+                _task.waitFinished();
+                cnt = super.getNodesCount(optimalResult);
+            }
+            return cnt;
+        }
         
         protected @Override void removeNotify() {
             super.removeNotify();
