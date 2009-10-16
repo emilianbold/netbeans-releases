@@ -2532,6 +2532,18 @@ public class GdbDebugger implements PropertyChangeListener {
         return breakpointList;
     }
 
+    public static BreakpointImpl<?> getBreakpointImpl(Breakpoint b) {
+        GdbDebugger debugger = getGdbDebugger();
+        if (debugger != null) {
+            for (BreakpointImpl<?> bptImpl : debugger.breakpointList.values()) {
+                if (bptImpl.getBreakpoint() == b) {
+                    return bptImpl;
+                }
+            }
+        }
+        return null;
+    }
+
     private BreakpointImpl<?> findBreakpoint(String id) {
         try {
             return breakpointList.get(Integer.valueOf(id));

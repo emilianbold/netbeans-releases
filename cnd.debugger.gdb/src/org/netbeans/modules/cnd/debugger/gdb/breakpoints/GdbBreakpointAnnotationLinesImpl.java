@@ -52,16 +52,7 @@ import org.openide.filesystems.FileObject;
  */
 public class GdbBreakpointAnnotationLinesImpl implements BreakpointAnnotationLinesProvider {
     public int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo) {
-        final GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
-        for (BreakpointImpl<?> breakpointImpl : gdbDebugger.getBreakpointList().values()) {
-            if (breakpointImpl.getBreakpoint() == b) {
-                return getBreakpointImplAnnotationLines(breakpointImpl, fo);
-            }
-        }
-        return null;
-    }
-
-    private int[] getBreakpointImplAnnotationLines(BreakpointImpl<?> bptImpl, FileObject fo) {
+        BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
         if (bptImpl instanceof FunctionBreakpointImpl) {
             if (fo.getPath().equals(bptImpl.getFullname())) {
                 return new int[] {bptImpl.getLine()};
