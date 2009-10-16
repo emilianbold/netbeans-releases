@@ -51,8 +51,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JList;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -60,9 +58,16 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
+import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
 import org.netbeans.modules.maven.dependencies.CheckNode;
 import org.netbeans.modules.maven.dependencies.CheckNodeListener;
 import org.netbeans.modules.maven.dependencies.CheckRenderer;
+import org.netbeans.validation.api.Problems;
+import org.netbeans.validation.api.Validator;
+import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ImageUtilities;
@@ -76,11 +81,13 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
     private DependencyNode rootnode;
     private NotificationLineSupport line;
     private DialogDescriptor dd;
+    private ValidationGroup vg;
 
     /** Creates new form CreateLibraryPanel */
     CreateLibraryPanel(DependencyNode root) {
         initComponents();
         DefaultComboBoxModel mdl = new DefaultComboBoxModel();
+        txtName.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(CreateLibraryPanel.class, "NAME_Library"));
 
         for (LibraryManager manager : LibraryManager.getOpenManagers()) {
             mdl.addElement(manager);
@@ -88,7 +95,7 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         comManager.setModel(mdl);
         comManager.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                checkLibraryName();
+                if (vg != null) vg.validateAll();
             }
 
         });
@@ -110,24 +117,19 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         rootnode = root;
         trDeps.setModel(new DefaultTreeModel(createDependenciesList()));
         setLibraryName();
-        txtName.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                checkLibraryName();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                checkLibraryName();
-            }
-            public void changedUpdate(DocumentEvent e) {
-                checkLibraryName();
-            }
-        });
     }
 
-    void setLineSupport(NotificationLineSupport notificationLineSupport, DialogDescriptor dd) {
-        line = notificationLineSupport;
+    void createValidations(DialogDescriptor dd) {
+        line = dd.createNotificationLineSupport();
         this.dd = dd;
+        vg = ValidationGroup.create(new NotificationLineSupportAdapter(line), new DialogDescriptorAdapter(dd));
+        vg.add(txtName,
+                    Validators.merge(true,
+                        Validators.REQUIRE_NON_EMPTY_STRING,
+//                        Validators.REQUIRE_VALID_FILENAME,
+                        new LibraryNameExists()
+                    ));
     }
-
 
     private TreeNode createDependenciesList() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(null, true);
@@ -152,22 +154,6 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
         }
     }
 
-    private void checkLibraryName() {
-
-        LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
-        String currentName = getLibraryName();
-        if (currentName.length() == 0) {
-            line.setErrorMessage(NbBundle.getMessage(CreateLibraryPanel.class, "ERR_EmptyName"));
-            dd.setValid(false);
-        }
-        else if (manager.getLibrary(currentName) != null) {
-            line.setErrorMessage(NbBundle.getMessage(CreateLibraryPanel.class, "ERR_NameExists"));
-            dd.setValid(false);
-        } else {
-            line.clearMessages();
-            dd.setValid(true);
-        }
-    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -340,9 +326,20 @@ public class CreateLibraryPanel extends javax.swing.JPanel {
 
             return a1.getId().compareTo(a2.getId());
         }
-
-
     }
+
+    private class LibraryNameExists implements Validator<String> {
+        public boolean validate(Problems problems, String compName, String model) {
+            LibraryManager manager = (LibraryManager) comManager.getSelectedItem();
+            String currentName = model.trim();
+            if (manager.getLibrary(currentName) != null) {
+                problems.add(NbBundle.getMessage(CreateLibraryPanel.class, "ERR_NameExists"));
+                return false;
+            }
+            return true;
+        }
+    }
+
 
     private class Visitor implements DependencyNodeVisitor {
 
