@@ -19,27 +19,30 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 class RfsLocalController implements Runnable {
 
     private final BufferedReader requestReader;
     private final PrintStream responseStream;
     private final String remoteDir;
-    private final File localDir;
+    private final File[] localDirs;
     private final ExecutionEnvironment execEnv;
     private final PrintWriter err;
     private final FileData fileData;
     private final Set<String> processedFiles = new HashSet<String>();
 
-    public RfsLocalController(ExecutionEnvironment executionEnvironment, File localDir, String remoteDir,
+    public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] localDirs, String remoteDir,
             InputStream requestStream, OutputStream responseStream, PrintWriter err,
             FileData fileData) {
         super();
         this.execEnv = executionEnvironment;
-        this.localDir = localDir;
+        this.localDirs = localDirs;
         this.remoteDir = remoteDir;
         this.requestReader = new BufferedReader(new InputStreamReader(requestStream));
         this.responseStream = new PrintStream(responseStream);
@@ -59,6 +62,31 @@ class RfsLocalController implements Runnable {
         responseStream.flush();
     }
 
+    private String toLocalFilePath(String remoteFilePath) {
+        if (remoteFilePath.startsWith(remoteDir)) {
+            String localPath =  remoteFilePath.substring(remoteDir.length());
+            if (Utilities.isWindows()) {
+                localPath = WindowsSupport.getInstance().convertFromMSysPath(localPath);
+            }
+            return localPath;
+        } else {
+            return null;
+        }
+    }
+
+    private String toRemoteFilePathName(String localAbsFilePath) {
+        String out = localAbsFilePath;
+        if (Utilities.isWindows()) {
+            out = WindowsSupport.getInstance().convertToMSysPath(localAbsFilePath);
+        }
+        if (out.charAt(0) == '/') {
+            out = out.substring(1);
+        } else {
+            RemoteUtil.LOGGER.warning("Path must start with /: " + out + "\n");
+        }
+        return out;
+    }
+
     public void run() {
         long totalCopyingTime = 0;
         while (true) {
@@ -76,8 +104,9 @@ class RfsLocalController implements Runnable {
                 } else {
                     processedFiles.add(remoteFile);
                 }
-                if (remoteFile.startsWith(remoteDir)) { // FIXUP: change startsWith(remoteDir) with more smart code
-                    File localFile = new File(localDir, remoteFile.substring(remoteDir.length()));
+                String localFilePath = toLocalFilePath(remoteFile);
+                if (localFilePath != null) {
+                    File localFile = new File(localFilePath);
                     if (localFile.exists() && !localFile.isDirectory()) {
                         FileState state = fileData.getState(localFile);
                         if (needsCopying(localFile)) {
@@ -168,9 +197,15 @@ class RfsLocalController implements Runnable {
     void feedFiles(OutputStream rcOutputStream, SharabilityFilter filter) {
         PrintWriter writer = new PrintWriter(rcOutputStream);
         List<FileGatheringInfo> files = new ArrayList<FileGatheringInfo>(512);
-        File[] children = localDir.listFiles(filter);
-        for (File child : children) {
-            gatherFiles(child, null, filter, files);
+        for (File localDir : localDirs) {
+            localDir = CndFileUtils.normalizeFile(localDir);
+            final String toRemoteFilePathName = toRemoteFilePathName(localDir.getAbsolutePath());
+            File[] children = localDir.listFiles(filter);
+            if (children != null) {
+                for (File child : children) {
+                    gatherFiles(child, toRemoteFilePathName, filter, files);
+                }
+            }
         }
         Collections.sort(files, new Comparator<FileGatheringInfo>() {
             public int compare(FileGatheringInfo f1, FileGatheringInfo f2) {

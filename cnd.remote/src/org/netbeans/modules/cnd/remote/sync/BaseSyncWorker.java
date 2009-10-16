@@ -127,16 +127,8 @@ import org.openide.util.NbBundle;
             return root;
         }
         String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String localHostID = local.getHost();
-        try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}");
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
+        return (home == null) ? null : home + "/.netbeans/remote"; // NOI18N
     }
 
     public boolean synchronize() {
