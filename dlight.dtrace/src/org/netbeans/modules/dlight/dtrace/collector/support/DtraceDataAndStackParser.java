@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
+import java.io.BufferedOutputStream;
 import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ final class DtraceDataAndStackParser extends DtraceParser {
             }
 
             try {
-                traceStream = new PrintStream(tmpDir + "/dsp.log"); // NOI18N
+                traceStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(tmpDir + "/dsp.log"), 32 *1024)); // NOI18N
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
                 traceStream = System.err;
@@ -141,8 +143,9 @@ final class DtraceDataAndStackParser extends DtraceParser {
     @Override
     public DataRow process(String line) {
         if (TRACE) {
-            traceStream.printf("%s\t%s\n", line, state); // NOI18N
-            traceStream.flush();
+            traceStream.print(line);
+            traceStream.print('\t'); // NOI18N
+            traceStream.println(""+state); // NOI18N
         }
 
         switch (state) {
