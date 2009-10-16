@@ -37,35 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
+package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.BreakpointAnnotationLinesProvider;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbBreakpointAnnotationLinesImpl implements BreakpointAnnotationLinesProvider {
-    public int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo) {
-        BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
-        if (bptImpl instanceof FunctionBreakpointImpl) {
-            if (fo.getPath().equals(bptImpl.getFullname())) {
-                return new int[] {bptImpl.getLine()};
-            }
-        } else if (bptImpl instanceof AddressBreakpointImpl) {
-            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-            if (disProvider != null) {
-                int res = disProvider.getAddressLine(bptImpl.getAddress());
-                if (res >= 0) {
-                    return new int[] {res};
-                }
-            }
-        }
-        return null;
+public class GdbBreakpointsNodeModelFilter implements NodeModelFilter {
+    public static final String BROKEN_POSTFIX = "_broken"; // NOI18N
+
+    public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getDisplayName(node);
     }
+
+    public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
+        String orig = original.getIconBase(node);
+        CndBreakpoint b = (CndBreakpoint) node;
+        BreakpointImpl<?> breakpointImpl = GdbDebugger.getBreakpointImpl(b);
+        if (breakpointImpl == null && b.isEnabled()) {
+            return orig + BROKEN_POSTFIX;
+        }
+        return orig;
+    }
+
+    public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
+        return original.getShortDescription(node);
+    }
+
+    public void removeModelListener(ModelListener l) {}
+
+    public void addModelListener(ModelListener l) {}
 }
