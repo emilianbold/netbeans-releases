@@ -76,10 +76,6 @@ public final class WindowsSupport {
     private WindowsSupport() {
         isWindows = Utilities.isWindows();
 
-        if (!isWindows) {
-            return;
-        }
-
         init();
 
         if (type == ShellType.NO_SHELL) {
@@ -98,6 +94,10 @@ public final class WindowsSupport {
     }
 
     public void init() {
+        if (!isWindows) {
+            return;
+        }
+
         String reg_exe = "reg.exe"; // NOI18N
 
         try {
