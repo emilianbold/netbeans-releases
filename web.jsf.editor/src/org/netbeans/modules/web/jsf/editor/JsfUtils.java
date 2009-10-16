@@ -47,6 +47,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
@@ -86,37 +87,53 @@ public class JsfUtils {
         final BaseDocument bdoc = (BaseDocument) document;
         try {
             Source source = Source.create(bdoc);
-            final HtmlParserResult[] result = new HtmlParserResult[1];
+            final HtmlParserResult[] _result = new HtmlParserResult[1];
             ParserManager.parse(Collections.singleton(source), new UserTask() {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator ri = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
                     if (ri != null) {
-                        result[0] = (HtmlParserResult) ri.getParserResult();
+                        _result[0] = (HtmlParserResult) ri.getParserResult();
                     }
                 }
             });
 
-            if (result[0] == null) {
+            if (_result[0] == null) {
                 //no html code
                 return null;
             }
-            //get parse tree root
-            AstNode root = result[0].root();
-            assert root != null;
+            //try find the html root node first
+            HtmlParserResult result = _result[0];
+            AstNode root = null;
+            //no html root node, we need to find a root node of some other ast tree
+            //belonging to some namespace
+            for (AstNode r : result.roots().values()) {
+                //find first open tag node
 
-            //find the first top most open tag where we can add the declaration
-            //XXX will it work for files w/o html root node? Likely not,
-            //since a facelet tag can be a root node
-            List<AstNode> rootChildren = root.children(new AstNode.NodeFilter() {
+                List<AstNode> chs = r.children(new AstNode.NodeFilter() {
 
-                public boolean accepts(AstNode node) {
-                    return node.type() == AstNode.NodeType.OPEN_TAG;
+                    public boolean accepts(AstNode node) {
+                        return (node.type() == AstNode.NodeType.OPEN_TAG ||
+                                node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
+                    }
+                    
+                });
+
+                if (!chs.isEmpty()) {
+                    AstNode top = chs.get(0);
+                    if (root == null) {
+                        root = top;
+                    } else {
+                        if (top.startOffset() < root.startOffset()) {
+                            root = top;
+                        }
+                    }
                 }
-            });
+            }
 
-            final AstNode rootNode = rootChildren.size() > 0 ? rootChildren.get(0) : null;
+
+            final AstNode rootNode = root;
             if (rootNode == null) {
                 //TODO we may want to add a root node in such case
                 return null;
@@ -131,7 +148,7 @@ public class JsfUtils {
             //result into an invalid page
 
             //namespace to declared prefix map
-            Map<String, String> declaredNamespaces = result[0].getNamespaces();
+            Map<String, String> declaredNamespaces = result.getNamespaces();
             String alreadyDeclaredPrefix = declaredNamespaces.get(library.getNamespace());
             if(alreadyDeclaredPrefix == null) {
                 //try composite component library default prefix

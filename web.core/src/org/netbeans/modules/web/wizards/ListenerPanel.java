@@ -48,6 +48,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -72,7 +73,14 @@ public class ListenerPanel implements WizardDescriptor.Panel {
      */
     private ListenerVisualPanel component;
     private transient TemplateWizard wizard;
-    
+
+    private static final String SERVLET_CONTEXT_LISTENER = "javax.servlet.ServletContextListener";    //NOI18N
+    private static final String SERVLET_CONTEXT_ATTRIBUTE_LISTENER = "javax.servlet.ServletContextAttributeListener";    //NOI18N
+    private static final String HTTP_SESSION_LISTENER = "javax.servlet.http.HttpSessionListener";    //NOI18N
+    private static final String HTTP_SESSION_ATTRIBUTE_LISTENER = "javax.servlet.http.HttpSessionAttributeListener";    //NOI18N
+    private static final String SERVLET_REQUEST_LISTENER = "javax.servlet.ServletRequestListener";    //NOI18N
+    private static final String SERVLET_REQUEST_ATTRIBUTE_LISTENER = "javax.servlet.ServletRequestAttributeListener";    //NOI18N
+
     /** Create the wizard panel descriptor. */
     public ListenerPanel(TemplateWizard wizard) {
         this.wizard=wizard;
@@ -106,13 +114,38 @@ public class ListenerPanel implements WizardDescriptor.Panel {
     }
     
     public boolean isValid() {
-	if(isListenerSelected()) { 
-	    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
-	    return true;
+	if(!isListenerSelected()) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
+                org.openide.util.NbBundle.getMessage(ListenerPanel.class,"MSG_noListenerSelected"));
+            return false;
 	}
-	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-            org.openide.util.NbBundle.getMessage(ListenerPanel.class,"MSG_noListenerSelected")); 
-	return false; 
+        Project project = Templates.getProject(wizard);
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath cp = null;
+        String resource = null;
+        if (groups !=null && groups.length!=0) {
+            cp = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
+            if (isContextListener()) {
+                resource = SERVLET_CONTEXT_LISTENER;
+            } else if(isContextAttrListener()) {
+                resource = SERVLET_CONTEXT_ATTRIBUTE_LISTENER;
+            } else if (isSessionListener()) {
+                resource = HTTP_SESSION_LISTENER;
+            } else if (isSessionAttrListener()) {
+                resource = HTTP_SESSION_ATTRIBUTE_LISTENER;
+            } else if (isRequestListener()) {
+                resource = SERVLET_REQUEST_LISTENER;
+            } else if (isRequestAttrListener()) {
+                resource = SERVLET_REQUEST_ATTRIBUTE_LISTENER;
+            }
+        }
+        if (cp != null && resource != null && cp.findResource(resource.replace('.', '/')+".class")==null) {  //NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,org.openide.util.NbBundle.getMessage(ListenerPanel.class, "MSG_noResourceInClassPath", resource));
+            return false;
+        }
+        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        return true;
     } 
     
     // FIXME: use org.openide.util.ChangeSupport for ChangeListeners
