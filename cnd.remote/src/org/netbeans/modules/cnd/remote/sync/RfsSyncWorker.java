@@ -174,7 +174,7 @@ final class RfsSyncWorker extends ZipSyncWorker {
                         int colon = folder.getAbsolutePath().indexOf(':'); // NOI18N
                         if (colon > 0) {
                             CharSequence disk = folder.getAbsolutePath().subSequence(0, colon);
-                            mapper.addMapping(disk + ":", remoteParent + "/" + disk);
+                            mapper.addMapping(disk + ":", remoteParent + "/" + disk); // NOI18N
                         }
                     }
                 } else {
