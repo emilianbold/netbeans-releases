@@ -45,10 +45,16 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -114,7 +120,16 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     }
 
     private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs();
+        Ear ear = Ear.getEar(project.getProjectDirectory());
+        EjbJar ejb = EjbJar.getEjbJar(project.getProjectDirectory());
+        WebModule war = WebModule.getWebModule(project.getProjectDirectory());
+        J2eeModule.Type type = ear != null ? J2eeModule.Type.EAR :
+                                     ( war != null ? J2eeModule.Type.WAR :
+                                           (ejb != null ? J2eeModule.Type.EJB : J2eeModule.Type.CAR));
+        Profile profile = ear != null ? ear.getJ2eeProfile() :
+                                     ( war != null ? war.getJ2eeProfile() :
+                                           (ejb != null ? ejb.getJ2eeProfile() : Profile.JAVA_EE_6_FULL));
+        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(type), profile);
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
         col.add(new Wrapper(ExecutionChecker.DEV_NULL));
