@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
@@ -62,15 +63,24 @@ import org.openide.util.NbPreferences;
  */
 public class RemotePathMap extends PathMap {
 
-    private final static Map<ExecutionEnvironment, RemotePathMap> pmtable =
-            new HashMap<ExecutionEnvironment, RemotePathMap>();
+    private final static Map<ExecutionEnvironment, Map<String, RemotePathMap>> pmtable =
+            new HashMap<ExecutionEnvironment, Map<String, RemotePathMap>>();
 
     public static RemotePathMap getPathMap(ExecutionEnvironment env) {
-        RemotePathMap pathmap = pmtable.get(env);
+        String syncID = getEnvSyncID(env);
+        Map<String, RemotePathMap> pathmaps = pmtable.get(env);
+        RemotePathMap pathmap = null;
+        if (pathmaps == null) {
+            synchronized (pmtable) {
+                pathmaps = new HashMap<String, RemotePathMap>();
+                pmtable.put(env, pathmaps);
+            }
+        }
+        pathmap = pathmaps.get(syncID);
         if (pathmap == null) {
             synchronized (pmtable) {
                 pathmap = new RemotePathMap(env);
-                pmtable.put(env, pathmap);
+                pathmaps.put(syncID, pathmap);
             }
         }
         return pathmap;
@@ -278,14 +288,18 @@ public class RemotePathMap extends PathMap {
     private static final String REMOTE_PATH_MAP = "remote-path-map"; // NOI18N
     private static final String DELIMITER = "\n"; // NOI18N
 
+    private static String getEnvSyncID(ExecutionEnvironment env) {
+        return ServerList.get(env).getSyncFactory().getID();
+    }
+
     private static String getPreferences(ExecutionEnvironment execEnv) {
         return NbPreferences.forModule(RemotePathMap.class).get(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), null);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv) + getEnvSyncID(execEnv), null);
     }
 
     private void setPreferences(String newValue) {
         NbPreferences.forModule(RemotePathMap.class).put(
-                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv), newValue);
+                REMOTE_PATH_MAP + ExecutionEnvironmentFactory.toUniqueID(execEnv) + getEnvSyncID(execEnv), newValue);
     }
 
     private static boolean validateMapping(ExecutionEnvironment execEnv,
