@@ -46,9 +46,9 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.archetype.Archetype;
+import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class BasicWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+        WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
     private BasicPanelVisual component;
@@ -150,13 +150,9 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
         return isFinish;
     }
     
-    public void validate() throws WizardValidationException {
-        validationGroup.validateAll();
-    }
-
     public boolean isValid() {
         getComponent();
-        return wizardDescriptor.isValid();
+        return validationGroup.validateAll().equals(Problem.NO_PROBLEM);
     }
     
 }
