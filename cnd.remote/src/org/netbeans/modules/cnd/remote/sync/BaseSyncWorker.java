@@ -116,7 +116,7 @@ import org.openide.util.NbBundle;
      */
     protected abstract void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException;
 
-    protected final String getRemoteSyncRoot() {
+    protected String getRemoteSyncRoot() {
         String root;
         root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
         if (root != null) {
@@ -127,16 +127,8 @@ import org.openide.util.NbBundle;
             return root;
         }
         String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String localHostID = local.getHost();
-        try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
+        return (home == null) ? null : home + "/.netbeans/remote"; // NOI18N
     }
 
     public boolean synchronize() {
