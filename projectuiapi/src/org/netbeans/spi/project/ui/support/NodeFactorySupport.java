@@ -52,11 +52,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -116,9 +120,19 @@ public class NodeFactorySupport {
             return key;
         }
     }
+
+    static Node createWaitNode() {
+        AbstractNode n = new AbstractNode(Children.LEAF);
+        n.setIconBaseWithExtension("org/openide/nodes/wait.gif"); //NOI18N
+        n.setDisplayName(NbBundle.getMessage(ChildFactory.class, "LBL_WAIT")); //NOI18N
+        return n;
+    }
+
+    private static NodeListKeyWrapper LOADING_KEY = new NodeListKeyWrapper(null, null);
     
     static class DelegateChildren extends Children.Keys<NodeListKeyWrapper> implements LookupListener, ChangeListener {
-        
+
+
         private String folderPath;
         private Project project;
         private List<NodeList<?>> nodeLists = new ArrayList<NodeList<?>>();
@@ -138,6 +152,9 @@ public class NodeFactorySupport {
         }
         
        protected Node[] createNodes(NodeListKeyWrapper key) {
+           if (key == LOADING_KEY) {
+               return new Node[] { createWaitNode() };
+           }
            @SuppressWarnings("unchecked") // needs to handle NodeList's of different types
            Node nd = key.nodeList.node(key.object);
            if (nd != null) {
@@ -165,23 +182,28 @@ public class NodeFactorySupport {
       
         protected @Override void addNotify() {
             super.addNotify();
-            synchronized (this) {
-                result = createLookup().lookupResult(NodeFactory.class);
-                for (NodeFactory factory : result.allInstances()) {
-                    NodeList<?> lst = factory.createNodes(project);
-                    assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
-                    lst.addNotify();
-                    List objects = lst.keys();
-                    synchronized (keys) {
-                        nodeLists.add(lst);
-                        addKeys(lst, objects);
+            setKeys(Collections.singleton(LOADING_KEY));
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    synchronized (this) {
+                        result = createLookup().lookupResult(NodeFactory.class);
+                        for (NodeFactory factory : result.allInstances()) {
+                            NodeList<?> lst = factory.createNodes(project);
+                            assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
+                            lst.addNotify();
+                            List objects = lst.keys();
+                            synchronized (keys) {
+                                nodeLists.add(lst);
+                                addKeys(lst, objects);
+                            }
+                            lst.addChangeListener(DelegateChildren.this);
+                            factories.add(factory);
+                        }
+                        result.addLookupListener(DelegateChildren.this);
                     }
-                    lst.addChangeListener(this);
-                    factories.add(factory);
+                    setKeys(createKeys());
                 }
-                result.addLookupListener(this);
-            }
-            setKeys(createKeys());
+            });
         }
         
         protected @Override void removeNotify() {

@@ -58,11 +58,13 @@ import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -72,6 +74,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -319,6 +322,10 @@ public class Utilities {
         if (model != null) {
             try {
                 model.sync();
+                if (Model.State.VALID != model.getState()) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                    return;
+                }
                 model.startTransaction();
                 for (ModelOperation<POMModel> op : operations) {
                     op.performOperation(model);
@@ -326,8 +333,9 @@ public class Utilities {
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
-                //TODO how to report?
-                Exceptions.printStackTrace(ex);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Canot write POM", ex);
+//                Exceptions.printStackTrace(ex);
             } finally {
                 if (model.isIntransaction()) {
                     model.rollbackTransaction();
@@ -354,6 +362,10 @@ public class Utilities {
         if (model != null) {
             try {
                 model.sync();
+                if (Model.State.VALID != model.getState()) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_PROFILE", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                    return;
+                }
                 model.startTransaction();
                 for (ModelOperation<ProfilesModel> op : operations) {
                     op.performOperation(model);
@@ -361,8 +373,8 @@ public class Utilities {
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
-                //TODO how to report?
-                Exceptions.printStackTrace(ex);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_PROFILE", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Cannot write profiles.xml", ex);
             } finally {
                 if (model.isIntransaction()) {
                     model.rollbackTransaction();
@@ -388,6 +400,10 @@ public class Utilities {
         if (model != null) {
             try {
                 model.sync();
+                if (Model.State.VALID != model.getState()) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_PROFILE", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                    return;
+                }
                 model.startTransaction();
                 for (ModelOperation<SettingsModel> op : operations) {
                     op.performOperation(model);
@@ -395,8 +411,8 @@ public class Utilities {
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
-                //TODO how to report?
-                Exceptions.printStackTrace(ex);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_SETTINGS", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Cannot write settings.xml", ex);
             } finally {
                 if (model.isIntransaction()) {
                     model.rollbackTransaction();

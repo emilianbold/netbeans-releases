@@ -142,10 +142,7 @@ public final class CsmContext {
         JTextComponent component = context.lookup(JTextComponent.class);
         if (component == null) {
             EditorCookie ec = context.lookup(EditorCookie.class);
-            JEditorPane[] openedPanes = (ec == null) ? null : CsmUtilities.getOpenedPanesInEQ(ec);
-            if (openedPanes != null && openedPanes.length > 0) {
-                component = openedPanes[0];
-            }
+            component = (ec == null) ? null : CsmUtilities.findRecentEditorPaneInEQ(ec);
         }
         if (component != null) {
             CsmFile csmFile = CsmUtilities.getCsmFile(component, false);

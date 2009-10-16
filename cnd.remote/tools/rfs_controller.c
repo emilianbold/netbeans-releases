@@ -74,7 +74,7 @@ typedef struct connection_data {
     struct sockaddr_in pin;
 } connection_data;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void serve_connection(void* data) {
     connection_data *conn_data = (connection_data*) data;
@@ -116,39 +116,48 @@ static void serve_connection(void* data) {
 
         char response[64];
         const char* filename = pkg->data;
-        file_data *fd = find_or_insert_file_data(filename, true); // temporary FIXUP: should be find_file_data
+        file_data *fd = find_file_data(filename);
 
         if (fd != NULL) {
-            if (fd->state == file_state_pending) {
-                /* TODO: this is a very primitive sync!  */
-                pthread_mutex_lock(&mutex);
+            switch (fd->state) {
+                case TOUCHED:
+                    trace("File %s state %c - requesting LC\n", filename, (char) fd->state);
+                    /* TODO: this is a very primitive sync!  */
+                    pthread_mutex_lock(&mutex);
 
-                fprintf(stdout, "%s\n", filename);
-                fflush(stdout);
+                    fprintf(stdout, "%s\n", filename);
+                    fflush(stdout);
 
-                #if TRACE
-                    if (emulate) {
-                        response[0] = response_ok;
-                    } else
-                #endif
-                fgets(response, sizeof response, stdin);
-                fd->state = (response[0] == response_ok) ? file_state_ok : file_state_error;
-                pthread_mutex_unlock(&mutex);
-                trace("Got reply=%s for %s from sd=%d set %X->state to %d\n", response, filename, conn_data->sd, fd, fd->state);
-            }
-            else if (fd->state == file_state_ok) {
-                response[0] = response_ok;
-                trace("Already known: %s; filled reply: %s\n", filename, response);
-            } else if(fd->state == file_state_error) {
-                response[0] = response_failure;
-                trace("Old error: %s; filled reply: %s\n", filename, response);
-            } else { // this can never happen, unless we have a bug in logic
-                report_error("Unexpected fd->state fir %s: %d\n", filename, fd->state);
-                response[0] = response_failure;
+                    #if TRACE
+                        if (emulate) {
+                            response[0] = response_ok;
+                        } else
+                    #endif
+                    fgets(response, sizeof response, stdin);
+                    fd->state = (response[0] == response_ok) ? COPIED : ERROR;
+                    pthread_mutex_unlock(&mutex);
+                    trace("File %s state %c - got from LC %s, replying %s\n", filename, (char) fd->state, response, response);
+                    break;
+                case COPIED:    // fall through
+                case UNCONTROLLED:
+                    response[0] = response_ok;
+                    trace("File %s state %c - uncontrolled, replying %s\n", filename, (char) fd->state, response);
+                    break;
+                case ERROR:
+                    response[0] = response_failure;
+                    trace("File %s state %c - old error, replying %s\n", filename, (char) fd->state, response);
+                    break;
+                case INITIAL:   // fall through
+                case DIRECTORY: // fall through
+                case PENDING:   // fall through
+                default:
+                    response[0] = response_failure;
+                    trace("File %s state %c - unexpected state, replying %s\n", filename, (char) fd->state, response);
+                    break;
             }
         } else {
             response[0] = response_ok;
-            trace("Not mine: %s; filled reply: %s\n", filename, response);
+            trace("File %s: state n/a, replying: %s\n", filename, response);
         }
 
         response[1] = 0;
@@ -165,24 +174,18 @@ static void serve_connection(void* data) {
     trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
 }
 
-static void create_dir(const char* path) {
+static int create_dir(const char* path) {
     trace("\tcreating dir %s\n", path);
     int rc = mkdir(path, 0700); // TODO: error processing
     if (rc != 0) {
+        // TODO: report errors
         trace("\t\terror creating dir %s: rc=%d\n", path, rc);
     }
+    return true; // TODO: check 
 }
 
 static int create_file(const char* path, int size) {
     trace("\tcreating file %s %d\n", path, size);
-
-    char real_path[PATH_MAX];
-    if ( realpath(path, real_path)) {
-        insert_file_data(path);
-    } else {
-        return false;
-    }
-
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
     if (fd > 0) { // // TODO: error processing
         if (size > 0) {
@@ -205,6 +208,72 @@ static int create_file(const char* path, int size) {
     return true;
 }
 
+static int touch_file(const char* path,  int size) {
+    if (create_file(path, size)) {
+        return true;
+    } else {
+        report_error("can not create proxy file %s: %s\n", path, strerror(errno));
+        return false;
+    }
+}
+
+static int file_exists(const char* path, int size) {
+    struct stat stat_buf;
+    if (stat(path, &stat_buf) == -1) {
+        if (errno != ENOENT) {
+            report_error("Can't check file %s: %s\n", path, strerror(errno));
+        }
+        return false;
+    } else {
+        return true;
+    }
+}
+
+static enum file_state char_to_state(char c) {
+    switch (c) {
+        case INITIAL:
+        case TOUCHED:
+        case COPIED:
+        case ERROR:
+        case UNCONTROLLED:
+        case DIRECTORY:
+            return c;
+        default:
+            return -1;
+    }
+}
+
+static int scan_line(const char* buffer, int bufsize, enum file_state *state, int *file_size, const char **path) {
+    *state = char_to_state(*buffer);
+    if (*state == -1) {
+        return false;
+    }
+    if (*state == DIRECTORY) { // directory
+        // format is as in printf("D %s", path)
+        *path = buffer + 2;
+        *state = DIRECTORY;
+        *file_size = 0;
+        return true;
+    } else {
+        // format is as in printf("%c %d %s", kind, length, path)
+        const char* filename = buffer+2;
+        while (filename < buffer + bufsize - 1 && *filename && *filename != ' ') {
+            if (!isdigit(*filename)) {
+                return false;
+            }
+            filename++;
+        }
+        // we should necessarily stay on ' '
+        if (filename < buffer + bufsize - 1 && *filename == ' ') {
+            filename++; // skip space after size
+        } else {
+            return false;
+        }
+        *file_size = atoi(buffer+2);
+        *path = filename;
+    }
+}
+
 /**
  * Reads the list of files from the host IDE runs on,
  * creates files, fills internal file table
@@ -225,30 +294,48 @@ static int init_files() {
         if (lf) {
             *lf = 0;
         }
-        if (*buffer == 'D') { // directory
-            create_dir(buffer + 2);
+        if (strchr(buffer, '\r')) {
+            report_error("prodocol error: unexpected CR: %s\n", buffer);
+            return false;
+        }
+
+        enum file_state state;
+        int file_size;
+        const char *path;
+
+        scan_line(buffer, bufsize, &state, &file_size, &path);
+
+        if (state == -1) {
+            report_error("prodocol error: %s\n", buffer);
+            break;
+        } else if (state == DIRECTORY) { // directory
+            create_dir(path);
         } else { // plain file
-            // check that the line has proper format, otherwise we can got seg. fault
-            // also find where the path begin
-            char* path = buffer;
-            while (path < buffer + bufsize - 1 && *path && *path != ' ') {
-                if (!isdigit(*path)) {
-                    fprintf(stderr, "prodocol error: %s\n", buffer);
-                    break;
-                }
-                path++;
-            }
-            // we should necessarily stay on ' '
-            if (path < buffer + bufsize - 1 && *path == ' ') {
-                path++; // skip space after size
+            int touch = false;
+            if (state == INITIAL) {
+                touch = true;
+            } else if (state == COPIED || state == TOUCHED) {
+                touch = !file_exists(path, file_size);
             } else {
-                fprintf(stderr, "prodocol error: %s\n", buffer);
-                break;
+                report_error("prodocol error: %s\n", buffer);
             }
-            int size = atoi(buffer);
-            if (!create_file(path, size)) {
-                break;
+
+            enum file_state new_state = state;
+            if (touch) {
+                if (touch_file(path, file_size)) {
+                    new_state = TOUCHED;
+                } else {
+                    new_state = ERROR;
+                }
             }
+
+            char real_path[PATH_MAX];
+            if ( realpath(path, real_path)) {
+                insert_file_data(real_path, new_state);
+            } else {
+                report_unresolved_path(path);
+            }
+
         }
     }
     trace("Files list initialization done\n");

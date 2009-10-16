@@ -292,10 +292,7 @@ public final class MacroExpansionViewUtils {
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         if (dobj != null) {
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            JEditorPane jEditorPanes[] = CsmUtilities.getOpenedPanesInEQ(ec);
-            if (jEditorPanes != null && jEditorPanes.length > 0) {
-                return jEditorPanes[0];
-            }
+            return ec == null ? null : CsmUtilities.findRecentEditorPaneInEQ(ec);
         }
         return null;
     }

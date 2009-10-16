@@ -56,7 +56,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
-import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -95,8 +94,6 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     private static final String HTTPS_PROXY_PORT_OPTION="-Dhttps.proxyPort"; //NOI18N
     private static final String HTTPS_NON_PROXY_HOSTS_OPTION="-Dhttps.nonProxyHosts"; //NOI18N
     private static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
-    private static final String JAXWS_ENDORSED = "jaxws.endorsed.dir"; // NOI18N
-    private static final String ENDORSED_OPTION = "-Djava.endorsed.dirs=\"${jaxws.endorsed.dir}\""; //NOI18N
     
     /** Creates a new instance of J2SEProjectJAXWSClientSupport */
     public J2SEProjectJAXWSClientSupport(Project project) {
@@ -191,12 +188,10 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
-                
-                //boolean endorsedModif = modifyEndorsedOption(ep,ep1);
 
                 boolean proxyModif = addJVMProxyOptions(ep);
                 
-                if (/*endorsedModif || */proxyModif)
+                if (proxyModif)
                 try {
                     WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);                
                     ProjectManager.getDefault().saveProject(project);

@@ -116,6 +116,10 @@ public class QueryHandleImpl extends QueryHandle implements ActionListener, Prop
         if(qh != null) {
             ret.add(qh);
         }
+        qh = QueryResultHandleImpl.getAllChangedResult(query);
+        if(qh != null) {
+            ret.add(qh);
+        }
         return ret;
     }
 

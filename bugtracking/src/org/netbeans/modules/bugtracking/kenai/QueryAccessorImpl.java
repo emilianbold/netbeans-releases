@@ -58,7 +58,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
@@ -87,13 +86,14 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         Dashboard.getDefault().addPropertyChangeListener(this);
     }
 
+
     @Override
-    public QueryResultHandle getAllChangesResult(ProjectHandle project) {
+    public QueryHandle getAllIssuesQuery(ProjectHandle project) {
         Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
             FakeJiraSupport jira = FakeJiraSupport.get(project);
             if (jira != null) {
-                return jira.getUnseenResult();
+                return jira.getAllIssuesQuery();
             }
             // XXX log this inconvenience
             return null;
@@ -115,9 +115,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
 
         registerProject(project, queries);
 
-        QueryHandleImpl qhi = (QueryHandleImpl) queries.get(0);
-        qhi.refreshIfNeeded();
-        return QueryResultHandleImpl.getAllChangedResult(qhi.getQuery());
+        return queries.get(0);
     }
 
     @Override

@@ -235,15 +235,18 @@ public class FileStatusCache {
     }
 
     private boolean containsFiles(File[] roots, int includeStatus, boolean addExcluded) {
-        // check to roots if they already apply to the given status
-        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
-            return true;
-        }
-
+        // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
+        // in such case we may end up with just access to io - getting the status of indeed modified file
+        // the other way around it would check status for all directories along the path
         for (File root : roots) {
             if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
                 return true;
             }
+        }
+
+        // check to roots if they apply to the given status
+        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
+            return true;
         }
         return false;
     }
@@ -252,17 +255,20 @@ public class FileStatusCache {
         if(indexRoots == null || indexRoots.length == 0) {
             return false;
         }
+        // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
+        // in such case we may end up with just access to io - getting the status of indeed modified file
+        // the other way around it would check status for all directories along the path
         for (File root : indexRoots) {
-
+            File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
+            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
+                return true;
+            }
+        }
+        for (File root : indexRoots) {
             FileInformation fi = getCachedStatus(root);
-
             if( (fi != null && (fi.getStatus() & includeStatus) != 0) &&
                 (addExcluded || !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath())))
             {
-                return true;
-            }
-            File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
-            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
                 return true;
             }
         }
@@ -1223,8 +1229,9 @@ public class FileStatusCache {
                             LABELS_CACHE_LOG.fine("Too old item in cache for : " + file.getAbsolutePath()); //NOI18N
                         }
                     }
-                    fileLabels.remove(file);
-                    labelInfo = FAKE_LABEL_INFO;
+                    if (labelInfo == null) {
+                        labelInfo = FAKE_LABEL_INFO;
+                    }
                     refreshInfo = true;
                 }
             }
@@ -1297,8 +1304,11 @@ public class FileStatusCache {
                         synchronized (fileLabels) {
                             for (Map.Entry<File, FileLabelInfo> e : labels.entrySet()) {
                                 e.getValue().updateTimestamp(); // after a possible slow initialization for many files update all timestamps, so they remain in cache longer
-                                fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
+                                FileLabelInfo oldInfo = fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
                                 fileLabels.put(e.getKey(), e.getValue());
+                                if (e.getValue().equals(oldInfo)) {
+                                    filesToRefresh.remove(e.getKey());
+                                }
                             }
                         }
                     } catch (SVNClientException ex) {
@@ -1313,7 +1323,7 @@ public class FileStatusCache {
                             LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                         }
                     }
-                    Subversion.getInstance().refreshAnnotations(files);
+                    Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new File[filesToRefresh.size()]));
                     synchronized (fileLabels) {
                         if (fileLabels.size() > 50) {
                             if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
@@ -1410,6 +1420,26 @@ public class FileStatusCache {
              */
             String getStickyString() {
                 return stickyString != null ? stickyString : "";            //NOI18N
+            }
+
+            @Override
+            public boolean equals (Object obj) {
+                if (obj instanceof FileLabelInfo) {
+                    FileLabelInfo other = (FileLabelInfo) obj;
+                    return getRevisionString().equals(other.getRevisionString())
+                            && getBinaryString().equals(other.getBinaryString())
+                            && getStickyString().equals(other.getStickyString());
+                }
+                return super.equals(obj);
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                hash = 53 * hash + (this.revisionString != null ? this.revisionString.hashCode() : 0);
+                hash = 53 * hash + (this.binaryString != null ? this.binaryString.hashCode() : 0);
+                hash = 53 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
+                return hash;
             }
         }
     }

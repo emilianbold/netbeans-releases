@@ -138,14 +138,7 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            report_error("Can not resolve path %s : %s\n", path, strerror(errno));
-            //#if TRACE
-            {
-                char pwd[PATH_MAX];
-                getcwd(pwd, sizeof pwd);
-                trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
-            }
-            //#endif
+            trace_unresolved_path(path);
             inside = 0;
             return false;
         }
@@ -229,10 +222,10 @@ pid_t fork() {
 //    real_fork("vfork", vfork);
 //}
 
-#pragma init(on_startup)
-void
+#pragma init(rfs_startup)
+static void
 __attribute__((constructor))
-on_startup(void) {
+rfs_startup(void) {
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
 
     test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
@@ -285,10 +278,10 @@ on_startup(void) {
     }
 }
 
-#pragma init(on_shutdown)
-void
+#pragma init(rfs_shutdown)
+static void
 __attribute__((destructor))
-on_shutdown(void) {
+rfs_shutdown(void) {
     static int shutdown_count = 0;
     shutdown_count++;
     trace("RFS shutdown (%d)\n", shutdown_count);

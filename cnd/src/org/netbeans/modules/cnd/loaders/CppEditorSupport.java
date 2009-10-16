@@ -141,6 +141,11 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         removeSaveCookie();
     }
 
+    @Override
+    protected boolean asynchronousOpen() {
+        return true;
+    }
+    
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
         CndDataObject obj = (CndDataObject) getDataObject();

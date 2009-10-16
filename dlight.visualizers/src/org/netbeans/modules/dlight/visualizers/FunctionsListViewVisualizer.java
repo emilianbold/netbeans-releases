@@ -389,10 +389,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metrics, list);
-                    if (functionsList != null && !functionsList.isEmpty()){
-                        sourceSupport.updateSourceWithBlockAnnotations(dataProvider, metrics, functionsList);
-                    }
+                    sourceSupport.updateSource(dataProvider, metrics, list, functionsList);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }

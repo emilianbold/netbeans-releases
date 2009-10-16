@@ -380,7 +380,13 @@ public class KenaiConnection implements PropertyChangeListener {
                         synchronized(KenaiConnection.this) {
                             final PasswordAuthentication pa = Kenai.getDefault().getPasswordAuthentication();
                             USER = pa.getUserName();
-                            tryConnect();
+                            try {
+                                tryConnect();
+                            } catch (IllegalStateException ise) {
+                                if (Kenai.getDefault().getXMPPConnection() != null) {
+                                    Exceptions.printStackTrace(ise);
+                                }
+                            }
                         }
                     }
                 });

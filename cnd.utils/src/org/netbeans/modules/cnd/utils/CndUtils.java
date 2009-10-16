@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.cnd.utils;
 
+import java.io.File;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -139,5 +141,14 @@ public class CndUtils {
 
     public static final void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+    }
+
+    public static void assertNormalized(File file) {
+        if (isDebugMode()) {
+            File normFile = CndFileUtils.normalizeFile(file);
+            if (!file.equals(normFile)) {
+                assertTrueInConsole(false, "Parameter file was not " + "normalized. Was " + file + " instead of " + normFile); // NOI18N
+            }
+        }
     }
 }

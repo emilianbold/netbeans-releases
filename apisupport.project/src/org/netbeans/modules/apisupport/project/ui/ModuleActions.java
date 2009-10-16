@@ -416,6 +416,11 @@ public final class ModuleActions implements ActionProvider {
                         targetNames = new String[]{"debug-fix-nb"}; // NOI18N
                     } else {
                         TestSources testSources = findTestSources(context, false);
+                        if (testSources == null) {  // #174147
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "MSG_no_source"));
+                            DialogDisplayer.getDefault().notify(msg);
+                            return;
+                        }
                         path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
                         p.setProperty("test.type", testSources.testType);
                         assert path != null;

@@ -113,6 +113,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests FileChangeListener on File.
      * @see FileUtil#addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3392
     public void testAddFileChangeListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -240,6 +241,7 @@ public class FileUtilTest extends NbTestCase {
         assertGC("FileChangeListener not collected.", ref);
     }
 
+    @RandomlyFails // NB-Core-Build #3398
     public void testAddRecursiveListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();

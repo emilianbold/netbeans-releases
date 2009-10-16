@@ -48,12 +48,24 @@ enum {
 
 void report_error(const char *format, ...);
 
+static void report_unresolved_path(const char* path) {
+    char pwd[PATH_MAX];
+    getcwd(pwd, sizeof pwd);
+    report_error("Can not resolve path: %s  cwd: %s: %s\n", path, pwd);
+}
+
 #if TRACE
     void trace(const char *format, ...);
     void trace_startup(const char* prefix, const char* env_var, const char* binary);
     void trace_shutdown();
+    static void trace_unresolved_path(const char* path) {
+        char pwd[PATH_MAX];
+        getcwd(pwd, sizeof pwd);
+        trace("Can not resolve path: %s  pwd: %s: %s\n", path, pwd);
+    }
 #else
     #define trace_startup(...)
     #define trace(...)
     #define trace_shutdown()
+    #define trace_unresolved_path(...)
 #endif

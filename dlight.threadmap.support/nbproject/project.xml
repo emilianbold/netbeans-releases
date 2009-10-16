@@ -61,6 +61,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.threadmap.api</package>
                 <package>org.netbeans.modules.dlight.threadmap.spi.dataprovider</package>

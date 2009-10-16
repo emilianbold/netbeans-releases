@@ -169,7 +169,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             }
                         } else {
                             if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
-                                doc.insertString(caretOffset, "* ", null); // NOI18N
+                                if (caretOffset > 0 && "\n".equals(doc.getText(caretOffset-1, 1))) { // NOI18N
+                                    doc.insertString(caretOffset, "* ", null); // NOI18N
+                                }
                             }
                         }
                     } catch (BadLocationException ex) {

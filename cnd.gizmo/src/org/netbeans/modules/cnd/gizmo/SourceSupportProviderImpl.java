@@ -65,12 +65,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
-
-
 
 /**
  *
@@ -182,7 +181,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                     Throwable t = ErrorManager.getDefault().annotate(e, loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, t);
                     StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
-                //Exceptions.printStackTrace(e);
+                    //Exceptions.printStackTrace(e);
                 }
             }
 
@@ -191,7 +190,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                 return;
             }
 
-           final  DataObject dob = DataObject.find(fo);
+            final DataObject dob = DataObject.find(fo);
 
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
@@ -199,52 +198,17 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
 
                     public void run() {
                         NbEditorUtilities.addJumpListEntry(dob);
-                        JEditorPane[] panes = ec.getOpenedPanes();
+                        JEditorPane pane = NbDocument.findRecentEditorPane(ec);
                         boolean opened = true;
-                        if (panes != null && panes.length >= 0) {
-                            //editor already opened, so just select
-                            opened = true;
-                        } else {
-                            // editor not yet opened
-                            // XXX: vv159170 commented out the ollowing code, because on the time
-                            // of firing even no chance to get opened panes yet...
-//                            ec.addPropertyChangeListener(new PropertyChangeListener() {
-//                                public void propertyChange(PropertyChangeEvent evt) {
-//                                    if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-//                                        final JEditorPane[] panes = ec.getOpenedPanes();
-//                                        if (panes != null && panes.length > 0) {
-//                                            selectElementInPane(panes[0], element, true);
-//                                        }
-//                                        ec.removePropertyChangeListener(this);
-//                                    }
-//                                }
-//                            });
-                            opened = false;
+                        if (pane == null) {
                             ec.open();
-                            // XXX: get panes here instead of in listener
-                            panes = ec.getOpenedPanes();
+                            opened = false;
+                            JEditorPane[] panes = ec.getOpenedPanes();
+                            pane = panes != null && panes.length > 0? panes[0] : null ;
                         }
-                        if (panes != null && panes.length > 0) {
-                            jumpToLine(panes[0], lineInfo, !opened);
+                        if (pane != null){
+                            jumpToLine(pane, lineInfo, !opened);
                         }
-//                        JEditorPane[] panes = ec.getOpenedPanes();
-//                        if (panes == null || panes.length <= 0) {
-//                            ec.open();
-//                            panes = ec.getOpenedPanes();
-//                        }
-//                        final JEditorPane pane = panes[0];
-//                        RequestProcessor.getDefault().post(new Runnable() {
-//
-//                            public void run() {
-//                                jumpToLine(pane, lineInfo);
-//                            }
-//                        });
-//                        // try to activate outer TopComponent
-//                        Container temp = pane;
-//                        while (!(temp instanceof TopComponent)) {
-//                            temp =  SwingUtilities.getAncestorOfClass(TopComponent.class, temp);
-//                        }
-//                        ((TopComponent) temp).requestActive();
                     }
                 });
             }
@@ -255,23 +219,24 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     }
 
     private static void jumpToLine(final JEditorPane pane, final SourceFileInfo sourceFileInfo, boolean delayProcessing) {
- // immediate processing
-            RequestProcessor.getDefault().post(new Runnable() {
+        // immediate processing
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    jumpToLine(pane, sourceFileInfo);
-                }
-            });
-            // try to activate outer TopComponent
-            Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
-                temp = temp.getParent();
+            public void run() {
+                jumpToLine(pane, sourceFileInfo);
             }
-            if (temp instanceof TopComponent) {
-                ((TopComponent) temp).open();
-                ((TopComponent) temp).requestActive();
-                ((TopComponent) temp).requestVisible();
-            }
+        });
+
+        // try to activate outer TopComponent
+        Container temp = pane;
+        while (temp != null && !(temp instanceof TopComponent)) {
+            temp = temp.getParent();
+        }
+        if (temp instanceof TopComponent) {
+            ((TopComponent) temp).open();
+            ((TopComponent) temp).requestActive();
+            ((TopComponent) temp).requestVisible();
+        }
 
     }
 
@@ -292,6 +257,4 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
     }
-
-
 }

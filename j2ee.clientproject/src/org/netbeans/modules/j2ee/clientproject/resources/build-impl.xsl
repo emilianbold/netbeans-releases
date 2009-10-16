@@ -281,7 +281,7 @@ made subject to such option by the copyright holder.
                     </and>
                 </condition>
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
-                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:${{toString:endorsed.classpath.path}}" else="">
+                <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
                 </condition>
             </target>
@@ -870,22 +870,21 @@ exists or setup the property manually. For example like this:
                     <copyfiles>
                         <xsl:attribute name="todir">${dist.ear.dir}</xsl:attribute>
                         <xsl:if test="//carproject:included-library[@dirs]">
-                            <xsl:if test="(@dirs = 200)">
+<!--                            <xsl:if test="(@dirs = 200)">
                                 <xsl:attribute name="todir">${dist.ear.dir}/lib</xsl:attribute>
-                            </xsl:if>
+                            </xsl:if> -->
                             <xsl:if test="(@dirs = 300)">
                                 <xsl:attribute name="todir">${build.classes.dir}/META-INF/lib</xsl:attribute>
                             </xsl:if>
                         </xsl:if>
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
-<!--                       <xsl:attribute name="manifestproperty">
+                       <xsl:attribute name="manifestproperty">
                            <xsl:value-of select="concat('manifest.', $included.prop.name)"/>
-                       </xsl:attribute> -->
+                       </xsl:attribute>
                     </copyfiles>
                 </xsl:for-each>
                 
-                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF"/>
-<!--                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//carproject:included-library">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
@@ -895,11 +894,16 @@ exists or setup the property manually. For example like this:
                                         <xsl:value-of select="."/>
                                     </xsl:variable>
                                     <xsl:value-of select="concat('${manifest.', $included.prop.name, '} ')"/>
+<!--                                    <xsl:if test="//carproject:included-library[@dirs]">
+                                        <xsl:if test="(@dirs = 200)">
+                                            <xsl:value-of select="concat('lib/${manifest.', $included.prop.name, '} ')"/>
+                                        </xsl:if>
+                                    </xsl:if> -->
                                 </xsl:for-each>  
                             </xsl:attribute>
                         </attribute>
                     </xsl:if>
-                </manifest> -->
+                </manifest>
                 
             </target>
             

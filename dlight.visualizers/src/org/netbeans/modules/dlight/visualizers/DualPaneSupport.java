@@ -38,11 +38,19 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.dlight.util.ui.Renderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -55,8 +63,12 @@ import org.openide.util.NbBundle;
  */
 public final class DualPaneSupport<T> extends JSplitPane {
 
+    private static final String SWITCH_TO_LEFT = "switchToLeftComponent"; // NOI18N
+    private static final String SWITCH_TO_RIGHT = "switchToRightComponent"; // NOI18N
+
     private JComponent detailsComponent;
     private Renderer<T> detailsRenderer;
+    private final JComponent masterComponent;
 
     /**
      * Creates new <code>DualPaneSupport</code> for given master component.
@@ -70,9 +82,48 @@ public final class DualPaneSupport<T> extends JSplitPane {
         super(HORIZONTAL_SPLIT);
         this.detailsRenderer = detailsRenderer;
         this.detailsComponent = null;
+        this.masterComponent = masterComponent;
         setResizeWeight(0.7);
         setContinuousLayout(true);
         setLeftComponent(masterComponent);
+        setFocusCycleRoot(true);
+
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK), SWITCH_TO_LEFT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), SWITCH_TO_RIGHT);
+
+        ActionMap actionMap = getActionMap();
+        actionMap.put(SWITCH_TO_LEFT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                focus(getLeftComponent());
+            }
+        });
+        actionMap.put(SWITCH_TO_RIGHT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                focus(getRightComponent());
+            }
+        });
+    }
+
+    private void focus(Component component) {
+        while (component instanceof JScrollPane) {
+            component = ((JScrollPane)component).getViewport().getView();
+        }
+        if (component != null) {
+            component.requestFocusInWindow();
+        }
+    }
+
+    @Override
+    public void requestFocus() {
+        masterComponent.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return masterComponent.requestFocusInWindow();
     }
 
     public void showDetailsFor(T item) {

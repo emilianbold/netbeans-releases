@@ -224,7 +224,7 @@ public final class OperationContainerImpl<Support> {
                 //TODO: what if elImpl instanceof FeatureUpdateElementImpl ?
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
-                if(eagerEl.getUpdateUnit().isPending()) {
+                if(eagerEl.getUpdateUnit().isPending() || eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty()) {
                     continue;
                 }
                 UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
@@ -249,7 +249,7 @@ public final class OperationContainerImpl<Support> {
                         }
                     }
                     if ((! reqs.isEmpty() && all.containsAll(reqs) && ! all.contains (eagerEl)) ||
-                            (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && !eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty() && type == OperationType.UPDATE && operations.size() > 0)) {
+                            (reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0)) {
                         // adds affectedEager into list of elements for the operation
                         OperationInfo<Support> i = null;
                         try {
@@ -257,7 +257,7 @@ public final class OperationContainerImpl<Support> {
                         } catch (IllegalArgumentException e) {
                             //investigate the reason of 172220, 171975, 169588
                             boolean firstCondition = (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl));
-                            boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && !eagerEl.getUpdateUnit().getAvailableUpdates().isEmpty() && type == OperationType.UPDATE && operations.size() > 0;
+                            boolean secondCondition = reqs.isEmpty() && impl.getUpdateUnit().getInstalled()!=null && type == OperationType.UPDATE && operations.size() > 0;
                             StringBuilder sb = new StringBuilder();
                             sb.append("\nIAE while adding eager element to the " + type + " container\n");
                             sb.append("\nEager: " + eagerEl);

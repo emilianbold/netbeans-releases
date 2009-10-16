@@ -39,6 +39,8 @@
 package org.netbeans.modules.dlight.threadmap.spi.dataprovider;
 
 import java.util.Collection;
+import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -78,4 +80,11 @@ public interface ThreadMapDataProvider extends DataProvider {
      * @return returns stack thread snapshots on the base of the query passed
      */
     Collection<ThreadSnapshot> getThreadSnapshots(ThreadSnapshotQuery query);
+
+    List<ThreadNameDetails> getThreadNameDetails(int threadID);
+
+    public interface ThreadNameDetails {
+        String getName();
+        Action goToSource();
+    }
 }

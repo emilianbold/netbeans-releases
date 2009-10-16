@@ -42,7 +42,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -79,16 +81,16 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         EditorRegistry.addPropertyChangeListener(new EditorFileChangeListener());
     }
 
-    private synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls, boolean lineAnnotation) {
-        log(sourceFileInfoProvider, metrics, functionCalls, lineAnnotation);
-        if (lineAnnotation) {
-            activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+    private void preProcessAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, boolean lineAnnotations) {
+        if (list == null || list.size() == 0) {
+            return;
         }
-        for (FunctionCallWithMetric functionCall : functionCalls) {
+        for (FunctionCallWithMetric functionCall : list) {
             SourceFileInfo sourceFileInfo = sourceFileInfoProvider.getSourceFileInfo(functionCall);
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
                     String filePath = sourceFileInfo.getFileName();
+                    filePath = FileUtil.normalizeFile(new File(filePath)).getAbsolutePath();
                     FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                     if (fileAnnotationInfo == null) {
                         fileAnnotationInfo = new FileAnnotationInfo();
@@ -121,19 +123,46 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
 
                         col++;
                     }
-                    if (lineAnnotation) {
-                        if (!below ) {
-                            fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
-                        }
+                    if (lineAnnotations && !below) {
+                        // line annotation (none zero)
+                        fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
                     }
-                    else {
+                    if (!lineAnnotations) {
+                        // block annotation
                         fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
                     }
                 }
             }
         }
+    }
+
+    public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
+        // log(sourceFileInfoProvider, metrics, list, functionCalls);
+        // Remember list of annotated panes
+        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet();
+        if (activeAnnotations != null) {
+            for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
+                if (fileAnnotationInfo.isAnnotated()) {
+                    previousAnnotatedPanes.add(fileAnnotationInfo.getEditorPane());
+                }
+            }
+        }
+        
+        activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+        preProcessAnnotations(sourceFileInfoProvider, metrics, list, true);
+        preProcessAnnotations(sourceFileInfoProvider, metrics, functionCalls, false);
         // Check current focused file in editor whether it should be annotated
-        annotateCurrentFocusedFile();
+        annotateCurrentFocusedFiles();
+
+        // Now un-annotate all previous annotated panes except for the ones that that just have been annotated
+        for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
+            if (fileAnnotationInfo.isAnnotated()) {
+                previousAnnotatedPanes.remove(fileAnnotationInfo.getEditorPane());
+            }
+        }
+        for (JEditorPane pane : previousAnnotatedPanes) {
+            SwingUtilities.invokeLater(new UnAnnotate(pane));
+        }
     }
 
     private File fileFromEditorPane(JTextComponent jEditorPane) {
@@ -147,44 +176,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
         return ret;
     }
-    
-    public void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        updateSource(sourceFileInfoProvider, metrics, functionCalls, true);
-    }
 
-    public void updateSourceWithBlockAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> functionCalls) {
-        updateSource(sourceFileInfoProvider, metrics, functionCalls, false);
-    }
-
-//    private File activatedFile(Node node) {
-//        DataObject dobj = node.getCookie(DataObject.class);
-//        if (dobj != null) {
-//            FileObject fo = dobj.getPrimaryFile();
-//            return FileUtil.toFile(fo);
-//        }
-//        return null;
-//    }
-//
-//    private JEditorPane activatedEditorPane(Node node) {
-//        EditorCookie ec = node.getCookie(EditorCookie.class);
-//        if (ec == null) {
-//            return null;
-//        }
-//
-//        JEditorPane[] panes = ec.getOpenedPanes();
-//        if (panes == null) {
-//            ec.open();
-//        }
-//
-//        panes = ec.getOpenedPanes();
-//        if (panes == null) {
-//            return null;
-//        }
-//        JEditorPane currentPane = panes[0];
-//        return currentPane;
-//    }
-
-    private synchronized void annotateCurrentFocusedFile() {
+    private synchronized void annotateCurrentFocusedFiles() {
+        // FIXUP: could there be more than one file in view?
         if (activeAnnotations.size() == 0) {
             return;
         }
@@ -199,12 +193,24 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                 if (fileAnnotationInfo != null) {
                     if (!fileAnnotationInfo.isAnnotated()) {
-                        fileAnnotationInfo.setEditorPane((JEditorPane)jEditorPane);
+                        fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
                         fileAnnotationInfo.setAnnotated(true);
                     }
                     SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
-                }
+               }
             }
+        }
+    }
+
+    class UnAnnotate implements Runnable {
+        JTextComponent jEditorPane;
+
+        public UnAnnotate(JTextComponent jEditorPane) {
+            this.jEditorPane = jEditorPane;
+        }
+
+        public void run() {
+            AnnotationBarManager.hideAnnotationBar(jEditorPane);
         }
     }
 
@@ -223,11 +229,13 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     class EditorFileChangeListener implements PropertyChangeListener {
+
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
                 DLightExecutorService.submit(new Runnable() {
+
                     public void run() {
-                        annotateCurrentFocusedFile();
+                        annotateCurrentFocusedFiles();
                     }
                 }, "Annotate current focused file");//NOI18N
             }
@@ -237,31 +245,21 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     class ProfilerPropertyChangeListener implements PropertyChangeListener {
 
         public synchronized void propertyChange(PropertyChangeEvent evt) {
-            final HashMap<String, FileAnnotationInfo> activeAnnotationsClone = (HashMap<String, FileAnnotationInfo>)activeAnnotations.clone();
             String prop = evt.getPropertyName();
             if (prop.equals(AnnotationSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE)) {
                 boolean annotate = AnnotationSupport.getInstance().getTextAnnotationVisible();
                 if (annotate) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            for (FileAnnotationInfo fileAnnotationInfo : activeAnnotationsClone.values()) {
-                                if (fileAnnotationInfo.isAnnotated()) {
-                                    AnnotationBarManager.showAnnotationBar((JTextComponent)fileAnnotationInfo.getEditorPane(), fileAnnotationInfo);
-                                }
-                            }
+                    for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
+                        if (fileAnnotationInfo.isAnnotated()) {
+                            SwingUtilities.invokeLater(new Annotate(fileAnnotationInfo.getEditorPane(), fileAnnotationInfo));
                         }
-                    });
-                }
-                else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            for (FileAnnotationInfo fileAnnotationInfo : activeAnnotationsClone.values()) {
-                                if (fileAnnotationInfo.isAnnotated()) {
-                                    AnnotationBarManager.hideAnnotationBar((JTextComponent)fileAnnotationInfo.getEditorPane());
-                                }
-                            }
+                    }
+                } else {
+                    for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
+                        if (fileAnnotationInfo.isAnnotated()) {
+                            SwingUtilities.invokeLater(new UnAnnotate(fileAnnotationInfo.getEditorPane()));
                         }
-                    });
+                    }
                 }
             }
         }
@@ -324,5 +322,14 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        for(Map.Entry<String, FileAnnotationInfo> entry : activeAnnotations.entrySet()) {
+            buf.append(entry.getKey()).append('=').append(entry.getValue()).append('\n'); // NOI18N
+        }
+        return buf.toString();
     }
 }

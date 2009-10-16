@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -108,6 +109,10 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     }
 
     protected void create() throws Throwable {
+        File pidFileFile = null;
+        File envFileFile = null;
+        File shFileFile = null;
+
         try {
             if (dorunScript == null) {
                 throw new IOException(loc("TerminalLocalNativeProcess.dorunNotFound.text")); // NOI18N
@@ -128,14 +133,23 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 workingDirectory = new File(wDir).getAbsolutePath();
             }
 
-            File pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
-            File envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
-            pidFileFile.deleteOnExit();
+            pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
+            envFileFile = new File(pidFileFile.getAbsoluteFile() + ".env"); // NOI18N
+            shFileFile = new File(pidFileFile.getAbsoluteFile() + ".sh"); // NOI18N
+            resultFile = new File(shFileFile.getAbsolutePath() + ".res"); // NOI18N
+
+            resultFile.deleteOnExit();
 
             String pidFile = (isWindows) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getAbsolutePath()) : pidFileFile.getAbsolutePath();
             String envFile = pidFile + ".env"; // NOI18N
+            String shFile = pidFile + ".sh"; // NOI18N
 
-            resultFile = new File(pidFileFile.getAbsolutePath() + ".res"); // NOI18N
+            FileWriter shWriter = new FileWriter(shFileFile);
+            shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
+            shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
+            shWriter.write("cd \"" + workingDirectory + "\" || exit $?\n"); // NOI18N
+            shWriter.write("exec " + commandLine + "\n"); // NOI18N
+            shWriter.close();
 
             final ExternalTerminalAccessor terminalInfo =
                     ExternalTerminalAccessor.getDefault();
@@ -148,12 +162,8 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             terminalArgs.addAll(Arrays.asList(
                     dorunScript.getAbsolutePath(),
-                    "-w", workingDirectory, // NOI18N
-                    "-e", envFile, // NOI18N
-                    "-p", pidFile, // NOI18N
-                    "-x", terminalInfo.getPrompt(terminal))); // NOI18N
-
-            terminalArgs.add(commandLine);
+                    "-p", terminalInfo.getPrompt(terminal), // NOI18N
+                    "-x", shFile)); // NOI18N
 
             List<String> command = terminalInfo.wrapCommand(
                     info.getExecutionEnvironment(),
@@ -221,6 +231,16 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             processError = new ByteArrayInputStream(msg.getBytes());
             resultFile = null;
             throw ex;
+        } finally {
+            if (pidFileFile != null) {
+                pidFileFile.delete();
+            }
+            if (envFileFile != null) {
+                envFileFile.delete();
+            }
+            if (shFileFile != null) {
+                shFileFile.delete();
+            }
         }
     }
 
@@ -285,7 +305,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         BufferedReader statusReader = null;
 
         try {
-            resultFile.deleteOnExit();
             int attempts = 10;
             while (attempts-- > 0) {
                 if (resultFile.exists() && resultFile.length() > 0) {

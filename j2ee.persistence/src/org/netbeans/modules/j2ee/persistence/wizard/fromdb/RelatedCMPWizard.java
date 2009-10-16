@@ -239,11 +239,10 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     
     public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         Component c = WindowManager.getDefault().getMainWindow();
-        
+
         // create the pu first if needed
         if (helper.getPersistenceUnit() != null) {
             
-            //Only add library for Hibernate in NB 6.5
             String providerClass = helper.getPersistenceUnit().getProvider();
             if(providerClass != null){
                 Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
@@ -363,7 +362,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
             progressPanel.setText(extracting);
             
             helper.buildBeans();
-            
+
             FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
             

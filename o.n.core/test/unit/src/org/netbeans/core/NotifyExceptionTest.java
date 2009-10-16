@@ -47,7 +47,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.startup.TopLogging;
@@ -57,7 +56,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -84,6 +82,7 @@ public class NotifyExceptionTest extends NbTestCase {
         });
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
@@ -163,25 +162,7 @@ public class NotifyExceptionTest extends NbTestCase {
         assertFalse("Main window is not visible", mainWindow.isVisible());
     }
     public void testNoDialogShownJustFlashing() throws Exception {
-        class MockFlashingIcon extends FlashingIcon {
-            public int cnt;
-
-            public MockFlashingIcon() {
-                super(new ImageIcon());
-            }
-            protected void onMouseClick() {
-            }
-
-            protected void timeout() {
-            }
-
-            public void startFlashing() {
-                cnt++;
-            }
-        }
-        MockFlashingIcon mock = new MockFlashingIcon();
-
-        NotifyExcPanel.flasher = mock;
+        NotifyExcPanel.ExceptionFlasher.flash = null;
 
         Logger l = Logger.getLogger(getName());
         l.setLevel(Level.ALL);
@@ -190,7 +171,7 @@ public class NotifyExceptionTest extends NbTestCase {
         waitEQ();
         assertNull("Really returned", DD.lastDescriptor);
 
-        assertEquals("Flasher flashing", 1, mock.cnt);
+        assertNotNull("Notification displayed", NotifyExcPanel.ExceptionFlasher.flash);
     }
 
     private static final class OwnLevel extends Level {
@@ -241,9 +222,11 @@ public class NotifyExceptionTest extends NbTestCase {
             super(p, b);
         }
 
+        @Override
         public void setVisible(boolean b) {
             v = b;
         }
+        @Override
         public boolean isVisible() {
             return v;
         }

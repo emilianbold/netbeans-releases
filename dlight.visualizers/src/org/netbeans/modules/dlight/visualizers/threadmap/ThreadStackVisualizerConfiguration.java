@@ -48,6 +48,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.datacollector.CpuSamplingSupport;
 import org.netbeans.modules.dlight.visualizers.api.ThreadStateResources;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -55,12 +56,19 @@ import org.openide.util.NbBundle;
  */
 public final class ThreadStackVisualizerConfiguration implements TableBasedVisualizerConfiguration {
 
+    public static enum ExpansionMode {
+        ExpandAll,
+        ExpandCurrent,
+        CollapseAll
+    }
+
     public static final String ID = "ThreadStackVisualizerConfiguration.id";//NOI18N
     private ThreadDump threadDump;
     private long dumpTime;
     private StackNameProvider stackNameProvider;
     private long preferredSelection;
     private ThreadStackActionsProvider actionsProvider;
+    private ExpansionMode expansionMode;
 
     public ThreadStackVisualizerConfiguration(long dumpTime, ThreadDump threadDump, StackNameProvider stackNameProvider, long preferredSelection, ThreadStackActionsProvider actionsProvider) {
         this.dumpTime = dumpTime;
@@ -68,6 +76,9 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
         this.stackNameProvider = stackNameProvider;
         this.preferredSelection = preferredSelection;
         this.actionsProvider = actionsProvider;
+        int i = NbPreferences.forModule(ThreadStackVisualizerConfiguration.class).getInt("expansionMode", 1);//NOI18N
+        i = Math.max(Math.min(i,2),0);
+        expansionMode = ExpansionMode.values()[i];
     }
 
     void update(ThreadStackVisualizerConfiguration another){
@@ -76,6 +87,7 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
         this.stackNameProvider = another.stackNameProvider;
         this.preferredSelection = another.preferredSelection;
         this.actionsProvider = another.actionsProvider;
+        this.expansionMode = another.expansionMode;
     }
 
     ThreadDump getThreadDump() {
@@ -99,6 +111,10 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
 
     long getPreferredSelection(){
         return preferredSelection;
+    }
+
+    ExpansionMode getPrefferedExpansion(){
+        return expansionMode;
     }
 
     public DataModelScheme getSupportedDataScheme() {

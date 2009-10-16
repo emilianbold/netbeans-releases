@@ -39,18 +39,25 @@
 package org.netbeans.modules.dlight.visualizers;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.dnd.DnDConstants;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -58,6 +65,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -68,6 +78,8 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.AdvancedTableViewVisualizerConfiguration;
 import org.netbeans.modules.dlight.visualizers.api.impl.AdvancedTableViewVisualizerConfigurationAccessor;
+import org.netbeans.swing.etable.ETableColumnModel;
+import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
@@ -97,7 +109,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private OnTimerRefreshVisualizerHandler timerHandler;
     private boolean isEmptyContent;
     private boolean isShown = true;
-    private OutlineView outlineView;
+    private final OutlineView outlineView;
     private final String nodeColumnName;
     private final String nodeRowColumnID;
     private final ExplorerManager explorerManager;
@@ -108,6 +120,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private String resourceID;
     private final boolean dualPaneMode;
     private final DualPaneSupport<DataRow> dualPaneSupport;
+    private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
+    private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+    private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
@@ -152,7 +167,66 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
         outlineView.setProperties(result.toArray(new Property<?>[0]));
         outlineView.setPopupAllowed(false);
+        outlineView.setDragSource(false);
+        outlineView.setDropTarget(false);
+        outlineView.setAllowedDragActions(DnDConstants.ACTION_NONE);
+        outlineView.setAllowedDropActions(DnDConstants.ACTION_NONE);
+        final Outline outline = outlineView.getOutline();
+        outline.getTableHeader().setReorderingAllowed(false);
+        outline.setRootVisible(false);
+        //add Alt+Column Number for sorting
+        int columnCount = columns.size() + 1;
+        int firstKey = KeyEvent.VK_1;
+        for (int i = 1; i <= columnCount; i++) {
+            final int columnNumber = i - 1;
+            KeyStroke columnKey = KeyStroke.getKeyStroke(firstKey++, KeyEvent.ALT_MASK, true);
+            outlineView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(columnKey, "ascSortFor" + i);//NOI18N
+            outlineView.getActionMap().put("ascSortFor" + i, new AbstractAction() {// NOI18N
+
+                public void actionPerformed(ActionEvent e) {
+                    // ok, do the sorting
+                    int column = columnNumber;
+                    ETableColumnModel columnModel = null;
+                    if (outline.getColumnModel() instanceof ETableColumnModel) {
+                        columnModel = (ETableColumnModel) outline.getColumnModel();
+                        columnModel.clearSortedColumns();
+                    }
+                    boolean asc = !ascColumnValues.containsKey(column) ? true : ascColumnValues.get(column);
+                    outline.setColumnSorted(column, asc, 1);
+                    ascColumnValues.put(column, !asc);
+                    outline.getTableHeader().resizeAndRepaint();
+                }
+            });
+//            KeyStroke columnDescKey = KeyStroke.getKeyStroke(firstKey++, KeyEvent.ALT_MASK + KeyEvent.SHIFT_MASK, true);
+//            outlineView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(columnDescKey, "descSortFor" + i);//NOI18N
+//            outlineView.getActionMap().put("descSortFor" + i, new AbstractAction() {// NOI18N
+//                public void actionPerformed(ActionEvent e) {
+//                    // ok, do the sorting
+//                    int column = columnNumber;
+//                    ETableColumnModel columnModel = null;
+//                    if (outline.getColumnModel() instanceof ETableColumnModel){
+//                        columnModel = (ETableColumnModel)outline.getColumnModel();
+//                        columnModel.clearSortedColumns();
+//                    }
+//                   boolean asc = !ascColumnValues.containsKey(column)  ?  false :  ascColumnValues.get(column);
+//                    outline.setColumnSorted(column, !asc  , 1);
+//                    ascColumnValues.put(column,! asc);
+//                    outline.getTableHeader().resizeAndRepaint();
+//                }
+//            });
+        }
+        outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
+
+        KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);
+        outlineView.getOutline().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(returnKey, "return"); // NOI18N
+        outlineView.getOutline().getActionMap().put("return", new AbstractAction() {// NOI18N
+
+            public void actionPerformed(ActionEvent e) {
+                refresh.requestFocus(false);
+            }
+        });
 
         this.dualPaneMode = accessor.isDualPaneMode(configuration);
         if (dualPaneMode) {
@@ -178,6 +252,24 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     @Override
+    public void requestFocus() {
+        if (refresh != null) {
+            refresh.requestFocus();
+        } else {
+            outlineView.requestFocus();
+        }
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        if (refresh != null) {
+            return refresh.requestFocusInWindow();
+        } else {
+            return outlineView.requestFocusInWindow();
+        }
+    }
+
+    @Override
     public void addNotify() {
         super.addNotify();
         addComponentListener(this);
@@ -187,8 +279,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             timerHandler.startTimer();
             return;
         }
-
-
     }
 
     @Override
@@ -252,10 +342,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void setNonEmptyContent() {
-        isEmptyContent = false;
+isEmptyContent = false;
         this.removeAll();
         this.setLayout(new BorderLayout());
         buttonsToolbar = new JToolBar();
+        if (isMacLaf) {
+            buttonsToolbar.setBackground(macBackground);
+        }
         refresh = new JButton();
 
         buttonsToolbar.setFloatable(false);
@@ -264,7 +357,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         // Refresh button...
         refresh.setIcon(ImageLoader.loadIcon("refresh.png")); // NOI18N
-        refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
@@ -289,6 +381,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 
         repaint();
         validate();
+        //    this.setFocusTraversalPolicyProvider(true);
+        ArrayList<Component> order = new ArrayList<Component>();
+        order.add(outlineView);
+        order.add(refresh);
+//        FocusTraversalPolicy newPolicy = new MyOwnFocusTraversalPolicy(this, order);
+//        setFocusTraversalPolicy(newPolicy);
+        refresh.requestFocus();        
 
     }
 
@@ -377,10 +476,10 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             return;
         }
         isShown = isShowing();
-        if (isShown) {
-            //we should change explorerManager
-            onTimer();
-        }
+//        if (isShown) {
+//            //we should change explorerManager
+//            onTimer();
+//        }
     }
 
     public void componentHidden(ComponentEvent e) {

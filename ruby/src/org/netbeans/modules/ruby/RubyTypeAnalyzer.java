@@ -43,6 +43,8 @@ package org.netbeans.modules.ruby;
 import java.util.HashMap;
 import java.util.Map;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.MultipleAsgnNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.openide.filesystems.FileObject;
@@ -120,6 +122,23 @@ public final class RubyTypeAnalyzer {
         // Algorithm: walk AST and look for assignments and such.
         // Attempt to compute the type of each expression and
         switch (node.getNodeType()) {
+            case MULTIPLEASGNNODE: {
+                MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) node;
+                ListNode head = multipleAsgnNode.getHeadNode();
+                Node value = multipleAsgnNode.getValueNode();
+                if (head == null || value == null) {
+                    break;
+                }
+                if (value.childNodes().size() != head.childNodes().size()) {
+                    break;
+                }
+                for (int i = 0; i < head.childNodes().size(); i++) {
+                    RubyType type = RubyTypeInferencer.create(knowledge).inferType(value.childNodes().get(i));
+                    String symbol = AstUtilities.getName(head.childNodes().get(i));
+                    maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
+                }
+                return;
+            }
             case LOCALASGNNODE:
             case INSTASGNNODE:
             case GLOBALASGNNODE:

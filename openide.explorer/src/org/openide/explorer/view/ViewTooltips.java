@@ -127,7 +127,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * from the component's removeNotify() method.
      */
     static void unregister (JComponent comp) {
-        // assert INSTANCE != null : "Unregister asymmetrically called";
+        assert INSTANCE != null : "Unregister asymmetrically called";
         if (INSTANCE != null && INSTANCE.detachFrom(comp) == 0) {
             INSTANCE.hide();
             INSTANCE = null;

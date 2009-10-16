@@ -67,7 +67,7 @@ public class JumpToOrCreateNewAction extends NodeAction {
             RADComponent metacomp = (radCookie != null) ? radCookie.getRADComponent() : null;
             if (metacomp != null) {
                 DataObject dobj = FormEditor.getFormDataObject(metacomp.getFormModel());
-                if (dobj != null && AppFrameworkSupport.isFrameworkEnabledProject(dobj.getPrimaryFile())) {
+                if (dobj != null && ActionManager.canHaveActions(dobj.getPrimaryFile())) {
                     FormProperty actionProp = metacomp.getBeanProperty("action"); // NOI18N
                     if (actionProp != null) {
                         try {
@@ -104,7 +104,7 @@ public class JumpToOrCreateNewAction extends NodeAction {
             if (metacomp != null) {
                 DataObject dobj = FormEditor.getFormDataObject(metacomp.getFormModel());
                 FileObject srcFile = (dobj != null) ? dobj.getPrimaryFile() : null;
-                if (srcFile != null && AppFrameworkSupport.isFrameworkEnabledProject(srcFile)) {
+                if (srcFile != null && ActionManager.canHaveActions(srcFile)) {
                     RADProperty actionProp = metacomp.getBeanProperty("action"); // NOI18N
                     if (actionProp != null) {
                         ActionManager am = ActionManager.getActionManager(srcFile);

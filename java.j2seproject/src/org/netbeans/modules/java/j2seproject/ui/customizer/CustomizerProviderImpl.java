@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,6 +51,8 @@ import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -59,9 +63,11 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
 
 
 /** Customization of J2SE project
@@ -105,6 +111,8 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
             return;
         }
         else {
+            try {
+            WaitCursor.show();
             J2SEProjectProperties uiProperties = createJ2SEProjectProperties();
             Lookup context = Lookups.fixed(new Object[] {
                 project,
@@ -121,7 +129,12 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
                     new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
 
             project2Dialog.put(project, dialog);
-            dialog.setVisible(true);
+            } finally {
+                WaitCursor.hide();
+            }
+            if (dialog != null) {
+                dialog.setVisible(true);
+            }
         }
     }
 
@@ -214,6 +227,42 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
             return subcategory;
         }
     }
-   
+
+    public static class WaitCursor implements Runnable {
+
+        private boolean show;
+
+        private WaitCursor(boolean show) {
+            this.show = show;
+        }
+
+        public static void show() {
+            invoke(new WaitCursor(true));
+        }
+
+        public static void hide() {
+            invoke(new WaitCursor(false));
+        }
+
+        private static void invoke(WaitCursor wc) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                wc.run();
+            } else {
+                SwingUtilities.invokeLater(wc);
+            }
+        }
+
+        public void run() {
+            try {
+                JFrame f = (JFrame) WindowManager.getDefault().getMainWindow();
+                Component c = f.getGlassPane();
+                c.setVisible(show);
+                c.setCursor(show ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);
+            } catch (NullPointerException npe) {
+                Exceptions.printStackTrace(npe);
+            }
+        }
+
+    }
                             
 }

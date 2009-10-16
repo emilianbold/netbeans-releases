@@ -594,9 +594,6 @@ public final class J2SEProject implements Project, AntProjectListener {
                                 File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                                 ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
-                                // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-                                setJaxWsEndorsedDirProperty(ep);
-
                                 // move web-service-clients one level up from in project.xml
                                 // WS should be part of auxiliary configuration
                                 Element data = helper.getPrimaryConfigurationData(true);
@@ -818,34 +815,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             return J2SEProject.this;
         }
         
-    }
-    
-    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
-    
-    /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
-     *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
-     */
-    public static void setJaxWsEndorsedDirProperty(EditableProperties ep) {
-        String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
-        String javaVersion = System.getProperty("java.specification.version"); //NOI18N
-        if ("1.6".equals(javaVersion)) { //NOI18N
-            String jaxWsEndorsedDirs = getJaxWsApiDir();
-            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs))
-                ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
-        } else {
-            if (oldJaxWsEndorsedDirs!=null) {
-                ep.remove(ENDORSED_DIR_PROPERTY);
-            }
-        }
-    }
-    
-    private static String getJaxWsApiDir() {
-        File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
-        if (jaxwsApi!=null) {
-            File jaxbApi =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
-            return jaxwsApi.getParent()+(jaxbApi != null? ":"+jaxbApi.getParent() : ""); //NOI18N
-        }
-        return null;
     }
     
     private static final DocumentBuilder db;

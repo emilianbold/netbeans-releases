@@ -604,33 +604,6 @@ public class OutlineView extends JScrollPane {
             }
         }
 
-        @Override
-        public void mouseClicked (MouseEvent e) {
-            int selRow = outline.rowAtPoint (e.getPoint ());
-
-            if ((selRow != -1) && SwingUtilities.isLeftMouseButton (e) && MouseUtils.isDoubleClick (e)) {
-                // Default action.
-                if (outline.getSelectedColumn () == 0) {
-                    TreePath selPath = outline.getClosestPathForLocation (e.getX (), e.getY ());
-                    Node node = Visualizer.findNode (selPath.getLastPathComponent ());
-                    if (node.isLeaf ()) {
-                        Action a = TreeView.takeAction (node.getPreferredAction (), node);
-
-                        if (a != null) {
-                            if (a.isEnabled ()) {
-                                a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                            } else {
-                                Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
-                            }
-
-                            e.consume ();
-                            return;
-                        }
-                    }
-                }
-            }
-            super.mouseClicked (e);
-        }
     }
 
     /**
@@ -944,6 +917,27 @@ public class OutlineView extends JScrollPane {
                 }
             }
 
+            if (row != -1 && e instanceof MouseEvent &&
+                    SwingUtilities.isLeftMouseButton ((MouseEvent) e) &&
+                    ((MouseEvent) e).getClickCount() > 1) {
+                // Default action.
+                if (column == 0) {
+                    Node node = Visualizer.findNode (o);
+                    if (node != null) {
+                        if (node.isLeaf ()) {
+                            Action a = TreeView.takeAction (node.getPreferredAction (), node);
+
+                            if (a != null) {
+                                if (a.isEnabled ()) {
+                                    a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                } else {
+                                    Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             boolean res = super.editCellAt(row, column, e);
             if( !res && e instanceof MouseEvent ) {
                 //try invoking custom editor on disabled cell
