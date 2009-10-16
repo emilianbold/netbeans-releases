@@ -745,7 +745,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
                     public Boolean call() {
                         boolean result = goToSource();
-                        asyncNotifyAnnotedSourceProviders(false);
                         return result;
                     }
                 }, "GoToSource from Functions List View"); // NOI18N
