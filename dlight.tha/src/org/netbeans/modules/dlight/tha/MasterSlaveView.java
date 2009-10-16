@@ -110,11 +110,13 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
     }
 
     private void valueChanged() {
-	if (manager.getSelectedNodes().length > 0) {
-	    @SuppressWarnings("unchecked")
-	    THANode<T> selectedNode = (THANode<T>) manager.getSelectedNodes()[0];
-            showDetails(selectedNode.getObject(), true);
-	} else {
+        Node[] selectedNodes = manager.getSelectedNodes();
+        Node node = 0 < selectedNodes.length? selectedNodes[0] : null;
+        if (node instanceof THANode<?>) {
+            @SuppressWarnings("unchecked")
+            THANode<T> thaNode = (THANode<T>) node;
+            showDetails(thaNode.getObject(), true);
+        } else {
             showDetails(null, true);
 	}
     }
