@@ -50,7 +50,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
 
@@ -61,7 +60,7 @@ import org.openide.util.Exceptions;
  *
  * @author Vladimir Kvashin
  */
-public class FileData {
+public final class FileData {
 
     private final Properties data;
     private final File dataFile;
@@ -73,7 +72,7 @@ public class FileData {
     //  Public stuff
     //
 
-    public static class FileInfo {
+    public static final class FileInfo {
         public final long timestamp;
         public final FileState state;
 
