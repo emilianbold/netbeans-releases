@@ -979,14 +979,14 @@ public class MenuEditLayer extends JPanel {
     }
     
     
-    void addRadComponentToBefore(RADVisualComponent payloadRad, JComponent target) {
-        addRadComponentTo(payloadRad, target, +0);
+    void addRadComponentToBefore(JComponent target, MetaComponentCreator creator) {
+        addRadComponentTo(target, 0, creator);
     }
     
-    void addRadComponentToAfter(RADVisualComponent payloadRad, JComponent target) {
-        addRadComponentTo(payloadRad, target, +1);
+    void addRadComponentToAfter(JComponent target, MetaComponentCreator creator) {
+        addRadComponentTo(target, 1, creator);
     }
-    private void addRadComponentTo(RADVisualComponent payloadRad, JComponent target, int offset) {
+    private void addRadComponentTo(JComponent target, int offset, MetaComponentCreator creator) {
         try {
             JComponent targetParent = getMenuParent(target);
             if(target.getParent() instanceof JMenuBar) {
@@ -998,8 +998,7 @@ public class MenuEditLayer extends JPanel {
             assert targetParentRad != null;
             
             int index2 = targetParentRad.getIndexOf(targetRad) + offset;
-            formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
-            formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);
+            creator.addPrecreatedComponent(targetParentRad, new Integer(index2));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
