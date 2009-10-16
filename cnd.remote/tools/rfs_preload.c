@@ -193,29 +193,25 @@ static int on_open(const char *path, int flags) {
     return result;
 }
 
-static pid_t real_fork(const char* function_name, pid_t (*wrapper_addr)(void)) {
+pid_t fork() {
     pid_t result;
     static pid_t (*prev)(void);
         if (!prev) {
-            prev = (pid_t (*)(void)) _get_real_addr(function_name, wrapper_addr);
+            prev = (pid_t (*)(void)) _get_real_addr("fork", fork);
         }
         if (prev) {
             result = prev();
         } else {
-            trace("Could not find original \"%s\" function\n", function_name);
+            trace("Could not find original \"%s\" function\n", "fork");
             errno = EFAULT;
             result = -1;
         }
     if (result == 0) {
         release_socket(); // child
     } else {
-        trace("%s -> %ld\n", function_name, result);
+        trace("%s -> %ld\n", "fork", result);
     }
     return result;
-}
-
-pid_t fork() {
-    real_fork("fork", fork);
 }
 
 //pid_t vfork() {
