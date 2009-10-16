@@ -1463,16 +1463,19 @@ public class GdbDebugger implements PropertyChangeListener {
                 String[] args = killcmd.subList(1, killcmd.size()).toArray(new String[killcmd.size()-1]);
                 NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                 npb.setExecutable(killcmd.get(0)).setArguments(args);
+
+                // see IZ 160749 - skip sigcont and sigint
+                // IZ 172855 - skipSignal need to be set before signal sending
+                if (signal == Signal.INT) {
+                    skipSignal = true;
+                }
                 
                 try {
                     npb.call();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                // see IZ 160749 - skip sigcont and sigint
-                if (signal == Signal.INT) {
-                    skipSignal = true;
-                }
+                
                 gdb.getLogger().logMessage("External Command: " + killcmd.toString()); // NOI18N
             }
         }
