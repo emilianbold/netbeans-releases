@@ -141,6 +141,12 @@ public class RemotePathMap extends PathMap {
         }
     }
 
+    public void clear() {
+        synchronized (map) {
+            map.clear();
+        }
+    }
+    
     // PathMap
     public String getRemotePath(String lpath, boolean useDefault) {
         String ulpath = unifySeparators(lpath);
