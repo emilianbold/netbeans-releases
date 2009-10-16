@@ -81,7 +81,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionEvent[] paes;
     private ExecutionEnvironment execEnv;
 
-    private File localDir;
+    private File[] localDirs;
     private PrintWriter out;
     private PrintWriter err;
     private File privProjectStorageDir;
@@ -110,7 +110,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                     // FIXUP: this should be done via ActionHandler.
                     RfsSyncWorker.Parameters params = RfsSyncWorker.getLastParameters();
                     assert params != null; // FIXUP: it's impossible because of the check above
-                    this.localDir = params.localDir;
+                    this.localDirs = params.localDirs;
                     this.remoteDir = params.remoteDir;
                     this.out = params.out;
                     this.err = params.err;
@@ -156,7 +156,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
         localController = new RfsLocalController(
-                execEnv, localDir,  remoteDir, rcInputStream,
+                execEnv, localDirs,  remoteDir, rcInputStream,
                 rcOutputStream, err, new FileData(privProjectStorageDir, execEnv));
 
         localController.feedFiles(rcOutputStream, new SharabilityFilter());
