@@ -80,6 +80,6 @@ public class SunStudioCompilerXautoparAdvice implements Advice {
     }
 
     private static String getString(String name) {
-        return NbBundle.getMessage(SunStudioCompilersAdvice.class, name);
+        return NbBundle.getMessage(SunStudioCompilerXautoparAdvice.class, name);
     }
 }
