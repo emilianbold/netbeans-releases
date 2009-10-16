@@ -168,7 +168,9 @@ public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter impl
             try {
                 Component root = engine.getSearchRoot(file);
 //System.out.println("       : " + root);
-                searchRoots.add(root);
+                if (root != null) {
+                    searchRoots.add(root);
+                }
             }
             catch (IOException ex) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.getMessage());
