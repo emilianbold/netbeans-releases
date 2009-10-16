@@ -562,8 +562,10 @@ public final class DashboardImpl extends Dashboard {
         String kenaiName = Kenai.getDefault().getName();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
-        if( 0 == count )
+        if( 0 == count ) {
+            projectLoadingFinished();
             return; //nothing to load
+        }
         ArrayList<String> ids = new ArrayList<String>(count);
         for( int i=0; i<count; i++ ) {
             String id = prefs.get(PREF_ID+i, null); //NOI18N
@@ -574,8 +576,10 @@ public final class DashboardImpl extends Dashboard {
         synchronized( LOCK ) {
             if( otherProjectsLoader != null )
                 otherProjectsLoader.cancel();
-            if( ids.isEmpty() )
+            if( ids.isEmpty() ) {
+                projectLoadingFinished();
                 return;
+            }
             otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
             requestProcessor.post(otherProjectsLoader);
         }
