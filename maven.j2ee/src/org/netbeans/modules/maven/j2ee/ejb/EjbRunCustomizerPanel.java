@@ -88,7 +88,7 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
     }
 
     private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(J2eeModule.Type.EJB));
+        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(J2eeModule.Type.EJB), module.getJ2eeProfile());
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
