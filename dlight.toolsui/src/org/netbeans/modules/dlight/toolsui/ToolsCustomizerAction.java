@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui.api;
+package org.netbeans.modules.dlight.toolsui;
 
 import org.netbeans.modules.dlight.toolsui.ToolsManagerPanel;
 import java.awt.Dialog;

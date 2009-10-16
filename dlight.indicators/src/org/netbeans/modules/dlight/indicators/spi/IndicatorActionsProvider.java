@@ -41,11 +41,12 @@ package org.netbeans.modules.dlight.indicators.spi;
 
 import java.util.List;
 import javax.swing.Action;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author thp
  */
 public interface IndicatorActionsProvider {
-    List<Action> getIndicatorActions();
+    List<Action> getIndicatorActions(Lookup context);
 }

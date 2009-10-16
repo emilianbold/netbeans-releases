@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider;
-import org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerAction;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -53,7 +53,7 @@ import org.openide.util.actions.SystemAction;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider.class)
 public class IndicatorActionsProviderImpl implements IndicatorActionsProvider {
 
-    public List<Action> getIndicatorActions() {
+    public List<Action> getIndicatorActions(Lookup context) {
         SystemAction action = SystemAction.get(ToolsCustomizerAction.class);
 
         List<Action> list = new ArrayList<Action>();
