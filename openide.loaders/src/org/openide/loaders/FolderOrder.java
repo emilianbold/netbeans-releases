@@ -117,13 +117,13 @@ final class FolderOrder extends Object implements Comparator<Object> {
             order = new HashMap<String, Integer> (arr.length * 4 / 3 + 1);
 
             // each object only once
-            Enumeration en = org.openide.util.Enumerations.removeDuplicates (
+            Enumeration<DataObject> en = org.openide.util.Enumerations.removeDuplicates (
                 org.openide.util.Enumerations.array (arr)
             );
 
             int i = 0;
             while (en.hasMoreElements ()) {
-                DataObject obj = (DataObject)en.nextElement ();
+                DataObject obj = en.nextElement ();
                 FileObject fo = obj.getPrimaryFile ();
                 if (folder.equals (fo.getParent ())) {
                     // object for my folder
@@ -143,19 +143,27 @@ final class FolderOrder extends Object implements Comparator<Object> {
     /** Compares two data object or two nodes.
     */
     public int compare (Object obj1, Object obj2) {
-        Integer i1 = (order == null) ? null : (Integer) order.get(FolderComparator.findFileObject(obj1).getNameExt());
-        Integer i2 = (order == null) ? null : (Integer) order.get(FolderComparator.findFileObject(obj2).getNameExt());
+        Integer i1 = (order == null) ? null : order.get(FolderComparator.findFileObject(obj1).getNameExt());
+        Integer i2 = (order == null) ? null : order.get(FolderComparator.findFileObject(obj2).getNameExt());
 
         if (i1 == null) {
-            if (i2 != null) return 1;
+            if (i2 != null) {
+                return 1;
+            }
 
             // compare by the provided comparator
             return ((FolderComparator)(getSortMode())).doCompare(obj1, obj2);
         } else {
-            if (i2 == null) return -1;
+            if (i2 == null) {
+                return -1;
+            }
             // compare integers
-            if (i1.intValue () == i2.intValue ()) return 0;
-            if (i1.intValue () < i2.intValue ()) return -1;
+            if (i1.intValue () == i2.intValue ()) {
+                return 0;
+            }
+            if (i1.intValue () < i2.intValue ()) {
+                return -1;
+            }
             return 1;
         }
     }

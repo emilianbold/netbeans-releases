@@ -66,8 +66,8 @@ public class FileData {
     private final Properties data;
     private final File dataFile;
 
-    private static final String VERSION = "1.0";
-    private static final String VERSION_KEY = "VERSION";
+    private static final String VERSION = "1.0"; // NOI18N
+    private static final String VERSION_KEY = "VERSION"; // NOI18N
 
     //
     //  Public stuff
