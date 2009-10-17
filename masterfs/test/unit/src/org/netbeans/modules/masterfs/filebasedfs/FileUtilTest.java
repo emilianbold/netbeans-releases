@@ -451,6 +451,7 @@ public class FileUtilTest extends NbTestCase {
      * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
      * It is expected that all events from sub folders are delivered just once.
      */
+    @RandomlyFails // NB-Core-Build #3405
     public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
         checkFolderRecursiveListener(false);
     }

@@ -90,10 +90,17 @@ implements CloneableEditorSupport.Env {
     public NotifyModifiedTest(java.lang.String testName) {
         super(testName);
     }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
   
 //    public static Test suite() {
 //        return new NotifyModifiedTest("testUndoDoesMarkFileAsDirtyIssue56963");
 //    }
+
+
     
     @Override
     protected void setUp () {
