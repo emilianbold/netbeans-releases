@@ -86,10 +86,18 @@ public class SyntaxParserResult {
     //doesn't take namespaces context into account
     //doesn't support multiple prefixes for one namespace
     public synchronized AstNode getASTRoot(String namespace) {
-        if(namespace != null && !getDeclaredNamespaces().containsKey(namespace)) {
-            //unknown namespace, not parse tree for it
-            return null;
+        return getASTRoot(namespace, null);
+    }
+
+    /** the defaultDTD is used when no DTD is determined based on the
+     * doctype declaration in the source */
+    public synchronized AstNode getASTRoot(String namespace, DTD defaultDTD) {
+        //compatibility, test
+        if(namespace == null && defaultDTD == null) {
+            //scecify default dtd
+            defaultDTD = getFallbackDTD();
         }
+
 
         if(astRoots == null) {
              astRoots = new HashMap<String, AstNode>();
@@ -99,8 +107,7 @@ public class SyntaxParserResult {
             return astRoots.get(namespace);
         } else {
             //filter the elements
-            int expectedElementCount = namespace == null ? getElements().size() : getElements().size() / 6;
-            List<SyntaxElement> filtered = new ArrayList<SyntaxElement>(expectedElementCount);
+            List<SyntaxElement> filtered = new ArrayList<SyntaxElement>();
 
             String prefix = getDeclaredNamespaces().get(namespace);
             for(SyntaxElement e : getElements()) {
@@ -120,8 +127,22 @@ public class SyntaxParserResult {
                 }
             }
 
-            //XXX this is also incorrect, html tags can have namespace and can use prefixes as well
-            DTD dtd = namespace == null ? getDTD() : null; //do not use DTD for namespaced tags
+            DTD dtd = null;
+            if(getDTDNoFallback() != null) {
+                if(defaultDTD != null) {
+                    //DTD found for this file and preferred dtd is specified
+                    //this means we are trying to parse html or xhtml tags
+                    dtd = getDTDNoFallback();
+                } else {
+                    //DTD found, but no preferred dtd specifes,
+                    //this means that one wants to parse some non-html stuff
+                    dtd = null;
+                }
+            } else {
+                if(defaultDTD != null) {
+                    dtd = defaultDTD;
+                }
+            }
             
             AstNode root = SyntaxTree.makeTree(context.clone().setElements(filtered).setDTD(dtd));
             root.setProperty(AstNode.NAMESPACE_PROPERTY, namespace); //NOI18N
@@ -155,7 +176,7 @@ public class SyntaxParserResult {
         return this.publicID;
     }
 
-    /** Returns a map of NS prefix to URI of namespaces used in the document
+    /** Returns a map of namespace URI to prefix used in the document
      * Not only globaly registered namespace (root tag) are taken into account.
      */
     // URI to prefix map
@@ -211,6 +232,20 @@ public class SyntaxParserResult {
             }
         }
         return _namespaces;
+    }
+
+     private DTD getDTDNoFallback() {
+        if (getPublicID() == null) {
+            //return context DTD in case that the context creator wants to explicitly
+            //define the fallback DTD
+            if(context.getDTD() != null) {
+                return context.getDTD();
+            }
+        } else {
+            return org.netbeans.editor.ext.html.dtd.Registry.getDTD(getPublicID(), null);
+        }
+
+        return null;
     }
 
     public DTD getDTD() {

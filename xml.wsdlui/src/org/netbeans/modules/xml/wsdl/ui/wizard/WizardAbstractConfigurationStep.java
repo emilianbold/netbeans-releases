@@ -187,6 +187,10 @@ public class WizardAbstractConfigurationStep extends WSDLWizardDescriptorPanel i
                 }
             }
             templateWizard.putProperty(WizardAbstractConfigurationStep.TEMP_WSDLMODEL, null);
+
+            // fix for issue #160855 - NPE at org.netbeans.modules.xml.xdm.XDMModel.flushDocument
+            templateWizard.putProperty(WSDLWizardConstants.CREATE_NEW_TEMP_WSDLFILE, true);
+
             mPortType = null;
             mNewMessageList = null;
             mPartnerLinkTypeElement = null;
