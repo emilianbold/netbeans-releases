@@ -1286,8 +1286,20 @@ public class CasualDiff {
         int[] lhsBounds = getBounds(oldT.lhs);
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
-        // rhs
         int[] rhsBounds = getBounds(oldT.rhs);
+
+        //#174552: '=' may be missing if this is a synthetic annotation attribute assignment (of attribute name "value"):
+        tokenSequence.move(rhsBounds[0]);
+        moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+        if (tokenSequence.token().id() != JavaTokenId.EQ) {
+            if (VeryPretty.getCodeStyle(workingCopy).spaceAroundAssignOps())
+                printer.print(" = ");
+            else
+                printer.print("=");
+        }
+        //#174552 end
+        
+        // rhs
         copyTo(localPointer, rhsBounds[0]);
         localPointer = diffTree(oldT.rhs, newT.rhs, rhsBounds);
 
