@@ -1289,13 +1289,17 @@ public class CasualDiff {
         int[] rhsBounds = getBounds(oldT.rhs);
 
         //#174552: '=' may be missing if this is a synthetic annotation attribute assignment (of attribute name "value"):
-        tokenSequence.move(rhsBounds[0]);
-        moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
-        if (tokenSequence.token().id() != JavaTokenId.EQ) {
-            if (VeryPretty.getCodeStyle(workingCopy).spaceAroundAssignOps())
-                printer.print(" = ");
-            else
-                printer.print("=");
+        if (   oldT.lhs.getKind() == Kind.IDENTIFIER
+            && newT.lhs.getKind() == Kind.IDENTIFIER
+            && !((JCIdent) oldT.lhs).name.equals(((JCIdent) newT.lhs).name)) {
+            tokenSequence.move(rhsBounds[0]);
+            moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+            if (tokenSequence.token().id() != JavaTokenId.EQ) {
+                if (VeryPretty.getCodeStyle(workingCopy).spaceAroundAssignOps())
+                    printer.print(" = ");
+                else
+                    printer.print("=");
+            }
         }
         //#174552 end
         
