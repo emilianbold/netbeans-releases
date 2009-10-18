@@ -839,8 +839,8 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 Long lastDirtyVersion = (Long) activeDocument.getProperty(PROP_LAST_DIRTY_VERSION);
                 boolean markDirty = false;
 
-                if (lastDirtyVersion != null && lastDirtyVersion < version) {
-                    // we have already seen the document and it's changed since the last time
+                if (lastDirtyVersion == null || lastDirtyVersion < version) {
+                    // the document was changed since the last time
                     markDirty = true;
                 }
 
