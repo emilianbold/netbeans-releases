@@ -124,6 +124,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.Position;
 import javax.swing.tree.ExpandVetoException;
@@ -585,17 +586,28 @@ public abstract class TreeView extends JScrollPane {
     /** Expands all paths.
     */
     public void expandAll() {
-        int i = 0;
-        int j;
+        TreeUI treeUI = tree.getUI();
+        tree.setUI(null);
+        TreeNode root = (TreeNode) tree.getModel().getRoot();
+        expandOrCollapseAll(new TreePath(root), true);
+        tree.setUI(treeUI);
+        tree.updateUI();
+    }
 
-        do {
-            do {
-                j = tree.getRowCount();
-                tree.expandRow(i);
-            } while (j != tree.getRowCount());
-
-            i++;
-        } while (i < tree.getRowCount());
+    private void expandOrCollapseAll(TreePath parent, boolean expand) {
+        TreeNode node = (TreeNode) parent.getLastPathComponent();
+        if (node.getChildCount() > 0) {
+            for (Enumeration<TreeNode> e = node.children(); e.hasMoreElements();) {
+                TreeNode n = e.nextElement();
+                TreePath path = parent.pathByAddingChild(n);
+                expandOrCollapseAll(path, expand);
+            }
+        }
+        if (expand) {
+            tree.expandPath(parent);
+        } else {
+            tree.collapsePath(parent);
+        }
     }
 
     //
