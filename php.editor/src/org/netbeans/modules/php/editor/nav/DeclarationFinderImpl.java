@@ -128,7 +128,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                     }
                                 }
                             }
-                            if (node != null && !PHPDocTypeTag.ORDINAL_TYPES.contains(node.getOriginalNode().getValue().toUpperCase())) {
+                            if (node != null) {
                                 return node.getRange().containsInclusive(caretOffset) ? node.getRange() : OffsetRange.NONE;
                             }
                         }
