@@ -83,6 +83,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -532,6 +533,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
                         for (Indicator<?> i : indicators) {
+                            i.setIndicatorActionsProviderContext(Lookups.fixed(context.getDLightConfiguration(), tool));
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {

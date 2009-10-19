@@ -69,6 +69,7 @@ import org.netbeans.modules.dlight.api.impl.IndicatorConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.openide.util.Lookup;
 
 /**
  * Indicator is a small, graphical, real-time monitor
@@ -149,6 +150,13 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
         this.visible = configuration.isVisible();
     }
+
+
+    /**
+     * 
+     * @param context
+     */
+    public abstract void setIndicatorActionsProviderContext(Lookup context);
 
     //public abstract Action[]  getActions();
     public final Action getDefaultAction() {
