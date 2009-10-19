@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="changeme" default="all" basedir=".">
+    <target name="all">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.api.autoupdate.ant.AutoUpdate" name="autoupdate">
+            <classpath>
+                <fileset dir="${root}">
+                    <include name="platform*/**/*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+
+        <autoupdate
+            updatecenter="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/nbms/updates.xml.gz"
+            netbeansdestdir="${root}"
+        />
+        
+    </target>
+</project>

@@ -102,6 +102,12 @@
                 <built-to>build/updaterclasses</built-to>
                 <built-to>${cluster}/modules/ext/updater.jar</built-to>
             </extra-compilation-unit>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${src-ant.cp}:${module.classpath}</classpath>
+                <built-to>build/antclasses</built-to>
+               <built-to>${cluster}/modules/ext/autoupdate-ant.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

@@ -15,6 +15,19 @@
             <fileset dir="libsrc" excludes="${jar-excludes}"/>
         </copy>
     </target>
+    <target name="compile-ant" depends="basic-init">
+        <mkdir dir="${src-ant.build}"/>
+        <javac srcdir="antsrc" destdir="${src-ant.build}"
+               deprecation="${build.compiler.deprecation}"
+               debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}"
+               optimize="${build.compiler.optimize}" source="${javac.source}"
+               target="${javac.target}" classpath="${src-ant.cp}:${module.classpath}">
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+        <copy todir="${src-ant.build}">
+            <fileset dir="antsrc" excludes="${jar-excludes}"/>
+        </copy>
+    </target>
 
     <target name="jar-updater" depends="init,compile-updater">
         <mkdir dir="${cluster}/modules/ext" />
@@ -26,10 +39,20 @@
             <fileset dir="build/updaterclasses"/>
         </jar>
     </target>
+    <target name="jar-ant" depends="init,compile-ant">
+        <mkdir dir="${cluster}/modules/ext" />
+        <jar jarfile="${cluster}/modules/ext/autoupdate-ant.jar"
+             compress="${build.package.compress}">
+            <manifest>
+                <attribute name="NetBeans-Own-Library" value="true"/>
+            </manifest>
+            <fileset dir="build/antclasses"/>
+        </jar>
+    </target>
 
-    <target name="compile" depends="jar-updater,projectized-common.compile"/>
+    <target name="compile" depends="jar-updater,projectized-common.compile,compile-ant"/>
 
-    <target name="netbeans-extra" depends="jar-updater"/>
+    <target name="netbeans-extra" depends="jar-updater,jar-ant"/>
 
     <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
         <locjar jarfile="${cluster}/modules/ext/updater.jar"
