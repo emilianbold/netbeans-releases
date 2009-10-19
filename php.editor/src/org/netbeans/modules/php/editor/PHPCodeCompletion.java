@@ -681,9 +681,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     String typeName = typeScope.getName();
-                    if (PHPDocTypeTag.ORDINAL_TYPES.contains(typeName.toUpperCase())) {
-                        continue;
-                    }
                     boolean staticAllowed = OptionsUtils.codeCompletionStaticMethods();
                     boolean nonstaticAllowed = OptionsUtils.codeCompletionNonStaticMethods();
                     final QualifiedName qualifiedTypeName = typeScope.getNamespaceName().append(typeName);
