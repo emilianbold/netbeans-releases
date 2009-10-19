@@ -3466,6 +3466,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         public final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap;
 
         private Indexers(boolean detectChanges) {
+            final long start = System.currentTimeMillis();
             if (detectChanges) {
                 changedCifs = new HashSet<IndexerCache.IndexerInfo<CustomIndexerFactory>>();
                 changedEifs = new HashSet<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>();
@@ -3475,6 +3476,9 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
             cifInfos = IndexerCache.getCifCache().getIndexers(changedCifs);
             eifInfosMap = IndexerCache.getEifCache().getIndexersMap(changedEifs);
+            
+            final long delta = System.currentTimeMillis() - start;
+            LOGGER.log(Level.FINE, "Loading indexers took {0} ms.", delta); // NOI18N
         }
     }
 
