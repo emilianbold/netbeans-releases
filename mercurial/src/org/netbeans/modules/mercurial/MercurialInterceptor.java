@@ -75,7 +75,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
-    private final RequestProcessor parallelRP = new RequestProcessor("Subversion FS handler", 50);
+    private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
 
     public MercurialInterceptor() {
