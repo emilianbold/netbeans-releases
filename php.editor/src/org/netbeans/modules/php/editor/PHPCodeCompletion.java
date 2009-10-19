@@ -65,6 +65,7 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -100,19 +101,10 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
@@ -841,11 +833,24 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         // Special keywords applicable only inside a class
-        ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
+        final ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
         if (classDecl != null) {
             for (String keyword : PHP_CLASS_KEYWORDS) {
                 if (startsWith(keyword, request.prefix)) {
-                    proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
+                    proposals.add(new PHPCompletionItem.KeywordItem(keyword, request) {
+
+                        @Override
+                        public String getLhsHtml(HtmlFormatter formatter) {
+                            String clsName = CodeUtils.extractClassName(classDecl);
+                            if (clsName != null) {
+                                formatter.type(true);
+                                formatter.appendText(clsName);
+                                formatter.type(false);
+                            }
+                            formatter.appendText(" "); //NOI18N
+                            return super.getLhsHtml(formatter);
+                        }
+                    });
                 }
             }
         }
@@ -963,6 +968,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     final String name = varName.getName();
                     String notDollaredName = name.startsWith("$") ? name.substring(1) : name;
                     if (PredefinedSymbols.SUPERGLOBALS.contains(notDollaredName)) {
+                        continue;
+                    }
+                    if (varName.representsThis()) {
                         continue;
                     }
                     final Collection<? extends String> typeNames = varName.getTypeNames(position);
