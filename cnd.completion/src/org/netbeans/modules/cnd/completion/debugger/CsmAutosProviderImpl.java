@@ -48,6 +48,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -106,53 +108,75 @@ public class CsmAutosProviderImpl implements AutosProvider {
                     }
                 }
             }
+
             final Set<String> autos = new HashSet<String>();
-            if (!spans.isEmpty()) {
-                CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
-                    public void visit(CsmReferenceContext context) {
-                        CsmReference reference = context.getReference();
-                        for (int[] span : spans) {
-                            if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
-                                CsmObject referencedObject = reference.getReferencedObject();
-                                if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
-                                    StringBuilder sb = new StringBuilder(reference.getText());
-                                    if (context.size() > 1) {
-                                        outer: for (int i = context.size()-1; i >= 0; i--) {
-                                            CppTokenId token = context.getToken(i);
-                                            switch (token) {
-                                                case DOT:
-                                                case ARROW:
-                                                case SCOPE:
-                                                    break;
-                                                default: break outer;
-                                            }
-                                            if (i > 0) {
-                                                sb.insert(0, token.fixedText());
-                                                sb.insert(0, context.getReference(i-1).getText());
-                                            }
-                                        }
-                                    }
-                                    autos.add(sb.toString());
-                                } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
-                                    String txt = reference.getText().toString();
-                                    int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
-                                    if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
-                                        try {
-                                            txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
-                                        } catch (BadLocationException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                    autos.add(txt);
-                                }
-                            }
-                        }
-                    }
-                });
+            addAutos(scope, spans, document, autos);
+            
+            // include previous scope sometimes (IZ 171412)
+            if (previous == null && CsmKindUtilities.isScopeElement(scope)) {
+                final List<int[]> parentSpans = new ArrayList<int[]>();
+                CsmScope parentScope = ((CsmScopeElement) scope).getScope();
+                if (CsmKindUtilities.isFunction(parentScope)) {
+                    CsmFunctionParameterList parameterList = ((CsmFunction) parentScope).getParameterList();
+                    parentSpans.add(new int[]{parameterList.getStartOffset(), parameterList.getEndOffset()});
+                } else if (CsmKindUtilities.isStatement(parentScope)) {
+                    parentSpans.add(getInterestedStatementOffsets((CsmStatement)parentScope));
+                }
+                addAutos(parentScope, parentSpans, document, autos);
             }
+
             return autos;
         }
         return Collections.emptySet();
+    }
+
+    private static void addAutos(final CsmScope scope,
+                                final List<int[]> spans,
+                                final StyledDocument document,
+                                final Set<String> autos) {
+        if (!spans.isEmpty()) {
+            CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
+                public void visit(CsmReferenceContext context) {
+                    CsmReference reference = context.getReference();
+                    for (int[] span : spans) {
+                        if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
+                            CsmObject referencedObject = reference.getReferencedObject();
+                            if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
+                                StringBuilder sb = new StringBuilder(reference.getText());
+                                if (context.size() > 1) {
+                                    outer: for (int i = context.size()-1; i >= 0; i--) {
+                                        CppTokenId token = context.getToken(i);
+                                        switch (token) {
+                                            case DOT:
+                                            case ARROW:
+                                            case SCOPE:
+                                                break;
+                                            default: break outer;
+                                        }
+                                        if (i > 0) {
+                                            sb.insert(0, token.fixedText());
+                                            sb.insert(0, context.getReference(i-1).getText());
+                                        }
+                                    }
+                                }
+                                autos.add(sb.toString());
+                            } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
+                                String txt = reference.getText().toString();
+                                int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
+                                if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
+                                    try {
+                                        txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                                autos.add(txt);
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private static boolean filterAuto(CsmScopeElement object) {
