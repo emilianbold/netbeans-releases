@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.spi;
+package org.netbeans.modules.dlight.spi.indicator;
 
 import java.util.List;
 import javax.swing.Action;

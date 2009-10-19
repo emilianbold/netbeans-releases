@@ -52,8 +52,9 @@ import org.openide.util.Lookup;
  * of the getNativeExecution() method.
  * 
  * @author gordonp
- * @Deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
+ * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public abstract class NativeExecution {
 
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N

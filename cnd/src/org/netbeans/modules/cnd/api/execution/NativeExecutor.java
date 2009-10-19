@@ -72,8 +72,9 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @Deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
+ * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public class NativeExecutor implements Runnable {
     private final ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
     

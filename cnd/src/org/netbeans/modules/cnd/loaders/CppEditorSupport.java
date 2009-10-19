@@ -260,6 +260,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          */
         @Override
         protected void componentActivated() {
+            super.componentActivated();
             if (support.getDocument() != null) {
                 log.log("CES.componentActivated: Activating " + getShortName() + // NOI18N
                         " [" + Thread.currentThread().getName() + "]"); // NOI18N
@@ -270,7 +271,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
                         a.performActivation(this);
                     }
                 }
-                super.componentActivated();
                 CppMetaModel.getDefault().scheduleParsing(support.getDocument());
                 support.attachParsingListener();
             } else {
@@ -305,6 +305,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
          */
         @Override
         protected void componentDeactivated() {
+            super.componentDeactivated();
             support.removeParsingListener();
         }
 

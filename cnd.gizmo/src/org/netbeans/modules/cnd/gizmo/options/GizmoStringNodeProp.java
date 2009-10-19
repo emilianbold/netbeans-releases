@@ -96,15 +96,15 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         return description;
     }
     
-    @Override
-    public String getHtmlDisplayName() {
-        if (getStringConfiguration().getModified()) {
-            return "<b>" + getDisplayName(); // NOI18N
-        }
-        else {
-            return null;
-        }
-    }
+//    @Override
+//    public String getHtmlDisplayName() {
+//        if (getStringConfiguration().getModified()) {
+//            return "<b>" + getDisplayName(); // NOI18N
+//        }
+//        else {
+//            return null;
+//        }
+//    }
 
     public String getValue() {
         return getStringConfiguration().getValueDef(def);
@@ -130,7 +130,8 @@ public class GizmoStringNodeProp extends Node.Property<String> {
 
     @Override
     public boolean supportsDefaultValue() {
-        return true;
+//        return true;
+        return false;
     }
 
     @Override
@@ -210,7 +211,7 @@ public class GizmoStringNodeProp extends Node.Property<String> {
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }
-
+        
         /**
          * Once the user presses OK, we attempt to validate the remote host. We never veto the action
          * because a failure should still close the property editor, but with the host still offline.

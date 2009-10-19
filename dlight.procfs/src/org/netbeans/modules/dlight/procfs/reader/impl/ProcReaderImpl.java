@@ -50,12 +50,12 @@ import org.netbeans.modules.dlight.procfs.reader.api.ProcReader;
 
 public abstract class ProcReaderImpl implements ProcReader {
 
-    // LWPID => prev MSAInfo
-    private final static HashMap<Integer, MSAInfoImpl> prevMSAData = new HashMap<Integer, MSAInfoImpl>();
-    // LWPID => prev Timestamp
-    private final static HashMap<Integer, Long> prevTSData = new HashMap<Integer, Long>();
     private final static int MAXFILELENGTH = 512;
-    private final static ReusableByteBuffer buffer = new ReusableByteBuffer(MAXFILELENGTH, 10);
+    // LWPID => prev MSAInfo
+    private final HashMap<Integer, MSAInfoImpl> prevMSAData = new HashMap<Integer, MSAInfoImpl>();
+    // LWPID => prev Timestamp
+    private final HashMap<Integer, Long> prevTSData = new HashMap<Integer, Long>();
+    private final ReusableByteBuffer buffer = new ReusableByteBuffer(MAXFILELENGTH, 10);
     private final boolean bigendian;
 
     public ProcReaderImpl(boolean bigendian) {

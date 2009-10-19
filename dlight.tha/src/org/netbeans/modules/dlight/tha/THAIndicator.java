@@ -46,6 +46,7 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.openide.util.Lookup;
 
 public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
@@ -110,6 +111,11 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     @Override
     public JComponent getComponent() {
         return controlPanel;
+    }
+
+    @Override
+    public void setIndicatorActionsProviderContext(Lookup context) {
+        
     }
    
 }
