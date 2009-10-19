@@ -928,120 +928,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return allVars.values();
     }
 
-    private void getLocalVariables_indexVariable(Variable var,
-            Map<String, IndexedConstant> localVars,
-            String namePrefix, String localFileURL, String type) {
-
-        String varName = CodeUtils.extractVariableName(var);
-        if (varName != null) {
-            String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
-
-            if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
-                IndexedConstant ic = new IndexedConstant(varName, null,
-                        null, localFileURL, var.getStartOffset(), 0, type);
-
-                localVars.put(varName, ic);
-            }
-        }
-    }
 
     private boolean isPrefix(String name, String prefix){
         return name != null && (name.startsWith(prefix)
                 || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && name.toLowerCase().startsWith(prefix.toLowerCase()));
     }
 
-    private void getLocalVariables_indexVariableInAssignment(Expression expr,
-            Map<String, IndexedConstant> localVars,
-            String namePrefix, String localFileURL) {
-
-        if (expr instanceof Assignment) {
-            Assignment assignment = (Assignment) expr;
-
-            if (assignment.getLeftHandSide() instanceof Variable) {
-                Variable variable = (Variable) assignment.getLeftHandSide();
-                String varType = CodeUtils.extractVariableType(assignment);
-
-                getLocalVariables_indexVariable(variable, localVars, namePrefix,
-                        localFileURL, varType);
-            }
-
-            if (assignment.getRightHandSide() instanceof Assignment){
-                getLocalVariables_indexVariableInAssignment(assignment.getRightHandSide(),
-                        localVars, namePrefix, localFileURL);
-            }
-        }
-    }
 
     private void autoCompleteExternals(List<CompletionProposal> proposals, CompletionRequest request) {
         FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
         EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
         for (PhpElement element : editorExtender.getElementsForCodeCompletion(fileObject)) {
             proposals.add(PhpElementCompletionItem.fromPhpElement(element, request));
-        }
-    }
-
-    private class VarFinder extends DefaultVisitor {
-        private Map<String, IndexedConstant> localVars = null;
-        private String namePrefix;
-        private String localFileURL;
-        private boolean foundGlobals = false;
-
-        VarFinder(Map<String, IndexedConstant> localVars, String namePrefix, String localFileURL) {
-            this.localVars = localVars;
-            this.localFileURL = localFileURL;
-            this.namePrefix = namePrefix;
-        }
-
-        @Override
-        public void visit(Assignment node) {
-            getLocalVariables_indexVariableInAssignment(node, localVars, namePrefix, localFileURL);
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(GlobalStatement node) {
-            foundGlobals = true;
-
-            for (Variable var : node.getVariables()) {
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, GLOBAL_VAR_MARKER);
-            }
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(StaticStatement node) {
-            for (Variable var : node.getVariables()) {
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-            }
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(ForEachStatement forEachStatement) {
-            Expression key = forEachStatement.getKey();
-            while(key instanceof Reference) {
-                key = ((Reference)key).getExpression();
-            }
-
-            if (key instanceof Variable) {
-                Variable var = (Variable) key;
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-            }
-            Expression value = forEachStatement.getValue();
-            while(value instanceof Reference) {
-                value = ((Reference)value).getExpression();
-            }
-
-            if (value instanceof Variable) {
-                Variable var = (Variable) value;
-                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-            }
-            super.visit(forEachStatement);
-        }
-
-        @Override
-        public void visit(FunctionDeclaration node) {
-            // do not enter!
         }
     }
 
@@ -1069,9 +967,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                     final Collection<? extends String> typeNames = varName.getTypeNames(position);
                     String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames);//NOI18N
-                    if (typeName != null && typeName.contains("@")) {//NOI18N
-                        typeName = null;
-                    }
                     IndexedConstant ic = new IndexedConstant(name, null, null, localFileURL, -1, 0, typeName);
                     localVars.put(name, ic);
                 }
