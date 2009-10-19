@@ -44,6 +44,7 @@ import javax.swing.JEditorPane;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.logging.Level;
+import javax.swing.text.StyledDocument;
 import junit.framework.Test;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.junit.NbModuleSuite;
@@ -115,10 +116,14 @@ public class OpenEditorEnablesEditMenuFactoryTest extends NbTestCase {
         assertNotNull("Can be opened: " + obj, open);
         open.open();
 
+        final EditorCookie ec = obj.getLookup().lookup(EditorCookie.class);
+        assertNotNull("EditorCookie found", ec);
+        StyledDocument doc = ec.openDocument();
+        assertNotNull("Document loaded", doc);
+
+
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
-                EditorCookie ec = obj.getLookup().lookup(EditorCookie.class);
-                assertNotNull("EditorCookie found", ec);
                 JEditorPane[] earr = ec.getOpenedPanes();
                 assertNotNull("panes found", earr);
                 assertEquals("One item", 1, earr.length);
