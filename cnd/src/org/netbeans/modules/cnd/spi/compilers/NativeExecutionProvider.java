@@ -45,8 +45,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
  *
  * @author gordonp
- * @Deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
+ * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public interface NativeExecutionProvider {
 
     /**
