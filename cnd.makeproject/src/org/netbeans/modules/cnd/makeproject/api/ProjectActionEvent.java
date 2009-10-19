@@ -81,6 +81,7 @@ public class ProjectActionEvent {
     private RunProfile profile;
     private boolean wait;
     private final Lookup context;
+    private boolean isFinalExecutable;
 
     public ProjectActionEvent(Project project, Type type, String tabName, String executable, MakeConfiguration configuration, RunProfile profile, boolean wait) {
         this(project, type, tabName, executable, configuration, profile, wait, Lookup.EMPTY);
@@ -124,6 +125,14 @@ public class ProjectActionEvent {
 
     public void setExecutable(String executable) {
         this.executable = executable;
+    }
+
+    void setFinalExecutable(){
+        isFinalExecutable = true;
+    }
+
+    boolean isFinalExecutable(){
+        return isFinalExecutable;
     }
 
     public MakeConfiguration getConfiguration() {

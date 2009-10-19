@@ -44,10 +44,9 @@ package org.netbeans.modules.java;
 import java.beans.*;
 import java.awt.Image;
 
-import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /** BeanInfo for java source loader.
 *
@@ -59,7 +58,7 @@ public final class JavaDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

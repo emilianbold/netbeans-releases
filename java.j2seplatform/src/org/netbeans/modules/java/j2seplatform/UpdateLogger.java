@@ -37,16 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.spi;
+package org.netbeans.modules.java.j2seplatform;
 
-import java.util.List;
-import javax.swing.Action;
-import org.openide.util.Lookup;
+import org.apache.tools.ant.module.spi.AntLogger;
+import org.apache.tools.ant.module.spi.AntSession;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author thp
- */
-public interface IndicatorActionsProvider {
-    List<Action> getIndicatorActions(Lookup context);
+@ServiceProvider(service=AntLogger.class, position=50)
+public final class UpdateLogger extends AntLogger {    
+  
+    @Override
+    public boolean interestedInSession(AntSession session) {
+        UpdateTask.getDefault().run();
+        return super.interestedInSession(session);
+    }
+
+
+
 }

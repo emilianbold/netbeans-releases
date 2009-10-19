@@ -127,7 +127,26 @@ public class DLightMath {
         }
     }
 
-    public static long nextProductOf(long multiplier, long ref) {
-        return (ref / multiplier + 1) * multiplier;
+    public static long nearestMultipleOf(long multiplier, long value) {
+        long remainder = value % multiplier;
+        if (remainder < multiplier / 2) {
+            return value - remainder;
+        } else {
+            return value - remainder + multiplier;
+        }
+    }
+
+    public static long prevMultipleOf(long multiplier, long value) {
+        long remainder = value % multiplier;
+        if (remainder == 0) {
+            return value - multiplier;
+        } else {
+            return value - remainder;
+        }
+    }
+
+    public static long nextMultipleOf(long multiplier, long value) {
+        long remainder = value % multiplier;
+        return value - remainder + multiplier;
     }
 }

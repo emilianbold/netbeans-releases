@@ -113,7 +113,7 @@ if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
 then
    hg up || exit 6
 else
-   if hg --config ui.merge=internal:merge --config ui.interactive=1 merge < /dev/null; then
+   if hg --config ui.merge=internal:merge --config ui.interactive=1 merge "$HGTIP" < /dev/null; then
      echo Merge OK.
    else
      echo Merge failed.
