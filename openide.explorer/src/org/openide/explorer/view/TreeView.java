@@ -226,7 +226,10 @@ public abstract class TreeView extends JScrollPane {
      * Defaults to false meaning prefix is used.
      */
     transient private boolean quickSearchUsingSubstring = false;
-    
+
+    /** wait cursor is shown automatically during expanding */
+    transient private boolean autoWaitCursor = true;
+
     /** Holds VisualizerChildren for all visible nodes */
     private final VisualizerHolder visHolder = new VisualizerHolder();
 
@@ -871,6 +874,15 @@ public abstract class TreeView extends JScrollPane {
         return tree.getSelectionModel().getSelectionMode();
     }
 
+    /**
+     * Controls automatic setting of wait cursor when node is expanded
+     * @param enable true if wait cursor should be shown automatically
+     * @since 6.21
+     */
+    public void setAutoWaitCursor(boolean enable) {
+        autoWaitCursor = enable;
+    }
+
     //
     // showing and removing the wait cursor
     //
@@ -913,8 +925,8 @@ public abstract class TreeView extends JScrollPane {
 
     private void prepareWaitCursor(final Node node) {
         // check type of node
-        if (node == null) {
-            showWaitCursor(false);
+        if (node == null || !autoWaitCursor) {
+            return;
         }
 
         showWaitCursor(true);
@@ -1289,8 +1301,6 @@ public abstract class TreeView extends JScrollPane {
         }
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
-
-            showWaitCursor(false);
             class Request implements Runnable {
                 private TreePath path;
 
