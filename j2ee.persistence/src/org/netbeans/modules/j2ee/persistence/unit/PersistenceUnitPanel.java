@@ -87,7 +87,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
 
     //jpa2.0 specific
     private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
-    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE"};//NOI18N
+    private final java.lang.String[] cachingTypes = {"ALL", "NONE", "ENABLE_SELECTIVE", "DISABLE_SELECTIVE", "UNSPECIFIED"};//NOI18N
     
     public PersistenceUnitPanel(SectionView view, final PUDataObject dObj,  final PersistenceUnit persistenceUnit) {
         super(view);
@@ -214,6 +214,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         }
         else
         {
+            //null or UNSPECIFIED
             ddDefault.setSelected(true);
         }
 
@@ -442,7 +443,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             else if(source==ddDefault)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setSharedCacheMode(null);
+                pu2.setSharedCacheMode(null);//can be set to cachingTypes[4] instead
             }
             else if(source==ddAuto)
             {
