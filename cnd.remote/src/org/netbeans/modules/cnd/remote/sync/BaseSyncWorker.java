@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
-import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -51,10 +50,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -116,24 +111,9 @@ import org.openide.util.NbBundle;
      */
     protected abstract void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException;
 
-    protected String getRemoteSyncRoot() {
-        String root;
-        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote"; // NOI18N
-    }
-
     public boolean synchronize() {
         // Later we'll allow user to specify where to copy project files to
-        String remoteParent = getRemoteSyncRoot();
+        String remoteParent = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
         if (remoteParent == null) {
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));

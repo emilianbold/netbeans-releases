@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
-import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -51,13 +50,8 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -110,78 +104,24 @@ final class RfsSyncWorker extends ZipSyncWorker {
     }
 
     @Override
-    protected String getRemoteSyncRoot() {
-        String root;
-        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String localHostID = local.getHost();
-        try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
-    }
-
-    @Override
     public boolean synchronize() {
         // Later we'll allow user to specify where to copy project files to
-        String remoteParent = getRemoteSyncRoot();
+        RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
+        String remoteParent = mapper.getRemotePath("/", false); // NOI18N
         if (remoteParent == null) {
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
             return false; // TODO: error processing
         }
-//        if (topLocalDir == null) {
-//            if (err != null) {
-//                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
-//            }
-//        }
-//        String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
 
         boolean success = false;
         try {
-//            boolean same;
-//            try {
-//                same = RemotePathMap.isTheSame(executionEnvironment, remoteDir, topLocalDir);
-//            } catch (InterruptedException e) {
-//                return false;
-//            }
-//            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-//                RemoteUtil.LOGGER.finest(executionEnvironment.getHost() + ":" + remoteDir + " and " + topLocalDir.getAbsolutePath() + //NOI18N
-//                        (same ? " are same - skipping" : " arent same - copying")); //NOI18N
-//            }
-//            if (!same) {
-                if (out != null) {
-                    out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
-                            remoteParent, ServerList.get(executionEnvironment).toString()));
-                }
-                RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
-                mapper.clear();
-                if (Utilities.isWindows()) {
-                    for (File folder : localDirs) {
-                        int colon = folder.getAbsolutePath().indexOf(':'); // NOI18N
-                        if (colon > 0) {
-                            CharSequence disk = folder.getAbsolutePath().subSequence(0, colon);
-                            mapper.addMapping(disk + ":", remoteParent + "/" + disk); // NOI18N
-                        }
-                    }
-                } else {
-                    mapper.addMapping("/", remoteParent); // NOI18N
-                }
-                synchronizeImpl(remoteParent);
-//            }
+            if (out != null) {
+                out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                        remoteParent, ServerList.get(executionEnvironment).toString()));
+            }
+            synchronizeImpl(remoteParent);
             success = true;
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
