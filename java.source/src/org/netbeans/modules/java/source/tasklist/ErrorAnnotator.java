@@ -44,6 +44,7 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -302,11 +303,12 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                                 Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.WARNING, "SourceGroup[" + sg.getDisplayName() + "].getRootFolder() returned null");
                                 continue;
                             }
+
                             if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot)) {
-                                recError = TaskCache.getDefault().isInError(sgRoot, true);
-                                nonRecError = TaskCache.getDefault().isInError(sgRoot, false);
+                                recError |= TaskCache.getDefault().isInError(sgRoot, true);
+                                nonRecError |= TaskCache.getDefault().isInError(sgRoot, false);
+
                                 handled = true;
-                                break;
                             }
                         }
                     }

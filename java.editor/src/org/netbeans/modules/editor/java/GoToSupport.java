@@ -47,11 +47,13 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -315,23 +317,10 @@ public class GoToSupport {
                             CALLER.beep(goToSource, javadoc);
                         }
                     } else {
-                        TreePath elpath = controller.getTrees().getPath(el);
-                        Tree tree = elpath != null && path.getCompilationUnit() == elpath.getCompilationUnit()? elpath.getLeaf(): null;
+                        TreePath elpath = getPath(controller, el);
                         
-                        if (tree == null && (el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE)) {
-                            while (path.getLeaf().getKind() != Kind.METHOD && path.getLeaf().getKind() != Kind.CLASS) {
-                                path = path.getParentPath();
-                            }
-                            
-                            FindVariableDeclarationVisitor v = new FindVariableDeclarationVisitor();
-                            
-                            v.info = controller;
-                            v.scan(path, el);
-                            
-                            tree = v.found;
-                        }
-                        
-                        if (tree != null) {
+                        if (elpath != null) {
+                            Tree tree = elpath.getLeaf();
                             long startPos = controller.getTrees().getSourcePositions().getStartPosition(controller.getCompilationUnit(), tree);
                             
                             if (startPos != (-1)) {
@@ -551,29 +540,54 @@ public class GoToSupport {
             return false;
         }
     }
-    
-    private static final class FindVariableDeclarationVisitor extends TreePathScanner<Void, Element> {
-        
-        private CompilationInfo info;
-        private Tree found;
-        
-        public @Override Void visitClass(ClassTree node, Element p) {
-            //do not dive into the innerclasses:
-            return null;
-        }
-        
-        public @Override Void visitVariable(VariableTree node, Element p) {
-            Element resolved = info.getTrees().getElement(getCurrentPath());
-            
-            if (resolved == p) {
-                found = node;
+
+    private static TreePath getPath(final CompilationInfo info, Element el) {
+        final Element toFind = info.getElementUtilities().isSynthetic(el) ? el.getEnclosingElement() : el;
+
+        class S extends TreePathScanner<Void, Void> {
+            private TreePath found;
+            @Override
+            public Void scan(Tree tree, Void p) {
+                if (found != null) return null;
+                return super.scan(tree, p);
             }
-            
-            return null;
+            private boolean process() {
+                Element resolved = info.getTrees().getElement(getCurrentPath());
+                if (toFind.equals(resolved)) {
+                    found = getCurrentPath();
+                    return true;
+                }
+                return false;
+            }
+            @Override
+            public Void visitClass(ClassTree node, Void p) {
+                if (!process()) super.visitClass(node, p);
+                return null;
+            }
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                if (!process()) return super.visitMethod(node, p);
+                return null;
+            }
+            @Override
+            public Void visitVariable(VariableTree node, Void p) {
+                if (!process()) return super.visitVariable(node, p);
+                return null;
+            }
+            @Override
+            public Void visitTypeParameter(TypeParameterTree node, Void p) {
+                if (!process()) return super.visitTypeParameter(node, p);
+                return null;
+            }
         }
-        
+
+        S search = new S();
+
+        search.scan(info.getCompilationUnit(), null);
+
+        return search.found;
     }
-    
+
     private static final class FindSuperConstructorCall extends TreePathScanner<TreePath, Void> {
         
         @Override
