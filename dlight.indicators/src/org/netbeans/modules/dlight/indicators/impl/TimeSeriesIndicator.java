@@ -148,6 +148,7 @@ public final class TimeSeriesIndicator
     protected void repairNeeded(boolean needed) {
         if (needed) {
             final RepairPanel repairPanel = new RepairPanel(getRepairActionProvider().getValidationStatus());
+            repairPanel.setPopupActions(popupActions);
             repairPanel.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {

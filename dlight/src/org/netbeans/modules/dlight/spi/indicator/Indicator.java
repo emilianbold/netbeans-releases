@@ -149,6 +149,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         };
 
         this.visible = configuration.isVisible();
+        setIndicatorActionsProviderContext(Lookup.EMPTY);
     }
 
 
