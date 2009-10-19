@@ -141,7 +141,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
         // log(sourceFileInfoProvider, metrics, list, functionCalls);
         // Remember list of annotated panes
-        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet();
+        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet<JEditorPane>();
         if (activeAnnotations != null) {
             for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
                 if (fileAnnotationInfo.isAnnotated()) {
