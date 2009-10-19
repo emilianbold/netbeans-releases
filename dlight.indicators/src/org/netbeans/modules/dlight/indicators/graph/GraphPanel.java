@@ -93,6 +93,19 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         add(graphPanel, Integer.valueOf(0));
     }
 
+    @Override
+    public void setToolTipText(String text) {
+        graphPanel.setToolTipText(text);
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        return graphPanel.getToolTipText();
+    }
+    
+
+
+
     private static JPanel createGraphPanel(String title, JComponent graph, JComponent legend, JComponent hAxis, JComponent vAxis, JButton button) {
         JPanel graphPanel = new JPanel(new GridBagLayout());
         GridBagConstraints c;
