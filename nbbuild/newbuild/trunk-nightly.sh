@@ -18,7 +18,7 @@ if [ ! -z $WORKSPACE ]; then
     if [ $RUNJAVAFX == 1 ]; then
         #Clone also javafx sources - XXX needs to be parametrized
         cd $NB_ALL
-        hg clone http://hg.netbeans.org/javafx
+        hg clone http://hg.netbeans.org/javafx68_beta javafx
     fi
 fi
 
