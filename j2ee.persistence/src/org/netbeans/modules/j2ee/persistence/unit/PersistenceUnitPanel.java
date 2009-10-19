@@ -195,7 +195,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     private void initCache(){
         org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-        String caching=pu2.getCaching();
+        String caching=pu2.getSharedCacheMode();
         if(cachingTypes[0].equals(caching))
         {
             ddAll.setSelected(true);
@@ -422,27 +422,27 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             if(source==ddAll)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[0]);
+                pu2.setSharedCacheMode(cachingTypes[0]);
             }
             else if(source==ddNone)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[1]);
+                pu2.setSharedCacheMode(cachingTypes[1]);
             }
             else if(source==ddEnableSelective)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[2]);
+                pu2.setSharedCacheMode(cachingTypes[2]);
             }
             else if(source==ddDisableSelective)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(cachingTypes[3]);
+                pu2.setSharedCacheMode(cachingTypes[3]);
             }
             else if(source==ddDefault)
             {
                 org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
-                pu2.setCaching(null);
+                pu2.setSharedCacheMode(null);
             }
             else if(source==ddAuto)
             {
