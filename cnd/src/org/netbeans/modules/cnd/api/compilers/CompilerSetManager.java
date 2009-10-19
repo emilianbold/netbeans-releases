@@ -644,12 +644,6 @@ public class CompilerSetManager {
 
     private CompilerSet parseCompilerSetString(int platform, String data) {
         log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
-        // to emulate #158088
-        if (Boolean.getBoolean("cnd.remote.emulate.npe")) {
-            CompilerSet cs = null;
-            cs.addDirectory(data);
-        }
-
         String flavor;
         String path;
         StringTokenizer st = new StringTokenizer(data, ";"); // NOI18N

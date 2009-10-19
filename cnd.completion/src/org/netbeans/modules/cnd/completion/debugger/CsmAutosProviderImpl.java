@@ -77,7 +77,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=AutosProvider.class)
 public class CsmAutosProviderImpl implements AutosProvider {
-    public static boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
+    public static final boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
 
     public Set<String> getAutos(final StyledDocument document, int offset) {
         if (document == null) {
