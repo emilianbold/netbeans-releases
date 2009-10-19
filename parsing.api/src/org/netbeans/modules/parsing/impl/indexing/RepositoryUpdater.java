@@ -2580,13 +2580,15 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
         }
 
         private boolean scanRootFiles(Map<URL, Set<FileObject>> files) {
-            for(Iterator<Map.Entry<URL, Set<FileObject>>> it = files.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry<URL, Set<FileObject>> entry = it.next();
-                URL root = entry.getKey();
-                if (scanFiles(root, entry.getValue(), true, sourcesForBinaryRoots.contains(root))) {
-                    it.remove();
-                } else {
-                    return false;
+            if (files != null && files.size() > 0) { // #174887
+                for(Iterator<Map.Entry<URL, Set<FileObject>>> it = files.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry<URL, Set<FileObject>> entry = it.next();
+                    URL root = entry.getKey();
+                    if (scanFiles(root, entry.getValue(), true, sourcesForBinaryRoots.contains(root))) {
+                        it.remove();
+                    } else {
+                        return false;
+                    }
                 }
             }
             return true;

@@ -62,4 +62,8 @@ public final class Bridge implements IndexingBridgeProvider {
             }
         });
     }
+
+    public boolean isIndexingInProgress() {
+        return IndexingManager.getDefault().isIndexing();
+    }
 }
