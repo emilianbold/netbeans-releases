@@ -55,6 +55,7 @@ public abstract class IndicatorConfiguration {
     private final int position;
     private final List<VisualizerConfiguration> visualizerConfigurations;
     private String actionDisplayName;
+    private String actionTooltip;
     private boolean visible;
 
     static {
@@ -104,6 +105,10 @@ public abstract class IndicatorConfiguration {
         this.actionDisplayName = actionDisplayName;
     }
 
+    public final void setActionTooltip(String actionTooltip) {
+        this.actionTooltip = actionTooltip;
+    }
+
     /**
      * Returns indicator metadata, see {@link org.netbeans.modules.dlight.api.indicator.IndicatorMetadata}
      * @return indicator metadata
@@ -130,7 +135,7 @@ public abstract class IndicatorConfiguration {
         return visualizerConfigurations;
     }
 
-    public final String getActionDisplayName() {
+    private final String getActionDisplayName() {
         return actionDisplayName;
     }
 
@@ -159,6 +164,13 @@ public abstract class IndicatorConfiguration {
         public String getActionDisplayName(IndicatorConfiguration configuration) {
             return configuration.getActionDisplayName();
         }
+
+        @Override
+        public String getActionTooltip(IndicatorConfiguration configuration) {
+            return configuration.actionTooltip;
+        }
+
+        
     }
 
 }
