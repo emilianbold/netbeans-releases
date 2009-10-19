@@ -119,6 +119,10 @@ public abstract class CndBreakpoint extends Breakpoint {
     public void setLineNumberNoOld(int ln) {
         setLineNumber(ln, true);
     }
+
+    public void validityChanged() {
+        firePropertyChange(PROP_VALIDITY, 0, 1);
+    }
     
     public void setValid() {
         setValidity(Breakpoint.VALIDITY.VALID, null);
@@ -127,7 +131,7 @@ public abstract class CndBreakpoint extends Breakpoint {
     public void setInvalid(String msg) {
         setValidity(Breakpoint.VALIDITY.INVALID, msg);
     }
-    
+
     /**
      *  Return a path based on this breakpoints URL. The path is not necessarily the
      *  same as the URL with the "File:/" removed. This is because Windows often substitues
