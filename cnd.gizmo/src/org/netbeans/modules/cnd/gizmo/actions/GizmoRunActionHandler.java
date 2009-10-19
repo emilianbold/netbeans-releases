@@ -119,11 +119,19 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         String executable = pae.getExecutable();
         String runDirectory = pae.getProfile().getRunDirectory();
 
-        if (execEnv.isRemote() && !configuration.getCollectorProviders().contains("SunStudio")) { // NOI18N
+        if (execEnv.isRemote()) {
+            boolean isSunStudio = configuration.getCollectorProviders().contains("SunStudio"); // NOI18N
             PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
             runDirectory = mapper.getRemotePath(runDirectory, true);
-            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+
+            if (isSunStudio) {
+                // No need to upload executable as dwarf provider is not used in
+                // this case
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+            } else {
+                RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+            }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
         }
