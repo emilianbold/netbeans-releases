@@ -93,7 +93,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     }
 
     protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canDelete(context); 
+        return true;
     }
     
     @Override
