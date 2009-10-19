@@ -86,7 +86,7 @@ var SUBSCRIBE_LABEL          = "Subscribe&nbsp;to&nbsp;newsletters:";
 var MONTHLY_LABEL            = "Monthly&nbsp;&nbsp;&nbsp;&nbsp;";
 var WEEKLY_LABEL             = "Weekly";
 var CONTACT_LABEL            = "NetBeans&nbsp;can&nbsp;contact&nbsp;me&nbsp;at&nbsp;this&nbsp;address";
-var LANGUAGE_LABEL           = "Language:";
+var LANGUAGE_LABEL           = "IDE Language:";
 var PLATFORM_LABEL           = "Platform:";
 var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br><br>";
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";
