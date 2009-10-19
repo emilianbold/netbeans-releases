@@ -342,7 +342,7 @@ public class ToolsManagerPanel extends PanelWithApply {
         if (item instanceof String && ((String) item).equals(manageConfigurations)) {
             MyListEditorPanel listEditorPanel = new MyListEditorPanel(dLightConfigurations);
 
-            DialogDescriptor descriptor = new DialogDescriptor(listEditorPanel, getString("TXT_ToolsCustomizer"));
+            DialogDescriptor descriptor = new DialogDescriptor(listEditorPanel, getString("TXT_ConfigurationsCustomizer"));
             Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             try {
                 dlg.setVisible(true);
