@@ -80,7 +80,7 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
     private int breakpointNumber = -1;
     private String address;
     private String fullname;
-    private int line;
+    private int line = -1;
 
     protected BreakpointImpl(B breakpoint, GdbDebugger debugger) {
         this.debugger = debugger;
@@ -137,7 +137,7 @@ public abstract class BreakpointImpl<B extends CndBreakpoint> implements Propert
             try {
                 line = Integer.parseInt(map.get("line")); // NOI18N
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                line = -1;
             }
 
             if (!breakpoint.isEnabled()) {
