@@ -964,11 +964,30 @@ public class CommonUtilities {
             }
         }
 
-            testSuiteTag=null;
-            for (int i=0;i<allPerfDoc.getElementsByTagName("Suite").getLength();i++) {
-                if (suite.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
-                    testSuiteTag =(Element)allPerfDoc.getElementsByTagName("Suite").item(i);
-                    break;
+            testSuiteTag = null;
+            if (suite != null) {
+                for (int i=0;i<allPerfDoc.getElementsByTagName("Suite").getLength();i++) {
+                    final NodeList elem = allPerfDoc.getElementsByTagName("Suite");
+                    if (elem == null) {
+                        continue;
+                    }
+                    final org.w3c.dom.Node item = elem.item(i);
+                    if (item == null) {
+                        continue;
+                    }
+                    final NamedNodeMap attrs = item.getAttributes();
+                    if (attrs == null) {
+                        continue;
+                    }
+                    final org.w3c.dom.Node ni = attrs.getNamedItem("suitename");
+                    if (ni == null) {
+                        continue;
+                    }
+
+                    if (suite.equalsIgnoreCase(ni.getNodeValue())) {
+                        testSuiteTag =(Element)item;
+                        break;
+                    }
                 }
             }
 
