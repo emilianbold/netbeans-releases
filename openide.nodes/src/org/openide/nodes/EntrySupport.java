@@ -694,15 +694,21 @@ abstract class EntrySupport {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
-        //
-        // ChildrenArray operations call only under lock
-        //
-        /** @return either nodes associated with this children or null if
-         * they are not created
+
+        /**
+         * @return either nodes associated with this children or null if they are not created
          */
         public Node[] testNodes() {
             ChildrenArray arr = array.get();
-            return (arr == null) ? null : arr.nodes();
+            if (arr == null) {
+                return null;
+            }
+            try {
+                Children.PR.enterReadAccess();
+                return arr.nodes();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
         }
 
         /** Obtains references to array holder. If it does not exist, it is created.
