@@ -109,6 +109,7 @@ public final class TimeSeriesIndicator
         this.button = new JButton(getDefaultAction());
         this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
                 legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+        panel.setPopupActions(popupActions);
     }
 
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration, TimeSeriesDataContainer data) {
@@ -256,7 +257,9 @@ public final class TimeSeriesIndicator
                 }
             }
         }
-        panel.setPopupActions(actions);
+        if (panel != null){
+            panel.setPopupActions(actions);
+        }
         this.popupActions = actions;
     }
 }
