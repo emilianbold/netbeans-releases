@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai;
+package org.netbeans.modules.bugtracking.jira;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,7 +49,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.swing.JButton;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.QueryAccessorImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -62,7 +64,6 @@ import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle.ResultType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -84,7 +85,7 @@ public class FakeJiraSupport {
         this.createIssueUrl = createIssueUrl;
     }
 
-    static synchronized FakeJiraSupport get(ProjectHandle handle) {
+    public static synchronized FakeJiraSupport get(ProjectHandle handle) {
         FakeJiraSupport support = supportedProjects.get(handle.getId());
         if(support != null) {
             return support;
@@ -125,11 +126,11 @@ public class FakeJiraSupport {
         return support;
     }
 
-    ActionListener getCreateIssueListener() {
+    public ActionListener getCreateIssueListener() {
         return getJiraListener(createIssueUrl);
     }
 
-    ActionListener getOpenProjectListener() {
+    public ActionListener getOpenProjectListener() {
         return getJiraListener(projectUrl);
     }
 
@@ -145,22 +146,16 @@ public class FakeJiraSupport {
             public void actionPerformed(ActionEvent e) {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                     public void run() {
-                        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                        if (displayer != null) {
-                            displayer.showURL (url);
-                        } else {
-                            // XXX nice error message?
-                            BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
-                        }
+                        notifyJiraSupport();
                     }
                 });
             }
         };
     }
 
-    QueryHandle getAllIssuesQuery() {
+    public QueryHandle getAllIssuesQuery() {
         List<QueryHandle> queries = getQueries();
-        String allIssuesName = NbBundle.getMessage(FakeJiraSupport.class, "LBL_AllIssues");
+        String allIssuesName = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues");   // NOI18N
         for (QueryHandle queryHandle : queries) {
             if(queryHandle.getDisplayName().equals(allIssuesName)) {
                 return queryHandle;
@@ -169,7 +164,7 @@ public class FakeJiraSupport {
         return null;
     }
 
-    List<QueryHandle> getQueries() {
+    public List<QueryHandle> getQueries() {
         if(queryHandles == null) {
             queryHandles = createQueryHandles();
         }
@@ -178,28 +173,35 @@ public class FakeJiraSupport {
 
     private List<QueryHandle> createQueryHandles() {
         List<QueryHandle> l = new ArrayList<QueryHandle>(2);
-        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(FakeJiraSupport.class, "LBL_MyIssues")));  // NOI18N
-        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(FakeJiraSupport.class, "LBL_AllIssues"))); // NOI18N
+        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_MyIssues")));  // NOI18N
+        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues"))); // NOI18N
         return l;
     }
 
-    static void notifyJiraSupport() {
+    public static void notifyJiraSupport() {
+        JButton ok = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
+        MissingJiraSupportPanel panel = JiraUpdater.getInstance().getPanel();
+
+        panel.downloadButton.setVisible(false);
+        panel.setMessage(NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA"));         // NOI18N
+
         final DialogDescriptor dd =
             new DialogDescriptor(
-                new MissingJiraSupportPanel(), 
-                NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"), 
+                panel,
+                NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"),                    // NOI18N
                 true, 
-                new Object[] {DialogDescriptor.YES_OPTION, DialogDescriptor.CANCEL_OPTION},
-                DialogDescriptor.YES_OPTION,
+                new Object[] {ok, cancel},
+                ok,
                 DialogDescriptor.DEFAULT_ALIGN, 
                 new HelpCtx(FakeJiraSupport.class), 
                 null);
-        if(DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.YES_OPTION) {
-            BugtrackingUtil.openPluginManager();
+        if(DialogDisplayer.getDefault().notify(dd) == ok) {
+            JiraUpdater.getInstance().install();
         }
     }
 
-    static class FakeJiraQueryHandle extends QueryHandle implements ActionListener {
+    public static class FakeJiraQueryHandle extends QueryHandle implements ActionListener {
         private final String displayName;
         private static List<QueryResultHandle> results;
         public FakeJiraQueryHandle(String displayName) {
@@ -217,12 +219,12 @@ public class FakeJiraSupport {
         public void actionPerformed(ActionEvent e) {
             FakeJiraSupport.notifyJiraSupport();
         }
-        List<QueryResultHandle> getQueryResults() {
+        public List<QueryResultHandle> getQueryResults() {
             if(results == null) {
                 List<QueryResultHandle> r = new ArrayList<QueryResultHandle>(1);
                 r.add(new FakeJiraQueryResultHandle(
                             NbBundle.getMessage(
-                                FakeJiraSupport.class,
+                                QueryAccessorImpl.class,
                                 "LBL_QueryResultTotal",  // NOI18N
                                 new Object[] {0}),
                                 ResultType.NAMED_RESULT));
@@ -231,12 +233,12 @@ public class FakeJiraSupport {
             return results; 
         }
 
-        QueryResultHandle getUnseenResult() {
+        public QueryResultHandle getUnseenResult() {
             return new FakeJiraQueryResultHandle("0", ResultType.ALL_CHANGES_RESULT); // NOI18N
         }
     }
 
-    static class FakeJiraQueryResultHandle extends QueryResultHandle implements ActionListener {
+    public static class FakeJiraQueryResultHandle extends QueryResultHandle implements ActionListener {
         private final String label;
         private final ResultType type;
         public FakeJiraQueryResultHandle(String label, ResultType type) {
