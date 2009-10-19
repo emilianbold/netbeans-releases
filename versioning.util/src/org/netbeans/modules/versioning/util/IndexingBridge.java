@@ -159,6 +159,21 @@ public final class IndexingBridge {
     }
 
     /**
+     * Determines if projects are being indexed or not.
+     *
+     * @return <code>true</code> if projects are being scanned, <code>false</code> otherwise.
+     * @since 1.7
+     */
+    public boolean isIndexingInProgress() {
+        IndexingBridgeProvider ibp = Lookup.getDefault().lookup(IndexingBridgeProvider.class);
+        if (ibp != null) {
+            return ibp.isIndexingInProgress();
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * This interface is supposed to be implemented by the actual bridge module
      * that connect the versioning and indexing infrastructure. Ordinary VCS support
      * modules do not need to implement this interface.
@@ -184,6 +199,14 @@ public final class IndexingBridge {
          *   this method.
          */
         <T> T runWithoutIndexing(Callable<T> operation, File... files) throws Exception;
+
+        /**
+         * Determines if projects are being indexed or not.
+         *
+         * @return <code>true</code> if projects are being scanned, <code>false</code> otherwise.
+         * @since 1.7
+         */
+        boolean isIndexingInProgress();
     }
 
     // -----------------------------------------------------------------------
