@@ -314,7 +314,7 @@ import org.openide.util.NbBundle;
 
         this.timeMarksProvider = TimeMarksProvider.newInstance();
 
-        DraggingSupport dragAdapter = new DraggingSupport(this,
+        /*DraggingSupport dragAdapter =*/ new DraggingSupport(this,
                 Arrays.asList(viewportStartMark, viewportEndMark, selectionStartMark, selectionEndMark));
     }
 
