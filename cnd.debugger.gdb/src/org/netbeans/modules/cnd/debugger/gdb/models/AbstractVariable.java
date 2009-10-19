@@ -650,8 +650,10 @@ public abstract class AbstractVariable implements LocalVariable {
                     } else if (isNumber(fValue)) {
                         fType = "int"; // NOI18N - best guess (std::string drops an "int")
                     } else {
-                        log.warning("Cannot determine field type for " + fName); // NOI18N
-                        return anon_count;
+                        // see IZ 163290 (type is not provided for base class fields)
+                        fType = null;
+                        //log.warning("Cannot determine field type for " + fName); // NOI18N
+                        //return anon_count;
                     }
                 }
                 fields.add(new AbstractField(parent, fName, fType, fValue));

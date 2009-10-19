@@ -971,6 +971,10 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
 private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRestoreActionPerformed
+    if (csm == null) {
+        // restore is available after long initialization
+        return;
+    }
     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
             getString("RESTORE_TXT"),
             getString("RESTORE_TITLE"),
