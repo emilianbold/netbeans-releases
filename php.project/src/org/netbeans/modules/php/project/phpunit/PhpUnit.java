@@ -64,6 +64,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -85,6 +86,8 @@ import org.openide.windows.InputOutput;
 public abstract class PhpUnit extends PhpProgram {
     // for keeping log files to able to evaluate and fix issues
     public static final boolean KEEP_LOGS = Boolean.getBoolean(PhpUnit.class.getName() + ".keepLogs"); // NOI18N
+    // options
+    public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
@@ -123,6 +126,7 @@ public abstract class PhpUnit extends PhpProgram {
     static final int[] UNKNOWN_VERSION = new int[0];
     // minimum supported version
     static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
+    static final int[] MINIMAL_VERSION_PHP53 = new int[] {3, 4, 0};
 
     /**
      * volatile is enough because:
@@ -149,8 +153,9 @@ public abstract class PhpUnit extends PhpProgram {
             throw new InvalidPhpProgramException(error);
         }
         // a bit ugly :/
-        if (new PhpUnitCustom(command).supportedVersionFound()
-                && version[1] >= 4) {
+        if (hasValidVersion(new PhpUnitCustom(command))
+                && version[0] >= MINIMAL_VERSION_PHP53[0]
+                && version[1] >= MINIMAL_VERSION_PHP53[1]) {
             return new PhpUnit34(command);
         }
         return new PhpUnit33(command);
@@ -194,17 +199,57 @@ public abstract class PhpUnit extends PhpProgram {
      * Since issue #167519 is fixed, this is not necessary true any more:
      * - test listener could be used instead of XML file (this would be more reliable and XML file independent)
      * - all tests are run using suite file, so no need to support directory as a parameter
-     * @return <code>true</code> if PHPUnit in minimum version was found
+     * @return <code>null</code> if invalid or not the minimal version of PHPUnit found, an error message otherwise
      */
-    public boolean supportedVersionFound() {
-        if (!isValid()) {
-            return false;
+    public static String validateVersion(PhpUnit phpUnit) {
+        if (phpUnit == null) {
+            return NbBundle.getMessage(PhpUnit.class, "MSG_NoPhpUnit");
         }
-        getVersion();
-        return version != null
-                && version != UNKNOWN_VERSION
-                && version[0] >= MINIMAL_VERSION[0]
-                && version[1] >= MINIMAL_VERSION[1];
+        String error = phpUnit.validate();
+        if (error == null) {
+            phpUnit.getVersion();
+            if (version == null
+                    || version == UNKNOWN_VERSION
+                    || (version[0] <= MINIMAL_VERSION[0] && version[1] < MINIMAL_VERSION[1])) {
+                error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
+            }
+        }
+        return error;
+    }
+
+    /**
+     * Check whether the PHPUnit is valid for the given project
+     * (currently, this is false for PHP 5.3 project and PHPUnit 3.3.x).
+     */
+    public static String validateVersion(PhpUnit phpUnit, PhpProject project) {
+        String error = validateVersion(phpUnit);
+        if (error != null) {
+            return error;
+        }
+        PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(project);
+        switch (phpVersion) {
+            case PHP_53:
+                if (version[0] <= MINIMAL_VERSION_PHP53[0]
+                        && version[1] < MINIMAL_VERSION_PHP53[1]) {
+                    // this instanceof PhpUnit34; - would not work with PhpUnit35 etc.
+                    error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnitPhp53", PhpUnit.getVersions(phpUnit, project));
+                }
+                break;
+            case PHP_5:
+                // noop
+                break;
+            default:
+                throw new IllegalStateException("Unknown PHP version: " + phpVersion);
+        }
+        return error;
+    }
+
+    public static boolean hasValidVersion(PhpUnit phpUnit) {
+        return validateVersion(phpUnit) == null;
+    }
+
+    public static boolean hasValidVersion(PhpUnit phpUnit, PhpProject project) {
+        return validateVersion(phpUnit, project) == null;
     }
 
     public static void resetVersion() {
@@ -248,6 +293,31 @@ public abstract class PhpUnit extends PhpProgram {
      * Return three times "?" if the actual version is not known or <code>null</code>.
      */
     public static String[] getVersions(PhpUnit phpUnit) {
+        return getVersions(phpUnit, MINIMAL_VERSION);
+    }
+
+    /**
+     * Get an array with actual and minimal PHPUnit versions for the given project.
+     * <p>
+     * Return three times "?" if the actual version is not known or <code>null</code>.
+     */
+    public static String[] getVersions(PhpUnit phpUnit, PhpProject project) {
+        int[] minimalVersion = null;
+        PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(project);
+        switch (phpVersion) {
+            case PHP_53:
+                minimalVersion = MINIMAL_VERSION_PHP53;
+                break;
+            case PHP_5:
+                minimalVersion = MINIMAL_VERSION;
+                break;
+            default:
+                throw new IllegalStateException("Unknown PHP version: " + phpVersion);
+        }
+        return getVersions(phpUnit, minimalVersion);
+    }
+
+    private static String[] getVersions(PhpUnit phpUnit, int[] minimalVersion) {
         List<String> params = new ArrayList<String>(6);
         if (phpUnit == null || phpUnit.getVersion() == UNKNOWN_VERSION) {
             String questionMark = NbBundle.getMessage(PhpUnit.class, "LBL_QuestionMark");
@@ -257,7 +327,7 @@ public abstract class PhpUnit extends PhpProgram {
                 params.add(String.valueOf(i));
             }
         }
-        for (Integer i : MINIMAL_VERSION) {
+        for (Integer i : minimalVersion) {
             params.add(String.valueOf(i));
         }
         return params.toArray(new String[params.size()]);

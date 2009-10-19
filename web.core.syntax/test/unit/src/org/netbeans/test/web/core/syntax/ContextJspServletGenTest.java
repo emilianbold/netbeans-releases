@@ -42,11 +42,9 @@ package org.netbeans.test.web.core.syntax;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -59,18 +57,11 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
-import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider;
-import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.java.source.parsing.ClassParserFactory;
-import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -81,7 +72,6 @@ import org.netbeans.modules.web.core.syntax.JSPProcessor;
 import org.netbeans.modules.web.core.syntax.JspKit;
 import org.netbeans.modules.web.core.syntax.SimplifiedJspServlet;
 import org.netbeans.modules.web.core.syntax.gsf.JspEmbeddingProvider;
-import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
@@ -109,11 +99,8 @@ public class ContextJspServletGenTest extends TestBase2 {
         super(name);
     }
     
-    public void testJsp() throws Exception{
-        /*SimplifiedJspServlet processor = getProcessor("testJsp.jsp");
-        processor.process();
-        Embedding servlet = processor.getSimplifiedServlet();
-        System.out.println(servlet.getSnapshot().getText());*/
+    public void testBasicInclude() throws Exception {
+        generateServlet("basicInclude");
     }
     
     protected void generateServlet( String prjFolder ) throws Exception{

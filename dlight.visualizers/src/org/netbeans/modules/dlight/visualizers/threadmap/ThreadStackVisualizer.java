@@ -68,6 +68,7 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.ExpansionMode;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.StackNameProvider;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -203,12 +204,16 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                //      try {
-                stackPanel.expandAll();
+                if (configuration.getPrefferedExpansion() == ExpansionMode.ExpandAll) {
+                    stackPanel.expandAll();
+                }
                 int i = 0;
                 for(Node node : stackPanel.getExplorerManager().getRootContext().getChildren().getNodes()) {
                     if (i == prefferedSelection) {
                         try {
+                            if (configuration.getPrefferedExpansion() == ExpansionMode.ExpandCurrent) {
+                                stackPanel.expandNode(node);
+                            }
                             stackPanel.getExplorerManager().setSelectedNodes(new Node[]{node});
                         } catch (PropertyVetoException ex) {
                             Exceptions.printStackTrace(ex);
@@ -217,10 +222,6 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                     }
                     i++;
                 }
-//                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
-//                } catch (PropertyVetoException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
             }
         }, 500);
     }
@@ -239,6 +240,14 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
     public VisualizerContainer getDefaultContainer() {
         return CallStackTopComponent.findInstance();
+    }
+
+    @Override
+    public boolean requestFocus(boolean temporary) {
+        if (stackPanel != null) {
+            return stackPanel.requestFocus(temporary);
+        }
+        return super.requestFocus(temporary);
     }
 
     public void refresh() {

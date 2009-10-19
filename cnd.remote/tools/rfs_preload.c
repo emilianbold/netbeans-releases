@@ -138,7 +138,6 @@ static int on_open(const char *path, int flags) {
         if ( realpath(path, real_path)) {
             path = real_path;
         } else {
-            report_error("Can not resolve path %s : %s\n", path, strerror(errno));
             trace_unresolved_path(path);
             inside = 0;
             return false;
@@ -194,39 +193,35 @@ static int on_open(const char *path, int flags) {
     return result;
 }
 
-static pid_t real_fork(const char* function_name, pid_t (*wrapper_addr)(void)) {
+pid_t fork() {
     pid_t result;
     static pid_t (*prev)(void);
         if (!prev) {
-            prev = (pid_t (*)(void)) _get_real_addr(function_name, wrapper_addr);
+            prev = (pid_t (*)(void)) _get_real_addr("fork", fork);
         }
         if (prev) {
             result = prev();
         } else {
-            trace("Could not find original \"%s\" function\n", function_name);
+            trace("Could not find original \"%s\" function\n", "fork");
             errno = EFAULT;
             result = -1;
         }
     if (result == 0) {
         release_socket(); // child
     } else {
-        trace("%s -> %ld\n", function_name, result);
+        trace("%s -> %ld\n", "fork", result);
     }
     return result;
-}
-
-pid_t fork() {
-    real_fork("fork", fork);
 }
 
 //pid_t vfork() {
 //    real_fork("vfork", vfork);
 //}
 
-#pragma init(on_startup)
-void
+#pragma init(rfs_startup)
+static void
 __attribute__((constructor))
-on_startup(void) {
+rfs_startup(void) {
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
 
     test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
@@ -279,10 +274,10 @@ on_startup(void) {
     }
 }
 
-#pragma init(on_shutdown)
-void
+#pragma init(rfs_shutdown)
+static void
 __attribute__((destructor))
-on_shutdown(void) {
+rfs_shutdown(void) {
     static int shutdown_count = 0;
     shutdown_count++;
     trace("RFS shutdown (%d)\n", shutdown_count);

@@ -88,6 +88,13 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/attr_declaration.rb", "c.t^hud", "attr_declaration.rb", 114);
     }
 
+    public void testCAttrDeclaration() throws Exception {
+        checkDeclaration("testfiles/cattr_declaration.rb", "Hila.vi^tkutin", "cattr_declaration.rb", 28);
+    }
+
+    public void testCAttrDeclaration2() throws Exception {
+        checkDeclaration("testfiles/cattr_declaration.rb", "h.vi^tkutin", "cattr_declaration.rb", 28);
+    }
 
     public void testSymbolToInheritedMethod() throws Exception {
         checkDeclaration("testfiles/symbol_to_method.rb", ":foo_bar_b^ax", "symbol_to_method_base.rb", 12);

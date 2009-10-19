@@ -134,7 +134,7 @@ public class ActionManager {
         }
         Project proj = getProject(fileInProject);
         ActionManager am = ams.get(proj);
-        if(am == null && AppFrameworkSupport.isFrameworkEnabledProject(fileInProject)) {
+        if(am == null && canHaveActions(fileInProject)) {
             synchronized(ActionManager.class) {
                 if (ams.get(proj) == null) {
                     ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
@@ -156,6 +156,10 @@ public class ActionManager {
         } else {
             return null;
         }
+    }
+
+    static boolean canHaveActions(FileObject fileInProject) {
+        return AppFrameworkSupport.isFrameworkLibAvailable(fileInProject);
     }
 
     // a map of all actions by classname

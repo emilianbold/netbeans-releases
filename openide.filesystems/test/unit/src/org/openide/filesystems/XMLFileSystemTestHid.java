@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -533,6 +534,79 @@ public class XMLFileSystemTestHid extends TestBaseHid {
     static int counter() {
         return cnt++;
     }
+    public void testMapsAreNotEqualWithoutCallsToAttributesMaybe174258() throws IOException {
+        File f = writeFile("layer.xml",
+            "<filesystem>\n" +
+              "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".counter'/>" +
+                "</file>\n" +
+                "<file name='snd.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".counter'/>" +
+                "</file>\n" +
+              "</folder>\n" +
+            "</filesystem>\n"
+        );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        FileObject snd = xfs.findResource ("TestModule/snd.txt");
+        assertNotNull(fo);
+
+        cnt = 0;
+
+        Map m1 = (Map)fo.getAttribute("map");
+        Map m2 = (Map)snd.getAttribute("map");
+
+        if (m1 == m2) {
+            fail("Surprise usually these two shall be different: " + m1);
+        }
+        assertFalse("Maps are not equal", m1.equals(m2));
+        assertEquals("No calls to other attributes of the map", 0, cnt);
+    }
+/* commented out as the test is too drastical and possibly simulates something
+ * more complex than happens in reality. If not, it can be uncommented and used
+ * as a base for more defensive fix.
+
+    public void testMapsEqualDoesNotCauseStackOverFlow174258() throws IOException {
+        File f = writeFile("layer.xml",
+            "<filesystem>\n" +
+              "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".checkEquality'/>" +
+                "</file>\n" +
+              "</folder>\n" +
+            "</filesystem>\n"
+        );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        cnt = 0;
+        Map m1 = (Map)fo.getAttribute("map");
+        // following call used to cause StackOverflowException
+        assertMapNotEqual(m1);
+        assertEquals("One call the checkEquality method", 1, cnt);
+    }
+
+    private static void assertMapNotEqual(Map m1) {
+        HashMap m2 = new HashMap();
+        m2.put("map", m1);
+        m2.put("instanceCreate", new Object());
+
+        assertEquals("Same size", m2.size(), m1.size());
+        assertFalse("They are not equal, and no stackoverflow thrown", m2.equals(m1));
+    }
+    static Map checkEquality(Map m) {
+        cnt++;
+        assertMapNotEqual(m);
+        return m;
+    }
+*/
 
     public void testClassBoolean() throws Exception {
         doPrimitiveTypeTest("boolvalue='true'", Boolean.class);

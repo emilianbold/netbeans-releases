@@ -23,9 +23,6 @@ BEGIN {
 
 typedef uint64_t address;
 
-typedef int bool;
-enum { false = 0, true = 1 };
-
 #ifdef DEBUG
 inline string prefix = "### SYNC ";
 #endif
@@ -34,7 +31,7 @@ inline string prefix = "### SYNC ";
 self uint64_t mutex_block_start[address];
 
 /* mutex address -> 1 if some thread is blocked on it, otherwise 0 */
-bool has_waiters[address];
+int has_waiters[address];
 
 /* mutex address -> thread that holds the mutex */
 id_t blocker_threads[address];

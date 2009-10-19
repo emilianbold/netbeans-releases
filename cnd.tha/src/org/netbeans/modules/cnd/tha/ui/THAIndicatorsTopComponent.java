@@ -138,6 +138,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
         this.associateLookup(ExplorerUtils.createLookup(manager, map));
         installActions();
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", true); // NOI18N
     }
 
     void setConfiguration(THAActionsProvider thaActionsProvider, THAConfiguration thaConfiguration){

@@ -235,15 +235,18 @@ public class FileStatusCache {
     }
 
     private boolean containsFiles(File[] roots, int includeStatus, boolean addExcluded) {
-        // check to roots if they already apply to the given status
-        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
-            return true;
-        }
-
+        // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
+        // in such case we may end up with just access to io - getting the status of indeed modified file
+        // the other way around it would check status for all directories along the path
         for (File root : roots) {
             if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
                 return true;
             }
+        }
+
+        // check to roots if they apply to the given status
+        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
+            return true;
         }
         return false;
     }
@@ -252,17 +255,20 @@ public class FileStatusCache {
         if(indexRoots == null || indexRoots.length == 0) {
             return false;
         }
+        // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
+        // in such case we may end up with just access to io - getting the status of indeed modified file
+        // the other way around it would check status for all directories along the path
         for (File root : indexRoots) {
-
+            File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
+            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
+                return true;
+            }
+        }
+        for (File root : indexRoots) {
             FileInformation fi = getCachedStatus(root);
-
             if( (fi != null && (fi.getStatus() & includeStatus) != 0) &&
                 (addExcluded || !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath())))
             {
-                return true;
-            }
-            File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
-            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
                 return true;
             }
         }

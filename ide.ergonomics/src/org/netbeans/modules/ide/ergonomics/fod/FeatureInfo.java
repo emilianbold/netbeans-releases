@@ -213,16 +213,19 @@ public final class FeatureInfo {
                     FeatureProjectFactory.LOG.log(Level.FINER, "    checking file {0}", s);
                     if (data.hasFile(s)) {
                         FeatureProjectFactory.LOG.log(Level.FINER, "    found", s);
-                        if (data.isDeepCheck() && required[1] != null) {
-                            if (!(required[1] instanceof XPathExpression)) {
+                        Object r1 = required[1];
+                        if (data.isDeepCheck() && r1 != null) {
+                            XPathExpression e;
+                            if (!(r1 instanceof XPathExpression)) {
                                 try {
-                                    required[1] = XPathFactory.newInstance().newXPath().compile((String) required[1]);
+                                    required[1] = e = XPathFactory.newInstance().newXPath().compile((String) r1);
                                 } catch (XPathExpressionException ex) {
-                                    FoDFileSystem.LOG.log(Level.WARNING, "Cannot parse " + required[1], ex);
+                                    FoDFileSystem.LOG.log(Level.WARNING, "Cannot parse " + r1, ex);
                                     continue;
                                 }
+                            } else {
+                                e = (XPathExpression)r1;
                             }
-                            XPathExpression e = (XPathExpression)required[1];
                             Document content = data.dom(s);
                             try {
                                 String res = e.evaluate(content);

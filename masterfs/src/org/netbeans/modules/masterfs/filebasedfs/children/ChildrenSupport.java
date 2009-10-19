@@ -49,6 +49,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.Mutex;
 
 /**
  * @author Radek Matous
@@ -62,8 +63,14 @@ public final class ChildrenSupport {
     private Set<FileNaming> notExistingChildren;
     private Set<FileNaming> existingChildren;
     private int status = ChildrenSupport.NO_CHILDREN_CACHED;
+    private final Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
+    private final Mutex mutex = new Mutex(mutexPrivileged);
 
     public ChildrenSupport() {
+    }
+
+    public final Mutex.Privileged getMutexPrivileged() {
+        return mutexPrivileged;
     }
 
     public Set<FileNaming> getCachedChildren() {

@@ -162,7 +162,6 @@ final class PaletteSwitch implements Runnable, LookupListener {
 
     private boolean isPaletteMaximized() {
         boolean isMaximized = true;
-        boolean currentPaletteStillAvailable = false;
         TopComponent.Registry registry = TopComponent.getRegistry();
         Set openedTcs = registry.getOpened();
         for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
@@ -173,15 +172,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
                 isMaximized = false;
                 break;
             }
-            if( !currentPaletteStillAvailable ) {
-                //check whether the window with the current palette controller wasn't closed
-                PaletteController palette = getPaletteFromTopComponent( tc, false, tc.isOpened() );
-                if( null != palette && palette == currentPalette ) {
-                    currentPaletteStillAvailable = true;
-                }
-            }
         }
-        return isMaximized && currentPaletteStillAvailable;
+        return isMaximized;
     }
     
     PaletteController getPaletteFromTopComponent( TopComponent tc, boolean mustBeShowing, boolean isOpened ) {
@@ -335,6 +327,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
         PaletteController palette;
         palette = getPaletteFromTopComponent( activeTc, true, true );
 
+        paletteIsMaximized &= isCurrentPaletteAvailable(existingPalette, openedTcs);
+
         ArrayList<PaletteController> availablePalettes = new ArrayList<PaletteController>(3);
         if( null == palette ) {
             for( Iterator i=openedTcs.iterator(); i.hasNext(); ) {
@@ -345,8 +339,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
                     availablePalettes.add( palette );
                 }
             }
-            if( null != currentPalette && (availablePalettes.contains( currentPalette ) || paletteIsMaximized) )
-                palette = currentPalette;
+            if( null != existingPalette && (availablePalettes.contains( existingPalette ) || paletteIsMaximized) )
+                palette = existingPalette;
             else if( availablePalettes.size() > 0 )
                 palette = availablePalettes.get( 0 );
         }
@@ -357,5 +351,16 @@ final class PaletteSwitch implements Runnable, LookupListener {
                     showHidePaletteTopComponent(existingPalette, newPalette);
             }
         });
+    }
+
+    private boolean isCurrentPaletteAvailable( PaletteController existingPalette, Set<TopComponent> openedTcs ) {
+        for( TopComponent tc : openedTcs ) {
+            //check whether the window with the current palette controller wasn't closed
+            PaletteController palette = getPaletteFromTopComponent( tc, false, true );
+            if( null != palette && palette == existingPalette ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -43,12 +43,15 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -58,6 +61,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -186,7 +190,56 @@ public class InstallerInitTest extends NbTestCase {
 
         assertNull("No dialog shown at begining", DD.d);
     }
-    
+
+    public void testDontSubmitTwiceIssue128306(){
+        final AtomicBoolean submittingTwiceStopped = new AtomicBoolean(false);
+        final Installer.SubmitInteractive interactive = new Installer.SubmitInteractive("hallo", true);
+        final ActionEvent evt = new ActionEvent("submit", 1, "submit");
+        Installer.LOG.setLevel(Level.FINEST);
+        Installer.LOG.addHandler(new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                if ("posting upload UIGESTURES".equals(record.getMessage())){
+                    interactive.actionPerformed(evt);
+                }
+                if ("ALREADY SUBMITTING".equals(record.getMessage())){
+                    submittingTwiceStopped.set(true);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        interactive.createDialog();
+        interactive.actionPerformed(evt);
+        Installer.RP_SUBMIT.post(new Runnable() {
+
+            public void run() {
+                // block RP executor
+                synchronized(this){
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        Installer.RP_SUBMIT.post(new Runnable() {
+
+            public void run() {
+                // just wait for processing
+            }
+        }).waitFinished();
+        assertTrue(submittingTwiceStopped.get());
+    }
+
     public static final class DD extends DialogDisplayer {
         static NotifyDescriptor d;
         

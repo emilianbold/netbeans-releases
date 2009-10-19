@@ -48,28 +48,11 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * FileFilter implementation that is based on file sharability
  * @author Vladimir Kvashin
  */
-public class SharabilityFilter implements FileFilter {
-
-    public interface StatisticsCallback {
-        void onAccept(File file, boolean accepted);
-    }
+public final class SharabilityFilter implements FileFilter {
 
     private static final boolean TRACE_SHARABILITY = Boolean.getBoolean("cnd.remote.trace.sharability"); //NOI18N
-    private StatisticsCallback statisticsCallback;
 
     public final boolean accept(File file) {
-        boolean accepted = acceptImpl(file);
-        if (statisticsCallback != null) {
-            statisticsCallback.onAccept(file, accepted);
-        }
-        return accepted;
-    }
-
-    public void setStatisticsCallback(StatisticsCallback statisticsCallback) {
-        this.statisticsCallback = statisticsCallback;
-    }
-
-    protected boolean acceptImpl(File file) {
         final int sharability = SharabilityQuery.getSharability(file);
         if(TRACE_SHARABILITY) {
             RemoteUtil.LOGGER.info(file.getAbsolutePath() + " sharability is " + sharabilityToString(sharability));

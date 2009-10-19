@@ -48,6 +48,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -206,10 +207,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     static boolean isFromEditor(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec != null && ec.getOpenedPanes() != null) {
-            return true;
-        }
-
-        return false;
+        return ec != null && CsmUtilities.findRecentEditorPaneInEQ(ec) != null;
     }
 }

@@ -92,4 +92,8 @@ class NotificationImpl extends Notification implements Comparable<NotificationIm
     public String getTitle() {
         return title;
     }
+
+    boolean showBallon() {
+        return priority != Priority.SILENT;
+    }
 }

@@ -93,8 +93,8 @@ public class RenameProjectPanel extends javax.swing.JPanel {
 
     RenameProjectPanel(NbMavenProjectImpl prj) {
         initComponents();
-        txtFolder.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "Folder Name");
-        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "ArtifactId");
+        txtFolder.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Folder"));
+        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Artifact"));
         this.project = prj;
         final String folder = project.getProjectDirectory().getNameExt();
         txtFolder.setText(folder);

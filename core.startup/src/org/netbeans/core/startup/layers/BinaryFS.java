@@ -970,12 +970,13 @@ final class BinaryFS extends FileSystem {
         }
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof FileMap) {
-                if (fo.equals(((FileMap)obj).fo)) {
-                    return true;
-                }
+            if (!(obj instanceof Map)) {
+                return false;
             }
-            return super.equals(obj);
+            if (obj instanceof FileMap) {
+                return fo.equals(((FileMap)obj).fo);
+            }
+            return obj.equals(this);
         }
         @Override
         public int hashCode() {

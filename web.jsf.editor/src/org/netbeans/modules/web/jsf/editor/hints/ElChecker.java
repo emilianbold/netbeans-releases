@@ -159,21 +159,8 @@ public class ElChecker extends HintsProvider {
                  return;
              }
         }
-        if ( expression.getParseType() == ELExpression.EL_UNKNOWN || 
-                expression.getParseType() == ELExpression.EL_START)
-        {
-            checkJspElContext( hints, document, fileObject, 
-                    expressions );
-        }
     }
     
-    private void checkJspElContext( List<Hint> hints, Document document,
-            FileObject fileObject, 
-            Map<Class<? extends ELExpression>, ELExpression> expressions )
-    {
-        myJspChecker.check( hints , document, fileObject, expressions);
-    }
-
     private static final Map<Integer, ElContextChecker> JSF_CHECKERS = new HashMap<Integer, 
         ElContextChecker>();
 
@@ -184,6 +171,8 @@ public class ElChecker extends HintsProvider {
                 JSF_CHECKERS.get(JsfElExpression.EL_JSF_BEAN));
         JSF_CHECKERS.put( JsfElExpression.EL_JSF_RESOURCE_BUNDLE, 
                 new ElContextChecker.JsfElResourceBundleContextChecker());
+        JSF_CHECKERS.put( ELExpression.EL_START, new ElContextChecker.JsfElStartContextChecker());
+        JSF_CHECKERS.put( ELExpression.EL_UNKNOWN, new ElContextChecker.JsfElUnknownContextChecker());
     }
     
     private JspElChecker myJspChecker;

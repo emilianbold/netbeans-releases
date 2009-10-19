@@ -113,6 +113,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests FileChangeListener on File.
      * @see FileUtil#addFileChangeListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3392
     public void testAddFileChangeListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -240,6 +241,7 @@ public class FileUtilTest extends NbTestCase {
         assertGC("FileChangeListener not collected.", ref);
     }
 
+    @RandomlyFails // NB-Core-Build #3398
     public void testAddRecursiveListener() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();
@@ -449,6 +451,7 @@ public class FileUtilTest extends NbTestCase {
      * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
      * It is expected that all events from sub folders are delivered just once.
      */
+    @RandomlyFails // NB-Core-Build #3405
     public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
         checkFolderRecursiveListener(false);
     }
@@ -632,6 +635,7 @@ public class FileUtilTest extends NbTestCase {
     /** Tests recursive FileChangeListener on File.
      * @see FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File)
      */
+    @RandomlyFails // NB-Core-Build #3418
     public void testAddRecursiveListenerToFile() throws IOException, InterruptedException {
         clearWorkDir();
         File rootF = getWorkDir();

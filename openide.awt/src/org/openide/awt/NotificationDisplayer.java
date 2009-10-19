@@ -61,6 +61,11 @@ public abstract class NotificationDisplayer {
         HIGH,
         NORMAL,
         LOW,
+        /** Priority that shows the notification without details.
+         * Details shall be shown only later, per user request.
+         * @since 7.18
+         */
+        SILENT
     }
 
     /**
@@ -149,6 +154,7 @@ public abstract class NotificationDisplayer {
                     importance = 50;
                     break;
                 case LOW:
+                case SILENT:
                     importance = 1;
                     break;
             }

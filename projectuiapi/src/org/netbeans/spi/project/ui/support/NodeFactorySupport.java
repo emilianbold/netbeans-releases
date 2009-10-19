@@ -52,11 +52,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -116,15 +120,26 @@ public class NodeFactorySupport {
             return key;
         }
     }
-    
+
+    static Node createWaitNode() {
+        AbstractNode n = new AbstractNode(Children.LEAF);
+        n.setIconBaseWithExtension("org/openide/nodes/wait.gif"); //NOI18N
+        n.setDisplayName(NbBundle.getMessage(ChildFactory.class, "LBL_WAIT")); //NOI18N
+        return n;
+    }
+
+    private static NodeListKeyWrapper LOADING_KEY = new NodeListKeyWrapper(null, null);
+
     static class DelegateChildren extends Children.Keys<NodeListKeyWrapper> implements LookupListener, ChangeListener {
-        
+
+
         private String folderPath;
         private Project project;
         private List<NodeList<?>> nodeLists = new ArrayList<NodeList<?>>();
         private List<NodeFactory> factories = new ArrayList<NodeFactory>();
         private Lookup.Result<NodeFactory> result;
         private final HashMap<NodeList<?>, List<NodeListKeyWrapper>> keys;
+        private RequestProcessor.Task task;
         
         public DelegateChildren(Project proj, String path) {
             folderPath = path;
@@ -138,6 +153,10 @@ public class NodeFactorySupport {
         }
         
        protected Node[] createNodes(NodeListKeyWrapper key) {
+           // XXX cleaner to use Children.create w/ asynch ChildFactory; getNodes(true) then works for free
+           if (key == LOADING_KEY) {
+               return new Node[] { createWaitNode() };
+           }
            @SuppressWarnings("unchecked") // needs to handle NodeList's of different types
            Node nd = key.nodeList.node(key.object);
            if (nd != null) {
@@ -165,23 +184,49 @@ public class NodeFactorySupport {
       
         protected @Override void addNotify() {
             super.addNotify();
-            synchronized (this) {
-                result = createLookup().lookupResult(NodeFactory.class);
-                for (NodeFactory factory : result.allInstances()) {
-                    NodeList<?> lst = factory.createNodes(project);
-                    assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
-                    lst.addNotify();
-                    List objects = lst.keys();
-                    synchronized (keys) {
-                        nodeLists.add(lst);
-                        addKeys(lst, objects);
+            setKeys(Collections.singleton(LOADING_KEY));
+            task = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    synchronized (this) {
+                        result = createLookup().lookupResult(NodeFactory.class);
+                        for (NodeFactory factory : result.allInstances()) {
+                            NodeList<?> lst = factory.createNodes(project);
+                            assert lst != null : "Factory " + factory.getClass() + " has broken the NodeFactory contract."; //NOI18N
+                            lst.addNotify();
+                            List objects = lst.keys();
+                            synchronized (keys) {
+                                nodeLists.add(lst);
+                                addKeys(lst, objects);
+                            }
+                            lst.addChangeListener(DelegateChildren.this);
+                            factories.add(factory);
+                        }
+                        result.addLookupListener(DelegateChildren.this);
                     }
-                    lst.addChangeListener(this);
-                    factories.add(factory);
+                    setKeys(createKeys());
+                    task = null;
                 }
-                result.addLookupListener(this);
+            });
+        }
+
+        public @Override Node[] getNodes(boolean optimalResult) {
+            Node[] ns = super.getNodes(optimalResult);
+            RequestProcessor.Task _task = task;
+            if (optimalResult && _task != null) {
+                _task.waitFinished();
+                ns = super.getNodes(optimalResult);
             }
-            setKeys(createKeys());
+            return ns;
+        }
+
+        public @Override int getNodesCount(boolean optimalResult) {
+            int cnt = super.getNodesCount(optimalResult);
+            RequestProcessor.Task _task = task;
+            if (optimalResult && _task != null) {
+                _task.waitFinished();
+                cnt = super.getNodesCount(optimalResult);
+            }
+            return cnt;
         }
         
         protected @Override void removeNotify() {

@@ -1064,6 +1064,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void updateResizabilityActions() {
         Collection componentIds = componentIds();
+        Action[] actions = getResizabilityActions().toArray(new Action[2]);
+
+        RADComponent top = getTopDesignComponent();
+        if (top == null || componentIds.contains(top.getId())) {
+            for (Action a : actions) {
+                a.setEnabled(false);
+            }
+            return;
+        }
+
         LayoutModel layoutModel = getFormModel().getLayoutModel();
         LayoutDesigner layoutDesigner = getLayoutDesigner();
         Iterator iter = componentIds.iterator();
@@ -1087,7 +1097,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             match = resizable[i];
             miss = nonResizable[i];
             getResizabilityButtons()[i].setSelected(!miss && match);
-            ((ResizabilityAction)getResizabilityActions().toArray()[i]).setEnabled(match || miss);
+            actions[i].setEnabled(match || miss);
 //                getResizabilityButtons()[i].setPaintDisabledIcon(match && miss);
         }
     }

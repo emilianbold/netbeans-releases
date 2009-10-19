@@ -79,8 +79,6 @@ import java.util.Set;
 
 public class CompactMap<K,V> implements Map<K,V> {
     
-    private static int EXPAND_THRESHOLD = 4;
-
     // Empty array would fail with present impl
     private MapEntry<K,V>[] table;
     
@@ -339,6 +337,7 @@ public class CompactMap<K,V> implements Map<K,V> {
         return new MapEntry[capacity];
     }
     
+    @Override
     public String toString() {
 	StringBuffer buf = new StringBuffer();
 	buf.append("{");
@@ -441,6 +440,7 @@ public class CompactMap<K,V> implements Map<K,V> {
         /**
          * Implementation that adheres to {@link java.util.Map.Entry#hashCode()} contract.
          */
+        @Override
         public final int hashCode() {
             // keyHashCode() cannot be used always as the entry is possibly not yet contained in a map
             int keyHash = (keyHashCode != 0) ? keyHashCode : getKey().hashCode();
@@ -450,6 +450,7 @@ public class CompactMap<K,V> implements Map<K,V> {
         /**
          * Implementation that adheres to {@link java.util.Map.Entry#equals(Object)} contract.
          */
+        @Override
         public final boolean equals(Object o) {
             if (o == this)
                 return true;
@@ -492,9 +493,9 @@ public class CompactMap<K,V> implements Map<K,V> {
         }
         
         public final V setValue(V value) {
-            Object oldValue = this.value;
+            V oldValue = this.value;
             this.value = value;
-            return value;
+            return oldValue;
         }
         
         protected final int valueHashCode() {
@@ -505,6 +506,7 @@ public class CompactMap<K,V> implements Map<K,V> {
             return (value == value2 || (value != null && value.equals(value2)));
         }
         
+        @Override
         public String toString() {
             return "key=" + getKey() + ", value=" + getValue(); // NOI18N
         }
@@ -526,6 +528,7 @@ public class CompactMap<K,V> implements Map<K,V> {
             return candidate != null && candidate.equals(e);
         }
 
+        @Override
         public boolean remove(Object o) {
             @SuppressWarnings("unchecked")
             MapEntry<K,V> e = (MapEntry<K,V>)o;

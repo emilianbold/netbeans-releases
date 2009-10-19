@@ -166,6 +166,12 @@ public class ThreadMapVisualizer extends JPanel implements
         this.toolID = toolID;
     }
 
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        threadsTimelinePanelContainer.requestFocus();
+    }
+
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         //filter out with the time
         if (session != null) {
@@ -210,7 +216,7 @@ public class ThreadMapVisualizer extends JPanel implements
                 case STARTING:
                     synchronized (uiLock) {
                         dataManager.reset();
-                        dataManager.startup();
+                        dataManager.startup(session.getState());
                         startTimeStamp = 0;
                     }
                     timerSupport.start();
@@ -218,7 +224,7 @@ public class ThreadMapVisualizer extends JPanel implements
                 default:
                     timerSupport.stop();
                     synchronized (uiLock) {
-                        dataManager.shutdown();
+                        dataManager.startup(session.getState());
                     }
             }
         }
@@ -227,7 +233,7 @@ public class ThreadMapVisualizer extends JPanel implements
     public void shutdown() {
         timerSupport.stop();
         synchronized (uiLock) {
-            dataManager.shutdown();
+            dataManager.shutdown(SessionState.CLOSED);
             dataManager.reset();
             startTimeStamp = 0;
         }
@@ -342,7 +348,7 @@ public class ThreadMapVisualizer extends JPanel implements
             case ANALYZE:
                 timerSupport.stop();
                 synchronized (uiLock) {
-                    dataManager.shutdown();
+                    dataManager.shutdown(newState);
                     startTimeStamp = 0;
                 }
                 refresh();

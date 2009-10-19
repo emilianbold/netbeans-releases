@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -73,14 +74,17 @@ public class LoopParallelizationCommonAdvice implements Advice {
 
     public String getHtml() {
         URL iconUrl = LoopParallelizationCommonAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
-        String html = "<a href=\"http://en.wikipedia.org/wiki/Parallel_computing\">Parallel computing</a> is a form of computation in which many calculations are carried out simultaneously, " + // NOI18N
-                "operating on the principle that large problems can often be divided into smaller ones, " + // NOI18N
-                "which are then solved concurrently (\"in parallel\").<br>" + // NOI18N
-                "There are several ways to make you program parallel. The easiest one is to use <a href=\"http://en.wikipedia.org/wiki/OpenMP\">OpenMP</a>."; // NOI18N
-        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Parallel computing", // NOI18N
-                html, 800); // NOI18N
+
+        return ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                getString("PAT_LoopParallelizationCommon_Title"), // NOI18N
+                getString("PAT_LoopParallelizationCommon_Body"), // NOI18N
+                800); // NOI18N
     }
 
     public void addNotification(OutputWriter writer) {
+    }
+
+    private static String getString(String name) {
+        return NbBundle.getMessage(LoopParallelizationCommonAdvice.class, name);
     }
 }

@@ -88,7 +88,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         Font f = new JLabel().getFont();
         int s = f.getSize();
-        nameLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
+        nameLabel.setFont(jLabel1.getFont().deriveFont(s * 1.7f));
         jiraFilterLabel.setVisible(isFilter);
         if(isFilter) {
             jiraFilterLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));

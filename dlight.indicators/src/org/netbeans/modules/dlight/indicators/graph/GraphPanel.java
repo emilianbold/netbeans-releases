@@ -47,6 +47,9 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -55,9 +58,9 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.dlight.toolsui.api.ToolsCustomizerAction;
+import org.netbeans.modules.dlight.indicators.spi.IndicatorActionsProvider;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.Lookup;
 
 /**
  * Convenient base class for indicator components.
@@ -155,9 +158,20 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         private JPopupMenu pm;
 
         public PopupMenuListener() {
-            SystemAction action = SystemAction.get(ToolsCustomizerAction.class);
             pm = new JPopupMenu();
-            pm.add(new JMenuItem(action));
+
+            Lookup.Template<IndicatorActionsProvider> template = new Lookup.Template<IndicatorActionsProvider>(IndicatorActionsProvider.class);
+            Lookup.Result<IndicatorActionsProvider> result = Lookup.getDefault().lookup(template);
+            Iterator iterator = result.allInstances().iterator();
+            while (iterator.hasNext()) {
+                Object caop = iterator.next();
+                if (caop instanceof IndicatorActionsProvider) {
+                    List<Action> list = ((IndicatorActionsProvider)caop).getIndicatorActions(null); // FIXUP: add DLightConfiguration, DLightTool, ... to lookup
+                    for (Action action : list) {
+                        pm.add(new JMenuItem(action));
+                    }
+                }
+            }
         }
 
         @Override

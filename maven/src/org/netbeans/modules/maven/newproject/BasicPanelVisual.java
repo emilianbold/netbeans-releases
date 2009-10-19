@@ -171,7 +171,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 //                        Validators.FILE_MUST_BE_DIRECTORY,
                 new Validator<String>() {
                     public boolean validate(Problems problems, String compName, String model) {
-                        File fil = new File(model);
+                        File fil = FileUtil.normalizeFile(new File(model));
                         File projLoc = fil;
                         while (projLoc != null && !projLoc.exists()) {
                             projLoc = projLoc.getParentFile();

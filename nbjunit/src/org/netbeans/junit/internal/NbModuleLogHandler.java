@@ -40,6 +40,8 @@
  */
 package org.netbeans.junit.internal;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -112,10 +114,11 @@ public final class NbModuleLogHandler extends Handler {
         sb.append(txt);
         Throwable t = record.getThrown();
         if (t != null) {
-            for (StackTraceElement s : t.getStackTrace()) {
-                sb.append("\n  ").append(s.toString());
-            }
+            StringWriter w = new StringWriter();
+            t.printStackTrace(new PrintWriter(w));
+            sb.append(w.toString().replace("\tat ", "  ").replace("\t... ", "  ... "));
         }
+        sb.append('\n');
         return sb;
     }
 
@@ -132,11 +135,11 @@ public final class NbModuleLogHandler extends Handler {
 
         if (record.getThrown() != null) {
             if (exc.intValue() <= record.getLevel().intValue()) {
-                t.append(toString(record)).append('\n');
+                t.append(toString(record));
             }
         } else {
             if (msg.intValue() <= record.getLevel().intValue()) {
-                t.append(toString(record)).append('\n');
+                t.append(toString(record));
             }
         }
     }

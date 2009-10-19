@@ -107,7 +107,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     /** See issue #69440 for more details. */
     private boolean runInAtomicAction;
-    
+    private boolean pendingReset = false;   // issue #173792
+
     private static class TestClasspath {
         
         private final String compile;
@@ -250,8 +251,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
-        if (!runInAtomicAction && ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            reset();
+        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
+            if (runInAtomicAction)
+                pendingReset = true;
+            else
+                reset();
         }
     }
     
@@ -261,7 +265,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     /** See issue #69440 for more details. */
     public void setRunInAtomicAction(boolean runInAtomicAction) {
+        assert runInAtomicAction != this.runInAtomicAction : "Nested calls not supported";
         this.runInAtomicAction = runInAtomicAction;
+        if (! runInAtomicAction && pendingReset) {
+            reset();
+        }
+        pendingReset = false;
     }
     
     /** See issue #69440 for more details. */

@@ -76,8 +76,6 @@ import org.openide.util.Mutex;
  */
 public final class FolderObj extends BaseFileObj {    
     static final long serialVersionUID = -1022430210876356809L;
-    private static final Mutex.Privileged mp = new Mutex.Privileged();
-    private static final Mutex mutex = new Mutex(FolderObj.mp);
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
@@ -545,7 +543,7 @@ public final class FolderObj extends BaseFileObj {
         }
 
         public final Mutex.Privileged getMutexPrivileged() {
-            return FolderObj.mp;
+            return ch.getMutexPrivileged();
         }
 
         @Override

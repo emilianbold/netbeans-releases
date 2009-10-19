@@ -154,32 +154,27 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
-            int index = atts.getIndex(VERSION_ATTR);
-            index = atts.getIndex(TYPE_ATTR);
             int confType = 0;
-            if (index < 0) {
+            String type = atts.getValue(TYPE_ATTR);
+            if (type == null) {
                 // Old type. Only makefile was really working...
                 confType = MakeConfiguration.TYPE_MAKEFILE;
-            } else if (atts.getValue(index).equals("0")) // FIXUP // NOI18N
-            {
+            } else if (type.equals("0")) {// FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_MAKEFILE;
-            } else if (atts.getValue(index).equals("1")) // FIXUP // NOI18N
-            {
+            } else if (type.equals("1")) {// FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_APPLICATION;
-            } else if (atts.getValue(index).equals("2")) // FIXUP // NOI18N
-            {
+            } else if (type.equals("2")) {// FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_DYNAMIC_LIB;
-            } else if (atts.getValue(index).equals("3")) // FIXUP // NOI18N
-            {
+            } else if (type.equals("3")) {// FIXUP // NOI18N
                 confType = MakeConfiguration.TYPE_STATIC_LIB;
-            } else if (atts.getValue(index).equals("4")) { // NOI18N
+            } else if (type.equals("4")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_APPLICATION;
-            } else if (atts.getValue(index).equals("5")) { // NOI18N
+            } else if (type.equals("5")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_DYNAMIC_LIB;
-            } else if (atts.getValue(index).equals("6")) { // NOI18N
+            } else if (type.equals("6")) { // NOI18N
                 confType = MakeConfiguration.TYPE_QT_STATIC_LIB;
             }
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType);
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
@@ -198,9 +193,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(NEO_CONF_ELEMENT)) {
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), MakeConfiguration.TYPE_APPLICATION);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_APPLICATION);
         } else if (element.equals(EXT_CONF_ELEMENT)) {
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), MakeConfiguration.TYPE_MAKEFILE);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_MAKEFILE);
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
             projectDescriptor.setExternalFileItems(currentFolder);
@@ -236,7 +231,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
-            String path = atts.getValue(0);
+            String path = atts.getValue(ItemXMLCodec.PATH_ATTR);
             path = getString(adjustOffset(path));
             //Item item = ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders().findItemByPath(path);
             Item item = projectDescriptor.findProjectItemByPath(path);
@@ -255,7 +250,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             // FIXUP
             }
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
-            String path = getString(atts.getValue(0));
+            String path = getString(atts.getValue(FolderXMLCodec.PATH_ATTR));
             Folder folder = projectDescriptor.findFolderByPath(path);
             if (folder != null) {
                 FolderConfiguration folderConfiguration = folder.getFolderConfiguration(currentConf);
@@ -567,9 +562,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SOURCE_FOLDERS_FILTER_ELEMENT)) {
             projectDescriptor.setFolderVisibilityQuery(currentText);
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
-            Iterator iter = currentList.iterator();
+            Iterator<String> iter = currentList.iterator();
             while (iter.hasNext()) {
-                String sf = (String) iter.next();
+                String sf = iter.next();
                 projectDescriptor.addSourceRootRaw(sf);
             }
             currentList = null;

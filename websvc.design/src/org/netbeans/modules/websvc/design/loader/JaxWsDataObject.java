@@ -344,6 +344,10 @@ public final class JaxWsDataObject extends MultiDataObject {
         public boolean close(boolean ask) {
             return super.close(ask);
         }
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return true;
+        }
     }
-    
 }
