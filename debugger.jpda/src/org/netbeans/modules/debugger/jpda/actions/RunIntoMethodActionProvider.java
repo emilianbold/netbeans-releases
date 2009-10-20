@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -168,6 +169,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     public void doAction (Object action) {
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
+        final String[] classPtr = new String[1];
         final int[] linePtr = new int[1];
         final int[] offsetPtr = new int[1];
         try {
@@ -178,6 +180,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     linePtr[0] = context.getCurrentLineNumber();
                     offsetPtr[0] = EditorContextBridge.getCurrentOffset();
                     urlPtr[0] = context.getCurrentURL();
+                    classPtr[0] = context.getCurrentClassName();
                 }
             });
         } catch (InvocationTargetException ex) {
@@ -199,17 +202,19 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final int methodLine = linePtr[0];
         final int methodOffset = offsetPtr[0];
         final String url = urlPtr[0];
-        String className = debugger.getCurrentThread().getClassName();
+        String className = classPtr[0]; //debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
         JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
         ThreadReference threadReference = ct.getThreadReference();
         // Find the class where the thread is stopped at
         ReferenceType clazz = null;
+        String clazzName = null;
         try {
             if (ThreadReferenceWrapper.frameCount(threadReference) < 1) return ;
             clazz = LocationWrapper.declaringType(
                     StackFrameWrapper.location(ThreadReferenceWrapper.frame(threadReference, 0)));
+            clazzName = ReferenceTypeWrapper.name(clazz);
         } catch (InternalExceptionWrapper ex) {
             return ;
         } catch (ObjectCollectedExceptionWrapper ex) {
@@ -221,16 +226,28 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         } catch (VMDisconnectedExceptionWrapper ex) {
             return ;
         }
-        if (clazz != null) {
-            doAction(url, clazz, methodLine, methodOffset, method);
+        if (clazz != null && (className == null || className.equals(clazzName))) {
+            doAction(url, clazz, methodLine, methodOffset, method, true);
         } else {
+            try {
+                List<ReferenceType> classes = VirtualMachineWrapper.classesByName(vm, className);
+                if (classes.size() > 0) {
+                    doAction(url, classes.get(0), methodLine, methodOffset, method, true);
+                    return ;
+                }
+            } catch (InternalExceptionWrapper ex) {
+                return ;
+            } catch (VMDisconnectedExceptionWrapper ex) {
+                return ;
+            }
+
             final ClassLoadUnloadBreakpoint cbrkp = ClassLoadUnloadBreakpoint.create(className, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
             cbrkp.setHidden(true);
             cbrkp.setSuspend(ClassLoadUnloadBreakpoint.SUSPEND_NONE);
             cbrkp.addJPDABreakpointListener(new JPDABreakpointListener() {
                 public void breakpointReached(JPDABreakpointEvent event) {
                     DebuggerManager.getDebuggerManager().removeBreakpoint(cbrkp);
-                    doAction(url, event.getReferenceType(), methodLine, methodOffset, method);
+                    doAction(url, event.getReferenceType(), methodLine, methodOffset, method, false);
                 }
             });
             // TODO: cbrkp.setSession(debugger);
@@ -260,7 +277,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     }
     
     private void doAction(String url, final ReferenceType clazz, int methodLine,
-                          int methodOffset, final String methodName) {
+                          int methodOffset, final String methodName, boolean doResume) {
         List<Location> locations = java.util.Collections.emptyList();
         try {
             while (methodLine > 0 && (locations = ReferenceTypeWrapper.locationsOfLine(clazz, methodLine)).isEmpty()) {
@@ -303,7 +320,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         if (bpLocation == null) {
             bpLocation = locations.get(0);
         }
-        doAction(debugger, methodName, bpLocation, false);
+        doAction(debugger, methodName, bpLocation, false, doResume);
     }
 
     static boolean doAction(final JPDADebuggerImpl debugger,
@@ -311,13 +328,33 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             Location bpLocation,
                             // If it's important not to run far from the expression
                             boolean setBoundaryStep) {
+        
+        return doAction(debugger, methodName, bpLocation, setBoundaryStep, true);
+    }
+
+    private static boolean doAction(final JPDADebuggerImpl debugger,
+                                    final String methodName,
+                                    Location bpLocation,
+                                    // If it's important not to run far from the expression
+                                    boolean setBoundaryStep,
+                                    boolean doResume) {
         final VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return false;
         final int line = LocationWrapper.lineNumber0(bpLocation, "Java");
-        CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
-        if (csf == null) {
-            return false; // No intelligent stepping without the current stack frame.
+        JPDAThreadImpl ct = (JPDAThreadImpl) debugger.getCurrentThread();
+        if (ct == null) {
+            return false; // No intelligent stepping without the current thread.
         }
+        CallStackFrame[] topFramePtr;
+        try {
+            topFramePtr = ct.getCallStack(0, 1);
+        } catch (AbsentInformationException ex) {
+            return false;
+        }
+        if (topFramePtr.length < 1) {
+            return false;
+        }
+        CallStackFrameImpl csf = (CallStackFrameImpl) topFramePtr[0];
         final JPDAThreadImpl t;
         boolean areWeOnTheLocation;
         try {
@@ -384,7 +421,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 return false;
             }
         }
-        resume(debugger);
+        if (doResume) {
+            resume(debugger);
+        }
         return true;
     }
 
