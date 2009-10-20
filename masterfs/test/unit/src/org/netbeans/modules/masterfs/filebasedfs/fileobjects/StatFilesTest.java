@@ -178,7 +178,12 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         final FileLock lock = fobj.lock();
         try {
-            monitor.getResults().assertResult(0, StatFiles.ALL);
+            int expectedCount = 0;
+            if (Utilities.isUnix()) {
+                // called File.toURI() from FileUtil.normalizeFile()
+                expectedCount = 1;
+            }
+            monitor.getResults().assertResult(expectedCount, StatFiles.ALL);
             //second time
             monitor.reset();
             FileLock lock2 = null;
@@ -187,7 +192,7 @@ public class StatFilesTest extends NbTestCase {
                 fail();
             } catch (IOException ex) {
             }
-            monitor.getResults().assertResult(0, StatFiles.ALL);
+            monitor.getResults().assertResult(expectedCount, StatFiles.ALL);
         } finally {
             lock.releaseLock();
         }
