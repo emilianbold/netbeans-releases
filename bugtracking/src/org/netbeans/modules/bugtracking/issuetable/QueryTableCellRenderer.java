@@ -19,6 +19,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -94,6 +95,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         if(format != null) {
             StringBuffer sb = new StringBuffer();
             sb.append("<html>");                                                // NOI18N
+            s = TextUtils.escapeForHTMLLabel(s);
             format.format(new Object[] {s}, sb, null);
             sb.append("</html>");                                               // NOI18N
             s = sb.toString();
