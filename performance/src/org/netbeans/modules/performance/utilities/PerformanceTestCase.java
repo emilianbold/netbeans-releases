@@ -43,16 +43,17 @@ package org.netbeans.modules.performance.utilities;
 
 import java.awt.Component;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.util.logging.Level;
 
+import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.jellytools.JellyTestCase;
@@ -64,6 +65,9 @@ import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test case with implemented Performance Tests Validation support stuff.
@@ -171,6 +175,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             rm = new LoggingRepaintManager(tr);
             rm.setEnabled(true);
        }
+       System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000"); // disable slowness detector
     }
 
     /** Tested component operator. */
@@ -190,6 +195,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      */
     private static Map<Object, Map<Reference<Object>, String>> tracedRefs = 
             new HashMap<Object, Map<Reference<Object>, String>>();
+    private Profile profile;
 
     /**
      * Creates a new instance of PerformanceTestCase
@@ -316,16 +322,17 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     logMemoryUsage();
 
+                    initializeProfiling();
                     tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
                     testedComponentOperator = open();
                     tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_AFTER);
+                    finishProfiling(i);
 
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
                     tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
                     Thread.sleep(wait_time);
                     waitNoEvent(wait_time/4);
-
                     logMemoryUsage();
 
                     // we were waiting for painting the component, but after
@@ -1111,4 +1118,54 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         disablePHPReadmeHTML();
     }
 
+    private void initializeProfiling() {
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        if (fo == null) {
+            return;
+        }
+        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
+        if (a == null) {
+            return;
+        }
+        profile = new Profile(a.getValue("logger-performance")); // NOI18N
+    }
+
+    private void finishProfiling(int round) throws Exception {
+        if (profile != null) {
+            profile.stop(round);
+        }
+    }
+
+    private class Profile implements Runnable {
+        Object profiler;
+        boolean profiling;
+
+        public Profile(Object profiler) {
+            this.profiler = profiler;
+            RequestProcessor.getDefault().post(this, (int)expectedTime);
+        }
+
+        public synchronized void run() {
+            profiling = true;
+            if (profiler instanceof Runnable) {
+                Runnable r = (Runnable)profiler;
+                r.run();
+            }
+        }
+
+        private synchronized void stop(int round) throws Exception {
+            ActionListener ss = (ActionListener)profiler;
+            profiler = null;
+            if (!profiling) {
+                return;
+            }
+            FileObject wd = FileUtil.toFileObject(getWorkDir());
+            String n = FileUtil.findFreeFileName(wd, "snapshot-" + round, "nps"); // NOI18N
+            FileObject snapshot = wd.createData(n, "nps"); // NOI18N
+            DataOutputStream dos = new DataOutputStream(snapshot.getOutputStream());
+            ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+            dos.close();
+        }
+
+    }
 }
