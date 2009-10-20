@@ -737,8 +737,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private boolean isServerInstanceChanged() {
         if ((serverInstanceID==null && currentServerInstanceID !=null) ||
-                (serverInstanceID == null && currentServerInstanceID !=null) ||
-                !serverInstanceID.equals(currentServerInstanceID)) {
+                (serverInstanceID != null &&  !serverInstanceID.equals(currentServerInstanceID))) {
             currentServerInstanceID = serverInstanceID;
             return true;
         }

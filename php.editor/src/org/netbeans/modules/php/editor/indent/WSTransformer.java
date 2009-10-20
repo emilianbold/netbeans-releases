@@ -175,7 +175,21 @@ class WSTransformer extends DefaultTreePathVisitor {
         PHPTokenId tokenId = tokenSequence.token().id();
 
         if (tokenId == PHPTokenId.PHP_SEMICOLON){
-            return true;
+            int pos = tokenSequence.offset();
+            boolean split = true;
+
+            if (tokenSequence.moveNext() && tokenSequence.token().id() == PHPTokenId.WHITESPACE){
+                tokenSequence.moveNext();
+            }
+
+            // do not break lines in expressions like <?php foo(); ?>, see issue #174595
+            if (tokenSequence.token().id() == PHPTokenId.PHP_CLOSETAG){
+                split = false;
+            }
+
+            tokenSequence.move(pos);
+            tokenSequence.moveNext();
+            return split;
         }
 
         //TODO: handle 'case:'
