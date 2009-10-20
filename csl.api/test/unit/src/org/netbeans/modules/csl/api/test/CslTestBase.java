@@ -1509,7 +1509,7 @@ public abstract class CslTestBase extends NbTestCase {
         } finally {
             IndexingSupport support = SPIAccessor.getInstance().context_getAttachedIndexingSupport(context);
             if (support != null) {
-                SupportAccessor.getInstance().store(support);
+                SupportAccessor.getInstance().store(support,true);
             }
         }
 
@@ -4216,8 +4216,8 @@ public abstract class CslTestBase extends NbTestCase {
             documents.keySet().removeAll(toRemove);
         }
 
-        public void store() throws IOException {
-            original.store();
+        public void store(boolean optimize) throws IOException {
+            original.store(optimize);
         }
 
         public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException {
