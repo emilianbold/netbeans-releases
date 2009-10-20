@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
@@ -399,6 +400,9 @@ public final class EventSupport {
                 }
                 if (source != null) {
                     Object rawValue = evt.getNewValue();
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "completion-active={0} for {1}", new Object [] { rawValue, source }); //NOI18N
+                    }
                     if (rawValue instanceof Boolean && ((Boolean) rawValue).booleanValue()) {
                         TaskProcessor.resetState(source, false, true);
                         k24.set(true);
