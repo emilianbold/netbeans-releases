@@ -425,7 +425,7 @@ public final class WindowsSupport {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof PathConverterParams)) {
+            if (obj == null || !(obj instanceof PathConverterParams)) {
                 return false;
             }
 
@@ -501,7 +501,7 @@ public final class WindowsSupport {
                     case MSYS:
                         result = path;
 
-                        if (result.charAt(1) == ':') {
+                        if (result.length() > 2 && result.charAt(1) == ':') {
                             result = "/" + result.replaceFirst(":", ""); // NOI18N
                         }
 

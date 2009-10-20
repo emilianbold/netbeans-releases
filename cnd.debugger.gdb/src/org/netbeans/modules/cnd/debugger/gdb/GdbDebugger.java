@@ -2001,6 +2001,10 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public String getOSPath(String path) {
+        if (path == null) {
+            return null;
+        }
+        
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin()) { // NOI18N
                 return WindowsSupport.getInstance().convertFromCygwinPath(path);
