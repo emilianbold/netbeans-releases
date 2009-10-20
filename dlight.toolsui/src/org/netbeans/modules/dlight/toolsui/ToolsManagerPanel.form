@@ -33,7 +33,7 @@
                               <Component id="detailsLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="182" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane1" pref="312" max="32767" attributes="0"/>
+                          <Component id="scrollPane" pref="340" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -65,7 +65,7 @@
                   <Group type="102" attributes="0">
                       <Component id="detailsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="312" max="32767" attributes="0"/>
+                      <Component id="scrollPane" pref="328" max="32767" attributes="0"/>
                   </Group>
                   <Component id="toolsList" pref="334" max="32767" attributes="1"/>
               </Group>
@@ -105,9 +105,6 @@
     </Component>
     <Container class="javax.swing.JScrollPane" name="toolsList">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
@@ -125,13 +122,8 @@
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="detailsLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/dlight/toolsui/Bundle.properties" key="ToolsManagerPanel.detailsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+    <Container class="javax.swing.JScrollPane" name="scrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -140,9 +132,6 @@
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="descriptionArea">
           <Properties>
-            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="ee" green="ee" id="Label.background" palette="3" red="ee" type="palette"/>
-            </Property>
             <Property name="columns" type="int" value="20"/>
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>

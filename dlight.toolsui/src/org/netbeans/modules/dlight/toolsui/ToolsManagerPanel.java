@@ -78,17 +78,12 @@ public class ToolsManagerPanel extends PanelWithApply {
 
     /** Creates new form ToolsManagerPanel */
     public ToolsManagerPanel() {
-//        initComponents();
-//        DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
-//        DLightConfigurationManager manager = DLightConfigurationManager.getInstance();
-//        allDLightTools = accessor.getDefaultConfiguration(manager).getToolsSet();
-//        initDialog(DLightConfigurationUIWrapperProvider.getInstance().getDLightConfigurationUIWrappers(), null);
-//        setPreferredSize(new Dimension(700, 400));
         this(null);
     }
 
     public ToolsManagerPanel(String preferredConfigurationName) {
         initComponents();
+        descriptionArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background")); // NOI18N
         descriptionArea.setOpaque(true);
 
         DLightConfigurationManagerAccessor accessor = DLightConfigurationManagerAccessor.getDefault();
@@ -257,7 +252,7 @@ public class ToolsManagerPanel extends PanelWithApply {
         toolsList = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
         detailsLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        scrollPane = new javax.swing.JScrollPane();
         descriptionArea = new javax.swing.JTextArea();
 
         profileConfigurationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/Bundle").getString("ProfilerConfiguration_MN").charAt(0));
@@ -273,21 +268,17 @@ public class ToolsManagerPanel extends PanelWithApply {
         toolsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/dlight/toolsui/Bundle").getString("TOOLS_MN").charAt(0));
         toolsLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.toolsLabel.text")); // NOI18N
 
-        toolsList.setBackground(new java.awt.Color(255, 255, 255));
         toolsList.setOpaque(false);
 
         jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jList1.setOpaque(false);
         toolsList.setViewportView(jList1);
 
-        detailsLabel.setText(org.openide.util.NbBundle.getMessage(ToolsManagerPanel.class, "ToolsManagerPanel.detailsLabel.text")); // NOI18N
-
-        descriptionArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         descriptionArea.setColumns(20);
         descriptionArea.setLineWrap(true);
         descriptionArea.setRows(5);
         descriptionArea.setWrapStyleWord(true);
-        jScrollPane1.setViewportView(descriptionArea);
+        scrollPane.setViewportView(descriptionArea);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -308,7 +299,7 @@ public class ToolsManagerPanel extends PanelWithApply {
                             .add(layout.createSequentialGroup()
                                 .add(detailsLabel)
                                 .add(182, 182, 182))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)))
+                            .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(toolsLabel)))
@@ -331,7 +322,7 @@ public class ToolsManagerPanel extends PanelWithApply {
                     .add(layout.createSequentialGroup()
                         .add(detailsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
+                        .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
                     .add(toolsList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -470,9 +461,9 @@ public class ToolsManagerPanel extends PanelWithApply {
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JList jList1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox profileConfigurationComboBox;
     private javax.swing.JLabel profileConfigurationLabel;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel toolsLabel;
     private javax.swing.JScrollPane toolsList;
     // End of variables declaration//GEN-END:variables
