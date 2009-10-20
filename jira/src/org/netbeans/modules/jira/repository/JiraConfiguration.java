@@ -163,6 +163,9 @@ public class JiraConfiguration extends JiraClientCache {
     private void loadProjectsIntern() throws JiraException {
         loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
         data.projects = client.getProjects(new NullProgressMonitor());
+        if(data.projects == null) {
+            data.projects = new Project[0];
+        }
         for (Project project : data.projects) {
             data.projectsById.put(project.getId(), project);
             data.projectsByKey.put(project.getKey(), project);
