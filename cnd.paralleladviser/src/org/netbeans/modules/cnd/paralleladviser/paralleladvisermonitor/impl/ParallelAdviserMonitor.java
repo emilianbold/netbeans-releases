@@ -444,7 +444,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                 Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
 
                     public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
-                        return (int) (((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos() - ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos());
+                        long l1 = ((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos();
+                        long l2 = ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos();
+                        return (l1 < l2) ? -1 : (l1 > l2) ? 1 : 0;
                     }
                 });
                 return functions;
