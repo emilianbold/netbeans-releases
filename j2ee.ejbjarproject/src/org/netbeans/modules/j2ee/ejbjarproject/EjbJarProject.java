@@ -1008,9 +1008,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             // Make it easier to run headless builds on the same machine at least.
             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-
-            // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-            WSUtils.setJaxWsEndorsedDirProperty(ep);
+            
+            //remove jaxws.endorsed.dir property
+            ep.remove("jaxws.endorsed.dir");
 
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
