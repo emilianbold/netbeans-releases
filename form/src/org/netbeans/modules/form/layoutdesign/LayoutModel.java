@@ -972,6 +972,16 @@ public class LayoutModel implements LayoutConstants {
      * @return dump of the layout model.
      */
     public String dump(final Map<String,String> idToNameMap) {
+        return dump(idToNameMap, null, true);
+    }
+
+    /**
+     * Returns dump of the layout model of given container.
+     * For debugging and testing purposes only.
+     *
+     * @return dump of the layout model.
+     */
+    public String dump(final Map<String,String> idToNameMap, String contId, boolean subcontainers) {
         Set<LayoutComponent> roots = new TreeSet<LayoutComponent>(new Comparator<LayoutComponent>() {
             // comparator to ensure stable order of dump; according to tree
             // hierarchy, order within container, name
@@ -1009,11 +1019,14 @@ public class LayoutModel implements LayoutConstants {
                 }
             }
         });
+        LayoutComponent rootComp = contId != null ? getLayoutComponent(contId) : null;
         Iterator<Map.Entry<String,LayoutComponent>> iter = idToComponents.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry<String,LayoutComponent> entry = iter.next();
             LayoutComponent comp = entry.getValue();
-            if (comp.isLayoutContainer()) {
+            if (comp.isLayoutContainer()
+                    && (rootComp == null || comp == rootComp
+                        || (subcontainers && rootComp.isParentOf(comp)))) {
                 roots.add(comp);
             }
         }
