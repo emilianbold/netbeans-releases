@@ -83,18 +83,23 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         super(ast, file);
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         name = NameCache.getManager().getString(ast.getText());
-        // TODO: here we override startOffset which is not good because startPosition is now wrong
-        startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         if (!global) {
             Utils.setSelfUID(this);
         }
         this.visibility = visibility;
+        // TODO: here we override startOffset which is not good because startPosition is now wrong
+        AST child = ast.getFirstChild();
+        if(child instanceof CsmAST) {
+            startOffset = ((CsmAST)child).getOffset();
+        } else {
+            startOffset = getStartOffset();
+        }
     }
 
     public CsmDeclaration getReferencedDeclaration() {
         return getReferencedDeclaration(null);
-    }   
+    }
 
     public CsmDeclaration getReferencedDeclaration(Resolver resolver) {
         // TODO: process preceding aliases
@@ -249,7 +254,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     public int getStartOffset() {
         return startOffset;
     }
-    
+
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.USING_DECLARATION;
     }

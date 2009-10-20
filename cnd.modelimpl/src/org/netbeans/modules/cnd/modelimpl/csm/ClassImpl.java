@@ -338,6 +338,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         }
                         break;
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
+                        UsingDeclarationImpl using = new UsingDeclarationImpl(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext(), curentVisibility);
+                        addMember(using, !isRenderingLocalContext());
                         break;
                     case CPPTokenTypes.RCURLY:
                         break;
