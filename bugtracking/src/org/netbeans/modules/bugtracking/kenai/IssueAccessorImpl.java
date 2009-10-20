@@ -48,6 +48,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.BugtrackingManager.RecentIssue;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport;
+import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -70,6 +72,16 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
      */
     @Override
     public void open(final KenaiProject project, final String issueID) {
+        if(!JiraUpdater.isJiraInstalled()) {
+            if(JiraUpdater.notifyJiraDownload()) {
+                JiraUpdater.getInstance().install();
+            } else {
+                FakeJiraSupport support = FakeJiraSupport.get(project);
+                support.openIsssueOnWeb(issueID);
+            }
+            return;
+        }
+
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
         handle.start();
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
