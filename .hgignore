@@ -27,7 +27,7 @@ derby\.log
 ^classfile/classfile\.jar$
 ^cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/generated$
 ^cnd.apt/src/org/netbeans/modules/cnd/apt/support/APTTokenTypes\.java$
-^asm/src/org/netbeans/modules/cnd/asm/base/generated$
+^asm/src/org/netbeans/modules/asm/base/generated$
 ^cnd.asm/src/org/netbeans/modules/cnd/asm/base/generated$
 ^cnd/src/org/netbeans/modules/cnd/tags$
 ^cnd.debugger.gdb/src/org/netbeans/modules/cnd/debugger/gdb/tags$
