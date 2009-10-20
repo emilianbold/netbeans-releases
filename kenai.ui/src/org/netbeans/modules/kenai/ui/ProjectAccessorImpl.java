@@ -146,13 +146,13 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             return new Action[]{
                         getOpenAction(project),
                         new RefreshAction(project),
-                        (Action) getDetailsAction(project),
+                        getDetailsAction(project),
             };
         } else {
             return new Action[]{
                         new RemoveProjectAction(project),
                         new RefreshAction(project),
-                        (Action) getDetailsAction(project)
+                        getDetailsAction(project)
             };
         }
     }
