@@ -97,6 +97,8 @@ import org.openide.util.NbBundle;
 final class AdvancedTableViewVisualizer extends JPanel implements
     Visualizer<AdvancedTableViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
+    private static final long MIN_REFRESH_MILLIS = 500;
+
     private TableDataProvider provider;
     private AdvancedTableViewVisualizerConfiguration configuration;
     private final List<DataRow> data = new ArrayList<DataRow>();
@@ -128,7 +130,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         this.provider = provider;
         this.configuration = configuration;
         this.explorerManager = new ExplorerManager();
-        setLoadingContent();
         addComponentListener(this);
         AdvancedTableViewVisualizerConfigurationAccessor accessor = AdvancedTableViewVisualizerConfigurationAccessor.getDefault();
 //        tableView = new TableView();
@@ -397,7 +398,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         if (!isShown || !isShowing()) {
             return 0;
         }
-        asyncFillModel();
+//        asyncFillModel();
         return 0;
     }
 
@@ -411,41 +412,59 @@ final class AdvancedTableViewVisualizer extends JPanel implements
             if (task != null) {
                 task.cancel(true);
             }
+
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    setLoadingContent();
+                }
+            });
+
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
-                    Future<List<DataRow>> queryDataTask = DLightExecutorService.submit(new Callable<List<DataRow>>() {
-
-                        public List<DataRow> call() throws Exception {
-                            return provider.queryData(configuration.getMetadata());
-                        }
-                    }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
-                    try {
-                        final List<DataRow> list = queryDataTask.get();
-                        final boolean isEmptyConent = list == null || list.isEmpty();
-                        UIThread.invoke(new Runnable() {
-
-                            public void run() {
-                                setContent(isEmptyConent);
-                                if (isEmptyConent) {
-                                    return;
-                                }
-
-                                updateList(list);
-                            }
-                        });
-                        return Boolean.valueOf(true);
-                    } catch (ExecutionException ex) {
-                        Thread.currentThread().interrupt();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    return Boolean.valueOf(false);
+                    syncFillModel(true);
+                    return Boolean.FALSE;
                 }
             }, "AdvancedTableViewVisualizer Async data load for " + configuration.getID()); // NOI18N
         }
+    }
 
+    private void syncFillModel(boolean wait) {
+        long startTime = System.currentTimeMillis();
+        Future<List<DataRow>> queryDataTask = DLightExecutorService.submit(new Callable<List<DataRow>>() {
 
+            public List<DataRow> call() throws Exception {
+                return provider.queryData(configuration.getMetadata());
+            }
+        }, "AdvancedTableViewVisualizer Async data from provider  load for " + configuration.getID()); // NOI18N
+        try {
+            final List<DataRow> list = queryDataTask.get();
+
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+
+            if (wait && duration < MIN_REFRESH_MILLIS) {
+                // ensure that request does not finish too fast -- IZ #172160
+                Thread.sleep(MIN_REFRESH_MILLIS - duration);
+            }
+
+            final boolean isEmptyConent = list == null || list.isEmpty();
+            UIThread.invoke(new Runnable() {
+
+                public void run() {
+                    setContent(isEmptyConent);
+                    if (isEmptyConent) {
+                        return;
+                    }
+
+                    updateList(list);
+                }
+            });
+        } catch (ExecutionException ex) {
+            Thread.currentThread().interrupt();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public AdvancedTableViewVisualizerConfiguration getVisualizerConfiguration() {

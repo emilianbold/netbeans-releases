@@ -125,7 +125,18 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         //show dialog here with the configuration
         JButton startB = new JButton(NbBundle.getMessage(THAMainProjectAction.class, "THAMainProjectAction.ConfigureDialog.Start"));//NOI18N
         Object[] options = new Object[]{DialogDescriptor.CANCEL_OPTION, startB};
-        THAConfigurationPanel configurationPanel = new THAConfigurationPanel();
+        NativeProject nativeProject = currentProject.getLookup().lookup(NativeProject.class);
+
+        String statusText = null;
+        if (nativeProject != null){
+            String projectName = nativeProject.getProjectDisplayName();
+
+            if (!THAProjectSupport.getSupportFor(currentProject).activeCompilerIsSunStudio()) {
+                statusText = loc("THA_ReconfigureProjectWithSunStudio", projectName);//NOI18N
+                startB.setEnabled(false);
+            }
+        }
+        THAConfigurationPanel configurationPanel = new THAConfigurationPanel(statusText);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(configurationPanel, 
                 NbBundle.getMessage(THAMainProjectAction.class, "THAMainProjectAction.ConfigureDialog.Title"),//NOI18N
                 true, options, startB, DialogDescriptor.BOTTOM_ALIGN, null, null);

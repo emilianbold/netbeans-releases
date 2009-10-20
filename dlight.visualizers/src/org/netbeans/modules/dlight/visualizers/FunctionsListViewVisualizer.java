@@ -117,6 +117,8 @@ import org.openide.util.NbBundle;
 public class FunctionsListViewVisualizer extends JPanel implements
         Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
+    private static final long MIN_REFRESH_MILLIS = 500;
+
     private Future<Boolean> task;
     private Future<Boolean> detailedTask;
     private final Object queryLock = FunctionsListViewVisualizer.class.getName() + " query lock"; // NOI18N
@@ -156,7 +158,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
         columnsUIMapping = FunctionsListViewVisualizerConfigurationAccessor.getDefault().getColumnsUIMapping(configuration);
         this.dataProvider = dataProvider;
         this.metadata = configuration.getMetadata();
-        setLoadingContent();
         addComponentListener(this);
         String nodeLabel = columnsUIMapping == null ||
                 columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn()) == null ? metadata.getColumnByName(functionDatatableDescription.getNameColumn()).getColumnUName() : columnsUIMapping.getDisplayedName(functionDatatableDescription.getNameColumn());
@@ -324,10 +325,16 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 }
             }
 
+            UIThread.invoke(new Runnable() {
+                public void run() {
+                    setLoadingContent();
+                }
+            });
+
             task = DLightExecutorService.submit(new Callable<Boolean>() {
 
                 public Boolean call() {
-                    syncFillModel();
+                    syncFillModel(true);
                     return Boolean.TRUE;
                 }
             }, "FunctionsListViewVisualizer Async data load for " + // NOI18N
@@ -336,13 +343,26 @@ public class FunctionsListViewVisualizer extends JPanel implements
         }
     }
 
-    private void syncFillModel() {
+    private void syncFillModel(boolean wait) {
+        long startTime = System.currentTimeMillis();
+
         List<FunctionCallWithMetric> callsList =
                 dataProvider.getFunctionsList(metadata, functionDatatableDescription, metrics);
 
         List<FunctionCallWithMetric> detailedCallsList =
                 dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
-        updateList(callsList, detailedCallsList);
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        try {
+            if (wait && duration < MIN_REFRESH_MILLIS) {
+                // ensure that request does not finish too fast -- IZ #172160
+                Thread.sleep(MIN_REFRESH_MILLIS - duration);
+            }
+
+            updateList(callsList, detailedCallsList);
+        } catch (InterruptedException ex) {
+        }
     }
 
     private void asyncNotifyAnnotedSourceProviders(boolean cancelIfNotDone) {
@@ -538,8 +558,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
     }
 
     public int onTimer() {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        syncFillModel();
+//        syncFillModel(false);
         return 0;
     }
 

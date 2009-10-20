@@ -232,7 +232,7 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                     container.addDeclaration(using);
                     currentNamespace.addDeclaration(using);
                     break;
@@ -1522,7 +1522,7 @@ public class AstRenderer {
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {
-                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                 container.addDeclaration(using);
                 currentNamespace.addDeclaration(using);
                 return true;

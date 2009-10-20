@@ -37,15 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.model.services;
+package org.netbeans.modules.dlight.tha;
 
-import java.util.Set;
-import javax.swing.text.StyledDocument;
+import javax.swing.Renderer;
 
 /**
  *
- * @author Egor Ushakov
+ * @author mt154047
  */
-public interface AutosProvider {
-    Set<String> getAutos(final StyledDocument document, int line);
+public interface SlaveRenderer extends Renderer{
+    void expandAll();
 }

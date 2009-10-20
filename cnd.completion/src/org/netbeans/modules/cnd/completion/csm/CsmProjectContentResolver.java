@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -1135,6 +1136,42 @@ public final class CsmProjectContentResolver {
                         if (set != null && set.size() > 0) {
                             set.putAll(res);
                             res = set;
+                        }
+                    }
+                }
+            }
+
+            // inspect usings
+            CsmDeclaration.Kind usingKind[] = {
+                CsmDeclaration.Kind.USING_DECLARATION,
+                };
+            CsmFilter usingFilter = CsmSelect.getFilterBuilder().createKindFilter(usingKind); // NOI18N
+            it = CsmSelect.getClassMembers(csmClass, usingFilter);
+            while (it.hasNext()) {
+                CsmMember member = it.next();
+                if (isKindOf(member.getKind(), usingKind) &&
+                        matchVisibility(member, minVisibility)) {
+                    CsmUsingDeclaration using = (CsmUsingDeclaration) member;
+                    CsmDeclaration decl = using.getReferencedDeclaration();
+                    if (CsmKindUtilities.isClassMember(decl)) {
+                        VisibilityInfo vInfo = getContextVisibility(((CsmMember)decl).getContainingClass(), member, CsmVisibility.PROTECTED, INIT_INHERITANCE_LEVEL);
+                        if (matchVisibility((CsmMember) decl, vInfo.visibility)) {
+                            if (isKindOf(decl.getKind(), kinds)) {
+                                CharSequence memberName = decl.getName();
+                                if ((matchName(memberName, strPrefix, match)) ||
+                                        (memberName.length() == 0 && returnUnnamedMembers)) {
+                                    CharSequence qname;
+                                    if (CsmKindUtilities.isFunction(decl)) {
+                                        qname = ((CsmFunction) decl).getSignature();
+                                    } else {
+                                        qname = decl.getQualifiedName();
+                                    }
+                                    // do not replace inner objects by outer ones
+                                    if (!res.containsKey(qname)) {
+                                        res.put(qname, (CsmMember) decl);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

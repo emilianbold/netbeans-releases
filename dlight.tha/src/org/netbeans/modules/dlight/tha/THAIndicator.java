@@ -39,9 +39,14 @@
 package org.netbeans.modules.dlight.tha;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataUtil;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
@@ -71,6 +76,21 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
         });
         dataracesColumnName = getMetadataColumnName(0);
         deadlocksColumnName = getMetadataColumnName(1);
+        ActionMap aMap = controlPanel.getActionMap();
+        aMap.put("enter", new AbstractAction() {//NOI18N
+
+            public void actionPerformed(ActionEvent e) {
+                //if there is no races
+                if (deadlocks >0){
+                    notifyListeners(DeadlockVisualizerConfiguration.ID);
+                    return;
+                }
+                if (dataraces > 0){
+                    notifyListeners(RacesVisualizerConfiguration.ID);
+                    return;
+                }
+            }
+        });
     }
 
     @Override
@@ -81,6 +101,7 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     @Override
     protected synchronized void tick() {
         UIThread.invoke(new Runnable() {
+
             public void run() {
                 controlPanel.setDataRaces(dataraces);
                 controlPanel.setDeadlocks(deadlocks);
@@ -101,7 +122,7 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
     @Override
     public void suggestRepaint() {
         tick();
-    }    
+    }
 
     @Override
     public void reset() {
@@ -115,7 +136,5 @@ public class THAIndicator extends Indicator<THAIndicatorConfiguration> {
 
     @Override
     public void setIndicatorActionsProviderContext(Lookup context) {
-        
     }
-   
 }
