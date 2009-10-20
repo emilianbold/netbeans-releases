@@ -225,7 +225,10 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 StyleConstants.setForeground(authorStyle, Color.BLUE);
 
                 // revision
-                doc.insertString(doc.getLength(), annotateLine.getRevision() + " - ", normalStyle);
+                doc.insertString(
+                        doc.getLength(),
+                        annotateLine.getRevision() + ":" + annotateLine.getId() + " - ",
+                        normalStyle);
 
                 // author
                 String author = annotateLine.getAuthor();
