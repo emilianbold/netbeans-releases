@@ -63,6 +63,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
@@ -72,7 +73,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- *
+ * Notifies and eventually downloads a missing JIRA plugin from the Update Center
  * @author Tomas Stupka
  */
 public class JiraUpdater implements ActionListener {
@@ -99,18 +100,17 @@ public class JiraUpdater implements ActionListener {
         return false;
     }
 
-    MissingJiraSupportPanel getPanel() {
-        if (panel == null) {
-            panel = new MissingJiraSupportPanel();            
-            panel.downloadButton.addActionListener(this);
-        }
-        return panel;
-    }
-
     public void actionPerformed(ActionEvent e) {
         install();
     }
 
+    /**
+     * Returns a fake {@link BugtrackingConnector} to be shown in the create
+     * repository dialog. The repository controler panel notifies a the missing
+     * JIRA plugin and comes with a button to donload it from the Update Center.
+     *
+     * @return
+     */
     public BugtrackingConnector getConnector() {
         if(connector == null) {
             connector = new JiraProxyConector();
@@ -118,6 +118,9 @@ public class JiraUpdater implements ActionListener {
         return connector;
     }
 
+    /**
+     * Download and install the JIRA plugin from the Update Center
+     */
     public void install() {
         final DownloadPlugin dp = new DownloadPlugin();
         dp.show();
@@ -135,6 +138,35 @@ public class JiraUpdater implements ActionListener {
         });
     }
 
+    public static boolean notifyJiraDownload() {
+        JButton ok = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
+        MissingJiraSupportPanel panel = JiraUpdater.getInstance().getPanel();
+
+        panel.downloadButton.setVisible(false);
+        panel.setMessage(NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA"));         // NOI18N
+
+        final DialogDescriptor dd =
+            new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"),                    // NOI18N
+                true,
+                new Object[] {ok, cancel},
+                ok,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(FakeJiraSupport.class),
+                null);
+        return DialogDisplayer.getDefault().notify(dd) == ok;
+    }
+
+    MissingJiraSupportPanel getPanel() {
+        if (panel == null) {
+            panel = new MissingJiraSupportPanel();
+            panel.downloadButton.addActionListener(this);
+        }
+        return panel;
+    }
+    
     private void install(final UpdateElement updateElement, final boolean done) {
         try {
             InstallCancellable ic = new InstallCancellable();

@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.jira;
+package org.netbeans.modules.bugtracking.kenai;
 
+import org.netbeans.modules.bugtracking.jira.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -60,14 +61,10 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle.ResultType;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Provides {@link QueryHandle}-s, {@link QueryResultHandle}-s and web access for
- * kenai projects with a JIRA issue tracker. To be used when no JIRA plugin is
- * available.
  *
  * @author Tomas Stupka
  */
@@ -75,41 +72,31 @@ public class FakeJiraSupport {
 
     private static final String JIRA_SUBSTRING ="kenai.com/jira/"; // NOI18N
 
-    private final String projectUrl;
-    private final String createIssueUrl;
-    private final String openIssueUrl;
+    private String projectUrl;
+    private String createIssueUrl;
     private static Map<String, FakeJiraSupport> supportedProjects = new HashMap<String, FakeJiraSupport>();
     private static List<QueryHandle> queryHandles;
 
-    private FakeJiraSupport(String projectUrl, String createIssueUrl, String openIssueUrl) {
+    private FakeJiraSupport(String projectUrl, String createIssueUrl) {
         this.projectUrl = projectUrl;
         this.createIssueUrl = createIssueUrl;
-        this.openIssueUrl = openIssueUrl;
     }
 
     public static synchronized FakeJiraSupport get(ProjectHandle handle) {
+        FakeJiraSupport support = supportedProjects.get(handle.getId());
+        if(support != null) {
+            return support;
+        }
         KenaiProject project = KenaiUtil.getKenaiProject(handle);
         if(project == null) {
             return null;
         }
-        return get(project);
-    }
-
-    public static synchronized FakeJiraSupport get(KenaiProject project) {
-        if(project == null) {
-            return null;
-        }
-        FakeJiraSupport support = supportedProjects.get(project.getName());
-        if(support != null) {
-            return support;
-        }
-        
         String url = null;
-        String createIssueUrl = null;
-        String openIssueUrl = null;
+        String issueUrl = null;
         try {
             KenaiFeature[] features = project.getFeatures(KenaiService.Type.ISSUES);
             url = null;
+            issueUrl = null;
             for (KenaiFeature f : features) {
                 if (!KenaiService.Names.JIRA.equals(f.getService())) {
                     return null;
@@ -125,54 +112,29 @@ public class FakeJiraSupport {
         }
         int idx = url.indexOf(JIRA_SUBSTRING);
         if(idx > -1) {
-            String urlBase = url.substring(0, idx + JIRA_SUBSTRING.length());
-            createIssueUrl =
-                    urlBase +
+            issueUrl =
+                    url.substring(0, idx + JIRA_SUBSTRING.length()) +
                     "secure/CreateIssue!default.jspa?pname=" + // NOI18N
                     project.getName();
-            openIssueUrl =
-                    urlBase +
-                    "browse/"; // NOI18N
+
         }
-        support = new FakeJiraSupport(url, createIssueUrl, openIssueUrl);
-        supportedProjects.put(project.getName(), support);
+        support = new FakeJiraSupport(url, issueUrl);
+        supportedProjects.put(handle.getId(), support);
         return support;
     }
 
-    /**
-     * Returns an action listerner for the "Create Issue" node in the Kenai dashboard.
-     * The user is either notified about a missing jira pluging with the option to
-     * download it or the create issue web page is opened in an external browser.
-     *
-     * @return an {@link ActionListener}
-     */
     public ActionListener getCreateIssueListener() {
         return getJiraListener(createIssueUrl);
     }
 
-    /**
-     * Returns an action listerner for the "Find issues" node in the Kenai dashboard.
-     * The user is either notified about a missing jira pluging with the option to
-     * download it or the project web page is opened in an external browser.
-     *
-     * @return an {@link ActionListener}
-     */
     public ActionListener getOpenProjectListener() {
         return getJiraListener(projectUrl);
     }
 
-    /**
-     * Opens the isssues web page in an external browser
-     * @param issueID
-     */
-    public void openIsssueOnWeb(String issueID) {
-        openOnWeb(openIssueUrl + issueID);
+    public static void openIsssueOnWeb() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    /**
-     * Returns a {@link QueryHandle} representing the "All Issues" query
-     * @return
-     */
     public QueryHandle getAllIssuesQuery() {
         List<QueryHandle> queries = getQueries();
         String allIssuesName = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues");   // NOI18N
@@ -184,17 +146,37 @@ public class FakeJiraSupport {
         return null;
     }
 
-    /**
-     * Returns a {@link QueryHandle} for each query from the project this
-     * {@link FakeJiraSupport} was created for
-     * 
-     * @return
-     */
     public List<QueryHandle> getQueries() {
         if(queryHandles == null) {
             queryHandles = createQueryHandles();
         }
         return queryHandles;
+    }
+
+    private List<QueryHandle> createQueryHandles() {
+        List<QueryHandle> l = new ArrayList<QueryHandle>(2);
+        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_MyIssues")));  // NOI18N
+        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues"))); // NOI18N
+        return l;
+    }
+
+    private ActionListener getJiraListener(String urlString) {
+        final URL url;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                    public void run() {
+                        JiraUpdater.notifyJiraDownload();
+                    }
+                });
+            }
+        };
     }
 
     public static class FakeJiraQueryHandle extends QueryHandle implements ActionListener {
@@ -252,44 +234,5 @@ public class FakeJiraSupport {
         public ResultType getResultType() {
             return type;
         }
-    }
-
-    private static void openOnWeb(String urlString) {
-        final URL url;
-        try {
-            url = new URL(urlString);
-        } catch (MalformedURLException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return;
-        }
-        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-        if (displayer != null) {
-            displayer.showURL (url);
-        } else {
-            // XXX nice error message?
-            BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
-        }
-    }
-
-
-    private List<QueryHandle> createQueryHandles() {
-        List<QueryHandle> l = new ArrayList<QueryHandle>(2);
-        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_MyIssues")));  // NOI18N
-        l.add(new FakeJiraQueryHandle(NbBundle.getMessage(QueryAccessorImpl.class, "LBL_AllIssues"))); // NOI18N
-        return l;
-    }
-
-    private ActionListener getJiraListener(final String urlString) {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        if(!JiraUpdater.notifyJiraDownload()) {
-                            FakeJiraSupport.openOnWeb(urlString);
-                        }
-                    }
-                });
-            }
-        };
     }
 }
