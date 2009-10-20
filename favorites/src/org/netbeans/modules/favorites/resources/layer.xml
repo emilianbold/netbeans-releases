@@ -107,6 +107,7 @@ made subject to such option by the copyright holder.
         <file name="Home.shadow">
             <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.FavoritesNode.getHome"/>
             <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem"/>
+            <attr name="position" intvalue="100"/>
         </file>
     </folder>
 
