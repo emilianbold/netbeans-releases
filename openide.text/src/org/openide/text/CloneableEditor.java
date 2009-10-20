@@ -540,8 +540,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                             + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
                             + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                             + " Name:" + CloneableEditor.this.getName()
-                            + " doc:" + doc
-                            + " kit:" + kit);
+                            + " doc:" + d
+                            + " kit:" + k);
                         }
                         wait();
                         if (LOG.isLoggable(Level.FINE)) {
@@ -551,23 +551,23 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                             + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
                             + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                             + " Name:" + CloneableEditor.this.getName()
-                            + " doc:" + doc
-                            + " kit:" + kit);
+                            + " doc:" + d
+                            + " kit:" + k);
                         }
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
             }
-            if (tmp.getDocument() == doc) {
+            if (tmp.getDocument() == d) {
                 return false;
             }
-            tmp.setEditorKit(kit);
+            tmp.setEditorKit(k);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
             // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
             // and reopen #132669
             tmp.setWorking(QuietEditorPane.FIRE);
-            tmp.setDocument(doc);
+            tmp.setDocument(d);
             return true;
         }
         
