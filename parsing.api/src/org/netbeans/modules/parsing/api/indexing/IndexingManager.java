@@ -127,7 +127,7 @@ public final class IndexingManager {
      * @since 1.16
      */
     public void refreshIndex(URL root, Collection<? extends URL> files, boolean fullRescan) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false, fullRescan);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false, fullRescan, true);
     }
 
     /**
@@ -173,7 +173,7 @@ public final class IndexingManager {
             //in between completion-active = true and completion-active = false.
             EventSupport.releaseCompletionCondition();
         }
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan, false);
     }
 
     /**
