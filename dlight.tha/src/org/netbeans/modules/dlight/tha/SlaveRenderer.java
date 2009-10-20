@@ -37,33 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.tha.ui;
+package org.netbeans.modules.dlight.tha;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.windows.TopComponent;
+import javax.swing.Renderer;
 
 /**
  *
  * @author mt154047
  */
-public class THAIndicatorTopComponentActivateAction extends AbstractAction {
-
-     public THAIndicatorTopComponentActivateAction() {
-        super("activateTHAMonitor");//NOI18N
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        //find and open VisualizerDispAction
-        THAIndicatorTopComponentRegsitry registry = THAIndicatorTopComponentRegsitry.getRegistry();
-        if (registry.getOpened() == null || registry.getOpened().size() == 0){
-            return;
-        }
-        TopComponent activatedTopComponent = registry.getActivated();
-        if (activatedTopComponent == null){
-            activatedTopComponent = registry.getOpened().iterator().next();
-        }
-        activatedTopComponent.requestActive();
-    }
-
+public interface SlaveRenderer extends Renderer{
+    void expandAll();
 }

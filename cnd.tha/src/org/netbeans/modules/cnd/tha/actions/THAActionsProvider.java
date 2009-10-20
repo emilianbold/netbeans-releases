@@ -310,7 +310,7 @@ public final class THAActionsProvider {
         suspendDataCollection.setEnabled(thaConfiguration.collectFromBeginning());
         resumeDataCollection.setEnabled(!thaConfiguration.collectFromBeginning());
         stop.setEnabled(true);
-
+        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, RESUME_COMMAND));
     }
 
     private void targetFailed() {
