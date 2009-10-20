@@ -497,7 +497,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 hideBar();
             }
         });
-        JSeparator separator = new JSeparator();
+        JSeparator separator = new JPopupMenu.Separator();
         popupMenu.add(separator);
         popupMenu.add(menu);
 

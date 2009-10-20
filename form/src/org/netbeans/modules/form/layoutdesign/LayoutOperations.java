@@ -969,8 +969,8 @@ class LayoutOperations implements LayoutConstants {
                     if (gap.isEmptySpace()) {
                         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
                             LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, LEADING, false, true, false);
-                            if (neighbor != null && neighbor.isEmptySpace() && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
-                                // preferred gap with preferred gap neighbor - would not work
+                            if (neighbor != null && neighbor.isEmptySpace()) {
+                                // preferred gap with a gap neighbor - would not work
                                 layoutModel.removeInterval(gap);
                                 gap = null;
                             }
@@ -1000,8 +1000,8 @@ class LayoutOperations implements LayoutConstants {
                     if (gap.isEmptySpace()) {
                         if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
                             LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, TRAILING, false, true, false);
-                            if (neighbor != null && neighbor.isEmptySpace() && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
-                                // preferred gap with preferred gap neighbor - would not work
+                            if (neighbor != null && neighbor.isEmptySpace()) {
+                                // preferred gap with a gap neighbor - would not work
                                 layoutModel.removeInterval(gap);
                                 gap = null;
                             }
