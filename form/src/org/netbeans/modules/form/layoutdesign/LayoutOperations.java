@@ -411,7 +411,7 @@ class LayoutOperations implements LayoutConstants {
                             break;
                         }
                     }
-                    if (!compatible) {
+                    if (!compatible && (align == LEADING || align == TRAILING)) {
                         LayoutInterval neighbor = LayoutInterval.getNeighbor(
                                 parent, group.getAlignment()^1, false, true, true);
                         if (neighbor != null && neighbor.isEmptySpace()
