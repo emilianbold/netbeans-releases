@@ -127,11 +127,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     }
                     if (lineAnnotations && !below) {
                         // line annotation (none zero)
-                        fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
+                        fileAnnotationInfo.addLineAnnotationInfo(lineAnnotationInfo);
                     }
                     if (!lineAnnotations) {
                         // block annotation
-                        fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
+                        fileAnnotationInfo.addBlockAnnotationInfo(lineAnnotationInfo);
                     }
                 }
             }
