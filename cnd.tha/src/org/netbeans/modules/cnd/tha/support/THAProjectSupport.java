@@ -152,7 +152,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
         MakeConfiguration mc = mcd.getActiveConfiguration();
         CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
 
-        if (!compilerSet.isSunCompiler()) {
+        if (compilerSet == null || !compilerSet.isSunCompiler()) {
             return false;
         }
 
@@ -400,8 +400,11 @@ public final class THAProjectSupport implements PropertyChangeListener {
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
             MakeConfiguration mc = mcd.getActiveConfiguration();
             CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
-            result = compilerSet.isSunCompiler();
+            if (compilerSet != null) {
+                result = compilerSet.isSunCompiler();
+            }
         } catch (Throwable th) {
+            th.printStackTrace();
         }
         return result;
     }
@@ -446,6 +449,9 @@ public final class THAProjectSupport implements PropertyChangeListener {
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         MakeConfiguration mc = mcd.getActiveConfiguration();
         CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return null;
+        }
         Tool ccTool = compilerSet.getTool(Tool.CCCompiler);
         String ccPath = ccTool.getPath();
         String sunstudioBinDir = ccPath.substring(0, ccPath.length() - ccTool.getName().length());

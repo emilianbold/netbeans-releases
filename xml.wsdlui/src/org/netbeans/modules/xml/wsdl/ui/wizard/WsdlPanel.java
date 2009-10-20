@@ -54,7 +54,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-import java.io.StringWriter;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -64,7 +63,6 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
-import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
@@ -272,7 +270,14 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         try {
             //LocalizedTemplateGroup ltg = (LocalizedTemplateGroup) templateWizard.getProperty(WSDLWizardConstants.BINDING_TYPE);
             LocalizedTemplate lt  = (LocalizedTemplate) templateWizard.getProperty(WSDLWizardConstants.BINDING_SUBTYPE);
-            
+
+            // fix for issue #160855 - NPE at org.netbeans.modules.xml.xdm.XDMModel.flushDocument
+            Object isNewTmpFileRequest  = wiz.getProperty(
+                WSDLWizardConstants.CREATE_NEW_TEMP_WSDLFILE);
+            if ((isNewTmpFileRequest instanceof Boolean) && ((Boolean) isNewTmpFileRequest)) {
+                tempWSDLFile = null;
+            }
+
             if (tempWSDLFile != null && gui != null) {
                 LocalizedTemplate userSelectedBindingSubType = gui.getBindingSubType();
                 if (lt != null) {
@@ -338,6 +343,10 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                 tempWSDLFile.deleteOnExit();
                 templateWizard.putProperty(
                         WSDLWizardConstants.TEMP_WSDLFILE, tempWSDLFile);
+
+                // fix for issue #160855 - NPE at org.netbeans.modules.xml.xdm.XDMModel.flushDocument
+                wiz.putProperty(WSDLWizardConstants.CREATE_NEW_TEMP_WSDLFILE, null);
+
                 mTempWSDLModel = prepareModelFromFile(tempWSDLFile, definitionName);
                 wiz.putProperty(
                         WSDLWizardConstants.TEMP_WSDLMODEL, mTempWSDLModel);

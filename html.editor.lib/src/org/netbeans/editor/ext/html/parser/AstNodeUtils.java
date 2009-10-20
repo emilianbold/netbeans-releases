@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import org.netbeans.editor.ext.html.dtd.DTD;
 
@@ -186,12 +187,15 @@ public class AstNodeUtils {
         return node;
     }
 
+    public static AstNode query(AstNode base, String path) {
+        return query(base, path, false);
+    }
     /** find an AstNode according to the path
      * example of path: html/body/table|2/tr -- find a second table tag in body tag
      *
      * note: queries OPEN TAGS ONLY!
      */
-    public static AstNode query(AstNode base, String path) {
+    public static AstNode query(AstNode base, String path, boolean caseInsensitive) {
         StringTokenizer st = new StringTokenizer(path, "/");
         AstNode found = base;
         while (st.hasMoreTokens()) {
@@ -199,13 +203,17 @@ public class AstNodeUtils {
             int indexDelim = token.indexOf('|');
 
             String nodeName = indexDelim >= 0 ? token.substring(0, indexDelim) : token;
+            if(caseInsensitive) {
+                nodeName = nodeName.toLowerCase(Locale.ENGLISH);
+            }
             String sindex = indexDelim >= 0 ? token.substring(indexDelim + 1, token.length()) : "0";
             int index = Integer.parseInt(sindex);
 
             int count = 0;
             AstNode foundLocal = null;
             for (AstNode child : found.children()) {
-                if (child.type() == AstNode.NodeType.OPEN_TAG && child.name().equals(nodeName) && count++ == index) {
+                String childName = child.name();
+                if (child.type() == AstNode.NodeType.OPEN_TAG && (caseInsensitive ? childName = childName.toLowerCase(Locale.ENGLISH) : childName).equals(nodeName) && count++ == index) {
                     foundLocal = child;
                     break;
                 }

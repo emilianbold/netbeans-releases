@@ -55,11 +55,11 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -127,7 +127,7 @@ public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
                     
                     bootClassPath = ClassPathSupport.createClassPath((URL[])urls.toArray(new URL[0]));
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
             

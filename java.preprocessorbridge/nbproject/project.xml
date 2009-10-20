@@ -24,7 +24,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.ptc.rbinfohandler</friend>
+                <friend>org.netbeans.modules.debugger.jpda.projects</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
+                <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.javafx.source</friend>
@@ -32,7 +34,6 @@
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.editor</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-                <friend>org.netbeans.modules.debugger.jpda.projects</friend>
                 <package>org.netbeans.modules.java.preprocessorbridge.api</package>
                 <package>org.netbeans.modules.java.preprocessorbridge.spi</package>
             </friend-packages>

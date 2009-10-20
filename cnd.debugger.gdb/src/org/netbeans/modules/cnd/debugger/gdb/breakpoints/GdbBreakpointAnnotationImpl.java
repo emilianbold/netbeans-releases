@@ -37,16 +37,49 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.spi;
+package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.util.List;
-import javax.swing.Action;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.BreakpointAnnotationProvider;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.SessionBreakpointAnnotationProvider;
+import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbBreakpointsNodeModelFilter;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author thp
+ * @author Egor Ushakov
  */
-public interface IndicatorActionsProvider {
-    List<Action> getIndicatorActions(Lookup context);
+public class GdbBreakpointAnnotationImpl implements SessionBreakpointAnnotationProvider {
+    public int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo) {
+        BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
+        if (bptImpl instanceof FunctionBreakpointImpl) {
+            if (fo.getPath().equals(bptImpl.getFullname())) {
+                int line = bptImpl.getLine();
+                if (line >= 0) {
+                    return new int[] {line};
+                }
+            }
+        } else if (bptImpl instanceof AddressBreakpointImpl) {
+            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
+            if (disProvider != null) {
+                int res = disProvider.getAddressLine(bptImpl.getAddress());
+                if (res >= 0) {
+                    return new int[] {res};
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getAnnotationType(CndBreakpoint b) {
+        String orig = BreakpointAnnotationProvider.getAnnotationType(b);
+        BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
+        if (bptImpl == null && b.isEnabled()) {
+            return orig + GdbBreakpointsNodeModelFilter.BROKEN_POSTFIX;
+        }
+        return orig;
+    }
 }

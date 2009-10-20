@@ -537,7 +537,8 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                 }
                 Column threadsCol = new Column("threads", Integer.class); // NOI18N
                 Object threadsObj = dataRow.getData(threadsCol.getColumnName());
-                if (threadsObj != null) {
+                Object usrTimeObj = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+                if (threadsObj != null && usrTimeObj != null) {
                     if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj)) && isHighLoaded(dataRow)) {
                         interval++;
                         if (interval > INTERVAL_BOUND) {

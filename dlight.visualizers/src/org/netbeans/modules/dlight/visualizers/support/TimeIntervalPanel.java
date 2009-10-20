@@ -84,8 +84,8 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
 
         if (this.manager != null) {
             this.manager.addDataFilterListener(this);
-            update(manager.getDataFilter(TimeIntervalDataFilter.class));
         }
+        update(manager == null? null : manager.getDataFilter(TimeIntervalDataFilter.class));
     }
 
     /** This method is called from within the constructor to
@@ -168,15 +168,9 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     }
 
     private final void update(Collection<TimeIntervalDataFilter> filters) {
-        if (filters == null || filters.isEmpty()) {
-            return;
-        }
         TimeIntervalDataFilter filter = null;
-        for (DataFilter f : filters) {
-            if (f instanceof TimeIntervalDataFilter) {
-                filter = (TimeIntervalDataFilter) f;
-                break;
-            }
+        if (filters != null && !filters.isEmpty()) {
+            filter = filters.iterator().next();
         }
         synchronized (uiLock) {
             startTimeSpinner.removeChangeListener(startTimeChangeListener);

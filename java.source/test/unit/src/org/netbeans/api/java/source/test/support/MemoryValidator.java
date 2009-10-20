@@ -56,7 +56,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -132,7 +131,6 @@ public class MemoryValidator extends NbTestCase {
                 } catch (Throwable t) {
                     if (log.isLoggable(Level.SEVERE))
                         log.log(Level.SEVERE, t.getMessage(), t);
-//                    ErrorManager.getDefault().notify(t);
                 }
                 
                 if (allFileObjects != null) {

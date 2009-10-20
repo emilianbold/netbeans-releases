@@ -37,14 +37,25 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common.breakpoints;
-
-import org.openide.filesystems.FileObject;
+package org.netbeans.api.java.classpath;
 
 /**
- *
- * @author Egor Ushakov
+ * Java related classpath constants.
+ * 
+ * @author Jan Lahoda
+ * @since 1.22
  */
-public interface BreakpointAnnotationLinesProvider {
-    int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo);
+public class JavaClassPathConstants {
+
+    /**
+     * ClassPath for annotation processors. If undefined, {@link ClassPath#COMPILE}
+     * should be used.
+     * <p class="nonnormative">
+     * It corresponds to the <code>-processorpath</code> option of <code>javac</code>.
+     * </p>
+     *
+     * @since 1.22
+     */
+    public static final String PROCESSOR_PATH = "classpath/processor";
+    
 }

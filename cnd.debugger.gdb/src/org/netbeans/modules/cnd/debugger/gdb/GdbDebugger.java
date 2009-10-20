@@ -559,6 +559,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 ver = 6.7;
             } else if (msg.contains("6.8")) { // NOI18N
                 ver = 6.8;
+            } else if (msg.contains("7.0")) { // NOI18N
+                ver = 7.0;
             } else {
                 log.warning("GdbDebugger: Failed to guess version string");
             }
@@ -1463,16 +1465,19 @@ public class GdbDebugger implements PropertyChangeListener {
                 String[] args = killcmd.subList(1, killcmd.size()).toArray(new String[killcmd.size()-1]);
                 NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
                 npb.setExecutable(killcmd.get(0)).setArguments(args);
+
+                // see IZ 160749 - skip sigcont and sigint
+                // IZ 172855 - skipSignal need to be set before signal sending
+                if (signal == Signal.INT) {
+                    skipSignal = true;
+                }
                 
                 try {
                     npb.call();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                // see IZ 160749 - skip sigcont and sigint
-                if (signal == Signal.INT) {
-                    skipSignal = true;
-                }
+                
                 gdb.getLogger().logMessage("External Command: " + killcmd.toString()); // NOI18N
             }
         }
@@ -1803,6 +1808,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 return;
             } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
                 // see IZ 172855 (On windows we need to skip SIGTRAP)
+                skipSignal = false;
                 gdb.stack_list_frames();
                 setStopped();
                 return;
@@ -2530,6 +2536,18 @@ public class GdbDebugger implements PropertyChangeListener {
 
     public Map<Integer, BreakpointImpl<?>> getBreakpointList() {
         return breakpointList;
+    }
+
+    public static BreakpointImpl<?> getBreakpointImpl(Breakpoint b) {
+        GdbDebugger debugger = getGdbDebugger();
+        if (debugger != null) {
+            for (BreakpointImpl<?> bptImpl : debugger.breakpointList.values()) {
+                if (bptImpl.getBreakpoint() == b) {
+                    return bptImpl;
+                }
+            }
+        }
+        return null;
     }
 
     private BreakpointImpl<?> findBreakpoint(String id) {

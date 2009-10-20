@@ -60,7 +60,9 @@ public abstract class IndexSearchThread implements Runnable  {
     // documentation index file (or foldee for splitted index)
     protected FileObject            indexRoot;
     private   DocIndexItemConsumer  ddiConsumer;
-    RequestProcessor.Task           rpTask = null;
+    private final RequestProcessor.Task rpTask;
+    private boolean isFinished = false;
+
     protected boolean caseSensitive;
     
     protected String lastField="";     //NOI18N
@@ -77,6 +79,7 @@ public abstract class IndexSearchThread implements Runnable  {
         this.ddiConsumer = ddiConsumer;
         this.indexRoot = fo;
         this.caseSensitive = caseSensitive;
+        this.rpTask = RequestProcessor.getDefault().create(this);
         
         //this.toFind = toFind;
         //rpTask = RequestProcessor.createRequest( this );
@@ -189,7 +192,8 @@ public abstract class IndexSearchThread implements Runnable  {
     }
 
     public void go() {
-        rpTask = RequestProcessor.getDefault().post( this, 0, Thread.NORM_PRIORITY );
+        rpTask.schedule(0);
+        rpTask.waitFinished();
     }
 
     public void finish() {
@@ -199,7 +203,10 @@ public abstract class IndexSearchThread implements Runnable  {
     }
 
     public void taskFinished() {
-        ddiConsumer.indexSearchThreadFinished( this );
+        if (!isFinished) {
+            isFinished = true;
+            ddiConsumer.indexSearchThreadFinished( this );
+        }
     }
 
     /** Class for callback. Used to feed some container with found

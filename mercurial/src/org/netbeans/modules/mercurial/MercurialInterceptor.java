@@ -75,6 +75,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
+    private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
 
     public MercurialInterceptor() {
@@ -157,7 +158,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 }
             };
 
-            Mercurial.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+            parallelRP.post(outOfAwt).waitFinished();
             if (innerT[0] != null) {
                 if (innerT[0] instanceof IOException) {
                     throw (IOException) innerT[0];
@@ -250,7 +251,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     }
                 };
 
-                Mercurial.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+                parallelRP.post(outOfAwt).waitFinished();
                 if (innerT[0] != null) {
                     Mercurial.LOG.log(Level.FINE, "beforeCreate(): File: {0} {1}", new Object[] {file.getAbsolutePath(), innerT[0].toString()}); // NOI18N
                 }

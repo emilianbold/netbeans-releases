@@ -217,6 +217,14 @@ public final class JavaRunner {
      */
     public static final String PROP_APPLICATION_ARGS = "application.args";
 
+    /**
+     * Runtime file encoding passed to the jvm (-Dfile.encoding).
+     * If not given the {@link org.netbeans.api.queries.FileEncodingQuery} is used
+     * to obtain the encoding.
+     * @since 1.28
+     */
+    public static final String PROP_RUNTIME_ENCODING = "runtime.encoding";  //NOI18N
+
     private static final Logger LOG = Logger.getLogger(JavaRunner.class.getName());
 
     /**

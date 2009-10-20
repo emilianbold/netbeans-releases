@@ -37,44 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
+package org.netbeans.modules.versioning.indexingbridge;
 
-import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.BreakpointAnnotationLinesProvider;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.openide.filesystems.FileObject;
+import java.io.File;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.versioning.util.IndexingBridge.IndexingBridgeProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov
+ * @author vita
  */
-public class GdbBreakpointAnnotationLinesImpl implements BreakpointAnnotationLinesProvider {
-    public int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo) {
-        final GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
-        for (BreakpointImpl<?> breakpointImpl : gdbDebugger.getBreakpointList().values()) {
-            if (breakpointImpl.getBreakpoint() == b) {
-                return getBreakpointImplAnnotationLines(breakpointImpl, fo);
+@ServiceProvider(service=IndexingBridgeProvider.class)
+public final class Bridge implements IndexingBridgeProvider {
+
+    public <T> T runWithoutIndexing(final Callable<T> operation, final File... files) throws Exception {
+        return IndexingManager.getDefault().runProtected(new Callable<T>() {
+            public T call() throws Exception {
+                // Schedule the refresh task, which will then absorb all other tasks generated
+                // by filesystem events caused by the operation
+                IndexingManager.getDefault().refreshAllIndices(false, false, files);
+                return operation.call();
             }
-        }
-        return null;
+        });
     }
 
-    private int[] getBreakpointImplAnnotationLines(BreakpointImpl<?> bptImpl, FileObject fo) {
-        if (bptImpl instanceof FunctionBreakpointImpl) {
-            if (fo.getPath().equals(bptImpl.getFullname())) {
-                return new int[] {bptImpl.getLine()};
-            }
-        } else if (bptImpl instanceof AddressBreakpointImpl) {
-            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-            if (disProvider != null) {
-                int res = disProvider.getAddressLine(bptImpl.getAddress());
-                if (res >= 0) {
-                    return new int[] {res};
-                }
-            }
-        }
-        return null;
+    public boolean isIndexingInProgress() {
+        return IndexingManager.getDefault().isIndexing();
     }
 }

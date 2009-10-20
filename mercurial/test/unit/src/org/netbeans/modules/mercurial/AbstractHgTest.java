@@ -60,6 +60,8 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class AbstractHgTest extends NbTestCase {
 
+    protected static final OutputLogger NULL_LOGGER = OutputLogger.getLogger(null);
+
     public FileStatusCache getCache() {
         return cache;
     }
