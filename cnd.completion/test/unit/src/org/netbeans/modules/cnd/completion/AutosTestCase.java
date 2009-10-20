@@ -44,9 +44,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.swing.text.StyledDocument;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.completion.debugger.CsmAutosProviderImpl;
@@ -108,7 +110,11 @@ public class AutosTestCase extends ProjectBasedTestCase {
 
         Set<String> res = new CsmAutosProviderImpl().getAutos(doc, offset);
 
-        for (String val : res) {
+        // sort results
+        List<String> resList = new ArrayList<String>(res);
+        Collections.sort(resList);
+
+        for (String val : resList) {
             streamOut.println(val);
         }
         streamOut.close();

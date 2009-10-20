@@ -106,7 +106,13 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
 
     private boolean ensureConnected() {
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
+        if (mcd == null) {
+            return false;
+        }
         MakeConfiguration mc = mcd.getActiveConfiguration();
+        if (mc == null) {
+            return false;
+        }
         ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
         // ensure that connection is established and ServerRecord exists for the
         // development host....
@@ -172,16 +178,6 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     }
 
     private boolean isEnabledFor() {
-        if (currentProject == null) {
-            return false;
-        }
-        NativeProject nativeProject = currentProject.getLookup().lookup(NativeProject.class);
-
-        if (nativeProject == null) {
-            return false;
-        }
-        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(currentProject);
-        MakeConfiguration mc = mcd.getActiveConfiguration();
         return THAProjectSupport.isSupported(currentProject);
     }
 
@@ -193,10 +189,12 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
                 if (mcd != null){
                     MakeConfiguration mc = mcd.getActiveConfiguration();
-                    mc.removePropertyChangeListener(THAMainProjectAction.this);
-                    Configurations c = mcd.getConfs();
-                    if (c != null){
-                        c.removePropertyChangeListener(THAMainProjectAction.this);
+                    if (mc == null) {
+                        mc.removePropertyChangeListener(THAMainProjectAction.this);
+                        Configurations c = mcd.getConfs();
+                        if (c != null){
+                            c.removePropertyChangeListener(THAMainProjectAction.this);
+                        }
                     }
                 }
             }
@@ -212,9 +210,11 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
                 if (mcd != null){
                     MakeConfiguration mc = mcd.getActiveConfiguration();
-                    mc.addPropertyChangeListener(THAMainProjectAction.this);
-                    Configurations c = mcd.getConfs();
-                    c.addPropertyChangeListener(THAMainProjectAction.this);
+                    if (mc == null) {
+                        mc.addPropertyChangeListener(THAMainProjectAction.this);
+                        Configurations c = mcd.getConfs();
+                        c.addPropertyChangeListener(THAMainProjectAction.this);
+                    }
                 }
 
             } else {
