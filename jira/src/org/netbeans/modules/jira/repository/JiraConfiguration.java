@@ -109,7 +109,7 @@ public class JiraConfiguration extends JiraClientCache {
             clearCached();
             refreshData();
             putToCache();
-            hackJiraCache();
+            hackJiraCache(); 
         }
     }
 
@@ -124,13 +124,9 @@ public class JiraConfiguration extends JiraClientCache {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
 
-        data.projects = client.getProjects(nullProgressMonitor);
         data.projectsById = new HashMap<String, Project>(data.projects.length);
         data.projectsByKey = new HashMap<String, Project>(data.projects.length);
-        for (Project project : data.projects) {
-            data.projectsById.put(project.getId(), project);
-            data.projectsByKey.put(project.getKey(), project);
-        }
+        loadProjectsIntern();
         data.priorities = client.getPriorities(nullProgressMonitor);
         data.prioritiesById = new HashMap<String, Priority>(data.priorities.length);
         for (Priority priority : data.priorities) {
@@ -162,6 +158,15 @@ public class JiraConfiguration extends JiraClientCache {
         // XXX issue types by project
 
         putToCache();
+    }
+
+    private void loadProjectsIntern() throws JiraException {
+        loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
+        data.projects = client.getProjects(new NullProgressMonitor());
+        for (Project project : data.projects) {
+            data.projectsById.put(project.getId(), project);
+            data.projectsByKey.put(project.getKey(), project);
+        }
     }
 
     private void putToCache () {
@@ -431,8 +436,7 @@ public class JiraConfiguration extends JiraClientCache {
         JiraCommand cmd = new JiraCommand() {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                loadedProjects.clear(); // XXX what about KenaiConfiguration.projects?
-                data.projects = client.getProjects(new NullProgressMonitor());
+                loadProjectsIntern();
             }
         };
         repository.getExecutor().execute(cmd);
