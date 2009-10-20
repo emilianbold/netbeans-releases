@@ -114,7 +114,6 @@ import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
-import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
@@ -172,8 +171,6 @@ public class JavacParser extends Parser {
     
     //Listener support
     private final ChangeSupport listeners = new ChangeSupport(this);
-    //May be the parser canceled inside javac?
-    private final AtomicBoolean mayCancel = new AtomicBoolean();
     //Cancelling of parser & index
     private final AtomicBoolean canceled = new AtomicBoolean();
     //When true the parser is a private copy not used by the parsing API, see JavaSourceAccessor.createCompilationController
@@ -410,13 +407,18 @@ public class JavacParser extends Parser {
                 LOGGER.warning("ParserResultTask: " + task + " doesn't provide phase, assuming RESOLVED");                   //NOI18N
             }
             Phase reachedPhase;
-            try {
-                mayCancel.set(true);
+            final DefaultCancelService cancelService = DefaultCancelService.instance(ciImpl.getJavacTask().getContext());
+            if (cancelService != null) {
+                cancelService.mayCancel.set(true);
+            }
+            try {                
                 reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
             } finally {
-                mayCancel.set(false);
+                if (cancelService != null) {
+                    cancelService.mayCancel.set(false);
+                }
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
@@ -645,11 +647,7 @@ public class JavacParser extends Parser {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new CancelService() {
-            public @Override boolean isCanceled() {
-                return parser.mayCancel.get() && parser.canceled.get();
-            }
-        });
+        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new DefaultCancelService(parser));
         Context context = javacTask.getContext();
         JavacFlowListener.preRegister(context);
         TreeLoader.preRegister(context, cpInfo);
@@ -709,7 +707,7 @@ public class JavacParser extends Parser {
                 context.put(ClassNamesForFileOraculum.class, cnih);
             }
             if (cancelService != null) {
-                CancelServiceRegistrator.preRegister(context, cancelService);
+                DefaultCancelService.preRegister(context, cancelService);
             }
             return task;
         } finally {
@@ -972,15 +970,29 @@ public class JavacParser extends Parser {
     
     //Helper classes
             
-    private static class CancelServiceRegistrator extends CancelService {
+    private static class DefaultCancelService extends CancelService {
+
+        //May be the parser canceled inside javac?
+        final AtomicBoolean mayCancel = new AtomicBoolean();        
+        private final JavacParser parser;
+
+        private DefaultCancelService(final JavacParser parser) {
+            this.parser = parser;
+        }
 
         public static void preRegister(Context context, CancelService cancelServiceToRegister) {
             context.put(cancelServiceKey, cancelServiceToRegister);
         }
 
+        public static DefaultCancelService instance(final Context ctx) {
+            assert ctx != null;
+            final CancelService cancelService = CancelService.instance(ctx);
+            return (cancelService instanceof DefaultCancelService) ? (DefaultCancelService) cancelService : null;
+        }
+
         @Override
         public boolean isCanceled() {
-            throw new UnsupportedOperationException("Never use CancelServiceRegistrator as a CancelService");
+            return mayCancel.get() && parser.canceled.get();
         }
     }
 
