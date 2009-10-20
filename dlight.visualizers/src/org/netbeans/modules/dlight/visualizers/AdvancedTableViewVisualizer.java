@@ -58,7 +58,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -101,7 +100,6 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private TableDataProvider provider;
     private AdvancedTableViewVisualizerConfiguration configuration;
     private final List<DataRow> data = new ArrayList<DataRow>();
-    private JToolBar buttonsToolbar;
     private JButton refresh;
 //    private AbstractTableModel tableModel;
 //    private JTable table;
@@ -125,6 +123,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
 
     AdvancedTableViewVisualizer(TableDataProvider provider, final AdvancedTableViewVisualizerConfiguration configuration) {
+        super(new BorderLayout());
         // timerHandler = new OnTimerRefreshVisualizerHandler(this, 1, TimeUnit.SECONDS);
         this.provider = provider;
         this.configuration = configuration;
@@ -300,10 +299,9 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private void setEmptyContent() {
         isEmptyContent = true;
         this.removeAll();
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration)); // NOI18N
-        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-        this.add(label);
+        JLabel label = new JLabel(timerHandler != null && timerHandler.isSessionAnalyzed() ? AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyAnalyzeMessage(configuration) : AdvancedTableViewVisualizerConfigurationAccessor.getDefault().getEmptyRunningMessage(configuration), JLabel.CENTER);
+        add(label, BorderLayout.CENTER);
+        add(createToolbar(), BorderLayout.WEST);
         repaint();
         revalidate();
     }
@@ -311,10 +309,8 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     private void setLoadingContent() {
         isEmptyContent = false;
         this.removeAll();
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        JLabel label = new JLabel(NbBundle.getMessage(AdvancedTableViewVisualizer.class, "Loading")); // NOI18N
-        label.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-        this.add(label);
+        JLabel label = new JLabel(getMessage("Loading"), JLabel.CENTER); // NOI18N
+        add(label, BorderLayout.CENTER);
         repaint();
         revalidate();
     }
@@ -342,35 +338,10 @@ final class AdvancedTableViewVisualizer extends JPanel implements
     }
 
     private void setNonEmptyContent() {
-isEmptyContent = false;
+        isEmptyContent = false;
         this.removeAll();
-        this.setLayout(new BorderLayout());
-        buttonsToolbar = new JToolBar();
-        if (isMacLaf) {
-            buttonsToolbar.setBackground(macBackground);
-        }
-        refresh = new JButton();
 
-        buttonsToolbar.setFloatable(false);
-        buttonsToolbar.setOrientation(1);
-        buttonsToolbar.setRollover(true);
-
-        // Refresh button...
-        refresh.setIcon(ImageLoader.loadIcon("refresh.png")); // NOI18N
-        refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        refresh.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                asyncFillModel();
-            }
-        });
-
-        buttonsToolbar.add(refresh);
-
-
-
-        add(buttonsToolbar, BorderLayout.LINE_START);
+        add(createToolbar(), BorderLayout.WEST);
 //        JComponent treeTableView =
 //            Models.createView(compoundModel);
 //        add(treeTableView, BorderLayout.CENTER);
@@ -389,6 +360,33 @@ isEmptyContent = false;
 //        setFocusTraversalPolicy(newPolicy);
         refresh.requestFocus();        
 
+    }
+
+    private JToolBar createToolbar() {
+        JToolBar buttonsToolbar = new JToolBar();
+        if (isMacLaf) {
+            buttonsToolbar.setBackground(macBackground);
+        }
+        buttonsToolbar.setFloatable(false);
+        buttonsToolbar.setOrientation(1);
+        buttonsToolbar.setRollover(true);
+
+        // Refresh button...
+        refresh = new JButton();
+        refresh.setIcon(ImageLoader.loadIcon("refresh.png")); // NOI18N
+        refresh.setToolTipText(getMessage("Refresh.Tooltip")); // NOI18N
+        refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        refresh.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asyncFillModel();
+            }
+        });
+
+        buttonsToolbar.add(refresh);
+
+        return buttonsToolbar;
     }
 
     public VisualizerContainer getDefaultContainer() {
@@ -595,4 +593,7 @@ isEmptyContent = false;
         }
     }
 
+    private static String getMessage(String key) {
+        return NbBundle.getMessage(AdvancedTableViewVisualizer.class, key);
+    }
 }
