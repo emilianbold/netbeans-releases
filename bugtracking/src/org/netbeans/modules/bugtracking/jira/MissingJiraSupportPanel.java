@@ -55,27 +55,19 @@ import org.jdesktop.layout.GroupLayout.SequentialGroup;
 public class MissingJiraSupportPanel extends javax.swing.JPanel{
 
     final javax.swing.JButton downloadButton = new javax.swing.JButton();
-    final javax.swing.JCheckBox forceGlobalCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel1;
     
     /** Creates new form MissingClientPanel */
-    public MissingJiraSupportPanel(boolean containerGaps) {
-        initComponents(containerGaps);
+    public MissingJiraSupportPanel(boolean containerGaps, String msg) {
+        initComponents(containerGaps, msg);
     }
 
-    void setMessage(String msg) {
-        jLabel1.setText(msg);
-        forceGlobalCheckBox.setVisible(false);
-    }
-
-    private void initComponents(boolean containerGaps) {
+    private void initComponents(boolean containerGaps, String msg) {
 
         jLabel1 = new javax.swing.JLabel();
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.jLabel1.text")); // NOI18N
+        jLabel1.setText(msg);
 
         org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(forceGlobalCheckBox, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.forceGlobalCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -83,8 +75,7 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel{
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(createSequentialGroup(layout, containerGaps)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(forceGlobalCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 142, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(downloadButton))
         );
@@ -94,9 +85,8 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel{
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(forceGlobalCheckBox)
                     .add(downloadButton))
-                .addContainerGap(30, Short.MAX_VALUE)
+                .addContainerGap(60, Short.MAX_VALUE)
                     )
         );
     }

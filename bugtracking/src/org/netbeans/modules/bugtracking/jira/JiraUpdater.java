@@ -78,14 +78,16 @@ import org.openide.util.RequestProcessor;
  */
 public class JiraUpdater implements ActionListener {
 
-    private static JiraUpdater instance = new JiraUpdater();
+    private static JiraUpdater instance;
     private JiraProxyConector connector;
-    private MissingJiraSupportPanel panel;
 
     private JiraUpdater() {
     }
 
-    public static JiraUpdater getInstance() {
+    public synchronized static JiraUpdater getInstance() {
+        if(instance == null) {
+            instance = new JiraUpdater();
+        }
         return instance;
     }
 
@@ -141,10 +143,7 @@ public class JiraUpdater implements ActionListener {
     public static boolean notifyJiraDownload() {
         JButton ok = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
         JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
-        MissingJiraSupportPanel panel = JiraUpdater.getInstance().createPanel(true);
-
-        panel.downloadButton.setVisible(false);
-        panel.setMessage(NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA"));         // NOI18N
+        MissingJiraSupportPanel panel = JiraUpdater.getInstance().createPanel(true, false, NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA")); // NOI18N
 
         final DialogDescriptor dd =
             new DialogDescriptor(
@@ -159,9 +158,10 @@ public class JiraUpdater implements ActionListener {
         return DialogDisplayer.getDefault().notify(dd) == ok;
     }
 
-    MissingJiraSupportPanel createPanel(boolean containerGaps) {
-        MissingJiraSupportPanel panel = new MissingJiraSupportPanel(containerGaps);
+    private MissingJiraSupportPanel createPanel(boolean containerGaps, boolean downloadButtonVisible, String msg) {
+        MissingJiraSupportPanel panel = new MissingJiraSupportPanel(containerGaps, msg);
         panel.downloadButton.addActionListener(this);
+        panel.downloadButton.setVisible(downloadButtonVisible);
         return panel;
     }
     
@@ -196,7 +196,7 @@ public class JiraUpdater implements ActionListener {
                         NbBundle.getMessage(
                         MissingJiraSupportPanel.class, "LBL_Downloading", updateElement.getDisplayName()),
                         ic),
-                    panel.forceGlobalCheckBox.isSelected());
+                    false);
             if(ic.cancelled) {
                 return;
             }
@@ -343,9 +343,7 @@ public class JiraUpdater implements ActionListener {
     private class JiraProxyController extends BugtrackingController {
         @Override
         public JComponent getComponent() {
-            panel = createPanel(false);
-            panel.setMessage(NbBundle.getMessage(FakeJiraSupport.class, "MSG_NOT_YET_INSTALLED")); // NOI18N
-            panel.downloadButton.setVisible(true);
+            MissingJiraSupportPanel panel = createPanel(false, true, NbBundle.getMessage(FakeJiraSupport.class, "MSG_NOT_YET_INSTALLED")); // NOI18N
             return panel;
         }
         @Override
