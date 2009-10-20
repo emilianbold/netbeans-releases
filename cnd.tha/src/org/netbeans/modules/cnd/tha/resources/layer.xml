@@ -57,4 +57,9 @@
         </folder>
     </folder>
 
+  <folder name="Shortcuts">
+        <file name="A-S-S.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-tha-ui-THAIndicatorTopComponentActivateAction.instance"/>
+        </file>
+    </folder>
 </filesystem>

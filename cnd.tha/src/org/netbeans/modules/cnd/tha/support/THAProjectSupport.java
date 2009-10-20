@@ -427,7 +427,7 @@ public final class THAProjectSupport implements PropertyChangeListener {
         return NbBundle.getMessage(THAProjectSupport.class, key, params);
     }
 
-    private boolean activeCompilerIsSunStudio() {
+    public boolean activeCompilerIsSunStudio() {
         boolean result = false;
         try {
             MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
