@@ -43,7 +43,7 @@
  * Created on Jul 9, 2008, 4:55:42 PM
  */
 
-package org.netbeans.modules.bugtracking.kenai;
+package org.netbeans.modules.bugtracking.jira;
 
 /**
  *
@@ -54,6 +54,11 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel{
     /** Creates new form MissingClientPanel */
     public MissingJiraSupportPanel() {
         initComponents();
+    }
+
+    void setMessage(String msg) {
+        jLabel1.setText(msg);
+        forceGlobalCheckBox.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -69,26 +74,50 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel{
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.jLabel1.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
+        downloadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(forceGlobalCheckBox, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.forceGlobalCheckBox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(forceGlobalCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 142, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(downloadButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(forceGlobalCheckBox)
+                    .add(downloadButton))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
+        
+    }//GEN-LAST:event_downloadButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton downloadButton = new javax.swing.JButton();
+    final javax.swing.JCheckBox forceGlobalCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
+
+    
 }
