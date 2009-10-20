@@ -50,7 +50,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
