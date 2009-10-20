@@ -1542,6 +1542,9 @@ public class AstUtilities {
         if (node instanceof StrNode) {
             return ((StrNode) node).getValue();
         }
+        if (node instanceof INameNode) {
+            return getName(node);
+        }
         assert false : "Invalid param " + node;
         return "";
     }
