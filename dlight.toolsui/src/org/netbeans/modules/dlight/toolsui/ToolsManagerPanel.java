@@ -275,9 +275,11 @@ public class ToolsManagerPanel extends PanelWithApply {
         toolsList.setViewportView(jList1);
 
         descriptionArea.setColumns(20);
+        descriptionArea.setEditable(false);
         descriptionArea.setLineWrap(true);
         descriptionArea.setRows(5);
         descriptionArea.setWrapStyleWord(true);
+        descriptionArea.setFocusable(false);
         scrollPane.setViewportView(descriptionArea);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -290,7 +292,7 @@ public class ToolsManagerPanel extends PanelWithApply {
                     .add(layout.createSequentialGroup()
                         .add(profileConfigurationLabel)
                         .add(4, 4, 4)
-                        .add(profileConfigurationComboBox, 0, 496, Short.MAX_VALUE))
+                        .add(profileConfigurationComboBox, 0, 518, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(toolsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 300, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
