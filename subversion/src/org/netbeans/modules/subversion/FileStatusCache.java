@@ -158,6 +158,10 @@ public class FileStatusCache {
     
         refreshTask = rp.create( new Runnable() {
             public void run() {
+                if (org.netbeans.modules.versioning.util.IndexingBridge.getInstance().isIndexingInProgress()) {
+                    refreshTask.schedule(5000);
+                    return;
+                }
                 long startTime = 0;
                 long files = 0;
                 boolean logEnabled = LOG.isLoggable(Level.FINE);
