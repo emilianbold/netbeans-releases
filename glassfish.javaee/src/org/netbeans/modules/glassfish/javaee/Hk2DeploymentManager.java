@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
@@ -523,7 +524,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
     
     private final String constructServerUri(String host, String port, String path) {
         StringBuilder builder = new StringBuilder(128);
-        builder.append("http://"); // NOI18N
+        builder.append(Utils.getHttpListenerProtocol(host, port));
+        builder.append("://"); // NOI18N
         builder.append(host);
         builder.append(":"); // NOI18N
         builder.append(port);

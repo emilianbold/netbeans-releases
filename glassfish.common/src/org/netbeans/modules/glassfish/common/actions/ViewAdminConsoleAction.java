@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -68,15 +69,16 @@ public class ViewAdminConsoleAction extends NodeAction {
                 try {
                     Map<String, String> ip = commonSupport.getInstanceProperties();
                     StringBuilder urlBuilder = new StringBuilder(128);
-                    urlBuilder.append("http://");
+                    String port = !("false".equals(System.getProperty("glassfish.useadminport"))) ?
+                        ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
+                    String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+                    urlBuilder.append(Utils.getHttpListenerProtocol(host, port));
+                    urlBuilder.append("://"); // NOI18N
                     urlBuilder.append(ip.get(GlassfishModule.HOSTNAME_ATTR));
                     urlBuilder.append(":");
-                    if(!"false".equals(System.getProperty("glassfish.useadminport"))) {
-                        // url for admin gui when on admin port (4848)
-                        urlBuilder.append(ip.get(GlassfishModule.ADMINPORT_ATTR));
-                    } else {
+                    urlBuilder.append(port);
+                    if("false".equals(System.getProperty("glassfish.useadminport"))) {
                         // url for admin gui when on http port (8080)
-                        urlBuilder.append(ip.get(GlassfishModule.HTTPPORT_ATTR));
                         urlBuilder.append("/admin");
                     }
                     URL url = new URL(urlBuilder.toString());
