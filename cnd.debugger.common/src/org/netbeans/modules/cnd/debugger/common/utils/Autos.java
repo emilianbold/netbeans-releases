@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 public final class Autos {
     private static AutosProvider DEFAULT = null;
     private static final AutosProvider EMPTY = new AutosProvider() {
-        public Set<String> getAutos(StyledDocument document, int offset) {
+        public Set<String> getAutos(StyledDocument document, int line) {
             return Collections.<String>emptySet();
         }
     };
@@ -68,7 +68,7 @@ public final class Autos {
         return DEFAULT == null ? EMPTY : DEFAULT;
     }
 
-    public static Set<String> get(final StyledDocument document, int offset) {
-        return getDefault().getAutos(document, offset);
+    public static Set<String> get(final StyledDocument document, int line) {
+        return getDefault().getAutos(document, line);
     }
 }
