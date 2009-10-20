@@ -239,6 +239,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                             }
                         }
                         break;
+                    case CPPTokenTypes.CSM_USING_DECLARATION: {
+                        UsingDeclarationImpl using = new UsingDeclarationImpl(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext(), curentVisibility);
+                        addMember(using, !isRenderingLocalContext());
+                        break;
+                    }
                     case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
                         {
                             child = token.getFirstChild();
