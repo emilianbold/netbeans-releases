@@ -201,7 +201,7 @@ public class EditorHyperlinkProviderImpl implements HyperlinkProviderExt, Lookup
             if (primCategory.toUpperCase().indexOf("COMMENT") > -1      ||  // primaryCategory == commment should be more or less a convention // NOI18N
                 name.toUpperCase().indexOf("COMMENT") > -1)                    // consider this as a fallback // NOI18N
             {
-                String text = t.text().toString();
+                CharSequence text = t.text();
                 for (IssueFinder issueFinder : issueFinders) {
                     int[] span = issueFinder.getIssueSpans(text);
                     for (int i = 1; i < span.length; i += 2) {
