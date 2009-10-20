@@ -256,11 +256,7 @@ public class LockForFile extends FileLock {
     }
 
     public static File getLockFile(File file) {
-        try {
-            file = file.getCanonicalFile();
-        } catch (IOException iex) {
-            LOGGER.log(Level.INFO, "[" + file + "] " + iex.getLocalizedMessage(), iex);
-        }
+        file = FileUtil.normalizeFile(file);
 
         final File parentFile = file.getParentFile();
         final StringBuilder sb = new StringBuilder();
