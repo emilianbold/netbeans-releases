@@ -40,31 +40,27 @@
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.BreakpointAnnotationLinesProvider;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.BreakpointAnnotationProvider;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.SessionBreakpointAnnotationProvider;
 import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.models.GdbBreakpointsNodeModelFilter;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Egor Ushakov
  */
-public class GdbBreakpointAnnotationLinesImpl implements BreakpointAnnotationLinesProvider {
+public class GdbBreakpointAnnotationImpl implements SessionBreakpointAnnotationProvider {
     public int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo) {
-        final GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
-        for (BreakpointImpl<?> breakpointImpl : gdbDebugger.getBreakpointList().values()) {
-            if (breakpointImpl.getBreakpoint() == b) {
-                return getBreakpointImplAnnotationLines(breakpointImpl, fo);
-            }
-        }
-        return null;
-    }
-
-    private int[] getBreakpointImplAnnotationLines(BreakpointImpl<?> bptImpl, FileObject fo) {
+        BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
         if (bptImpl instanceof FunctionBreakpointImpl) {
             if (fo.getPath().equals(bptImpl.getFullname())) {
-                return new int[] {bptImpl.getLine()};
+                int line = bptImpl.getLine();
+                if (line >= 0) {
+                    return new int[] {line};
+                }
             }
         } else if (bptImpl instanceof AddressBreakpointImpl) {
             DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
@@ -76,5 +72,14 @@ public class GdbBreakpointAnnotationLinesImpl implements BreakpointAnnotationLin
             }
         }
         return null;
+    }
+
+    public String getAnnotationType(CndBreakpoint b) {
+        String orig = BreakpointAnnotationProvider.getAnnotationType(b);
+        BreakpointImpl<?> bptImpl = GdbDebugger.getBreakpointImpl(b);
+        if (bptImpl == null && b.isEnabled()) {
+            return orig + GdbBreakpointsNodeModelFilter.BROKEN_POSTFIX;
+        }
+        return orig;
     }
 }

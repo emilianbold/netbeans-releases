@@ -444,7 +444,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             }
         }
 
-        if (id == PHPTokenId.PHPDOC_COMMENT || id == PHPTokenId.PHPDOC_COMMENT_START || id == PHPTokenId.PHPDOC_COMMENT_END) {
+        if (id == PHPTokenId.PHPDOC_COMMENT || (id == PHPTokenId.PHPDOC_COMMENT_START && offset > ts.offset()) || id == PHPTokenId.PHPDOC_COMMENT_END) {
             final Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
                 PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END);
             boolean isEmptyComment = (Boolean) ret[1];

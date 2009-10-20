@@ -111,23 +111,9 @@ import org.openide.util.NbBundle;
      */
     protected abstract void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException;
 
-    protected String getRemoteSyncRoot() {
-        String root;
-        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
-        if (root != null) {
-            return root;
-        }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        return (home == null) ? null : home + "/.netbeans/remote"; // NOI18N
-    }
-
     public boolean synchronize() {
         // Later we'll allow user to specify where to copy project files to
-        String remoteParent = getRemoteSyncRoot();
+        String remoteParent = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
         if (remoteParent == null) {
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));

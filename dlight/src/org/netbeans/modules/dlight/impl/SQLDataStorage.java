@@ -407,7 +407,9 @@ public abstract class SQLDataStorage implements DataStorage {
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE));
     }
 
-    public final ResultSet select(DataTableMetadata metadata, Collection<DataTableMetadataFilter> filters) {
+    public final synchronized ResultSet select(DataTableMetadata metadata, Collection<DataTableMetadataFilter> filters) {
+        // synchronized -- fix for IZ 171779
+
         //if we have filters for the column we should create view First
         String tableName = metadata.getName();
         String sqlQuery = metadata.getViewStatement();

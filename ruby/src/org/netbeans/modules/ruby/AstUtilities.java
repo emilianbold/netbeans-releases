@@ -121,6 +121,9 @@ public class AstUtilities {
     private static final String[] ATTR_ACCESSORS = {"attr", "attr_reader", "attr_accessor", "attr_writer",
         "attr_internal", "attr_internal_accessor", "attr_internal_reader", "attr_internal_writer"};
 
+    /** ActiveSupport extensions */
+    private static final String[] CATTR_ACCESSORS = {"cattr_reader", "cattr_accessor", "cattr_writer"};
+
     private static final String[] NAMED_SCOPE = {"named_scope"};
 
     /**
@@ -1484,7 +1487,15 @@ public class AstUtilities {
             return false;
         }
 
-        return isNodeNameIn(node, ATTR_ACCESSORS);
+        return isNodeNameIn(node, ATTR_ACCESSORS) || isNodeNameIn(node, CATTR_ACCESSORS);
+    }
+
+    public static boolean isCAttr(Node node) {
+        if (!isCallNode(node)) {
+            return false;
+        }
+
+        return isNodeNameIn(node, CATTR_ACCESSORS);
     }
 
     static boolean isNamedScope(Node node) {

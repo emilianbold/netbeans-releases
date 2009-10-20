@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -110,5 +111,11 @@ public class MemoryValidationTest extends IDEValidation {
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
         return NbModuleSuite.create(conf);
+    }
+
+    @RandomlyFails
+    @Override
+    public void testGCDocuments() throws Exception {
+        super.testGCDocuments();
     }
 }

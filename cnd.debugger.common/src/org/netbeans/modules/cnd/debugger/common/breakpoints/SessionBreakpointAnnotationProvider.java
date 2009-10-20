@@ -45,6 +45,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Egor Ushakov
  */
-public interface BreakpointAnnotationLinesProvider {
+public interface SessionBreakpointAnnotationProvider {
+    String getAnnotationType(CndBreakpoint b);
     int[] getBreakpointAnnotationLines(CndBreakpoint b, FileObject fo);
 }

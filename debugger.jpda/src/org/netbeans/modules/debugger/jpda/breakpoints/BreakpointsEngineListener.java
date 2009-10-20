@@ -145,7 +145,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     public void breakpointAdded (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
-        if (debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
+        if (!EventQueue.isDispatchThread() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
             try {
                 createBreakpointImpl (breakpoint);
             } finally {
@@ -180,7 +180,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     public void breakpointRemoved (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
-        if (debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
+        if (!EventQueue.isDispatchThread() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
             try {
                 removeBreakpointImpl (breakpoint);
             } finally {

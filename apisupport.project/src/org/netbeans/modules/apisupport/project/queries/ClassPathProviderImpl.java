@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -125,7 +126,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     LOG.log(Level.FINE, "compile/execute-time classpath for file '" + file.getPath() + "' (prj: " + project + "): " + compile);
                 }
                 return compile;
-            } else if (type.equals(ClassPath.EXECUTE)) {
+            } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
                 if (execute == null) {
                     execute = ClassPathFactory.createClassPath(createExecuteClasspath());
                 }
@@ -145,7 +146,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     LOG.log(Level.FINE, "compile-time classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testCompile);
                 }
                 return testCompile;
-            } else if (type.equals(ClassPath.EXECUTE)) {
+            } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
                 if (testExecute == null) {
                     testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
                     LOG.log(Level.FINE, "runtime classpath for tests for file '" + file.getPath() + "' (prj: " + project + "): " + testExecute);
@@ -171,7 +172,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     LOG.log(Level.FINE, "compile-time classpath for func tests for file '" + file.getPath() + "' (prj: " + project + "): " + funcTestCompile);
                 }
                 return funcTestCompile;
-            } else if (type.equals(ClassPath.EXECUTE)) {
+            } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
                 if (funcTestExecute == null) {
                     funcTestExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("qa-functional"));
                 }

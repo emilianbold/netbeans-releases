@@ -83,6 +83,25 @@ class ProcBasedProcessInfoProvider implements ProcessInfoProvider {
             this.env = env;
             this.pid = pid;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof FetchParams)) {
+                return false;
+            }
+
+            FetchParams that = (FetchParams) obj;
+
+            return this.pid == that.pid && this.env.equals(that.env);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + (this.env != null ? this.env.hashCode() : 0);
+            hash = 71 * hash + this.pid;
+            return hash;
+        }
     }
 
     private static class ProcessInfoFetcher implements Computable<FetchParams, ProcessInfo> {
@@ -98,7 +117,7 @@ class ProcBasedProcessInfoProvider implements ProcessInfoProvider {
 
                 ProcReader reader = ProcReaderFactory.getReader(taskArguments.env, taskArguments.pid);
                 final long creation_ts = reader.getProcessUsage().getUsageInfo().pr_create;
-                
+
                 if (creation_ts > 0) {
                     result = new ProcessInfo() {
 

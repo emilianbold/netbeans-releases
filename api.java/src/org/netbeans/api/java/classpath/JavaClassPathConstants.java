@@ -36,53 +36,26 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.toolsui.api;
 
-import org.netbeans.modules.dlight.toolsui.ToolsManagerPanel;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+package org.netbeans.api.java.classpath;
 
-public final class ToolsCustomizerAction extends SystemAction implements ActionListener {
-
-    public void actionPerformed(ActionEvent e) {
-        showCustomizer();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(ToolsCustomizerAction.class, "CTL_ProfilerToolsAction2");
-    }
+/**
+ * Java related classpath constants.
+ * 
+ * @author Jan Lahoda
+ * @since 1.22
+ */
+public class JavaClassPathConstants {
 
     /**
-     * Shows libraries customizer displaying all currently open library managers.
-     * @return true if user pressed OK and libraries were sucessfully modified
+     * ClassPath for annotation processors. If undefined, {@link ClassPath#COMPILE}
+     * should be used.
+     * <p class="nonnormative">
+     * It corresponds to the <code>-processorpath</code> option of <code>javac</code>.
+     * </p>
+     *
+     * @since 1.22
      */
-    private static boolean showCustomizer () {
-        ToolsManagerPanel customizer = new ToolsManagerPanel();
-        DialogDescriptor descriptor = new DialogDescriptor (customizer,
-                NbBundle.getMessage(ToolsCustomizerAction.class, "TXT_ToolsCustomizer"));
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            dlg.setVisible(true);
-            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                return customizer.apply();
-            } else {
-                return false;
-            }
-        } finally {
-            dlg.dispose();
-        }
-    }
-
+    public static final String PROCESSOR_PATH = "classpath/processor";
+    
 }

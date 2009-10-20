@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uihandler;
 
-import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,7 +52,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -62,7 +60,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
 /**
@@ -529,41 +526,6 @@ public class InstallerTest extends NbTestCase {
         assertEquals("thrown is annotated", "annotation message", thrown.getCause().getMessage());
         String message = Installer.createMessage(thrown);
         assertEquals("annontation should be ignored", "NullPointerException: root", message);
-    }
-
-    public void testDontSubmitTwiceIssue128306(){
-        final AtomicBoolean submittingTwiceStopped = new AtomicBoolean(false);
-        final Installer.SubmitInteractive interactive = new Installer.SubmitInteractive("hallo", true);
-        final ActionEvent evt = new ActionEvent("submit", 1, "submit");
-        Installer.LOG.setLevel(Level.FINEST);
-        Installer.LOG.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                if ("posting upload UIGESTURES".equals(record.getMessage())){
-                    interactive.actionPerformed(evt);
-                }
-                if ("ALREADY SUBMITTING".equals(record.getMessage())){
-                    submittingTwiceStopped.set(true);
-                }
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
-        interactive.actionPerformed(evt);
-        Installer.RP_SUBMIT.post(new Runnable() {
-
-            public void run() {
-                // just wait for processing
-            }
-        }).waitFinished();
-        assertTrue(submittingTwiceStopped.get());
     }
 
     static int getLogsSize(){

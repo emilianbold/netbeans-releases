@@ -40,11 +40,18 @@ package org.netbeans.modules.dlight.indicators.graph;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.List;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.util.UIUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
@@ -58,12 +65,13 @@ public class RepairPanel extends JPanel {
     private static final int MARGIN = 2;
     private final JEditorPane label;
     private JButton button;
+    private List<Action> actions;
 
     public RepairPanel(ValidationStatus status) {
         setOpaque(false);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Box.createVerticalGlue());
-        String text = status.isKnown()? status.getReason() : getMessage("RepairPanel.Label.Text"); // NOI18N
+        String text = status.isKnown() ? status.getReason() : getMessage("RepairPanel.Label.Text"); // NOI18N
         String buttonText = getMessage("RepairPanel.Repair.Text"); // NOI18N
 
         label = UIUtilities.createJEditorPane(text, false, DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_LEGEND_FONT_COLOR));
@@ -82,6 +90,39 @@ public class RepairPanel extends JPanel {
             add(button);
         }
         add(Box.createVerticalGlue());
+        addMouseListener(new PopupMenuListener());
+    }
+
+    private JPopupMenu createPopupMenu() {
+        if (actions == null || actions.isEmpty()) {
+            return null;
+        }
+        JPopupMenu pm = new JPopupMenu();
+        for (Action action : actions) {
+            pm.add(new JMenuItem(action));
+        }
+        return pm;
+
+    }
+
+    private class PopupMenuListener extends MouseAdapter implements MouseListener {
+
+        PopupMenuListener() {
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                JPopupMenu pm = createPopupMenu();
+                if (pm != null) {
+                    pm.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        }
+    }
+
+    public void setPopupActions(List<Action> actions) {
+        this.actions = actions;
     }
 
     public void addActionListener(ActionListener listener) {
@@ -107,7 +148,6 @@ public class RepairPanel extends JPanel {
 //        label.setPreferredSize(size);
 //        super.doLayout();
 //    }
-
     private static String getMessage(String name, Object... args) {
         return NbBundle.getMessage(RepairPanel.class, name, args);
     }

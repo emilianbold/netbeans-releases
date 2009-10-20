@@ -16,45 +16,49 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorRepairActionProvider;
  */
 public abstract class IndicatorAccessor {
 
-  private static volatile IndicatorAccessor DEFAULT;
+    private static volatile IndicatorAccessor DEFAULT;
 
-  public static IndicatorAccessor getDefault() {
-    IndicatorAccessor a = DEFAULT;
-    if (a != null) {
-      return a;
+    public static IndicatorAccessor getDefault() {
+        IndicatorAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(Indicator.class.getName(), true, Indicator.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    try {
-      Class.forName(Indicator.class.getName(), true, Indicator.class.getClassLoader());//
-    } catch (Exception e) {
+    public static void setDefault(IndicatorAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
-    return DEFAULT;
-  }
 
-  public static void setDefault(IndicatorAccessor accessor) {
-    if (DEFAULT != null) {
-      throw new IllegalStateException();
+    public IndicatorAccessor() {
     }
-    DEFAULT = accessor;
-  }
 
-  public IndicatorAccessor() {
-  }
+    public abstract void setToolID(Indicator<?> ind, String toolID);
 
-  public abstract void setToolID(Indicator<?> ind, String toolID);
+    public abstract void setToolDescription(Indicator<?> ind, String toolDescription);
 
-  public abstract String getToolID(Indicator<?> ind);
-  
-  public abstract List<Column> getMetadataColumns(Indicator<?> indicator);
+    public abstract String getToolID(Indicator<?> ind);
 
-  public abstract String getMetadataColumnName(Indicator<?> indicator, int idx);
+    public abstract List<Column> getMetadataColumns(Indicator<?> indicator);
 
-  public abstract List<VisualizerConfiguration> getVisualizerConfigurations(Indicator<?> indicator);
+    public abstract String getMetadataColumnName(Indicator<?> indicator, int idx);
 
-  public abstract void addIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l);
+    public abstract List<VisualizerConfiguration> getVisualizerConfigurations(Indicator<?> indicator);
 
-  public abstract void removeIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l);
+    public abstract void addIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l);
 
-  public abstract void initMouseListener(Indicator<?> indicator);
-  public abstract void setRepairActionProviderFor(Indicator<?> indicator, IndicatorRepairActionProvider repairActionProvider);
+    public abstract void removeIndicatorActionListener(Indicator<?> indicator, IndicatorActionListener l);
+
+    public abstract void initMouseListener(Indicator<?> indicator);
+
+    public abstract void setRepairActionProviderFor(Indicator<?> indicator, IndicatorRepairActionProvider repairActionProvider);
+
 }

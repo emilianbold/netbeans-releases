@@ -279,4 +279,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#166165 : Unresolved extern enum declaration
         performTest("iz166165.cc");
     }
+
+    public void testIZ174256() throws Exception {
+        // IZ#174256 : parser cant understand _Pragma operator
+        performTest("iz174256.cc");
+    }
 }

@@ -78,7 +78,8 @@ public class ConfigurationsPanel extends javax.swing.JPanel {
 //        btnRemove.setVisible(false);
 //        addProfileConfigurations();
         
-        initUI(handle.isConfigurationsEnabled());
+        initListUI();
+        checkButtonEnablement();
         lstConfigurations.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -294,23 +295,14 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JList lstConfigurations;
     // End of variables declaration//GEN-END:variables
 
-    private void initListUI(boolean selected) {
-        lstConfigurations.setEnabled(selected);
-        btnActivate.setEnabled(selected);
-        btnAdd.setEnabled(selected);
-        btnEdit.setEnabled(selected);
-        btnRemove.setEnabled(selected);
+    private void initListUI() {
+        lstConfigurations.setEnabled(true);
+        btnActivate.setEnabled(true);
+        btnAdd.setEnabled(true);
+        btnEdit.setEnabled(true);
+        btnRemove.setEnabled(true);
     }
     // End of variables declaration
-
- 
-    private void initUI(boolean configsEnabled) {
-//        cbProfiles.setEnabled(configsEnabled);
-        initListUI(configsEnabled);
-        if (configsEnabled) {
-            checkButtonEnablement();
-        }
-    }
 
 
 //    private void addProfileConfigurations() {

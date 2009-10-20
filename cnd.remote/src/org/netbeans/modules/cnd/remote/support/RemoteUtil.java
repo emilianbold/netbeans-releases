@@ -63,7 +63,7 @@ public class RemoteUtil {
         RemoteCommandSupport rcs = new RemoteCommandSupport(env, cmd);
         int rc = rcs.run();
         if (rc != 0) {
-            throw new RemoteException(String.format("Failed to run %s at %s")); // NOI18N
+            throw new RemoteException(String.format("Failed to run %s at %s", cmd, env.getDisplayName())); // NOI18N
         }
         String result = rcs.getOutput();
         return result;

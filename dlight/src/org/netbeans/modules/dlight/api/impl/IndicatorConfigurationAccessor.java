@@ -50,4 +50,6 @@ public abstract class IndicatorConfigurationAccessor {
   public abstract List<VisualizerConfiguration> getVisualizerConfigurations(IndicatorConfiguration configuration);
 
   public abstract String getActionDisplayName(IndicatorConfiguration configuration);
+
+  public abstract String getActionTooltip(IndicatorConfiguration configuration);
 }

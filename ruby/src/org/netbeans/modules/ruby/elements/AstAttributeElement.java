@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.elements;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.SymbolNode;
@@ -49,6 +50,7 @@ import org.jrubyparser.ast.INameNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.AstUtilities;
 
 public class AstAttributeElement extends AstElement {
 
@@ -81,6 +83,9 @@ public class AstAttributeElement extends AstElement {
 
     @Override
     public Set<Modifier> getModifiers() {
+        if (AstUtilities.isCAttr(creationNode)) {
+            return EnumSet.of(Modifier.PUBLIC, Modifier.STATIC);
+        }
         // TODO compute!
         return Collections.emptySet();
     }
