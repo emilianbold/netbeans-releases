@@ -719,11 +719,29 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         }
                     }
                 }
+            } else if ("alias_method".equals(name)) {
+                List<Node> values = AstUtilities.getChildValues(node);
+                if (values.size() == 2) {
+                    Node newMethod = values.get(0);
+                    AstMethodElement aliased = findExistingMethod(AstUtilities.getNameOrValue(values.get(1)));
+                    if (aliased != null) {
+                        AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
+                        co.setModifiers(aliased.getModifiers());
+                        co.setParameters(aliased.getParameters());
+                        co.setIn(in);
+                        co.setType(aliased.getType());
+                        co.setHidden(true);
+                        if (parent != null) {
+                            parent.addChild(co);
+                        } else {
+                            structure.add(co);
+                        }
+                    }
+                }
             } else if (AstUtilities.isNamedScope(node)) {
                 SymbolNode[] symbols = AstUtilities.getSymbols(node);
                 if (symbols.length > 0) {
                     SymbolNode method = symbols[0];
-                    method.getName();
                     AstDynamicMethodElement co = new AstDynamicMethodElement(result, method);
                     co.setIn(in);
                     co.setModifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC));
@@ -930,6 +948,16 @@ public class RubyStructureAnalyzer implements StructureScanner {
             scan(child, path, in, includes, parent);
             path.ascend();
         }
+    }
+
+    private AstMethodElement findExistingMethod(String name) {
+        for (AstMethodElement each : methods) {
+            if (each.getClass().equals(AstMethodElement.class) // don't include AstDynamicMethodElement
+                    && each.getName().equals(name)) {
+                return each;
+            }  
+        }
+        return null;
     }
 
     /** Analyze the given method and see if it looks like the following

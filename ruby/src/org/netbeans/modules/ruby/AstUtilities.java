@@ -1055,11 +1055,12 @@ public class AstUtilities {
             break;
 
         case FCALLNODE:
-            if (isAttr(node) || isNamedScope(node) || isActiveRecordAssociation(node)) {
-                SymbolNode[] symbols = getSymbols(node);
-                for (SymbolNode sym : symbols) {
-                    if (name.equals(sym.getName())) {
-                        return sym;
+            if (isAttr(node) || isNamedScope(node)
+                    || isActiveRecordAssociation(node) || isNodeNameIn(node, "alias_method")) { //NOI18N
+                List<Node> values = getChildValues(node);
+                for (Node each : values) {
+                    if (name.equals(getNameOrValue(each))) {
+                        return each;
                     }
                 }
             }
@@ -1527,26 +1528,47 @@ public class AstUtilities {
         return node instanceof FCallNode || node instanceof VCallNode;
     }
 
+    /**
+     * Gets the name or the value of given node, depending on its type.
+     * 
+     * @param node the node whose value to get; must be either <code>SymbolNode</code>
+     * or <code>StrNode</code>.
+     * @return
+     */
+    public static String getNameOrValue(Node node) {
+        if (node instanceof SymbolNode) {
+            return ((SymbolNode) node).getName();
+        }
+        if (node instanceof StrNode) {
+            return ((StrNode) node).getValue();
+        }
+        assert false : "Invalid param " + node;
+        return "";
+    }
+
     static SymbolNode[] getSymbols(Node node) {
-        List<Node> list = node.childNodes();
+        List<SymbolNode> symbolList = new ArrayList<SymbolNode>();
+        for (Node child : getChildValues(node)) {
+            if (child instanceof SymbolNode) {
+                symbolList.add((SymbolNode) child);
+            }
 
-        for (Node child : list) {
+        }
+        return symbolList.toArray(new SymbolNode[symbolList.size()]);
+    }
+
+    static List<Node> getChildValues(Node node) {
+        List<Node> result = new ArrayList<Node>();
+        for (Node child : node.childNodes()) {
             if (child instanceof ListNode) {
-                List<Node> symbols = child.childNodes();
-                List<SymbolNode> symbolList = new ArrayList<SymbolNode>(symbols.size());
-
-                for (Node symbol : symbols) {
-                    if (symbol instanceof SymbolNode) {
-                        symbolList.add((SymbolNode)symbol);
-                    }
-                }
-
-                return symbolList.toArray(new SymbolNode[symbolList.size()]);
+                List<Node> values = child.childNodes();
+                result.addAll(values);
             }
         }
+        return result;
 
-        return new SymbolNode[0];
     }
+
     public static SymbolNode[] getAttrSymbols(Node node) {
         assert isAttr(node);
         return getSymbols(node);
