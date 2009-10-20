@@ -210,9 +210,12 @@ implements FileNameMapper, URIResolver, EntityResolver {
                         if (modname == null) {
                             continue;
                         }
+                        String show = mf.getMainAttributes().getValue("AutoUpdate-Show-In-Client");
                         String base = modname.replaceFirst("/[0-9]+$", "");
-                        modules.append(sep).append(base);
-                        sep = ",\\\n    ";
+                        if (!"false".equals(show)) {
+                            modules.append(sep).append(base);
+                            sep = ",\\\n    ";
+                        }
 
                         String mflayer = mf.getMainAttributes().getValue("OpenIDE-Module-Layer");
                         if (mflayer != null) {
