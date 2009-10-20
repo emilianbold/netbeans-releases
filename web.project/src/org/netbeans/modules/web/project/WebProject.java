@@ -1000,8 +1000,8 @@ public final class WebProject implements Project, AntProjectListener {
             File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
             ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
-            // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-            WSUtils.setJaxWsEndorsedDirProperty(ep);
+            //remove jaxws.endorsed.dir property
+            ep.remove("jaxws.endorsed.dir");
             
             filterBrokenLibraryRefs();
 
