@@ -37,33 +37,77 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.versioning.indexingbridge;
+package org.netbeans.modules.glassfish.spi;
 
-import java.io.File;
-import java.util.concurrent.Callable;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.versioning.util.IndexingBridge.IndexingBridgeProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author vita
+ * @author vkraemer
  */
-@ServiceProvider(service=IndexingBridgeProvider.class)
-public final class Bridge implements IndexingBridgeProvider {
+public class UtilsTest {
 
-    public <T> T runWithoutIndexing(final Callable<T> operation, final File... files) throws Exception {
-        return IndexingManager.getDefault().runProtected(new Callable<T>() {
-            public T call() throws Exception {
-                // Schedule the refresh task, which will then absorb all other tasks generated
-                // by filesystem events caused by the operation
-                IndexingManager.getDefault().refreshAllIndices(false, false, files);
-                return operation.call();
-            }
-        });
+    public UtilsTest() {
     }
 
-    public boolean isIndexingInProgress() {
-        return IndexingManager.getDefault().isIndexing();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+
+    /**
+     * Test of getHttpListenerProtocol method, of class Utils.
+     */
+    @Test
+    public void testGetHttpListenerProtocol() {
+        System.out.println("getHttpListenerProtocol");
+        String hostname = "glassfish.dev.java.net";
+        int port = 443;
+        String expResult = "https";
+        String result = Utils.getHttpListenerProtocol(hostname, port);
+        assertEquals(expResult, result);
+        port = 80;
+        expResult = "http";
+        result = Utils.getHttpListenerProtocol(hostname, port);
+        assertEquals(expResult, result);
+        hostname = "this.is.a.bogus.name.edu";
+        port = 443;
+        result = Utils.getHttpListenerProtocol(hostname, port);
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of isSecurePort method, of class Utils.
+     */
+    @Test
+    public void testIsSecurePort() throws Exception {
+        System.out.println("isSecurePort");
+        String hostname = "glassfish.dev.java.net";
+        int port = 443;
+        boolean expResult = true;
+        boolean result = Utils.isSecurePort(hostname, port);
+        assertEquals(expResult, result);
+        port = 80;
+        expResult = false;
+        result = Utils.isSecurePort(hostname, port);
+        assertEquals(expResult, result);
+    }
+
 }

@@ -17,16 +17,16 @@ Searchable Keys:
   field : sg
   fqn : Date
   method : +(n)|DOCUMENTED|
-  method : -(x)|DOCUMENTED|
+  method : -(x)|DOCUMENTED|;;Fixnum;
   method : <<(n)|DOCUMENTED|
   method : <=>(other)|DOCUMENTED|;;Fixnum|NilClass;
   method : ===(other)|DOCUMENTED|;;TrueClass|FalseClass;
   method : >>(n)|DOCUMENTED|;;Date;
   method : _dump(limit)|DOCUMENTED|
   method : _load(str)|DOCUMENTED|STATIC|
-  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|;;Fixnum;
+  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|
   method : ajd_to_jd(ajd,of)|DOCUMENTED|STATIC|
-  method : ajd|DOCUMENTED|
+  method : ajd|DOCUMENTED|;;Fixnum;
   method : amjd_to_ajd(amjd)|DOCUMENTED|STATIC|
   method : amjd|DOCUMENTED|
   method : civil(y,m,d,sg)|DOCUMENTED|PRIVATE|STATIC|
@@ -75,7 +75,7 @@ Searchable Keys:
   method : new_with_hash(elem,sg)|STATIC|
   method : ns?(jd,sg)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : ns?|DOCUMENTED|;;TrueClass|FalseClass;
-  method : offset|PRIVATE|
+  method : offset|PRIVATE|;;Fixnum;
   method : once(*ids)|PRIVATE|STATIC|
   method : ordinal(y,d,sg)|DOCUMENTED|PRIVATE|STATIC|
   method : ordinal_to_jd(y,d,sg)|DOCUMENTED|STATIC|

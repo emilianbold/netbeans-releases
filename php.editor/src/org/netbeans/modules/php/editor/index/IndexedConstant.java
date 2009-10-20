@@ -64,9 +64,16 @@ public class IndexedConstant extends IndexedElement {
         }
     }
 
+    public boolean isTypeResolved(){
+        if (typeName != null && typeName.contains("@")){//NOI18N
+            return false;
+        }
+        return true;
+    }
+
     @CheckForNull
     public String getTypeName() {
-        return typeName;
+        return isTypeResolved() ? typeName : null;
     }
 
     public void setTypeName(String typeName) {

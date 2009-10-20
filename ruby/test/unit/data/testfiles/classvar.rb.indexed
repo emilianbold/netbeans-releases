@@ -2,6 +2,7 @@
 
 Document 0
 Searchable Keys:
+  attribute : verbose;10
   class : Migration
   class-ig : migration
   field : myfield

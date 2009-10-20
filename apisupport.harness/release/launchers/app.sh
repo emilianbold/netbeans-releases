@@ -68,8 +68,8 @@ readClusters() {
 
 clusters=`(cat "$progdir/../etc/$APPNAME".clusters; echo) | readClusters | tr '\012' ':'`
 
-if [ ! -z "$extraclusters" ] ; then
-    clusters="$clusters:$extraclusters"
+if [ ! -z "$extra_clusters" ] ; then
+    clusters="$clusters:$extra_clusters"
 fi
 
 nbexec=`echo "$progdir"/../platform*/lib/nbexec`

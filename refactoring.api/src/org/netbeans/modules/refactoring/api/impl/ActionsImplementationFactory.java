@@ -41,18 +41,26 @@
 
 package org.netbeans.modules.refactoring.api.impl;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.refactoring.spi.impl.CopyAction;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * @author Jan Becicka
  */
 public final class ActionsImplementationFactory {
+
+    private static final Logger LOG = Logger.getLogger(ActionsImplementationFactory.class.getName());
     
     private ActionsImplementationFactory(){}
     
     private static final Lookup.Result<ActionsImplementationProvider> implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(ActionsImplementationProvider.class));
+        Lookup.getDefault().lookupResult(ActionsImplementationProvider.class);
 
     public static boolean canRename(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
@@ -65,11 +73,18 @@ public final class ActionsImplementationFactory {
     
     public static void doRename(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canRename(lookup)) {
+            boolean canRename = rafi.canRename(lookup);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(String.format("canRename: %s, %s", rafi, canRename));
+            }
+
+            if (canRename) {
                 rafi.doRename(lookup);
                 return;
             }
         }
+        notifyOutOfContext("LBL_RenameRefactoring"); // NOI18N
     }
 
     public static boolean canFindUsages(Lookup lookup) {
@@ -83,11 +98,18 @@ public final class ActionsImplementationFactory {
     
     public static void doFindUsages(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canFindUsages(lookup)) {
+            boolean canFindUsages = rafi.canFindUsages(lookup);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(String.format("canFindUsages: %s, %s", rafi, canFindUsages));
+            }
+
+            if (canFindUsages) {
                 rafi.doFindUsages(lookup);
                 return;
             }
         }
+        notifyOutOfContext("LBL_FindUsagesRefactoring"); // NOI18N
     }
     public static boolean canDelete(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
@@ -100,20 +122,34 @@ public final class ActionsImplementationFactory {
     
     public static void doDelete(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canDelete(lookup)) {
+            boolean canDelete = rafi.canDelete(lookup);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(String.format("canDelete: %s, %s", rafi, canDelete));
+            }
+
+            if (canDelete) {
                 rafi.doDelete(lookup);
                 return;
             }
         }
+        notifyOutOfContext("LBL_SafeDeleteRefactoring"); // NOI18N
     }
     
     public static void doMove(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canMove(lookup)) {
+            boolean canMove = rafi.canMove(lookup);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(String.format("canMove: %s, %s", rafi, canMove));
+            }
+
+            if (canMove) {
                 rafi.doMove(lookup);
                 return;
             }
         }
+        notifyOutOfContext("LBL_MoveRefactoring"); // NOI18N
     }
     
     public static boolean canMove(Lookup lookup) {
@@ -127,11 +163,18 @@ public final class ActionsImplementationFactory {
 
     public static void doCopy(Lookup lookup) {
         for (ActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canCopy(lookup)) {
+            boolean canCopy = rafi.canCopy(lookup);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(String.format("canCopy: %s, %s", rafi, canCopy));
+            }
+
+            if (canCopy) {
                 rafi.doCopy(lookup);
                 return;
             }
         }
+        notifyOutOfContext("LBL_CopyRefactoring"); // NOI18N
     }
     
     public static boolean canCopy(Lookup lookup) {
@@ -141,6 +184,12 @@ public final class ActionsImplementationFactory {
             }
         }
         return false;
+    }
+
+    private static void notifyOutOfContext(String refactoringNameKey) {
+        String refactoringName = NbBundle.getMessage(CopyAction.class, refactoringNameKey);
+        DialogDisplayer.getDefault().notify(new Message(
+                NbBundle.getMessage(CopyAction.class, "MSG_CantApplyRefactoring", refactoringName)));
     }
     
 }
