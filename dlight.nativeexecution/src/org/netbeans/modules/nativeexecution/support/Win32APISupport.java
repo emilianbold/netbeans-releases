@@ -36,16 +36,59 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.support;
 
-package org.netbeans.modules.cnd.spi.model.services;
+import com.sun.jna.FromNativeContext;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.PointerType;
+import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.win32.W32APIFunctionMapper;
+import com.sun.jna.win32.W32APITypeMapper;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+/* https://jna.dev.java.net/ */
+/* http://golesny.de/wiki/code:javahowtogetpid */
 
-import java.util.Set;
-import javax.swing.text.StyledDocument;
+public interface Win32APISupport extends StdCallLibrary {
 
-/**
- *
- * @author Egor Ushakov
- */
-public interface AutosProvider {
-    Set<String> getAutos(final StyledDocument document, int line);
+    final Map<Object, Object> DEFAULT_OPTIONS = Collections.unmodifiableMap(new HashMap<Object, Object>() {
+
+        {
+            put(OPTION_TYPE_MAPPER, W32APITypeMapper.UNICODE);
+            put(OPTION_FUNCTION_MAPPER, W32APIFunctionMapper.UNICODE);
+        }
+    });
+    final Win32APISupport instance = (Win32APISupport) Native.loadLibrary("kernel32", Win32APISupport.class, DEFAULT_OPTIONS); // NOI18N
+
+    /* http://msdn.microsoft.com/en-us/library/ms683179(VS.85).aspx */
+    HANDLE GetCurrentProcess();
+
+    /* http://msdn.microsoft.com/en-us/library/ms683215.aspx */
+    int GetProcessId(HANDLE process);
+
+    public class HANDLE extends PointerType {
+
+        @Override
+        public Object fromNative(Object nativeValue, FromNativeContext context) {
+            Object o = super.fromNative(nativeValue, context);
+            if (InvalidHandle.equals(o)) {
+                return InvalidHandle;
+            }
+            return o;
+        }
+    }
+    public final static HANDLE InvalidHandle = new HANDLE() {
+
+        {
+            super.setPointer(Pointer.createConstant(-1));
+        }
+
+        @Override
+        public void setPointer(Pointer p) {
+            throw new UnsupportedOperationException();
+        }
+    };
 }
+    

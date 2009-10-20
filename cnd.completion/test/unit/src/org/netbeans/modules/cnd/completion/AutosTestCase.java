@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 
 /**
  *
@@ -68,6 +67,18 @@ public class AutosTestCase extends ProjectBasedTestCase {
 
     public AutosTestCase(String testName) {
         super(testName, false);
+    }
+    
+    public void testAutosWrong() throws Exception {
+        performTest("file.cc", -1); // should not fail
+    }
+
+    public void testAutosFirst() throws Exception {
+        performTest("file.cc", 0);
+    }
+
+    public void testAutosMain() throws Exception {
+        performTest("file.cc", 2);
     }
 
     public void testAutosBody() throws Exception {
@@ -90,6 +101,14 @@ public class AutosTestCase extends ProjectBasedTestCase {
         performTest("file.cc", 9);
     }
 
+    public void testAutosCompoundLine1() throws Exception {
+        performTest("file.cc", 14);
+    }
+
+    public void testAutosCompoundLine2() throws Exception {
+        performTest("file.cc", 15);
+    }
+
     private void performTest(String source, int lineIndex) throws Exception {
         File workDir = getWorkDir();
         File testFile = getDataFile(source);
@@ -106,9 +125,7 @@ public class AutosTestCase extends ProjectBasedTestCase {
 
         final StyledDocument doc = (StyledDocument)CndCoreTestUtils.getBaseDocument(testFileDO);
 
-        int offset = NbDocument.findLineOffset(doc, lineIndex-1);
-
-        Set<String> res = new CsmAutosProviderImpl().getAutos(doc, offset);
+        Set<String> res = new CsmAutosProviderImpl().getAutos(doc, lineIndex-1);
 
         // sort results
         List<String> resList = new ArrayList<String>(res);
