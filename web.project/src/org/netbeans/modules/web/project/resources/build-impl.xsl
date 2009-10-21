@@ -277,7 +277,10 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.tmp.war.package.with.custom.manifest">
                     <and>
                         <isset property="has.custom.manifest"/>
-                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <or>
+                            <isfalse value="${{directory.deployment.supported}}"/>
+                            <isset property="dist.ear.dir"/>
+                        </or>
                     </and>
                 </condition>
                 <condition property="do.tmp.war.package.without.custom.manifest">
@@ -285,11 +288,17 @@ introduced by support for multiple source roots. -jglick
                         <not>
                             <isset property="has.custom.manifest"/>
                         </not>
-                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <or>
+                            <isfalse value="${{directory.deployment.supported}}"/>
+                            <isset property="dist.ear.dir"/>
+                        </or>
                     </and>
                 </condition>
                 <condition property="do.tmp.war.package">
-                    <isfalse value="${{directory.deployment.supported}}"/>
+                    <or>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <isset property="dist.ear.dir"/>
+                    </or>
                 </condition>
                 
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
