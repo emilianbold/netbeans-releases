@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.tha;
 import java.awt.Component;
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.module.dlight.threads.api.Deadlock;
@@ -187,6 +188,12 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private static final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {

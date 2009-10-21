@@ -43,6 +43,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.module.dlight.threads.api.Datarace;
@@ -133,12 +134,15 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         public Component getComponent() {
             stackPanel.clean();
+            if (threadDumps != null && !threadDumps.isEmpty()){
+                
+            }
             for (ThreadDump threadDump : threadDumps) {
                 List<ThreadSnapshot> threads = threadDump.getThreadStates();
                 for (ThreadSnapshot snap : threads) {
-                    stackPanel.add( loc("RacesVisuailzer.Access")  + " " + //NOI18N
+                    stackPanel.add( loc("RacesVisualizer.Access")  + " " + //NOI18N
                             (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
-                                " [" + loc("RacesVisuailzer.Access.R") + "]" : " [" + loc("RacesVisuailzer.Access.W") + "]"),//NOI18N
+                                " [" + loc("RacesVisualizer.Access.R") + "]" : " [" + loc("RacesVisualizer.Access.W") + "]"),//NOI18N
                                 ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png",//NOI18N
                                 false), snap.getStack());
                 }
@@ -189,6 +193,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private final static class RaceNode extends THANode<ThreadDump> {
@@ -205,8 +215,8 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
                 List<FunctionCall> stack = s.getStack();
                 displayName += stack.get(stack.size() - 1).getFunction().getName() +
                         (s.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
-                            " [" + loc("RacesVisuailzer.Access.R") + "]" : //NOI18N
-                            " [" + loc("RacesVisuailzer.Access.W") + "]") + " | "; // NOI18N
+                            " [" + loc("RacesVisualizer.Access.R") + "]" : //NOI18N
+                            " [" + loc("RacesVisualizer.Access.W") + "]") + " | "; // NOI18N
             }
             if (displayName.length() > 1) {
                 displayName = displayName.substring(0, displayName.length() - 2);
@@ -227,6 +237,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private final class DataraceNodeChildren extends Children.Keys<ThreadDump> {

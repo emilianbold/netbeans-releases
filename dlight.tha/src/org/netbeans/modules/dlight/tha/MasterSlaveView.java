@@ -160,6 +160,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
 //        master.setRootVisible(true);
         if (data.isEmpty()) {
             master.setRootVisible(true);
+            rootNode.setLeaf();
         } else {
             master.setRootVisible(false);
             rootNode.setKeys(new ChildrenList(nodeFactory, data));
@@ -251,6 +252,10 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
         void setKeys(ChildrenList children) {
             setChildren(Children.LEAF);
             setChildren(children);
+        }
+
+        void setLeaf(){
+            setChildren(Children.LEAF);
         }
     }
 }
