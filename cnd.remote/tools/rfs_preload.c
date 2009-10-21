@@ -461,6 +461,39 @@ FILE *fopen64(const char * filename, const char * mode) {
 #endif
 //#endif
 
+#define real_freopen(function, path, mode, stream) \
+    inside_open++; \
+    trace("%s %s %s\n", #function, path, mode); \
+    FILE* result = NULL; \
+    int int_mode = (strchr(mode, 'w') || strchr(mode, '+'))  ? O_WRONLY : O_RDONLY; \
+    if (on_open(path, int_mode)) { \
+        static FILE* (*prev)(const char *, const char *, FILE *); \
+        if (!prev) { \
+            prev = (FILE* (*)(const char *, const char *, FILE *)) get_real_addr(function); \
+        } \
+        if (prev) { \
+            result = prev(path, mode, stream); \
+        } else { \
+            trace("Could not find original \"%s\" function\n", #function); \
+            errno = EFAULT; \
+            result = NULL; \
+        } \
+    } \
+    trace("%s %s -> %d\n", #function, path, result); \
+    inside_open--; \
+    return result;
+    //result ? -12345 : fileno(result)
+
+FILE *freopen(const char *path, const char *mode, FILE *stream) {
+    real_freopen(freopen, path, mode, stream)
+}
+
+#if _FILE_OFFSET_BITS != 64
+FILE *freopen64(const char *path, const char *mode, FILE *stream) {
+    real_freopen(freopen64, path, mode, stream)
+}
+#endif
+
 // TODO: int openat(int fd, const char *path, int flags, ...);
 // TODO: int openat64(int fd, const char *path, int flags, ...);
 
