@@ -122,15 +122,16 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
-            final String commandLine = info.getCommandLineForShell();
-            String wDir = info.getWorkingDirectory(true);
+            final String cline = info.getCommandLineForShell();
+            final String commandLine = cline.startsWith("/") ? cline : "./" + cline; // NOI18N
+            final String wDir = info.getWorkingDirectory(true);
 
-            String workingDirectory;
+            final File workingDirectory;
 
             if (wDir == null || isWindows) {
-                workingDirectory = "."; // NOI18N
+                workingDirectory = new File("."); // NOI18N
             } else {
-                workingDirectory = new File(wDir).getAbsolutePath();
+                workingDirectory = new File(wDir);
             }
 
             pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()); // NOI18N
@@ -147,7 +148,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             FileWriter shWriter = new FileWriter(shFileFile);
             shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
             shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write("cd \"" + workingDirectory + "\" || exit $?\n"); // NOI18N
+            shWriter.write("cd \"" + workingDirectory.getAbsolutePath() + "\" || exit $?\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
             shWriter.close();
 
@@ -171,12 +172,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     terminalArgs);
 
             ProcessBuilder pb = new ProcessBuilder(command);
-            LOG.log(Level.FINEST, "Command: {0}", command);
-
-            if ((isWindows || isMacOS) && wDir != null) {
-                pb.directory(new File(wDir));
-                LOG.log(Level.FINEST, "Working directory: {0}", wDir);
-            }
+            pb.directory(workingDirectory);
+            
+            LOG.log(Level.FINEST, "Command: " + command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
 

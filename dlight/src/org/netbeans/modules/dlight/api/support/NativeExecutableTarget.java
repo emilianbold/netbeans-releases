@@ -91,7 +91,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private volatile Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
-    private final Object stateLock = new String(NativeExecutableTarget.class.getName() + " - state lock"); // NOI18N
+    private final StateLock stateLock = new StateLock();
     private volatile State state;
     private LineConvertorFactory outConvertorFactory;
     private LineConvertorFactory errConvertorFactory;
@@ -348,5 +348,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         public synchronized void terminate(NativeExecutableTarget target) {
             target.terminate();
         }
+    }
+
+    private final static class StateLock {
     }
 }
