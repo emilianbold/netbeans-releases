@@ -6,7 +6,7 @@ Searchable Keys:
   class : TableDefinition
   class-ig : tabledefinition
   field : base
-  field : columns
+  field : columns;;Array;
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
   method : [](name)|DOCUMENTED|
   method : column(name,type,options)|DOCUMENTED|;;TableDefinition;
@@ -41,11 +41,11 @@ Searchable Keys:
   field : default
   field : limit
   field : name
-  field : null
+  field : null;;TrueClass;
   field : precision
-  field : primary
+  field : primary;;NilClass;
   field : scale
-  field : sql_type
+  field : sql_type;;NilClass;
   field : type
   fqn : ActiveRecord::ConnectionAdapters::Column
   method : binary_to_string(value)|DOCUMENTED|STATIC|

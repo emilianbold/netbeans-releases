@@ -96,6 +96,10 @@ public final class RubyTypeInferencer {
         analyzer.analyze();
 
         RubyType type = knowledge.getType(symbol);
+        if (type == null || !type.isKnown()) {
+            type = knowledge.getType(getLocalVarPath(new AstPath(knowledge.getRoot(), knowledge.getTarget()), symbol));
+        }
+
         if (type == null) {
             type = RubyType.createUnknown();
         }
@@ -134,17 +138,17 @@ public final class RubyTypeInferencer {
      * of the method where it is defined (if any), e.g. <code>"my_method/my_local_var"</code> or
      * just <code>"my_local_var"</code> if it was defined at top-level.
      * 
-     * @param root
+     * @param path the path
      * @param localVar 
      * @return
      */
-    static String getLocalVarPath(Node root, Node localVar) {
-        Node method = AstUtilities.findMethod(new AstPath(root, localVar));
+    static String getLocalVarPath(AstPath path, String varName) {
+        Node method = AstUtilities.findMethod(path);
         String prefix = "";
         if (method != null) {
             prefix = AstUtilities.getName(method) + "/";
         }
-        return prefix + AstUtilities.getName(localVar);
+        return prefix + varName;
     }
 
     /** Called on AsgnNodes to compute RHS. */
@@ -166,7 +170,7 @@ public final class RubyTypeInferencer {
         }
         switch (node.getNodeType()) {
             case LOCALVARNODE:
-                type = knowledge.getType(getLocalVarPath(knowledge.getRoot(), node));
+                type = knowledge.getType(getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node)));
                 break;
             case DVARNODE:
             case INSTVARNODE:
