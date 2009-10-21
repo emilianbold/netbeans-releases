@@ -519,9 +519,16 @@ public class JSFClientGenerator {
                 replace.append(find);
                 replace.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
-                String commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
-                commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
-                commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                String commandLink = "";
+                if (pageLink == null || "".equals(pageLink)) {
+                    commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE), "UTF-8"); //NOI18N
+                    commandLink = commandLink.replaceAll(MANAGED_BEAN_NAME_VAR, managedBeanName);
+                    commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                } else {
+                    commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
+                    commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
+                    commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                }
                 if (content.indexOf(commandLink) > -1) {
                     //return, indicating welcomeJsp exists
                     return true;
