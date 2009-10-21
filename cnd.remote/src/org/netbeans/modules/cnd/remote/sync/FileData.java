@@ -61,19 +61,19 @@ import org.openide.util.Exceptions;
  *
  * @author Vladimir Kvashin
  */
-public class FileData {
+public final class FileData {
 
     private final Properties data;
     private final File dataFile;
 
-    private static final String VERSION = "1.0";
-    private static final String VERSION_KEY = "VERSION";
+    private static final String VERSION = "1.0"; // NOI18N
+    private static final String VERSION_KEY = "VERSION"; // NOI18N
 
     //
     //  Public stuff
     //
 
-    public static class FileInfo {
+    public static final class FileInfo {
         public final long timestamp;
         public final FileState state;
 
@@ -205,6 +205,10 @@ public class FileData {
     }
 
     private String getFileKey(File file) {
-        return file.getAbsolutePath();
+        String key = file.getAbsolutePath();
+        if (!CndFileUtils.isSystemCaseSensitive()) {
+            key = key.toLowerCase();
+        }
+        return key;
     }
 }

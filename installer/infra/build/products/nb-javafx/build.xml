@@ -170,16 +170,20 @@
 
 
     <target name="-pre-package">
-        <!--
+        
 	<if property="i" value="2">
-            <mkdir dir="${data.directory}/${sources.params.1.value}"/>            
-            <move todir="${data.directory}/${sources.params.1.value}">
-                <fileset dir="${data.directory}">
-		    <exclude name="${sources.params.1.value}"/>
-                </fileset>
-            </move>
+            <delete includeemptydirs="true">
+              <fileset dir="${data.directory}/${sources.params.1.value}" includes="javafx-sdk/**"/>
+            </delete>
         </if>
-        -->
+
+	<if property="i" value="3">
+            <delete includeemptydirs="true">
+              <fileset dir="${data.directory}/${sources.params.1.value}" excludes="javafx-sdk/**"/>
+            </delete>
+        </if>
+
+        
         <delete dir="${data.directory}/META-INF" includeemptydirs="true"/>
     </target>
     

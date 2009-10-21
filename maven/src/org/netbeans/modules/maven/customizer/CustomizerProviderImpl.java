@@ -76,6 +76,7 @@ import org.jdom.output.Format;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
@@ -364,15 +365,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
    public static void writeAll(ModelHandle handle, NbMavenProjectImpl project) throws IOException {
-        Utilities.saveChanges(handle.getPOMModel());
-        if (handle.isModified(handle.getProfileModel())) {
-            Utilities.saveChanges(handle.getProfileModel());
-        }
-        if (handle.isModified(handle.getActionMappings())) {
-            writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
-        }
+       //save configs before pom, to save reloads in case both pom and configs were changed.
+       boolean performConfigsInvokedReload = false;
         M2ConfigProvider prv = project.getLookup().lookup(M2ConfigProvider.class);
-
         if (handle.isModified(handle.getConfigurations())) {
             List<M2Configuration> shared = new ArrayList<M2Configuration>();
             List<M2Configuration> nonshared = new ArrayList<M2Configuration>();
@@ -388,6 +383,16 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 }
             }
             prv.setConfigurations(shared, nonshared, true);
+            performConfigsInvokedReload = true;
+        }
+
+        Utilities.saveChanges(handle.getPOMModel());
+        if (handle.isModified(handle.getProfileModel())) {
+            performConfigsInvokedReload = false;
+            Utilities.saveChanges(handle.getProfileModel());
+        }
+        if (handle.isModified(handle.getActionMappings())) {
+            writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
         }
 
         //TODO we need to set the configurations for the case of non profile configs
@@ -402,7 +407,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             if (handle.isModified(handle.getActionMappings(c))) {
                 writeNbActionsModel(project, handle.getActionMappings(c), M2Configuration.getFileNameExt(c.getId()));
             }
-
+        }
+        if (performConfigsInvokedReload) {
+            //#174637
+            NbMavenProject.fireMavenProjectReload(project);
         }
    }
 

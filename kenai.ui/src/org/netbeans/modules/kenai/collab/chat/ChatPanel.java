@@ -231,20 +231,12 @@ public class ChatPanel extends javax.swing.JPanel {
         if (trackers.length == 0) { // No issue trackers found for the project
             return;
         }
-        if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) { // open BZ issue in the IDE
-            SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
 
-                public void run() {
-                    KenaiIssueAccessor.getDefault().open(proj, issueNumber);
-                }
-            });
-        } else { //... and open Jira issues in the browser
-            try {
-                URLDisplayer.getDefault().showURL(new URL(trackers[0].getWebLocation() + "-" + issueNumber));
-            } catch (MalformedURLException ex) {
-                //
+            public void run() {
+                KenaiIssueAccessor.getDefault().open(proj, issueNumber);
             }
-        }
+        });
     }
 
     private void selectStackTrace(Matcher m) {

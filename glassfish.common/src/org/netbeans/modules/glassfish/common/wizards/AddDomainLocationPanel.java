@@ -198,7 +198,8 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             return true;
         }
         File domainsDir = domainDirCandidate.getParentFile();
-        if (Utils.canWrite(domainsDir) && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
+        if (Utils.canWrite(domainsDir) && dex < 0 && !ServerUtilities.isTP2(gfRoot) &&
+                !domainDirCandidate.exists()) {
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N
@@ -221,7 +222,13 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setHostName("localhost");
             return true;
         }
-        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain", domainField)); // NOI18N
+        if (new File(domainsDir, domainField).exists()) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_UnusableDomain", domainField)); // NOI18N
+        } else if (domainDirCandidate.exists()) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_UnusableDomain", domainField)); // NOI18N
+        } else {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain", domainField)); // NOI18N
+        }
         return false;
     }
 

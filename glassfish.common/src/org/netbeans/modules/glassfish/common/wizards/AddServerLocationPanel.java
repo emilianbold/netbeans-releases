@@ -437,11 +437,12 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 }
                 
                 int httpPort = httpData != null ? httpData.getPort() : -1;
+                int adminPort = null!=adminData ? adminData.getPort() : -1;
                 if (null != wi) {
                     wi.setHttpPort(httpPort);
                     wi.setHttpsPort(httpsData != null ? httpsData.getPort() : -1);
                 }
-                result = httpPort != -1;
+                result = httpPort != -1 && adminPort != -1;
             } catch(IllegalStateException ex) {
                 Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
@@ -477,6 +478,6 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         public String toString() {
             return "{ " + id + ", " + port + ", " + secure + " }";
         }
-        
+
     }
 }

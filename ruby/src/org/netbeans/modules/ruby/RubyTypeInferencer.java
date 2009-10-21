@@ -129,6 +129,24 @@ public final class RubyTypeInferencer {
         return type;
     }
 
+    /**
+     * Returns the name of the given local variable prefixed with the name
+     * of the method where it is defined (if any), e.g. <code>"my_method/my_local_var"</code> or
+     * just <code>"my_local_var"</code> if it was defined at top-level.
+     * 
+     * @param root
+     * @param localVar 
+     * @return
+     */
+    static String getLocalVarPath(Node root, Node localVar) {
+        Node method = AstUtilities.findMethod(new AstPath(root, localVar));
+        String prefix = "";
+        if (method != null) {
+            prefix = AstUtilities.getName(method) + "/";
+        }
+        return prefix + AstUtilities.getName(localVar);
+    }
+
     /** Called on AsgnNodes to compute RHS. */
     RubyType inferTypesOfRHS(final Node node) {
         List<Node> children = node.childNodes();
@@ -148,6 +166,8 @@ public final class RubyTypeInferencer {
         }
         switch (node.getNodeType()) {
             case LOCALVARNODE:
+                type = knowledge.getType(getLocalVarPath(knowledge.getRoot(), node));
+                break;
             case DVARNODE:
             case INSTVARNODE:
             case GLOBALVARNODE:

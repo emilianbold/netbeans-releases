@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
@@ -317,6 +320,18 @@ public class JaxWsServiceCreator implements ServiceCreator {
         } else {
             throw new Exception("Unable to add JAXWS 2.1 Library. " +
                     "ProjectClassPathExtender or library not found");
+        }
+
+        if (sgs.length > 0) {
+            try {
+                FileObject srcRoot = sgs[0].getRootFolder();
+                String java_version = System.getProperty("java.version"); //NOI18N
+                if (java_version.compareTo("1.6") >= 0) {
+                    WSUtils.addJaxWsApiEndorsed(project, srcRoot);
+                }
+            } catch (java.io.IOException ex) {
+                Logger.getLogger(JaxWsServiceCreator.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
+            }
         }
     }
 

@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  * @author gordonp
  * @deprecated  Use {@link @org-netbeans-modules-nativexecution@} instead
  */
+@Deprecated
 public abstract class NativeExecution {
 
     protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N

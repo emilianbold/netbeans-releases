@@ -48,7 +48,7 @@ import org.netbeans.editor.Utilities;
  *
  * @author thp
  */
-public class LineAnnotationInfo {
+public final class LineAnnotationInfo {
 
     private static String SPACES = "                               ";  // NOI18N
     private FileAnnotationInfo fileAnnotationInfo;
@@ -58,6 +58,7 @@ public class LineAnnotationInfo {
     private String annotation;
     private String tooltip;
     private String columns[];
+    private String notFormatedColumns[];
     private Position position;
     private int y1;
     private int y2;
@@ -176,6 +177,18 @@ public class LineAnnotationInfo {
     public void setColumns(String[] columns) {
         this.columns = columns;
     }
+    /**
+     * @return the columns
+     */
+    public String[] getNotFormattedColumns() {
+        return notFormatedColumns;
+    }
+    /**
+     * @param columns the columns to set
+     */
+    public void setNotFormattedColumns(String[] columns) {
+        this.notFormatedColumns = columns;
+    }
 
     /**
      * @return the tooltip
@@ -188,7 +201,7 @@ public class LineAnnotationInfo {
                 if (tt.length() > 0) {
                     tt += " | "; // NOI18N
                 }
-                tt += col + ':' + columns[i];
+                tt += col + ':' + notFormatedColumns[i];
                 i++;
             }
             tooltip = tt;

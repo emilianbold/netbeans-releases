@@ -103,6 +103,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     lineAnnotationInfo.setLine(sourceFileInfo.getLine());
                     lineAnnotationInfo.setOffset(sourceFileInfo.getOffset());
                     lineAnnotationInfo.setColumns(new String[metrics.size()]);
+                    lineAnnotationInfo.setNotFormattedColumns(new String[metrics.size()]);
                     boolean below = true;
                     int col = 0;
                     for (Column column : metrics) {
@@ -113,6 +114,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                             below = false;
                         }
                         lineAnnotationInfo.getColumns()[col] = metricValString;
+                        lineAnnotationInfo.getNotFormattedColumns()[col] = metricVal + "";
                         int metricValLength = metricValString.length();
                         if (fileAnnotationInfo.getMaxColumnWidth()[col] < metricValLength) {
                             fileAnnotationInfo.getMaxColumnWidth()[col] = metricValLength;
@@ -125,11 +127,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     }
                     if (lineAnnotations && !below) {
                         // line annotation (none zero)
-                        fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
+                        fileAnnotationInfo.addLineAnnotationInfo(lineAnnotationInfo);
                     }
                     if (!lineAnnotations) {
                         // block annotation
-                        fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
+                        fileAnnotationInfo.addBlockAnnotationInfo(lineAnnotationInfo);
                     }
                 }
             }
@@ -139,7 +141,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
         // log(sourceFileInfoProvider, metrics, list, functionCalls);
         // Remember list of annotated panes
-        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet();
+        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet<JEditorPane>();
         if (activeAnnotations != null) {
             for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
                 if (fileAnnotationInfo.isAnnotated()) {

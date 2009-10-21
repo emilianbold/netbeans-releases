@@ -601,6 +601,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             t.accessLock.readLock().lock();
             try {
                 try {
+                    if (!ThreadReferenceWrapper.isSuspended(tr)) {
+                        return false;   // Already running.
+                    }
                     // Synthetic method?
                     Method m = LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0)));
                     boolean doStepAgain = false;

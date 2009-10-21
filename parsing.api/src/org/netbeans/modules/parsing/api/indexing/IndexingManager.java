@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.parsing.api.indexing;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -89,7 +92,7 @@ public final class IndexingManager {
      * job will take.
      *
      * @param root The common parent folder of the files that should be reindexed.
-     * @param files The files to reindex. Can be <code>null</code> or an empty
+     * @param filesOrFolders The files to reindex. Can be <code>null</code> or an empty
      *   collection in which case <b>all</b> files under the <code>root</code> will
      *   be reindexed.
      */
@@ -114,7 +117,7 @@ public final class IndexingManager {
      * job will take.
      *
      * @param root The common parent folder of the files that should be reindexed.
-     * @param files The files to reindex. Can be <code>null</code> or an empty
+     * @param filesOrFolders The files to reindex. Can be <code>null</code> or an empty
      *   collection in which case <b>all</b> files under the <code>root</code> will
      *   be reindexed.
      * @param fullRescan If <code>true</code> no timestamps check will be done
@@ -124,7 +127,7 @@ public final class IndexingManager {
      * @since 1.16
      */
     public void refreshIndex(URL root, Collection<? extends URL> files, boolean fullRescan) {
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false, fullRescan);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, false, fullRescan, true);
     }
 
     /**
@@ -137,7 +140,7 @@ public final class IndexingManager {
      * job will take.
      *
      * @param root The common parent folder of the files that should be reindexed.
-     * @param files The files to reindex. Can be <code>null</code> or an empty
+     * @param filesOrFolders The files to reindex. Can be <code>null</code> or an empty
      *   collection in which case <b>all</b> files under the <code>root</code> will
      *   be reindexed.
      */
@@ -155,7 +158,7 @@ public final class IndexingManager {
      * job will take.
      *
      * @param root The common parent folder of the files that should be reindexed.
-     * @param files The files to reindex. Can be <code>null</code> or an empty
+     * @param filesOrFolders The files to reindex. Can be <code>null</code> or an empty
      *   collection in which case <b>all</b> files under the <code>root</code> will
      *   be reindexed.
      * @param fullRescan If <code>true</code> no timestamps check will be done
@@ -170,7 +173,7 @@ public final class IndexingManager {
             //in between completion-active = true and completion-active = false.
             EventSupport.releaseCompletionCondition();
         }
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan, false);
     }
 
     /**
@@ -198,42 +201,105 @@ public final class IndexingManager {
     }
 
     /**
-     * Schedules a new job that will reindex all known roots thay lie under the
-     * <code>folders</code>. This method does the same as {@link #refreshAllIndices(boolean, boolean, org.openide.filesystems.FileObject[])}
+     * Schedules a new job that will reindex known source roots determined by
+     * <code>filesOrFolder</code> parameter.
+     * This method does the same as {@link #refreshAllIndices(boolean, boolean, org.openide.filesystems.FileObject[])}
      * with <code>fullRescan == true</code> and <code>wait == false</code>.
      *
      * 
-     * @param folders The list of folders that may contain some of previously
-     *   indexed roots. Can be <code>null</code> in which case all indices for
+     * @param filesOrFolders The list of files or folders that should be refreshed.
+     *   This can be a mixture of files or folders that either lie under some source
+     *   root or contain (folders) source roots. The files lying under a source root
+     *   will simply be rescanned. The folders lying under a source root will be rescanned
+     *   recursively. Files lying outside of all source roots will be ignored. Folders
+     *   lying outside of all source folders will be checked for source roots that they
+     *   contain and these source roots will be rescanned.
+     *   <p>Can be <code>null</code> in which case all indices for
      *   all roots will be refreshed.
      *
      * @since 1.11
      */
-    public void refreshAllIndices(FileObject... folders) {
-        refreshAllIndices(true, false, folders);
+    public void refreshAllIndices(FileObject... filesOrFolders) {
+        refreshAllIndices(true, false, filesOrFolders);
     }
 
     /**
-     * Schedules a new job that will reindex all known roots thay lie under the
-     * <code>folders</code>.
+     * Schedules a new job that will reindex known source roots determined by
+     * <code>filesOrFolder</code> parameter.
      *
      * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
      * very expensive operation and the more files you ask to reindex the longer the
      * job will take.
      *
-     * @param fullRescan If <code>true</code> full rescan of roots under the
-     *   <code>folders</code>. If <code>false</code> only modified, new or deleted
-     *   files under the roots will be rescanned.
+     * @param fullRescan If <code>false</code> only modified, new or deleted
+     *   files under the roots will be rescanned. Otherwise files will be rescanned
+     *   no matter if they were modified or not.
      * @param wait If <code>true</code> the method will block the caller until
      *   refreshing is done.
-     * @param folders The list of folders that may contain some of previously
-     *   indexed roots. Can be <code>null</code> in which case all indices for
+     * @param filesOrFolders The list of files or folders that should be refreshed.
+     *   This can be a mixture of files or folders that either lie under some source
+     *   root or contain (folders) source roots. The files lying under a source root
+     *   will simply be rescanned. The folders lying under a source root will be rescanned
+     *   recursively. Files lying outside of all source roots will be ignored. Folders
+     *   lying outside of all source folders will be checked for source roots that they
+     *   contain and these source roots will be rescanned.
+     *   <p>Can be <code>null</code> in which case all indices for
      *   all roots will be refreshed.
      *
      * @since 1.23
      */
-    public void refreshAllIndices(boolean fullRescan, boolean wait, FileObject... folders) {
-        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, folders);
+    public void refreshAllIndices(boolean fullRescan, boolean wait, FileObject... filesOrFolders) {
+        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
+    }
+
+    /**
+     * Schedules a new job that will reindex known source roots determined by
+     * <code>filesOrFolder</code> parameter. This is the same method as {@link #refreshAllIndices(boolean, boolean, org.openide.filesystems.FileObject[])},
+     * but it accepts <code>java.io.File</code>s rather than <code>FileObject</code>s.
+     *
+     * <p>IMPORTANT: Please use this with extreme caution. Indexing is generally
+     * very expensive operation and the more files you ask to reindex the longer the
+     * job will take.
+     *
+     * @param fullRescan If <code>false</code> only modified, new or deleted
+     *   files under the roots will be rescanned. Otherwise files will be rescanned
+     *   no matter if they were modified or not.
+     * @param wait If <code>true</code> the method will block the caller until
+     *   refreshing is done.
+     * @param filesOrFolders The list of files or folders that should be refreshed.
+     *   This can be a mixture of files or folders that either lie under some source
+     *   root or contain (folders) source roots. The files lying under a source root
+     *   will simply be rescanned. The folders lying under a source root will be rescanned
+     *   recursively. The files lying outside of all source roots will be ignored. Finally,
+     *   the folders lying outside of all source folders will be checked for source roots
+     *   that they contain and these source roots will be rescanned.
+     *   <p>Can be <code>null</code> in which case all indices for
+     *   all roots will be refreshed.
+     *
+     * @since 1.24
+     */
+    public void refreshAllIndices(boolean fullRescan, boolean wait, File... filesOrFolders) {
+        RepositoryUpdater.getDefault().refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
+    }
+
+    /**
+     * Runs the <code>operation</code> in protected mode. All events that would normally
+     * trigger rescanning are rememberd and processed after the operation finishes.
+     *
+     * @param operation The operation to run without rescanning while the operation
+     *   is running.
+     * @return Whatever value the <code>operation</code> returns.
+     * 
+     * @throws Exception Any exception thrown from the operation is rethrown.
+     * @since 1.24
+     */
+    public <T> T runProtected(Callable<T> operation) throws Exception {
+        IndexingController.getDefault().enterProtectedMode();
+        try {
+            return operation.call();
+        } finally {
+            IndexingController.getDefault().exitProtectedMode(null);
+        }
     }
 
     // -----------------------------------------------------------------------

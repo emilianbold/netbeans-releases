@@ -302,7 +302,7 @@ public class ReformatterImpl {
                         braces.pop(ts);
                     }
                     if (entry != null && 
-                       (entry.getKind() == DO || entry.getImportantKind() == DO)) {
+                       ((entry.getKind() == DO || entry.getImportantKind() == DO)) && entry.getKind() != LBRACE) {
                         Token<CppTokenId> next = ts.lookNextImportant();
                         if (next != null && next.id() == WHILE) {
                             braces.isDoWhile = true;
@@ -566,6 +566,7 @@ public class ReformatterImpl {
                     braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         boolean doSpaceBefore = true;
+
                         if (braces.isDoWhile) {
                             if (ts.isFirstLineToken()) {
                                 if (!codeStyle.newLineWhile()) {

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -300,7 +301,15 @@ public class ProjectActionSupport {
             }
             progressHandle = createProgressHandle();
             progressHandle.start();
-            go();
+            if (SwingUtilities.isEventDispatchThread()) {
+                RequestProcessor.getDefault().post(new Runnable(){
+                    public void run() {
+                        go();
+                    }
+                });
+            } else {
+                go();
+            }
         }
 
         private void go() {
@@ -529,8 +538,10 @@ public class ProjectActionSupport {
 
                 if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
-                    PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                    executable = mapper.getRemotePath(executable,true);
+                    if (!pae.isFinalExecutable()) {
+                        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                        executable = mapper.getRemotePath(executable,true);
+                    }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
                         ok = cmd.run(execEnv, "test", null, "-x", executable, "-a", "-f", executable) == 0; // NOI18N
@@ -557,6 +568,7 @@ public class ProjectActionSupport {
             // path that reflects file location on a target host (local or remote)
 
             pae.setExecutable(executable);
+            pae.setFinalExecutable();
             
             return true;
         }
