@@ -84,6 +84,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -655,6 +656,25 @@ public class CsmUtilities {
         } catch (DataObjectNotFoundException ex) {
             return false;
         }
+    }
+
+    public static boolean openSource(PositionBounds position) {
+        CloneableEditorSupport editorSupport = position.getBegin().getCloneableEditorSupport();
+        editorSupport.edit();
+        JEditorPane[] panes = editorSupport.getOpenedPanes();
+        if (panes != null) {
+            JumpList.checkAddEntry();
+            JEditorPane pane = panes[0];
+            pane.setCaretPosition(position.getBegin().getOffset());
+            Container container = pane;
+            while (container != null && !(container instanceof TopComponent)) {
+                container = container.getParent();
+            }
+            if (container != null) {
+                ((TopComponent) container).requestActive();
+            }
+        }
+        return false;
     }
 
     private static boolean openAtElement(final CsmOffsetable element) {

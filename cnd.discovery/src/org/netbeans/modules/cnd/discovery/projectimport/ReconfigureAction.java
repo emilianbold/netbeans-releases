@@ -149,7 +149,9 @@ public class ReconfigureAction extends NodeAction {
             cFlags = "-g3 -gdwarf-2"; // NOI18N
             cxxFlags = "-g3 -gdwarf-2"; // NOI18N
         }
-        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, linkerFlags, reconfigurator.getRestOptions(), getLegend(reconfigurator));
+
+        ReconfigurePanel panel = new ReconfigurePanel(cFlags, cxxFlags, linkerFlags, reconfigurator.getRestOptions(), 
+                getLegend(reconfigurator), reconfigurator.getCompilerSet().getDisplayName());
         JButton runButton = new JButton(NbBundle.getMessage(getClass(), "ReconfigureButton")); // NOI18N
         runButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ReconfigureButtonAD")); // NOI18N
         Object options[] =  new Object[]{runButton, DialogDescriptor.CANCEL_OPTION};
@@ -174,7 +176,7 @@ public class ReconfigureAction extends NodeAction {
         if (options != null && options.CFlags != null && options.CppFlags != null &&
             options.CCompiler != null && options.CppCompiler != null) {
             String linker = options.LinkerFlags == null ? "" : options.LinkerFlags;
-            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler+"<br>"+options.CppCompiler+"<br>", options.CFlags, options.CppFlags, linker); // NOI18N
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler, options.CppCompiler, options.CFlags, options.CppFlags, linker); // NOI18N
         }
         return ""; // NOI18N
     }

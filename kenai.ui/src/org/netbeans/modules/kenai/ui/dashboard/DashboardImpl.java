@@ -427,7 +427,7 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    void refreshNonMemberProjects() {
+    public void refreshNonMemberProjects() {
         synchronized( LOCK ) {
             removeProjectsFromModel(openProjects);
             openProjects.clear();

@@ -71,6 +71,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
@@ -911,7 +912,11 @@ public final class SingleModuleProperties extends ModuleProperties {
 
             logNetBeansAPIUsage("DEPENDENCIES", dependencyModel.getDependencies()); // NOI18N
 
-            pxm.replaceDependencies(depsToSave);
+            try {
+                pxm.replaceDependencies(depsToSave);
+            } catch (CyclicDependencyException ex) {
+                throw new IOException(ex.getMessage());
+            }
         }
         Set<String> friends = getFriendListModel().getFriends();
         Set<String> publicPkgs = getPublicPackagesModel().getSelectedPackages();

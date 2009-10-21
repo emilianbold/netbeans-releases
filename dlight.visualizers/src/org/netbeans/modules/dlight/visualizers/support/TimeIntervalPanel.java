@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.visualizers.support;
 
 import java.util.Collection;
@@ -60,7 +59,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     private DataFilterManager manager;
     private final ChangeListener startTimeChangeListener = new StartTimeSpinnerListener();
     private final ChangeListener endTimeChangeListener = new EndTimeSpinnerListener();
-    private final Object uiLock = new String("TimeIntervalPanel.uiLock"); // NOI18N
+    private final UILock uiLock = new UILock();
 
     /** Creates new form TimeIntervalPanel */
     public TimeIntervalPanel(DataFilterManager manager) {
@@ -85,7 +84,7 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         if (this.manager != null) {
             this.manager.addDataFilterListener(this);
         }
-        update(manager == null? null : manager.getDataFilter(TimeIntervalDataFilter.class));
+        update(manager == null ? null : manager.getDataFilter(TimeIntervalDataFilter.class));
     }
 
     /** This method is called from within the constructor to
@@ -160,7 +159,8 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
     }
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
-            UIThread.invoke(new Runnable() {
+        UIThread.invoke(new Runnable() {
+
             public void run() {
                 update(manager.getDataFilter(TimeIntervalDataFilter.class));
             }
@@ -175,8 +175,8 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
         synchronized (uiLock) {
             startTimeSpinner.removeChangeListener(startTimeChangeListener);
             endTimeSpinner.removeChangeListener(endTimeChangeListener);
-            startTimeSpinner.setValue(filter == null? 0L : filter.getInterval().getStart());
-            endTimeSpinner.setValue(filter == null? Long.MAX_VALUE : filter.getInterval().getEnd());
+            startTimeSpinner.setValue(filter == null ? 0L : filter.getInterval().getStart());
+            endTimeSpinner.setValue(filter == null ? Long.MAX_VALUE : filter.getInterval().getEnd());
             startTimeSpinner.addChangeListener(startTimeChangeListener);
             endTimeSpinner.addChangeListener(endTimeChangeListener);
         }
@@ -209,5 +209,8 @@ public final class TimeIntervalPanel extends javax.swing.JPanel implements DataF
             }
             applyFilter();
         }
+    }
+
+    private final static class UILock {
     }
 }

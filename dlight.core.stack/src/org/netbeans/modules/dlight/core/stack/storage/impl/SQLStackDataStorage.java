@@ -435,7 +435,6 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 funcId = ++funcIdSequence;
                 AddFunction cmd = new AddFunction();
                 cmd.id = funcId;
-                funcName = new String(funcName.toString());
                 cmd.name = funcName;
                 executor.submitCommand(cmd);
                 funcCache.put(funcName, funcId);

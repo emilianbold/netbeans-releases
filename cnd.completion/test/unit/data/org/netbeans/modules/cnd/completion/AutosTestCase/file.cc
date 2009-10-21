@@ -10,5 +10,9 @@ int main(int argc, char**argv) {
         }
     }
 
+    int i = 5;
+    if (argc == 1) return argc + argv;
+    if (argc == 2) return main(argc, argv);
+
     return 0;
 }

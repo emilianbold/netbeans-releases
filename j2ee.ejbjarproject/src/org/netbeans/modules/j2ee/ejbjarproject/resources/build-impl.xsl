@@ -264,13 +264,7 @@ is divided into following sections:
                 </condition> 
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
                 <property name="includes" value="**"/>
-                <property name="excludes" value=""/>
-                <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
-                    <and>
-                        <isset property="jaxws.endorsed.dir"/>
-                        <available file="nbproject/jaxws-build.xml"/>
-                    </and>
-                </condition>             
+                <property name="excludes" value=""/>            
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
                     <length length="0" string="${{endorsed.classpath}}" when="greater"/>
@@ -407,7 +401,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                            <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
                     </sequential>

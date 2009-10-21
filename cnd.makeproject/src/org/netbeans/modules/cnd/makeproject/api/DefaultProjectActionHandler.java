@@ -135,7 +135,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
                                 + " " + getArguments(); // NOI18N
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
-                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
+                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
                     }
                     unbuffer = true;
                 } else {

@@ -53,7 +53,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
@@ -74,6 +78,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -368,15 +373,17 @@ public final class ProjectXMLManager {
 
     /**
      * Adds given dependency.
+     * Checks for dependency cycles, see {@link #replaceDependencies(java.util.Set)} for details.
      */
-    public void addDependency(ModuleDependency md) throws IOException {
+    public void addDependency(ModuleDependency md) throws IOException, CyclicDependencyException {
         addDependencies(Collections.singleton(md));
     }
 
     /**
      * Adds given modules as module-dependencies for the project.
+     * Checks for dependency cycles, see {@link #replaceDependencies(java.util.Set)} for details.
      */
-    public void addDependencies(final Set<ModuleDependency> toAdd) throws IOException {
+    public void addDependencies(final Set<ModuleDependency> toAdd) throws IOException, CyclicDependencyException {
         SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(getDirectDependencies());
         if (deps.addAll(toAdd)) {
             replaceDependencies(deps);
@@ -384,9 +391,50 @@ public final class ProjectXMLManager {
     }
 
     /**
-     * Replaces all original dependencies with the given <code>newDeps</code>.
+     * Checks if <code>candidates</code> dependencies introduce dependency cycle.
+     * In such case returns localized message about which dependency causes the cycle.
+     * @param candidates Module dependencies about to be added. May be empty but not <code>null</code>.
+     * @return Localized warning message about introduced dependency cycle,
+     * <code>null</code> otherwise.
      */
-    public void replaceDependencies(final Set<ModuleDependency> newDeps) {
+    public String getDependencyCycleWarning(final Set<ModuleDependency> candidates) {
+        for (ModuleDependency md : candidates) {
+            File srcLoc = md.getModuleEntry().getSourceLocation();
+            if (srcLoc == null)
+                continue;
+            Project candidate = FileOwnerQuery.getOwner(FileUtil.toFileObject(srcLoc));
+            boolean cyclicDep = ProjectUtils.hasSubprojectCycles(project, candidate);
+            if (cyclicDep) {
+                String c = ProjectUtils.getInformation(candidate).getDisplayName();
+                String m = ProjectUtils.getInformation(project).getDisplayName();
+                return NbBundle.getMessage(ProjectXMLManager.class, "MSG_cyclic_dep", c, m);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Exception thrown when dependency cycle is created when storing
+     * new dependencies via project XML manager.
+     * {@link #getLocalizedMessage()} return warning message about which project caused the cycle.
+     */
+    public static class CyclicDependencyException extends Exception {
+        private CyclicDependencyException(String message) {
+            super(message);
+        }
+    }
+
+    /**
+     * Replaces all original dependencies with the given <code>newDeps</code>.
+     *
+     * Checks for dependency cycles, throws {@link CyclicDependencyException} if new dependencies
+     * introduce dependency cycle and leaves current dependencies untouched.
+     */
+    public void replaceDependencies(final Set<ModuleDependency> newDeps) throws CyclicDependencyException {
+        String warning = getDependencyCycleWarning(newDeps);
+        if (warning != null)
+            throw new CyclicDependencyException(warning);
+
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element moduleDependencies = findModuleDependencies(confData);

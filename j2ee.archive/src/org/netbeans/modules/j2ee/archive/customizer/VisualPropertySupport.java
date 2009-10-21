@@ -62,7 +62,7 @@ import org.openide.ErrorManager;
  */
 public final class VisualPropertySupport {
     
-    private static final String WRONG_TYPE = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/customizer/Bundle").getString("WrongType");
+    private final String WRONG_TYPE = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/customizer/Bundle").getString("WrongType");
     
     private ArchiveProjectProperties apProperties;
     private HashMap component2property;

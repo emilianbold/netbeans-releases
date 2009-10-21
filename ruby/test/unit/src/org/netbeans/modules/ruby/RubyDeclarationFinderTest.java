@@ -112,6 +112,10 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/named_scopes_client.rb", "my_model.to^ka", "named_scopes.rb", 91);
     }
 
+    public void testAliasMethod() throws Exception {
+        checkDeclaration("testfiles/alias_method.rb", "Far.new.far_far_aw^ay", "alias_method.rb", 48);
+    }
+
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
     //}

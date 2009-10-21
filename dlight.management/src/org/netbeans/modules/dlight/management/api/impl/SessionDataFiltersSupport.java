@@ -46,7 +46,7 @@ import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 
 public class SessionDataFiltersSupport {
 
-    private final Object lock = new String(SessionDataFiltersSupport.class.getName());
+    private final Lock lock = new Lock();
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private final Collection<DataFilterListener> listeners = new ArrayList<DataFilterListener>();
 
@@ -149,5 +149,8 @@ public class SessionDataFiltersSupport {
         for (DataFilterListener listener : listeners) {
             listener.dataFiltersChanged(filters, isAdjusting);
         }
+    }
+
+    private final static class Lock {
     }
 }

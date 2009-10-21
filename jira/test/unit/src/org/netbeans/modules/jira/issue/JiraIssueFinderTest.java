@@ -77,15 +77,21 @@ public class JiraIssueFinderTest {
         checkNoIssueSpansFound("bug -1");
         checkNoIssueSpansFound("bug -12");
         checkNoIssueSpansFound("bug -123");
-        checkNoIssueSpansFound("bug A-1");
-        checkNoIssueSpansFound("bug A-12");
-        checkNoIssueSpansFound("bug A-123");
         checkNoIssueSpansFound("bug AB-");
         checkNoIssueSpansFound("bug A-B");
         checkNoIssueSpansFound("bug AB-C");
         checkNoIssueSpansFound("bug AB-1C");
         checkNoIssueSpansFound("bug AB-12C");
         checkNoIssueSpansFound("bug AB-123C");
+        checkNoIssueSpansFound("bug AB1-123C");
+        checkNoIssueSpansFound("bug AB12-123C");
+        checkNoIssueSpansFound("bug 1A-123C");
+        checkNoIssueSpansFound("bug 12A-123C");
+        checkNoIssueSpansFound("bug 1A1-123C");
+        checkNoIssueSpansFound("bug 1A12-123C");
+        checkNoIssueSpansFound("bug 12A1-123C");
+        checkNoIssueSpansFound("bug 12A12-123C");
+        checkNoIssueSpansFound("bug 123-123C");
 
         checkNoIssueSpansFound("bug#A");
         checkNoIssueSpansFound("bug #A");
@@ -96,33 +102,56 @@ public class JiraIssueFinderTest {
         checkNoIssueSpansFound("bug #-1");
         checkNoIssueSpansFound("bug #-12");
         checkNoIssueSpansFound("bug #-123");
-        checkNoIssueSpansFound("bug #A-1");
-        checkNoIssueSpansFound("bug #A-12");
-        checkNoIssueSpansFound("bug #A-123");
         checkNoIssueSpansFound("bug #AB-");
         checkNoIssueSpansFound("bug #A-B");
         checkNoIssueSpansFound("bug #AB-C");
         checkNoIssueSpansFound("bug #AB-1C");
         checkNoIssueSpansFound("bug #AB-12C");
         checkNoIssueSpansFound("bug #AB-123C");
-
-        checkNoIssueSpansFound("bug##ABC-123");
-        checkNoIssueSpansFound("bug ##ABC-123");
-        checkNoIssueSpansFound("bug###ABC-123");
-
-        checkNoIssueSpansFound("sbug#ABC-123");
-
-        checkNoIssueSpansFound("bugABC-123");
-        checkNoIssueSpansFound("bug#ABC-123");
+        checkNoIssueSpansFound("bug #AB1-123C");
+        checkNoIssueSpansFound("bug #AB12-123C");
+        checkNoIssueSpansFound("bug #1A-123C");
+        checkNoIssueSpansFound("bug #12A-123C");
+        checkNoIssueSpansFound("bug #1A1-123C");
+        checkNoIssueSpansFound("bug #1A12-123C");
+        checkNoIssueSpansFound("bug #12A1-123C");
+        checkNoIssueSpansFound("bug #12A12-123C");
+        checkNoIssueSpansFound("bug #123-123C");
 
         checkIssueSpans("ABC-123", "ABC-123");
+        checkIssueSpans("ABC1-123", "ABC1-123");
+        checkIssueSpans("ABC12-123", "ABC12-123");
+        checkIssueSpans("1A-123", "1A-123");
+        checkIssueSpans("12A-123", "12A-123");
+        checkIssueSpans("1A1-123", "1A1-123");
+        checkIssueSpans("1A12-123", "1A12-123");
+        checkIssueSpans("12A1-123", "12A1-123");
+        checkIssueSpans("12A12-123", "12A12-123");
+        checkIssueSpans("123-123", "123-123");
         checkIssueSpans(" ABC-123", "ABC-123");
         checkIssueSpans("  ABC-123", "ABC-123");
         checkIssueSpans("   ABC-123", "ABC-123");
+        checkIssueSpans("   A12-123", "A12-123");
+        checkIssueSpans("   1A1-123", "1A1-123");
+        checkIssueSpans("   987-123", "987-123");
+        checkIssueSpans("   12A-123", "12A-123");
         checkIssueSpans("bug# ABC-123", "ABC-123");
+        checkIssueSpans("bug# A12-123", "A12-123");
+        checkIssueSpans("bug# 1A1-123", "1A1-123");
+        checkIssueSpans("bug# 987-123", "987-123");
+        checkIssueSpans("bug# 12A-123", "12A-123");
+        checkIssueSpans("bug# 6-123", "6-123");
         checkIssueSpans("bug#  ABC-123", "ABC-123");
         checkIssueSpans("sbug ABC-123", "ABC-123");
+        checkIssueSpans("sbug A12-123", "A12-123");
+        checkIssueSpans("sbug 1A1-123", "1A1-123");
+        checkIssueSpans("sbug 987-123", "987-123");
+        checkIssueSpans("sbug 12A-123", "12A-123");
+        checkIssueSpans("sbug 9-123", "9-123");
         checkIssueSpans("bug## ABC-123", "ABC-123");
+        checkIssueSpans("# bug ABC-123", "bug ABC-123");
+        checkIssueSpans("bug bug ABC-123", "bug ABC-123");
+        checkIssueSpans("bug bug bug-123", "bug bug-123");
 
         checkIssueSpans("#ABC-123", "#ABC-123");
         checkIssueSpans("# ABC-123", "# ABC-123");
@@ -141,6 +170,10 @@ public class JiraIssueFinderTest {
         checkIssueSpans("BUG ABC-123", "BUG ABC-123");
         checkIssueSpans("Issue ABC-123", "Issue ABC-123");
         checkIssueSpans("ISSUE ABC-123", "ISSUE ABC-123");
+        checkIssueSpans("Issue 5-123", "Issue 5-123");
+        checkIssueSpans("Issue issue-123", "Issue issue-123");
+        checkIssueSpans("Issue issue-123-456", "Issue issue-123-456");
+        checkIssueSpans("Issue issue-123-456-def-8", "Issue issue-123-456-def-8");
 
         checkIssueSpans("Bug #ABC-123", "Bug #ABC-123");
         checkIssueSpans("BUG #ABC-123", "BUG #ABC-123");
@@ -202,6 +235,18 @@ public class JiraIssueFinderTest {
         testGetIssueNumber("  #ABC-123", "ABC-123");
         testGetIssueNumber(" # ABC-123", "ABC-123");
         testGetIssueNumber("#  ABC-123", "ABC-123");
+
+        testGetIssueNumber("#A-123", "A-123");
+        testGetIssueNumber("#A1-123", "A1-123");
+        testGetIssueNumber("#A12-123", "A12-123");
+        testGetIssueNumber("#1A12-123", "1A12-123");
+        testGetIssueNumber("#12A12-123", "12A12-123");
+        testGetIssueNumber("#12A1-123", "12A1-123");
+        testGetIssueNumber("#12A-123", "12A-123");
+        testGetIssueNumber("#1A-123", "1A-123");
+        testGetIssueNumber("#1-123", "1-123");
+        testGetIssueNumber("#1A1-123", "1A1-123");
+
         testGetIssueNumber("bug ABC-123", "ABC-123");
         testGetIssueNumber("bug  ABC-123", "ABC-123");
         testGetIssueNumber("bug #ABC-123", "ABC-123");
@@ -226,6 +271,8 @@ public class JiraIssueFinderTest {
         testGetIssueNumber("BUG #ABC-123", "ABC-123");
         testGetIssueNumber("Issue #ABC-123", "ABC-123");
         testGetIssueNumber("ISSUE #ABC-123", "ABC-123");
+
+        testGetIssueNumber("Issue issue-123-456-def-8", "issue-123-456-def-8");
 
     }
 

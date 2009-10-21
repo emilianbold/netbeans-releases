@@ -153,7 +153,7 @@ public final class Context {
         if (repouLogger.isLoggable(Level.FINE)) {
             repouLogger.fine("addSupplementaryFiles: root=" + root + ", files=" + files); //NOI18N
         }
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false, true);
+        RepositoryUpdater.getDefault().addIndexingJob(root, files, true, false, false, true, true);
     }
 
     /**
