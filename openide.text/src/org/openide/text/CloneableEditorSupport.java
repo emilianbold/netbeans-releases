@@ -2684,7 +2684,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private void setStrong(boolean alreadyModified) {
             if (alreadyModified) {
                 this.doc = super.get();
-                this.lineSet = CloneableEditorSupport.this.lineSet.get();
+                if (CloneableEditorSupport.this.lineSet != null) {
+                    this.lineSet = CloneableEditorSupport.this.lineSet.get();
+                } else {
+                    this.lineSet = null;
+                }
             } else {
                 this.doc = null;
                 this.lineSet = null;
