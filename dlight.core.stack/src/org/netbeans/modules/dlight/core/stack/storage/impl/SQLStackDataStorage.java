@@ -424,10 +424,14 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         }
     }
 
-    private long generateFuncId(CharSequence funcName) {
+    private long generateFuncId(final CharSequence fname) {
+        // Need an immutable copy of fname. Otherwise will use
+        // wrong key in funcCache (mutuable fname)
+        String funcName = fname.toString();
+        
         int plusPos = lastIndexOf(funcName, '+'); // NOI18N
         if (0 <= plusPos) {
-            funcName = funcName.subSequence(0, plusPos);
+            funcName = funcName.substring(0, plusPos);
         }
         synchronized (funcCache) {
             Long funcId = funcCache.get(funcName);
