@@ -4,17 +4,17 @@ Document 0
 Searchable Keys:
   class : Ape
   class-ig : ape
-  field : authent
+  field : authent;;Authent;
   field : cats
   field : dialogs
-  field : dianum
-  field : diarefs
+  field : dianum;;Fixnum;
+  field : diarefs;;Hash;
   field : footer
-  field : header
-  field : lnum
+  field : header;;String;
+  field : lnum;;Fixnum;
   field : output
-  field : steps
-  field : w
+  field : steps;;Array;
+  field : w;;XmlMarkup;
   fqn : Ape
   method : check(uri,username,password,requested_e_coll,requested_m_coll)|DOCUMENTED|
   method : check_new_entry(as_posted,new_entry,desc)

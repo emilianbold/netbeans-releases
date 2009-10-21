@@ -70,6 +70,7 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
 
@@ -845,6 +846,16 @@ class RDocFormatter {
             signature.append("</b>");
         } else {
             signature.append(element.getName());
+        }
+
+        RubyType type = element.getType();
+        if (type != null && type.isKnown()) {
+            signature.append("<br>");
+            signature.append("<i>");
+            signature.append(NbBundle.getMessage(RDocFormatter.class, "InferredType"));
+            signature.append(" ");
+            signature.append(type.asString(", ", " " + NbBundle.getMessage(RDocFormatter.class, "Or") + " "));
+            signature.append("</i>");
         }
 
         signature.append("</pre>\n");

@@ -1485,22 +1485,23 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         private void indexField(AstElement child, IndexDocument document, boolean nodoc) {
-            String signature = child.getName();
+            StringBuilder signature = new StringBuilder(child.getName());
             int flags = getModifiersFlag(child.getModifiers());
             if (nodoc) {
                 flags |= IndexedElement.NODOC;
             }
-
             if (flags != 0) {
-                StringBuilder sb = new StringBuilder(signature);
-                sb.append(';');
-                sb.append(IndexedElement.flagToFirstChar(flags));
-                sb.append(IndexedElement.flagToSecondChar(flags));
-                signature = sb.toString();
+                signature.append(';');
+                signature.append(IndexedElement.flagToFirstChar(flags));
+                signature.append(IndexedElement.flagToSecondChar(flags));
+            }
+            RubyType type = child.getType();
+            if (type.isKnown()) {
+                signature.append(";;" + type.asIndexedString() + ";");
             }
 
             // TODO - gather documentation on fields? naeh
-            document.addPair(FIELD_FIELD_NAME, signature, true, true);
+            document.addPair(FIELD_FIELD_NAME, signature.toString(), true, true);
         }
 
         private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
