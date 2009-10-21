@@ -134,7 +134,7 @@ import org.w3c.dom.Text;
 )
 public final class EarProject implements Project, AntProjectListener {
     
-    private static final Icon EAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif", false); // NOI18N
+    private final Icon EAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif", false); // NOI18N
     public static final String ARTIFACT_TYPE_EAR = "ear";
     
     private final AntProjectHelper helper;

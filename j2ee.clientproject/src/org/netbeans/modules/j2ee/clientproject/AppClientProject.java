@@ -156,7 +156,7 @@ import org.w3c.dom.Text;
 )
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
+    private final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
     
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
