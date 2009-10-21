@@ -336,7 +336,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
     private static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
         LibraryManager lmgr = LibraryManager.getDefault();
-        synchronized (lmgr) {
 
         int size = 0;
 
@@ -415,7 +414,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
         return lib != null;
-        }
     }
 
     static class InitializeLibrary implements PropertyChangeListener {
