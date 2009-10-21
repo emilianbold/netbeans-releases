@@ -130,13 +130,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
-        String commandLine = info.getCommandLineForShell();
-        if (!commandLine.startsWith("/")) { // NOI18N
-            // In case it is not an absolute path - add ./
-            commandLine = "./" + commandLine; // NOI18N
-        }
-
-        processInput.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
+        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
         processInput.flush();
 
         creation_ts = System.nanoTime();
