@@ -925,14 +925,13 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
                 nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
                 DialogDisplayer.getDefault().notify(nd);
-
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        btVersions.setEnabled(true);
-                    }
-                });
             }
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    btVersions.setEnabled(true);
+                }
+            });
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
