@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -1084,42 +1085,38 @@ class OccurenceBuilder {
     private static List<MethodScope> name2Methods(FileScopeImpl fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier(name, null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
-        List<MethodScope> methods = Collections.emptyList();
+        List<MethodScope> retval = new ArrayList<MethodScope>();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();
-
-        if (typeNamesForIdentifier.size() > 0) {
-            List<MethodScope> methodsSuggestions = methods4TypeNames(fileScope, typeNamesForIdentifier, name);
-            methods = new ArrayList<MethodScope>();
-            for (MethodScope methodScope : methodsSuggestions) {
-                List<? extends Parameter> parameters = methodScope.getParameters();
-                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, methodScope.getName())
-                        && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size() ) {
-                    methods.add(methodScope);
+        Collection<IndexedFunction> methods = index.getMethods(null, (String) null, name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+        for (IndexedFunction meth : methods) {
+            List<? extends Parameter> parameters = meth.getParameters();
+            if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, meth.getName()) && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size()) {            
+                String in = meth.getIn();
+                if (in != null) {
+                    ClassScope clz = ModelUtils.getFirst(CachingSupport.getClasses(in, fileScope));
+                    retval.add(new MethodScopeImpl(clz, meth));
                 }
             }
         }
-
-        return methods;
+        return retval;
     }
 
     private static List<FieldElementImpl> name2Fields(FileScopeImpl fileScope, String name) {
         IndexScope indexScope = fileScope.getIndexScope();
         PHPIndex index = indexScope.getIndex();
-        Set<String> typeNamesForIdentifier = index.typeNamesForIdentifier((name.startsWith("$")) ? name.substring(1) : name,
-                null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
-        List<FieldElementImpl> fields = Collections.emptyList();
-        if (typeNamesForIdentifier.size() > 0) {
-            fields = new ArrayList<FieldElementImpl>();
-            List<FieldElementImpl> fieldSuggestions = flds4TypeNames(fileScope, typeNamesForIdentifier, name);
-            for (FieldElementImpl fieldElementImpl : fieldSuggestions) {
-                if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, fieldElementImpl.getName())) {
-                    fields.add(fieldElementImpl);
+        List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
+        Collection<IndexedConstant> fields = index.getFields(null, (String) null, name.startsWith("$") ? name.substring(1) : name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
+        for (IndexedConstant fld : fields) {
+            if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, fld.getName())) {
+                String in = fld.getIn();
+                if (in != null) {
+                    ClassScope clz = ModelUtils.getFirst(CachingSupport.getClasses(in, fileScope));
+                    retval.add(new FieldElementImpl(clz, fld));
                 }
             }
         }
-        return fields;
+        return retval;
     }
 
     /**
