@@ -65,7 +65,7 @@ introduced by support for multiple source roots. -jglick
         <project>
             <xsl:attribute name="default">-post-run-deploy</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-            
+
             <target name="-wsit-init">
                 <property file="nbproject/private/private.properties"/>
                 <condition property="user.properties.file" value="${{netbeans.user}}/build.properties">
@@ -73,13 +73,33 @@ introduced by support for multiple source roots. -jglick
                         <isset property="user.properties.file"/>
                     </not>
                 </condition>
+                <!-- GFv2 -->
+                <condition property="appserver.root" value="${{sjsas.root}}">
+                    <isset property="sjsas.root"/>
+                </condition>
+                <condition property="appserver.password" value="${{sjsas.password}}">
+                    <isset property="sjsas.password"/>
+                </condition>
+                <!-- GFv3 -->
+                <condition property="appserver.root" value="${{gfv3.root}}">
+                    <isset property="gfv3.root"/>
+                </condition>
+                <condition property="appserver.password" value="${{gfv3.password}}">
+                    <isset property="gfv3.password"/>
+                </condition>
+
+                <!-- fallback -->
+                <condition property="appserver.password" value="changeit">
+                    <not><isset property="appserver.password"/></not>
+                </condition>
                 <property file="${{deploy.ant.properties.file}}"/>
                 <fail unless="user.properties.file">Must set user properties file</fail>
-                <fail unless="sjsas.root">Must set Sun app server root</fail>
+                <fail unless="appserver.root">Must set Sun app server root</fail>
+                <fail unless="appserver.password">Must set Sun app server password</fail>
             </target>
 
             <target name="-create-wsit-prop" unless="do.not.create.wsit.prop">  
-                <echo file="nbproject/wsit.properties">AS_ADMIN_USERPASSWORD=changeit</echo>
+                <echo file="nbproject/wsit.properties" message="AS_ADMIN_USERPASSWORD=${{appserver.password}}"/>
             </target>
 
             <target name="-delete-create-wsit-file" if="user.created">
