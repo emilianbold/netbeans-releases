@@ -181,14 +181,14 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     private FolderList reassignList (FileObject fo, boolean attach) {
         // creates object that handles all elements in array and
         // assignes it to the
-        FolderList list = FolderList.find (fo, true);
+        FolderList folderList = FolderList.find (fo, true);
 
         if (attach) {
             pcl = new ListPCL ();
-            list.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (pcl, list));
+            folderList.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (pcl, folderList));
         }
 
-        return list;
+        return folderList;
     }
 
 
@@ -267,6 +267,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * <p>This implementation uses the name and extension of the primary file.
     * @return the name
     */
+    @Override
     public String getName () {
         return getPrimaryFile ().getNameExt ();
     }
@@ -329,6 +330,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
     /** Create node representative for this folder.
     */
+    @Override
     protected synchronized Node createNodeDelegate () {
         return new FolderNode();
     }
@@ -345,6 +347,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         public ClonedFilter (DataFilter filter) {
             this (DataFolder.this.getNodeDelegate (), filter);
         }
+        @Override
         public Node cloneNode () {
             if (isValid()) {
                 return new ClonedFilter (filter);
@@ -352,9 +355,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 return super.cloneNode();
             }
         }
+        @Override
         public Node.Handle getHandle () {
             return new ClonedFilterHandle (DataFolder.this, filter);
         }
+        @Override
         public boolean equals (Object o) {
             if (o == null) {
                 return false;
@@ -362,7 +367,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 return true;
             } else if (o instanceof FolderNode) {
                 FolderNode fn = (FolderNode) o;
-                if (fn.getCookie (DataFolder.class) != DataFolder.this) return false;
+                if (fn.getCookie (DataFolder.class) != DataFolder.this) {
+                    return false;
+                }
                 org.openide.nodes.Children ch = fn.getChildren ();
                 if (ch instanceof FolderChildren) {
                     ((FolderChildren) ch).getFilter ().equals (filter);
@@ -379,6 +386,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 return false;
             }
         }
+        @Override
         public int hashCode () {
             if ( hashCode == -1 ) {
                 if ( isValid() ) {
@@ -420,6 +428,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @param filter filter for subdata objects
     * @return the node delegate (without parent) for this data object
     */
+    @Override
     Node getClonedNodeDelegate (DataFilter filter) {
         Node n = getNodeDelegate ();
         Children c = n.getChildren ();
@@ -492,6 +501,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /* Getter for delete action.
     * @return true if the object can be deleted
     */
+    @Override
     public boolean isDeleteAllowed () {
         return isRenameAllowed ();
     }
@@ -499,6 +509,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /* Getter for copy action.
     * @return true if the object can be copied
     */
+    @Override
     public boolean isCopyAllowed () {
         return true;
     }
@@ -506,6 +517,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /* Getter for move action.
     * @return true if the object can be moved
     */
+    @Override
     public boolean isMoveAllowed () {
         return isRenameAllowed ();
     }
@@ -513,6 +525,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /* Getter for rename action.
     * @return true if the object can be renamed
     */
+    @Override
     public boolean isRenameAllowed () {
         FileObject fo = getPrimaryFile ();
         return !fo.isRoot() && fo.canWrite();
@@ -521,6 +534,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /* Help context for this object.
     * @return help context
     */
+    @Override
     public HelpCtx getHelpCtx () {
         return null;
     }
@@ -566,10 +580,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @exception IOException if something went wrong
     * @return the new object
     */
+    @Override
     protected DataObject handleCopy (DataFolder f) throws IOException {
         testNesting(this, f);
 
-        Enumeration en = children ();
+        Enumeration<DataObject> en = children ();
 
         DataObject newFolderDO = super.handleCopy (f);
         DataFolder newFolderDF;
@@ -588,7 +603,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         while (en.hasMoreElements ()) {
             try {
-                DataObject obj = (DataObject)en.nextElement ();
+                DataObject obj = en.nextElement ();
                 if (obj.isCopyAllowed()) {
                     obj.copy(newFolderDF);
                 } else {
@@ -633,13 +648,14 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     /* Deals with deleting of the object. Must be overriden in children.
     * @exception IOException if an error occures
     */
+    @Override
     protected void handleDelete () throws IOException {
-        Enumeration en = children ();
+        Enumeration<DataObject> en = children ();
         FileLock lightWeightLock = null;//#43278
         try {
             lightWeightLock = createLightWeightLock(this);
             while (en.hasMoreElements ()) {
-                DataObject obj = (DataObject)en.nextElement ();
+                DataObject obj = en.nextElement ();
                 if (obj.isValid ()) {
                     obj.delete ();
                 }
@@ -674,6 +690,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @return new primary file of the object
     * @exception IOException if an error occures
     */
+    @Override
     protected FileObject handleRename (final String name) throws IOException {
         if (! confirmName (name)) {
             IOException e = new IOException("bad name: " + name); // NOI18N
@@ -769,11 +786,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             }
 
             // move all children
-            Enumeration en = children ();
+            Enumeration<DataObject> en = children ();
 
             while (en.hasMoreElements ()) {
                 try {
-                    DataObject obj = (DataObject)en.nextElement ();
+                    DataObject obj = en.nextElement ();
                     if (obj.isMoveAllowed ()) {
                         obj.move (newFolder);
                     } else {
@@ -843,15 +860,16 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @return new data object
     * @exception IOException if an error occured
     */
+    @Override
     protected DataObject handleCreateFromTemplate (
         DataFolder f, String name
     ) throws IOException {
         DataFolder newFolder = (DataFolder)super.handleCreateFromTemplate (f, name);
-        Enumeration en = children ();
+        Enumeration<DataObject> en = children ();
 
         while (en.hasMoreElements ()) {
             try {
-                DataObject obj = (DataObject)en.nextElement ();
+                DataObject obj = en.nextElement ();
                 obj.createFromTemplate (newFolder);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -869,6 +887,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @param f the folder to create a shortcut in
     * @return the shadow
     */
+    @Override
     protected DataShadow handleCreateShadow (DataFolder f) throws IOException {
         // #33871 - prevent creation of recursive folder structure
         testNesting(this, f);
@@ -889,6 +908,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
      * @returns <code>true</code>
      * @since 1.13
      */
+    @Override
     boolean isMergingFolders(FileObject who, FileObject targetFolder) {
         return !targetFolder.equals (who.getParent ());
     }
@@ -1008,6 +1028,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
         /* Invokes a dialog for reordering subnodes.
         */
+        @Override
         public void reorder () {
             Index.Support.showIndexedCustomizer(this);
         }
@@ -1094,12 +1115,19 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             //if (f.getPrimaryFile ().getFileSystem ().isReadOnly ()) return; // cannot write to read-only FS
 
             String x;
-            if (this == FOLDER_NAMES) x = "F"; // NOI18N
-            else if (this == NAMES) x = "N"; // NOI18N
-            else if (this == CLASS) x = "C"; // NOI18N
-            else if (this == LAST_MODIFIED) x = "M"; // NOI18N
-            else if (this == SIZE) x = "S"; // NOI18N
-            else x = "O"; // NOI18N
+            if (this == FOLDER_NAMES) {
+                x = "F"; // NOI18N
+            } else if (this == NAMES) {
+                x = "N"; // NOI18N
+            } else if (this == CLASS) {
+                x = "C"; // NOI18N
+            } else if (this == LAST_MODIFIED) {
+                x = "M"; // NOI18N
+            } else if (this == SIZE) {
+                x = "S"; // NOI18N
+            } else {
+                x = "O"; // NOI18N
+            }
 
             f.setAttribute (EA_SORT_MODE, x);
         }
@@ -1108,7 +1136,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         */
         static SortMode read (FileObject f) {
             String x = (String)f.getAttribute (EA_SORT_MODE);
-            if (x == null || x.length () != 1) return FOLDER_NAMES;
+            if (x == null || x.length () != 1) {
+                return FOLDER_NAMES;
+            }
 
             char c = x.charAt (0);
             switch (c) {
@@ -1186,6 +1216,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
          * across Look and Feels.
          * Keeps possibility of icon annotations.
          */
+        @Override
         public Image getIcon (int type) {
             Image img = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
@@ -1213,6 +1244,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
          * across Look and Feels.
          * Keeps possibility of icon annotations.
          */
+        @Override
         public Image getOpenedIcon (int type) {
             Image img = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
@@ -1235,6 +1267,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return img;
         }
 
+        @Override
         public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
             if (clazz == org.openide.nodes.Index.class || clazz == Index.class) {
                 //#33130 - enable IndexCookie only on SystemFileSystem
@@ -1254,6 +1287,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /* Adds properties for sorting.
          * @return the augmented property sheet
         */
+        @Override
         protected Sheet createSheet () {
             Sheet s = super.createSheet ();
 
@@ -1262,7 +1296,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             ss.setDisplayName (DataObject.getString ("PROP_sorting"));
             ss.setShortDescription (DataObject.getString ("HINT_sorting"));
 
-            Node.Property p;
+            Node.Property<SortMode> p;
 
             p = new PropertySupport.ReadWrite<SortMode> (
                     PROP_SORT_MODE, SortMode.class,
@@ -1281,6 +1315,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
                     }
 
+                    @Override
                     public java.beans.PropertyEditor getPropertyEditor () {
                         return new SortModeEditor ();
                     }
@@ -1294,6 +1329,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /* No default action on data folder node.
          * @return null
          */
+        @Override
         public Action getPreferredAction() {
             return null;
         }
@@ -1302,6 +1338,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /* New type for creating new subfolder.
         * @return array with one element
         */
+        @Override
         public NewType[] getNewTypes () {
             return new NewType[0];
 /*          Commented out. Folder is now created via template.
@@ -1315,15 +1352,18 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
  */
         }
         private synchronized FolderRenameHandler getRenameHandler() {
-            Collection handlers = Lookup.getDefault().lookupAll(FolderRenameHandler.class);
-            if (handlers.size()==0)
+            Collection<? extends FolderRenameHandler> handlers = Lookup.getDefault().lookupAll(FolderRenameHandler.class);
+            if (handlers.size() == 0) {
                 return null;
-            if (handlers.size()>1)
+            }
+            if (handlers.size()>1) {
                 DataObject.LOG.warning(
                     "Multiple instances of FolderRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
+            }
             return (FolderRenameHandler) handlers.iterator().next();
         }
 
+        @Override
         public void setName(String name) {
             FolderRenameHandler handler = getRenameHandler();
             if (handler == null) {
@@ -1341,6 +1381,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         * @param t transferable to use
         * @param s list of {@link PasteType}s
         */
+        @Override
         protected void createPasteTypes (Transferable t, java.util.List<PasteType> s) {
             super.createPasteTypes (t, s);
             if (getPrimaryFile().canWrite()) {
@@ -1402,10 +1443,12 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             try {
                 if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                     //windows & mac
+                    @SuppressWarnings("rawtypes")  // checked later
                     List fileList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
                     //#92812 - make sure mac os does not return null value
-                    if( null != fileList )
-                        return NbCollections.checkedListByCopy((List) t.getTransferData(DataFlavor.javaFileListFlavor), File.class, true);
+                    if( null != fileList ) {
+                        return NbCollections.checkedListByCopy(fileList, File.class, true);
+                    }
                 } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
                     //linux
                     String uriList = (String)t.getTransferData( getUriListDataFlavor() );
@@ -1467,6 +1510,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         *
         * @return the name of the action
         */
+        @Override
         public String getName() {
             return DataObject.getString ("CTL_NewFolder");
         }
@@ -1474,6 +1518,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         /** Help context for the creation action.
         * @return the help context
         */
+        @Override
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }
@@ -1488,7 +1533,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             input.setInputText (DataObject.getString ("CTL_NewFolderValue"));
             if (DialogDisplayer.getDefault ().notify (input) == NotifyDescriptor.OK_OPTION) {
                 String folderName = input.getInputText ();
-                if ("".equals (folderName)) return; // empty name = cancel // NOI18N
+                if ("".equals (folderName)) {
+                    return; // empty name = cancel // NOI18N
+                }
 
                 FileObject folder = getPrimaryFile ();
                 int dotPos = -1;
@@ -1577,9 +1624,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 case LoaderTransfer.CLIPBOARD_CUT:
                 return new DataTransferSupport.PasteTypeExt [] {
                     new DataTransferSupport.PasteTypeExt() {
+                        @Override
                         public String getName () {
                             return DataObject.getString ("PT_move"); // NOI18N
                         }
+                        @Override
                         public HelpCtx getHelpCtx () {
                             return new HelpCtx (Paste.class.getName () + ".move"); // NOI18N
                         }
@@ -1591,6 +1640,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
 
                         /** Cleans clipboard after paste. Overrides superclass method. */
+                        @Override
                         protected boolean cleanClipboard() {
                             return true;
                         }
@@ -1632,9 +1682,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 case LoaderTransfer.CLIPBOARD_COPY:
                 return new DataTransferSupport.PasteTypeExt[] {
                     new DataTransferSupport.PasteTypeExt() {
+                        @Override
                         public String getName () {
                             return DataObject.getString ("PT_copy"); // NOI18N
                         }
+                        @Override
                         public HelpCtx getHelpCtx () {
                             return new HelpCtx (Paste.class.getName () + ".copy"); // NOI18N
                         }
@@ -1656,9 +1708,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
                     },
                     new DataTransferSupport.PasteTypeExt() {
+                        @Override
                         public String getName () {
                             return DataObject.getString ("PT_instantiate"); // NOI18N
                         }
+                        @Override
                         public HelpCtx getHelpCtx () {
                             return new HelpCtx (Paste.class.getName () + ".instantiate"); // NOI18N
                         }
@@ -1670,9 +1724,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                         }
                     },
                     new DataTransferSupport.PasteTypeExt() {
+                        @Override
                         public String getName () {
                             return DataObject.getString ("PT_shadow"); // NOI18N
                         }
+                        @Override
                         public HelpCtx getHelpCtx () {
                             return new HelpCtx (Paste.class.getName () + ".shadow"); // NOI18N
                         }
@@ -1718,6 +1774,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 LoaderTransfer.CLIPBOARD_COPY
             };
         }
+        @Override
         protected void handleCreatePasteTypes (Transferable t, java.util.List<PasteType> s) {
             // These should only accept single-node transfers, since they require dialogs.
             Node node = NodeTransfer.node (t, NodeTransfer.CLIPBOARD_COPY);

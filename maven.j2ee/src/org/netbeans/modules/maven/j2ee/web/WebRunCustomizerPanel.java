@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -51,11 +52,13 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.SessionContent;
@@ -156,7 +159,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     
     
     private void loadComboModel() {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs();
+        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(J2eeModule.Type.WAR), module.getJ2eeProfile());
         Collection<Wrapper> col = new ArrayList<Wrapper>();
 //        Wrapper selected = null;
         SessionContent sc = project.getLookup().lookup(SessionContent.class);

@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.CountDownLatch;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -68,6 +67,7 @@ import org.netbeans.modules.dlight.core.stack.ui.MultipleCallStackPanel;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.ExpansionMode;
 import org.netbeans.modules.dlight.visualizers.threadmap.ThreadStackVisualizerConfiguration.StackNameProvider;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -137,11 +137,6 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
             final String timeString = TimeLineUtils.getMillisValue(time);
             final String rootName = NbBundle.getMessage(ThreadStackVisualizer.class, "ThreadStackVisualizerStackAt", timeString); //NOI18N
             //collect all and then update UI
-            final CountDownLatch doneFlag = new CountDownLatch(descriptor.getThreadStates().size());
-//            for (final ThreadSnapshot stack : descriptor.getThreadStates()) {
-//                final MSAState msa = stack.getState();
-//                final ThreadStateResources res = ThreadStateResources.forState(msa);
-//                if (res != null) {
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
@@ -203,12 +198,16 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                //      try {
-                stackPanel.expandAll();
+                if (configuration.getPrefferedExpansion() == ExpansionMode.ExpandAll) {
+                    stackPanel.expandAll();
+                }
                 int i = 0;
                 for(Node node : stackPanel.getExplorerManager().getRootContext().getChildren().getNodes()) {
                     if (i == prefferedSelection) {
                         try {
+                            if (configuration.getPrefferedExpansion() == ExpansionMode.ExpandCurrent) {
+                                stackPanel.expandNode(node);
+                            }
                             stackPanel.getExplorerManager().setSelectedNodes(new Node[]{node});
                         } catch (PropertyVetoException ex) {
                             Exceptions.printStackTrace(ex);
@@ -217,10 +216,6 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
                     }
                     i++;
                 }
-//                    stackPanel.getExplorerManager().setSelectedNodes(new Node[]{stackPanel.getExplorerManager().getRootContext()});
-//                } catch (PropertyVetoException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
             }
         }, 500);
     }
@@ -239,6 +234,14 @@ public final class ThreadStackVisualizer extends JPanel implements Visualizer<Th
 
     public VisualizerContainer getDefaultContainer() {
         return CallStackTopComponent.findInstance();
+    }
+
+    @Override
+    public boolean requestFocus(boolean temporary) {
+        if (stackPanel != null) {
+            return stackPanel.requestFocus(temporary);
+        }
+        return super.requestFocus(temporary);
     }
 
     public void refresh() {

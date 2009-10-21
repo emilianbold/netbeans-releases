@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -55,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -118,6 +120,14 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         return new MultipleCallStackPanel(sourceFileInfoDataProvider);
     }
 
+    @Override
+    public boolean requestFocus(boolean temporary) {
+        if (treeView != null) {
+            return treeView.requestFocus(temporary);
+        }
+         return super.requestFocus(temporary);
+    }
+
     public void clean() {
         rootNode.removeAll();
         treeView.setRootVisible(false);
@@ -131,6 +141,16 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
     }
 
+    @Override
+    public void requestFocus() {
+        treeView.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return treeView.requestFocusInWindow();
+    }
+
     public void expandAll() {
         if (manager.getRootContext() == null) {
             return;
@@ -141,8 +161,10 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     public void scrollToRoot() {
         //     Component c  = treeView.getComponents();
         treeView.getViewport().setViewPosition(new Point(0, 0));
+    }
 
-
+    public void expandNode(Node node){
+        treeView.expandNode(node);
     }
 
     public void setRootVisible(String rootName) {
@@ -183,29 +205,18 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
 
         @Override
         public void expandAll() {
-            super.expandAll();
-            RequestProcessor.getDefault().post(new Runnable() {
+            if (!EventQueue.isDispatchThread()){
+                SwingUtilities.invokeLater(new Runnable() {
 
-                public void run() {
-                    try {
-                        Node[] selected = manager.getSelectedNodes();
-                        if (selected == null || selected.length == 0) {
-                            selected = new Node[]{rootNode};
-                            manager.setSelectedNodes(selected);
-                        }
-                        final TreePath path = tree.getSelectionPath();
-                        SwingUtilities.invokeLater(new Runnable(){
-                            public void run() {
-                                if (path != null) {
-                                    tree.scrollPathToVisible(path);
-                                }
-                            }
-                        });
-                    } catch (PropertyVetoException ex) {
-                        Exceptions.printStackTrace(ex);
+                    public void run() {
+                        MyOwnBeanTreeView.super.expandAll();
                     }
-                }
-            }, 500);
+                });
+           }else{
+                super.expandAll();
+           }
+            
+
         }
     }
 }

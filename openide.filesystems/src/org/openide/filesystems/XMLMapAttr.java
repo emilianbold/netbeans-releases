@@ -1205,7 +1205,7 @@ final class XMLMapAttr implements Map {
         
         private FileMap (FileObject fo) {
             this.fo = fo;
-}
+        }
         
         public Set<Map.Entry<String,Object>> entrySet() {
             return new AttrFileSet(fo);
@@ -1228,12 +1228,13 @@ final class XMLMapAttr implements Map {
         
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof FileMap) {
-                if (fo.equals(((FileMap)obj).fo)) {
-                    return true;
-                }
+            if (!(obj instanceof Map)) {
+                return false;
             }
-            return super.equals(obj);
+            if (obj instanceof FileMap) {
+                return fo.equals(((FileMap)obj).fo);
+            }
+            return obj.equals(this);
         }
 
         @Override

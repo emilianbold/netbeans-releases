@@ -334,12 +334,32 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         class Query implements Runnable {
                             
                             private DoInitialize doInit;
+                            boolean inAWT;
+                            boolean finished;
                             
                             public Query (DoInitialize doInit) {
                                 this.doInit = doInit;
                             }
                             
                             public void run() {
+                                synchronized (this) {
+                                    inAWT = true;
+                                    notifyAll();
+                                    if (finished) {
+                                        return;
+                                    }
+                                }
+                                try {
+                                    doQuestion();
+                                } finally {
+                                    synchronized (this) {
+                                        finished = true;
+                                        notifyAll();
+                                    }
+                                }
+                            }
+
+                            private void doQuestion() {
                                 UserQuestionException e = (UserQuestionException) ex.getCause();
                                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                                         e.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
@@ -361,14 +381,31 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                                     return;
                                 }
                             }
+
+                            public synchronized boolean awaitAWT() throws InterruptedException {
+                                if (!inAWT) {
+                                    wait(10000);
+                                }
+                                return inAWT;
+                            }
+
+                            public synchronized void waitRest() throws InterruptedException {
+                                while (inAWT && !finished) {
+                                    wait();
+                                }
+                            }
                         }
 
                         Query query = new Query(this);
                         try {
-                            SwingUtilities.invokeAndWait(query);
+                            SwingUtilities.invokeLater(query);
+                            if (query.awaitAWT()) {
+                                query.waitRest();
+                            }
+                            synchronized (query) {
+                                query.finished = true;
+                            }
                         } catch (InterruptedException exc) {
-                            Exceptions.printStackTrace(exc);
-                        } catch (InvocationTargetException exc) {
                             Exceptions.printStackTrace(exc);
                         }
                         if (confirmed) {
@@ -503,8 +540,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                             + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
                             + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                             + " Name:" + CloneableEditor.this.getName()
-                            + " doc:" + doc
-                            + " kit:" + kit);
+                            + " doc:" + d
+                            + " kit:" + k);
                         }
                         wait();
                         if (LOG.isLoggable(Level.FINE)) {
@@ -514,23 +551,23 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                             + " this:[" + Integer.toHexString(System.identityHashCode(this)) + "]"
                             + " support:[" + Integer.toHexString(System.identityHashCode(support)) + "]"
                             + " Name:" + CloneableEditor.this.getName()
-                            + " doc:" + doc
-                            + " kit:" + kit);
+                            + " doc:" + d
+                            + " kit:" + k);
                         }
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
             }
-            if (tmp.getDocument() == doc) {
+            if (tmp.getDocument() == d) {
                 return false;
             }
-            tmp.setEditorKit(kit);
+            tmp.setEditorKit(k);
             // #132669, do not fire prior setting the kit, which by itself sets a bogus document, etc.
             // if this is a problem please revert the change and initialize QuietEditorPane.working = FIRE
             // and reopen #132669
             tmp.setWorking(QuietEditorPane.FIRE);
-            tmp.setDocument(doc);
+            tmp.setDocument(d);
             return true;
         }
         
@@ -830,15 +867,22 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         return null;
     }
-
-    /** Overrides superclass method. Remembers last selected component of
+    
+    /**
+     * Overrides superclass method. Remembers last selected component of
      * support belonging to this component.
-     * @see #componentDeactivated */
+     *
+     * Descendants overriding this method must call this implementation to set last
+     * selected pane otherwise <code>CloneableEditorSupport.getRecentPane</code> and
+     * <code>CloneableEditorSupport.getOpenedPanes</code> will be broken.
+     *
+     * @see #componentDeactivated
+     */
     @Override
     protected void componentActivated() {
         support.setLastSelected(this);
     }
-
+    
     /** Updates the name and tooltip of this <code>CloneableEditor</code>
      * {@link org.openide.windows.TopComponent TopCompoenent}
      * according to the support retrieved from {@link #cloneableEditorSupport}

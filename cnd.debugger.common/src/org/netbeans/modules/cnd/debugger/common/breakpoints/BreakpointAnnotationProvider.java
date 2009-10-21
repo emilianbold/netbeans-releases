@@ -54,7 +54,6 @@ import java.util.Set;
 
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -62,8 +61,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 
 import org.netbeans.modules.cnd.debugger.common.EditorContext;
-import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
-import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -184,6 +181,17 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (propertyName == null) {
             return;
         }
+
+        // on session change update all annotations
+        if (DebuggerManager.PROP_CURRENT_SESSION.equals(propertyName)) {
+            for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+                if (breakpoint instanceof CndBreakpoint) {
+                    RequestProcessor.getDefault().post(new AnnotationRefresh((CndBreakpoint)breakpoint, true, true));
+                }
+            }
+            return;
+        }
+
         if ( (!CndBreakpoint.PROP_ENABLED.equals(propertyName)) &&
              (!CndBreakpoint.PROP_VALIDITY.equals(propertyName)) &&
              (!CndBreakpoint.PROP_CONDITION.equals(propertyName)) &&
@@ -197,10 +205,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         }
         
         CndBreakpoint b = (CndBreakpoint) evt.getSource();
-        DebuggerManager manager = DebuggerManager.getDebuggerManager();
-        Breakpoint[] bkpts = manager.getBreakpoints();
         boolean found = false;
-        for (Breakpoint breakpoint : bkpts) {
+        for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (b == breakpoint) {
                 found = true;
                 break;
@@ -247,8 +253,9 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                !((CndBreakpoint) b).isHidden();
     }
     
-    private static String getAnnotationType(CndBreakpoint b, boolean isConditional) {
-        boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
+    public static String getAnnotationType(CndBreakpoint b) {
+        String condition = b.getCondition();
+        boolean isConditional = (condition != null) && condition.trim().length() > 0;
         String annotationType;
         if (b instanceof LineBreakpoint) {
             annotationType = b.isEnabled() ?
@@ -267,14 +274,12 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         } else {
             throw new IllegalStateException(b.toString());
         }
-        if (isInvalid && b.isEnabled()) {
-            annotationType += "_broken"; // NOI18N
-        }
         return annotationType;
     }
     
     /** @return The annotation lines or <code>null</code>. */
     private static int[] getAnnotationLines(CndBreakpoint b, FileObject fo) {
+        // Line breakpoints are not session specific
         if (b instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) b;
             try {
@@ -287,35 +292,17 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
                 Exceptions.printStackTrace(ex);
             }
             return null;
-        } else if (b instanceof FunctionBreakpoint) {
-            FunctionBreakpoint fb = (FunctionBreakpoint) b;
-            String url = fb.getURL();
-            if (url.length() > 0) {
-                try {
-                    if (fo.getURL().equals(new URL(url))) {
-                        return new int[] { fb.getLineNumber() };
-                    }
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            return null;
-        } else if (b instanceof AddressBreakpoint) {
-            DisassemblyService disProvider = EditorContextBridge.getCurrentDisassemblyService();
-            if (disProvider != null) {
-                int res = disProvider.getAddressLine(((AddressBreakpoint)b).getAddress());
-                if (res < 0) {
-                    return null;
-                } else {
-                    return new int[] {res};
-                }
-            }
-            return null;
-        } else {
-            throw new IllegalStateException(b.toString());
         }
+
+        // the rest are session specific
+        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine != null) {
+            SessionBreakpointAnnotationProvider bptLinesProvider = currentEngine.lookupFirst(null, SessionBreakpointAnnotationProvider.class);
+            if (bptLinesProvider != null) {
+                return bptLinesProvider.getBreakpointAnnotationLines(b, fo);
+            }
+        }
+        return null;
     }
     
     // Is called under synchronized (breakpointToAnnotations)
@@ -325,9 +312,17 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             return;
         }
         log.fine("BreakpointAnnotationProvider.addAnnotationTo: " + b.getPath() + ":" + b.getLineNumber());
-        String condition = b.getCondition();
-        boolean isConditional = (condition != null) && condition.trim().length() > 0;
-        String annotationType = getAnnotationType(b, isConditional);
+        String annotationType = getAnnotationType(b);
+
+        // update with session specifics
+        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine != null) {
+            SessionBreakpointAnnotationProvider bptLinesProvider = currentEngine.lookupFirst(null, SessionBreakpointAnnotationProvider.class);
+            if (bptLinesProvider != null) {
+                annotationType = bptLinesProvider.getAnnotationType(b);
+            }
+        }
+
         DataObject dataObject;
         try {
             dataObject = DataObject.find(fo);

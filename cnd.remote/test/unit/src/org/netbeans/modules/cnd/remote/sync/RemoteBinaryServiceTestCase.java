@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService.RemoteBinaryID;
 import org.netbeans.modules.cnd.remote.support.*;
 import java.io.File;
 import junit.framework.Test;
@@ -91,8 +92,14 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
                 assertTrue(rcs.run() == 0);
                 expectedDownloadCount++;
             }
-            localPath = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
-            assertNotNull(localPath);
+
+            RemoteBinaryID remoteBinaryID = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
+            assertNotNull(remoteBinaryID);
+
+            Boolean result = RemoteBinaryService.getResult(remoteBinaryID).get();
+            assertTrue(result);
+
+            localPath = RemoteBinaryService.getFileName(remoteBinaryID);
             localFile = new File(localPath);
             assertTrue(localFile.exists());
             assertTrue(localFile.length() > 0);

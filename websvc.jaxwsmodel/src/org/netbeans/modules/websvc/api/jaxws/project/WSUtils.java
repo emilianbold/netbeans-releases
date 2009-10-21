@@ -72,7 +72,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -101,8 +100,9 @@ public class WSUtils {
     private static String SUN_DOMAIN_13_DTD_SUFFIX =
             "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_3.dtd";
     
-    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
     private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
+
+    private static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
     
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
@@ -361,28 +361,6 @@ public class WSUtils {
         return projectDir.getFileObject(JAX_WS_XML_PATH);
     }
     
-    /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
-     *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
-     */
-    public static boolean setJaxWsEndorsedDirProperty(EditableProperties ep) {
-        String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
-        String javaVersion = System.getProperty("java.specification.version"); //NOI18N
-        boolean changed=false;
-        if ("1.6".equals(javaVersion)) { //NOI18N
-            String jaxWsEndorsedDirs = getJaxWsApiDir();
-            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs)) {
-                ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
-                changed=true;
-            }
-        } else {
-            if (oldJaxWsEndorsedDirs!=null) {
-                ep.remove(ENDORSED_DIR_PROPERTY);
-                changed=true;
-            }
-        }
-        return changed;
-    }
-    
     private static String getJaxWsApiDir() {
         File jaxwsApi = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
         if (jaxwsApi!=null) {
@@ -392,15 +370,16 @@ public class WSUtils {
         return null;
     }
 
+    private  static final String ENDORSED = "classpath/endorsed"; //NOI18N
 
     public static void addJaxWsApiEndorsed(Project project, FileObject srcRoot) throws IOException {
-        ClassPath classPath = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+        ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
         if (classPath == null || classPath.findResource("javax/xml/ws/Service.class") == null) { //NOI18N
-            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary("JAX-WS-ENDORSED"); //NOI18N
+            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAX_WS_ENDORSED);
             if (jaxWsApiLib == null) {
                 jaxWsApiLib = createJaxWsApiLibrary();
             }
-            ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ClassPath.COMPILE);
+            ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
         }
     }
 
@@ -408,29 +387,25 @@ public class WSUtils {
         List<URL> apiJars = getJaxWsApiJars();
         if (apiJars.size() > 0) {
             Map<String, List<URL>> map = Collections.<String, List<URL>>singletonMap("classpath", apiJars); //NOI18N
-            return LibraryManager.getDefault().createLibrary("j2se", "JAX-WS-ENDORSED", map); //NOI18N
+            return LibraryManager.getDefault().createLibrary("j2se", JAX_WS_ENDORSED, map); //NOI18N
         }
         return null;
     }
 
     private static List<URL> getJaxWsApiJars() throws IOException {
         List<URL> urls = new ArrayList<URL>();
-        File jaxwsApiDir = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api", null, false); // NOI18N
-        File jaxbApiDir =  InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api", null, false); // NOI18N
-        if (jaxwsApiDir != null && jaxbApiDir != null) {
-            File[] jars = jaxwsApiDir.listFiles();
-            for (File jar: jars) {
-                URL url = jar.toURI().toURL();
-                if (FileUtil.isArchiveFile(url)) {
-                    urls.add(FileUtil.getArchiveRoot(url));
-                }
+        File apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+        if (apiJar != null) {
+            URL url = apiJar.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                urls.add(FileUtil.getArchiveRoot(url));
             }
-            jars = jaxbApiDir.listFiles();
-            for (File jar: jars) {
-                URL url = jar.toURI().toURL();
-                if (FileUtil.isArchiveFile(url)) {
-                    urls.add(FileUtil.getArchiveRoot(url));
-                }
+        }
+        apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
+        if (apiJar != null) {
+            URL url = apiJar.toURI().toURL();
+            if (FileUtil.isArchiveFile(url)) {
+                urls.add(FileUtil.getArchiveRoot(url));
             }
         }
         return urls;

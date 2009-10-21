@@ -210,8 +210,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG));
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
             actions.add(null);
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-            if (phpUnit != null && phpUnit.supportedVersionFound()) {
+            if (PhpUnit.hasValidVersion(CommandUtils.getPhpUnit(false))) {
                 // code coverage seems to be supported in php unit 3.3.0+
                 actions.add(CoverageActionFactory.createCollectorAction(null, null));
                 actions.add(null);

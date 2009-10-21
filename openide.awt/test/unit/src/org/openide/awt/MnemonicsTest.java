@@ -123,5 +123,17 @@ public class MnemonicsTest extends NbTestCase {
         assertEquals('T', b.getMnemonic());
         assertEquals(6, b.getDisplayedMnemonicIndex());
     }
-    
+
+    public void testBug174191_1() {
+        final JButton button = new JButton();
+        Mnemonics.setLocalizedText(button, "Aaaaaaaaaaaaaaaaaaaarrrrgggghh&h!");
+        Mnemonics.setLocalizedText(button, "Help!");
+    }
+
+    public void testBug174191_2() {
+        final JButton button = new JButton();
+        Mnemonics.setLocalizedText(button, "Aaaaaaaaaaaaaaaaaaaarrrrgggghh&h!");
+        Mnemonics.setLocalizedText(button, "&Roaarr!");
+    }
+
 }

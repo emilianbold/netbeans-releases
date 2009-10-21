@@ -113,15 +113,34 @@ public final class UiUtils {
         });
     }
 
-    private static void informAndOpenOptions(NotifyDescriptor descriptor, String optionsSubcategory) {
-        assert descriptor != null;
+    /**
+     * Display Options dialog with PHP > General panel preselected.
+     * @see #showOptions(String)
+     * @since 1.20
+     */
+    public static void showGeneralOptions() {
+        showOptions(null);
+    }
 
-        DialogDisplayer.getDefault().notify(descriptor);
+    /**
+     * Display Options dialog with PHP > &lt;subcategory> panel preselected.
+     * @param optionsSubcategory PHP Options subcategory to be opened, can be <code>null</code> (then, the General panel is opened)
+     * @see #showGeneralOptions()
+     * @since 1.20
+     */
+    public static void showOptions(String optionsSubcategory) {
         String path = OPTIONS_PATH;
         if (StringUtils.hasText(optionsSubcategory)) {
             path += "/" + optionsSubcategory; // NOI18N
         }
         OptionsDisplayer.getDefault().open(path);
+    }
+
+    private static void informAndOpenOptions(NotifyDescriptor descriptor, String optionsSubcategory) {
+        assert descriptor != null;
+
+        DialogDisplayer.getDefault().notify(descriptor);
+        showOptions(optionsSubcategory);
     }
 
     /**

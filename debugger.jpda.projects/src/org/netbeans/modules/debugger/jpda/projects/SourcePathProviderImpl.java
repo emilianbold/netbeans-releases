@@ -113,13 +113,18 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private static final Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
     private static final Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
 
-    /** Contains all known source paths + jdk source path for JPDAStart task */
+    /** Contains all known source paths + jdk source path for JPDAStart task + {@link #additionalSourceRoots} */
     private ClassPath               originalSourcePath;
     /** Contains the additional source roots, added at a later time to the original roots. */
     private Set<String>             additionalSourceRoots;
-    /** Contains just the source paths which are selected for debugging. */
+    /** Contains just the source paths from {@link #originalSourcePath} which are selected for debugging. */
     private ClassPath               smartSteppingSourcePath;
+    /** Roots of {@link #originalSourcePath} */
     private String[]                projectSourceRoots;
+    /** {@link #originalSourcePath} in the original order. */
+    private ClassPath               unorderedOriginalSourcePath;
+    /** Permutation that creates {@link #originalSourcePath} from {@link #unorderedOriginalSourcePath}. */
+    private int[]                   sourcePathPermutation;
     private PropertyChangeSupport   pcs;
     private PathRegistryListener    pathRegistryListener;
     private File                    baseDir;
@@ -167,6 +172,16 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         smartSteppingSourcePath,
                     }
             );
+            unorderedOriginalSourcePath = smartSteppingSourcePath;
+
+            Map<String, Integer> orderIndexes = getSourceRootsOrder(baseDir);
+            String[] unorderedOriginalRoots = getSourceRoots(unorderedOriginalSourcePath);
+            String[] sortedOriginalRoots = new String[unorderedOriginalRoots.length];
+            sourcePathPermutation = createPermutation(unorderedOriginalRoots,
+                                                      orderIndexes,
+                                                      sortedOriginalRoots);
+            smartSteppingSourcePath = createClassPath(sortedOriginalRoots);
+            
             originalSourcePath = smartSteppingSourcePath;
 
             Set<String> disabledRoots;
@@ -297,10 +312,19 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             Set<String> disabledRoots = getRemoteDisabledSourceRoots();
             
             synchronized (this) {
-                originalSourcePath = ClassPathSupport.createClassPath (
+                unorderedOriginalSourcePath = ClassPathSupport.createClassPath (
                     allSourceRoots.toArray
                         (new FileObject [allSourceRoots.size()])
                 );
+                
+                Map<String, Integer> orderIndexes = getRemoteSourceRootsOrder();
+                String[] unorderedOriginalRoots = getSourceRoots(unorderedOriginalSourcePath);
+                String[] sorterOriginalRoots = new String[unorderedOriginalRoots.length];
+                sourcePathPermutation = createPermutation(unorderedOriginalRoots,
+                                                          orderIndexes,
+                                                          sorterOriginalRoots);
+                originalSourcePath = createClassPath(sorterOriginalRoots);
+
                 projectSourceRoots = getSourceRoots(originalSourcePath);
 
                 srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
@@ -465,6 +489,73 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         } else {
             sourcesProperties.getProperties("source_roots").
                     setCollection("remote_disabled", disabledSourceRoots);
+        }
+    }
+
+    private static Map<String, Integer> getSourceRootsOrder(File baseDir) {
+        try {
+            String root = baseDir.toURI().toURL().toExternalForm();
+            return getSourceRootsOrder(root);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
+    static Map<String, Integer> getSourceRootsOrder(String root) {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        return (Map<String, Integer>) sourcesProperties.getProperties("source_roots").
+            getMap("project_order", Collections.emptyMap()).
+            get(root);
+    }
+
+    static Map<String, Integer> getRemoteSourceRootsOrder() {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        return (Map<String, Integer>) sourcesProperties.getProperties("source_roots").
+            getMap("remote_order", Collections.emptyMap());
+    }
+
+    private static void storeSourceRootsOrder(File baseDir, String[] roots, int[] permutation) {
+        String projectRoot;
+        if (baseDir != null) {
+            try {
+                projectRoot = baseDir.toURI().toURL().toExternalForm();
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return ;
+            }
+        } else {
+            projectRoot = null;
+        }
+        storeSourceRootsOrder(projectRoot, roots, permutation);
+    }
+
+    static void storeSourceRootsOrder(String projectRoot, String[] roots, int[] permutation) {
+        Map<String, Integer> sourceOrder = new HashMap<String, Integer>();
+        if (roots.length != permutation.length) {
+            throw new IllegalArgumentException("Incompatible array length: roots = "+roots.length+", permutation = "+permutation.length);
+        }
+        for (int i = 0; i < roots.length; i++) {
+            sourceOrder.put(roots[permutation[i]], i);
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("SourcePathProviderImpl.storeSourceRootsOrder():");
+            logger.fine("  sourceOrder = "+sourceOrder);
+        }
+        storeSourceRootsOrder(projectRoot, sourceOrder);
+    }
+
+    private static void storeSourceRootsOrder(String projectRoot, Map<String, Integer> sourceOrder) {
+        Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
+        if (projectRoot != null) {
+            Map map = sourcesProperties.getProperties("source_roots").
+                    getMap("project_order", new HashMap());
+            map.put(projectRoot, sourceOrder);
+            sourcesProperties.getProperties("source_roots").
+                    setMap("project_order", map);
+        } else {
+            sourcesProperties.getProperties("source_roots").
+                    setMap("remote_order", sourceOrder);
         }
     }
 
@@ -678,6 +769,81 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public synchronized String[] getAdditionalSourceRoots() {
         return (additionalSourceRoots == null) ? new String[] {} : additionalSourceRoots.toArray(new String[]{});
     }
+
+    public synchronized void reorderOriginalSourceRoots(int[] permutation) {
+        String[] srcRoots = getOriginalSourceRoots();
+        if (permutation == null) {
+            // Restting the order to the original
+            for (int i = 0; i < sourcePathPermutation.length; i++) {
+                sourcePathPermutation[i] = i;
+            }
+            originalSourcePath = unorderedOriginalSourcePath;
+            srcRoots = getSourceRoots(unorderedOriginalSourcePath);
+        } else {
+            if (srcRoots.length != permutation.length) {
+                throw new IllegalArgumentException("Bad length of permutation: "+permutation.length+", have "+srcRoots.length+" source roots.");
+            }
+            int n = permutation.length;
+            String[] unorderedOriginalRoots = getSourceRoots(unorderedOriginalSourcePath);
+            String[] sortedOriginalRoots = new String[n];
+            // Adding the permutation
+            for (int i = 0; i < n; i++) {
+                permutation[i] = sourcePathPermutation[permutation[i]];
+                sortedOriginalRoots[i] = unorderedOriginalRoots[permutation[i]];
+            }
+            for (int i = 0; i < n; i++) {
+                sourcePathPermutation[i] = permutation[i];
+            }
+            originalSourcePath = createClassPath(sortedOriginalRoots);
+            srcRoots = unorderedOriginalRoots;
+        }
+        projectSourceRoots = getSourceRoots(originalSourcePath);
+        Set<String> smartSteppingRoots = new HashSet<String>(Arrays.asList(getSourceRoots(smartSteppingSourcePath)));
+        String[] orderedSmartSteppingRoots = new String[smartSteppingRoots.size()];
+        int i = 0;
+        for (String root : projectSourceRoots) {
+            if (smartSteppingRoots.contains(root)) {
+                orderedSmartSteppingRoots[i++] = root;
+            }
+        }
+        smartSteppingSourcePath = createClassPath(orderedSmartSteppingRoots);
+        storeSourceRootsOrder(baseDir, srcRoots, sourcePathPermutation);
+    }
+    
+    /**
+     * Sets array of source roots.
+     * {@link #setSourceRoots(java.lang.String[])} can not save disabled additionalSourceRoots, since it gets
+     * only *enabled* source roots
+     *
+     * @param sourceRoots a new array of sourceRoots
+     * @param additionalRoots complete list of additional source roots (including disabled ones)
+     */
+    public void setSourceRoots (String[] sourceRoots, String[] additionalRoots) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("SourcePathProviderImpl.setSourceRoots("+java.util.Arrays.asList(sourceRoots)+", "+java.util.Arrays.asList(additionalRoots)+")");
+        }
+        /*if (sourceRootRename(sourceRoots)) {
+            return ;
+        }*/
+        Set<String> newRoots = new LinkedHashSet<String>(Arrays.asList(sourceRoots));
+        ClassPath[] oldCP_ptr = new ClassPath[] { null };
+        ClassPath[] newCP_ptr = new ClassPath[] { null };
+        synchronized (this) {
+            Set<String> allAdditionalSourceRoots = new LinkedHashSet<String>(Arrays.asList(additionalRoots));
+            int permLength = sourcePathPermutation.length;
+            Set<String> disabledSourceRoots = setSourceRoots(newRoots, oldCP_ptr, newCP_ptr, allAdditionalSourceRoots);
+
+            storeAdditionalSourceRoots();
+            storeDisabledSourceRoots(disabledSourceRoots);
+            if (permLength != sourcePathPermutation.length) {
+                storeSourceRootsOrder(baseDir, getSourceRoots(unorderedOriginalSourcePath), sourcePathPermutation);
+            }
+        }
+        
+        if (oldCP_ptr[0] != null) {
+            pcs.firePropertyChange (PROP_SOURCE_ROOTS, oldCP_ptr[0], newCP_ptr[0]);
+        }
+    }
     
     /**
      * Sets array of source roots.
@@ -689,90 +855,203 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             logger.fine("SourcePathProviderImpl.setSourceRoots("+java.util.Arrays.asList(sourceRoots)+")");
         }
         Set<String> newRoots = new LinkedHashSet<String>(Arrays.asList(sourceRoots));
-        ClassPath oldCP = null;
-        ClassPath newCP = null;
+        ClassPath[] oldCP_ptr = new ClassPath[] { null };
+        ClassPath[] newCP_ptr = new ClassPath[] { null };
         synchronized (this) {
-            List<FileObject> sourcePath = new ArrayList<FileObject>(
-                    Arrays.asList(smartSteppingSourcePath.getRoots()));
-            List<FileObject> sourcePathOriginal = new ArrayList<FileObject>(
-                    Arrays.asList(originalSourcePath.getRoots()));
-
-            // First check whether there are some new source roots
-            Set<String> newOriginalRoots = new LinkedHashSet<String>(newRoots);
-            for (FileObject fo : sourcePathOriginal) {
-                newOriginalRoots.remove(getRoot(fo));
-            }
-            if (!newOriginalRoots.isEmpty()) {
-                for (String root : newOriginalRoots) {
-                    FileObject fo = getFileObject(root);
-                    if (fo != null) {
-                        sourcePathOriginal.add(fo);
-                    }
-                }
-                originalSourcePath =
-                        ClassPathSupport.createClassPath(
-                            sourcePathOriginal.toArray(new FileObject[0]));
-                if (additionalSourceRoots == null) {
-                    additionalSourceRoots = new LinkedHashSet<String>();
-                }
-                additionalSourceRoots.addAll(newOriginalRoots);
-            }
-
-            // Then correct the smart-stepping path
-            Set<String> newSteppingRoots = new LinkedHashSet<String>(newRoots);
-            for (FileObject fo : sourcePath) {
-                newSteppingRoots.remove(getRoot(fo));
-            }
-            Set<FileObject> removedSteppingRoots = new HashSet<FileObject>();
-            Set<FileObject> removedOriginalRoots = new HashSet<FileObject>();
-            for (FileObject fo : sourcePath) {
-                String spr = getRoot(fo);
-                if (!newRoots.contains(spr)) {
-                    removedSteppingRoots.add(fo);
-                    if (additionalSourceRoots != null && additionalSourceRoots.contains(spr)) {
-                        removedOriginalRoots.add(fo);
-                        additionalSourceRoots.remove(spr);
-                        if (additionalSourceRoots.size() == 0) {
-                            additionalSourceRoots = null;
-                        }
-                    }
-                }
-            }
-            if (removedOriginalRoots.size() > 0) {
-                sourcePathOriginal.removeAll(removedOriginalRoots);
-                originalSourcePath =
-                        ClassPathSupport.createClassPath(
-                            sourcePathOriginal.toArray(new FileObject[0]));
-            }
-            if (newSteppingRoots.size() > 0 || removedSteppingRoots.size() > 0) {
-                for (String root : newSteppingRoots) {
-                    FileObject fo = getFileObject(root);
-                    if (fo != null) {
-                        sourcePath.add(fo);
-                    }
-                }
-                sourcePath.removeAll(removedSteppingRoots);
-                oldCP = smartSteppingSourcePath;
-                smartSteppingSourcePath =
-                        ClassPathSupport.createClassPath(
-                            sourcePath.toArray(new FileObject[0]));
-                newCP = smartSteppingSourcePath;
-            }
-            Set<FileObject> disabledRoots = new HashSet(sourcePathOriginal);
-            disabledRoots.removeAll(sourcePath);
-            Set<String> disabledSourceRoots = new HashSet<String>();
-            for (FileObject fo : disabledRoots) {
-                disabledSourceRoots.add(getRoot(fo));
-            }
-
+            int permLength = sourcePathPermutation.length;
+            Set<String> disabledSourceRoots = setSourceRoots(newRoots, oldCP_ptr, newCP_ptr, null);
+            
             storeAdditionalSourceRoots();
             storeDisabledSourceRoots(disabledSourceRoots);
+            if (permLength != sourcePathPermutation.length) {
+                storeSourceRootsOrder(baseDir, getSourceRoots(unorderedOriginalSourcePath), sourcePathPermutation);
+            }
         }
         
-        if (oldCP != null) {
-            pcs.firePropertyChange (PROP_SOURCE_ROOTS, oldCP, newCP);
+        if (oldCP_ptr[0] != null) {
+            pcs.firePropertyChange (PROP_SOURCE_ROOTS, oldCP_ptr[0], newCP_ptr[0]);
         }
     }
+
+    private synchronized Set<String> setSourceRoots(Set<String> newRoots,
+                                                    ClassPath[] oldCP_ptr,
+                                                    ClassPath[] newCP_ptr,
+                                                    Set<String> allAdditionalSourceRoots) {
+        List<FileObject> sourcePath = new ArrayList<FileObject>(
+                Arrays.asList(smartSteppingSourcePath.getRoots()));
+        List<FileObject> sourcePathOriginal = new ArrayList<FileObject>(
+                Arrays.asList(originalSourcePath.getRoots()));
+        List<FileObject> unorderedSourcePathOriginal = new ArrayList<FileObject>(
+                Arrays.asList(unorderedOriginalSourcePath.getRoots()));
+
+        // First check whether there are some new source roots
+        Set<String> newOriginalRoots = new LinkedHashSet<String>(newRoots);
+        for (FileObject fo : sourcePathOriginal) {
+            newOriginalRoots.remove(getRoot(fo));
+        }
+        if (!newOriginalRoots.isEmpty()) {
+            // There are new additional source roots added. We need to update
+            // unorderedOriginalSourcePath, originalSourcePath, projectSourceRoots,
+            // smartSteppingSourcePath, sourcePathPermutation and additionalSourceRoots
+            for (String root : newOriginalRoots) {
+                FileObject fo = getFileObject(root);
+                if (fo != null) {
+                    sourcePathOriginal.add(fo);
+                    unorderedSourcePathOriginal.add(fo);
+                }
+            }
+            if (additionalSourceRoots == null) {
+                additionalSourceRoots = new LinkedHashSet<String>();
+            }
+            additionalSourceRoots.addAll(newOriginalRoots);
+        }
+
+        // Then correct the smart-stepping path
+        Set<String> newSteppingRoots = new LinkedHashSet<String>(newRoots);
+        for (FileObject fo : sourcePath) {
+            newSteppingRoots.remove(getRoot(fo));
+        }
+        Set<FileObject> removedSteppingRoots = new HashSet<FileObject>();
+        Set<FileObject> removedOriginalRoots = new HashSet<FileObject>();
+        for (FileObject fo : sourcePath) {
+            String spr = getRoot(fo);
+            if (!newRoots.contains(spr)) {
+                removedSteppingRoots.add(fo);
+                if (additionalSourceRoots != null && additionalSourceRoots.contains(spr) &&
+                    !(allAdditionalSourceRoots != null && allAdditionalSourceRoots.contains(spr))) {
+                    // Remove it only if it's not among all additional source roots
+                    removedOriginalRoots.add(fo);
+                    additionalSourceRoots.remove(spr);
+                    if (additionalSourceRoots.size() == 0) {
+                        additionalSourceRoots = null;
+                    }
+                }
+            }
+        }
+        if (!removedOriginalRoots.isEmpty()) {
+            sourcePathOriginal.removeAll(removedOriginalRoots);
+            unorderedSourcePathOriginal.removeAll(removedOriginalRoots);
+        }
+        if (!newOriginalRoots.isEmpty() || !removedOriginalRoots.isEmpty()) {
+            for (FileObject fo : removedOriginalRoots) {
+                int index = unorderedSourcePathOriginal.indexOf(fo);
+                int pi = sourcePathPermutation[index];
+                for (int i = 0; i < sourcePathPermutation.length; i++) {
+                    if (sourcePathPermutation[i] > pi) {
+                        sourcePathPermutation[i]--;
+                    }
+                }
+                for (int i = index; i < (sourcePathPermutation.length - 1); i++) {
+                    sourcePathPermutation[i] = sourcePathPermutation[i+1];
+                }
+            }
+            int n = sourcePathPermutation.length - removedOriginalRoots.size() + newOriginalRoots.size();
+            int[] newSourcePathPermutation = new int[n];
+            System.arraycopy(sourcePathPermutation, 0, newSourcePathPermutation, 0, sourcePathPermutation.length - removedOriginalRoots.size());
+            for (int i = sourcePathPermutation.length - removedOriginalRoots.size(); i < n; i++) {
+                newSourcePathPermutation[i] = i;
+            }
+            sourcePathPermutation = newSourcePathPermutation;
+            originalSourcePath =
+                    ClassPathSupport.createClassPath(
+                        sourcePathOriginal.toArray(new FileObject[0]));
+            unorderedOriginalSourcePath =
+                    ClassPathSupport.createClassPath(
+                        unorderedSourcePathOriginal.toArray(new FileObject[0]));
+            projectSourceRoots = getSourceRoots(originalSourcePath);
+        }
+        if (newSteppingRoots.size() > 0 || removedSteppingRoots.size() > 0) {
+            for (String root : newSteppingRoots) {
+                FileObject fo = getFileObject(root);
+                if (fo != null) {
+                    sourcePath.add(fo);
+                }
+            }
+            sourcePath.removeAll(removedSteppingRoots);
+            oldCP_ptr[0] = smartSteppingSourcePath;
+            smartSteppingSourcePath =
+                    ClassPathSupport.createClassPath(
+                        sourcePath.toArray(new FileObject[0]));
+            newCP_ptr[0] = smartSteppingSourcePath;
+        }
+        Set<FileObject> disabledRoots = new HashSet(sourcePathOriginal);
+        disabledRoots.removeAll(sourcePath);
+        Set<String> disabledSourceRoots = new HashSet<String>();
+        for (FileObject fo : disabledRoots) {
+            disabledSourceRoots.add(getRoot(fo));
+        }
+        return disabledSourceRoots;
+    }
+
+    /*
+    private synchronized boolean sourceRootRename(String[] sourceRoots) {
+        FileObject[] currentRoots = smartSteppingSourcePath.getRoots();
+        if (currentRoots.length != sourceRoots.length) {
+            return false;
+        }
+        int i = 0;
+        int index = -1;
+        String renamed = null;
+        FileObject renamedFO = null;
+        for (FileObject fo : currentRoots) {
+            String root = getRoot(fo);
+            if (root != null) {
+                if (root.equals(sourceRoots[i])) {
+                    if (index < 0) {
+                        index = i;
+                        renamed = root;
+                        renamedFO = fo;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            i++;
+        }
+        String newRoot = sourceRoots[index];
+        FileObject newFO = getFileObject(newRoot);
+        if (newFO == null) {
+            throw Exceptions.attachLocalizedMessage(new IllegalArgumentException(newRoot), newRoot+" does not exists.");
+        }
+        //currentRoots[index] = newRoot;
+        additionalSourceRoots.remove(renamed);
+        additionalSourceRoots.add(newRoot);
+        List<FileObject> sourcePath = new ArrayList<FileObject>(
+                Arrays.asList(smartSteppingSourcePath.getRoots()));
+        List<FileObject> sourcePathOriginal = new ArrayList<FileObject>(
+                Arrays.asList(originalSourcePath.getRoots()));
+        List<FileObject> unorderedSourcePathOriginal = new ArrayList<FileObject>(
+                Arrays.asList(unorderedOriginalSourcePath.getRoots()));
+        sourcePath.set(index, newFO);
+        index = sourcePathOriginal.indexOf(renamedFO);
+        sourcePathOriginal.set(index, newFO);
+        index = unorderedSourcePathOriginal.indexOf(renamedFO);
+        unorderedSourcePathOriginal.set(index, newFO);
+        smartSteppingSourcePath =
+                ClassPathSupport.createClassPath(
+                    sourcePath.toArray(new FileObject[0]));
+        originalSourcePath =
+                ClassPathSupport.createClassPath(
+                    sourcePathOriginal.toArray(new FileObject[0]));
+        unorderedOriginalSourcePath =
+                ClassPathSupport.createClassPath(
+                    unorderedSourcePathOriginal.toArray(new FileObject[0]));
+        projectSourceRoots = getSourceRoots(originalSourcePath);
+        Set<String> disabledRoots;
+        if (baseDir != null) {
+            disabledRoots = getDisabledSourceRoots(baseDir);
+        } else {
+            disabledRoots = getRemoteDisabledSourceRoots();
+        }
+        if (disabledRoots.remove(renamed)) {
+            disabledRoots.add(newRoot);
+            storeDisabledSourceRoots(disabledRoots);
+        }
+        storeAdditionalSourceRoots();
+        storeSourceRootsOrder(baseDir, getSourceRoots(unorderedOriginalSourcePath), sourcePathPermutation);
+        return true;
+    }
+     */
     
     /**
      * Adds property change listener.
@@ -866,6 +1145,83 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         return fo;
+    }
+
+    static int[] createPermutation(String[] roots, Map<String, Integer> orderIndexes, String[] sortedRoots) {
+        int n = roots.length;
+        if (orderIndexes == null) {
+            int[] perm = new int[n];
+            for (int i = 0; i < n; i++) {
+                sortedRoots[i] = roots[i];
+                perm[i] = i;
+            }
+            return perm;
+        }
+
+        class IndexedRoot {
+            String root;
+            Integer index;
+            int order;
+            IndexedRoot(String root, Integer index, int order) {
+                this.root = root;
+                this.index = index;
+                this.order = order;
+            }
+        }
+        IndexedRoot[] indexedRoots = new IndexedRoot[n];
+        for (int i = 0; i < n; i++) {
+            indexedRoots[i] = new IndexedRoot(roots[i], orderIndexes.get(roots[i]), i);
+        }
+        class Cmp implements Comparator<IndexedRoot> {
+            public int compare(IndexedRoot ir1, IndexedRoot ir2) {
+                Integer i1 = ir1.index;
+                if (i1 == null) return 0;
+                Integer i2 = ir2.index;
+                if (i2 == null) return 0;
+                return i1 - i2;
+            }
+        }
+        Cmp cmp = new Cmp();
+        Arrays.sort(indexedRoots, cmp);
+
+        int[] perm = new int[n];
+        for (int i = 0; i < n; i++) {
+            sortedRoots[i] = indexedRoots[i].root;
+            perm[i] = indexedRoots[i].order;
+        }
+        return perm;
+    }
+    
+    private ClassPath reorder(ClassPath sourcePath, final Map<String, Integer> orderIndexes) {
+        String[] roots = getSourceRoots(sourcePath);
+        class Cmp implements Comparator<String> {
+            public int compare(String o1, String o2) {
+                int i1 = orderIndexes.get(o1);
+                int i2 = orderIndexes.get(o2);
+                return i1 - i2;
+            }
+        }
+        Cmp cmp = new Cmp();
+        Arrays.sort(roots, cmp);
+        List<FileObject> froots = new ArrayList<FileObject>(roots.length);
+        for (String r : roots) {
+            FileObject fo = getFileObject(r);
+            if (fo != null) {
+                froots.add(fo);
+            }
+        }
+        return ClassPathSupport.createClassPath(froots.toArray(new FileObject[]{}));
+    }
+
+    private ClassPath createClassPath(String[] roots) {
+        List<FileObject> froots = new ArrayList<FileObject>(roots.length);
+        for (String r : roots) {
+            FileObject fo = getFileObject(r);
+            if (fo != null) {
+                froots.add(fo);
+            }
+        }
+        return ClassPathSupport.createClassPath(froots.toArray(new FileObject[]{}));
     }
     
     private ArtifactsUpdatedImpl addArtifactsUpdateListenerFor(JPDADebugger debugger, FileObject src) throws FileStateInvalidException {

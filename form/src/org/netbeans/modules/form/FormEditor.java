@@ -635,7 +635,10 @@ public class FormEditor {
         // destroy all invalid components
         for (RADComponent comp : invalidComponents) {
             try {
-                comp.getNodeReference().destroy();
+                RADComponentNode node = comp.getNodeReference();
+                if (node != null) {
+                    node.destroy();
+                }
             }
             catch (java.io.IOException ex) { // should not happen
                 ex.printStackTrace();

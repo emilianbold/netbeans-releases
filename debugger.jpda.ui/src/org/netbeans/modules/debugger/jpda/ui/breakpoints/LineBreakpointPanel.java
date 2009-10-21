@@ -316,6 +316,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
     private class LBController implements Controller {
 
         private boolean valid;
+        private String errMsg = null;
 
         /**
          * Called when "Ok" button is pressed.
@@ -323,6 +324,10 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
          * @return whether customizer can be closed
          */
         public boolean ok () {
+            if (!valid) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errMsg));
+                return false;
+            }
             actionsPanel.ok ();
             String path = tfFileName.getText().trim();
             if (new File(path).exists()) {
@@ -398,7 +403,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
             }
             int maxLine = findNumLines(path);
             if (maxLine == 0) { // Not found
-                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
+                maxLine = Integer.MAX_VALUE - 1; // Not to bother the user when we did not find it
             }
             if (line > maxLine + 1) {
                 setErrorMessage(NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
@@ -420,6 +425,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, o
         }
 
         private void setErrorMessage(String msg) {
+            errMsg = msg;
             firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, msg);
         }
 

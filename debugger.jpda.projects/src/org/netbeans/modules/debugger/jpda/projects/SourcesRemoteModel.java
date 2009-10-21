@@ -48,6 +48,8 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -67,6 +69,7 @@ import org.netbeans.modules.debugger.jpda.projects.SourcePathProviderImpl.FileOb
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -91,10 +94,15 @@ import org.openide.util.WeakListeners;
 public class SourcesRemoteModel implements TreeModel, CheckNodeModelFilter,
 NodeActionsProvider {
 
+    private static Logger logger = Logger.getLogger(SourcesCurrentModel.class.getName());
+
     private Vector<ModelListener>   listeners = new Vector<ModelListener>();
     // set of filters
     private Set<String>             disabledSourceRoots = new HashSet<String>();
     private List<String>            additionalSourceRoots = new ArrayList<String>();
+    private String[]                unorderedOriginalSourceRoots;
+    private String[]                sortedOriginalSourceRoots;
+    private int[]                   sourcePathPermutation;
     private Properties              sourcesProperties = Properties.
         getDefault ().getProperties ("debugger").getProperties ("sources");
     private GlobalPathRegistryListener globalRegistryListener;
@@ -170,13 +178,31 @@ NodeActionsProvider {
             }
 
             // 3) join them
-            Object[] os = sourceRoots.toArray();
-            //System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
-            //System.arraycopy (addSrcRoots.toArray(), 0, os, sourceRoots.length, addSrcRoots.size());
-            to = Math.min(os.length, to);
-            from = Math.min(os.length, from);
+            String[] os = sourceRoots.toArray(new String[] {});
+
+            // 4) sort them
+            Map<String, Integer> orderIndexes = SourcePathProviderImpl.getRemoteSourceRootsOrder();
+            String[] sortedOriginalRoots = new String[os.length];
+            int[] sourcePathPermutation = SourcePathProviderImpl.createPermutation(
+                    os,
+                    orderIndexes,
+                    sortedOriginalRoots);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("getChildren(): orderIndexes = "+orderIndexes+", sourcePathPermutation = "+Arrays.toString(sourcePathPermutation));
+                logger.fine("    sorted roots = "+Arrays.toString(sortedOriginalRoots));
+                logger.fine("  sourcePathPermutation = "+Arrays.toString(sourcePathPermutation));
+            }
+
+            to = Math.min(sortedOriginalRoots.length, to);
+            from = Math.min(sortedOriginalRoots.length, from);
             Object[] fos = new Object [to - from];
-            System.arraycopy (os, from, fos, 0, to - from);
+            System.arraycopy (sortedOriginalRoots, from, fos, 0, to - from);
+            synchronized (this) {
+                this.unorderedOriginalSourceRoots = os;
+                this.sortedOriginalSourceRoots = sortedOriginalRoots;
+                this.sourcePathPermutation = sourcePathPermutation;
+            }
             return fos;
         } else
         throw new UnknownTypeException (parent);
@@ -222,19 +248,37 @@ NodeActionsProvider {
             ((ModelListener) v.get (i)).modelChanged (null);
     }
 
+    private void fireSelectedNodes(Object[] nodes) {
+        ModelEvent event = new ModelEvent.SelectionChanged(this, nodes);
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (event);
+    }
+
 
     // NodeActionsProvider .....................................................
 
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
-            if (additionalSourceRoots.contains(node)) {
+            if (additionalSourceRoots.contains((String) node)) {
                 return new Action[] {
                     NEW_SOURCE_ROOT_ACTION,
-                    DELETE_ACTION
+                    DELETE_ACTION,
+                    null,
+                    MOVE_UP_ACTION,
+                    MOVE_DOWN_ACTION,
+                    null,
+                    RESET_ORDER_ACTION,
                 };
             } else {
                 return new Action[] {
-                    NEW_SOURCE_ROOT_ACTION
+                    NEW_SOURCE_ROOT_ACTION,
+                    null,
+                    MOVE_UP_ACTION,
+                    MOVE_DOWN_ACTION,
+                    null,
+                    RESET_ORDER_ACTION,
                 };
             }
         } else
@@ -369,6 +413,62 @@ NodeActionsProvider {
         return original.getShortDescription(node);
     }
 
+    public synchronized void reorderOriginalSourceRoots(int[] permutation) {
+        String[] srcRoots = sortedOriginalSourceRoots;
+        if (permutation == null) {
+            // Restting the order to the original
+            for (int i = 0; i < sourcePathPermutation.length; i++) {
+                sourcePathPermutation[i] = i;
+            }
+            sortedOriginalSourceRoots = unorderedOriginalSourceRoots;
+            srcRoots = unorderedOriginalSourceRoots;
+        } else {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("reorderOriginalSourceRoots("+Arrays.toString(permutation));
+            }
+            if (srcRoots.length != permutation.length) {
+                throw new IllegalArgumentException("Bad length of permutation: "+permutation.length+", have "+srcRoots.length+" source roots.");
+            }
+            int n = permutation.length;
+            String[] unorderedOriginalRoots = unorderedOriginalSourceRoots;
+            String[] sortedOriginalRoots = new String[n];
+            // Adding the permutation
+            for (int i = 0; i < n; i++) {
+                permutation[i] = sourcePathPermutation[permutation[i]];
+                sortedOriginalRoots[i] = unorderedOriginalRoots[permutation[i]];
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("  sourcePathPermutation = "+Arrays.toString(sourcePathPermutation));
+            }
+            for (int i = 0; i < n; i++) {
+                sourcePathPermutation[i] = permutation[i];
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("  => sourcePathPermutation = "+Arrays.toString(sourcePathPermutation));
+                logger.fine("  => sorted roots = "+Arrays.toString(sortedOriginalRoots));
+            }
+            sortedOriginalSourceRoots = sortedOriginalRoots;
+            srcRoots = unorderedOriginalRoots;
+        }
+        SourcePathProviderImpl.storeSourceRootsOrder(null, srcRoots, sourcePathPermutation);
+    }
+
+    private static String[] resize(String[] array, int by) {
+        int n = array.length + by;
+        String[] newArray = new String[n];
+        n = Math.max(n, array.length);
+        System.arraycopy(array, 0, newArray, 0, n);
+        return newArray;
+    }
+
+    private static int[] resize(int[] array, int by) {
+        int n = array.length + by;
+        int[] newArray = new int[n];
+        n = Math.min(n, array.length);
+        System.arraycopy(array, 0, newArray, 0, n);
+        return newArray;
+    }
+
 
     // innerclasses ............................................................
 
@@ -411,6 +511,16 @@ NodeActionsProvider {
                     String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesRemoteModel.this) {
                         additionalSourceRoots.add(d);
+
+                        unorderedOriginalSourceRoots = resize(unorderedOriginalSourceRoots, +1);
+                        sortedOriginalSourceRoots = resize(sortedOriginalSourceRoots, +1);
+                        sourcePathPermutation = resize(sourcePathPermutation, +1);
+
+                        unorderedOriginalSourceRoots[unorderedOriginalSourceRoots.length - 1] = d;
+                        sortedOriginalSourceRoots[sortedOriginalSourceRoots.length - 1] = d;
+                        sourcePathPermutation[sourcePathPermutation.length - 1] = sourcePathPermutation.length - 1;
+
+                        SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
                         //enabledSourceRoots.add(d);
                     }
                     // Set the new source roots:
@@ -446,6 +556,28 @@ NodeActionsProvider {
                         additionalSourceRoots.remove(node);
                         //enabledSourceRoots.remove(node);
                         disabledSourceRoots.remove(node);
+
+                        List<String> unorderedSR = new ArrayList<String>(Arrays.asList(unorderedOriginalSourceRoots));
+                        int index = unorderedSR.indexOf(node);
+                        if (index >= 0) {
+                            unorderedSR.remove(index);
+                            unorderedOriginalSourceRoots = unorderedSR.toArray(new String[] {});
+                            int pi = sourcePathPermutation[index];
+                            for (int j = 0; j < sourcePathPermutation.length; j++) {
+                                if (sourcePathPermutation[k] > pi) {
+                                    sourcePathPermutation[k]--;
+                                }
+                            }
+                            for (int j = index; j < (sourcePathPermutation.length - 1); j++) {
+                                sourcePathPermutation[j] = sourcePathPermutation[j+1];
+                            }
+                        }
+                        List<String> sortedSR = new ArrayList<String>(Arrays.asList(sortedOriginalSourceRoots));
+                        index = sortedSR.indexOf(node);
+                        if (index >= 0) {
+                            sortedSR.remove(index);
+                            sortedOriginalSourceRoots = sortedSR.toArray(new String[] {});
+                        }
                     }
                     // Set the new source roots:
                     /*
@@ -465,8 +597,113 @@ NodeActionsProvider {
                         sourcePath.setSourceRoots(newSourceRoots);
                     }
                      */
+                    saveAdditionalSourceRoots();
+                    saveDisabledSourceRoots();
+                    SourcePathProviderImpl.storeSourceRootsOrder(null, unorderedOriginalSourceRoots, sourcePathPermutation);
                 }
-                saveAdditionalSourceRoots();
+                fireTreeChanged ();
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
+    private final Action MOVE_UP_ACTION = Models.createAction (
+        NbBundle.getBundle (SourcesRemoteModel.class).getString
+            ("CTL_SourcesModel_MoveUpSrc"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (ROOT.equals(node)) return false;
+                synchronized (SourcesRemoteModel.this) {
+                    return sortedOriginalSourceRoots.length > 0 && !sortedOriginalSourceRoots[0].equals(node);
+                }
+            }
+            public void perform (Object[] nodes) {
+                int k = nodes.length;
+                synchronized (SourcesRemoteModel.this) {
+                    String[] roots = sortedOriginalSourceRoots;
+                    int n = roots.length;
+                    int[] permutation = new int[n];
+                    for (int i = 0; i < n; i++) {
+                        int j;
+                        for (j = 0; j < k; j++) {
+                            if (roots[i].equals(nodes[j])) {
+                                break;
+                            }
+                        }
+                        if (j < k) {
+                            // Move up the node
+                            if (i > 0) {
+                                permutation[i] = permutation[i-1];
+                                permutation[i-1] = i;
+                            }
+                        } else {
+                            permutation[i] = i;
+                        }
+                    }
+                    reorderOriginalSourceRoots(permutation);
+                }
+                //saveFilters ();
+                fireTreeChanged ();
+                fireSelectedNodes(nodes);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
+    private final Action MOVE_DOWN_ACTION = Models.createAction (
+        NbBundle.getBundle (SourcesCurrentModel.class).getString
+            ("CTL_SourcesModel_MoveDownSrc"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                if (ROOT.equals(node)) return false;
+                synchronized (SourcesRemoteModel.this) {
+                    return sortedOriginalSourceRoots.length > 0 &&
+                           !sortedOriginalSourceRoots[sortedOriginalSourceRoots.length - 1].equals(node);
+                }
+            }
+            public void perform (Object[] nodes) {
+                int k = nodes.length;
+                synchronized (SourcesRemoteModel.this) {
+                    String[] roots = sortedOriginalSourceRoots;
+                    int n = roots.length;
+                    int[] permutation = new int[n];
+                    for (int i = n - 1; i >= 0; i--) {
+                        int j;
+                        for (j = 0; j < k; j++) {
+                            if (roots[i].equals(nodes[j])) {
+                                break;
+                            }
+                        }
+                        if (j < k) {
+                            // Move down the node
+                            if (i < (n - 1)) {
+                                permutation[i] = permutation[i+1];
+                                permutation[i+1] = i;
+                            }
+                        } else {
+                            permutation[i] = i;
+                        }
+                    }
+                    reorderOriginalSourceRoots(permutation);
+                }
+                //saveFilters ();
+                fireTreeChanged ();
+                fireSelectedNodes(nodes);
+            }
+        },
+        Models.MULTISELECTION_TYPE_ANY
+    );
+
+    private final Action RESET_ORDER_ACTION = Models.createAction (
+        NbBundle.getBundle (SourcesCurrentModel.class).getString
+            ("CTL_SourcesModel_ResetOrderSrc"),
+        new Models.ActionPerformer () {
+            public boolean isEnabled (Object node) {
+                return true;
+            }
+            public void perform (Object[] nodes) {
+                reorderOriginalSourceRoots(null);
+                //saveFilters ();
                 fireTreeChanged ();
             }
         },

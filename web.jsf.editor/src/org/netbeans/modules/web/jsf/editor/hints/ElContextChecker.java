@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.web.jsf.editor.hints;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.source.CompilationController;
@@ -51,12 +53,15 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression.InspectPropertiesTask;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -66,15 +71,58 @@ import org.openide.util.NbBundle;
  */
 public abstract class ElContextChecker {
 
-    public abstract boolean check(JsfElExpression expression, Document document,
+    public boolean check(JsfElExpression expression, Document document,
+            FileObject fileObject, List<Hint> hints) {
+        if (isErrorCheckingEnabled(fileObject)) {
+            return checkImpl(expression, document, fileObject, hints);
+        } else {
+            //add the reenable el checks hint
+             //add a special hint for reenabling disabled error checks
+            HintFix fix = new EnableErrorChecksFix(fileObject, document);
+            Hint h = new EnableELChecksHint(HintsProvider.DEFAULT_WARNING_RULE,
+                    NbBundle.getMessage(ElContextChecker.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR"), //NOI18N
+                    fileObject,
+                    new OffsetRange(0, 0),
+                    Collections.singletonList(fix),
+                    50);
+
+            if(!hints.contains(h)) {
+                //add just one instance - this check method is called for each expression in the document
+                hints.add(h);
+            }
+            return true;
+        }
+    }
+
+    public abstract boolean checkImpl(JsfElExpression expression, Document document,
             FileObject fileObject, List<Hint> hints);
+
+    public static class JsfElUnknownContextChecker extends ElContextChecker {
+
+        public boolean checkImpl(JsfElExpression expression, Document document, FileObject fileObject, List<Hint> hints) {
+
+            String beanName = expression.getBeanName();
+            Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
+                    NbBundle.getMessage(ElContextChecker.class, "MSG_UNKNOWN_BEAN_CONTEXT", // NOI18N
+                    beanName),
+                    fileObject,
+                    new OffsetRange(expression.getStartOffset(),
+                    expression.getStartOffset() + beanName.length()),
+                    Collections.<HintFix>singletonList(new DisableErrorChecksFix(fileObject, document)),
+                    HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
+            hints.add(hint);
+            return false;
+        }
+        
+    }
+
 
     public static class JsfElStartContextChecker extends ElContextChecker {
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, javax.swing.text.Document, org.openide.filesystems.FileObject, java.util.List)
          */
-        public boolean check(JsfElExpression expression, Document document,
+        public boolean checkImpl(JsfElExpression expression, Document document,
                 FileObject fileObject, List<Hint> hints) {
             // check managed beans
             List<FacesManagedBean> beans = JSFBeanCache.getBeans(WebModule.getWebModule(fileObject));
@@ -103,7 +151,7 @@ public abstract class ElContextChecker {
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.core.syntax.completion.JspELExpression, javax.swing.text.Document, org.openide.filesystems.FileObject, java.util.List)
          */
-        public boolean check(final JsfElExpression expression, Document document,
+        public boolean checkImpl(final JsfElExpression expression, Document document,
                 FileObject fileObject, List<Hint> hints) {
             //create an InspectPropertiesTask for a base bean type of the expression
             InspectPropertiesTask inspectPropertiesTask = expression.new InspectPropertiesTask(expression.getBaseObjectClass()) {
@@ -146,7 +194,7 @@ public abstract class ElContextChecker {
                         fileObject,
                         new OffsetRange(expression.getStartOffset() + offset,
                         expression.getStartOffset() + offset + property.length()),
-                        Collections.<HintFix>emptyList(),
+                        Collections.<HintFix>singletonList(new DisableErrorChecksFix(fileObject, document)),
                         HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
                 hints.add(hint);
             } else if (offset > 0 && property != null) {
@@ -162,7 +210,7 @@ public abstract class ElContextChecker {
                         fileObject,
                         new OffsetRange(expression.getStartOffset() + offset,
                         expression.getStartOffset() + offset + property.length()),
-                        Collections.<HintFix>emptyList(),
+                        Collections.<HintFix>singletonList(new DisableErrorChecksFix(fileObject, document)),
                         HintsProvider.DEFAULT_ERROR_HINT_PRIORITY,
                         property);
                 hints.add(hint);
@@ -176,7 +224,7 @@ public abstract class ElContextChecker {
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.jsf.editor.hints.ElContextChecker#check(org.netbeans.modules.web.jsf.editor.el.JsfElExpression, java.util.List)
          */
-        public boolean check(JsfElExpression expression, Document document,
+        public boolean checkImpl(JsfElExpression expression, Document document,
                 FileObject fileObject, List<Hint> hints) {
             /*
              * Fix for IZ#172143 - False EL Error 'Unknown resource bunde key "]".'
@@ -202,7 +250,7 @@ public abstract class ElContextChecker {
                     new OffsetRange(expression.getStartOffset() + offset,
                     expression.getStartOffset() + offset +
                     property.length()),
-                    Collections.<HintFix>emptyList(),
+                    Collections.<HintFix>singletonList(new DisableErrorChecksFix(fileObject, document)),
                     HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
             hints.add(hint);
             return true;
@@ -221,6 +269,118 @@ public abstract class ElContextChecker {
             return property;
         }
         
+    }
+
+    static final String DISABLE_ERROR_CHECKS_KEY = "disable_el_error_checking"; //NOI18N
+
+    public static boolean isErrorCheckingEnabled(FileObject fo) {
+        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) == null;
+    }
+
+    private static final class DisableErrorChecksFix implements HintFix {
+
+
+        private static String VALUE = "true"; //NOI18N
+        private FileObject fo;
+        private Document doc;
+
+        public DisableErrorChecksFix(FileObject fo, Document doc) {
+            this.fo = fo;
+            this.doc = doc;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(ElContextChecker.class, "MSG_HINT_DISABLE_ERROR_CHECKS_FILE"); //NOI18N
+        }
+
+        public void implement() throws Exception {
+            fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, VALUE);
+            //force reparse => hints update
+            forceReparse(doc);
+        }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    private static final class EnableErrorChecksFix implements HintFix {
+
+        private FileObject fo;
+        private Document doc;
+
+        public EnableErrorChecksFix(FileObject fo, Document doc) {
+            this.fo = fo;
+            this.doc = doc;
+        }
+
+        public String getDescription() {
+            return NbBundle.getMessage(ElContextChecker.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE"); //NOI18N
+        }
+
+        public void implement() throws Exception {
+            fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, null);
+            //force reparse => hints update
+            forceReparse(doc);
+        }
+
+        public boolean isSafe() {
+            return true;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+    }
+
+    private static void forceReparse(final Document doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private static class EnableELChecksHint extends Hint {
+
+        public EnableELChecksHint(Rule rule, String description, FileObject file, OffsetRange range, List<HintFix> fixes, int priority) {
+            super(rule, description, file, range, fixes, priority);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+
+            //all hints of this type are equal
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+
+
     }
 
 }

@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Locale;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.net.URL;
@@ -92,18 +95,90 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
     private static class Query extends AbstractQuery {
 
+        private int anchor;
+        private volatile Collection<? extends CompletionItem> items =  Collections.<CompletionItem>emptyList();
+        private JTextComponent component;
+
+        @Override
+        protected void prepareQuery(JTextComponent component) {
+            this.component = component;
+        }
+
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
-                if (result == null) {
-                    return;
+                if(result != null) {
+                    items = result.getItems();
                 }
-                resultSet.addAllItems(result.getItems());
-                resultSet.setAnchorOffset(result.getAnchor());
+
+                resultSet.addAllItems(items);
+                if(result != null) {
+                    anchor = result.getAnchor();
+                    resultSet.setAnchorOffset(anchor);
+                }
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
+
+        @Override
+        protected boolean canFilter(JTextComponent component) {
+            try {
+                Document doc = component.getDocument();
+                int offset = component.getCaretPosition();
+                if(offset < anchor) {
+                    return false;
+                }
+
+                String prefix = doc.getText(anchor, offset - anchor);
+
+                //check the items
+                for(CompletionItem item : items) {
+                    if(item instanceof HtmlCompletionItem) {
+                        if(startsWithIgnoreCase( ((HtmlCompletionItem)item).getItemText(), prefix)) {
+                            return true; //at least one item will remain
+                        }
+                    }
+                }
+
+
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return false;
+
+        }
+
+        @Override
+        protected void filter(CompletionResultSet resultSet) {
+            try {
+                Document doc = component.getDocument();
+                int offset = component.getCaretPosition();
+                String prefix = doc.getText(anchor, offset - anchor);
+
+                //check the items
+                for(CompletionItem item : items) {
+                    if(item instanceof HtmlCompletionItem) {
+                        if(startsWithIgnoreCase(((HtmlCompletionItem)item).getItemText(), prefix)) {
+                            resultSet.addItem(item);
+                        }
+                    }
+                }
+
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                resultSet.setAnchorOffset(anchor);
+                resultSet.finish();
+            }
+
+        }
+
+        private static boolean startsWithIgnoreCase(String text, String prefix) {
+            return text.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
+        }
+
     }
 
     public static class DocQuery extends AbstractQuery {
@@ -138,48 +213,43 @@ public class HtmlCompletionProvider implements CompletionProvider {
     private static abstract class AbstractQuery extends AsyncCompletionQuery {
 
         @Override
-        protected void prepareQuery(JTextComponent component) {
-            //no action
-        }
-
-        @Override
         protected void preQueryUpdate(JTextComponent component) {
-            int caretOffset = component.getCaretPosition();
-            Document doc = component.getDocument();
-            checkHideCompletion((BaseDocument) doc, caretOffset);
+            checkHideCompletion((BaseDocument) component.getDocument(), component.getCaretPosition());
         }
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            doQuery(resultSet, doc, caretOffset);
-            resultSet.finish();
+            try {
+                doQuery(resultSet, doc, caretOffset);
+            } finally {
+                resultSet.finish();
+            }
         }
 
         abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
     }
 
-    private static void checkHideCompletion(BaseDocument doc, int caretOffset) {
+    private static void checkHideCompletion(final BaseDocument doc, final int caretOffset) {
         //test whether we are just in text and eventually close the opened completion
         //this is handy after end tag autocompletion when user doesn't complete the
         //end tag and just types a text
         //test whether the user typed an ending quotation in the attribute value
-        doc.readLock();
-        try {
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        doc.render(new Runnable() {
 
-            tokenSequence.move(caretOffset == 0 ? 0 : caretOffset - 1);
-            if (!tokenSequence.moveNext()) {
-                return;
+            public void run() {
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+
+                tokenSequence.move(caretOffset == 0 ? 0 : caretOffset - 1);
+                if (!tokenSequence.moveNext()) {
+                    return;
+                }
+
+                Token tokenItem = tokenSequence.token();
+                if (tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
+                    hideCompletion();
+                }
             }
-
-            Token tokenItem = tokenSequence.token();
-            if (tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
-                hideCompletion();
-            }
-
-        } finally {
-            doc.readUnlock();
-        }
+        });
     }
 
     static boolean checkOpenCompletion(Document document, final int dotPos, String typedText) {

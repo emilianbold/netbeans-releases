@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshotQuery;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.management.api.DLightSession;
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 import org.netbeans.modules.dlight.threadmap.api.ThreadData;
 import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
 import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
@@ -87,6 +88,7 @@ public class ThreadsDataManager {
     private ScheduledFuture<?> updateNameTask;
     private static final class Lock {}
     private final Object lock = new Lock();
+    private boolean fillThreadNames = false;
 
     /**
      * Creates a new instance of ThreadsDataManager
@@ -256,6 +258,10 @@ public class ThreadsDataManager {
             }
             fireDataChanged(); // all listeners are notified about threadData change */
         }
+        if (fillThreadNames) {
+            fillThreadNames = false;
+            setThreadNameFormat();
+        }
     }
 
     private void mergeData(MonitoredData monitoredData, long requestFrom){
@@ -275,9 +281,9 @@ public class ThreadsDataManager {
             Integer number = IdToNumber.get(col.getThreadID());
             if (number != null) {
                 long lastState = col.getThreadStateAt(col.size()-1).getTimeStamp();
-                if (requestFrom < lastState) {
+                if (requestFrom == 0) {
                     col.clearStates();
-                    lastState = requestFrom - 1;
+                    lastState = -1;
                 }
                 int newData = number.intValue();
                 List<ThreadState> states = monitoredData.getThreadStates(newData);
@@ -308,15 +314,25 @@ public class ThreadsDataManager {
         }
     }
 
-    public synchronized void startup(){
-        if (updateNameTask == null || updateNameTask.isDone()){
-            updateNameTask = DLightExecutorService.scheduleAtFixedRate(updater, 5, TimeUnit.SECONDS, "updateNameTask"); //NOI18N
+    public synchronized void startup(SessionState sessionState){
+        if (sessionState == SessionState.ANALYZE) {
+            if (updateNameTask != null) {
+                updateNameTask.cancel(true);
+            }
+            fillThreadNames = true;
+        } else {
+            if (updateNameTask == null || updateNameTask.isDone()){
+                updateNameTask = DLightExecutorService.scheduleAtFixedRate(updater, 5, TimeUnit.SECONDS, "updateNameTask"); //NOI18N
+            }
         }
     }
 
-    public synchronized void shutdown(){
+    public synchronized void shutdown(SessionState sessionState){
         if (updateNameTask != null) {
             updateNameTask.cancel(true);
+        }
+        if (sessionState == SessionState.ANALYZE) {
+            fillThreadNames = true;
         }
     }
 
@@ -345,23 +361,27 @@ public class ThreadsDataManager {
             if (init) {
                 return;
             }
-            switch (threadNameFormat) {
-                case 2:
-                case 1:
+            setThreadNameFormat();
+        }
+    }
+
+    private void setThreadNameFormat() {
+        switch (threadNameFormat) {
+            case 2:
+            case 1:
                 {
                     DLightExecutorService.submit(updater, "urgentUpdateNameTask"); //NOI18N
                     break;
                 }
-                case 0:
-                default:
+            case 0:
+            default:
                 {
-                    for(ThreadStateColumnImpl col : threadData) {
+                    for (ThreadStateColumnImpl col : threadData) {
                         col.resetName();
                     }
                     fireDataChanged();
                     break;
                 }
-            }
         }
     }
 

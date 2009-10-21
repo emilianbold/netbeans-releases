@@ -206,35 +206,21 @@ public class UnitDetails extends DetailsPanel {
 
             container.add(u.updateUnit, uu.getRelevantElement());
             Set<UpdateElement> required = new LinkedHashSet<UpdateElement>();
-            Map<UpdateElement, Set<UpdateElement>> requiredMap = new HashMap<UpdateElement, Set<UpdateElement>>();
-
             List <OperationInfo<InstallSupport>> infos = container.listAll();
 
             for (OperationInfo<InstallSupport> info : infos) {
-                Set<UpdateElement> reqs = requiredMap.get(uu.getRelevantElement());
-                if (reqs == null) {
-                    reqs = info.getRequiredElements();
-                    requiredMap.put(uu.getRelevantElement(), reqs);
-                }
-
+                Set<UpdateElement> reqs  = info.getRequiredElements();
+                
                 for (UpdateElement req : reqs) {
                     if (req.getUpdateUnit().getInstalled() != null && !req.getUpdateUnit().isPending()) {
-                        required.add(req);
-                        Set<UpdateElement> requiredElements = requiredMap.get(req);
-                        if (requiredElements == null) {
-                            requiredElements = OperationContainer.createForUpdate().add(req).getRequiredElements();
-                            requiredMap.put(req, requiredElements);
-                        }
-                        for (UpdateElement e : requiredElements) {
-                            required.add(e);
-                        }
+                        required.add(req);                        
                     } else {
                         //OperationContainer.createForInstall().
                     }
                 }                
             }
             for (OperationInfo<InstallSupport> i : infos) {
-                if (!i.getUpdateUnit().equals(u.updateUnit)) {
+                if (!i.getUpdateUnit().equals(u.updateUnit) && !i.getUpdateUnit().isPending()) {
                     required.add(i.getUpdateElement());
                 }
             }
@@ -276,15 +262,11 @@ public class UnitDetails extends DetailsPanel {
             }
         } else {
             Unit.InternalUpdate iu = (Unit.InternalUpdate) u;
-
+            
             OperationContainer<InstallSupport> updContainer = OperationContainer.createForUpdate();
             for (UpdateUnit inv : iu.getUpdateUnits()) {
                 updContainer.add(inv.getAvailableUpdates().get(0));
             }
-
-            OperationContainer<InstallSupport> reiContainer = OperationContainer.createForInternalUpdate();
-            reiContainer.add(iu.getRelevantElement());
-            
             for (OperationInfo<InstallSupport> info : updContainer.listAll()) {
                 internalUpdates.add(info.getUpdateElement());
                 for (UpdateElement r : info.getRequiredElements()) {
@@ -294,6 +276,11 @@ public class UnitDetails extends DetailsPanel {
 
                 }
             }
+            /*
+             *
+            OperationContainer<InstallSupport> reiContainer = OperationContainer.createForInternalUpdate();
+            reiContainer.add(iu.getRelevantElement());
+
             for (OperationInfo<InstallSupport> info : reiContainer.listAll()) {
                 if (!info.getUpdateElement().equals(iu.updateUnit.getInstalled())) {
                     internalUpdates.add(info.getUpdateElement());
@@ -304,6 +291,8 @@ public class UnitDetails extends DetailsPanel {
                     }
                 }
             }
+             * 
+             */
         }
         StringBuilder desc = new StringBuilder();
         try {
@@ -332,7 +321,7 @@ public class UnitDetails extends DetailsPanel {
         if (ue.getUpdateUnit().getInstalled() != null) {
             desc.append(" [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->");
         } else {
-            desc.append(" <span color=\"red\">new!</span> [");
+            desc.append(" <span color=\"red\">" + getBundle("UnitDetails_New_Internal_Update_Mark") + "</span> [");
         }
 
         desc.append(ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion());

@@ -165,7 +165,8 @@ public class TreeEvaluator {
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;
             } else {
-                throw new InvalidExpressionException(expression.getExpression());
+                throw new InvalidExpressionException(NbBundle.getMessage(
+                    TreeEvaluator.class, "CTL_EvalError_notAValue") + ": " + expression.getExpression());
             }
             //return exprTree.accept(new EvaluatorVisitor(), evaluationContext);
         } catch (IllegalStateException isex) {

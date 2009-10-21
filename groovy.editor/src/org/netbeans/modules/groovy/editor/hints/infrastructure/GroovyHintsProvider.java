@@ -137,12 +137,15 @@ public class GroovyHintsProvider implements HintsProvider {
         for (Error error : errors) {
             if (error instanceof GroovyError) {
                 LOG.log(Level.FINEST, "@@@ ----------------------------------------------------\n");
+                LOG.log(Level.FINEST, "@@@ thread name   : {0}\n", Thread.currentThread().getName());
                 LOG.log(Level.FINEST, "@@@ error.getDescription()   : {0}\n", error.getDescription());
                 LOG.log(Level.FINEST, "@@@ error.getKey()           : {0}\n", error.getKey());
                 LOG.log(Level.FINEST, "@@@ error.getDisplayName()   : {0}\n", error.getDisplayName());
                 LOG.log(Level.FINEST, "@@@ error.getStartPosition() : {0}\n", error.getStartPosition());
                 LOG.log(Level.FINEST, "@@@ error.getEndPosition()   : {0}\n", error.getEndPosition());
-                if (!applyRules((GroovyError) error, context, hints, result)) {
+                boolean applyRet = applyRules((GroovyError) error, context, hints, result);
+                LOG.log(Level.FINEST, "@@@ apply   : {0}\n", applyRet);
+                if (!applyRet) {
                     LOG.log(Level.FINEST, "@@@ Adding error to unhandled");
                     unhandled.add(error);
                 }

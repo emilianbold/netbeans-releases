@@ -889,6 +889,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz159422.cc", 8, 27, "iz159422.cc", 4, 5);
     }
 
+    public void testIZ174581() throws Exception {
+        // IZ#174581 : template: Unable to resolve identifier
+        performTest("iz174581.cc", 22, 17, "iz174581.cc", 2, 5);
+    }
+
+    public void testIZ157786() throws Exception {
+        // IZ#157786 : No member in class
+        performTest("iz157786.cc", 13, 9, "iz157786.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

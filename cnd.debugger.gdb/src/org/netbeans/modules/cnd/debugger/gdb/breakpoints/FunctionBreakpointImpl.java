@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.util.Map;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
@@ -60,15 +59,5 @@ public class FunctionBreakpointImpl extends BreakpointImpl<FunctionBreakpoint> {
     @Override
     protected String getBreakpointCommand() {
         return getBreakpoint().getFunctionName();
-    }
-
-    @Override
-    protected void validationUpdate(Map<String, String> map) {
-        try {
-            getBreakpoint().setURL(debugger.getOSPath(map.get("fullname"))); // NOI18N
-            getBreakpoint().setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
-        } catch (Exception ex) {
-            // do nothing
-        }
     }
 }

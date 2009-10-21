@@ -42,7 +42,6 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,12 +50,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.apisupport.project.EvaluatorTest;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -168,8 +171,7 @@ public class ClassPathProviderImplTest extends TestBase {
         fail(failMsg);
     }
     
-    private static final Set<String> TESTLIBS = new HashSet<String>(Arrays.asList(
-        "junit.jar", "org-netbeans-modules-nbjunit.jar", "org-netbeans-insane.jar", "org-netbeans-libs-junit.jar"));
+    private static final Set<String> TESTLIBS = new HashSet<String>(/* no more default test libs after issue #171616 */);
     
     private Set<String> urlsOfCp4Tests(ClassPath cp) throws Exception {
         Set<String> s = new TreeSet<String>();
@@ -605,6 +607,86 @@ public class ClassPathProviderImplTest extends TestBase {
         cp = cpp.findClassPath(modD.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
         expectedRoots.add(urlForJar(modD.getTestClassesDirectory("unit").getPath()));
         assertEquals("correct TEST EXECUTE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    @Override
+    protected int timeOut() {
+        return 30000;   // testCyclicDependenciesDetected may loop endlessly
+    }
+
+
+    public void testCyclicDependenciesDetected() throws Exception {
+        // generate simple A -> B -> C -> A runtime deps cycle (A->B is recursive test dep)
+        testSuite = generateSuite("testSuite2");
+        modC = generateTestingSuiteComponent(testSuite, "c",
+                "<dependency>\n" +
+                "<code-name-base>org.example.a</code-name-base>" +
+                "<build-prerequisite/>\n<run-dependency/>\n" +
+                "</dependency>",
+                "", "");
+        modB = generateTestingSuiteComponent(testSuite, "b",
+                "<dependency>\n" +
+                "<code-name-base>org.example.c</code-name-base>" +
+                "<build-prerequisite/>\n<run-dependency/>\n" +
+                "</dependency>",
+                "", "");
+        modA = generateTestingSuiteComponent(testSuite, "a",
+                "<dependency>\n" +
+                "<code-name-base>org.example.b</code-name-base>" +
+                "<build-prerequisite/>\n<run-dependency/>\n" +
+                "</dependency>",
+                "<test-dependency>\n" +
+                "<code-name-base>org.example.b</code-name-base>\n" +
+                "<recursive/>\n" +
+                "<compile-dependency/>\n" +
+                "</test-dependency>\n", "");
+
+        ClassPathProvider cpp = modA.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(modA.getTestSourceDirectory("unit"), ClassPath.EXECUTE);
+        Set<String> expectedRoots = new TreeSet<String>();
+        expectedRoots.add(urlForJar(modA.getTestClassesDirectory("unit").getPath()));
+        expectedRoots.add(urlForJar(modA.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modB.getModuleJarLocation().getPath()));
+        expectedRoots.add(urlForJar(modC.getModuleJarLocation().getPath()));
+        assertEquals("correct TEST COMPILE classpath", expectedRoots, urlsOfCp4Tests(cp));
+    }
+
+    private class MyHandler extends Handler {
+        public int c;
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().startsWith("computeTestType: processing "))
+                c++;
+        }
+        @Override
+        public void flush() {
+        }
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
+
+    @RandomlyFails
+    // not randomly failing, but fails without NB sources
+    public void testRecursiveScanOptimization() throws Exception {
+        FileObject src = nbRoot().getFileObject("apisupport.project/test/unit/src");
+        assertNotNull("apisupport.project/test/unit/src", src);
+        Logger logger = Logger.getLogger("org.netbeans.modules.apisupport.project.Evaluator");
+        MyHandler h = new MyHandler();
+        logger.addHandler(h);
+        Level origL = logger.getLevel();
+        try {
+            logger.setLevel(Level.FINE);
+            ClassPath cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
+            assertNotNull("have an EXECUTE classpath", cp);
+            Set<String> expectedRoots = new TreeSet<String>();
+            // 247 entries & 5848 processed module entries before optimization
+            // 142 processed entries with duplicate entries pruned
+            assertTrue("Each module entry processed at most once", h.c <= 2 * cp.getRoots().length);
+        } finally {
+            logger.setLevel(origL);
+            logger.removeHandler(h);
+        }
     }
 
     /**

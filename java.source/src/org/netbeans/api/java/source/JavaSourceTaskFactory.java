@@ -59,8 +59,6 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
-import org.netbeans.modules.parsing.api.Source;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
 /**

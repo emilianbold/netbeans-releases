@@ -115,9 +115,12 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpQuery;
 import org.netbeans.modules.dlight.util.UIThread;
+import org.netbeans.modules.dlight.visualizers.CallStackTopComponent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -148,11 +151,17 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private static final String SUMMARY_COLUMN_NAME = messages.getString("ThreadsPanel_SummaryColumnName"); // NOI18N
     private static final String SELECTED_THREADS_ITEM = messages.getString("ThreadsPanel_SelectedThreadsItem"); // NOI18N
     private static final String SHOW_LEGEND = messages.getString("ThreadsPanel_ShowLegend"); // NOI18N
+    private static final String HIDE_LEGEND = messages.getString("ThreadsPanel_HideLegend"); // NOI18N
     private static final String SELECT_THREAD_NAME = messages.getString("ThreadsPanel_SelectThreadName"); // NOI18N
     static final String THREAD_NAME_ID = messages.getString("ThreadsPanel_ThreadNameId"); // NOI18N
     static final String THREAD_NAME_CALLEE = messages.getString("ThreadsPanel_ThreadNameCallee"); // NOI18N
     static final String THREAD_NAME_CALLEE_CALLEE = messages.getString("ThreadsPanel_ThreadNameCalleeCallee"); // NOI18N
     static final String THREAD_NAME_FORMAT_TOOL_TIP = messages.getString("ThreadsPanel_ChangeThreadNameFormatToolTip"); // NOI18N
+    private static final String NAVIGATE = messages.getString("ThreadsPanel_Navigate"); // NOI18N
+    private static final String NAVIGATE_CARET_LEFT = messages.getString("ThreadsPanel_NavigateCaretLeft"); // NOI18N
+    private static final String NAVIGATE_CARET_RIGHT = messages.getString("ThreadsPanel_NavigateCaretRight"); // NOI18N
+    private static final String NAVIGATE_SET_CARET = messages.getString("ThreadsPanel_NavigateSetCaret"); // NOI18N
+    private static final String NAVIGATE_STACK_VIEW = messages.getString("ThreadsPanel_NavigateStackView"); // NOI18N
     private static final String CLOSE_LEGEND_TOOLTIP = messages.getString("ThreadsPanel_CloseLegendToolTip"); // NOI18N
     private static final String TABLE_ACCESS_NAME = messages.getString("ThreadsPanel_TableAccessName"); // NOI18N
     private static final String TABLE_ACCESS_DESCR = messages.getString("ThreadsPanel_TableAccessDescr"); // NOI18N
@@ -190,6 +199,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     private JPanel legendPanel;
     private JMenuItem showOnlySelectedThreads;
     private JMenuItem showLegend;
+    private JMenuItem hideLegend;
     private JMenu selectThreadName;
     private JRadioButtonMenuItem idThreadName;
     private JRadioButtonMenuItem calleeThreadName;
@@ -308,7 +318,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         JPanel tablePanel = new JPanel();
         JPanel scrollPanel = new JPanel();
-        popupMenu = initPopupMenu();
 
         // set properties
         zoomInButton.setEnabled(!scaleToFit);
@@ -477,11 +486,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         zoomOutButton.addActionListener(this);
         scaleToFitButton.addActionListener(this);
         threadsSelectionCombo.addActionListener(this);
-        showOnlySelectedThreads.addActionListener(this);
-        showLegend.addActionListener(this);
-        idThreadName.addActionListener(this);
-        calleeThreadName.addActionListener(this);
-        calleeCalleeThreadName.addActionListener(this);
         viewModeSelectionCombo.addActionListener(this);
         viewModeSelectionCombo.setSelectedIndex(Math.min(NbPreferences.forModule(getClass()).getInt("ViewMode", 0), viewModeComboModel.getSize()-1)); // NOI18N
 
@@ -498,7 +502,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         });
 
         table.addKeyListener(new KeyAdapter() {
-
             @Override
             public void keyPressed(KeyEvent e) {
                 if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) || ((e.getKeyCode() == KeyEvent.VK_F10) && (e.getModifiers() == InputEvent.SHIFT_MASK))) {
@@ -507,6 +510,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     if (selectedRow != -1) {
                         Rectangle cellRect = table.getCellRect(selectedRow, 0, false);
                         showLegend.setVisible(!isShowLegend);
+                        hideLegend.setVisible(isShowLegend);
                         popupMenu.show(e.getComponent(), ((cellRect.x + table.getSize().width) > 50) ? 50 : 5, cellRect.y);
                     }
                 }
@@ -514,7 +518,6 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         });
 
         table.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mousePressed(MouseEvent e) {
                 if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
@@ -537,6 +540,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                 if (clickedLine != -1) {
                     if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
                         showLegend.setVisible(!isShowLegend);
+                        hideLegend.setVisible(isShowLegend);
                         popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     } else if ((e.getModifiers() == InputEvent.BUTTON1_MASK)){
                         if (e.getClickCount() == 1){
@@ -558,7 +562,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     if (column == NAME_COLUMN_INDEX) {
                         ThreadNameHeaderRenderer renderer = (ThreadNameHeaderRenderer) table.getColumnModel().getColumn(NAME_COLUMN_INDEX).getHeaderRenderer();
                         Rectangle rect = renderer.getFormatRectangle();
-                        if (rect.getX() <= e.getX() && e.getX() <= rect.getX()+rect.getWidth()) {
+                        if (rect != null && rect.getX() <= e.getX() && e.getX() <= rect.getX()+rect.getWidth()) {
                             setThreadNameFormat(getThreadNameFormat() + 1);
                             return;
                         }
@@ -589,6 +593,60 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         keys = new HashSet<AWTKeyStroke>(table.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
         keys.add(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK));
         table.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, keys);
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.ALT_MASK, true), "ascSortFor1");//NOI18N
+        table.getActionMap().put("ascSortFor1", new AbstractAction() {// NOI18N
+            public void actionPerformed(ActionEvent e) {
+                sortByColumn(0);
+            }
+        });
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_3, KeyEvent.ALT_MASK, true), "ascSortFor3");//NOI18N
+        table.getActionMap().put("ascSortFor3", new AbstractAction() {// NOI18N
+            public void actionPerformed(ActionEvent e) {
+                sortByColumn(2);
+            }
+        });
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_MASK, true), "leftTimeLine"); //NOI18N
+        AbstractAction action = new AbstractAction(NAVIGATE_CARET_LEFT) {
+            public void actionPerformed(ActionEvent e) {
+                shiftTimeLine(-1);
+            }
+        };
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_MASK, true));//NOI18N
+        table.getActionMap().put("leftTimeLine", action); //NOI18N
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_MASK, true), "rightTimeLine"); //NOI18N
+        action = new AbstractAction(NAVIGATE_CARET_RIGHT) {
+            public void actionPerformed(ActionEvent e) {
+                shiftTimeLine(1);
+            }
+        };
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_MASK, true));
+        table.getActionMap().put("rightTimeLine", action);// NOI18N
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK, true), "newTimeLine"); //NOI18N
+        action = new AbstractAction(NAVIGATE_SET_CARET) {
+            public void actionPerformed(ActionEvent e) {
+                shiftTimeLine(0);
+            }
+        };
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK, true));
+        table.getActionMap().put("newTimeLine", action);// NOI18N
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_MASK, true), "focuseStack"); //NOI18N
+        action = new AbstractAction(NAVIGATE_STACK_VIEW) {
+            public void actionPerformed(ActionEvent e) {
+                CallStackTopComponent.getDefault().requestFocus(false);
+            }
+        };
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_MASK, true));
+        table.getActionMap().put("focuseStack", action);// NOI18N
+
+        scrollBar.setFocusable(true);
+
+        popupMenu = initPopupMenu();
 
         updateScrollbar();
         updateZoomButtonsEnabledState();
@@ -692,6 +750,80 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         }
         refreshUI();
+    }
+
+    private void shiftTimeLine(int shift){
+        int rowIndex = table.getSelectedRow();
+        if (rowIndex < 0) {
+            return;
+        }
+        int row = filteredDataToDataIndex.get(rowIndex).intValue();
+        ThreadStateColumnImpl threadData = null;
+        ThreadState bestCandidate = null;
+        if (timeLine == null || shift == 0){
+            long middle = (getViewStart()+ getViewEnd())/2;
+            if (middle == 0) {
+                return;
+            }
+            threadData = manager.getThreadData(row);
+            for(int i = 0; i < threadData.size(); i++){
+                ThreadState state = threadData.getThreadStateAt(i);
+                if (bestCandidate == null) {
+                    bestCandidate = state;
+                }
+                long time1 = ThreadStateColumnImpl.timeStampToMilliSeconds(bestCandidate.getTimeStamp());
+                long time2 = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
+                if (Math.abs(middle - time1) > Math.abs(middle - time2)) {
+                    bestCandidate = state;
+                }
+            }
+            if (bestCandidate == null) {
+                return;
+            }
+            timeLine = new TimeLine(bestCandidate.getTimeStamp(), manager.getStartTime(), (int)bestCandidate.getMSASamplePeriod());
+        } else {
+            long current = timeLine.getTimeStamp();
+            if (shift < 0) {
+                current -= timeLine.getInterval();
+            } else if (shift > 0) {
+                current += timeLine.getInterval();
+            }
+            threadData = manager.getThreadData(row);
+            for(int i = 0; i < threadData.size(); i++){
+                ThreadState state = threadData.getThreadStateAt(i);
+                if (bestCandidate == null) {
+                    bestCandidate = state;
+                }
+                long time1 = ThreadStateColumnImpl.timeStampToMilliSeconds(bestCandidate.getTimeStamp());
+                long time2 = ThreadStateColumnImpl.timeStampToMilliSeconds(state.getTimeStamp());
+                if (Math.abs(current - time1) > Math.abs(current - time2)) {
+                    bestCandidate = state;
+                }
+            }
+            if (bestCandidate == null) {
+                return;
+            }
+            timeLine = new TimeLine(bestCandidate.getTimeStamp(), manager.getStartTime(), (int)bestCandidate.getMSASamplePeriod());
+        }
+        MSAState prefferedState = null;
+        EnumMap<MSAState, AtomicInteger> aMap = new EnumMap<MSAState, AtomicInteger>(MSAState.class);
+        ThreadStateColumnImpl.fillMap(this, bestCandidate, aMap);
+        ThreadStateColumnImpl.roundMap(aMap);
+        int maxValue = 0;
+        for(OrderedEnumStateIterator it = new OrderedEnumStateIterator(aMap); it.hasNext();){
+            Map.Entry<MSAState, AtomicInteger> e = it.next();
+            MSAState msa = e.getKey();
+            if (prefferedState == null) {
+                prefferedState = msa;
+                maxValue = e.getValue().intValue();
+            }
+            if (maxValue < e.getValue().intValue()) {
+                prefferedState = msa;
+                maxValue = e.getValue().intValue();
+            }
+        }
+        bestCandidate.getMSAState(rowIndex, isFullMode());
+        showStacksAtTimeLine(threadData, bestCandidate, prefferedState);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -825,6 +957,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             table.clearSelection();
         } else if (e.getSource() == showLegend) {
             isShowLegend = true;
+            initLegend(isFullMode());
+            refreshUI();
+            viewPort.repaint();
+        } else if (e.getSource() == hideLegend) {
+            isShowLegend = false;
             initLegend(isFullMode());
             refreshUI();
             viewPort.repaint();
@@ -1009,6 +1146,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         showOnlySelectedThreads = new JMenuItem(SELECTED_THREADS_ITEM);
         showLegend = new JMenuItem(SHOW_LEGEND);
+        hideLegend = new JMenuItem(HIDE_LEGEND);
 
         selectThreadName = new JMenu(SELECT_THREAD_NAME);
         idThreadName = new JRadioButtonMenuItem(THREAD_NAME_ID);
@@ -1034,7 +1172,22 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         popup.add(showOnlySelectedThreads);
         popup.add(showLegend);
+        popup.add(hideLegend);
         popup.add(selectThreadName);
+
+        JMenu navigate = new JMenu(NAVIGATE);
+        navigate.add(table.getActionMap().get("leftTimeLine")); // NOI18N
+        navigate.add(table.getActionMap().get("rightTimeLine")); // NOI18N
+        navigate.add(table.getActionMap().get("newTimeLine")); // NOI18N
+        navigate.add(table.getActionMap().get("focuseStack")); // NOI18N
+        popup.add(navigate);
+
+        showOnlySelectedThreads.addActionListener(this);
+        showLegend.addActionListener(this);
+        hideLegend.addActionListener(this);
+        idThreadName.addActionListener(this);
+        calleeThreadName.addActionListener(this);
+        calleeCalleeThreadName.addActionListener(this);
 
         return popup;
     }
@@ -1122,38 +1275,48 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                         final ThreadState state = threadData.getThreadStateAt(index);
                         int interval = (int) state.getMSASamplePeriod();
                         timeLine = new TimeLine(state.getTimeStamp(), manager.getStartTime(), interval);
-                        LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
-                        final List<Integer> showThreadsID = new ArrayList<Integer>();
-                        //showThreadsID.add(manager.getThreadData(row).getThreadID());
-                        for(Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()){
-                            //if (entry.getKey().intValue() != row) {
-                                showThreadsID.add(manager.getThreadData(entry.getKey().intValue()).getThreadID());
-                            //}
-                        }
-                        //if (true) {
-                        //    System.err.println("Prepare Stack Query:");
-                        //    for(Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()){
-                        //        ThreadState s = entry.getValue();
-                        //        String time = TimeLineUtils.getMillisValue(ThreadStateColumnImpl.timeStampToMilliSeconds(s.getTimeStamp()));
-                        //        int id = manager.getThreadData(entry.getKey().intValue()).getThreadID();
-                        //        System.err.println("\t"+id+" "+time+" "+s);
-                        //    }
-                        //}
-                        refreshUI();
-                        if (detailsCallback != null) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    ThreadDumpQuery  query = new ThreadDumpQuery(threadData.getThreadID(), state,  showThreadsID, prefferedState,
-                                                                                 isMSAMode(), isFullMode(), manager.getStartTime());
-                                    //ThreadStackVisualizer v =
-                                            detailsCallback.showStack(state.getTimeStamp(), query);
-                                    //v.selectRootNode();
-                                }
-                            });
-                        }
+                        showStacksAtTimeLine(threadData, state, prefferedState);
                     }
                 }
             }
+        }
+    }
+
+    private Task showStackTask = null;
+    private void showStacksAtTimeLine(final ThreadStateColumnImpl threadData, final ThreadState state, final MSAState prefferedState) {
+        if (timeLine != null) {
+            if (!(getViewStart() <= timeLine.getTime() && timeLine.getTime() <= getViewEnd())) {
+                if (scrollBar.isVisible()){
+                    int oldValue = scrollBar.getValue();
+                    int newValue = (int) (timeLine.getTime() - scrollBar.getVisibleAmount() / 2);
+                    newValue = Math.max(Math.min(newValue, scrollBar.getMaximum() -
+                                scrollBar.getVisibleAmount()), scrollBar.getMinimum());
+                    if (oldValue != newValue) {
+                        scrollBar.setValue(newValue);
+                    }
+                }
+            }
+        }
+        refreshUI();
+        if (detailsCallback != null) {
+            if (showStackTask != null) {
+                showStackTask.cancel();
+            }
+            showStackTask = RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
+                            final List<Integer> showThreadsID = new ArrayList<Integer>();
+                            for (Map.Entry<Integer, ThreadState> entry : avaliableStates.entrySet()) {
+                                showThreadsID.add(manager.getThreadData(entry.getKey().intValue()).getThreadID());
+                            }
+                            ThreadDumpQuery query = new ThreadDumpQuery(threadData.getThreadID(), state, showThreadsID, prefferedState, isMSAMode(), isFullMode(), manager.getStartTime());
+                            detailsCallback.showStack(state.getTimeStamp(), query);
+                        }
+                    });
+                }
+            }, 1000);
         }
     }
 

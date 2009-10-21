@@ -58,7 +58,7 @@ import org.openide.util.NbPreferences;
 final class THAConfigurationPanel extends javax.swing.JPanel {
 
     /** Creates new form THAConfigurationPanel */
-    THAConfigurationPanel() {
+    THAConfigurationPanel(String statusText) {
         initComponents();
         // combo box contents set here to allow NOI18N
         startCollectingComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[]{
@@ -84,17 +84,15 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
             }
         });
         collectComboBox.setSelectedIndex(NbPreferences.forModule(getClass()).getInt("CollectedData", 0)); // NOI18N
-        overheadProgressBar.setMinimum(0);
-        overheadProgressBar.setMaximum(10);
         setProgressBarValue();
+        statusLabel.setText(statusText == null ? "" : statusText);
 
     }
 
 
     private void setProgressBarValue(){
-        int comboBoxIndex = collectComboBox.getSelectedIndex();
-        overheadProgressBar.setValue(comboBoxIndex == 0 ? 7 : 10);
-        overheadProgressBar.setString(comboBoxIndex == 0 ?
+        int comboBoxIndex = collectComboBox.getSelectedIndex();        
+        overheadLabel.setText(comboBoxIndex == 0 ?
             NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.overheadProgressBar.medium") :
             NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.overheadProgressBar.high"));
     }
@@ -113,13 +111,20 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         startCollectingComboBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
-        overheadProgressBar = new javax.swing.JProgressBar();
+        overheadLabel = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel2.text")); // NOI18N
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.jLabel3.text")); // NOI18N
+
+        overheadLabel.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.overheadLabel.text")); // NOI18N
+        overheadLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
+        statusLabel.setForeground(new java.awt.Color(255, 0, 0));
+        statusLabel.setText(org.openide.util.NbBundle.getMessage(THAConfigurationPanel.class, "THAConfigurationPanel.statusLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -128,16 +133,17 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(jLabel1)
-                    .add(jLabel3))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(overheadProgressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 129, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(startCollectingComboBox, 0, 190, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(collectComboBox, 0, 190, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel1)
+                            .add(jLabel2)
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, startCollectingComboBox, 0, 225, Short.MAX_VALUE)
+                            .add(collectComboBox, 0, 225, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, overheadLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)))
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -151,11 +157,12 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(startCollectingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(32, 32, 32)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(jLabel3, 0, 0, Short.MAX_VALUE)
-                    .add(overheadProgressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel3)
+                    .add(overheadLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(statusLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -163,8 +170,9 @@ final class THAConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JProgressBar overheadProgressBar;
+    private javax.swing.JLabel overheadLabel;
     private javax.swing.JComboBox startCollectingComboBox;
+    private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
     THAConfiguration getTHAConfiguration() {

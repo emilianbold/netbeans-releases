@@ -42,11 +42,13 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 
 /** Miscellaneous utility classes useful for the C/C++/Fortran module */
 public class CppUtils {
     
+    private CppUtils() {
+    }
+
     public static String reformatWhitespaces(String string)  {
         return reformatWhitespaces(string, ""); // NOI18N
     }
@@ -56,8 +58,9 @@ public class CppUtils {
     }
     
     public static String reformatWhitespaces(String string, String prepend, String delimiter)  {
-        if (string == null || string.length() == 0)
+        if (string == null || string.length() == 0) {
             return string;
+        }
         
         boolean firstToken = true;
         ArrayList<String> tokens = tokenizeString(string);
@@ -78,8 +81,9 @@ public class CppUtils {
     public static ArrayList<String> tokenizeString(String string)  {
         ArrayList<String> list = new ArrayList<String>(0);
         
-        if (string == null || string.length() == 0)
+        if (string == null || string.length() == 0) {
             return list;
+        }
         StringBuilder token = new StringBuilder();
         boolean inToken = false;
         boolean inQuote = false;
@@ -89,8 +93,9 @@ public class CppUtils {
             if (eol || inToken) {
                 if (!eol && inQuote) {
                     token.append(string.charAt(i));
-                    if (string.charAt(i) == quoteChar)
+                    if (string.charAt(i) == quoteChar) {
                         inQuote = false;
+                    }
                 } else {
                     if (eol || Character.isWhitespace(string.charAt(i))) {
                         if (token.length() > 0) {
@@ -113,22 +118,10 @@ public class CppUtils {
                 }
             }
         }
-        if (token.length() > 0)
+        if (token.length() > 0) {
             list.add(token.toString());
+        }
         
         return list;
     }
-
-    /** Use org.netbeans.modules.cnd.api.compilers.CompilerSetManager.getCygwinBase() instead */
-    @Deprecated
-    public static String getCygwinBase() {
-        return CompilerSetManager.getCygwinBase();
-    }
-    
-    /** Use org.netbeans.modules.cnd.api.compilers.CompilerSetManager.getMSysBase() instead */
-    @Deprecated
-    public static String getMSysBase() {
-        return CompilerSetManager.getMSysBase();
-    }
 }
-

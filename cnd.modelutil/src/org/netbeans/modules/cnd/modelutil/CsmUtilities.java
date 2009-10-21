@@ -669,9 +669,9 @@ public class CsmUtilities {
 
                     public void run() {
                         NbEditorUtilities.addJumpListEntry(dob);
-                        JEditorPane[] panes = ec.getOpenedPanes();
-                        boolean opened = true;
-                        if (panes != null && panes.length >= 0) {
+                        JEditorPane pane = findRecentEditorPaneInEQ(ec);
+                        boolean opened;
+                        if (pane != null) {
                             //editor already opened, so just select
                             opened = true;
                         } else {
@@ -691,11 +691,14 @@ public class CsmUtilities {
 //                            });
                             opened = false;
                             ec.open();
-                            // XXX: get panes here instead of in listener
-                            panes = ec.getOpenedPanes();
+                            // we have to get panes here instead of in listener using getOpenedPanes which is synchronious
+                            JEditorPane[] panes = ec.getOpenedPanes();
+                            if (panes != null && panes.length > 0) {
+                                pane = panes[0];
+                            }
                         }
-                        if (panes != null && panes.length > 0) {
-                            selectElementInPane(panes[0], element, !opened);
+                        if (pane != null) {
+                            selectElementInPane(pane, element, !opened);
                         }
                     }
                 });
@@ -740,7 +743,7 @@ public class CsmUtilities {
             });
             // try to activate outer TopComponent
             Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
+            while (temp != null && !(temp instanceof TopComponent)) {
                 temp = temp.getParent();
             }
             if (temp instanceof TopComponent) {

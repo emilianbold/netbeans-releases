@@ -101,7 +101,6 @@ public class LuceneIndex implements IndexImpl, Evictable {
 
         synchronized (this) {
             assert document instanceof LuceneDocument;
-
             toAdd.add((LuceneDocument) document);
             forceFlush = lmListener.isLowMemory();
         }
@@ -109,7 +108,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
-                store();
+                store(false);
                 System.gc();
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
@@ -126,20 +125,20 @@ public class LuceneIndex implements IndexImpl, Evictable {
 
         synchronized (this) {
             toRemove.add(relativePath);
-            forceFlush = toAdd.size() > MAX_DOCS || lmListener.isLowMemory();
+            forceFlush = lmListener.isLowMemory();
         }
 
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
-                store();
+                store(false);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, annotateException(ioe, indexFolder));
             }
         }
     }
-
-    public void store() throws IOException {        
+    
+    public void store(final boolean optimize) throws IOException {
         LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
             public Void run() throws IOException {
                 checkPreconditions();
@@ -160,7 +159,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
 
                 if (toAdd.size() > 0 || toRemove.size() > 0) {
-                    flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, lmListener);
+                    flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, lmListener, optimize);
                 }
                 
                 return null;
@@ -335,7 +334,6 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
 
     /* package */ static final int VERSION = 1;
-    private static final int MAX_DOCS = 2000;
     private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
 
     private final File indexFolder;
@@ -591,17 +589,17 @@ public class LuceneIndex implements IndexImpl, Evictable {
     
     // called under LuceneIndexManager.writeAccess
     // Always has to invalidate the cached reader
-    private void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, LMListener lmListener) throws IOException {
+    private void flush(File indexFolder, List<LuceneDocument> toAdd, List<String> toRemove, Directory directory, LMListener lmListener, final boolean optimize) throws IOException {
         LOGGER.log(Level.FINE, "Flushing: {0}", indexFolder); //NOI18N
         try {
             assert LuceneIndexManager.getDefault().holdsWriteLock();
             _hit();
             boolean exists = IndexReader.indexExists(this.directory);
             final IndexWriter out = new IndexWriter(
-                directory, // index directory
-                false, // auto-commit each flush
+                directory, // index directory                
                 new KeywordAnalyzer(), //analyzer to tokenize fields
-                !exists // open existing or create new index
+                !exists, // open existing or create new index
+                IndexWriter.MaxFieldLength.LIMITED
             );
             try {
                 //1) delete all documents from to delete and toAdd
@@ -628,7 +626,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
                 else {
                     memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                    activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
                 }
                 for (Iterator<LuceneDocument> it = toAdd.iterator(); it.hasNext();) {
                     final LuceneDocument doc = it.next();
@@ -636,17 +634,20 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     activeOut.addDocument(doc.doc);
                     if (memDir != null && lmListener.isLowMemory()) {
                         activeOut.close();
-                        out.addIndexes(new Directory[] {memDir});
+                        out.addIndexesNoOptimize(new Directory[] {memDir});
                         memDir = new RAMDirectory ();
-                        activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true);
+                        activeOut = new IndexWriter (memDir, new KeywordAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
                     }
                     LOGGER.log(Level.FINEST, "LuceneDocument merged: {0}", doc); //NOI18N
                 }
                 if (memDir != null) {
                     activeOut.close();
-                    out.addIndexes(new Directory[] {memDir});
+                    out.addIndexesNoOptimize(new Directory[] {memDir});
                     activeOut = null;
                     memDir = null;
+                }
+                if (optimize) {
+                    out.optimize(false);
                 }
             } finally {
                 try {

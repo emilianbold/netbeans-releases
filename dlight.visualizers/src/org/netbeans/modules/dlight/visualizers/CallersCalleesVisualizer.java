@@ -92,7 +92,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
     private final List<Column> metricsList;
 
     CallersCalleesVisualizer(StackDataProvider dataProvider, TreeTableVisualizerConfiguration configuration) {
-        super(configuration, (TreeTableDataProvider) dataProvider);
+        super(configuration, (TreeTableDataProvider<FunctionCallTreeTableNode>) dataProvider);
         this.configuration = (CallersCalleesVisualizerConfiguration) configuration;
         this.configuration.setNodeActionProvider(new NodeActionsProviderImpl());
         this.dataProvider = dataProvider;
@@ -334,7 +334,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                    sourceSupport.updateSource(dataProvider, metricsList, list, null);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }
@@ -347,7 +347,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
             DLightExecutorService.submit(new Runnable() {
 
                 public void run() {
-                    sourceSupport.updateSource(dataProvider, metricsList, list);
+                    sourceSupport.updateSource(dataProvider, metricsList, list, null);
                 }
             }, "Annoted Source from FunctionsListView Visualizer");//NOI18N
         }

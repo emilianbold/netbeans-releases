@@ -309,7 +309,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         projectNameTextField.requestFocus();
     }
     
-    private static final ResourceBundle bundle = NbBundle.getBundle(DeployablePanelVisual.class);
+    private final ResourceBundle bundle = NbBundle.getBundle(DeployablePanelVisual.class);
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (projectNameTextField.getText().length() == 0) {

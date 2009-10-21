@@ -58,32 +58,55 @@ public class EmptyNode extends LeafNode {
 
     private JPanel panel;
     private JLabel lbl;
+    private JLabel progress;
     private String title;
-    private Icon icon;
+    private String p;
 
     private final Object LOCK = new Object();
+    private int loadingCounter = 0;
 
-    public EmptyNode( DashboardImpl dashboard, String name, Icon icon ) {
+
+    public EmptyNode( DashboardImpl dashboard, String name, String progress) {
         super( null );
         this.title = name;
-        this.icon = icon;
+        this.p = progress;
     }
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        synchronized (LOCK) {
-            if (null == panel) {
-                panel = new JPanel(new BorderLayout());
-                panel.setBorder(new EmptyBorder(0, 0, 0, 0));
-                panel.setOpaque(false);
+        if (null == panel) {
+            panel = new JPanel(new BorderLayout());
+            panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+            panel.setOpaque(false);
 
-                lbl = new TreeLabel(title);
-                if (icon != null) {
-                    panel.add(new JLabel(icon), BorderLayout.EAST);
-                }
-                panel.add(lbl, BorderLayout.WEST);
-            }
-            return panel;
+            lbl = new TreeLabel(title);
+            progress = createProgressLabel(p);
+
+            panel.add(lbl, BorderLayout.WEST);
+            panel.add(progress, BorderLayout.CENTER);
+        }
+
+        synchronized (LOCK) {
+            progress.setVisible(loadingCounter > 0);
+            lbl.setVisible(loadingCounter <= 0);
+        }
+        return panel;
+    }
+
+    void loadingStarted() {
+        synchronized( LOCK ) {
+            loadingCounter++;
+            fireContentChanged();
         }
     }
+
+    void loadingFinished() {
+        synchronized( LOCK ) {
+            loadingCounter--;
+            if( loadingCounter < 0 )
+                loadingCounter = 0;
+            fireContentChanged();
+        }
+    }
+
 }

@@ -222,6 +222,7 @@ public class HtmlCompletionQuery extends UserTask {
 
         //namespace is null for html content
         String namespace = (String) root.getProperty(AstNode.NAMESPACE_PROPERTY);
+        boolean queryHtmlContent = namespace == null || parserResult.getHtmlVersion().getDefaultNamespace().equals(namespace);
 
         /* Character reference finder */
         int ampIndex = preText.lastIndexOf('&'); //NOI18N
@@ -245,7 +246,7 @@ public class HtmlCompletionQuery extends UserTask {
 
             result = new ArrayList<CompletionItem>();
 
-            if (namespace == null) {
+            if (queryHtmlContent) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
 
                 result.addAll(translateTags(documentItemOffset - 1,
@@ -266,7 +267,7 @@ public class HtmlCompletionQuery extends UserTask {
             anchor = offset;
             result = new ArrayList<CompletionItem>();
 
-            if (namespace == null) {
+            if (queryHtmlContent) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
             }
@@ -299,7 +300,7 @@ public class HtmlCompletionQuery extends UserTask {
             len = prefix.length();
             anchor = offset - len;
 
-            if (namespace != null) {
+            if (!queryHtmlContent) {
                 //extensions
                 Collection<CompletionItem> items = new ArrayList<CompletionItem>();
                 HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, itemOffset, astOffset, anchor, prefix, itemText, node);
@@ -438,18 +439,6 @@ public class HtmlCompletionQuery extends UserTask {
         return node != null ? Character.isLowerCase(node.name().charAt(0)) : true;
     }
 
-    private List<CompletionItem> addEndTag(String tagName, String preText, int offset) {
-        int commonLength = getLastCommonCharIndex("</" + tagName + ">", isXHtml ? preText.trim() : preText.toUpperCase(Locale.ENGLISH).trim()); //NOI18N
-        if (commonLength == -1) {
-            commonLength = 0;
-        }
-        if (commonLength == preText.trim().length()) {
-            tagName = isXHtml ? tagName : (lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName);
-            return Collections.singletonList((CompletionItem) HtmlCompletionItem.createEndTag(tagName, offset - commonLength, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
-        }
-        return null;
-    }
-
     public List<CompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset) {
         //check for open tags only
         //the test node.endOffset() == astOffset is required since the given node
@@ -468,17 +457,6 @@ public class HtmlCompletionQuery extends UserTask {
             }
         }
         return Collections.emptyList();
-    }
-
-    private int getLastCommonCharIndex(String base, String pattern) {
-        int i = 0;
-        for (; i < base.length() && i < pattern.length(); i++) {
-            if (base.charAt(i) != pattern.charAt(i)) {
-                i--;
-                break;
-            }
-        }
-        return i;
     }
 
     private List<CompletionItem> translateCharRefs(int offset, List refs) {

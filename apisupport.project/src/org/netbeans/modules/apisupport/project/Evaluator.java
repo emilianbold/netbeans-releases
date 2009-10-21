@@ -107,7 +107,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     /** See issue #69440 for more details. */
     private boolean runInAtomicAction;
-    
+    private boolean pendingReset = false;   // issue #173792
+
     private static class TestClasspath {
         
         private final String compile;
@@ -250,8 +251,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
-        if (!runInAtomicAction && ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            reset();
+        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
+            if (runInAtomicAction)
+                pendingReset = true;
+            else
+                reset();
         }
     }
     
@@ -261,7 +265,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     
     /** See issue #69440 for more details. */
     public void setRunInAtomicAction(boolean runInAtomicAction) {
+        assert runInAtomicAction != this.runInAtomicAction : "Nested calls not supported";
         this.runInAtomicAction = runInAtomicAction;
+        if (! runInAtomicAction && pendingReset) {
+            reset();
+        }
+        pendingReset = false;
     }
     
     /** See issue #69440 for more details. */
@@ -702,31 +711,59 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return classpaths;
     }
     
-    private static interface Callback {
-        void callback(TestModuleDependency td, String cnb);
-    }
-    
     private void computeTestType(String ttName, File testDistDir, Set<TestModuleDependency> ttModules, Map<String,TestClasspath> classpaths, ModuleList ml) {
         final Set<String> compileCnbs = new HashSet<String>();
         final Set<String> runtimeCnbs = new HashSet<String>();
         final Set<String> testCompileCnbs = new HashSet<String>();
         final Set<String> testRuntimeCnbs = new HashSet<String>();
+        Logger logger = Logger.getLogger(Evaluator.class.getName());
+        // maps CNB->status: FALSE - added only to runtime CP, TRUE - added to compile CP too,
+        // null - not processed (yet)
+        Map<String, Boolean> processedRecursive = new HashMap<String, Boolean>();
 
         // #139339: optimization using processedRecursive set was too bold, removed
         for (TestModuleDependency td : ttModules) {
             String cnb = td.getModule().getCodeNameBase();
-
+            logger.fine("computeTestType: processing '" + cnb + "'");
             if (td.isRecursive()) {
                 // scan cp recursively
-                processTestEntryRecursive(td,
-                        new Callback() {
-                            public void callback(TestModuleDependency td, String cnb) {
-                                runtimeCnbs.add(cnb);
-                                if (td.isCompile()) {
-                                    compileCnbs.add(cnb);
-                                }
-                            }
-                        }, ml);
+                Set<String> unprocessed = new HashSet<String>();
+
+                final String codeNameBase = project.getCodeNameBase();
+                unprocessed.add(td.getModule().getCodeNameBase());
+                while (!unprocessed.isEmpty()) { // crude breadth-first search
+                    Iterator<String> it = unprocessed.iterator();
+                    String recursiveCNB = it.next();
+                    it.remove();
+
+                    // if we've put recursiveCNB module only to runtime CP and now should be also added to compile CP, process once more
+                    Boolean alreadyInCompileCP = processedRecursive.get(recursiveCNB);
+                    if (Boolean.TRUE.equals(alreadyInCompileCP)
+                            || (Boolean.FALSE.FALSE.equals(alreadyInCompileCP) && ! td.isCompile()))
+                        continue;
+
+                    logger.fine("computeTestType: processing '" + recursiveCNB + "'");
+                    ModuleEntry module = ml.getEntry(recursiveCNB);
+                    if (module == null) {
+                        Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + recursiveCNB + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
+                        continue;
+                    }
+                    if (!recursiveCNB.equals(codeNameBase)) { // build/classes for this is special
+//                       XXX clb.callback(td, cnb);
+                        runtimeCnbs.add(recursiveCNB);
+                        if (td.isCompile()) {
+                            compileCnbs.add(recursiveCNB);
+                        }
+                        processedRecursive.put(recursiveCNB, td.isCompile());
+                    }
+                    String[] newDeps = module.getRunDependencies();
+                    unprocessed.addAll(Arrays.asList(newDeps));
+                }
+//             XXX   processTestEntryRecursive(td,
+//                        new Callback() {
+//                            public void callback(TestModuleDependency td, String cnb) {
+//                            }
+//                        }, ml);
             } else {
                 runtimeCnbs.add(cnb);
                 if (td.isCompile()) {
@@ -775,31 +812,6 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 mergePaths(testRuntimeCnbs,true,ttName,testDistDir,ml));
 
         classpaths.put(ttName,testClasspath);
-    }
-  
-  private void processTestEntryRecursive(final TestModuleDependency td,
-                                        final Callback clb,
-                                        final ModuleList ml) {
-        Set<String> unprocessed = new HashSet<String>();
-
-        final String codeNameBase = project.getCodeNameBase();
-        unprocessed.add(td.getModule().getCodeNameBase()); 
-        while (!unprocessed.isEmpty()) { // crude breadth-first search
-            Iterator<String> it = unprocessed.iterator();
-            String cnb = it.next();
-            it.remove();
-
-            ModuleEntry module = ml.getEntry(cnb);
-            if (module == null) {
-                Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
-                continue;
-            }
-            if (!cnb.equals(codeNameBase)) { // build/classes for this is special
-                clb.callback(td, cnb);
-            }
-            String[] newDeps = module.getRunDependencies();
-            unprocessed.addAll(Arrays.asList(newDeps));
-        }
     }
 
    private static final Set<String> warnedModules = Collections.synchronizedSet(new HashSet<String>());

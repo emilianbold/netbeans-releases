@@ -125,6 +125,38 @@ public class FunctionCallImpl extends FunctionCallWithMetric {
     }
 
     @Override
+    public int hashCode() {
+        int hashCode = (this.getFunction().getQuilifiedName() + fileName).hashCode();
+        int h  = hashCode;
+        h += ~(h << 9);
+        h ^=  (h >>> 14);
+        h +=  (h << 4);
+        h ^=  (h >>> 10);
+        return h;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FunctionCallImpl other = (FunctionCallImpl) obj;
+        if ((this.fileName == null) ? (other.fileName != null) : !this.fileName.equals(other.fileName)) {
+            return false;
+        }
+        if ((this.getFunction() == null) ? (other.getFunction() != null) : !this.getFunction().getQuilifiedName().equals(other.getFunction().getQuilifiedName())) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+
+    @Override
     public boolean hasMetric(String metric_id) {
         for (FunctionMetric metric : metrics.keySet()) {
             if (metric.getMetricID().equals(metric_id)) {

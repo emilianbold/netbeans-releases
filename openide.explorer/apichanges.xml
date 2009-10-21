@@ -47,6 +47,17 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="TreeView.setAutoWaitCursor">
+        <api name="explorer"/>
+        <summary><code>TreeView.setAutoWaitCursor</code> added.</summary>
+        <version major="6" minor="21"/>
+        <date day="19" month="10" year="2009"/>
+        <author login="t_h"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>Added method to control automatic setting of wait cursor when node is expanded.</description>
+        <class package="org.openide.explorer.view" name="TreeView"/>
+        <issue number="169353"/>
+    </change>
     <change id="CheckNodes">
         <api name="explorer"/>
         <summary>Support for check-boxes displayed next to node icons.</summary>

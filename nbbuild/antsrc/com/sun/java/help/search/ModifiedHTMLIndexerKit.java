@@ -53,6 +53,7 @@ public class ModifiedHTMLIndexerKit extends HTMLIndexerKit {
     }
     public class ModifiedHTMLParserCallback extends HTMLIndexerKit.HTMLParserCallback {
         private IndexerKit kit;
+        @SuppressWarnings("unchecked") // tagMap is untyped
         public ModifiedHTMLParserCallback (IndexerKit kit) {
             super(kit);
             this.kit = kit;
@@ -61,7 +62,7 @@ public class ModifiedHTMLIndexerKit extends HTMLIndexerKit {
         }
 
         class MetaAction extends HiddenAction {
-            public void start(HTML.Tag t, MutableAttributeSet a) {
+            public @Override void start(HTML.Tag t, MutableAttributeSet a) {
                 super.start(t, a);
                 Object attr = a.getAttribute(HTML.Attribute.NAME);
                 if (attr != null)

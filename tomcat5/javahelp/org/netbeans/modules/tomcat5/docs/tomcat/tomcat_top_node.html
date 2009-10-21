@@ -25,23 +25,22 @@
 <ol><li>Choose Window > Services (Ctrl+5)
 	from the main menu. The Services window appears.</li>
 	
-  <li>Expand the Servers node to view the Tomcat Web Server nodes.</li>
+  <li>Expand the Servers node to view the Tomcat Web Server nodes.
     <ul>
-	    <li><p>The Servers node <img src="../images/tomcat-container16.gif">&nbsp;shows
-	    all the servers that are registered in the IDE, such as the 
-       bundled Tomcat Web Server.</p></li>
-<li><p>The <img src="../images/tomcat5instance.gif" width="16" height="16">&nbsp; instance node 
-       represents a physical installation of a Tomcat Web Server. When you install the Java EE version of the IDE, you can choose to install and register the Tomcat Web Server. You can add additional 
-       Tomcat Web Servers using the Add New Server dialog box.</p></li>    
-<li><p>The web applications node <img src="../images/mfolder.gif">&nbsp;lists 
+        <li>The Servers node <img src="../images/tomcat-container16.gif">&nbsp;shows
+        all the servers that are registered in the IDE, such as the
+       bundled Tomcat Web Server.</li>
+        <li>The <img src="../images/tomcat5instance.gif" width="16" height="16">&nbsp; instance node
+       represents a physical installation of a Tomcat Web Server. </li>    
+        <li>The web applications node <img src="../images/mfolder.gif">&nbsp;lists
        the web application contexts that have been deployed to the server. It appears 
        under the server's instance node in the Services window.
        The IDE adds a web application's context node <img src="../images/webmodule.gif">&nbsp;
        the first time you execute the web application from the IDE.
        When the server receives a HTTP request, the server selects the web application 
        for processing the request by matching the longest possible prefix of the Request 
-       URI against all of the defined context paths.</p></li>
-</ul>
+       URI against all of the defined context paths.</li>
+    </ul></li>
 </ol>
 <table cellpadding="3" cellspacing="0" border="0">
    <tr valign="top">
@@ -69,12 +68,12 @@
       <li>JNDI resources and resource parameters (JDBC data source)</li> 
           <li>Web application context parameters and environment entries</li>
       </ul>
-      The <tt>context.xml</tt> file represents the <tt>server.xml</tt> context element.
+   <p>The <tt>context.xml</tt> file represents the <tt>server.xml</tt> context element.
       Unlike Tomcat 4, use of the <tt>server.xml</tt> context element is not recommended
       for Tomcat 5.
       Instead, the recommendation is to specify the context information 
       in a standalone <tt>context.xml</tt> file in the <tt>META-INF</tt> directory.
-      For more information about the <tt>context.xml</tt> configuration, see: 
+   For more information about the <tt>context.xml</tt> configuration, see: </p>
       <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/context.html">
         <param name="text" value="<html><u>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/context.html</u></html>">
@@ -88,12 +87,12 @@
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
 <dd><a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a></dd>
-<dd><a href="tomcat_addinstall.html">Registering an External Tomcat Web Server</a></dd>
+<dd><a href="tomcat_addinstall.html">Registering a Tomcat Web Server</a></dd>
 </dl>
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
+<small><a href="../credits.html">Legal Notices</a> </small>
 <table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
-</small></body></html>
+</body></html>

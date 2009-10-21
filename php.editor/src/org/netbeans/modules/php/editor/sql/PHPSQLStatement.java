@@ -198,6 +198,10 @@ final class PHPSQLStatement {
                     // These tokens should be ignored, but shouldn't create an "__UNKNOWN__" tag
                     skip(seq);
                     break;
+                case UNKNOWN_TOKEN:
+                    // probably unfinished statement
+                    addCodeBlock(seq, text, buf);
+                    break;
                 default:
                     switch (seq.token().id()) {
                         case PHP_TOKEN:
@@ -525,6 +529,11 @@ final class PHPSQLStatement {
                                 // Keep going, looking for that potential concatenation token...
                                 break;
                         }
+                        break;
+                    case UNKNOWN_TOKEN:
+                        // probably unfinished statement
+                        substringTermOffset = getOffset(seq, direction);
+                        state = StringState.SUBSTRING_TERM;
                         break;
                     default:
                         switch (state) {

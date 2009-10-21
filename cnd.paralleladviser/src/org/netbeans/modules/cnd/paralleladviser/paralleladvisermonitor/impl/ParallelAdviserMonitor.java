@@ -63,7 +63,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -73,6 +75,8 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.paralleladviser.api.ParallelAdviser;
 import org.netbeans.modules.cnd.paralleladviser.codemodel.CodeModelUtils;
 import org.netbeans.modules.cnd.paralleladviser.hints.ParallelAdviserFileTaskFactory;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.api.dataprovider.DataModelScheme;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -82,16 +86,24 @@ import org.netbeans.modules.dlight.api.storage.types.Time;
 import org.netbeans.modules.dlight.api.support.DataModelSchemeProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
+import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.dataprovider.FunctionsListDataProvider;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.management.api.DLightSessionListener;
 import org.netbeans.modules.dlight.management.api.SessionStateListener;
+import org.netbeans.modules.dlight.msa.support.MSASQLTables;
 import org.netbeans.modules.dlight.perfan.SunStudioDCConfiguration;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.dlight.threadmap.api.ThreadMapSummaryData;
+import org.netbeans.modules.dlight.threadmap.api.ThreadSummaryData;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
+import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapSummaryDataQuery;
 import org.netbeans.modules.dlight.tools.ProcDataProviderConfiguration;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.util.Range;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -115,6 +127,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     private CpuHighLoadIntervalFinder highLoadFinder;
     private UnnecessaryThreadsIntervalFinder unnecessaryThreadsFinder;
     Collection<Advice> notificationTips;
+    private Future<Boolean> task;
 
     public static ParallelAdviserMonitor getInstance() {
         return instance;
@@ -148,37 +161,56 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
     }
 
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
-        InputOutput io = session.getInputOutput();
+        final InputOutput io = session.getInputOutput();
         if (newState == SessionState.ANALYZE) {
+            if (task != null && !task.isDone()) {
+                task.cancel(true);
+            }
 
-            analyzeDataCollectors();
+            task = DLightExecutorService.submit(new Callable<Boolean>() {
 
-            if (!notificationTips.isEmpty() && io != null) {
-                try {
-                    io.getErr().println("Parallel Adviser: ", // NOI18N
-                            new OutputListener() {
-
-                        public void outputLineSelected(OutputEvent ev) {
-                        }
-
-                        public void outputLineAction(OutputEvent ev) {
-                            ParallelAdviser.showParallelAdviserView();
-                        }
-
-                        public void outputLineCleared(OutputEvent ev) {
-                        }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                public Boolean call() {
+                    analyze(io);
+                    return Boolean.TRUE;
                 }
-                for (Advice advice : notificationTips) {
-                    advice.addNotification(io.getErr());
-                }
+            }, "Parallel Adviser Analyzing Phaze"); // NOI18N
+        }
+    }
 
-                ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
-                if (hints != null) {
-                    hints.propertyChange(null);
-                }
+    private void analyze(InputOutput io) {
+        CsmProject project = getProject();
+        if (project != null) {
+            LoopParallelizationTipsProvider.clearTipsForProject(project);
+            UnnecessaryThreadsTipsProvider.clearTipsForProject(project);
+        }
+
+        analyzeDataCollectors();
+        
+        if (!notificationTips.isEmpty() && io != null) {
+            try {
+                io.getErr().println("Parallel Adviser: ", // NOI18N
+                        new OutputListener() {
+
+                    public void outputLineSelected(OutputEvent ev) {
+                    }
+
+                    public void outputLineAction(OutputEvent ev) {
+                        ParallelAdviser.showParallelAdviserView();
+                    }
+
+                    public void outputLineCleared(OutputEvent ev) {
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            for (Advice advice : notificationTips) {
+                advice.addNotification(io.getErr());
+            }
+
+            ParallelAdviserFileTaskFactory hints = Lookup.getDefault().lookup(ParallelAdviserFileTaskFactory.class);
+            if (hints != null) {
+                hints.propertyChange(null);
             }
         }
     }
@@ -203,7 +235,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
 
     private void analyzeDataCollectors() {
         if (highLoadFinder.isHighLoadInterval()) {
-            SunStudioDataCollector collector = new SunStudioDataCollector();
+            SunStudioFunctionCallsDataCollector collector = new SunStudioFunctionCallsDataCollector();
 
             for (FunctionCallWithMetric functionCall : collector.getFunctionCallsSortedByInclusiveTime()) {
                 if ((Double) functionCall.getMetricValue(SunStudioDCConfiguration.c_iUser.getColumnName()) < CpuHighLoadIntervalFinder.INTERVAL_BOUND * 0.8) {
@@ -225,7 +257,7 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                 }
             }
 
-            DTraceDataCollector collector2 = new DTraceDataCollector();
+            DTraceFunctionCallsDataCollector collector2 = new DTraceFunctionCallsDataCollector();
 
             for (FunctionCallWithMetric functionCall : collector2.getFunctionCallsSortedByInclusiveTime()) {
                 final Column c_iUser = new Column(
@@ -258,8 +290,10 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
 
         if (unnecessaryThreadsFinder.isUnnecessaryThreadsInterval()) {
+            DTraceThreadsDataCollector collector = new DTraceThreadsDataCollector();
             UnnecessaryThreadsTipsProvider.clearTips();
-            UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice();
+            UnnecessaryThreadsAdvice tip = new UnnecessaryThreadsAdvice(getProject(), 
+                    collector.getThreadsSummaryDataSortedByWaitTime());
             UnnecessaryThreadsTipsProvider.addTip(tip);
             addNotificationTip(tip);
         }
@@ -353,12 +387,12 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         return csmProject;
     }
 
-    private static class SunStudioDataCollector {
+    private static class SunStudioFunctionCallsDataCollector {
 
         private DataProvider dataProvider = null;
         private DataTableMetadata metadata;
 
-        public SunStudioDataCollector() {
+        public SunStudioFunctionCallsDataCollector() {
             metadata =
                     SunStudioDCConfiguration.getCPUTableMetadata(
                     SunStudioDCConfiguration.c_name,
@@ -390,13 +424,12 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
     }
 
-    private static class DTraceDataCollector {
+    private static class DTraceFunctionCallsDataCollector {
 
-        public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder"; //NOI18N
         private DataProvider dataProvider;
         private DataTableMetadata metadata;
 
-        public DTraceDataCollector() {
+        public DTraceFunctionCallsDataCollector() {
             Column timestamp = new Column("time_stamp", Long.class); // NOI18N
             Column cpuId = new Column("cpu_id", Integer.class); // NOI18N
             Column threadId = new Column("thread_id", Integer.class); // NOI18N
@@ -429,7 +462,9 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
                 Collections.sort(functions, new Comparator<FunctionCallWithMetric>() {
 
                     public int compare(FunctionCallWithMetric o1, FunctionCallWithMetric o2) {
-                        return (int) (((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos() - ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos());
+                        long l1 = ((Time) o2.getMetricValue(c_iUser.getColumnName())).getNanos();
+                        long l2 = ((Time) o1.getMetricValue(c_iUser.getColumnName())).getNanos();
+                        return (l1 < l2) ? -1 : (l1 > l2) ? 1 : 0;
                     }
                 });
                 return functions;
@@ -439,11 +474,63 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
         }
     }
 
+
+    private static class DTraceThreadsDataCollector {
+
+        private DataProvider dataProvider;
+        private DataTableMetadata metadata;
+
+        public DTraceThreadsDataCollector() {
+            metadata = MSASQLTables.msa.tableMetadata;
+
+            DataModelScheme dataModel = DataModelSchemeProvider.getInstance().getScheme("model:threadmap"); //NOI18N
+
+            DLightSession session = DLightManager.getDefault().getActiveSession();
+            if (session != null) {
+                dataProvider = session.createDataProvider(dataModel, metadata);
+            }
+        }
+
+        public List<ThreadSummaryData> getThreadsSummaryDataSortedByWaitTime() {
+            if (dataProvider != null) {
+                ThreadMapDataProvider provider = (ThreadMapDataProvider) dataProvider;
+
+                TimeIntervalDataFilter time = TimeIntervalDataFilterFactory.create(new Range<Long>(Long.MIN_VALUE, Long.MAX_VALUE));
+                Collection<TimeIntervalDataFilter> timeFilters = new ArrayList<TimeIntervalDataFilter>();
+                timeFilters.add(time);
+                ThreadMapSummaryData summaryData = provider.queryData(new ThreadMapSummaryDataQuery(Arrays.asList(time), true));
+                List<ThreadSummaryData> threadsData = summaryData.getThreadsData();
+                Collections.sort(threadsData, new Comparator<ThreadSummaryData>() {
+
+                    public int compare(ThreadSummaryData o1, ThreadSummaryData o2) {
+                        return (int) (getThreadWaitTime(o1) - getThreadWaitTime(o2));
+                    }
+                });
+                return threadsData;
+            } else {
+                return Collections.<ThreadSummaryData>emptyList();
+            }
+        }
+
+        public static double getThreadWaitTime(ThreadSummaryData summaryData) {
+            for (ThreadSummaryData.StateDuration stateDuration : summaryData.getThreadSummary()) {
+                if(stateDuration.getState() == MSAState.Waiting) {
+                    return stateDuration.getDuration();
+                }
+            }
+            return 0;
+        }
+    }
+
+
     private class UnnecessaryThreadsIntervalFinder {
 
         private static final int INTERVAL_BOUND = 10;
+        private static final int SUN_STUDIO_DATA_PROVIDER = 0;
+        private static final int DTRACE_DATA_PROVIDER = 1;
         private int interval;
         private boolean found;
+        private int dataProvider = SUN_STUDIO_DATA_PROVIDER;
 
         public UnnecessaryThreadsIntervalFinder() {
             interval = 0;
@@ -455,17 +542,47 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             return found;
         }
 
+        public int getDataProvider() {
+            return dataProvider;
+        }
+
         public void update(DataRow dataRow) {
-            Column threadsCol = new Column("threads", Integer.class); // NOI18N
-            Object threadsObj = dataRow.getData(threadsCol.getColumnName());
-            if (threadsObj != null) {
-                if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj))) {
-                    interval++;
-                    if (interval > INTERVAL_BOUND) {
-                        found = true;
-                    }
-                } else {
+            if (dataProvider == SUN_STUDIO_DATA_PROVIDER) {
+                Column lwps_lcountCol = new Column("lwps_lcount", Integer.class); // NOI18N
+                Object lwps_lcountObj = dataRow.getData(lwps_lcountCol.getColumnName());
+                if (lwps_lcountObj != null) {
+                    dataProvider = DTRACE_DATA_PROVIDER;
                     interval = 0;
+                    found = false;
+                }
+                Column threadsCol = new Column("threads", Integer.class); // NOI18N
+                Object threadsObj = dataRow.getData(threadsCol.getColumnName());
+                Object usrTimeObj = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+                if (threadsObj != null && usrTimeObj != null) {
+                    if (areUnnecessaryThreadsUsed(DataUtil.toInt(threadsObj)) && isHighLoaded(dataRow)) {
+                        interval++;
+                        if (interval > INTERVAL_BOUND) {
+                            found = true;
+                        }
+                    } else {
+                        interval = 0;
+                    }
+                }
+            }
+            if (dataProvider == DTRACE_DATA_PROVIDER) {
+                Column lwps_lcountCol = new Column("lwps_lcount", Integer.class); // NOI18N
+                Object lwps_lcountObj = dataRow.getData(lwps_lcountCol.getColumnName());
+                Column p_waitCol = new Column("p_wait", Float.class); // NOI18N
+                Object p_waitObj = dataRow.getData(p_waitCol.getColumnName());
+                if (lwps_lcountObj != null && p_waitObj != null) {
+                    if (areUnnecessaryThreadsUsed(DataUtil.toInt(lwps_lcountObj), DataUtil.toFloat(p_waitObj))) {
+                        interval++;
+                        if (interval > INTERVAL_BOUND) {
+                            found = true;
+                        }
+                    } else {
+                        interval = 0;
+                    }
                 }
             }
         }
@@ -476,6 +593,25 @@ public class ParallelAdviserMonitor implements IndicatorNotificationsListener, D
             }
             return false;
         }
+
+        private boolean areUnnecessaryThreadsUsed(int threads, double waiting) {
+            if (areUnnecessaryThreadsUsed(threads) && (waiting > 1)) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean isHighLoaded(DataRow dataRow) {
+            Object usrTimeObj = dataRow.getData(ProcDataProviderConfiguration.USR_TIME.getColumnName());
+            if (usrTimeObj != null) {
+                float utime = DataUtil.toFloat(usrTimeObj);
+                if (80 < utime) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 
     private class CpuHighLoadIntervalFinder {

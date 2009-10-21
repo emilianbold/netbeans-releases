@@ -40,19 +40,29 @@ package org.netbeans.modules.dlight.tha;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
 import javax.swing.Renderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  * @author Alexey Vladykin
@@ -62,16 +72,19 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
     private final BeanTreeView master;
     private final JPanel rightPanel = new JPanel();
     private Component slave;
-    private Renderer slaveRenderer;
+    private SlaveRenderer slaveRenderer;
     private final ExplorerManager manager = new ExplorerManager();
     private final RootNode rootNode = new RootNode();
     private final F nodeFactory;
+    private volatile boolean isFirstTime = true;
+    private static final String SWITCH_TO_LEFT = "switchToLeftComponent"; // NOI18N
+    private static final String SWITCH_TO_RIGHT = "switchToRightComponent"; // NOI18N
 
     public MasterSlaveView(F factory) {
         this(factory, Collections.<T>emptyList(), null);
     }
 
-    public MasterSlaveView(F factory, List<? extends T> data, Renderer slaveRenderer) {
+    public MasterSlaveView(F factory, List<? extends T> data, SlaveRenderer slaveRenderer) {
         super(HORIZONTAL_SPLIT);
         this.master = new BeanTreeView();
         master.setRootVisible(false);
@@ -89,7 +102,50 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
                 }
             }
         });
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK), SWITCH_TO_LEFT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), SWITCH_TO_RIGHT);
+
+        ActionMap actionMap = getActionMap();
+        actionMap.put(SWITCH_TO_LEFT, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                focus(getLeftComponent());
+            }
+        });
+        actionMap.put(SWITCH_TO_RIGHT, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                focus(getRightComponent());
+            }
+        });
         //showDetails(master.getSelectedValue(), false);
+    }
+
+    @Override
+    public void requestFocus() {
+        if (master != null) {
+            master.requestFocus();
+        }
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        if (master != null) {
+            return master.requestFocusInWindow();
+        }
+        return super.requestFocusInWindow();
+    }
+
+    private void focus(Component component) {
+        while (component instanceof JScrollPane) {
+            component = ((JScrollPane) component).getViewport().getView();
+        }
+        if (component != null) {
+            component.requestFocusInWindow();
+        }
     }
 
     public void setMasterData(List<? extends T> data) {
@@ -102,21 +158,30 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
             rootNode.setKeys(new ChildrenList(nodeFactory, data));
         }
         master.expandAll();
+        if (data != null && !data.isEmpty()) {
+            try {
+                manager.setSelectedNodes(new Node[]{rootNode.getChildren().getNodes()[0]});
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
-    public void setSlaveRenderer(Renderer renderer) {
+    public void setSlaveRenderer(SlaveRenderer renderer) {
         slaveRenderer = renderer;
-	valueChanged();
+        valueChanged();
     }
 
     private void valueChanged() {
-	if (manager.getSelectedNodes().length > 0) {
-	    @SuppressWarnings("unchecked")
-	    THANode<T> selectedNode = (THANode<T>) manager.getSelectedNodes()[0];
-            showDetails(selectedNode.getObject(), true);
-	} else {
+        Node[] selectedNodes = manager.getSelectedNodes();
+        Node node = 0 < selectedNodes.length ? selectedNodes[0] : null;
+        if (node instanceof THANode<?>) {
+            @SuppressWarnings("unchecked")
+            THANode<T> thaNode = (THANode<T>) node;
+            showDetails(thaNode.getObject(), true);
+        } else {
             showDetails(null, true);
-	}
+        }
     }
 
     private void showDetails(T masterItem, boolean keepDividerPos) {
@@ -133,6 +198,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
         rightPanel.setLayout(new BorderLayout());
         rightPanel.add(slave, BorderLayout.CENTER);
         rightPanel.repaint();
+        slaveRenderer.expandAll();
         if (keepDividerPos) {
             setDividerLocation(oldDividerPos);
         }

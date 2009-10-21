@@ -60,10 +60,10 @@ import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.impl.IDPProvider;
+import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.openide.util.Exceptions;
 
 /**
  * D-Light Tool is a set of registered collector used to collect data,
@@ -78,6 +78,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private final String id;
     private final String toolName;
     private final String detailedToolName;
+    private final String description;
     private boolean enabled;
     private final List<DataCollector<?>> dataCollectors;
     private final List<IndicatorDataProvider<?>> indicatorDataProviders;
@@ -104,6 +105,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         this.toolName = toolConfAccessor.getToolName(configuration);
         this.detailedToolName = toolConfAccessor.getDetailedToolName(configuration);
         this.iconPath = toolConfAccessor.getIconPath(configuration);
+        this.description = toolConfAccessor.getToolDescription(configuration);
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollector<?>>());
         indicators = new ArrayList<Indicator<?>>();
         this.configuration = configuration;
@@ -156,6 +158,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     public final String getName() {
         return toolName;
+    }
+
+    public final String getDescription(){
+        return description;
     }
 
     public final String getID() {
@@ -270,6 +276,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                         continue;
 
                     }
+                    IndicatorAccessor.getDefault().setToolDescription(indicator, description);
                     if (!indicators.contains(indicator)) {
                         indicators.add(indicator);
                     }

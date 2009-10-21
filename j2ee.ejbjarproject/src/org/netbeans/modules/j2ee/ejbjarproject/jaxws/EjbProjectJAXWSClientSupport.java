@@ -88,7 +88,11 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
         SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
         if (sgs.length > 0) {
             try {
-                WSUtils.addJaxWsApiEndorsed(project, sgs[0].getRootFolder());
+                FileObject srcRoot = sgs[0].getRootFolder();
+                String java_version = System.getProperty("java.version"); //NOI18N
+                if (java_version.compareTo("1.6") >= 0) {
+                    WSUtils.addJaxWsApiEndorsed(project, srcRoot);
+                }
             } catch (java.io.IOException ex) {
                 Logger.getLogger(EjbProjectJAXWSClientSupport.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
             }

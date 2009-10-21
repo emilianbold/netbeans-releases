@@ -80,10 +80,7 @@ public class KenaiUtil {
      * @return
      */
     public static boolean isKenai(String url) {
-        try {
-            return KenaiProject.forRepository(url) != null;
-        } catch (KenaiException ex) { }
-        return false;
+        return KenaiProject.getNameForRepository(url) != null;
     }
 
     /**

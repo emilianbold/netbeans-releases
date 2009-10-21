@@ -99,10 +99,7 @@ public class BugzillaExecutor {
 
             if(cmd instanceof PerformQueryCommand) {
                 PerformQueryCommand pqc = (PerformQueryCommand) cmd;
-                IStatus status = pqc.getStatus();
-                if(status != null && !status.isOK()) {
-                    Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
-                    handleKOStatus(status);
+                if(handleStatus(pqc, handleExceptions)) {
                     return;
                 }
             }
@@ -151,25 +148,46 @@ public class BugzillaExecutor {
         }
     }
 
-    private void handleKOStatus(IStatus status) throws CoreException {
+    /**
+     * Returnes true if the given commands status != ok
+     * @param cmd
+     * @param handleExceptions
+     * @return
+     * @throws CoreException
+     */
+    private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
+        IStatus status = cmd.getStatus();
+        if(status == null || status.isOK()) {
+            return false;
+        }
+        Bugzilla.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()});
+
         if (status.getException() instanceof CoreException) {
             throw (CoreException) status.getException();
+        }
+        
+        cmd.setErrorMessage(status.getMessage());
+        cmd.setFailed(true);
+
+        if(!handleExceptions) {
+            return true;
         }
 
         BugzillaConfiguration conf = repository.getConfiguration();
         if(conf.isValid()) {
             BugzillaVersion version = conf.getInstalledVersion();
-            BugzillaVersion v34 = new BugzillaVersion("3.4");
+            BugzillaVersion v34 = new BugzillaVersion("3.4");                   // NOI18N
             if(version.compareTo(v34) >= 0) {
+                boolean ua = BugzillaAutoupdate.getInstance().isUpdateAvailable(repository);
                 notifyErrorMessage(
-                        NbBundle.getMessage(
-                            BugzillaExecutor.class,
-                            "MSG_BUGZILLA_VERSION_WARNING",                     // NOI18N
-                            new Object[] {version, status.getMessage()}));
-                return;
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N
+                        (ua ? NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING2") + "\n\n" : "\n") +   // NOI18N
+                        NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));     // NOI18N
+                return true;
             }
         }
-        notifyErrorMessage(status.getMessage());
+        notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING3", status.getMessage()));
+        return true;
     }
 
     static void notifyErrorMessage(String msg) {
@@ -396,8 +414,7 @@ public class BugzillaExecutor {
 
     private void checkAutoupdate() {
         try {
-            BugzillaAutoupdate jau = new BugzillaAutoupdate();
-            jau.checkAndNotify(repository);
+            BugzillaAutoupdate.getInstance().checkAndNotify(repository);
         } catch (Throwable t) {
             Bugzilla.LOG.log(Level.SEVERE, "Exception in Bugzilla autoupdate check.", t);
         }

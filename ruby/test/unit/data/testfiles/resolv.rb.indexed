@@ -456,8 +456,8 @@ Searchable Keys:
   field : ndots
   field : search
   fqn : Resolv::DNS::Config
-  method : default_config_hash(filename)|STATIC|;;Hash|NilClass;
-  method : generate_candidates(name)
+  method : default_config_hash(filename)|STATIC|;;Hash;
+  method : generate_candidates(name);;Array;
   method : generate_timeouts;;Array;
   method : initialize(config_info)|PRIVATE|
   method : lazy_initialize;;Config;
@@ -623,15 +623,15 @@ Searchable Keys:
   field : index
   field : limit
   fqn : Resolv::DNS::Message::MessageDecoder
-  method : get_bytes(len);;Array;
+  method : get_bytes(len)
   method : get_label;;Str;
   method : get_labels(limit);;Array;
-  method : get_length16;;Array;
+  method : get_length16
   method : get_name;;Name;
   method : get_question;;Array;
   method : get_rr;;Array;
-  method : get_string;;Array;
-  method : get_string_list
+  method : get_string
+  method : get_string_list;;Array;
   method : get_unpack(template)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|

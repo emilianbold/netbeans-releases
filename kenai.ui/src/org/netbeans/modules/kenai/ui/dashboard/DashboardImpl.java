@@ -70,6 +70,7 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
@@ -128,8 +129,8 @@ public final class DashboardImpl extends Dashboard {
 
     private final CategoryNode openProjectsNode;
     private final CategoryNode myProjectsNode;
-    private final EmptyNode noOpenProjects = new EmptyNode(this, org.openide.util.NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"), null);
-    private final EmptyNode noMyProjects = new EmptyNode(this, org.openide.util.NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), null);
+    private final EmptyNode noOpenProjects = new EmptyNode(this, NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningProjects"));
+    private final EmptyNode noMyProjects = new EmptyNode(this, NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningMyProjects"));
 
     private final Object LOCK = new Object();
 
@@ -163,6 +164,43 @@ public final class DashboardImpl extends Dashboard {
             }
         };
         final Kenai kenai = Kenai.getDefault();
+        kenai.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
+
+                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
+                    if (newValue == null) {
+                        setUser(null);
+                    } else {
+                        setUser(new LoginHandleImpl(newValue.getUserName()));
+                    }
+                    loggingFinished();
+                } else if (Kenai.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
+                    loggingStarted();
+                } else if (Kenai.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
+                    loggingFinished();
+                } else if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(pce.getPropertyName())) {
+                    xmppStarted();
+                } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
+                    xmppFinsihed();
+                } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(pce.getPropertyName())) {
+                    xmppFinsihed();
+                }
+            }
+        });
+
+        KenaiConnection.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (KenaiConnection.PROP_XMPP_STARTED.equals(evt.getPropertyName())) {
+                    xmppStarted();
+                } else if (KenaiConnection.PROP_XMPP_FINISHED.equals(evt.getPropertyName())) {
+                    xmppFinsihed();
+                }
+            }
+        });
+
         final PasswordAuthentication pa = kenai.getPasswordAuthentication();
         this.login = pa==null ? null : new LoginHandleImpl(pa.getUserName());
         userNode = new UserNode(this);
@@ -192,27 +230,6 @@ public final class DashboardImpl extends Dashboard {
                 refreshProjects();
             }
         });
-
-        kenai.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent pce) {
-                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
-
-                    final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                    if (newValue == null) {
-                        setUser(null);
-                    } else {
-                        setUser(new LoginHandleImpl(newValue.getUserName()));
-                    }
-                    loadingFinished();
-                } else if (Kenai.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    loadingStarted();
-                } else if (Kenai.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    loadingFinished();
-                }
-            }
-        });
-
     }
 
     public static DashboardImpl getInstance() {
@@ -393,6 +410,8 @@ public final class DashboardImpl extends Dashboard {
     }
 
     void refreshProjects() {
+        myProjectLoadingStarted();
+        projectLoadingStarted();
         changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
             removeMemberProjectsFromModel(memberProjects);
@@ -408,7 +427,7 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    void refreshNonMemberProjects() {
+    public void refreshNonMemberProjects() {
         synchronized( LOCK ) {
             removeProjectsFromModel(openProjects);
             openProjects.clear();
@@ -443,6 +462,8 @@ public final class DashboardImpl extends Dashboard {
             requestProcessor.post(new Runnable() {
                 public void run() {
                     UIUtils.waitStartupFinished();
+                    myProjectLoadingStarted();
+                    projectLoadingStarted();
                     if (null != login && !memberProjectsLoaded) {
                         startLoadingMemberProjects(false);
                     }
@@ -541,8 +562,10 @@ public final class DashboardImpl extends Dashboard {
         String kenaiName = Kenai.getDefault().getName();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
-        if( 0 == count )
+        if( 0 == count ) {
+            projectLoadingFinished();
             return; //nothing to load
+        }
         ArrayList<String> ids = new ArrayList<String>(count);
         for( int i=0; i<count; i++ ) {
             String id = prefs.get(PREF_ID+i, null); //NOI18N
@@ -553,8 +576,10 @@ public final class DashboardImpl extends Dashboard {
         synchronized( LOCK ) {
             if( otherProjectsLoader != null )
                 otherProjectsLoader.cancel();
-            if( ids.isEmpty() )
+            if( ids.isEmpty() ) {
+                projectLoadingFinished();
                 return;
+            }
             otherProjectsLoader = new OtherProjectsLoader(ids, forceRefresh);
             requestProcessor.post(otherProjectsLoader);
         }
@@ -609,11 +634,44 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    private void loadingStarted() {
-        userNode.loadingStarted();
+    private void loggingStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Authenticating"));
     }
 
-    private void loadingFinished() {
+    private void loggingFinished() {
+        userNode.loadingFinished();
+    }
+
+    private void xmppStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_ConnectingXMPP"));
+    }
+
+    private void xmppFinsihed() {
+        userNode.loadingFinished();
+    }
+
+
+    private void projectLoadingStarted() {
+        noOpenProjects.loadingStarted();
+    }
+
+    private void projectLoadingFinished() {
+        noOpenProjects.loadingFinished();
+    }
+
+    private void myProjectLoadingStarted() {
+        noMyProjects.loadingStarted();
+    }
+
+    private void myProjectLoadingFinished() {
+        noMyProjects.loadingFinished();
+    }
+
+    void myProjectsProgressStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_LoadingIssues"));
+    }
+
+    void myProjectsProgressFinished() {
         userNode.loadingFinished();
     }
 
@@ -747,7 +805,7 @@ public final class DashboardImpl extends Dashboard {
         }
 
         public void run() {
-            loadingStarted();
+            projectLoadingStarted();
             final ArrayList[] res = new ArrayList[1];
             Runnable r = new Runnable() {
                 public void run() {
@@ -771,7 +829,8 @@ public final class DashboardImpl extends Dashboard {
             } catch( InterruptedException iE ) {
                 //ignore
             }
-            loadingFinished();
+            projectLoadingFinished();
+            projectLoadingFinished();
             if( cancelled )
                 return;
             if( null == res[0] ) {
@@ -807,7 +866,7 @@ public final class DashboardImpl extends Dashboard {
         }
 
         public void run() {
-            loadingStarted();
+            myProjectLoadingStarted();
             final ArrayList[] res = new ArrayList[1];
             Runnable r = new Runnable() {
                 public void run() {
@@ -822,7 +881,8 @@ public final class DashboardImpl extends Dashboard {
             } catch( InterruptedException iE ) {
                 //ignore
             }
-            loadingFinished();
+            myProjectLoadingFinished();
+            myProjectLoadingFinished();
             if( cancelled )
                 return;
             if( null == res[0] ) {

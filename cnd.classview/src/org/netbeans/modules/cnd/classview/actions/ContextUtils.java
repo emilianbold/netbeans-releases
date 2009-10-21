@@ -54,9 +54,9 @@ public class ContextUtils {
     private static CsmOffsetableDeclaration findDeclaration(Node activatedNode) {
         EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {
-            JEditorPane[] panes = c.getOpenedPanes();
-            if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getDot();
+            JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
+            if (pane != null ) {
+                int offset = pane.getCaret().getDot();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 if (file != null){
                     return findInnerFileDeclaration(file, offset);

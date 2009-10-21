@@ -75,6 +75,24 @@ public class BugzillaAutoupdate {
     private static Map<String, Long> lastChecks = null;
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
 
+    private static BugzillaAutoupdate instance;
+    private Map<String, Boolean> updateAvailableMap = new HashMap<String, Boolean>();
+
+    private BugzillaAutoupdate() {
+    }
+
+    public static BugzillaAutoupdate getInstance() {
+        if(instance == null) {
+            instance = new BugzillaAutoupdate();
+        }
+        return instance;
+    }
+
+    public boolean isUpdateAvailable(BugzillaRepository repository) {
+        Boolean ret = updateAvailableMap.get(repository.getUrl());
+        return ret != null ? ret : false;
+    }
+
     /**
      * Checks if the remote Bugzilla repository has a version higher then actually
      * supported and if an update is available on the UC.
@@ -94,6 +112,7 @@ public class BugzillaAutoupdate {
                 return true;
             }
             if(!checkSupportedBugzillaServerVersion(repository) && checkNewBugzillaPluginAvailable()) {
+                updateAvailableMap.put(repository.getUrl(), Boolean.TRUE);
                 AutoupdatePanel panel = new AutoupdatePanel();
                 if(BugzillaUtil.show(
                         panel,

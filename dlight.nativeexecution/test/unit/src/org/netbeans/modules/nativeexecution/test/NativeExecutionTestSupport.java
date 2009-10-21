@@ -77,6 +77,8 @@ public class NativeExecutionTestSupport {
                     File homeDir = new File(homePath);
                     rcFile = new RcFile(new File(homeDir, ".cndtestrc"));
                 }
+            } else {
+                rcFile = new RcFile(new File(rcFileName));
             }
         }
         return rcFile;
@@ -138,6 +140,8 @@ public class NativeExecutionTestSupport {
                 File homeDir = new File(homePath);
                 userInfoFile = new File(homeDir, ".testuserinfo");
             }
+        } else {
+            userInfoFile = new File(rcFileName);
         }
 
         if (userInfoFile == null || ! userInfoFile.exists()) {
@@ -156,8 +160,8 @@ public class NativeExecutionTestSupport {
             String loginInfo;
 
             if (m.matches()) {
-                spec = m.group(1);
-                loginInfo = m.group(2);
+                spec = m.group(1).trim();
+                loginInfo = m.group(2).trim();
             } else {
                 continue;
             }
