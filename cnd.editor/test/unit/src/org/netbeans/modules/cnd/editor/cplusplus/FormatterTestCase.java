@@ -4992,4 +4992,72 @@ public class FormatterTestCase extends EditorBase {
                 "}\n"
                 );
     }
+
+    // IZ#159334:Cannot format initialization list the way I want
+    public void testIZ159334_1() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.constructorListContinuationIndent, 4);
+        setLoadDocumentText(
+                "MyClass::MyClass(int param1, int param2)\n" +
+                "   : _var1(param1),\n" +
+                "     _var2(param2)\n" +
+                "{\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#159334:Cannot format initialization list the way I want",
+                "MyClass::MyClass(int param1, int param2)\n" +
+                "    : _var1(param1),\n" +
+                "    _var2(param2)\n" +
+                "{\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#159334:Cannot format initialization list the way I want
+    public void testIZ159334_2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.constructorListContinuationIndent, 4);
+        setLoadDocumentText(
+                "class Class\n" +
+                "{\n" +
+                "    int p, r;\n" +
+                "public:\n" +
+                "\n" +
+                "    Class()\n" +
+                "      : p(0),\n" +
+                "      r(0) {\n" +
+                "    }\n" +
+                "    Class(const Class& orig);\n" +
+                "    virtual ~Class();\n" +
+                "private:\n" +
+                "\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("IZ#159334:Cannot format initialization list the way I want",
+                "class Class\n" +
+                "{\n" +
+                "    int p, r;\n" +
+                "public:\n" +
+                "\n" +
+                "    Class()\n" +
+                "        : p(0),\n" +
+                "        r(0) {\n" +
+                "    }\n" +
+                "    Class(const Class& orig);\n" +
+                "    virtual ~Class();\n" +
+                "private:\n" +
+                "\n" +
+                "};\n"
+                );
+    }
 }

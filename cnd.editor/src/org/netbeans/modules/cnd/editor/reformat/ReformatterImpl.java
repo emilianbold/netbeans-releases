@@ -790,6 +790,8 @@ public class ReformatterImpl {
                       kind == StatementKind.FUNCTION && braces.parenDepth == 0)) {
                     shift += codeStyle.getFormatStatementContinuationIndent();
                 }
+            } else if (braces.getStatementContinuation() == BracesStack.StatementContinuation.CONTINUE_INIT){
+                shift += codeStyle.getConstructorInitializerListContinuationIndent();
             }
         }
         if (shift > 0) {
