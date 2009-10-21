@@ -298,7 +298,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             VisualizerContainer container = visualizer.getDefaultContainer();
             DLightTool tool = dlightSession.getToolByID(toolID);
             if (tool != null) {
-                container.addVisualizer(toolID,tool.getDetailedName(), visualizer);
+                container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
             } else {
                 container.addVisualizer(toolID, toolID, visualizer);
             }
@@ -367,7 +367,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         VisualizerContainer container = visualizer.getDefaultContainer();
         DLightTool tool = dlightSession.getToolByID(toolID);
         if (tool != null) {
-            container.addVisualizer(toolID,tool.getDetailedName(), visualizer);
+            container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
         } else {
             container.addVisualizer(toolID, toolID, visualizer);
         }
@@ -392,26 +392,31 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
         Collection<? extends EmptyVisualizerContainerProvider> providers = Lookup.getDefault().lookupAll(EmptyVisualizerContainerProvider.class);
         VisualizerContainer container = Lookup.getDefault().lookup(EmptyVisualizerContainerProvider.class).getEmptyVisualizerContainer();
-        if (vcID != null){
-            
-            for (EmptyVisualizerContainerProvider provider : providers){
+        if (vcID != null) {
+
+            for (EmptyVisualizerContainerProvider provider : providers) {
                 VisualizerContainer vC = provider.getEmptyVisualizerContainer(vcID);
-                if (vC != null){
+                if (vC != null) {
                     container = vC;
                     break;
                 }
             }
         }
 
-        if (container == null){
-            for (EmptyVisualizerContainerProvider provider : providers){
+        if (container == null) {
+            for (EmptyVisualizerContainerProvider provider : providers) {
                 VisualizerContainer vC = provider.getEmptyVisualizerContainer();
-                if (vC != null){
+                if (vC != null) {
                     container = vC;
                     break;
                 }
             }
         }
+
+        if (container == null) {
+            return;
+        }
+
         String name = toolID;
         if (tool != null) {
             name = tool.getDetailedName();
@@ -426,7 +431,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             }
         }
         container.showup();
-
     }
 
     private void notifySessionRemoved(DLightSession session) {
@@ -502,7 +506,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
-    public final void openVisualizer(DLightSession session, String toolID, VisualizerConfiguration vc){
+    public final void openVisualizer(DLightSession session, String toolID, VisualizerConfiguration vc) {
         setActiveSession(session);
         boolean found = openVisualizer(toolID, vc, session) != null;
         if (!found) {
