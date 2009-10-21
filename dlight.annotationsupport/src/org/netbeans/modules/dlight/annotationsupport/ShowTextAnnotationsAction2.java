@@ -41,8 +41,8 @@
 package org.netbeans.modules.dlight.annotationsupport;
 
 import java.awt.event.ActionEvent;
-import javax.swing.JEditorPane;
-import org.openide.cookies.EditorCookie;
+import java.io.File;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -82,6 +82,9 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
     }
 
     private boolean hasAnnotations() {
+        if (AnnotatedSourceSupportImpl.getInstance() == null) {
+            return false;
+        }
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
 
         if (nodes == null || nodes.length != 1) {
@@ -98,25 +101,30 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
             return true; // Maybe
         }
 
-        EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
-        if (editorCookie == null) {
-            return true; // Maybe
-        }
+        File file = FileUtil.toFile(dataObject.getPrimaryFile());
+        String filePath = FileUtil.normalizeFile(file).getAbsolutePath();
+        FileAnnotationInfo fileAnnotationInfo = AnnotatedSourceSupportImpl.getInstance().getFileAnnotationInfo(filePath);
+        return fileAnnotationInfo != null;
 
-        JEditorPane panes[] = editorCookie.getOpenedPanes();
-        boolean annotated = false;
-        for (JEditorPane pane : panes) {
-            AnnotationBar ab = (AnnotationBar) pane.getClientProperty(AnnotationBarManager.BAR_KEY);
-            FileAnnotationInfo fileAnnotationInfo = ab.getFileAnnotationInfo();
-            if (fileAnnotationInfo != null && fileAnnotationInfo.isAnnotated()) {
-                annotated = true;
-                break;
-            }
-        }
-        if (!annotated) {
-            return false;
-        }
-
-        return true; // Maybe
+//        EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
+//        if (editorCookie == null) {
+//            return true; // Maybe
+//        }
+//
+//        JEditorPane panes[] = editorCookie.getOpenedPanes();
+//        boolean annotated = false;
+//        for (JEditorPane pane : panes) {
+//            AnnotationBar ab = (AnnotationBar) pane.getClientProperty(AnnotationBarManager.BAR_KEY);
+//            FileAnnotationInfo fileAnnotationInfo = ab.getFileAnnotationInfo();
+//            if (fileAnnotationInfo != null && fileAnnotationInfo.isAnnotated()) {
+//                annotated = true;
+//                break;
+//            }
+//        }
+//        if (!annotated) {
+//            return false;
+//        }
+//
+//        return true; // Maybe
     }
 }
