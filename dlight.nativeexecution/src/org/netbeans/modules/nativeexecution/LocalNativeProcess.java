@@ -87,13 +87,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     private void createNonWin() throws IOException, InterruptedException {
-        // Get working directory ....
-        String workingDirectory = info.getWorkingDirectory(true);
-
-        if (workingDirectory != null) {
-            workingDirectory = new File(workingDirectory).getAbsolutePath();
-        }
-
         final MacroMap env = info.getEnvironment().clone();
 
         if (info.isUnbuffer()) {
@@ -103,6 +96,17 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         env.appendPathVariable("PATH", "/bin:/usr/bin:" + hostInfo.getPath()); // NOI18N
 
         final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+
+        // Get working directory ....
+        String workingDirectory = info.getWorkingDirectory(true);
+
+        if (workingDirectory != null) {
+            File dirFile = new File(workingDirectory);
+            if (dirFile.exists()) {
+                workingDirectory = dirFile.getAbsolutePath();
+                pb.directory(dirFile);
+            }
+        }
 
         if (isInterrupted()) {
             throw new InterruptedException();
@@ -120,17 +124,19 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         EnvWriter ew = new EnvWriter(processInput);
         ew.write(env);
 
-        if (workingDirectory != null) {
-            processInput.write(("cd \"" + workingDirectory + "\"\n").getBytes()); // NOI18N
-        }
-
         if (info.getInitialSuspend()) {
             processInput.write("ITS_TIME_TO_START=\n".getBytes()); // NOI18N
             processInput.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
             processInput.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
-        processInput.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
+        String commandLine = info.getCommandLineForShell();
+        if (!commandLine.startsWith("/")) { // NOI18N
+            // In case it is not an absolute path - add ./
+            commandLine = "./" + commandLine; // NOI18N
+        }
+
+        processInput.write(("exec " + commandLine + "\n").getBytes()); // NOI18N
         processInput.flush();
 
         creation_ts = System.nanoTime();

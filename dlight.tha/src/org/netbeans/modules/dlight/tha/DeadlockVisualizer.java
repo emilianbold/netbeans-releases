@@ -178,7 +178,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
-    private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
+    private static final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
 
         public THANode<Deadlock> create(Deadlock object) {
             return new DeadlockNode(object);

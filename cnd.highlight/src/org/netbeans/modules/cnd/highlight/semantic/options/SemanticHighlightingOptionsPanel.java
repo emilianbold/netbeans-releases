@@ -142,6 +142,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cb.setMnemonic(getString("Show-" + ne.getName() + "-mnemonic").charAt(0)); //NOI18N
         cb.getAccessibleContext().setAccessibleDescription(getString("Show-" + ne.getName() + "-AD")); //NOI18N
         cb.setText(getString("Show-" + ne.getName())); //NOI18N
+        cb.setToolTipText(getString("Show-" + ne.getName() + "-AD")); //NOI18N
         cb.setOpaque(false);
         entities.add(new Entity(ne, cb));
     }
@@ -153,6 +154,15 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         for (NamedEntity ee : Lookup.getDefault().lookupResult(CsmErrorProvider.class).allInstances()) {
             addEntity(ee);
         }
+
+        addEntity(new NamedEntity(){
+            public String getName() {
+                return "reparse-on-document-changed"; //NOI18N
+            }
+            public boolean isEnabledByDefault() {
+                return true;
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(layout);

@@ -70,7 +70,7 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
     private ValidationStatus currentStatus;
     private final List<IndicatorDataProvider<?>> toReValidate;
     private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-    private final Object listenersLock = new String("IndicatorRepairActionProvider.Listeners"); // NOI18N
+    private final Lock listenersLock = new Lock();
     private Future<Boolean> repairTask;
 
     static {
@@ -219,5 +219,8 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
 
     private static String getMessage(String name) {
         return NbBundle.getMessage(IndicatorRepairActionProvider.class, name);
+    }
+
+    private final static class Lock {
     }
 }
