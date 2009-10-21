@@ -114,6 +114,7 @@ public final class NbModuleLogHandler extends Handler {
         sb.append(txt);
         Throwable t = record.getThrown();
         if (t != null) {
+            sb.append('\n');
             StringWriter w = new StringWriter();
             t.printStackTrace(new PrintWriter(w));
             sb.append(w.toString().replace("\tat ", "  ").replace("\t... ", "  ... "));
