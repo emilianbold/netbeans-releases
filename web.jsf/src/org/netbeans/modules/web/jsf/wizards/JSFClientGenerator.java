@@ -513,11 +513,9 @@ public class JSFClientGenerator {
                 }
             }
 
-            String find = "Hello from the Facelets"; //NOI18N
+            String find = "</h:body>"; //NOI18N
             if ( content.indexOf(find) > -1){
                 StringBuffer replace = new StringBuffer();
-                replace.append(find);
-                replace.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
                 String commandLink = "";
                 if (pageLink == null || "".equals(pageLink)) {
@@ -534,6 +532,8 @@ public class JSFClientGenerator {
                     return true;
                 }
                 replace.append(commandLink);
+                replace.append(find);
+                replace.append(endLine);
                 content = content.replace(find, replace.toString()); //NOI18N
                 JSFFrameworkProvider.createFile(indexfl, content, projectEncoding); //NOI18N
                 //return, indicating welcomeJsp exists
