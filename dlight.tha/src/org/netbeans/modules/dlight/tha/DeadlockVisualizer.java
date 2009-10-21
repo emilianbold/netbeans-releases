@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
@@ -154,7 +153,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
-    private final class DeadlockNode extends THANode<Deadlock> {
+    private final static class DeadlockNode extends THANode<Deadlock> {
 
         private final Deadlock deadlock;
 

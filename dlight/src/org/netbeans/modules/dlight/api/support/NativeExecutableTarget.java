@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
@@ -120,8 +121,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         this.templateCMD = this.cmd;
         Map<String, String> info = configuration.getInfo();
 
-        for (String name : info.keySet()) {
-            putToInfo(name, info.get(name));
+        for (Entry<String, String> entry : info.entrySet()) {
+            putToInfo(entry.getKey(), entry.getValue());
         }
 
         this.templateArgs = args.clone();

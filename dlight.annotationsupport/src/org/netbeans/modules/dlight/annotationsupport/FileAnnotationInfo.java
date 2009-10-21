@@ -184,17 +184,23 @@ public class FileAnnotationInfo {
     /**
      * @return the tooltip
      */
-    public String getTooltip() {
+    public synchronized String getTooltip() {
         if (tooltip == null) {
-            String tt = "";
+            StringBuilder sb = new StringBuilder();
+            boolean first = true;
+
             for (String col : getColumnNames()) {
-                if (tt.length() > 0) {
-                    tt += " | "; // NOI18N
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(" | "); // NOI18N
                 }
-                tt += col;
+                sb.append(col);
             }
-            tooltip = tt;
+            
+            tooltip = sb.toString();
         }
+        
         return tooltip;
     }
 
