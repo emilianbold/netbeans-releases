@@ -38,8 +38,11 @@
  */
 package org.netbeans.modules.web.jsf.editor.tld;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileObject;
 
@@ -52,10 +55,16 @@ public class TldLibrariesCache {
 
     //uri -> library map
     private final Map<String, TldLibrary> LIBRARIES = new HashMap<String, TldLibrary>();
+    private static Collection<TldLibrary> DEFAULT_LIBRARIES;
     private JsfSupport support;
 
     public TldLibrariesCache(JsfSupport support) {
         this.support = support;
+
+        //add default libraries
+        for (TldLibrary lib : getDefaultLibraries()) {
+            LIBRARIES.put(lib.getURI(), lib);
+        }
     }
 
     public synchronized TldLibrary getLibrary(String namespace) throws TldLibraryException {
@@ -71,4 +80,27 @@ public class TldLibrariesCache {
         
     }
 
+     public static synchronized Collection<TldLibrary> getDefaultLibraries() {
+        if (DEFAULT_LIBRARIES == null) {
+            DEFAULT_LIBRARIES = new ArrayList<TldLibrary>();
+            try {
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/composite.tld"))); //NOI18N
+                DEFAULT_LIBRARIES.add(
+                        TldLibrary.create(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/editor/resources/ui.tld"))); //NOI18N
+            } catch (TldLibraryException ex) {
+                //warn user, this should not happen
+                Logger.global.warning(ex.getMessage());
+            }
+        }
+        return DEFAULT_LIBRARIES;
+    }
+
+    private void dumpLibs() {
+        System.out.println("Available TLD libraries:"); //NOI18N
+        for (TldLibrary l : LIBRARIES.values()) {
+            System.out.println(l.getDisplayName() + " (" + l.getURI() + "; " + (l.getDefinitionFile() != null ? l.getDefinitionFile().getPath() : "default library") + ")");
+        }
+
+    }
 }
