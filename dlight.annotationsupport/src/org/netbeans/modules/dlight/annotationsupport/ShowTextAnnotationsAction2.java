@@ -82,9 +82,9 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
     }
 
     private boolean hasAnnotations() {
-        Node [] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
+        Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
 
-        if (nodes == null || nodes.length != 1 ) {
+        if (nodes == null || nodes.length != 1) {
             return true; // Maybe
         }
 
@@ -112,9 +112,9 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
                 annotated = true;
                 break;
             }
-            if (!annotated) {
-                return false;
-            }
+        }
+        if (!annotated) {
+            return false;
         }
 
         return true; // Maybe
