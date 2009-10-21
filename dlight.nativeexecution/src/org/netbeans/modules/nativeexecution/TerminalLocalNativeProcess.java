@@ -122,8 +122,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 throw new IOException(loc("NativeProcess.shellNotFound.text")); // NOI18N
             }
 
-            final String cline = info.getCommandLineForShell();
-            final String commandLine = cline.startsWith("/") ? cline : "./" + cline; // NOI18N
+            final String commandLine = info.getCommandLineForShell();
             final String wDir = info.getWorkingDirectory(true);
 
             final File workingDirectory;
