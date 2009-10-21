@@ -101,6 +101,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1889,7 +1890,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), issue.getBugzillaRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), // NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.blocksChooser")); // NOI18N
         if (newIssue != null) {
             StringBuilder sb = new StringBuilder();
             if (!blocksField.getText().trim().equals("")) { // NOI18N
@@ -1901,7 +1906,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), issue.getBugzillaRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.dependsOnChooser")); // NOI18N
         if (newIssue != null) {
             StringBuilder sb = new StringBuilder();
             if (!dependsField.getText().trim().equals("")) { // NOI18N
@@ -1990,7 +1999,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), issue.getBugzillaRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
         if (newIssue != null) {
             duplicateField.setText(newIssue.getID());
         }
