@@ -39,7 +39,6 @@
 package org.netbeans.modules.dlight.tha;
 
 import java.awt.AWTKeyStroke;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -57,7 +56,6 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
@@ -74,7 +72,6 @@ import org.openide.util.Exceptions;
 public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSplitPane implements ExplorerManager.Provider {
 
     private final BeanTreeView master;
-    private final JPanel rightPanel = new JPanel();
     private Component slave;
     private SlaveRenderer slaveRenderer;
     private final ExplorerManager manager = new ExplorerManager();
@@ -96,7 +93,6 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
         this.nodeFactory = factory;
         setResizeWeight(0.5);
         setLeftComponent(master);
-        setRightComponent(rightPanel);
         manager.setRootContext(rootNode);
         manager.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -205,10 +201,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
             slave = new JLabel("<No details>"); // NOI18N
         }
         int oldDividerPos = keepDividerPos ? getDividerLocation() : 0;
-        rightPanel.removeAll();
-        rightPanel.setLayout(new BorderLayout());
-        rightPanel.add(slave, BorderLayout.CENTER);
-        rightPanel.repaint();
+        setRightComponent(slave);
         slaveRenderer.expandAll();
         if (keepDividerPos) {
             setDividerLocation(oldDividerPos);
