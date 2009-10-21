@@ -632,6 +632,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ145071_2.cc", 11, 20, "IZ145071_2.cc", 10, 5);
     }
 
+    public void testIZ175123() throws Exception {
+        // IZ#175123 : Pointer to const parsed incorrectly in some cases
+        performTest("IZ175123.cc", 4, 21, "IZ175123.cc", 4, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
