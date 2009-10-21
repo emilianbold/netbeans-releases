@@ -159,10 +159,18 @@ public class Subversion {
     
     private void prepareCache() {
         cleanupTask = getRequestProcessor().create(new Runnable() {
+            private int waitingLoops;
+            private int MAX_WAITING_TIME = 180000; // wait max 3 mins
+            private int WAITING_PERIOD = 5000;
             public void run() {
-                if (org.netbeans.modules.versioning.util.IndexingBridge.getInstance().isIndexingInProgress()) {
-                    cleanupTask.schedule(5000);
+                if (org.netbeans.modules.versioning.util.IndexingBridge.getInstance().isIndexingInProgress()
+                        && waitingLoops * WAITING_PERIOD < MAX_WAITING_TIME) {
+                    Level level = ++waitingLoops < 10 ? Level.FINE : Level.INFO;
+                    LOG.log(level, "Subversion.cleanupTask: Scanning in progress, trying again in " + WAITING_PERIOD + "ms"); //NOI18N
+                    cleanupTask.schedule(WAITING_PERIOD);
                     return;
+                } else {
+                    waitingLoops = 0;
                 }
                 try {
                     fileStatusCache.computeIndex();
