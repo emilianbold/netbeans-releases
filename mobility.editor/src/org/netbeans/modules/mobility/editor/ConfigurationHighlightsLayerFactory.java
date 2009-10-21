@@ -82,11 +82,11 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         }
 
         public void insertUpdate(DocumentEvent e) {
-            this.headersBag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
+            this.headersBag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), true);
         }
 
         public void removeUpdate(DocumentEvent e) {
-            this.headersBag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, false);
+            this.headersBag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, true);
         }
 
         public void changedUpdate(DocumentEvent e) {
@@ -170,11 +170,11 @@ public class ConfigurationHighlightsLayerFactory implements HighlightsLayerFacto
         }
 
         public void insertUpdate(DocumentEvent e) {
-            this.blocksBag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
+            this.blocksBag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), true);
         }
 
         public void removeUpdate(DocumentEvent e) {
-            this.blocksBag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, false);
+            this.blocksBag.removeHighlights(e.getOffset() - 1, e.getOffset() + e.getLength() - 1, true);
         }
 
         public void changedUpdate(DocumentEvent e) {
