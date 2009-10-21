@@ -2226,7 +2226,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         documentStatus = DOCUMENT_NO;
         fireEvent = true;
         setDoc(null, false);
-        kit = null;
+//        kit = null;
         
         getUndoRedo().discardAllEdits();
         updateLineSet(true);
