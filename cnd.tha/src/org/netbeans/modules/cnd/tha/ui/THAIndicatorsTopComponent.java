@@ -136,8 +136,8 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                 }
             }
         }
-        setFocusTraversalPolicyProvider(true);
-        setFocusTraversalPolicy(focusPolicy);
+//        setFocusTraversalPolicyProvider(true);
+//        setFocusTraversalPolicy(focusPolicy);
         ActionMap map = new ActionMap();
         map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
         this.associateLookup(ExplorerUtils.createLookup(manager, map));

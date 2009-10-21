@@ -72,11 +72,10 @@ final class THAControlPanel extends JToolBar {
     THAControlPanel(THAActionsProvider actionsSupport, Project project, final THAConfiguration thaConfiguration) {
         this.project = project;
         this.thaConfiguration = thaConfiguration;
-        setFloatable(false);
+        setFloatable(true);
         setRollover(true);
         setBorder(null);
-        setFocusable(true);
-        setFocusTraversalPolicyProvider(true);
+//        setFocusable(true);
         final JLabel statusLabel = new JLabel();
         final String collectionKind = getMessage(thaConfiguration.collectDataRaces() ? "THAControlPanel.DeadlocksAndRaces" : "THAControlPanel.Deadlocks"); // NOI18N
         actionsSupport.addActionListener(new ActionListener() {
