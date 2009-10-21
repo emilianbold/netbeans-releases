@@ -145,8 +145,8 @@ public class ParallelAdviserHintsProvider extends CsmErrorProvider {
 
         private String message;
 
-        public LoopParallelizationInfo(CsmLoopStatement loop) {
-            super(loop.getStartOffset(), loop.getStartOffset() + 3, Severity.WARNING);
+        public LoopParallelizationInfo(PositionBounds loopPosition) {
+            super(loopPosition.getBegin().getOffset(), loopPosition.getBegin().getOffset() + 3, Severity.WARNING);
             this.message = NbBundle.getMessage(ParallelAdviserHintsProvider.class, "ParallelAdviser_LoopParallelization");
         }
 
@@ -168,9 +168,9 @@ public class ParallelAdviserHintsProvider extends CsmErrorProvider {
         for (Advice advice : tips) {
             if (!outdatedTips.contains(advice)) {
                 if (advice instanceof LoopParallelizationAdvice) {
-                    CsmLoopStatement loop = ((LoopParallelizationAdvice) advice).getLoop();
-                    if (loop != null && loop.getContainingFile() == file) {
-                        res.add(new LoopParallelizationInfo(loop));
+                    PositionBounds loopPosition = ((LoopParallelizationAdvice) advice).getLoopPosition();
+                    if (CsmUtilities.getCsmFile(loopPosition.getBegin().getCloneableEditorSupport().getDocument(), true) == file) {
+                        res.add(new LoopParallelizationInfo(loopPosition));
                     }
                 }
             }
@@ -290,8 +290,8 @@ public class ParallelAdviserHintsProvider extends CsmErrorProvider {
             Collection<Advice> tips = ParallelAdviser.getTips();
             for (Advice advice : tips) {
                 if (advice instanceof LoopParallelizationAdvice) {
-                    CsmLoopStatement loop = ((LoopParallelizationAdvice) advice).getLoop();
-                    if (loop != null && changedFiles.contains(loop.getContainingFile())) {
+                    PositionBounds loopPosition = ((LoopParallelizationAdvice) advice).getLoopPosition();
+                    if (changedFiles.contains(CsmUtilities.getCsmFile(loopPosition.getBegin().getCloneableEditorSupport().getDocument(), true))) {
                         outdatedTips.add(advice);
                     }
                 }
