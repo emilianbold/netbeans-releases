@@ -210,8 +210,14 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 fileSystem.removeFileChangeListener(fileChangeListener);
                 LOGGER.log(Level.FINE, "\t-> NON-RECURSIVE listener unregistered for project {0}", project.getName());
             } else {
-                FileUtil.removeRecursiveListener(this, FileUtil.toFile(getSources()));
-                LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
+                // #172777
+                try {
+                    FileUtil.removeRecursiveListener(this, FileUtil.toFile(getSources()));
+                    LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.log(Level.WARNING, "If this happens to you reliably, report issue and attach IDE log (http://www.netbeans.org/community/issues).", ex);
+                    LOGGER.log(Level.INFO, "sources valid: {0}, listener added: {1}", new Object[] {getSources().isValid(), fileChangeListenerRegistered});
+                }
             }
             fileSystem = null;
             fileChangeListener = null;

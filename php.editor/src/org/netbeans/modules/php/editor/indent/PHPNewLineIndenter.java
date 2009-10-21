@@ -188,25 +188,20 @@ public class PHPNewLineIndenter {
     private CodeB4BreakData processCodeBeforeBreak(TokenSequence ts){
         CodeB4BreakData retunValue = new CodeB4BreakData();
         int origOffset = ts.offset();
-
-        if (ts.movePrevious()){
-            while (ts.movePrevious()) {
-                Token token = ts.token();
-                ScopeDelimiter delimiter = getScopeDelimiter(token);
-
-                if (delimiter != null){
-
-                    if (CONTROL_STATEMENT_TOKENS.contains(delimiter.tokenId)){
-                        retunValue.processedByControlStmt = true;
-                    }
-
-                    retunValue.expressionStartOffset = ts.offset();
-                    retunValue.indentDelta = delimiter.indentDelta;
-                    break;
+        
+        while (ts.movePrevious()) {
+            Token token = ts.token();
+            ScopeDelimiter delimiter = getScopeDelimiter(token);
+            if (delimiter != null){
+                retunValue.expressionStartOffset = ts.offset();
+                retunValue.indentDelta = delimiter.indentDelta;
+                if (CONTROL_STATEMENT_TOKENS.contains(delimiter.tokenId)) {
+                    retunValue.indentDelta = 0;
                 }
+                break;
             }
         }
-
+        
         ts.move(origOffset);
         ts.moveNext();
         return retunValue;
