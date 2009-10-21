@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
@@ -117,7 +116,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
     public void updateVisualizerConfiguration(RacesVisualizerConfiguration configuration) {
     }
 
-    private class RacesRenderer implements Renderer {
+    private class RacesRenderer implements SlaveRenderer {
 
         private List<ThreadDump> threadDumps;
         private final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(RacesVisualizer.this.dataProvider);
@@ -139,13 +138,17 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
                     stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png", false), snap.getStack());//NOI18N
                 }
             }
+            return stackPanel;
+        }
+
+        public void expandAll() {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
                     stackPanel.expandAll();
                 }
             }, 500);
-            return stackPanel;
+
         }
     }
 
@@ -176,7 +179,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         }
     }
 
-    private final class RaceNode extends THANode<ThreadDump> {
+    private final static class RaceNode extends THANode<ThreadDump> {
 
         private final ThreadDump threadDump;
         private String displayName;

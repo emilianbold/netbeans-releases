@@ -220,7 +220,6 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
                 
                 bootClassPath = urls;
             } catch (FileStateInvalidException e) {
-//                ErrorManager.getDefault().notify(e);
                 if (log.isLoggable(Level.SEVERE))
                     log.log(Level.SEVERE, e.getMessage(), e);
             }
@@ -384,7 +383,6 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
                 info.toPhase(this.phase);
                 this.info = info;
             } catch (IOException ioe) {
-//                ErrorManager.getDefault().notify(ioe);
                 if (log.isLoggable(Level.SEVERE))
                     log.log(Level.SEVERE, ioe.getMessage(), ioe);
             }

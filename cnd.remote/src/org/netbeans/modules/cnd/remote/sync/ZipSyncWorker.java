@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -83,7 +84,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         public boolean accept(File file) {
             boolean accepted = delegate.accept(file);
             if (accepted && ! file.isDirectory()) {
-                accepted = needsCopying(fileData.getState(file));
+                accepted = needsCopying(file);
                 if (accepted) {
                     fileData.setState(file, FileState.COPIED);
                 } else {
@@ -101,21 +102,22 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
         private void clear() {
             fileData.clear();
         }
-    }
 
-    private boolean needsCopying(FileState state) {
-        switch (state) {
-            case INITIAL:       return true;
-            case TOUCHED:       return true;
-            case COPIED:        return false;
-            case ERROR:         return true;
-            case UNCONTROLLED:  return false;
-            default:
-                CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
-                return false;
+        private boolean needsCopying(File file) {
+            FileInfo info = fileData.getFileInfo(file);
+            FileState state = (info == null) ? FileState.INITIAL : info.state;
+            switch (state) {
+                case INITIAL:       return true;
+                case TOUCHED:       return true;
+                case COPIED:        return false;
+                case ERROR:         return true;
+                case UNCONTROLLED:  return false;
+                default:
+                    CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
+                    return false;
+            }
         }
     }
-
 
     public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
         super(executionEnvironment, out, err, privProjectStorageDir, localDirs);

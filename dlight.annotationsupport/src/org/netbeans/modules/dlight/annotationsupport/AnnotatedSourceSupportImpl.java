@@ -127,11 +127,11 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                     }
                     if (lineAnnotations && !below) {
                         // line annotation (none zero)
-                        fileAnnotationInfo.getLineAnnotationInfo().add(lineAnnotationInfo);
+                        fileAnnotationInfo.addLineAnnotationInfo(lineAnnotationInfo);
                     }
                     if (!lineAnnotations) {
                         // block annotation
-                        fileAnnotationInfo.getBlockAnnotationInfo().add(lineAnnotationInfo);
+                        fileAnnotationInfo.addBlockAnnotationInfo(lineAnnotationInfo);
                     }
                 }
             }
@@ -141,7 +141,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
         // log(sourceFileInfoProvider, metrics, list, functionCalls);
         // Remember list of annotated panes
-        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet();
+        HashSet<JEditorPane> previousAnnotatedPanes = new HashSet<JEditorPane>();
         if (activeAnnotations != null) {
             for (FileAnnotationInfo fileAnnotationInfo : activeAnnotations.values()) {
                 if (fileAnnotationInfo.isAnnotated()) {
@@ -204,7 +204,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    class UnAnnotate implements Runnable {
+    private static class UnAnnotate implements Runnable {
         JTextComponent jEditorPane;
 
         public UnAnnotate(JTextComponent jEditorPane) {
@@ -216,7 +216,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    class Annotate implements Runnable {
+    private static class Annotate implements Runnable {
         JTextComponent jEditorPane;
         FileAnnotationInfo fileAnnotationInfo;
 
@@ -230,7 +230,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    class EditorFileChangeListener implements PropertyChangeListener {
+    private class EditorFileChangeListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
@@ -244,7 +244,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
         }
     }
 
-    class ProfilerPropertyChangeListener implements PropertyChangeListener {
+    private class ProfilerPropertyChangeListener implements PropertyChangeListener {
 
         public synchronized void propertyChange(PropertyChangeEvent evt) {
             String prop = evt.getPropertyName();

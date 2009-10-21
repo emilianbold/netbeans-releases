@@ -391,47 +391,50 @@ public class ThreadsDataManager {
 
     private void updateThreadNames() {
         ThreadMapDataProvider aProvider = provider;
-        if (threadNameFormat == 0 || aProvider == null) {
-            return;
-        }
-        synchronized (lock) {
-            try {
-                ThreadSnapshotQuery.TimeFilter time = new ThreadSnapshotQuery.TimeFilter(0, Long.MAX_VALUE, ThreadSnapshotQuery.TimeFilter.Mode.FIRST);
-                ThreadSnapshotQuery query = new ThreadSnapshotQuery(true, time);
-                Collection<ThreadSnapshot> dumps = aProvider.getThreadSnapshots(query);
-                if (dumps == null) {
-                    return;
-                }
-                if (threadNameFormat == 0) {
-                    return;
-                }
-                int level = threadNameFormat + 1;
-                if (level > 0) {
-                    for (ThreadSnapshot dump : dumps) {
-                        int i = dump.getThreadInfo().getThreadId();
-                        int lookAt = i == 1 ? 1 : level;
-                        if (!isValidDump(dump, lookAt)) {
-                            time = new ThreadSnapshotQuery.TimeFilter(dump.getTimestamp(), dump.getTimestamp() + 50 * 1000 * 1000, ThreadSnapshotQuery.TimeFilter.Mode.ALL);
-                            ThreadSnapshotQuery.ThreadFilter thread = new ThreadSnapshotQuery.ThreadFilter(Collections.singletonList(Integer.valueOf(i)));
-                            query = new ThreadSnapshotQuery(true, time, thread);
-                            dump = null;
-                            for (ThreadSnapshot d : aProvider.getThreadSnapshots(query)) {
-                                if (isValidDump(d, lookAt)) {
-                                    dump = d;
+        try {
+            if (threadNameFormat == 0 || aProvider == null) {
+                return;
+            }
+            synchronized (lock) {
+                try {
+                    ThreadSnapshotQuery.TimeFilter time = new ThreadSnapshotQuery.TimeFilter(0, Long.MAX_VALUE, ThreadSnapshotQuery.TimeFilter.Mode.FIRST);
+                    ThreadSnapshotQuery query = new ThreadSnapshotQuery(true, time);
+                    Collection<ThreadSnapshot> dumps = aProvider.getThreadSnapshots(query);
+                    if (dumps == null) {
+                        return;
+                    }
+                    if (threadNameFormat == 0) {
+                        return;
+                    }
+                    int level = threadNameFormat + 1;
+                    if (level > 0) {
+                        for (ThreadSnapshot dump : dumps) {
+                            int i = dump.getThreadInfo().getThreadId();
+                            int lookAt = i == 1 ? 1 : level;
+                            if (!isValidDump(dump, lookAt)) {
+                                time = new ThreadSnapshotQuery.TimeFilter(dump.getTimestamp(), dump.getTimestamp() + 50 * 1000 * 1000, ThreadSnapshotQuery.TimeFilter.Mode.ALL);
+                                ThreadSnapshotQuery.ThreadFilter thread = new ThreadSnapshotQuery.ThreadFilter(Collections.singletonList(Integer.valueOf(i)));
+                                query = new ThreadSnapshotQuery(true, time, thread);
+                                dump = null;
+                                for (ThreadSnapshot d : aProvider.getThreadSnapshots(query)) {
+                                    if (isValidDump(d, lookAt)) {
+                                        dump = d;
+                                    }
                                 }
                             }
+                            if (dump == null) {
+                                continue;
+                            }
+                            updateName(dump.getStack().get(lookAt).getFunction().getQuilifiedName(), i);
                         }
-                        if (dump == null) {
-                            continue;
-                        }
-                        updateName(dump.getStack().get(lookAt).getFunction().getQuilifiedName(), i);
                     }
+                } catch (Throwable ex) {
+                    // skip all
                 }
-            } catch (Throwable ex) {
-                // skip all
             }
+        } finally {
+            fireDataChanged();
         }
-        fireDataChanged();
     }
 
     private boolean isValidDump(ThreadSnapshot dump, int lookAt){

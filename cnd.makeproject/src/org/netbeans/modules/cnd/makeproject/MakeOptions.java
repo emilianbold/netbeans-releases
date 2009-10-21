@@ -49,36 +49,41 @@ import org.openide.util.SharedClassObject;
 
 public class MakeOptions extends SharedClassObject implements PropertyChangeListener {
 
-    static private MakeOptions instance = null;
-    // Default make options
-    public static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
-    static private String defaultMakeOptions = ""; // NOI18N
-    // Default Path mode
-    public static final int PATH_REL_OR_ABS = 0;
-    public static final int PATH_REL = 1;
-    public static final int PATH_ABS = 2;
+    // Display binary files
+    public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
     public static final String[] PathModeNames = new String[]{
         getString("TXT_Auto"),
         getString("TXT_AlwaysRelative"),
         getString("TXT_AlwaysAbsolute"),};
-    public static final String PATH_MODE = "pathMode"; // NOI18N
-    // Dependency checking
-    public static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
-    // Save
-    public static final String SAVE = "save";  // NOI18N
-    // Reuse
-    public static final String REUSE = "reuse";  // NOI18N
-    //
-    public static final String SHOW_PROFILING = "showProfiling"; // NOI18N
 
-    // Display binary files
-    public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
+    private static MakeOptions instance = null;
+    // Default make options
+    private static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
+    private static String defaultMakeOptions = ""; // NOI18N
+    // Default Path mode
+    //private static final int PATH_REL_OR_ABS = 0;
+    private static final int PATH_REL = 1;
+    //private static final int PATH_ABS = 2;
+    private static final String PATH_MODE = "pathMode"; // NOI18N
+    // Dependency checking
+    private static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
+    // Save
+    private static final String SAVE = "save";  // NOI18N
+    // Reuse
+    private static final String REUSE = "reuse";  // NOI18N
+    //
+    private static final String SHOW_PROFILING = "showProfiling"; // NOI18N
+
     // packaging Defaults
-    static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
-    static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
-    static final String DEF_OWNER = "defowner"; // NOI18N
-    static final String DEF_GROUP = "defgroup"; // NOI18N
-    static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
+    private static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
+    private static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
+    private static final String DEF_OWNER = "defowner"; // NOI18N
+    private static final String DEF_GROUP = "defgroup"; // NOI18N
+    private static final String PREF_APP_LANGUAGE = "prefAppLanguage"; // NOI18N // Prefered language when creating new Application projects
+
+    static {
+        
+    }
 
     static public MakeOptions getInstance() {
         if (instance == null) {

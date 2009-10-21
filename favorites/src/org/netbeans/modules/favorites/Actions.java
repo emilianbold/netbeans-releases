@@ -47,6 +47,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -262,6 +263,7 @@ public final class Actions extends Object {
 
     } // end of Remove
     
+
     /** Adds something to favorites. Made public so it can be referenced
     * directly from manifest.
     *
@@ -291,38 +293,8 @@ public final class Actions extends Object {
 
             for (int i = 0; i < arr.length; i++) {
                 DataObject dataObject = arr[i].getCookie(DataObject.class);
-                //Action is disabled for root folder eg:"/" on Linux or "C:" on Win
-                if (dataObject == null) {
+                if (! isAllowed(dataObject))
                     return false;
-                }
-                FileObject fo = dataObject.getPrimaryFile();
-                if (fo != null) {
-                    //#63459: Do not enable action on internal object/URL.
-                    if (URLMapper.findURL(fo, URLMapper.EXTERNAL) == null) {
-                        return false;
-                    }
-                    //Allow to link only once
-                    if (Favorites.getDefault().isInFavorites(fo)) {
-                        return false;
-                    }
-                    //Check if it is root.
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        if (file.getParent() == null) {
-                            //It is root: disable.
-                            return false;
-                        }
-                    }
-                }
-
-                // Fix #14740 disable action on SystemFileSystem.
-                try {
-                    if(dataObject.getPrimaryFile().getFileSystem().isDefault()) {
-                        return false;
-                    }
-                } catch(FileStateInvalidException fsie) {
-                    return false;
-                }
             }
             return true;
         }
@@ -349,26 +321,23 @@ public final class Actions extends Object {
         * @param activatedNodes gives array of actually activated nodes.
         */
         protected void performAction (final Node[] activatedNodes) {
-            final DataFolder f = FavoritesNode.getFolder();
-            final DataObject [] arr = f.getChildren();
-            final List<DataObject> listAdd = new ArrayList<DataObject>();
-            
-            DataObject createdDO = null;
-            Node[] toShadows = activatedNodes; 
+            List<DataObject> toShadows;
 
             try {
                 if (activatedNodes.length == 1 && activatedNodes[0] instanceof FavoritesNode) {
                     // show JFileChooser
                     FileObject fo = chooseFileObject();
                     if (fo == null) return;
-                    toShadows = new Node[] {DataObject.find(fo).getNodeDelegate()};                
-                } 
-                
-                createdDO = createShadows(f, toShadows, listAdd);
-                
-                //This is done to set desired order of nodes in view                             
-                reorderAfterAddition(f, arr, listAdd);
-                selectAfterAddition(createdDO);               
+                    toShadows = Collections.singletonList(DataObject.find(fo));
+                } else {
+                    toShadows = new ArrayList<DataObject>();
+                    for (Node node : activatedNodes) {
+                        DataObject obj = node.getCookie(DataObject.class);
+                        if (obj != null)
+                            toShadows.add(obj);
+                    }
+                }
+                addToFavorites(toShadows);
             } catch (DataObjectNotFoundException e) {
                 LOG.log(Level.WARNING, null, e);
             }
@@ -448,23 +417,19 @@ public final class Actions extends Object {
             }
         }
 
-        static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List<DataObject> listAdd) {
+        static DataObject createShadows(final DataFolder favourities, final List<DataObject> dos, final List<DataObject> listAdd) {
             DataObject createdDO = null;
-            for (int i = 0; i < activatedNodes.length; i++) {
-                DataObject obj = activatedNodes[i].getCookie(DataObject.class);
-
-                if (obj != null) {
-                    try {
-                        if (createdDO == null) {
-                            // Select only first node in array added to favorites
-                            createdDO = obj.createShadow(favourities);
-                            listAdd.add(createdDO);
-                        } else {
-                            listAdd.add(obj.createShadow(favourities));
-                        }
-                    } catch (IOException ex) {
-                        LOG.log(Level.WARNING, null, ex);
+            for (DataObject obj : dos) {
+                try {
+                    if (createdDO == null) {
+                        // Select only first node in array added to favorites
+                        createdDO = obj.createShadow(favourities);
+                        listAdd.add(createdDO);
+                    } else {
+                        listAdd.add(obj.createShadow(favourities));
                     }
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, null, ex);
                 }
             }
             return createdDO;
@@ -512,8 +477,53 @@ public final class Actions extends Object {
             return false;
         }
 
+        static void addToFavorites(List<DataObject> toShadows) {
+            final DataFolder f = FavoritesNode.getFolder();
+            final DataObject[] arr = f.getChildren();
+            final List<DataObject> listAdd = new ArrayList<DataObject>();
+            DataObject createdDO = createShadows(f, toShadows, listAdd);
+            //This is done to set desired order of nodes in view
+            reorderAfterAddition(f, arr, listAdd);
+            selectAfterAddition(createdDO);
+        }
+
+        static boolean isAllowed(DataObject dataObject) {
+            //Action is disabled for root folder eg:"/" on Linux or "C:" on Win
+            if (dataObject == null) {
+                return false;
+            }
+            FileObject fo = dataObject.getPrimaryFile();
+            if (fo != null) {
+                //#63459: Do not enable action on internal object/URL.
+                if (URLMapper.findURL(fo, URLMapper.EXTERNAL) == null) {
+                    return false;
+                }
+                //Allow to link only once
+                if (Favorites.getDefault().isInFavorites(fo)) {
+                    return false;
+                }
+                //Check if it is root.
+                File file = FileUtil.toFile(fo);
+                if (file != null) {
+                    if (file.getParent() == null) {
+                        //It is root: disable.
+                        return false;
+                    }
+                }
+            }
+
+            // Fix #14740 disable action on SystemFileSystem.
+            try {
+                if (dataObject.getPrimaryFile().getFileSystem().isDefault()) {
+                    return false;
+                }
+            } catch (FileStateInvalidException fsie) {
+                return false;
+            }
+            return true;
+        }
+
     } // end of Add
-    
     /** Subclass of Add. Only its display name is different otherwise the same as Add.
     *
     * @author   Marek Slama

@@ -3,10 +3,10 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
@@ -14,7 +14,7 @@
  * * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,39 +33,30 @@ import javax.naming.InitialContext;
 
 import enterprise.lottery_annotation_ejb_stateful.Lottery;
 import enterprise.lottery_annotation_ejb_stateless.Dice;
+import javax.ejb.EJB;
 
 public class JavaClient {
 
+    @EJB
+    private static Dice dice;
+    @EJB
+    private static Lottery lottery;
+
     public static void main(String args[]) {
 
-        try {
-
-            InitialContext ic = new InitialContext();
-
-            Lottery lottery = 
-                (Lottery) ic.lookup("enterprise.lottery_annotation_ejb_stateful.Lottery");
-
-	    Dice dice;
 	    for(int i=0; i<5; i++) {
-            	dice = 
-		    (Dice) ic.lookup("enterprise.lottery_annotation_ejb_stateless.Dice");
 		lottery.select(dice.play());
             }
 
             String lotteryName = lottery.getName();
             String lotteryNumber = lottery.getNumber();
             String lotteryDate = lottery.getDate();
-           
-            String results = "Your" + " " + lotteryName + " " + 
+
+            String results = "Your" + " " + lotteryName + " " +
                 "quick pick, played on" + " " + lotteryDate +
-                    " " + "is" + " " + lotteryNumber;       
+                    " " + "is" + " " + lotteryNumber;
 
             System.out.println(results);
-
-        } catch(Exception e) {
-	    System.out.println("Exception: " + e);
-            e.printStackTrace();
-        }
 
     }
 

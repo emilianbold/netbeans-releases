@@ -69,7 +69,7 @@ public class VariablesTestCase extends GdbTestCase {
 
     @Test
     public void testLocalSimple() {
-        AbstractVariable var = createLocalVariable("test", "type", "value", "ptype");
+        createLocalVariable("test", "type", "value", "ptype");
     }
 
     @Test
@@ -228,6 +228,62 @@ public class VariablesTestCase extends GdbTestCase {
         assertEquals("{a = 12, b = 23}", var.getFields()[0].getValue());
     }
 
+    @Test
+    public void testBaseClass1() { // IZ 163290
+        //((MockGdbDebugger)debugger).addVar(name, type, value);
+        AbstractVariable var = createLocalVariable(
+                "this",
+                "B * const",
+                "(B * const) 0x80477c4",
+                "class B : public C {\\n  private:\\n    int a;\\n\\n  public:\\n    void foo();\\n} * const\\n");
+
+        ((MockGdbDebugger)debugger).addVar(
+                "*this",
+                null,//"B * const",
+                "{<C> = {e = 134550490}, a = -16795724}");
+
+        ((MockGdbDebugger)debugger).addVar(
+                "C",
+                null,
+                null,
+                "Type B has no component named C"
+                );
+
+        // Should have 1 field
+        assertEquals(2, var.getFields().length);
+        assertEquals("<Base class>", var.getFields()[0].getName());
+        assertEquals(1, ((AbstractVariable)var.getFields()[0]).getFields().length);
+        assertEquals("e", ((AbstractVariable)var.getFields()[0]).getFields()[0].getName());
+    }
+
+    @Test
+    public void testBaseClass2() { // IZ 163290
+        //((MockGdbDebugger)debugger).addVar(name, type, value);
+        AbstractVariable var = createLocalVariable(
+                "this",
+                "B * const",
+                "(B * const) 0x80477c4",
+                "class B : public C {\\n  private:\\n    int a;\\n\\n  public:\\n    void foo();\\n} * const\\n");
+
+        ((MockGdbDebugger)debugger).addVar(
+                "*this",
+                null,//"B * const",
+                "{<C> = {e = 5.2240448966420603e-270}, a = 134510512}");
+
+        ((MockGdbDebugger)debugger).addVar(
+                "C",
+                null,
+                null,
+                "Type B has no component named C"
+                );
+
+        // Should have 1 field
+        assertEquals(2, var.getFields().length);
+        assertEquals("<Base class>", var.getFields()[0].getName());
+        assertEquals(1, ((AbstractVariable)var.getFields()[0]).getFields().length);
+        assertEquals("e", ((AbstractVariable)var.getFields()[0]).getFields()[0].getName());
+    }
+
     private AbstractVariable createLocalVariable(String name, String type, String value, String ptype) {
         return createLocalVariable(name, type, value, ptype, false);
     }
@@ -283,12 +339,25 @@ public class VariablesTestCase extends GdbTestCase {
         }
 
         @Override
+        public String requestValueEx(String name) throws GdbErrorException {
+            String res = values.get(name);
+            assertNotNull("Requesting value for unknown " + name, res);
+            return res;
+        }
+
+        @Override
         public String requestSymbolTypeFromName(String name) {
             String res = ptypes.get(name);
             assertNotNull("Requesting ptype for unknown " + name, res);
             return res;
         }
 
+        @Override
+        public String requestSymbolType(String name) {
+            String res = ptypes.get(name);
+            assertNotNull("Requesting ptype for unknown " + name, res);
+            return res;
+        }
 
         @Override
         public String requestWhatis(String name) {

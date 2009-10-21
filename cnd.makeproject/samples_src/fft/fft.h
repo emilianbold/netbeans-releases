@@ -32,28 +32,41 @@
 
 #include "bmp.h"
 
+//
+// Fast Fourier Transformation class.
+//
+
 class FastFourierTransform {
 public:
+    // Constructor
     FastFourierTransform();
+
+    // Destructor
     virtual ~FastFourierTransform();
 
+    // Transforms bitmap
     void Transform(Bitmap&);
 
 private:
+
+    // FFT direction
 
     enum Direction {
         DIRECT, REVERSE
     };
 
+    // 2d trasformation
     void FFT2D(int m);
+    // Linear transformation
     void FFT(Direction d, int m);
+
+    // Transformation curve initialization
     void InitTransformationCurve(int m);
 
-    double *x, *y;
-    double* x2x;
-    double* y2x;
-    double* transformationCurve;
-    double transformationCurveBase;
+    double *x, *y; // arrays for linear FFT
+    double *x2x, *y2x; // arrays for 2d FFT
+    double* transformationCurve; // curve
+    double transformationCurveBase; // base value of transformation
 };
 
 #endif	/* _FFT_H */

@@ -76,10 +76,6 @@ public final class WindowsSupport {
     private WindowsSupport() {
         isWindows = Utilities.isWindows();
 
-        if (!isWindows) {
-            return;
-        }
-
         init();
 
         if (type == ShellType.NO_SHELL) {
@@ -98,6 +94,10 @@ public final class WindowsSupport {
     }
 
     public void init() {
+        if (!isWindows) {
+            return;
+        }
+
         String reg_exe = "reg.exe"; // NOI18N
 
         try {
@@ -425,7 +425,7 @@ public final class WindowsSupport {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof PathConverterParams)) {
+            if (obj == null || !(obj instanceof PathConverterParams)) {
                 return false;
             }
 
@@ -501,7 +501,7 @@ public final class WindowsSupport {
                     case MSYS:
                         result = path;
 
-                        if (result.charAt(1) == ':') {
+                        if (result.length() > 2 && result.charAt(1) == ':') {
                             result = "/" + result.replaceFirst(":", ""); // NOI18N
                         }
 

@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -120,7 +121,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         }));
 
         FileObjectCrawler crawler = new FileObjectCrawler(src, false, cp.entries().get(0), CR);
-        assertCollectedFiles("Wrong files collected", crawler,
+        assertCollectedFiles("Wrong files collected", crawler.getAllResources(),
                 "p1/Included1.java",
                 "p1/Included2.java",
                 "p1/a/Included3.java",
@@ -139,19 +140,44 @@ public class FileObjectCrawlerTest extends NbTestCase {
         populateFolderStructure(root, paths);
 
         FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
-        assertCollectedFiles("Wrong files collected", crawler1, paths);
+        assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
         
         FileObject folder = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
         FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { folder }, false, null, CR);
-        assertCollectedFiles("Wrong files collected from " + folder, crawler2,
+        assertCollectedFiles("Wrong files collected from " + folder, crawler2.getAllResources(),
             "org/pckg1/pckg2/file1.txt",
             "org/pckg1/pckg2/file2.txt"
         );
     }
 
-    protected void assertCollectedFiles(String message, FileObjectCrawler crawler, String... expectedPaths) throws IOException {
+    public void testDeletedFiles() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/pckg1/file1.txt",
+                "org/pckg1/pckg2/file1.txt",
+                "org/pckg1/pckg2/file2.txt",
+                "org/pckg2/"
+        };
+        populateFolderStructure(root, paths);
+
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
+
+        FileObject pckg2 = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
+        FileObject org = FileUtil.toFileObject(new File(root, "org"));
+        org.delete();
+
+        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { pckg2 }, false, null, CR);
+        assertCollectedFiles("There should be no files in " + root, crawler2.getAllResources());
+
+        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        assertCollectedFiles("There should be no files in " + root, crawler1.getAllResources());
+        assertCollectedFiles("All files in " + root + " should be deleted", crawler1.getDeletedResources());
+    }
+
+    protected void assertCollectedFiles(String message, Collection<IndexableImpl> resources, String... expectedPaths) throws IOException {
         Set<String> collectedPaths = new HashSet<String>();
-        for(IndexableImpl ii : crawler.getAllResources()) {
+        for(IndexableImpl ii : resources) {
             collectedPaths.add(ii.getRelativePath());
         }
         Set<String> expectedPathsFiltered = new HashSet<String>();

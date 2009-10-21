@@ -91,6 +91,7 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(jEditorPane1);
 
         setBackground(java.awt.Color.white);
+        setOpaque(false);
 
         deadlocksLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"))); // NOI18N
         deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksLabel.text")); // NOI18N
@@ -164,9 +165,11 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
                 }
 
             });
+            deadlocksDetails.setFocusable(true);
         } else {
             deadlocksLabel.setText(getMessage("THAControlPanel.deadlocksButton.nodeadlocks"));//NOI18N
             deadlocksLabel.setEnabled(false);
+            deadlocksDetails.setFocusable(false);
         }
     }
 
@@ -187,9 +190,11 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
                 }
 
             });
+            racesDetails.setFocusable(true);
         } else {
             racesLabel.setText(getMessage("THAControlPanel.dataracesButton.nodataraces"));//NOI18N
             racesLabel.setEnabled(false);
+            racesDetails.setFocusable(false);
         }
     }
 

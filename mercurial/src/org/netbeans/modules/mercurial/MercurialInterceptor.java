@@ -57,6 +57,7 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -75,6 +76,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
+    private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HashSet<FileObject> dirStates = new HashSet<FileObject>(5);
 
     public MercurialInterceptor() {
@@ -157,7 +159,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 }
             };
 
-            Mercurial.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+            parallelRP.post(outOfAwt).waitFinished();
             if (innerT[0] != null) {
                 if (innerT[0] instanceof IOException) {
                     throw (IOException) innerT[0];
@@ -250,7 +252,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     }
                 };
 
-                Mercurial.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+                parallelRP.post(outOfAwt).waitFinished();
                 if (innerT[0] != null) {
                     Mercurial.LOG.log(Level.FINE, "beforeCreate(): File: {0} {1}", new Object[] {file.getAbsolutePath(), innerT[0].toString()}); // NOI18N
                 }
@@ -379,6 +381,11 @@ public class MercurialInterceptor extends VCSInterceptor {
     private class RefreshTask implements Runnable {
         public void run() {
             Thread.interrupted();
+            if (IndexingBridge.getInstance().isIndexingInProgress()) {
+                // do not steal disk from openning projects and indexing tasks
+                refreshTask.schedule(5000); // try again in 5 seconds
+                return;
+            }
             File fileToRefresh;
             if (!"false".equals(System.getProperty("mercurial.onEventRefreshRoot"))) { //NOI18N
                 // fill a fileset with all the modified files

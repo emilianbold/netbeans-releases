@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.toolsui;
 
-import org.netbeans.modules.dlight.toolsui.ToolsManagerPanel;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,7 +47,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-public final class ToolsCustomizerAction extends SystemAction implements ActionListener {
+public class ToolsCustomizerAction extends SystemAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         showCustomizer();
@@ -68,8 +67,12 @@ public final class ToolsCustomizerAction extends SystemAction implements ActionL
      * Shows libraries customizer displaying all currently open library managers.
      * @return true if user pressed OK and libraries were sucessfully modified
      */
-    private static boolean showCustomizer () {
-        ToolsManagerPanel customizer = new ToolsManagerPanel();
+    protected static boolean showCustomizer () {
+        return showCustomizer(null);
+    }
+
+    public static boolean showCustomizer (String displayName) {
+        ToolsManagerPanel customizer = new ToolsManagerPanel(displayName);
         DialogDescriptor descriptor = new DialogDescriptor (customizer,
                 NbBundle.getMessage(ToolsCustomizerAction.class, "TXT_ToolsCustomizer"));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);

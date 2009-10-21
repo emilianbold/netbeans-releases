@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <codetemplates>
     <codetemplate abbreviation="ab"><code><![CDATA[abstract ]]></code></codetemplate> 
     <codetemplate abbreviation="bo"><code><![CDATA[boolean ]]></code></codetemplate> 
-    <codetemplate abbreviation="br"><code><![CDATA[break]]></code></codetemplate> 
+    <codetemplate abbreviation="br"><code><![CDATA[break;]]></code></codetemplate>
     <codetemplate abbreviation="ca"><code><![CDATA[catch (]]></code></codetemplate> 
     <codetemplate abbreviation="cl"><code><![CDATA[class ]]></code></codetemplate> 
     <codetemplate abbreviation="cn"><code><![CDATA[continue]]></code></codetemplate> 
@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="psfb"><code><![CDATA[private static final boolean ]]></code></codetemplate> 
     <codetemplate abbreviation="pst"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
     <codetemplate abbreviation="pu"><code><![CDATA[public ]]></code></codetemplate> 
-    <codetemplate abbreviation="re"><code><![CDATA[return ]]></code></codetemplate> 
+    <codetemplate abbreviation="re"><code><![CDATA[return ${cursor};]]></code></codetemplate>
     <codetemplate abbreviation="serr"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
     <codetemplate abbreviation="sout"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
     <codetemplate abbreviation="st"><code><![CDATA[static ]]></code></codetemplate> 

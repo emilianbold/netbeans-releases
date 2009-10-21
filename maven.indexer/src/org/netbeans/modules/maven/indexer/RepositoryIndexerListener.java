@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.indexer;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.api.progress.ProgressHandle;
@@ -86,6 +87,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener {
     }
 
     public void scanningStarted(IndexingContext ctx) {
+        RemoteIndexTransferListener.addToActive(Thread.currentThread());
         handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_Indexing") + (ri!=null? ri.getName() : indexingContext.getId()));
         if (DEBUG) {
             writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
@@ -139,6 +141,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener {
     }
 
     public void scanningFinished(IndexingContext ctx, ScanningResult result) {
+        RemoteIndexTransferListener.removeFromActive(Thread.currentThread());
         if (DEBUG) {
             writer.println("Scanning ended at " + SimpleDateFormat.getInstance().format(new Date())); //NOI18N
 

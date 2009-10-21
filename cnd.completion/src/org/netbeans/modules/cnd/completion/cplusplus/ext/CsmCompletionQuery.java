@@ -543,7 +543,7 @@ abstract public class CsmCompletionQuery {
         }
 
         // in global context add all methods, but only direct ones
-        if (contextFunction == null) {
+        if (contextFunction == null && contextClass == null) {
             staticOnly = false;
             context = cls;
         }

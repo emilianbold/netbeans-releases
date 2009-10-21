@@ -37,16 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.indicators.spi;
+package org.netbeans.modules.versioning.indexingbridge;
 
-import java.util.List;
-import javax.swing.Action;
-import org.openide.util.Lookup;
+import java.io.File;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.versioning.util.IndexingBridge.IndexingBridgeProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author thp
+ * @author vita
  */
-public interface IndicatorActionsProvider {
-    List<Action> getIndicatorActions(Lookup context);
+@ServiceProvider(service=IndexingBridgeProvider.class)
+public final class Bridge implements IndexingBridgeProvider {
+
+    public <T> T runWithoutIndexing(final Callable<T> operation, final File... files) throws Exception {
+        return IndexingManager.getDefault().runProtected(new Callable<T>() {
+            public T call() throws Exception {
+                // Schedule the refresh task, which will then absorb all other tasks generated
+                // by filesystem events caused by the operation
+                IndexingManager.getDefault().refreshAllIndices(false, false, files);
+                return operation.call();
+            }
+        });
+    }
+
+    public boolean isIndexingInProgress() {
+        return IndexingManager.getDefault().isIndexing();
+    }
 }

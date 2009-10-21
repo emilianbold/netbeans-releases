@@ -63,7 +63,7 @@ public abstract class NotificationDisplayer {
         LOW,
         /** Priority that shows the notification without details.
          * Details shall be shown only later, per user request.
-         * @since 7.17
+         * @since 7.18
          */
         SILENT
     }

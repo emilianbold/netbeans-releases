@@ -37,8 +37,14 @@
 extern "C" double log2(double x);
 #endif
 
+
+// Constructor
+
 FastFourierTransform::FastFourierTransform() {
 }
+
+
+// Destructor
 
 FastFourierTransform::~FastFourierTransform() {
     delete[] x2x;
@@ -48,12 +54,16 @@ FastFourierTransform::~FastFourierTransform() {
     delete[] y;
 }
 
+
+// Transforms bitmap
+
 void FastFourierTransform::Transform(Bitmap& bmp) {
 
     int bmpMaxLineSize = (bmp.GetHeight() > bmp.GetWidth()) ? bmp.GetHeight() : bmp.GetWidth();
     int transformationSizeLog2 = (int) log2(bmpMaxLineSize);
     int transformationSize = (int) (pow(2.0, transformationSizeLog2));
 
+    // memory allocation
     x2x = new double [transformationSize * transformationSize];
     y2x = new double [transformationSize * transformationSize];
     transformationCurve = new double [transformationSize];
@@ -63,16 +73,19 @@ void FastFourierTransform::Transform(Bitmap& bmp) {
     double *a, *b;
     unsigned char* data;
 
+    // curve init
     InitTransformationCurve(transformationSizeLog2);
 
     int addBits = (int) ((bmp.GetImageSize())-((bmp.GetHeight())*(bmp.GetHeight())*3)) / (bmp.GetHeight());
-    int shift = bmp.GetImageSize() - (bmp.GetWidth() * 3 + addBits)*(transformationSize) +  3;
+    int shift = bmp.GetImageSize() - (bmp.GetWidth() * 3 + addBits)*(transformationSize) + 3;
 
+    // transformation layer by layer
     for (int Color = 0; Color <= 2; Color++) {
         printf("    Transforming ");
-        printf( (Color == 0 ? "red " : ((Color == 1) ? "green " : "blue ")));
+        printf((Color == 0 ? "red " : ((Color == 1) ? "green " : "blue ")));
         printf("layer.\n");
 
+        // init 2d transformation arrays by image data
         a = x2x;
         b = y2x;
         data = bmp.GetData() + shift;
@@ -86,13 +99,15 @@ void FastFourierTransform::Transform(Bitmap& bmp) {
             }
             data = data - transformationSize * 3 + bmp.GetWidth() * 3 + addBits;
         }
+        // 2d FFT
         FFT2D(transformationSizeLog2);
+        // puting result to the image
         a = x2x;
         b = y2x;
         data = bmp.GetData() + shift;
         for (int i = 0; i < transformationSize; i++) {
             for (int j = 0; j < transformationSize; j++) {
-                *(data + Color) = (unsigned char)(sqrt(pow(*a, 2) + pow(*b, 2)));
+                *(data + Color) = (unsigned char) (sqrt(pow(*a, 2) + pow(*b, 2)));
                 if (sqrt(pow(*a, 2) + pow(*b, 2)) > 255)
                     *(data + Color) = 255;
                 a++;
@@ -103,6 +118,9 @@ void FastFourierTransform::Transform(Bitmap& bmp) {
         }
     }
 }
+
+
+// Linear transformation
 
 void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) {
     int d = (direction == DIRECT) ? -1 : 1;
@@ -124,13 +142,13 @@ void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) 
                 q = y[i] + y[o];
                 r = x[i] - x[o];
                 t = y[i] - y[o];
-                x[o] = r * u - t*v;
-                y[o] = t * u + r*v;
+                x[o] = r * u - t * v;
+                y[o] = t * u + r * v;
                 x[i] = p;
                 y[i] = q;
             }
-            w = u * c - v*s;
-            v = v * c + u*s;
+            w = u * c - v * s;
+            v = v * c + u * s;
             u = w;
         }
     }
@@ -170,6 +188,9 @@ void FastFourierTransform::FFT(Direction direction, int transformationSizeLog2) 
         }
     }
 }
+
+
+// 2d trasformation
 
 void FastFourierTransform::FFT2D(int transformationSizeLog2) {
 
@@ -234,7 +255,6 @@ void FastFourierTransform::FFT2D(int transformationSizeLog2) {
             b++;
             a++;
         }
-
     }
 
     // reverse FFT
@@ -284,13 +304,19 @@ void FastFourierTransform::FFT2D(int transformationSizeLog2) {
     }
 }
 
+
+// Transformation curve initialization
+
 void FastFourierTransform::InitTransformationCurve(int m) {
+    // It's area for customization.
+    // Now we remove harmonics from 0 to 5
+    // and increase other ones.
     transformationCurveBase = 0;
     int n = (int) (pow(2.0, m));
     for (int i = 0; i <= 5; i++) {
         transformationCurve[i] = 0;
     }
-    for (int i = 5; i <= n/2; i++) {
+    for (int i = 5; i <= n / 2; i++) {
         transformationCurve[i] = 100;
     }
     for (int i = 0; i <= (int) n / 2; i++)

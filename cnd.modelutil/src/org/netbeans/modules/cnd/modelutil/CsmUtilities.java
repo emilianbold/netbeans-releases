@@ -743,7 +743,7 @@ public class CsmUtilities {
             });
             // try to activate outer TopComponent
             Container temp = pane;
-            while (!(temp instanceof TopComponent)) {
+            while (temp != null && !(temp instanceof TopComponent)) {
                 temp = temp.getParent();
             }
             if (temp instanceof TopComponent) {

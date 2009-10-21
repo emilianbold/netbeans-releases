@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.awt.event.ActionEvent;
@@ -52,23 +51,24 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Egor Ushakov
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.class)
 public class AttachOutputActionProvider extends BuildActionsProvider {
+
     @Override
     public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
-        if (events != null && events.length > 0 && events[events.length-1].getType() == ProjectActionEvent.Type.RUN) {
+        if (events != null && events.length > 0 && events[events.length - 1].getType() == ProjectActionEvent.Type.RUN) {
             return Collections.<BuildAction>singletonList(new AttachAction(events));
         }
         return Collections.emptyList();
     }
 
     private static final class AttachAction extends AbstractAction implements BuildAction {
+
         ProjectActionEvent[] events;
         private int step = -1;
         private long pid = ExecutionListener.UNKNOWN_PID;
@@ -81,14 +81,9 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
         }
 
         public void executionStarted(int pid) {
-            if (step == events.length-1 && pid != ExecutionListener.UNKNOWN_PID) {
+            if (step == events.length - 1 && pid != ExecutionListener.UNKNOWN_PID) {
                 this.pid = pid;
-                //TODO: temporary fix until we have a valid pid on windows
-                if (Utilities.isWindows() && (events[step].getConfiguration()).getDevelopmentHost().getExecutionEnvironment().isLocal()) {
-                    setEnabled(false);
-                } else {
-                    setEnabled(true);
-                }
+                setEnabled(true);
             }
         }
 
@@ -108,7 +103,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
             if (pid == ExecutionListener.UNKNOWN_PID) {
                 return;
             }
-            
+
             ProjectActionEvent event = events[step];
             ProjectInformation info = ProjectUtils.getInformation(event.getProject());
             if (info == null) {

@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.cnd.completion.debugger;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -68,6 +67,7 @@ import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.spi.model.services.AutosProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -77,82 +77,88 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=AutosProvider.class)
 public class CsmAutosProviderImpl implements AutosProvider {
-    public static boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
+    public static final boolean AUTOS_INCLUDE_MACROS = Boolean.getBoolean("debugger.autos.macros");
 
-    public Set<String> getAutos(final StyledDocument document, int offset) {
-        if (document == null) {
+    public Set<String> getAutos(final StyledDocument document, int line) {
+        if (line < 0 || document == null) {
             return Collections.emptySet();
         }
+
         CsmFile csmFile = CsmUtilities.getCsmFile(document, false);
         if (csmFile == null || !csmFile.isParsed()) {
             return Collections.emptySet();
         }
-        CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, null);
+
+        final Element lineRootElement = NbDocument.findLineRootElement(document);
+
+        final Set<String> autos = new HashSet<String>();
+
+        // add current line autos
+        addAutos(csmFile, lineRootElement, line, document, autos);
+
+        if (line > 0) {
+            // add previous line autos
+            addAutos(csmFile, lineRootElement, line-1, document, autos);
+        }
+
+        return autos;
+    }
+
+    private static void addAutos(final CsmFile csmFile,
+                                final Element lineRootElement,
+                                final int line,
+                                final StyledDocument document,
+                                final Set<String> autos) {
+        final Element lineElem = lineRootElement.getElement(line);
+        if (lineElem == null) {
+            return;
+        }
+        final int lineStartOffset = lineElem.getStartOffset();
+        final int lineEndOffset = lineElem.getEndOffset();
+
+        CsmContext context = CsmOffsetResolver.findContext(csmFile, lineStartOffset, null);
         CsmScope scope = context.getLastScope();
         if (scope != null) {
-            CsmOffsetable previous = null;
-            final List<int[]> spans = new ArrayList<int[]>();
-            for (CsmScopeElement csmScopeElement : scope.getScopeElements()) {
-                if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
-                    CsmOffsetable offs = (CsmOffsetable) csmScopeElement;
-                    if (offs.getEndOffset() >= offset) {
-                        if (previous != null) {
-                            spans.add(getInterestedStatementOffsets(previous));
-                        }
-                        spans.add(getInterestedStatementOffsets(offs));
-                        break;
-                    } else {
-                        previous = offs;
-                    }
-                }
-            }
-            final Set<String> autos = new HashSet<String>();
-            if (!spans.isEmpty()) {
-                CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
-                    public void visit(CsmReferenceContext context) {
-                        CsmReference reference = context.getReference();
-                        for (int[] span : spans) {
-                            if (span[0] <= reference.getStartOffset() && reference.getEndOffset() <= span[1]) {
-                                CsmObject referencedObject = reference.getReferencedObject();
-                                if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
-                                    StringBuilder sb = new StringBuilder(reference.getText());
-                                    if (context.size() > 1) {
-                                        outer: for (int i = context.size()-1; i >= 0; i--) {
-                                            CppTokenId token = context.getToken(i);
-                                            switch (token) {
-                                                case DOT:
-                                                case ARROW:
-                                                case SCOPE:
-                                                    break;
-                                                default: break outer;
-                                            }
-                                            if (i > 0) {
-                                                sb.insert(0, token.fixedText());
-                                                sb.insert(0, context.getReference(i-1).getText());
-                                            }
+            CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
+                public void visit(CsmReferenceContext context) {
+                    CsmReference reference = context.getReference();
+                        if (lineStartOffset <= reference.getStartOffset() && reference.getEndOffset() <= lineEndOffset) {
+                            CsmObject referencedObject = reference.getReferencedObject();
+                            if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
+                                StringBuilder sb = new StringBuilder(reference.getText());
+                                if (context.size() > 1) {
+                                    outer: for (int i = context.size()-1; i >= 0; i--) {
+                                        CppTokenId token = context.getToken(i);
+                                        switch (token) {
+                                            case DOT:
+                                            case ARROW:
+                                            case SCOPE:
+                                                break;
+                                            default: break outer;
+                                        }
+                                        if (i > 0) {
+                                            sb.insert(0, token.fixedText());
+                                            sb.insert(0, context.getReference(i-1).getText());
                                         }
                                     }
-                                    autos.add(sb.toString());
-                                } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
-                                    String txt = reference.getText().toString();
-                                    int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
-                                    if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
-                                        try {
-                                            txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
-                                        } catch (BadLocationException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                    autos.add(txt);
                                 }
+                                autos.add(sb.toString());
+                            } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
+                                String txt = reference.getText().toString();
+                                int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
+                                if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
+                                    try {
+                                        txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                                autos.add(txt);
                             }
                         }
-                    }
-                });
-            }
-            return autos;
+                }
+            });
         }
-        return Collections.emptySet();
     }
 
     private static boolean filterAuto(CsmScopeElement object) {

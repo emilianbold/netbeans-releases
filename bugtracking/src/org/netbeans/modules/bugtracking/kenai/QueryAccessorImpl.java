@@ -52,8 +52,9 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
-import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport.FakeJiraQueryHandle;
+import org.netbeans.modules.bugtracking.jira.FakeJiraSupport.FakeJiraQueryResultHandle;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -85,7 +86,6 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
         Kenai.getDefault().addPropertyChangeListener(this);
         Dashboard.getDefault().addPropertyChangeListener(this);
     }
-
 
     @Override
     public QueryHandle getAllIssuesQuery(ProjectHandle project) {

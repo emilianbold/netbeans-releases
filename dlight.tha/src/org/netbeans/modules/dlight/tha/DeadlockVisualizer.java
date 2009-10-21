@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.Renderer;
 import org.netbeans.module.dlight.threads.api.Deadlock;
 import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
 import org.netbeans.module.dlight.threads.dataprovider.ThreadAnalyzerDataProvider;
@@ -113,8 +112,9 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
     public void updateVisualizerConfiguration(DeadlockVisualizerConfiguration configuration) {
     }
 
-    private class DeadlockRenderer implements Renderer {
+    private class DeadlockRenderer implements SlaveRenderer {
 
+        final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
         private List<DeadlockThreadSnapshot> snapshots;
 
         public void setValue(Object aValue, boolean isSelected) {
@@ -133,23 +133,27 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
 
         public Component getComponent() {
-            final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(DeadlockVisualizer.this.dataProvider);
+            stackPanel.clean();
             for (DeadlockThreadSnapshot dts : snapshots) {
                 stackPanel.add("Lock held:  " + Long.toHexString(dts.getHeldLockAddress()), deadlockHeldIcon, dts.getHeldLockCallStack());//NOI18N
                 stackPanel.add("Lock requested:  " + Long.toHexString(dts.getRequestedLockAddress()), deadlockRequestIcon, dts.getRequestedLockCallStack());//NOI18N
             }
+            return stackPanel;
+//            return StackPanelFactory.newStackPanel(stack);
+        }
+
+        public void expandAll() {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
                     stackPanel.expandAll();
                 }
             }, 500);
-            return stackPanel;
-//            return StackPanelFactory.newStackPanel(stack);
+
         }
     }
 
-    private final class DeadlockNode extends THANode<Deadlock> {
+    private final static class DeadlockNode extends THANode<Deadlock> {
 
         private final Deadlock deadlock;
 
@@ -174,7 +178,7 @@ public final class DeadlockVisualizer implements Visualizer<DeadlockVisualizerCo
         }
     }
 
-    private final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
+    private static final class DeadlockTHANodeFactory implements THANodeFactory<Deadlock> {
 
         public THANode<Deadlock> create(Deadlock object) {
             return new DeadlockNode(object);

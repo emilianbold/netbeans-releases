@@ -54,6 +54,7 @@ package org.netbeans.modules.cnd.paralleladviser.paralleladviserview;
 import java.util.Collection;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -125,14 +126,24 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
      */
     public void updateTips() {
         removeAll();
-        
+
+        final JScrollPane scrollPane = new JScrollPane();
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
         Collection<Advice> tips = ParallelAdviser.getTips();
 
         JPanel tipPanels = null;
         JPanel lastTipPanel = tipPanels;
-        
+
         for (Advice advice : tips) {
             JPanel newTipPanel = new JPanel();
+            newTipPanel.addKeyListener(new java.awt.event.KeyAdapter() {
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    scrollPane.dispatchEvent(e);
+                }
+            });
             newTipPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             newTipPanel.setLayout(new java.awt.BorderLayout());
             newTipPanel.add(advice.getComponent(), java.awt.BorderLayout.PAGE_START);
@@ -148,11 +159,9 @@ public final class ParallelAdviserTopComponent extends TopComponent implements P
             lastTipPanel = newTipPanel;
         }
 
-        JScrollPane pane = new JScrollPane();
-        pane.getVerticalScrollBar().setUnitIncrement(16);
-        pane.setViewportView(tipPanels);
+        scrollPane.setViewportView(tipPanels);
 
-        add(pane, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         validate();
     }
 
