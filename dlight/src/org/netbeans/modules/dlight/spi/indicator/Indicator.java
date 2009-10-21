@@ -302,12 +302,17 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");//NOI18N
 
                 ActionMap aMap = rootPane.getActionMap();
-                aMap.put("enter", new AbstractAction() {//NOI18N
+                if (component.getActionMap().get("enter") != null){//NOI18N
+                    aMap.put("enter", component.getActionMap().get("enter"));//NOI18N
+                }else{
+                    //let to re-define in child
+                    aMap.put("enter", new AbstractAction() {//NOI18N
 
-                    public void actionPerformed(ActionEvent e) {
-                        notifyListeners();
-                    }
-                });
+                        public void actionPerformed(ActionEvent e) {
+                            notifyListeners();
+                        }
+                    });
+                }
             }
 
             public void focusLost(FocusEvent e) {

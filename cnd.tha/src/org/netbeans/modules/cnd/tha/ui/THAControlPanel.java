@@ -72,9 +72,11 @@ final class THAControlPanel extends JToolBar {
     THAControlPanel(THAActionsProvider actionsSupport, Project project, final THAConfiguration thaConfiguration) {
         this.project = project;
         this.thaConfiguration = thaConfiguration;
-        setFloatable(true);
+        setFloatable(false);
         setRollover(true);
         setBorder(null);
+        setFocusable(true);
+        setFocusTraversalPolicyProvider(true);
         final JLabel statusLabel = new JLabel();
         final String collectionKind = getMessage(thaConfiguration.collectDataRaces() ? "THAControlPanel.DeadlocksAndRaces" : "THAControlPanel.Deadlocks"); // NOI18N
         actionsSupport.addActionListener(new ActionListener() {
@@ -94,7 +96,8 @@ final class THAControlPanel extends JToolBar {
         Action suspendAction = actionsSupport.getSuspendCollectionAction();
         Action resumeAction = actionsSupport.getResumeCollectionAction();
 
-        statusLabel.setText(getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" : "THAControlPanel.Paused", collectionKind)); // NOI18N
+        statusLabel.setText(getMessage("THAControlPanel.Preparing"));//NOI18N
+                //getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" : "THAControlPanel.Paused", collectionKind)); // NOI18N
         statusLabel.setForeground(thaConfiguration.collectFromBeginning() ? RECORDING_COLOR : PAUSED_COLOR);
         statusLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 //        JButton suspendButton = new JButton(suspendAction);
@@ -103,6 +106,7 @@ final class THAControlPanel extends JToolBar {
 //        JButton resumeButton = new JButton(resumeAction);
 //        resumeButton.setDisabledIcon(ImageUtilities.image2Icon((Image)resumeAction.getValue("disabledIcon")));//NOI18N
 //        add(resumeButton);
+        statusLabel.setVisible(false);
         add(suspendAction);
         add(resumeAction);
         add(actionsSupport.getStopAction());

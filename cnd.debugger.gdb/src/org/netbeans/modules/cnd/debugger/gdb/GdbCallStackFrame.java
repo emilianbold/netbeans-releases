@@ -262,7 +262,7 @@ public class GdbCallStackFrame extends CallStackFrame {
 
     public AbstractVariable[] getAutos() {
         if (cachedAutos == null) {
-            Set<String> res = Autos.get(getDocument(), getOffset());
+            Set<String> res = Autos.get(getDocument(), lineNumber-1);
             cachedAutos = new AbstractVariable[res.size()];
             int i = 0;
             for (String name : res) {

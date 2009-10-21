@@ -105,6 +105,12 @@ public class PHPNewLineIndenter {
                     ts.move(offset);
                     ts.moveNext();
 
+
+                    if (ts.token().id() == PHPTokenId.PHP_COMMENT || ts.token().id() == PHPTokenId.PHP_COMMENT_START
+                            || ts.token().id() == PHPTokenId.PHP_COMMENT_END) {
+                        // don't indent comment - issue #173979
+                        return;
+                    }
                     if (ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) {
 
                         int stringLineStart = Utilities.getRowStart(doc, ts.offset());

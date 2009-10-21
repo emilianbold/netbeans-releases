@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.prefs.Preferences;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
@@ -66,6 +67,7 @@ import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 import org.netbeans.modules.kenai.UserData;
+import org.openide.util.NbPreferences;
 
 /**
  * Main entry point to Kenai integration.
@@ -109,6 +111,9 @@ public final class Kenai {
     private KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
+    private static Preferences prefs = NbPreferences.forModule(Kenai.class);
+    private static final String DEFAULT_INSTANCE_PREF="kenai.default.instance";
+
 
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
@@ -122,7 +127,8 @@ public final class Kenai {
      public static synchronized Kenai getDefault() {
         if (instance == null) {
             try {
-                String urlString = System.getProperty("kenai.com.url", "https://kenai.com/");
+                String urlString = prefs.get(DEFAULT_INSTANCE_PREF, "https://kenai.com/");
+                urlString = System.getProperty("kenai.com.url", urlString);
                 assert urlString.startsWith("https://"):"the only supported protocol is https";
                 if (urlString.endsWith("/")) {
                     urlString = urlString.substring(0, urlString.length()-1);
@@ -155,6 +161,7 @@ public final class Kenai {
         synchronized (Kenai.class) {
             impl = new KenaiREST(url);
         }
+        prefs.put(DEFAULT_INSTANCE_PREF, url.toString());
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_URL_CHANGED, old, impl.getUrl()));
     }
 

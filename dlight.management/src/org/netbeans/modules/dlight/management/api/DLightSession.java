@@ -338,7 +338,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 // first target.... (from the first context)
                 boolean f = false;
 
-                final DLightTargetAccessor targetAccess =
+                final DLightTargetAccessor<? extends DLightTarget> targetAccess =
                         DLightTargetAccessor.getDefault();
 
                 for (ExecutionContext context : contexts) {

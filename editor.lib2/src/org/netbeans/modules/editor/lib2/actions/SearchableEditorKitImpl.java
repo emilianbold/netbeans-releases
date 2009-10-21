@@ -50,7 +50,6 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.EditorKit;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -67,10 +66,6 @@ public final class SearchableEditorKitImpl extends DefaultEditorKit implements S
     // -J-Dorg.netbeans.modules.editor.lib2.actions.SearchableEditorKitImpl.level=FINEST
     private static final Logger LOG = Logger.getLogger(SearchableEditorKitImpl.class.getName());
 
-    public static EditorKit createGlobalKit() {
-        return new SearchableEditorKitImpl("");
-    }
-
     private final String mimeType;
 
     private final Map<String,Action> name2Action = new HashMap<String,Action>();
@@ -81,7 +76,7 @@ public final class SearchableEditorKitImpl extends DefaultEditorKit implements S
 
     private ListenerList<ChangeListener> listenerList = new ListenerList<ChangeListener>();
 
-    private SearchableEditorKitImpl(String mimeType) {
+    SearchableEditorKitImpl(String mimeType) {
         this.mimeType = mimeType;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("SearchableEditorKitImpl created for \"" + mimeType + "\"\n"); // NOI18N

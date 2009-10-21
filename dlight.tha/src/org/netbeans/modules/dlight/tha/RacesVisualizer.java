@@ -117,7 +117,7 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
     public void updateVisualizerConfiguration(RacesVisualizerConfiguration configuration) {
     }
 
-    private class RacesRenderer implements Renderer {
+    private class RacesRenderer implements SlaveRenderer {
 
         private List<ThreadDump> threadDumps;
         private final MultipleCallStackPanel stackPanel = MultipleCallStackPanel.createInstance(RacesVisualizer.this.dataProvider);
@@ -139,13 +139,17 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
                     stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png", false), snap.getStack());//NOI18N
                 }
             }
+            return stackPanel;
+        }
+
+        public void expandAll() {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
                     stackPanel.expandAll();
                 }
             }, 500);
-            return stackPanel;
+
         }
     }
 
