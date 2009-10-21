@@ -47,7 +47,7 @@ AWK=${AWK-"nawk"}
 function classpath() {
 
     local nbdist=${NBDIST-"../nbbuild/netbeans"}
-    local cnddist=${CNDDIST-"${nbdist}/cnd3"}
+    local cnddist="${nbdist}/cnd3"
 
     CP=""
 
