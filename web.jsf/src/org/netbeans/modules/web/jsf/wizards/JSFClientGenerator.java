@@ -117,11 +117,15 @@ import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -513,20 +517,27 @@ public class JSFClientGenerator {
                 }
             }
 
-            String find = "Hello from the Facelets"; //NOI18N
+            String find = "</h:body>"; //NOI18N
             if ( content.indexOf(find) > -1){
                 StringBuffer replace = new StringBuffer();
-                replace.append(find);
-                replace.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
-                String commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
-                commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
-                commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                String commandLink = "";
+                if (pageLink == null || "".equals(pageLink)) {
+                    commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE), "UTF-8"); //NOI18N
+                    commandLink = commandLink.replaceAll(MANAGED_BEAN_NAME_VAR, managedBeanName);
+                    commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                } else {
+                    commandLink = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(TEMPLATE_FOLDER + COMMAND_LINK_TEMPLATE2), "UTF-8"); //NOI18N
+                    commandLink = commandLink.replaceAll("\\_\\_PAGE\\_LINK\\_\\_", pageLink);
+                    commandLink = commandLink.replaceAll(ENTITY_NAME_VAR, simpleEntityName);
+                }
                 if (content.indexOf(commandLink) > -1) {
                     //return, indicating welcomeJsp exists
                     return true;
                 }
                 replace.append(commandLink);
+                replace.append(find);
+                replace.append(endLine);
                 content = content.replace(find, replace.toString()); //NOI18N
                 JSFFrameworkProvider.createFile(indexfl, content, projectEncoding); //NOI18N
                 //return, indicating welcomeJsp exists
@@ -810,6 +821,20 @@ public class JSFClientGenerator {
             finally {
                 //TODO: RETOUCHE correct write to JSF model?
                 model.endTransaction();
+                DataObject facesDO;
+                try {
+                    facesDO = DataObject.find(fo);
+                    if (facesDO !=null) {
+                        SaveCookie save = facesDO.getCookie(SaveCookie.class);
+                        if (save != null) {
+                            save.save();
+                        }
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }

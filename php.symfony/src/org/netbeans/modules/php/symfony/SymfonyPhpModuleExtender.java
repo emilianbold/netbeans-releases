@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.Pair;
@@ -123,6 +124,11 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
     @Override
     public String getErrorMessage() {
+        try {
+            PhpInterpreter.getDefault();
+        } catch (InvalidPhpProgramException ex) {
+            return ex.getLocalizedMessage();
+        }
         try {
             SymfonyScript.getDefault();
         } catch (InvalidPhpProgramException ex) {
