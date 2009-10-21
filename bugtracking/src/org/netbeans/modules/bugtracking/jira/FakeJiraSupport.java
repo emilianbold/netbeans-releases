@@ -213,7 +213,9 @@ public class FakeJiraSupport {
         public void removePropertyChangeListener(PropertyChangeListener l) {}
 
         public void actionPerformed(ActionEvent e) {
-            JiraUpdater.notifyJiraDownload();
+            if(JiraUpdater.notifyJiraDownload()) {
+                JiraUpdater.getInstance().install();
+            }
         }
         public List<QueryResultHandle> getQueryResults() {
             if(results == null) {
@@ -246,7 +248,9 @@ public class FakeJiraSupport {
             return label;
         }
         public void actionPerformed(ActionEvent e) {
-            JiraUpdater.notifyJiraDownload();
+            if(JiraUpdater.notifyJiraDownload()) {
+                JiraUpdater.getInstance().install();
+            }
         }
         @Override
         public ResultType getResultType() {
@@ -286,6 +290,8 @@ public class FakeJiraSupport {
                     public void run() {
                         if(!JiraUpdater.notifyJiraDownload()) {
                             FakeJiraSupport.openOnWeb(urlString);
+                        } else {
+                            JiraUpdater.getInstance().install();
                         }
                     }
                 });
