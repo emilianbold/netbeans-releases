@@ -73,6 +73,7 @@ introduced by support for multiple source roots. -jglick
                         <isset property="user.properties.file"/>
                     </not>
                 </condition>
+                <property file="${{deploy.ant.properties.file}}"/>
                 <!-- GFv2 -->
                 <condition property="appserver.root" value="${{sjsas.root}}">
                     <isset property="sjsas.root"/>
@@ -92,7 +93,6 @@ introduced by support for multiple source roots. -jglick
                 <condition property="appserver.password" value="changeit">
                     <not><isset property="appserver.password"/></not>
                 </condition>
-                <property file="${{deploy.ant.properties.file}}"/>
                 <fail unless="user.properties.file">Must set user properties file</fail>
                 <fail unless="appserver.root">Must set Sun app server root</fail>
                 <fail unless="appserver.password">Must set Sun app server password</fail>
