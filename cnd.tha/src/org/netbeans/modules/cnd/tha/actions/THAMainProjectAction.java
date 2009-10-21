@@ -200,7 +200,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
                 if (mcd != null){
                     MakeConfiguration mc = mcd.getActiveConfiguration();
-                    if (mc == null) {
+                    if (mc != null) {
                         mc.removePropertyChangeListener(THAMainProjectAction.this);
                         Configurations c = mcd.getConfs();
                         if (c != null){
@@ -221,7 +221,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
                 MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(THAMainProjectAction.this.currentProject);
                 if (mcd != null){
                     MakeConfiguration mc = mcd.getActiveConfiguration();
-                    if (mc == null) {
+                    if (mc != null) {
                         mc.addPropertyChangeListener(THAMainProjectAction.this);
                         Configurations c = mcd.getConfs();
                         c.addPropertyChangeListener(THAMainProjectAction.this);
