@@ -39,6 +39,13 @@
 
 package org.netbeans.modules.css.editor.indent;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -54,6 +61,8 @@ import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 public class CssIndenterTest extends TestBase {
 
@@ -211,6 +220,84 @@ public class CssIndenterTest extends TestBase {
         insertNewline(
                 "@media page {\n    @media {^}\n}\n",
                 "@media page {\n    @media {\n        ^\n    }\n}\n", null);
+    }
+
+    @Override
+    /** really ugly override of the default impl.
+     * Since the KeystrokeHandlers may invoke reformat which is in some cases
+     * done in a separate EDT task, we need to wait for such modification before
+     * we try to compare the document content with the golden file.
+     */
+    public void insertNewline(final String source, final String reformatted, final IndentPrefs preferences) throws Exception {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                try {
+                    final int sourcePos = source.indexOf('^');
+                    assertNotNull(sourcePos);
+                    final String source2 = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+
+                    
+                    final AtomicReference<Document> doc = new AtomicReference<Document>();
+                    final AtomicReference<Caret> caret = new AtomicReference<Caret>();
+                    //first invoke the action in the AWT
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            try {
+                                JEditorPane ta = getPane(source2);
+                                Caret c = ta.getCaret();
+                                caret.set(c);
+                                c.setDot(sourcePos);
+                                BaseDocument bdoc = (BaseDocument) ta.getDocument();
+                                doc.set(bdoc);
+                                Formatter formatter = getFormatter(null);
+                                if (formatter != null) {
+                                    configureIndenters(bdoc, formatter, true);
+                                }
+                                setupDocumentIndentation(bdoc, preferences);
+                                runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+
+                    //then in a separate AWT even check the content
+                    //this will ensure, that the reformat task queued before this
+                    //one is done
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        public void run() {
+                            try {
+                                int reformattedPos = reformatted.indexOf('^');
+                                assertNotNull(reformattedPos);
+                                String reformatted2 = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos + 1);
+                                Document _doc = doc.get();
+                                Caret _caret = caret.get();
+                                String formatted = _doc.getText(0, _doc.getLength());
+                                assertEquals(reformatted2, formatted);
+                                if (reformattedPos != -1) {
+                                    assertEquals(reformattedPos, _caret.getDot());
+                                }
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                    });
+
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+        });
+
+        
+
+        
     }
 
 }
