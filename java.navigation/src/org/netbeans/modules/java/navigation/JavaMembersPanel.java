@@ -56,6 +56,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -79,7 +80,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -113,11 +114,29 @@ public class JavaMembersPanel extends javax.swing.JPanel {
      * @param elements
      * @param compilationInfo
      */
-    public JavaMembersPanel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
+    public JavaMembersPanel(final FileObject fileObject, final ElementHandle<?>[] elements) {
         this();
-        javaMembersModel = new JavaMembersModel(fileObject, elements, compilationInfo);
+        javaMembersModel = new JavaMembersModel(fileObject, elements);
         javaMembersFilterModel = javaMembersModel.getFilterModel();
-        javaMembersTree.setModel(javaMembersFilterModel);
+        enterBusy();
+        RP.post(new Runnable() {
+            public void run() {
+                try {
+                    javaMembersModel.update();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            javaMembersTree.setModel(javaMembersFilterModel);
+                        }
+                    });
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable(){
+                        public void run() {
+                            leaveBusy();
+                        }
+                    });
+                }
+            }
+        });
         registerActions();
     }
 
@@ -154,8 +173,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                                         elementsSet.add(element);
                                     }
                                 }
-                                Element[] elements = elementsSet.toArray(JavaMembersModel.EMPTY_ELEMENTS_ARRAY);
-                                javaMembersModel = new JavaMembersModel(fileObject, elements, compilationController);
+                                ElementHandle[] handles = new ElementHandle[elementsSet.size()];
+                                Iterator<Element> elements = elementsSet.iterator();
+                                for (int i=0; i<handles.length; i++) {
+                                    handles[i] = ElementHandle.create(elements.next());
+                                }
+                                javaMembersModel = new JavaMembersModel(fileObject, handles);
                                 javaMembersFilterModel = javaMembersModel.getFilterModel();
                                 SwingUtilities.invokeLater(new Runnable() {
                                     public void run () {
