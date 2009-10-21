@@ -58,6 +58,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -135,7 +136,11 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             for (ThreadDump threadDump : threadDumps) {
                 List<ThreadSnapshot> threads = threadDump.getThreadStates();
                 for (ThreadSnapshot snap : threads) {
-                    stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png", false), snap.getStack());//NOI18N
+                    stackPanel.add( loc("RacesVisuailzer.Access")  + " " + //NOI18N
+                            (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
+                                " [" + loc("RacesVisuailzer.Access.R") + "]" : " [" + loc("RacesVisuailzer.Access.W") + "]"),//NOI18N
+                                ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png",//NOI18N
+                                false), snap.getStack());
                 }
             }
             return stackPanel;
@@ -151,7 +156,11 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         }
     }
-
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                RacesVisualizer.class, key, params);
+    }
+    
     private final class DataraceNode extends THANode<Datarace> {
 
         public final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/races_active16.png"); // NOI18N
@@ -165,7 +174,10 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         @Override
         public String getDisplayName() {
-            return "Address " + race.stringAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
+            return  loc("RacesVisualizer.DataraceNode.Addess") + //NOI18N
+                    " " + race.stringAddress() + ": " + //NOI18N
+                    race.getThreadDumps().size() + " " + //NOI18N
+                    loc("RacesVisualizer.DataraceNode.CA");//NOI18N
         }
 
         @Override
@@ -191,7 +203,10 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             displayName = "";
             for (ThreadSnapshot s : snapshots) {
                 List<FunctionCall> stack = s.getStack();
-                displayName += stack.get(stack.size() - 1).getFunction().getName() + (s.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]") + " | "; // NOI18N
+                displayName += stack.get(stack.size() - 1).getFunction().getName() +
+                        (s.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
+                            " [" + loc("RacesVisuailzer.Access.R") + "]" : //NOI18N
+                            " [" + loc("RacesVisuailzer.Access.W") + "]") + " | "; // NOI18N
             }
             if (displayName.length() > 1) {
                 displayName = displayName.substring(0, displayName.length() - 2);

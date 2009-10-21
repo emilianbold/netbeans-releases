@@ -65,6 +65,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -77,7 +78,6 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
     private final ExplorerManager manager = new ExplorerManager();
     private final RootNode rootNode = new RootNode();
     private final F nodeFactory;
-    private volatile boolean isFirstTime = true;
     private static final String SWITCH_TO_LEFT = "switchToLeftComponent"; // NOI18N
     private static final String SWITCH_TO_RIGHT = "switchToRightComponent"; // NOI18N
 
@@ -191,6 +191,11 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
         }
     }
 
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                MasterSlaveView.class, key, params);
+    }
+
     private void showDetails(T masterItem, boolean keepDividerPos) {
         slave = null;
         if (masterItem != null && slaveRenderer != null) {
@@ -198,7 +203,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
             slave = slaveRenderer.getComponent();
         }
         if (slave == null) {
-            slave = new JLabel("<No details>"); // NOI18N
+            slave = new JLabel(loc("MasterSlaveView.NoDetails")); // NOI18N
         }
         int oldDividerPos = keepDividerPos ? getDividerLocation() : 0;
         setRightComponent(slave);
@@ -240,7 +245,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
 
         RootNode() {
             super(Children.LEAF);
-            setDisplayName("Loading...");//NOI18N
+            setDisplayName(loc("MasterSlaveView.RootNode.Loading"));//NOI18N
         }
 
         void setKeys(ChildrenList children) {
