@@ -149,6 +149,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             shWriter.write(". \"" + envFile + "\" || exit $?\n"); // NOI18N
             shWriter.write("cd \"" + workingDirectory.getAbsolutePath() + "\" || exit $?\n"); // NOI18N
             shWriter.write("exec " + commandLine + "\n"); // NOI18N
+            shWriter.flush();
             shWriter.close();
 
             final ExternalTerminalAccessor terminalInfo =
