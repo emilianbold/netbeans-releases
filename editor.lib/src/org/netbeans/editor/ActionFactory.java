@@ -707,7 +707,12 @@ public class ActionFactory {
                                     int column = start - startLineStartOffset;
 
                                     // insert it after next line
-                                    doc.insertString(endLineEndOffset, linesText, null);
+                                    if (endLineEndOffset == doc.getLength() + 1) { // extra newline at doc end (not included in doc-len)
+                                        assert (linesText.charAt(linesText.length() - 1) == '\n');
+                                        doc.insertString(endLineEndOffset - 1, "\n" + linesText.substring(0, linesText.length() - 1), null);
+                                    } else { // Regular case
+                                        doc.insertString(endLineEndOffset, linesText, null);
+                                    }
 
                                     if (selection) {
                                         // select moved lines
