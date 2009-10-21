@@ -107,19 +107,19 @@ introduced by support for multiple source roots. -jglick
             </target>
 
             <target name="create-user" unless="user.exists">  
-                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
-                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
-                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{appserver.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
@@ -138,13 +138,13 @@ introduced by support for multiple source roots. -jglick
                 <available property="do.not.create.wsit.prop" file="nbproject/wsit.properties"/>
                 <antcall target="-create-wsit-prop"/>
 
-                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+                <exec timeout="10000" outputproperty="as.users" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
                     <arg value="list-file-users"/>
                 </exec>
-                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                <exec timeout="10000" outputproperty="as.users" executable="${{appserver.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
                     <arg value="list-file-users"/>
                 </exec>
-                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                <exec timeout="10000" outputproperty="as.users" executable="${{appserver.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
                     <arg value="list-file-users"/>
                 </exec>
 
