@@ -76,7 +76,7 @@ public final class ThreadStackVisualizerConfiguration implements TableBasedVisua
         this.stackNameProvider = stackNameProvider;
         this.preferredSelection = preferredSelection;
         this.actionsProvider = actionsProvider;
-        int i = 0;//NbPreferences.forModule(ThreadStackVisualizerConfiguration.class).getInt("expansionMode", 1);//NOI18N
+        int i = NbPreferences.forModule(ThreadStackVisualizerConfiguration.class).getInt("expansionMode", 1);//NOI18N
         i = Math.max(Math.min(i,2),0);
         expansionMode = ExpansionMode.values()[i];
     }
