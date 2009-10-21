@@ -103,7 +103,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         if (workingDirectory != null) {
             File dirFile = new File(workingDirectory);
             if (dirFile.exists()) {
-                workingDirectory = dirFile.getAbsolutePath();
                 pb.directory(dirFile);
             }
         }

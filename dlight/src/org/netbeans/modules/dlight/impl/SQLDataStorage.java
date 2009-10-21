@@ -194,10 +194,9 @@ public abstract class SQLDataStorage implements DataStorage {
         this.serviceInfoDataStorage = serviceInfoStorage;
     }
 
-    protected final ServiceInfoDataStorage getServiceInfoDataStorage(){
+    protected final ServiceInfoDataStorage getServiceInfoDataStorage() {
         return serviceInfoDataStorage;
     }
-
 
     public boolean shutdown() {
         disable();
@@ -388,15 +387,19 @@ public abstract class SQLDataStorage implements DataStorage {
                 logger.fine("SQL: dispatching " + query.toString()); //NOI18N
             }
 
-            final String sQuery = query.toString();
+            PreparedStatement stmt = null;
 
             try {
-                synchronized (insertPreparedStatments) {
-                    insertPreparedStatments.put(tableName, connection.prepareStatement(sQuery));
-                }
-                //insert(tableName, row);
+                stmt = connection.prepareStatement(query.toString());
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+
+            if (stmt != null) {
+                synchronized (insertPreparedStatments) {
+                    insertPreparedStatments.put(tableName, stmt);
+                    //insert(tableName, row);
+                }
             }
             return statement;
         }
@@ -433,7 +436,7 @@ public abstract class SQLDataStorage implements DataStorage {
                 return select(tableName, columns, sqlQuery);
             }
             if (sqlQuery == null) {
-                return select(viewName, columns, sqlQuery);
+                return select(viewName, columns, null);
             }
         }
 
@@ -467,14 +470,14 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             rs = connection.createStatement().executeQuery(sqlQuery);
         } catch (SQLException ex) {
-	    Throwable cause = ex.getCause();
-	    if (cause != null &&
-		(cause instanceof InterruptedIOException ||
-		 cause instanceof InterruptedException)) {
-		// skip exception
-	    } else {
-		logger.log(Level.SEVERE, null, ex);
-	    }
+            Throwable cause = ex.getCause();
+            if (cause != null &&
+                    (cause instanceof InterruptedIOException ||
+                    cause instanceof InterruptedException)) {
+                // skip exception
+            } else {
+                logger.log(Level.SEVERE, null, ex);
+            }
         }
 
         return rs;
