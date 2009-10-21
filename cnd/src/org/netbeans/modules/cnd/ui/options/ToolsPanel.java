@@ -918,18 +918,21 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     RequestProcessor.getDefault().post(new Runnable() {
 
         public void run() {
-            String versions = getToolCollectionPanel().getVersion(currentCompilerSet);
+            CompilerSet set = currentCompilerSet;
+            if (set != null) {
+                String versions = getToolCollectionPanel().getVersion(set);
 
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
 
-            SwingUtilities.invokeLater(new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
 
-                public void run() {
-                    btVersions.setEnabled(true);
-                }
-            });
+                    public void run() {
+                        btVersions.setEnabled(true);
+                    }
+                });
+            }
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
