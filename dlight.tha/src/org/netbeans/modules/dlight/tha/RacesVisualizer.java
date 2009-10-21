@@ -43,6 +43,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.module.dlight.threads.api.Datarace;
@@ -58,6 +59,7 @@ import org.netbeans.modules.dlight.util.UIThread;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -132,10 +134,17 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         public Component getComponent() {
             stackPanel.clean();
+            if (threadDumps != null && !threadDumps.isEmpty()){
+                
+            }
             for (ThreadDump threadDump : threadDumps) {
                 List<ThreadSnapshot> threads = threadDump.getThreadStates();
                 for (ThreadSnapshot snap : threads) {
-                    stackPanel.add("Access  " + (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]"), ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png", false), snap.getStack());//NOI18N
+                    stackPanel.add( loc("RacesVisualizer.Access")  + " " + //NOI18N
+                            (snap.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
+                                " [" + loc("RacesVisualizer.Access.R") + "]" : " [" + loc("RacesVisualizer.Access.W") + "]"),//NOI18N
+                                ImageUtilities.loadImageIcon("org/netbeans/modules/dlight/tha/resources/memory.png",//NOI18N
+                                false), snap.getStack());
                 }
             }
             return stackPanel;
@@ -151,7 +160,11 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         }
     }
-
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                RacesVisualizer.class, key, params);
+    }
+    
     private final class DataraceNode extends THANode<Datarace> {
 
         public final Image icon = ImageUtilities.loadImage("org/netbeans/modules/dlight/tha/resources/races_active16.png"); // NOI18N
@@ -165,7 +178,10 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
 
         @Override
         public String getDisplayName() {
-            return "Address " + race.stringAddress() + ": " + race.getThreadDumps().size() + " concurrent accesses";//NOI18N
+            return  loc("RacesVisualizer.DataraceNode.Addess") + //NOI18N
+                    " " + race.stringAddress() + ": " + //NOI18N
+                    race.getThreadDumps().size() + " " + //NOI18N
+                    loc("RacesVisualizer.DataraceNode.CA");//NOI18N
         }
 
         @Override
@@ -177,6 +193,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private final static class RaceNode extends THANode<ThreadDump> {
@@ -191,7 +213,10 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
             displayName = "";
             for (ThreadSnapshot s : snapshots) {
                 List<FunctionCall> stack = s.getStack();
-                displayName += stack.get(stack.size() - 1).getFunction().getName() + (s.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ? " [R]" : " [W]") + " | "; // NOI18N
+                displayName += stack.get(stack.size() - 1).getFunction().getName() +
+                        (s.getMemoryAccessType() == ThreadSnapshot.MemoryAccessType.READ ?
+                            " [" + loc("RacesVisualizer.Access.R") + "]" : //NOI18N
+                            " [" + loc("RacesVisualizer.Access.W") + "]") + " | "; // NOI18N
             }
             if (displayName.length() > 1) {
                 displayName = displayName.substring(0, displayName.length() - 2);
@@ -212,6 +237,12 @@ public class RacesVisualizer implements Visualizer<RacesVisualizerConfiguration>
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private final class DataraceNodeChildren extends Children.Keys<ThreadDump> {

@@ -236,8 +236,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                     statusLabel.setText(getMessage("THAControlPanel.Recording", collectionKind)); // NOI18N
                     statusLabel.setForeground(RECORDING_COLOR);
                 } else if (THAActionsProvider.STOP_COMMAND.equals(e.getActionCommand())) {
-                    statusLabel.setText("");//NOI18N
-                    //getMessage("THAControlPanel.Stopped", collectionKind));//NOI18N
+                    statusLabel.setText(getMessage("THAControlPanel.Stopped", collectionKind));//NOI18N
                 }
             }
         });

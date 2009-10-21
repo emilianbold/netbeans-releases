@@ -140,7 +140,9 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
 
     void setDeadlocks(int deadlocks) {
         if (0 < deadlocks) {
-            deadlocksLabel.setText(getMessage("THAControlPanel.deadlocksLabel.deadlocks", deadlocks));//NOI18N
+            deadlocksLabel.setText(deadlocks == 1 ?
+                getMessage("THAControlPanel.deadlocksLabel.deadlock", deadlocks) ://NOI18N
+                getMessage("THAControlPanel.deadlocksLabel.deadlocks", deadlocks));//NOI18N
             deadlocksLabel.setEnabled(true);
             deadlocksDetails.setVisible(true);
         } else {
@@ -152,7 +154,9 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
 
     void setDataRaces(int dataraces) {
         if (0 < dataraces) {
-            racesLabel.setText(getMessage("THAControlPanel.dataracesLabel.dataraces", dataraces));//NOI18N
+            racesLabel.setText(dataraces == 1 ?
+                getMessage("THAControlPanel.dataracesLabel.datarace", dataraces) ://NOI18N
+                getMessage("THAControlPanel.dataracesLabel.dataraces", dataraces));//NOI18N
             racesLabel.setEnabled(true);
             racesDetails.setVisible(true);
         } else {
