@@ -34,7 +34,7 @@ License Agreement and Entitlement.
 LICENSE #4: The use of the Java ME SDK 3.0 is subject to
 this Software License Agreement and Entitlement.
 
-LICENSE #5: The use of the JavaFX SDK 1.2 is subject to this
+LICENSE #5: The use of the JavaFX SDK 1.2.1 is subject to this
 Software License Agreement and Entitlement.
 
 ************************************************************
@@ -1518,7 +1518,7 @@ Licensee/Company: Entity receiving Software.
 
 Effective Date: Date of delivery of the Software to You.
 
-Software: JavaFX 1.2 Software Development Kit (SDK).
+Software: JavaFX 1.2.1 Software Development Kit (SDK).
 
 License Term: Perpetual (subject to termination under the
 SLA).
