@@ -46,10 +46,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -94,7 +92,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     /**
      * Most recent status message.
      */
-    private String recentStatusMessage = "";
+    //private String recentStatusMessage = "";
 
     public AnnotationBar(JTextComponent target) {
         this.textComponent = target;
@@ -266,12 +264,11 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         addMouseMotionListener(this);
 
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
-        int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
+            marks.add(new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
         }
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getBlockAnnotationInfo()) {
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
+            marks.add(new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
         }
 
         AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
@@ -503,10 +500,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      * displayed by this annotation bar.
      */
     private void clearRecentFeedback() {
-        StatusBar statusBar = editorUI.getStatusBar();
-        if (statusBar.getText(StatusBar.CELL_MAIN) == recentStatusMessage) {
-            statusBar.setText(StatusBar.CELL_MAIN, "");  // NOI18N
-        }
+        //StatusBar statusBar = editorUI.getStatusBar();
+        //if (statusBar.getText(StatusBar.CELL_MAIN) == recentStatusMessage) {
+        //    statusBar.setText(StatusBar.CELL_MAIN, "");  // NOI18N
+        //}
     }
 
     public void insertUpdate(DocumentEvent e) {
