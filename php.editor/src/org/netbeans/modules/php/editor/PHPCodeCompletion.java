@@ -835,19 +835,21 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // Special keywords applicable only inside a class
         final ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
         if (classDecl != null) {
-            for (String keyword : PHP_CLASS_KEYWORDS) {
+            for (final String keyword : PHP_CLASS_KEYWORDS) {
                 if (startsWith(keyword, request.prefix)) {
                     proposals.add(new PHPCompletionItem.KeywordItem(keyword, request) {
 
                         @Override
                         public String getLhsHtml(HtmlFormatter formatter) {
-                            String clsName = CodeUtils.extractClassName(classDecl);
-                            if (clsName != null) {
-                                formatter.type(true);
-                                formatter.appendText(clsName);
-                                formatter.type(false);
+                            if (keyword.startsWith("$")) {//NOI18N
+                                String clsName = CodeUtils.extractClassName(classDecl);
+                                if (clsName != null) {
+                                    formatter.type(true);
+                                    formatter.appendText(clsName);
+                                    formatter.type(false);
+                                }
+                                formatter.appendText(" "); //NOI18N
                             }
-                            formatter.appendText(" "); //NOI18N
                             return super.getLhsHtml(formatter);
                         }
                     });
