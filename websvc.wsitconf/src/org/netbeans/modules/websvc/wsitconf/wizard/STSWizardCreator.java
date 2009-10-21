@@ -261,7 +261,6 @@ public class STSWizardCreator {
                     ParameterizedTypeTree t = make.ParameterizedType(make.QualIdent(provider), 
                             Collections.singletonList(make.QualIdent(source)) );
                     modifiedClass = make.addClassImplementsClause(modifiedClass, t);
-//                    modifiedClass = make.setExtends(modifiedClass, make.QualIdent(baseStsImpl));
                     modifiedClass = make.setExtends(modifiedClass, make.Identifier(baseStsImpl));
                     
                     //add @WebServiceProvider annotation
