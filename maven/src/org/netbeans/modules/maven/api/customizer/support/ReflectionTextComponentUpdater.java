@@ -44,6 +44,7 @@ import java.lang.reflect.Method;
 import javax.swing.JLabel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.model.pom.POMComponent;
 
 /**
  *
@@ -103,7 +104,11 @@ public class ReflectionTextComponentUpdater extends TextComponentUpdater {
     public void setValue(String value) {
         try {
             modelsetter.invoke(model, new Object[] { value });
-            handle.markAsModified(model);
+            if (model instanceof POMComponent) {
+                handle.markAsModified(((POMComponent)model).getModel());
+            } else {
+                handle.markAsModified(model);
+            }
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
         } catch (InvocationTargetException ex) {
