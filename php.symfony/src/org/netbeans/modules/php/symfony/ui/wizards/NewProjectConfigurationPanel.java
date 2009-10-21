@@ -229,6 +229,7 @@ public class NewProjectConfigurationPanel extends JPanel {
         otherNameTextField = new JTextField();
         otherParamsLabel = new JLabel();
         otherParamsTextField = new JTextField();
+        infoLabel = new JLabel();
 
         generateAppLabel.setLabelFor(frontendCheckBox);
 
@@ -259,7 +260,9 @@ public class NewProjectConfigurationPanel extends JPanel {
         Mnemonics.setLocalizedText(otherCheckBox, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherCheckBox.text"));
         otherParamsLabel.setLabelFor(otherParamsTextField);
 
+
         Mnemonics.setLocalizedText(otherParamsLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.otherParamsLabel.text"));
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -271,7 +274,7 @@ public class NewProjectConfigurationPanel extends JPanel {
                         .add(21, 21, 21)
                         .add(backendParamsLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(backendParamsTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                        .add(backendParamsTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                     .add(backendCheckBox))
                 .add(0, 0, 0))
             .add(layout.createSequentialGroup()
@@ -283,29 +286,33 @@ public class NewProjectConfigurationPanel extends JPanel {
                     .add(otherCheckBox))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(otherParamsTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                    .add(otherNameTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                    .add(otherParamsTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(otherNameTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .add(0, 0, 0))
             .add(layout.createSequentialGroup()
                 .add(generateAppLabel)
-                .addPreferredGap(LayoutStyle.RELATED, 132, Short.MAX_VALUE)
-                .add(optionsLabel))
+                .addPreferredGap(LayoutStyle.RELATED, 186, Short.MAX_VALUE)
+                .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(29, 29, 29)
                 .add(frontendParamsLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(frontendParamsTextField, GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                .add(frontendParamsTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(frontendCheckBox)
-                .addContainerGap(306, Short.MAX_VALUE))
+                .addContainerGap(360, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(generateAppLabel)
-                    .add(optionsLabel))
+                    .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(frontendCheckBox)
                 .addPreferredGap(LayoutStyle.RELATED)
@@ -325,7 +332,9 @@ public class NewProjectConfigurationPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(otherParamsLabel)
-                    .add(otherParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .add(otherParamsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(infoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -346,6 +355,7 @@ public class NewProjectConfigurationPanel extends JPanel {
     private JLabel frontendParamsLabel;
     private JTextField frontendParamsTextField;
     private JLabel generateAppLabel;
+    private JLabel infoLabel;
     private JLabel optionsLabel;
     private JCheckBox otherCheckBox;
     private JTextField otherNameTextField;
