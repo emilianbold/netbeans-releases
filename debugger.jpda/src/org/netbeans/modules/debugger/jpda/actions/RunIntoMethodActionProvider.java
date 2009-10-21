@@ -42,11 +42,15 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
@@ -112,6 +116,8 @@ import org.openide.util.NbBundle;
 public class RunIntoMethodActionProvider extends ActionsProviderSupport 
                                          implements PropertyChangeListener,
                                                     ActionsManagerListener {
+
+    private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
 
     private JPDADebuggerImpl debugger;
     private ActionsManager lastActionsManager;
@@ -293,8 +299,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }
-        Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                fine("doAction("+url+", "+clazz+", "+methodLine+", "+methodName+") locations = "+locations);
+        logger.fine("doAction("+url+", "+clazz+", "+methodLine+", "+methodName+") locations = "+locations);
         if (locations.isEmpty()) {
             String message = NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                                  "MSG_RunIntoMeth_absentInfo",
@@ -370,7 +375,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final boolean doFinishWhenMethodNotFound = setBoundaryStep;
         if (areWeOnTheLocation) {
             // We're on the line from which the method is called
-            traceLineForMethod(debugger, methodName, line, doFinishWhenMethodNotFound);
+            traceLineForMethod(debugger, ct.getThreadReference(), methodName, line, doFinishWhenMethodNotFound);
         } else {
             final JPDAStep[] boundaryStepPtr = new JPDAStep[] { null };
             // Submit the breakpoint to get to the point from which the method is called
@@ -378,11 +383,52 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 final BreakpointRequest brReq = EventRequestManagerWrapper.createBreakpointRequest(
                         VirtualMachineWrapper.eventRequestManager(vm),
                         bpLocation);
+                final ThreadReference preferredThread = t.getThreadReference();
                 Executor tracingExecutor = new Executor() {
 
                     public boolean exec(Event event) {
-                        Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                            fine("Calling location reached, tracing for "+methodName+"()");
+                        ThreadReference tr = ((BreakpointEvent) event).thread();
+                        try {
+                            if (!preferredThread.equals(tr)) {
+                                logger.fine("doAction: tracingExecutor.exec("+event+") called with non-preferred thread.");
+                                // Wait a while for the preferred thread to hit the breakpoint...
+                                int i = 20;
+                                while (!ThreadReferenceWrapper.isAtBreakpoint(preferredThread) && i > 0) {
+                                    try {
+                                        Thread.sleep(50);
+                                    } catch (InterruptedException ex) {
+                                        break;
+                                    }
+                                    i--;
+                                }
+                                if (ThreadReferenceWrapper.isAtBreakpoint(preferredThread)) {
+                                    if (ThreadReferenceWrapper.frameCount(tr) > 0) {
+                                        Location trLoc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
+                                        if (ThreadReferenceWrapper.frameCount(preferredThread) > 0) {
+                                            Location prLoc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(preferredThread, 0));
+                                            if (trLoc.equals(prLoc)) {
+                                                logger.fine("doAction: tracingExecutor - preferredThread "+preferredThread+" is at breakpoint, resuming hit thread "+tr);
+                                                return true; // Resume this thread, the preferred thread has hit.
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (InternalExceptionWrapper iex) {
+                        } catch (InternalException iex) {
+                        } catch (VMDisconnectedExceptionWrapper vdex) {
+                        } catch (VMDisconnectedException vdex) {
+                        } catch (ObjectCollectedExceptionWrapper ocex) {
+                        } catch (ObjectCollectedException ocex) {
+                        } catch (IllegalThreadStateExceptionWrapper itex) {
+                        } catch (IllegalThreadStateException itex) {
+                        } catch (IncompatibleThreadStateException itex) {
+                        } catch (InvalidStackFrameExceptionWrapper isex) {
+                        }
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("doAction: tracingExecutor.exec("+event+") called with thread "+tr+" which is "+((preferredThread.equals(tr)) ? "" : "not ")+"preferred.");
+                            logger.fine("Calling location reached, tracing for "+methodName+"()");
+                        }
                         if (boundaryStepPtr[0] != null) {
                             ((JPDAStepImpl) boundaryStepPtr[0]).cancel();
                         }
@@ -395,16 +441,16 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         } catch (VMDisconnectedExceptionWrapper e) {
                             return false;
                         }
-                        traceLineForMethod(debugger, methodName, line, doFinishWhenMethodNotFound);
+                        traceLineForMethod(debugger, tr, methodName, line, doFinishWhenMethodNotFound);
                         return true;
                     }
 
                     public void removed(EventRequest eventRequest) {}
                 };
                 debugger.getOperator().register(brReq, tracingExecutor);
-                BreakpointRequestWrapper.addThreadFilter(brReq, t.getThreadReference());
+                //BreakpointRequestWrapper.addThreadFilter(brReq, t.getThreadReference()); - a different thread might run into the method
                 EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
-                EventRequestWrapper.addCountFilter(brReq, 1);
+                //EventRequestWrapper.addCountFilter(brReq, 1); - Can be hit multiple times in multiple threads
                 try {
                     EventRequestWrapper.enable(brReq);
                 } catch (ObjectCollectedExceptionWrapper ocex) {
@@ -453,32 +499,31 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     }
 
     private static void traceLineForMethod(final JPDADebuggerImpl debugger,
+                                           final ThreadReference tr,
                                            final String method,
                                            final int methodLine,
                                            final boolean finishWhenNotFound) {
-        final int depth = debugger.getCurrentThread().getStackDepth();
+        final JPDAThread jtr = debugger.getThread(tr);
+        final int depth = jtr.getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
         step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (Logger.getLogger(RunIntoMethodActionProvider.class.getName()).isLoggable(Level.FINE)) {
-                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
+                    logger.fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
                 }
                 //System.err.println("RunIntoMethodActionProvider: Step fired, at "+
                 //                   debugger.getCurrentThread().getMethodName()+"()");
-                JPDAThread t = debugger.getCurrentThread();
-                int currentDepth = t.getStackDepth();
-                Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("  depth = "+currentDepth+", target = "+depth);
+                //JPDAThread t = debugger.getCurrentThread();
+                int currentDepth = jtr.getStackDepth();
+                logger.fine("  depth = "+currentDepth+", target = "+depth);
                 if (currentDepth == depth) { // We're in the outer expression
                     try {
-                        if (t.getCallStack()[0].getLineNumber("Java") != methodLine) {
+                        if (jtr.getCallStack()[0].getLineNumber("Java") != methodLine) {
                             // We've missed the method :-(
                             step.setHidden(false);
                         } else {
-                            Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                                fine("  back on the method invoaction line, setting additional step into.");
+                            logger.fine("  back on the method invoaction line, setting additional step into.");
                             step.setDepth(JPDAStep.STEP_INTO);
                             step.addStep(debugger.getCurrentThread());
                         }
@@ -488,10 +533,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         step.setHidden(false);
                     }
                 } else {
-                    if (t.getMethodName().equals(method)) {
+                    if (jtr.getMethodName().equals(method)) {
                         // We've found it :-)
                         step.setHidden(false);
-                    } else if (t.getMethodName().equals("<init>") && (t.getClassName().endsWith("."+method) || t.getClassName().equals(method))) {
+                    } else if (jtr.getMethodName().equals("<init>") && (jtr.getClassName().endsWith("."+method) || jtr.getClassName().equals(method))) {
                         // The method can be a constructor
                         step.setHidden(false);
                     } else {
@@ -506,7 +551,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 }
             }
         });
-        step.addStep(debugger.getCurrentThread());
+        step.addStep(jtr);
     } 
 
     public void actionPerformed(Object action) {
