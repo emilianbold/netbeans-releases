@@ -685,7 +685,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
         FileObject [] children = srcRootWithFiles1.getChildren();
         assertTrue(children.length > 0);
-        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false, true);
         assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
 
         RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false);

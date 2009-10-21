@@ -154,18 +154,27 @@ public class Subversion {
             }
         }, 500);
     }
+
+    RequestProcessor.Task cleanupTask;
+    
     private void prepareCache() {
-        getRequestProcessor().post(new Runnable() {
+        cleanupTask = getRequestProcessor().create(new Runnable() {
             public void run() {
+                if (org.netbeans.modules.versioning.util.IndexingBridge.getInstance().isIndexingInProgress()) {
+                    cleanupTask.schedule(5000);
+                    return;
+                }
                 try {
                     fileStatusCache.computeIndex();
                     LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {
                     Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
+                    cleanupTask = null;
                 }
             }
-        }, 500);
+        });
+        cleanupTask.schedule(500);
     }
 
     public void shutdown() {

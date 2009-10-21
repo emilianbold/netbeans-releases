@@ -223,6 +223,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 public void run() {
                     long startTime = System.currentTimeMillis();
                     elementView.setRootVisible(false);
+                    elementView.setAutoWaitCursor(false);
                     manager.setRootContext(new ElementNode( description, ClassMemberPanelUI.this, fileObject ) );
 
                     boolean expand = true;
@@ -246,6 +247,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                             elementView.expandNode(node);
                         }
                     }
+                    elementView.setAutoWaitCursor(true);
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});

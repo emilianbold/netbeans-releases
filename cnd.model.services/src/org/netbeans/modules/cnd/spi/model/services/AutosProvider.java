@@ -47,5 +47,5 @@ import javax.swing.text.StyledDocument;
  * @author Egor Ushakov
  */
 public interface AutosProvider {
-    Set<String> getAutos(final StyledDocument document, int offset);
+    Set<String> getAutos(final StyledDocument document, int line);
 }

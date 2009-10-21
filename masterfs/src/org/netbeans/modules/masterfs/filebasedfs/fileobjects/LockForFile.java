@@ -50,7 +50,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
@@ -256,11 +255,7 @@ public class LockForFile extends FileLock {
     }
 
     public static File getLockFile(File file) {
-        try {
-            file = file.getCanonicalFile();
-        } catch (IOException iex) {
-            LOGGER.log(Level.INFO, "[" + file + "] " + iex.getLocalizedMessage(), iex);
-        }
+        file = FileUtil.normalizeFile(file);
 
         final File parentFile = file.getParentFile();
         final StringBuilder sb = new StringBuilder();

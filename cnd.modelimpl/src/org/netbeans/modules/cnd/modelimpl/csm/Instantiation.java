@@ -379,6 +379,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
             } else if (member instanceof CsmEnum) {
                 // no need to instantiate enums?
                 return member;
+            } else if (member instanceof CsmUsingDeclaration) {
+                // no need to instantiate usings?
+                return member;
             }
             assert false : "Unknown class for member instantiation:" + member + " of class:" + member.getClass(); // NOI18N
             return member;

@@ -82,7 +82,7 @@ public final class DDProvider {
 
     private static final Logger LOGGER = Logger.getLogger(DDProvider.class.getName());
 
-    static ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
+    ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
     
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
