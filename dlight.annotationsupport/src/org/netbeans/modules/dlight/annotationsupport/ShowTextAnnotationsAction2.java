@@ -41,9 +41,14 @@
 package org.netbeans.modules.dlight.annotationsupport;
 
 import java.awt.event.ActionEvent;
+import javax.swing.JEditorPane;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.BooleanStateAction;
+import org.openide.windows.WindowManager;
 
 /**
  * Enables or disables breakpoints.
@@ -54,7 +59,7 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return hasAnnotations();
     }
 
     @Override
@@ -74,5 +79,44 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
     public void actionPerformed(ActionEvent ev) {
         boolean tav = AnnotationSupport.getInstance().getTextAnnotationVisible();
         AnnotationSupport.getInstance().setTextAnnotationVisible(!tav);
+    }
+
+    private boolean hasAnnotations() {
+        Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
+
+        if (nodes == null || nodes.length != 1) {
+            return true; // Maybe
+        }
+
+        Node node = nodes[0];
+        if (node == null) {
+            return true; // Maybe
+        }
+
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
+        if (dataObject == null) {
+            return true; // Maybe
+        }
+
+        EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
+        if (editorCookie == null) {
+            return true; // Maybe
+        }
+
+        JEditorPane panes[] = editorCookie.getOpenedPanes();
+        boolean annotated = false;
+        for (JEditorPane pane : panes) {
+            AnnotationBar ab = (AnnotationBar) pane.getClientProperty(AnnotationBarManager.BAR_KEY);
+            FileAnnotationInfo fileAnnotationInfo = ab.getFileAnnotationInfo();
+            if (fileAnnotationInfo != null && fileAnnotationInfo.isAnnotated()) {
+                annotated = true;
+                break;
+            }
+        }
+        if (!annotated) {
+            return false;
+        }
+
+        return true; // Maybe
     }
 }
