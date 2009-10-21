@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
@@ -387,9 +388,11 @@ public abstract class SQLDataStorage implements DataStorage {
                 logger.fine("SQL: dispatching " + query.toString()); //NOI18N
             }
 
+            final String sQuery = query.toString();
+
             try {
                 synchronized (insertPreparedStatments) {
-                    insertPreparedStatments.put(tableName, connection.prepareStatement(query.toString()));
+                    insertPreparedStatments.put(tableName, connection.prepareStatement(sQuery));
                 }
                 //insert(tableName, row);
             } catch (SQLException ex) {
@@ -433,14 +436,14 @@ public abstract class SQLDataStorage implements DataStorage {
                 return select(viewName, columns, sqlQuery);
             }
         }
-        Iterator<String> tableNames = renamedTableNames.keySet().iterator();
-        String sqlQueryNew = sqlQuery;
-        while (tableNames.hasNext()) {
-            String key = tableNames.next();
-            sqlQueryNew = sqlQuery.replaceAll(key, renamedTableNames.get(key));
-        }
-        return select(tableName, columns, sqlQueryNew);
 
+        String sqlQueryNew = sqlQuery;
+
+        for (Entry<String, String> entry : renamedTableNames.entrySet()) {
+            sqlQueryNew = sqlQueryNew.replaceAll(entry.getKey(), entry.getValue());
+        }
+
+        return select(tableName, columns, sqlQueryNew);
     }
 
     public final ResultSet select(String tableName, List<Column> columns, String sqlQuery) {

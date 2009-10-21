@@ -193,18 +193,20 @@ public final class LineAnnotationInfo {
     /**
      * @return the tooltip
      */
-    public String getTooltip() {
+    public synchronized String getTooltip() {
         if (tooltip == null) {
-            String tt = "";
+            StringBuilder sb = new StringBuilder();
             int i = 0;
+
             for (String col : getFileAnnotationInfo().getColumnNames()) {
-                if (tt.length() > 0) {
-                    tt += " | "; // NOI18N
+                if (i > 0) {
+                    sb.append(" | "); // NOI18N
                 }
-                tt += col + ':' + notFormatedColumns[i];
+                sb.append(col).append(':').append(notFormatedColumns[i]);
                 i++;
             }
-            tooltip = tt;
+
+            tooltip = sb.toString();
         }
         return tooltip;
     }
