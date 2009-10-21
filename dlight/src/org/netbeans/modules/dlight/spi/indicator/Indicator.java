@@ -285,7 +285,8 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             }
         });
         final Color c = component.getBackground();
-        final Color selectionColor = c == null ? (UIManager.getColor("Panel.background") == null ? c : UIManager.getColor("Panel.background").darker()) : c.darker();//UIManager.getColor("TextField.selectionBackground");
+        final Color selectionColor = c == null ? UIManager.getColor("Panel.background") : c.darker(); // NOI18N
+
         component.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
