@@ -688,7 +688,7 @@ public class CsmUtilities {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        NbEditorUtilities.addJumpListEntry(dob);
+                        JumpList.checkAddEntry();
                         JEditorPane pane = findRecentEditorPaneInEQ(ec);
                         boolean opened;
                         if (pane != null) {
