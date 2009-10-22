@@ -54,7 +54,7 @@
     <property name="glassfish.v3.sun.build.number"    value="28e"/>
     -->
     <loadresource property="glassfish.v3.sun.build.number">
-          <url url="${glassfish.v3.sun.location.prefix}/fcs/latest/archive/bundles"/>
+          <url url="${glassfish.v3.sun.location.prefix}/fcs/b68/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -83,7 +83,7 @@
     -->
     
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/fcs/latest/archive/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/fcs/b68/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
