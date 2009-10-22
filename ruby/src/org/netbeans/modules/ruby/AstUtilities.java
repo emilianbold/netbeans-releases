@@ -79,6 +79,7 @@ import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.SourcePosition;
+import org.jrubyparser.ast.DSymbolNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Modifier;
@@ -1531,9 +1532,8 @@ public class AstUtilities {
     /**
      * Gets the name or the value of given node, depending on its type.
      * 
-     * @param node the node whose value to get; must be either <code>SymbolNode</code>
-     * or <code>StrNode</code>.
-     * @return
+     * @param node the node whose value to get.
+     * @return the name or value of the given node or <code>null</code>.
      */
     public static String getNameOrValue(Node node) {
         if (node instanceof SymbolNode) {
@@ -1545,8 +1545,13 @@ public class AstUtilities {
         if (node instanceof INameNode) {
             return getName(node);
         }
-        assert false : "Invalid param " + node;
-        return "";
+        if (node instanceof DSymbolNode) {
+            if (!node.childNodes().isEmpty()) {
+                Node child = node.childNodes().get(0);
+                return getNameOrValue(child);
+            }
+        }
+        return null;
     }
 
     static SymbolNode[] getSymbols(Node node) {
