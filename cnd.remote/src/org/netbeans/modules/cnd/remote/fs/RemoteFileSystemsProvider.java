@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -70,6 +71,9 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
     protected Data getImpl(CharSequence path) {
         if (USE_REMOTE_FS) {
             String prefix = BasicCompiler.getIncludeFileBase();
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
             if (CharSequenceUtils.startsWith(path, prefix)) {
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
                 int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
