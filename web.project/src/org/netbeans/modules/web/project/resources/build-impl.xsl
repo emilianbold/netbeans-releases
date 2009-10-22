@@ -1169,9 +1169,14 @@ exists or setup the property manually. For example like this:
                     </copyfiles>
                 </xsl:for-each>
             </target>
-            
+
+            <target depends="init" name="-clean-webinf-lib" if="dist.ear.dir">
+                <!-- this may need to be optimized in future -->
+                <delete dir="${{build.web.dir}}/WEB-INF/lib"/>
+            </target>
+
             <target name="do-ear-dist">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,-clean-webinf-lib,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.tmp.war.package</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
