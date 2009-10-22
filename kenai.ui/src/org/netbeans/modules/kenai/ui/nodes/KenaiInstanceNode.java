@@ -102,4 +102,9 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
         return new PropertySet[] {properties.getSheetSet()};
     }
 
+    @Override
+    public boolean canCopy() {
+        return false;
+    }
+
 }

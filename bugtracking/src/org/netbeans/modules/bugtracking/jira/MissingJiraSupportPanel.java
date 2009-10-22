@@ -45,6 +45,8 @@
 
 package org.netbeans.modules.bugtracking.jira;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.GroupLayout.SequentialGroup;
 
@@ -52,10 +54,10 @@ import org.jdesktop.layout.GroupLayout.SequentialGroup;
  *
  * @author Tomas Stupka
  */
-public class MissingJiraSupportPanel extends javax.swing.JPanel{
+public class MissingJiraSupportPanel extends javax.swing.JPanel {
 
     final javax.swing.JButton downloadButton = new javax.swing.JButton();
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextPane pane;
     
     /** Creates new form MissingClientPanel */
     public MissingJiraSupportPanel(boolean containerGaps, String msg) {
@@ -64,25 +66,28 @@ public class MissingJiraSupportPanel extends javax.swing.JPanel{
 
     private void initComponents(boolean containerGaps, String msg) {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel1.setText(msg);
+        pane = new javax.swing.JTextPane();
+        pane.setBackground(this.getBackground());
+        pane.setContentType("text/html"); // NOI18N
+        pane.setText(msg);
+        pane.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
-
+        this.setPreferredSize(new Dimension(650, 100));
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(createSequentialGroup(layout, containerGaps)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
+                    .add(pane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(downloadButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, createSequentialGroup(layout, containerGaps)
-                .add(jLabel1)
+                .add(pane)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(downloadButton))
