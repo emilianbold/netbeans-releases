@@ -167,7 +167,7 @@ public class JiraUpdater {
                 new Object[] {download, cancel},
                 download,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(FakeJiraSupport.class),
+                new HelpCtx(JiraUpdater.class),
                 null);
         return DialogDisplayer.getDefault().notify(dd) == download;
     }
