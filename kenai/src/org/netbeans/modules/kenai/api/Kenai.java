@@ -113,6 +113,7 @@ public final class Kenai {
     private PacketListener packetListener;
     private static Preferences prefs = NbPreferences.forModule(Kenai.class);
     private static final String DEFAULT_INSTANCE_PREF="kenai.default.instance";
+    private static final String INSTANCES_PREF="kenai.instances";
 
 
 
@@ -170,7 +171,19 @@ public final class Kenai {
      * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
      */
     public String getName() {
-        return getUrl().toString().substring("https://".length());
+        String s = prefs.get(INSTANCES_PREF, "");//NOI18N
+        if (s.length() > 1) {
+            for (String inst : s.split(";")) { // NOI18N
+                if (inst.length()>0) {
+                    String[] pair = inst.split(","); // NOI18N
+                    if (inst.split(",")[0].equals(getUrl().toString())) {// NOI18N
+                        return pair[1];
+                    }
+                }
+            }
+        }
+
+        return getUrl().toString().substring("https://".length());// NOI18N
     }
 
     Kenai(KenaiImpl impl) {
@@ -589,7 +602,7 @@ public final class Kenai {
     private void xmppConnect() throws KenaiException {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_XMPP_LOGIN_STARTED, null, null));
         synchronized (this) {
-            xmppConnection = new XMPPConnection(getName());
+            xmppConnection = new XMPPConnection(getUrl().getHost());
             packetListener = new KenaiUser.KenaiPacketListener();
             try {
                 xmppConnection.removePacketListener(packetListener);

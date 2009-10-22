@@ -95,7 +95,7 @@ public final class UIUtils {
     private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
     public static String getPrefName(String name)  {
-        return Kenai.getDefault().getName() + name;
+        return Kenai.getDefault().getUrl().getHost() + name;
     }
 
     public static void waitStartupFinished() {
