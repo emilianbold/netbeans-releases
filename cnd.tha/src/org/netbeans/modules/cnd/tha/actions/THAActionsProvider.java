@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.tha.actions;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -52,10 +51,10 @@ import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.DLightTargetListener;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
+import org.netbeans.modules.dlight.perfan.tha.api.THASuspensionSupport;
+import org.netbeans.modules.dlight.perfan.tha.api.THASuspensionSupport.State;
+import org.netbeans.modules.dlight.perfan.tha.api.THASuspensionSupport.Status;
 import org.netbeans.modules.dlight.util.UIThread;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -66,10 +65,10 @@ public final class THAActionsProvider {
     public static final String SUSPEND_COMMAND = "THAProfileSuspend";//NOI18N
     public static final String RESUME_COMMAND = "THAProfileResume";//NOI18N
     public static final String STOP_COMMAND = "THAProfileStop";//NOI18N
+    private volatile THASuspensionSupport suspensionSupport = null;
     private Action suspendDataCollection;
     private Action resumeDataCollection;
     private Action stop;
-    private int pid;
     private DLightTarget target;
     private static Action startThreadAnalyzerConfiguration;
     /** A list of event listeners for this component. */
@@ -177,11 +176,11 @@ public final class THAActionsProvider {
         suspendDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                if (project == null) {
+                if (project == null || suspensionSupport == null) {
                     return;
                 }
-                sendSignal();
-                resumeDataCollection.setEnabled(true);
+
+                suspensionSupport.resume(false);
                 suspendDataCollection.setEnabled(false);
                 fireActionPerformed(e);
             }
@@ -194,9 +193,12 @@ public final class THAActionsProvider {
         resumeDataCollection = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                sendSignal();
+                if (project == null || suspensionSupport == null) {
+                    return;
+                }
+
+                suspensionSupport.resume(true);
                 resumeDataCollection.setEnabled(false);
-                suspendDataCollection.setEnabled(true);
                 fireActionPerformed(e);
             }
         };
@@ -234,8 +236,6 @@ public final class THAActionsProvider {
         }
     }
 
-    
-
     public void targetStateChanged(DLightTargetChangeEvent event) {
         this.target = event.target;
         switch (event.state) {
@@ -258,7 +258,7 @@ public final class THAActionsProvider {
         }
     }
 
-    static  boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
+    static boolean start(final DLightTargetListener listener, final Project project, final THAConfiguration thaConfiguration) {
         THAProjectSupport support = THAProjectSupport.getSupportFor(project);
 
         if (support == null) {
@@ -289,26 +289,30 @@ public final class THAActionsProvider {
         return true;
     }
 
-    void sendSignal() {
-        if (0 < pid) {
-            if (!EventQueue.isDispatchThread()){
-                CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
-            }else{
-                DLightExecutorService.submit(new Runnable() {
-
-                    public void run() {
-                        CommonTasksSupport.sendSignal(target.getExecEnv(), pid, Signal.SIGUSR1, null); // NOI18N
-                    }
-                }, "Send signal USR1 to pid " + pid + " from THAActionsProvider.sendSignal()");//NOI18N
-            }
-        }
-    }
-
     private void targetStarted(int pid) {
         //means stop button should be enabled
-        this.pid = pid;
-        suspendDataCollection.setEnabled(thaConfiguration.collectFromBeginning());
-        resumeDataCollection.setEnabled(!thaConfiguration.collectFromBeginning());
+        suspensionSupport = THASuspensionSupport.getSupportFor(target.getExecEnv(), pid, new THASuspensionSupport.Listener() {
+
+            public void statusChanged(Status newStatus) {
+                switch (newStatus) {
+                    case ENABLED:
+                        suspendDataCollection.setEnabled(thaConfiguration.collectFromBeginning());
+                        resumeDataCollection.setEnabled(!thaConfiguration.collectFromBeginning());
+                        break;
+                    default:
+                        suspendDataCollection.setEnabled(false);
+                        resumeDataCollection.setEnabled(false);
+                }
+            }
+
+            public void stateChanged(State newState) {
+                suspendDataCollection.setEnabled(newState == State.RESUMED);
+                resumeDataCollection.setEnabled(newState == State.SUSPENDED);
+            }
+        }, thaConfiguration.collectFromBeginning());
+
+        suspendDataCollection.setEnabled(false);
+        resumeDataCollection.setEnabled(false);
         stop.setEnabled(true);
         fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, RESUME_COMMAND));
     }

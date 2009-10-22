@@ -72,6 +72,7 @@ public class ErprintSession {
         this.dataFiltersProvider = dataFiltersProvider;
 
         npb = erProcessBuilder;
+        npb.getEnvironment().put("LC_ALL", "C");//NOI18N
     }
 
     /**
