@@ -92,6 +92,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private final DLightToolConfiguration configuration;
     private volatile Boolean idpsInitialized = false;
     private boolean visible;
+    private boolean isDetailsEnabled = true;
     //register accessor which will be used ne friend packages of API/SPI accessor packages
     //to get access to tool creation, etc.
 
@@ -269,7 +270,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 //Add All indicators
                 List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
                 for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
-                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration);
+                    Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration, isDetailsEnabled);
                     if (indicator == null) {
                         log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
                                 "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N
@@ -505,6 +506,16 @@ public final class DLightTool implements Validateable<DLightTarget> {
         @Override
         public void turnCollectorsState(DLightTool tool, boolean turnedOn) {
             tool.turnCollectorsState(null, turnedOn);
+        }
+
+        @Override
+        public void setDetailsEnabled(DLightTool tool, boolean isEnabled) {
+            tool.isDetailsEnabled = isEnabled;
+        }
+
+        @Override
+        public boolean isDetailsEnabled(DLightTool tool) {
+            return tool.isDetailsEnabled;
         }
     }
 }
