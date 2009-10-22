@@ -733,7 +733,8 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                 PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction, dropIndex );
 
                 final Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
-                ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
+                if( null != ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 ) )
+                    ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
 
                 // check canReorder or optionally perform it
                 if (canReorder(dropNode, diffNodes) && lowerNodeIdx >= 0 && upperNodeIdx >= 0 ) {
