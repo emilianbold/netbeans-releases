@@ -267,7 +267,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 if (res == JsfElExpression.EL_JSF_BEAN || 
                         res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
                 {
-                    if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
+                    if (!exp.gotoPropertyDeclaration(exp.getBaseObjectClass())){
                         String msg = NbBundle.getBundle(JsfHyperlinkProvider.class).
                             getString("MSG_source_not_found");
                         StatusDisplayer.getDefault().setStatusText(msg);
