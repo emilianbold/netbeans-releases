@@ -145,7 +145,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     }
 
     public synchronized FileAnnotationInfo getFileAnnotationInfo(String filePath) {
-        return (FileAnnotationInfo)activeAnnotations.get(filePath);
+        return activeAnnotations.get(filePath);
     }
 
     public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
