@@ -59,6 +59,9 @@ import org.openide.util.Exceptions;
  * @author mkuchtiak
  */
 public abstract class WebRestSupport extends RestSupport {
+
+    public static final String PROP_APPLICATION_PATH_ANNOTATION = "application.path"; //NOI18N
+    public static final String PROP_RESOURCE_CLASSES = "resource.classes";//NOI18N
     
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {

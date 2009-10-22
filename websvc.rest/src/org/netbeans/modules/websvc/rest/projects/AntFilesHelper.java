@@ -63,13 +63,13 @@ public class AntFilesHelper {
     /**
      * IMPORTANT: bump up version when you change the dependencies list
      */
-    public static final int CURRENT_DEPENDECIES_VERSION = 3;
+    public static final int CURRENT_DEPENDECIES_VERSION = 4;
     // dependency(from, to)
     public static Map<String,String> dependencies = new HashMap<String,String>();
     static {
         //IMPORTANT: bump up version when you change the dependencies list
         //dependencies.put("-post-compile", "-rest-post-compile");
-        //IMPORTANT: bump up version when you change the dependencies list
+        dependencies.put("-pre-pre-compile", "generate-rest-config");
     }
     
     public static final String REST_ANT_EXT_NAME_BASE = "rest";
