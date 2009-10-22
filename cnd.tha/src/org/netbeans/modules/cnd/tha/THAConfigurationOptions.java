@@ -70,9 +70,8 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
     private String DLightCollectorString = "SunStudio";//NOI18N
     private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
     private static final String SUNSTUDIO = "SunStudio";//NOI18N
-    private static final String LL_MONITOR = "LLTool";//NOI18N
-    private static final String DTRACE = "DTrace";//NOI18N
-    private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
+//    private static final String DTRACE = "DTrace";//NOI18N
+//    private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
     private static final String PROC_READER = "ProcReader";//NOI18N
     private static final String PROCFS_READER = "ProcFSReader";//NOI18N
     private Project currentProject;
@@ -150,7 +149,7 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
                 DLightCollectorString = "";//NOI18N
             }
 
-            DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER, LL_MONITOR);
+            DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER);
             return true;
         }
         return false;
