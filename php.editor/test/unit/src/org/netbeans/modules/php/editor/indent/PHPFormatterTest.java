@@ -205,6 +205,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/arrays2.php");
     }
 
+    public void testNestedArrays1() throws Exception {
+        reformatFileContents("testfiles/formatting/nested_array1.php");
+    }
+
     public void testSubsequentQuotes() throws Exception {
         reformatFileContents("testfiles/formatting/subsequentquotes.php");
     }
