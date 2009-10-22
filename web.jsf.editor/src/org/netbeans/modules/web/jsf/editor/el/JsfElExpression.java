@@ -765,7 +765,9 @@ public class JsfElExpression extends ELExpression {
                 CompilationController compilationController)
         {
             // Fix for IZ#173117 -  multiplied EL completion items
-            if ( super.checkMethod(method, compilationController)){
+            if ( super.checkMethodParameters(method, compilationController)&& 
+                    super.checkMethod(method, compilationController))
+            {
                 return false;
             }
             return JsfElExpression.this.checkMethod(method, compilationController);
