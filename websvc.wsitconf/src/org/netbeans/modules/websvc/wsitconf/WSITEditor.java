@@ -141,6 +141,9 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                     jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
                     try {
                         clientWsdlModel = WSITModelSupport.getModel(node, jaxWsModel, this, true, createdFiles);
+                        if (clientWsdlModel == null) {
+                            return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_ClientWsdlNotFound"));
+                        }
                         wsdlModel = WSITModelSupport.getServiceModelForClient(wscs, client);
                         return new ClientTopComponent(client, jaxWsModel, clientWsdlModel, wsdlModel, node);
                     } catch (Exception e) {

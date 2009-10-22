@@ -178,6 +178,9 @@ public class BindingPanel extends SectionInnerPanel {
                 cfgVersionCombo.addItem(cfgVersion);
             }
         }
+        if (supportedConfigVersions.isEmpty()) {
+            supportedConfigVersions.add(ConfigVersion.CONFIG_1_0);
+        }
         inSync = false;
 
         String CONVERT = NbBundle.getMessage(BindingPanel.class, "LBL_Convert");
