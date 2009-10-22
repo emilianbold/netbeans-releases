@@ -79,7 +79,7 @@ public class MoveTransformer extends RefactoringVisitor {
     private boolean moveToDefaulPackageProblem = false;
     private String originalPackage;
     private SourceUtilsEx.Cache cacheOfSrcFiles = new SourceUtilsEx.Cache();
-    private final Set<ElementHandle> classes2Move;
+    private final Set<ElementHandle<TypeElement>> classes2Move;
 
     public Problem getProblem() {
         return problem;
@@ -87,7 +87,7 @@ public class MoveTransformer extends RefactoringVisitor {
 
     public MoveTransformer(MoveRefactoringPlugin move) {
         this.move = move;
-        classes2Move = new HashSet<ElementHandle>(move.classes.values());
+        classes2Move = move.classes;
     }
     
     @Override
@@ -231,15 +231,15 @@ public class MoveTransformer extends RefactoringVisitor {
         return move.isRenameRefactoring;
     }
     
-    private boolean isThisFileReferencedbyOldPackage() {
-        Set<FileObject> references = new HashSet<FileObject>(move.whoReferences.get(workingCopy.getFileObject()));
-        references.removeAll(move.filesToMove);
-        for (FileObject file:references) {
-            if (file.getParent().equals(originalFolder))
-                return true;
-        }
-        return false;
-    }
+//    private boolean isThisFileReferencedbyOldPackage() {
+//        Set<FileObject> references = new HashSet<FileObject>(move.whoReferences.get(workingCopy.getFileObject()));
+//        references.removeAll(move.filesToMove);
+//        for (FileObject file:references) {
+//            if (file.getParent().equals(originalFolder))
+//                return true;
+//        }
+//        return false;
+//    }
     
 //    private boolean isThisFileReferencingOldPackage() {
 //        //TODO: correctly implement
