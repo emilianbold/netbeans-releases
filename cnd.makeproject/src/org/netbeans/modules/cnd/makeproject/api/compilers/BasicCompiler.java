@@ -68,9 +68,14 @@ public abstract class BasicCompiler extends Tool {
         return getIncludeFileBase() + hostid + "/"; //NOI18N
     }
 
+    private static String includeFileNamePrefix;
     // FIXUP: still a fixup. Think over, who is responsible for this
     public static String getIncludeFileBase() {
-        return System.getProperty("netbeans.user") + "/var/cache/cnd3/includes-cache/"; //NOI18N
+        if (includeFileNamePrefix == null) {
+            // use always Unix path, because java.io.File on windows understands it well
+            includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd3/includes-cache/"; //NOI18N
+        }
+        return includeFileNamePrefix;
     }
 
     @Override
