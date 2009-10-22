@@ -33,6 +33,8 @@ else
     fi
 fi
 
-hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
+TIP=`hg id -i | tr -d "+"`
+
+hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
 unset BASETIP
 exit 0

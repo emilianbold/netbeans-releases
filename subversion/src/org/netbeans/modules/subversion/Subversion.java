@@ -62,6 +62,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -160,8 +161,7 @@ public class Subversion {
     private void prepareCache() {
         cleanupTask = getRequestProcessor().create(new Runnable() {
             public void run() {
-                if (org.netbeans.modules.versioning.util.IndexingBridge.getInstance().isIndexingInProgress()) {
-                    cleanupTask.schedule(5000);
+                if (DelayScanRegistry.getInstance().isDelayed(cleanupTask, LOG, "Subversion.cleanupTask")) { //NOI18N
                     return;
                 }
                 try {

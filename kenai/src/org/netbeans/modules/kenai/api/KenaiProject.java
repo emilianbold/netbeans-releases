@@ -253,7 +253,7 @@ public final class KenaiProject {
     }
     
     private static Pattern getRepositoryPattern() {
-        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getName().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
+        return Pattern.compile("(https|http)://([a-z]+\\.)?" + Kenai.getDefault().getUrl().getHost().replace(".", "\\.") + "/(svn|hg)/(\\S*)~(.*)");
     }
     private static final int repositoryPatternProjectGroup = 4;
 

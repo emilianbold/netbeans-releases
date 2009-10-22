@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.tigris.subversion.svnclientadapter.*;
@@ -158,8 +159,7 @@ public class FileStatusCache {
     
         refreshTask = rp.create( new Runnable() {
             public void run() {
-                if (org.netbeans.modules.versioning.util.IndexingBridge.getInstance().isIndexingInProgress()) {
-                    refreshTask.schedule(5000);
+                if (DelayScanRegistry.getInstance().isDelayed(refreshTask, LOG, "FileStatusCache.refreshTask")) { //NOI18N
                     return;
                 }
                 long startTime = 0;

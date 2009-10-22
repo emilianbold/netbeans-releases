@@ -57,7 +57,7 @@ import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
-import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -381,9 +381,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private class RefreshTask implements Runnable {
         public void run() {
             Thread.interrupted();
-            if (IndexingBridge.getInstance().isIndexingInProgress()) {
-                // do not steal disk from openning projects and indexing tasks
-                refreshTask.schedule(5000); // try again in 5 seconds
+            if (DelayScanRegistry.getInstance().isDelayed(refreshTask, Mercurial.STATUS_LOG, "MercurialInterceptor.refreshTask")) { //NOI18N
                 return;
             }
             File fileToRefresh;

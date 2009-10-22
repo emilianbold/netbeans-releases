@@ -642,7 +642,7 @@ public class IntroduceHint extends AbstractRule {
                 varName = String.format("$param%d", i);//NOI18N
             }
             if (i > 0) {
-                paramNames.append(", ");
+                paramNames.append(",");
             }
             paramNames.append(varName);
         }
@@ -663,7 +663,7 @@ public class IntroduceHint extends AbstractRule {
 
         @Override
         protected String getFunctionBodyForTemplate() {
-            return ";\n";//NOI18N
+            return "\n";//NOI18N
         }
     }
 

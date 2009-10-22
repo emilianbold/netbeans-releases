@@ -12,8 +12,8 @@ Searchable Keys:
   constant : ITALY;Fixnum
   constant : JULIAN;FalseClass
   constant : MONTHNAMES;Array
-  field : ajd
-  field : of
+  field : ajd;;Fixnum;
+  field : of;;Fixnum;
   field : sg
   fqn : Date
   method : +(n)|DOCUMENTED|

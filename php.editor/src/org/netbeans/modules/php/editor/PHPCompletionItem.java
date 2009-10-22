@@ -738,7 +738,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         protected String getFunctionBodyForTemplate() {
-            return "${cursor};\n";//NOI18N
+            return "${cursor}\n";//NOI18N
         }
     }
 

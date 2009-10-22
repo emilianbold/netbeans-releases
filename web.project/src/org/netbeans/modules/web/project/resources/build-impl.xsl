@@ -277,7 +277,10 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.tmp.war.package.with.custom.manifest">
                     <and>
                         <isset property="has.custom.manifest"/>
-                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <or>
+                            <isfalse value="${{directory.deployment.supported}}"/>
+                            <isset property="dist.ear.dir"/>
+                        </or>
                     </and>
                 </condition>
                 <condition property="do.tmp.war.package.without.custom.manifest">
@@ -285,11 +288,17 @@ introduced by support for multiple source roots. -jglick
                         <not>
                             <isset property="has.custom.manifest"/>
                         </not>
-                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <or>
+                            <isfalse value="${{directory.deployment.supported}}"/>
+                            <isset property="dist.ear.dir"/>
+                        </or>
                     </and>
                 </condition>
                 <condition property="do.tmp.war.package">
-                    <isfalse value="${{directory.deployment.supported}}"/>
+                    <or>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                        <isset property="dist.ear.dir"/>
+                    </or>
                 </condition>
                 
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
@@ -1160,9 +1169,14 @@ exists or setup the property manually. For example like this:
                     </copyfiles>
                 </xsl:for-each>
             </target>
-            
+
+            <target depends="init" name="-clean-webinf-lib" if="dist.ear.dir">
+                <!-- this may need to be optimized in future -->
+                <delete dir="${{build.web.dir}}/WEB-INF/lib"/>
+            </target>
+
             <target name="do-ear-dist">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,-clean-webinf-lib,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.tmp.war.package</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>

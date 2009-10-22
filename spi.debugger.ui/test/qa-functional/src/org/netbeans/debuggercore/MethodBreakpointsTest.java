@@ -234,14 +234,6 @@ public class MethodBreakpointsTest extends DebuggerTestCase {
             new ContinueAction().perform();
             Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:121");
             new ContinueAction().perform();
-
-            //TODO: change if neccessary once http://www.netbeans.org/issues/show_bug.cgi?id=172027 is resolved
-            if (System.getProperty("java.version").startsWith("1.6"))
-            {
-                Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:32");
-                new ContinueAction().perform();
-            }
-
             Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();
             Utilities.waitStatusOrConsoleText("Thread main stopped at MemoryView.java:92");

@@ -120,7 +120,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 return;
             }
 
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
             if (adaptorServlet != null) {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.

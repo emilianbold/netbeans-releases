@@ -7,3 +7,13 @@ class Far
 end
 
 Far.new.far_far_away
+
+class Close
+  def so_close
+
+  end
+  # for testing dsymbolnodes
+  alias_method :"so_so_close", :"so_close"
+end
+
+Close.new.so_so_close

@@ -559,7 +559,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {
-        String kenaiName = Kenai.getDefault().getName();
+        String kenaiName = Kenai.getDefault().getUrl().getHost();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
         if( 0 == count ) {
@@ -586,7 +586,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void storeAllProjects() {
-        String kenaiName = Kenai.getDefault().getName();
+        String kenaiName = Kenai.getDefault().getUrl().getHost();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int index = 0;
         for( ProjectHandle project : openProjects ) {
