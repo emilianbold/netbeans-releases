@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.dlight.procfs.processinfo;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
@@ -62,7 +64,8 @@ public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderF
             if (hinfo != null && hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
                 return new ProcBasedProcessInfoProvider(execEnv, pid);
             }
-        } catch (Exception ex) {
+        } catch (CancellationException ex) {
+        } catch (IOException ex) {
         }
 
         return null;

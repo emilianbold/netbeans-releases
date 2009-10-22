@@ -141,7 +141,7 @@ public final class RubyTypeAnalyzer {
             }
             case LOCALASGNNODE: {
                 RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
-                String symbol = RubyTypeInferencer.getLocalVarPath(knowledge.getRoot(), node);
+                String symbol = RubyTypeInferencer.getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node));
                 maybePutTypeForSymbol(typesForSymbols, symbol, type, override);
                 break;
             }

@@ -42,8 +42,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -105,7 +103,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
     private boolean dock;
     private final ExplorerManager manager = new ExplorerManager();
     private JComponent lastFocusedComponent = null;
-    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl();
     private THAIndicatorsTopComponentActionsProvider actionsProvider = null;
     private final PopupAction popupAction = new PopupAction("popupTHAIndicatorTopComponentAction");//NOI18N
     private THAConfiguration thaConfiguration = null;
@@ -136,8 +133,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                 }
             }
         }
-        setFocusTraversalPolicyProvider(true);
-        setFocusTraversalPolicy(focusPolicy);
         ActionMap map = new ActionMap();
         map.put("org.openide.actions.PopupAction", popupAction);//NOI18N
         this.associateLookup(ExplorerUtils.createLookup(manager, map));
@@ -241,8 +236,7 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
                     statusLabel.setText(getMessage("THAControlPanel.Recording", collectionKind)); // NOI18N
                     statusLabel.setForeground(RECORDING_COLOR);
                 } else if (THAActionsProvider.STOP_COMMAND.equals(e.getActionCommand())) {
-                    statusLabel.setText("");//NOI18N
-                    //getMessage("THAControlPanel.Stopped", collectionKind));//NOI18N
+                    statusLabel.setText(getMessage("THAControlPanel.Stopped", collectionKind));//NOI18N
                 }
             }
         });
@@ -434,10 +428,9 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
         super.componentActivated();
         if (lastFocusedComponent != null) {
             lastFocusedComponent.requestFocus();
-        } else {
-            focusPolicy.getFirstComponent(this).requestFocus();
+        } else if (controlPanel != null) {
+            controlPanel.requestFocus();
         }
-
     }
 
     @Override
@@ -482,76 +475,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     private static String getMessage(String name, Object... params) {
         return NbBundle.getMessage(THAIndicatorsTopComponent.class, name, params);
-    }
-
-    private final class FocusTraversalPolicyImpl extends FocusTraversalPolicy {
-
-        @Override
-        public Component getComponentAfter(Container aContainer, Component aComponent) {
-            if (aComponent == getCurrentPanel()) {
-                return controlPanel;
-            }
-            if (aComponent == controlPanel) {
-                return getCurrentPanel();
-            }
-            if (indicatorPanels == null) {
-                return controlPanel;
-            }
-            int indexOf = indicatorPanels.indexOf(aComponent);
-            if (indexOf == -1) {
-                return controlPanel;
-            }
-            if (indexOf == indicatorPanels.size() - 1) {
-                return controlPanel;
-            }
-            return indicatorPanels.get(indexOf + 1);
-        }
-
-        @Override
-        public Component getComponentBefore(Container aContainer, Component aComponent) {
-            if (aComponent == getCurrentPanel()) {
-                return controlPanel;//no path to go
-            }
-            if (aComponent == controlPanel) {
-                return getCurrentPanel();
-            }
-            if (indicatorPanels == null) {
-                return controlPanel;
-            }
-            int indexOf = indicatorPanels.indexOf(aComponent);
-            if (indexOf == -1) {
-                return controlPanel;
-            }
-            if (indexOf == 0) {
-                return controlPanel;
-            }
-            return indicatorPanels.get(indexOf - 1);
-        }
-
-        @Override
-        public Component getFirstComponent(Container aContainer) {
-            return controlPanel;
-//            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-//                return getCurrentPanel();
-//            }
-//            return indicatorPanels.get(0);
-        }
-
-        @Override
-        public Component getLastComponent(Container aContainer) {
-            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-                return getCurrentPanel();
-            }
-            return indicatorPanels.get(indicatorPanels.size() - 1);
-        }
-
-        @Override
-        public Component getDefaultComponent(Container aContainer) {
-            if (indicatorPanels == null || indicatorPanels.size() == 0) {
-                return getCurrentPanel();
-            }
-            return indicatorPanels.get(0);
-        }
     }
 
     private class PopupAction extends AbstractAction implements Runnable {

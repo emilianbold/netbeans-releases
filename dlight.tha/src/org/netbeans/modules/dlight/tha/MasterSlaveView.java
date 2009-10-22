@@ -38,31 +38,34 @@
  */
 package org.netbeans.modules.dlight.tha;
 
-import java.awt.BorderLayout;
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
-import javax.swing.Renderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * @author Alexey Vladykin
@@ -70,13 +73,11 @@ import org.openide.util.Exceptions;
 public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSplitPane implements ExplorerManager.Provider {
 
     private final BeanTreeView master;
-    private final JPanel rightPanel = new JPanel();
     private Component slave;
     private SlaveRenderer slaveRenderer;
     private final ExplorerManager manager = new ExplorerManager();
     private final RootNode rootNode = new RootNode();
     private final F nodeFactory;
-    private volatile boolean isFirstTime = true;
     private static final String SWITCH_TO_LEFT = "switchToLeftComponent"; // NOI18N
     private static final String SWITCH_TO_RIGHT = "switchToRightComponent"; // NOI18N
 
@@ -92,7 +93,6 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
         this.nodeFactory = factory;
         setResizeWeight(0.5);
         setLeftComponent(master);
-        setRightComponent(rightPanel);
         manager.setRootContext(rootNode);
         manager.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -102,6 +102,13 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
                 }
             }
         });
+        Set<AWTKeyStroke> keys = new HashSet<AWTKeyStroke>(master.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+        keys.add(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
+        master.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, keys);
+
+        keys = new HashSet<AWTKeyStroke>(master.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+        keys.add(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_MASK));
+        master.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, keys);
         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK), SWITCH_TO_LEFT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK), SWITCH_TO_RIGHT);
@@ -153,6 +160,7 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
 //        master.setRootVisible(true);
         if (data.isEmpty()) {
             master.setRootVisible(true);
+            rootNode.setLeaf();
         } else {
             master.setRootVisible(false);
             rootNode.setKeys(new ChildrenList(nodeFactory, data));
@@ -184,6 +192,11 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
         }
     }
 
+    private static String loc(String key, String... params) {
+        return NbBundle.getMessage(
+                MasterSlaveView.class, key, params);
+    }
+
     private void showDetails(T masterItem, boolean keepDividerPos) {
         slave = null;
         if (masterItem != null && slaveRenderer != null) {
@@ -191,13 +204,10 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
             slave = slaveRenderer.getComponent();
         }
         if (slave == null) {
-            slave = new JLabel("<No details>"); // NOI18N
+            slave = new JLabel(loc("MasterSlaveView.NoDetails")); // NOI18N
         }
         int oldDividerPos = keepDividerPos ? getDividerLocation() : 0;
-        rightPanel.removeAll();
-        rightPanel.setLayout(new BorderLayout());
-        rightPanel.add(slave, BorderLayout.CENTER);
-        rightPanel.repaint();
+        setRightComponent(slave);
         slaveRenderer.expandAll();
         if (keepDividerPos) {
             setDividerLocation(oldDividerPos);
@@ -236,12 +246,16 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
 
         RootNode() {
             super(Children.LEAF);
-            setDisplayName("Loading...");//NOI18N
+            setDisplayName(loc("MasterSlaveView.RootNode.Loading"));//NOI18N
         }
 
         void setKeys(ChildrenList children) {
             setChildren(Children.LEAF);
             setChildren(children);
+        }
+
+        void setLeaf(){
+            setChildren(Children.LEAF);
         }
     }
 }

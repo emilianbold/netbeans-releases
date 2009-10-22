@@ -286,6 +286,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                     // Make sure I don't already have an entry for this field as an
                     // attr_accessor or writer
                     String fieldName = field.getName();
+                    co.setType(knowledge.getType(fieldName));
 
                     if (fieldName.startsWith("@@")) {
                         fieldName = fieldName.substring(2);

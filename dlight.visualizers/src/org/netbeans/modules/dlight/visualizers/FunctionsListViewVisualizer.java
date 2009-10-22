@@ -118,12 +118,12 @@ public class FunctionsListViewVisualizer extends JPanel implements
         Visualizer<FunctionsListViewVisualizerConfiguration>, OnTimerTask, ComponentListener, ExplorerManager.Provider {
 
     private static final long MIN_REFRESH_MILLIS = 500;
-
     private Future<Boolean> task;
     private Future<Boolean> detailedTask;
-    private final Object queryLock = FunctionsListViewVisualizer.class.getName() + " query lock"; // NOI18N
-    private final Object detailsQueryLock = FunctionsListViewVisualizer.class.getName() + " details query lock"; // NOI18N
-    private final Object uiLock = FunctionsListViewVisualizer.class.getName() + " UI lock"; // NOI18N
+    private final QueryLock queryLock = new QueryLock();
+    private final DetailsQueryLock detailsQueryLock = new DetailsQueryLock();
+    private final SourcePrefetchExecutorLock sourcePrefetchExecutorLock = new SourcePrefetchExecutorLock();
+    private final UILock uiLock = new UILock();
     private JButton refresh;
     private boolean isEmptyContent;
     private boolean isLoadingContent;
@@ -139,7 +139,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private final VisualizersSupport visSupport;
     private FunctionCallChildren currentChildren;
     private ExecutorService sourcePrefetchExecutor;
-    private final String sourcePrefetchExecutorLock = new String("sourcePrefetchExecutorLock");//NOI18N
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
@@ -206,10 +205,12 @@ public class FunctionsListViewVisualizer extends JPanel implements
             @SuppressWarnings("unchecked")
             Property<?> property = new PropertySupport(c.getColumnName(), c.getColumnClass(),
                     displayedName, displayedTooltip, true, false) {
+
                 @Override
                 public Object getValue() throws IllegalAccessException, InvocationTargetException {
                     return null;
                 }
+
                 @Override
                 public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                 }
@@ -326,6 +327,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             }
 
             UIThread.invoke(new Runnable() {
+
                 public void run() {
                     setLoadingContent();
                 }
@@ -381,12 +383,11 @@ public class FunctionsListViewVisualizer extends JPanel implements
                     List<FunctionCallWithMetric> detailedCallsList =
                             dataProvider.getDetailedFunctionsList(metadata, functionDatatableDescription, metrics);
                     List<FunctionCallWithMetric> functionsList = Collections.<FunctionCallWithMetric>emptyList();
-                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)){
+                    if (!dataProvider.hasTheSameDetails(metadata, functionDatatableDescription, metrics)) {
                         functionsList =
                                 (explorerManager.getRootContext() != null &&
                                 explorerManager.getRootContext().getChildren() != null &&
-                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ?
-                                ((FunctionCallChildren)explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
+                                explorerManager.getRootContext().getChildren() instanceof FunctionCallChildren) ? ((FunctionCallChildren) explorerManager.getRootContext().getChildren()).list : Collections.<FunctionCallWithMetric>emptyList();
                     }
 
                     asyncNotifyAnnotedSourceProviders(functionsList, detailedCallsList);
@@ -547,6 +548,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
+
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 asyncFillModel(false);
             }
@@ -835,5 +837,17 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
     private static String getMessage(String key) {
         return NbBundle.getMessage(FunctionsListViewVisualizer.class, key);
+    }
+
+    private final static class QueryLock {
+    }
+
+    private final static class DetailsQueryLock {
+    }
+
+    private final static class SourcePrefetchExecutorLock {
+    }
+
+    private final static class UILock {
     }
 }

@@ -90,7 +90,7 @@ final class ExecutionContext {
         DataCollectorProvider.getInstance().reset();
         envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
-    
+
     void clear() {
         envProvider.clear();
     }
@@ -135,10 +135,10 @@ final class ExecutionContext {
         }
 
         Map<Validateable<DLightTarget>, Future<ValidationStatus>> tasks =
-            new HashMap<Validateable<DLightTarget>, Future<ValidationStatus>>();
+                new HashMap<Validateable<DLightTarget>, Future<ValidationStatus>>();
 
         Map<Validateable<DLightTarget>, ValidationStatus> states =
-            new HashMap<Validateable<DLightTarget>, ValidationStatus>();
+                new HashMap<Validateable<DLightTarget>, ValidationStatus>();
 
 //        count++;
         List<DataCollector<?>> collectors = new ArrayList<DataCollector<?>>();
@@ -155,16 +155,28 @@ final class ExecutionContext {
                 }
             }
         }
+
         List<IndicatorDataProvider<?>> idps = new ArrayList<IndicatorDataProvider<?>>();
+
         for (DLightTool tool : toolsToValidate) {
             // Try to subscribe every IndicatorDataProvider to every Indicator
             //there can be the situation when IndicatorDataProvider is collector
             //and not attacheble
             List<IndicatorDataProvider<?>> tool_idps = getDLightConfiguration().getConfigurationOptions(false).getIndicatorDataProviders(tool);
-            for (IndicatorDataProvider idp : tool_idps){
-                if (!collectors.contains(idp) && !idps.contains(idp)){
-                    idps.add(idp);
+
+            for (IndicatorDataProvider<?> idp : tool_idps) {
+                if (idp instanceof DataCollector<?>) {
+                    if (collectors.contains((DataCollector<?>) idp)) {
+                        // I.e. this provider will be enabled
+                        continue;
+                    }
                 }
+
+                if (idps.contains(idp)) {
+                    continue;
+                }
+
+                idps.add(idp);
             }
         }
 
@@ -185,7 +197,7 @@ final class ExecutionContext {
 //
 ////            System.out.printf("%d: Future for validation task: %s\n", count, tasks.get(tool).toString());
 //        }
-        for (final DataCollector<?> c : collectors){
+        for (final DataCollector<?> c : collectors) {
             ValidationStatus collectorCurrentStatus = c.getValidationStatus();
             states.put(c, collectorCurrentStatus);
             tasks.put(c, DLightExecutorService.submit(new Callable<ValidationStatus>() {
@@ -197,7 +209,7 @@ final class ExecutionContext {
 
 
         }
-        for (final IndicatorDataProvider<?> idp : idps){
+        for (final IndicatorDataProvider<?> idp : idps) {
             ValidationStatus collectorCurrentStatus = idp.getValidationStatus();
             states.put(idp, collectorCurrentStatus);
             tasks.put(idp, DLightExecutorService.submit(new Callable<ValidationStatus>() {
@@ -247,7 +259,7 @@ final class ExecutionContext {
                                 public ValidationStatus call() throws Exception {
                                     return validatable.validate(target);
                                 }
-                            },  validatable + " validation"); // NOI18N
+                            }, validatable + " validation"); // NOI18N
                             vNewStatus = task.get();
                             thisValidatableStateChaged = !vNewStatus.equals(states.get(validatable));
                         }
@@ -308,7 +320,7 @@ final class ExecutionContext {
         ArrayList<Indicator<?>> result = new ArrayList<Indicator<?>>();
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(tool.getID())){
+            if (activeToolNames == null || activeToolNames.contains(tool.getID())) {
                 result.addAll(DLightToolAccessor.getDefault().getIndicators(tool));
             }
         }
@@ -316,31 +328,31 @@ final class ExecutionContext {
         return result;
     }
 
-    DLightTool getToolByName(String toolName){
+    DLightTool getToolByName(String toolName) {
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(tool.getID()) &&  tool.getName().equals(toolName)){
+            if (activeToolNames == null || activeToolNames.contains(tool.getID()) && tool.getName().equals(toolName)) {
                 return tool;
             }
         }
-       return null;
+        return null;
     }
 
-    DLightTool getToolByID(String toolId){
+    DLightTool getToolByID(String toolId) {
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if (activeToolNames == null || activeToolNames.contains(toolId) &&  tool.getID().equals(toolId)){
+            if (activeToolNames == null || activeToolNames.contains(toolId) && tool.getID().equals(toolId)) {
                 return tool;
             }
         }
-       return null;
+        return null;
     }
 
     List<DLightTool> getTools() {
         List<DLightTool> result = new ArrayList<DLightTool>();
         Collection<String> activeToolNames = getDLightConfiguration().getConfigurationOptions(false).getActiveToolNames();
         for (DLightTool tool : tools) {
-            if ((tool.isEnabled() &&  (activeToolNames == null || activeToolNames.contains(tool.getID()))) ||
+            if ((tool.isEnabled() && (activeToolNames == null || activeToolNames.contains(tool.getID()))) ||
                     (!tool.isEnabled() && activeToolNames != null && activeToolNames.contains(tool.getID()))) {
                 result.add(tool);
             }
@@ -349,7 +361,7 @@ final class ExecutionContext {
         return result;
     }
 
-    final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {
+    private static final class DLightTargetExecutionEnvProviderCollection implements ExecutionEnvVariablesProvider {
 
         private Set<ExecutionEnvVariablesProvider> providers;
 
@@ -382,5 +394,4 @@ final class ExecutionContext {
             }
         }
     }
-
 }

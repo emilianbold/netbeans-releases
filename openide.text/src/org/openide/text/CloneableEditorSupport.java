@@ -2226,7 +2226,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         documentStatus = DOCUMENT_NO;
         fireEvent = true;
         setDoc(null, false);
-        kit = null;
+//        kit = null;
         
         getUndoRedo().discardAllEdits();
         updateLineSet(true);
@@ -2684,7 +2684,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private void setStrong(boolean alreadyModified) {
             if (alreadyModified) {
                 this.doc = super.get();
-                this.lineSet = CloneableEditorSupport.this.lineSet.get();
+                Reference<Line.Set> r = CloneableEditorSupport.this.lineSet;
+                this.lineSet = r == null ? null : r.get();
             } else {
                 this.doc = null;
                 this.lineSet = null;

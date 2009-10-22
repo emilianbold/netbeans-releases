@@ -46,10 +46,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -94,7 +92,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     /**
      * Most recent status message.
      */
-    private String recentStatusMessage = "";
+    //private String recentStatusMessage = "";
 
     public AnnotationBar(JTextComponent target) {
         this.textComponent = target;
@@ -106,6 +104,13 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 //    this.setLayout(new BorderLayout());
 //    this.add(mainPanel, BorderLayout.CENTER);
         addMouseListener(new PopupMenuListener());
+    }
+
+    /**
+     * @return the fileAnnotationInfo
+     */
+    protected FileAnnotationInfo getFileAnnotationInfo() {
+        return fileAnnotationInfo;
     }
 
     private static class PopupMenuListener extends MouseAdapter implements MouseListener {
@@ -218,7 +223,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      */
     @Override
     public Dimension getPreferredSize() {
-        if (!annotated || fileAnnotationInfo == null) {
+        if (!annotated || getFileAnnotationInfo() == null) {
             return new Dimension(0, 0);
         }
         Dimension dim = textComponent.getSize();
@@ -234,7 +239,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      * @return the preferred width of this component
      */
     private int getBarWidth() {
-        int annotationLength = fileAnnotationInfo.getAnnotationLength();
+        int annotationLength = getFileAnnotationInfo().getAnnotationLength();
         if (annotationLength == 0) {
             return 0;
         }
@@ -266,12 +271,11 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         addMouseMotionListener(this);
 
         List<AnnotationMark> marks = new ArrayList<AnnotationMark>();
-        int index = 0;
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
+            marks.add(new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
         }
         for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getBlockAnnotationInfo()) {
-            marks.add(index++, new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
+            marks.add(new AnnotationMark(lineAnnotationInfo.getLine() - 1, lineAnnotationInfo.getTooltip(), getNavigationBarFGColor()));
         }
 
         AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
@@ -284,7 +288,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     public void unAnnotate() {
         annotated = false;
 
-        for (LineAnnotationInfo lineAnnotationInfo : fileAnnotationInfo.getLineAnnotationInfo()) {
+        for (LineAnnotationInfo lineAnnotationInfo : getFileAnnotationInfo().getLineAnnotationInfo()) {
             setHighlight((StyledDocument) doc, lineAnnotationInfo.getLine(), lineAnnotationInfo.getLine(), new Color(255, 255, 255), null);
         }
 
@@ -336,7 +340,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      */
     @Override
     public void paintComponent(Graphics g) {
-        if (!annotated || fileAnnotationInfo == null) {
+        if (!annotated || getFileAnnotationInfo() == null) {
             return;
         }
         super.paintComponent(g);
@@ -407,7 +411,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
         int offset = view.getStartOffset();
 //        int line = rootElem.getElementIndex(offset);
 //        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLine(line + 1);
-        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLineOffset(offset);
+        LineAnnotationInfo lineAnnotationInfo = getFileAnnotationInfo().getLineAnnotationInfoByLineOffset(offset);
         if (lineAnnotationInfo != null) {
             // paint line annotation
             Rectangle clip = g.getClipBounds();
@@ -425,7 +429,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
             g.drawString(annotation, 4, yBase + editorUI.getLineAscent());
             lineAnnotationInfo.setY(yBase, yBase + editorUI.getLineHeight());
         }
-        lineAnnotationInfo = fileAnnotationInfo.getBlockAnnotationInfoByLineOffset(offset);
+        lineAnnotationInfo = getFileAnnotationInfo().getBlockAnnotationInfoByLineOffset(offset);
         if (lineAnnotationInfo != null) {
             // paint block annotation
             Rectangle clip = g.getClipBounds();
@@ -465,7 +469,7 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
 
                 if (annotated) {
                     unAnnotate();
-                    annotate(fileAnnotationInfo);
+                    annotate(getFileAnnotationInfo());
                 }
             }
         }
@@ -503,10 +507,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
      * displayed by this annotation bar.
      */
     private void clearRecentFeedback() {
-        StatusBar statusBar = editorUI.getStatusBar();
-        if (statusBar.getText(StatusBar.CELL_MAIN) == recentStatusMessage) {
-            statusBar.setText(StatusBar.CELL_MAIN, "");  // NOI18N
-        }
+        //StatusBar statusBar = editorUI.getStatusBar();
+        //if (statusBar.getText(StatusBar.CELL_MAIN) == recentStatusMessage) {
+        //    statusBar.setText(StatusBar.CELL_MAIN, "");  // NOI18N
+        //}
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -538,10 +542,10 @@ public class AnnotationBar extends JComponent implements Accessible, PropertyCha
     }
 
     public void mouseMoved(MouseEvent e) {
-        String tooltip = fileAnnotationInfo.getTooltip();
-        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByYCoordinate(e.getY());
+        String tooltip = getFileAnnotationInfo().getTooltip();
+        LineAnnotationInfo lineAnnotationInfo = getFileAnnotationInfo().getLineAnnotationInfoByYCoordinate(e.getY());
         if (lineAnnotationInfo == null) {
-            lineAnnotationInfo = fileAnnotationInfo.getBlockAnnotationInfoByYCoordinate(e.getY());
+            lineAnnotationInfo = getFileAnnotationInfo().getBlockAnnotationInfoByYCoordinate(e.getY());
         }
         if (lineAnnotationInfo != null) {
             tooltip = lineAnnotationInfo.getTooltip();

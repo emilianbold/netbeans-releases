@@ -74,7 +74,7 @@ public class ExecSupport {
             // not a critical error, continue
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        io.select();
+//            io.select();
         ow.println(initialMessage);
         final Thread[] copyMakers = new Thread[3];
         (copyMakers[0] = new OutputCopier(new InputStreamReader(child.getInputStream()), ow, true)).start();

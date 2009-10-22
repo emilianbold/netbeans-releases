@@ -2942,10 +2942,14 @@ function_try_block
 
 protected 
 condition
-	:
-	((condition_declaration)=> condition_declaration | condition_expression)
-	{#condition=#(#[CSM_CONDITION, "CSM_CONDITION"], #condition);}
-	;
+    :
+        (
+            (condition_declaration) => condition_declaration
+        |
+            condition_expression
+        )
+        {#condition=#(#[CSM_CONDITION, "CSM_CONDITION"], #condition);}
+    ;
 
 protected 
 condition_expression
@@ -2955,10 +2959,13 @@ condition_expression
 
 protected 
 condition_declaration {int ts = tsInvalid;}
-	:
+    :
         cv_qualifier_seq (LITERAL_typename)?
-	ts=type_specifier[dsInvalid, false] declarator[declStatement] ASSIGNEQUAL assignment_expression
-	;
+        ts=type_specifier[dsInvalid, false]
+        (postfix_cv_qualifier)? 
+        declarator[declStatement]
+        ASSIGNEQUAL assignment_expression
+    ;
 
 //	(declaration)=> declaration|	expression
 

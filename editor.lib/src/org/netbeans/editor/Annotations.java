@@ -796,14 +796,14 @@ public class Annotations implements DocumentListener {
         // add checkbox for enabling/disabling of line numbers
         Action action = kit.getActionByName(BaseKit.toggleLineNumbersAction);
         JMenuItem popupItem = getPopupMenuItem(action);
-        assert (popupItem != null);
-        pm.add(popupItem);
+        if (popupItem != null)
+            pm.add(popupItem);
         
         action = kit.getActionByName(ExtKit.toggleToolbarAction);
-        if (action != null){
+        if (action != null) {
             popupItem = getPopupMenuItem(action);
-            assert (popupItem != null);
-            pm.add(popupItem);
+            if (popupItem != null)
+                pm.add(popupItem);
         }
         menuInitialized = true;
     }

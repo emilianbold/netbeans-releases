@@ -1,5 +1,5 @@
 Ape:CLASS:[]:ESCAPED{Ape}:
-  authent:FIELD:[]:ESCAPED{authent}:
+  authent:FIELD:[]:ESCAPED{authent}<font color='#777777'> : ESCAPED{Authent}</font>:
   cats:FIELD:[]:ESCAPED{cats}:
   check:METHOD:[PUBLIC]:ESCAPED{check}(PARAMETERS{ESCAPED{uri}, ESCAPED{username}, ESCAPED{password}, ESCAPED{requested_e_coll}, ESCAPED{requested_m_coll}}):
   check_new_entry:METHOD:[PUBLIC]:ESCAPED{check_new_entry}(PARAMETERS{ESCAPED{as_posted}, ESCAPED{new_entry}, ESCAPED{desc}}):
@@ -7,8 +7,8 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   compare1:METHOD:[PUBLIC]:ESCAPED{compare1}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}, ESCAPED{field}})<font color='#777777'> : ESCAPED{TrueClass}</font>:
   compare_entries:METHOD:[PUBLIC]:ESCAPED{compare_entries}(PARAMETERS{ESCAPED{e1}, ESCAPED{e2}, ESCAPED{e1Name}, ESCAPED{e2Name}})<font color='#777777'> : ESCAPED{TrueClass, FalseClass}</font>:
   dialogs:FIELD:[]:ESCAPED{dialogs}:
-  dianum:FIELD:[]:ESCAPED{dianum}:
-  diarefs:FIELD:[]:ESCAPED{diarefs}:
+  dianum:FIELD:[]:ESCAPED{dianum}<font color='#777777'> : ESCAPED{Fixnum}</font>:
+  diarefs:FIELD:[]:ESCAPED{diarefs}<font color='#777777'> : ESCAPED{Hash}</font>:
   end_list:METHOD:[PUBLIC]:ESCAPED{end_list}:
   error:METHOD:[PUBLIC]:ESCAPED{error}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}})<font color='#777777'> : ESCAPED{Array}</font>:
   find_entry:METHOD:[PUBLIC]:ESCAPED{find_entry}(PARAMETERS{ESCAPED{feed_uri}, ESCAPED{name}, ESCAPED{id}, ESCAPED{report}})<font color='#777777'> : ESCAPED{String, Unknown}</font>:
@@ -16,12 +16,12 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   footer:FIELD:[]:ESCAPED{footer}:
   good:METHOD:[PUBLIC]:ESCAPED{good}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}})<font color='#777777'> : ESCAPED{Array}</font>:
   header:METHOD:[PUBLIC]:ESCAPED{header}(PARAMETERS{ESCAPED{uri}}):
-  header:FIELD:[]:ESCAPED{header}:
+  header:FIELD:[]:ESCAPED{header}<font color='#777777'> : ESCAPED{String}</font>:
   info:METHOD:[PUBLIC]:ESCAPED{info}(PARAMETERS{ESCAPED{message}})<font color='#777777'> : ESCAPED{Array}</font>:
   initialize:CONSTRUCTOR:[PRIVATE]:ESCAPED{initialize}(PARAMETERS{ESCAPED{args}}):
   line:METHOD:[PUBLIC]:ESCAPED{line}:
   list_item:METHOD:[PUBLIC]:ESCAPED{list_item}(PARAMETERS{ESCAPED{message}}):
-  lnum:FIELD:[]:ESCAPED{lnum}:
+  lnum:FIELD:[]:ESCAPED{lnum}<font color='#777777'> : ESCAPED{Fixnum}</font>:
   might_fail:METHOD:[PUBLIC]:ESCAPED{might_fail}(PARAMETERS{ESCAPED{uri}, ESCAPED{requested_e_coll}, ESCAPED{requested_m_coll}}):
   output:FIELD:[]:ESCAPED{output}:
   report:METHOD:[PUBLIC]:ESCAPED{report}(PARAMETERS{ESCAPED{output}}):
@@ -33,11 +33,11 @@ Ape:CLASS:[]:ESCAPED{Ape}:
   show_message:METHOD:[PUBLIC]:ESCAPED{show_message}(PARAMETERS{ESCAPED{crumb}, ESCAPED{tf}}):
   start_list:METHOD:[PUBLIC]:ESCAPED{start_list}(PARAMETERS{ESCAPED{message}})<font color='#777777'> : ESCAPED{Array}</font>:
   step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{message}})<font color='#777777'> : ESCAPED{Array}</font>:
-  steps:FIELD:[]:ESCAPED{steps}:
+  steps:FIELD:[]:ESCAPED{steps}<font color='#777777'> : ESCAPED{Array}</font>:
   test_entry_posts:METHOD:[PUBLIC]:ESCAPED{test_entry_posts}(PARAMETERS{ESCAPED{entry_collection}}):
   test_media_linkage:METHOD:[PUBLIC]:ESCAPED{test_media_linkage}(PARAMETERS{ESCAPED{coll}}):
   test_media_posts:METHOD:[PUBLIC]:ESCAPED{test_media_posts}(PARAMETERS{ESCAPED{media_collection}}):
   test_sorting:METHOD:[PUBLIC]:ESCAPED{test_sorting}(PARAMETERS{ESCAPED{coll}}):
-  w:FIELD:[]:ESCAPED{w}:
+  w:FIELD:[]:ESCAPED{w}<font color='#777777'> : ESCAPED{XmlMarkup}</font>:
   warning:METHOD:[PUBLIC]:ESCAPED{warning}(PARAMETERS{ESCAPED{message}, ESCAPED{crumb_key}})<font color='#777777'> : ESCAPED{Array}</font>:
   write_mark:METHOD:[PUBLIC]:ESCAPED{write_mark}(PARAMETERS{ESCAPED{mark}}):
