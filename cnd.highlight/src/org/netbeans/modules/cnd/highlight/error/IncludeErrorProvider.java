@@ -183,7 +183,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
             return false;
         }
         visited.add(file);
-        if (!CsmFileInfoQuery.getDefault().getBrokenIncludes(file).isEmpty()) {
+        if (CsmFileInfoQuery.getDefault().hasBrokenIncludes(file)) {
             return true;
         }
         for (CsmInclude incl : file.getIncludes()) {
