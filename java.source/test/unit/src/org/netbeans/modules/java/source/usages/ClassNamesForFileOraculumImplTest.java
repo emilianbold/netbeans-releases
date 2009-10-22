@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.source.usages;
 
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
-import java.util.LinkedList;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Jan Lahoda
+ * @author lahvac
  */
-public class ClassNamesForFileOraculumImpl implements ClassNamesForFileOraculum {
+public class ClassNamesForFileOraculumImplTest {
 
-    private final Map<JavaFileObject, List<String>> misplacedSource2FQNs;
-
-    public ClassNamesForFileOraculumImpl(Map<JavaFileObject, List<String>> misplacedSource2FQNs) {
-        this.misplacedSource2FQNs = misplacedSource2FQNs;
-    }
-    
-    public String[] divineClassName(JavaFileObject jfo) {
-        if (misplacedSource2FQNs.isEmpty()) {
-            return null;
-        }
-        
-        List<String> result = misplacedSource2FQNs.get(jfo);
-        
-        if (result != null) {
-            return result.toArray(new String[result.size()]);
-        }
-        
-        return null;
+    public ClassNamesForFileOraculumImplTest() {
     }
 
-    public JavaFileObject[] divineSources(String fqn) {
-        if (fqn == null || fqn.length() == 0 || misplacedSource2FQNs.isEmpty()) {
-            return null;
-        }
+    @Test
+    public void testDivineSources() {
+        TestJavaFileObject fo1 = new TestJavaFileObject();
+        TestJavaFileObject fo2 = new TestJavaFileObject();
+        Map<JavaFileObject, List<String>> fo2FQNs = new HashMap<JavaFileObject, List<String>>();
 
-        fqn += "."; //fqn should always be a package name
+        fo2FQNs.put(fo1, Arrays.asList("a.b.c.Class1"));
+        fo2FQNs.put(fo2, Arrays.asList("e.f.g"));
 
-        List<JavaFileObject> jfos = new LinkedList<JavaFileObject>();
-        for (Map.Entry<JavaFileObject, List<String>> entry : misplacedSource2FQNs.entrySet()) {
-            for (String s : entry.getValue()) {
-                if (s.startsWith(fqn)) {
-                    if (s.indexOf('.', fqn.length()) == -1) {
-                        jfos.add(entry.getKey());
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return jfos.size() > 0 ? jfos.toArray(new JavaFileObject[jfos.size()]) : null;
+        ClassNamesForFileOraculum oraculum = new ClassNamesForFileOraculumImpl(fo2FQNs);
+
+        assertArrayEquals(new JavaFileObject[] {fo1}, oraculum.divineSources("a.b.c"));
+        assertNull(oraculum.divineSources("a.b"));
+        assertNull(oraculum.divineSources("e.f.g"));
     }
+
+    private static final class TestJavaFileObject extends SimpleJavaFileObject {
+
+        public TestJavaFileObject() {
+            super(URI.create("test://test.java"), Kind.SOURCE);
+        }
+
+    }
+
 }

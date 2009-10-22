@@ -1370,20 +1370,23 @@ public class ActionFactory {
                     target.replaceSelection(null);
                 }
 
-                final int dotPos = caret.getDot();
-                final String s = editorUI.getWordMatch().getMatchWord(dotPos, matchNext);
+                final int caretOffset = caret.getDot();
+                final String s = editorUI.getWordMatch().getMatchWord(caretOffset, matchNext);
                 final String prevWord = editorUI.getWordMatch().getPreviousWord();
                 if (s != null) {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                int pos = dotPos;
-                                if (prevWord != null && prevWord.length() > 0) {
-                                    pos -= prevWord.length();
-                                    doc.remove(pos, prevWord.length());
+                                int offset = caretOffset;
+                                boolean removePrevWord = (prevWord != null && prevWord.length() > 0);
+                                if (removePrevWord) {
+                                    offset -= prevWord.length();
                                 }
-                                doc.insertString(pos, s, null);
+                                // Create position due to possible text replication (e.g. for variable renaming)
+                                Position pos = doc.createPosition(offset);
+                                doc.remove(offset, prevWord.length());
+                                doc.insertString(pos.getOffset(), s, null);
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {
