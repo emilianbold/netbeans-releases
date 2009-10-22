@@ -326,7 +326,7 @@ public class ComputeImports {
                 Map<String, Object> p) {
             super.visitAnnotation(node, p);
             TypeMirror typeMirror = info.getTrees().getTypeMirror(getCurrentPath());
-            if (typeMirror.getKind() == TypeKind.ERROR) {
+            if (typeMirror != null && typeMirror.getKind() == TypeKind.ERROR) {
                 unresolved.add(node.getAnnotationType().toString());
             }
             return null;
