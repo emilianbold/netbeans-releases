@@ -194,12 +194,12 @@
     </Component>
     <Component class="javax.swing.JButton" name="forgotPassword">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(LoginPanel.class, &quot;LoginPanel.forgotPassword.text&quot;), new URLDisplayerAction(&quot;&quot;,forgetPasswordUrl));"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(LoginPanel.class, &quot;LoginPanel.forgotPassword.text&quot;), new URLDisplayerAction(&quot;&quot;,getForgetPasswordUrl()));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="signUp">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(LoginPanel.class, &quot;LoginPanel.register.text&quot;), new URLDisplayerAction(&quot;&quot;,registerUrl));"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(LoginPanel.class, &quot;LoginPanel.register.text&quot;), new URLDisplayerAction(&quot;&quot;,getRegisterUrl()));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="lblKenaiLogoLeft">

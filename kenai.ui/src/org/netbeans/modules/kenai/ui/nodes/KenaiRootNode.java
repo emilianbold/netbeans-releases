@@ -93,7 +93,7 @@ public class KenaiRootNode extends AbstractNode {
         
         protected boolean createKeys(List<KenaiInstance> toPopulate) {
             toPopulate.addAll(KenaiInstancesManager.getDefault().getInstances());
-            //Collections.sort(toPopulate);
+            Collections.sort(toPopulate);
             return true;
         }
         public void propertyChange(PropertyChangeEvent evt) {
