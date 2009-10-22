@@ -65,6 +65,7 @@ public final class THAActionsProvider {
     public static final String SUSPEND_COMMAND = "THAProfileSuspend";//NOI18N
     public static final String RESUME_COMMAND = "THAProfileResume";//NOI18N
     public static final String STOP_COMMAND = "THAProfileStop";//NOI18N
+    public static final String PROCESSING_REQUEST_COMMAND = "THAProfileProcessRequest";//NOI18N
     private volatile THASuspensionSupport suspensionSupport = null;
     private Action suspendDataCollection;
     private Action resumeDataCollection;
@@ -180,9 +181,9 @@ public final class THAActionsProvider {
                     return;
                 }
 
+                fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, PROCESSING_REQUEST_COMMAND));
                 suspensionSupport.resume(false);
                 suspendDataCollection.setEnabled(false);
-                fireActionPerformed(e);
             }
         };
         suspendDataCollection.putValue("command", SUSPEND_COMMAND); // NOI18N
@@ -197,9 +198,9 @@ public final class THAActionsProvider {
                     return;
                 }
 
+                fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, PROCESSING_REQUEST_COMMAND));
                 suspensionSupport.resume(true);
                 resumeDataCollection.setEnabled(false);
-                fireActionPerformed(e);
             }
         };
         resumeDataCollection.putValue("command", RESUME_COMMAND); // NOI18N
@@ -294,10 +295,15 @@ public final class THAActionsProvider {
         suspensionSupport = THASuspensionSupport.getSupportFor(target.getExecEnv(), pid, new THASuspensionSupport.Listener() {
 
             public void statusChanged(Status newStatus) {
+                boolean fromStart = thaConfiguration.collectFromBeginning();
                 switch (newStatus) {
                     case ENABLED:
-                        suspendDataCollection.setEnabled(thaConfiguration.collectFromBeginning());
-                        resumeDataCollection.setEnabled(!thaConfiguration.collectFromBeginning());
+                        suspendDataCollection.setEnabled(fromStart);
+                        resumeDataCollection.setEnabled(!fromStart);
+                        fireActionPerformed(new ActionEvent(
+                                THAActionsProvider.this,
+                                ActionEvent.ACTION_PERFORMED,
+                                fromStart ? RESUME_COMMAND : SUSPEND_COMMAND));
                         break;
                     default:
                         suspendDataCollection.setEnabled(false);
@@ -308,13 +314,17 @@ public final class THAActionsProvider {
             public void stateChanged(State newState) {
                 suspendDataCollection.setEnabled(newState == State.RESUMED);
                 resumeDataCollection.setEnabled(newState == State.SUSPENDED);
+                if (newState == State.RESUMED) {
+                    fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, RESUME_COMMAND));
+                } else if (newState == State.SUSPENDED) {
+                    fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, SUSPEND_COMMAND));
+                }
             }
         }, thaConfiguration.collectFromBeginning());
 
         suspendDataCollection.setEnabled(false);
         resumeDataCollection.setEnabled(false);
         stop.setEnabled(true);
-        fireActionPerformed(new ActionEvent(THAActionsProvider.this, ActionEvent.ACTION_PERFORMED, RESUME_COMMAND));
     }
 
     private void targetFailed() {
