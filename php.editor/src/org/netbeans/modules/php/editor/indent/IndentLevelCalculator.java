@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
@@ -50,6 +52,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
@@ -59,12 +64,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -81,6 +88,10 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     private int indentSize;
     private int continuationIndentSize;
     private BaseDocument doc;
+    private Collection<Class<? extends ASTNode>>PARENTS_WITHOUT_CONT_INDENT = Arrays.asList(
+            Assignment.class, FieldsDeclaration.class, ReturnStatement.class,
+            InfixExpression.class, ExpressionStatement.class, SingleFieldDeclaration.class,
+            FunctionInvocation.class);
 
     public IndentLevelCalculator(Document doc, Map<Position, Integer> indentLevels) {
         this.indentLevels = indentLevels;
@@ -146,31 +157,54 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(ArrayCreation node) {
+        Class parentClass = getPath().get(0).getClass();
+
+        if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)
+                && node.getElements().size() > 0){
+            int start = node.getElements().get(0).getStartOffset();
+            ArrayElement lastElem = node.getElements().get(node.getElements().size() - 1);
+            int end = lastElem.getEndOffset();
+
+            addIndentLevel(start, continuationIndentSize);
+            addIndentLevel(end, -1 * continuationIndentSize);
+        }
+
+        super.visit(node);
+    }
+
+    @Override
     public void visit(InfixExpression node) {
-        indentContinuationWithinStatement(node);
-        // do not call super.visit()
-        // to avoid reccurency!
+        Class parentClass = getPath().get(0).getClass();
+
+        if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+            indentContinuationWithinStatement(node);
+        }
+
+        super.visit(node);
     }
 
     @Override
     public void visit(ExpressionStatement node) {
-        indentContinuationWithinStatement(node);
-        // do not call super.visit()
-        // to avoid reccurency!
+        Class parentClass = getPath().get(0).getClass();
+
+        if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+            indentContinuationWithinStatement(node);
+        }
+
+        super.visit(node);
     }
 
     @Override
     public void visit(ReturnStatement node) {
         indentContinuationWithinStatement(node);
-        // do not call super.visit()
-        // to avoid reccurency!
+        super.visit(node);
     }
 
     @Override
     public void visit(FieldsDeclaration node) {
         indentContinuationWithinStatement(node);
-        // do not call super.visit()
-        // to avoid reccurency!
+        super.visit(node);
     }
 
     @Override

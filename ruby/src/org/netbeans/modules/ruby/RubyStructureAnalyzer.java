@@ -724,18 +724,21 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 List<Node> values = AstUtilities.getChildValues(node);
                 if (values.size() == 2) {
                     Node newMethod = values.get(0);
-                    AstMethodElement aliased = findExistingMethod(AstUtilities.getNameOrValue(values.get(1)));
-                    if (aliased != null) {
-                        AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
-                        co.setModifiers(aliased.getModifiers());
-                        co.setParameters(aliased.getParameters());
-                        co.setIn(in);
-                        co.setType(aliased.getType());
-                        co.setHidden(true);
-                        if (parent != null) {
-                            parent.addChild(co);
-                        } else {
-                            structure.add(co);
+                    String newMethodName = AstUtilities.getNameOrValue(values.get(1));
+                    if (newMethodName != null) {
+                        AstMethodElement aliased = findExistingMethod(newMethodName);
+                        if (aliased != null) {
+                            AstDynamicMethodElement co = new AstDynamicMethodElement(result, newMethod);
+                            co.setModifiers(aliased.getModifiers());
+                            co.setParameters(aliased.getParameters());
+                            co.setIn(in);
+                            co.setType(aliased.getType());
+                            co.setHidden(true);
+                            if (parent != null) {
+                                parent.addChild(co);
+                            } else {
+                                structure.add(co);
+                            }
                         }
                     }
                 }

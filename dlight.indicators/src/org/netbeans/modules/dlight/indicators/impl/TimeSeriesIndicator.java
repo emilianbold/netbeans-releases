@@ -89,27 +89,39 @@ public final class TimeSeriesIndicator
     private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
     private final DataRowToTimeSeries dataRowHandler;
     private final TimeSeriesDataContainer data;
-    private final GraphPanel<TimeSeriesPlot, Legend> panel;
-    private final TimeSeriesPlot graph;
-    private final Legend legend;
-    private final JButton button;
+    private  GraphPanel<TimeSeriesPlot, Legend> panel;
+    private  TimeSeriesPlot graph;
+    private  Legend legend;
+    private  JButton button;
     private final int graphCount;
     private int tickCounter;
     private List<Action> popupActions;
+    private volatile boolean isInitialized = false;
+    private final TimeSeriesIndicatorConfiguration configuration;
+    private final Object uiLock = new String("TimeSeriesIndicator.uiLock");//NOI18N
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
+        this.configuration  = configuration;
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
         this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
         this.data = new TimeSeriesDataContainer(accessor.getGranularity(configuration), accessor.getAggregation(configuration), graphCount, accessor.getLastNonNull(configuration));
         this.data.put(0, new float[graphCount]);
-        this.graph = createGraph(configuration, data);
-        this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
-        this.button = new JButton(getDefaultAction());
-        this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
-                legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
-        panel.setPopupActions(popupActions);
+
+    }
+
+    private final void initUI(){
+        synchronized(uiLock){
+            this.graph = createGraph(configuration, data);
+            TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
+            this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
+            this.button = getDefaultAction().isEnabled() ? new JButton(getDefaultAction()) : null;
+            this.panel = new GraphPanel<TimeSeriesPlot, Legend>(accessor.getTitle(configuration), graph,
+                    legend, graph.getHorizontalAxis(), graph.getVerticalAxis(), button);
+            panel.setPopupActions(popupActions);
+            isInitialized = true;
+        }
     }
 
     private static TimeSeriesPlot createGraph(TimeSeriesIndicatorConfiguration configuration, TimeSeriesDataContainer data) {
@@ -235,6 +247,11 @@ public final class TimeSeriesIndicator
 
     @Override
     public JComponent getComponent() {
+        synchronized(uiLock){
+            if (!isInitialized){
+                initUI();
+            }
+        }
         return panel;
     }
 

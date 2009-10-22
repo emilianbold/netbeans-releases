@@ -178,7 +178,7 @@ public class THARunActionHandler implements ProjectActionHandler, DLightTargetLi
         DLightConfiguration configuration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof THAConfigurationOptions) {
-            ((THAConfigurationOptions) options).configure(pae.getContext().lookup(THAConfiguration.class));
+            ((THAConfigurationOptions) options).configure(pae.getProject());
         }
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);
         target.addTargetListener(this);
