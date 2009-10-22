@@ -470,6 +470,8 @@ import org.openide.util.NbBundle;
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                    //set accessible description
+                    jc.getAccessibleContext().setAccessibleDescription( (i+stepsStartPos)<steps.length ? steps[i+stepsStartPos] : jc.getName() );
                     // Turn on subtitle creation on each step
                     jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
                     // Show steps on the left side with the image on the background
