@@ -74,11 +74,17 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
     private static boolean checkedLogging = checkLogging();
     private static boolean logginIsOn;
     private HashMap<String, FileAnnotationInfo> activeAnnotations = new HashMap<String, FileAnnotationInfo>();
+    private static AnnotatedSourceSupportImpl instance = null;
 
     public AnnotatedSourceSupportImpl() {
+        instance = this;
 //        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new EditorFileChangeListener());
         AnnotationSupport.getInstance().addPropertyChangeListener(new ProfilerPropertyChangeListener());
         EditorRegistry.addPropertyChangeListener(new EditorFileChangeListener());
+    }
+
+    protected static AnnotatedSourceSupportImpl getInstance() {
+        return instance;
     }
 
     private void preProcessAnnotations(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, boolean lineAnnotations) {
@@ -136,6 +142,10 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 }
             }
         }
+    }
+
+    public synchronized FileAnnotationInfo getFileAnnotationInfo(String filePath) {
+        return (FileAnnotationInfo)activeAnnotations.get(filePath);
     }
 
     public synchronized void updateSource(SourceFileInfoDataProvider sourceFileInfoProvider, List<Column> metrics, List<FunctionCallWithMetric> list, List<FunctionCallWithMetric> functionCalls) {
