@@ -147,7 +147,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                 sb.append(param.getName());
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
-                        sb.append("=").append(defaultValue); //NOI18N
+                        sb.append(" = ").append(defaultValue); //NOI18N
                     }
             }
         }

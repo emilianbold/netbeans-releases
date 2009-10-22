@@ -129,7 +129,7 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
                 if (includeParamInfo) {
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
-                        sb.append("=").append(defaultValue); //NOI18N
+                        sb.append(" = ").append(defaultValue); //NOI18N
                     }
                 }
             }
