@@ -285,11 +285,11 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
 
         if (GCPPFILT.equals(demanglerTool) || CPPFILT.equals(demanglerTool)) {
             StringBuilder cmdline = new StringBuilder();
-            cmdline.append(ECHO).append(" \"");
+            cmdline.append(ECHO).append(" \""); // NOI18N
             for (String name : mangledNames) {
                 cmdline.append(name).append('\n'); // NOI18N
             }
-            cmdline.append("\" | ").append(demanglerTool);
+            cmdline.append("\" | ").append(demanglerTool); // NOI18N
             npb.setCommandLine(cmdline.toString());
         } else {
             npb.setExecutable(demanglerTool);
