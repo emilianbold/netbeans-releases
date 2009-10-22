@@ -79,6 +79,8 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.SuperNode;
+import org.jrubyparser.ast.ZSuperNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -209,10 +211,11 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
         }
 
-        // TODO: Tokens.SUPER, Tokens.THIS, Tokens.SELF ...
+        // TODO: Tokens.THIS, Tokens.SELF ...
         if ((id == RubyTokenId.IDENTIFIER) || (id == RubyTokenId.CLASS_VAR) ||
                 (id == RubyTokenId.GLOBAL_VAR) || (id == RubyTokenId.CONSTANT) ||
-                (id == RubyTokenId.TYPE_SYMBOL) || (id == RubyTokenId.INSTANCE_VAR)) {
+                (id == RubyTokenId.TYPE_SYMBOL) || (id == RubyTokenId.INSTANCE_VAR) ||
+                (id == RubyTokenId.SUPER)) {
             return new OffsetRange(ts.offset(), ts.offset() + token.length());
         }
 
@@ -625,6 +628,29 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                             return getLocation(index.getClasses(className, QuerySupport.Kind.EXACT, true, false, false));
                         }
                     }
+            } else if (closest instanceof SuperNode || closest instanceof ZSuperNode) {
+                Node scope = AstUtilities.findLocalScope(closest, path);
+                String fqn = AstUtilities.getFqnName(path);
+                switch (scope.getNodeType()) {
+                    case SCLASSNODE:
+                    case MODULENODE:
+                    case CLASSNODE: {
+                        IndexedClass superClass = index.getSuperclass(fqn);
+                        if (superClass != null) {
+                            return getLocation(Collections.singleton(superClass));
+                        }
+                        break;
+                    }
+                    case DEFNNODE:
+                    case DEFSNODE: {
+                        MethodDefNode methodDef = AstUtilities.findMethod(path);
+                        IndexedMethod superMethod = index.getSuperMethod(fqn, methodDef.getName(), true);
+                        if (superMethod != null) {
+                            return getLocation(Collections.singleton(superMethod));
+                        }
+                        break;
+                    }
+                }
             }
         } catch (BadLocationException ble) {
             // do nothing - see #154991
