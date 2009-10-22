@@ -298,7 +298,16 @@ public class BinaryAnalyser {
     /** Analyses a zip file */
     private Result analyseArchive (final ZipFile zipFile, final Enumeration<? extends ZipEntry> e, AtomicBoolean cancel, AtomicBoolean closed) throws IOException {
         while(e.hasMoreElements()) {
-            ZipEntry ze = (ZipEntry)e.nextElement();
+            ZipEntry ze;
+
+            try {
+                ze = (ZipEntry)e.nextElement();
+            } catch (InternalError err) {
+                //#174611:
+                LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
+                return Result.FINISHED;
+            }
+            
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
                 InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
                 try {                                        
