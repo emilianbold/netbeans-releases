@@ -130,9 +130,19 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     public ServletMapping getRestServletMapping(WebApp webApp) {
-        for (ServletMapping sm : webApp.getServletMapping()) {
-            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
-                return sm;
+        String servletName = null;
+        for (Servlet s : webApp.getServlet()) {
+            String servletClass = s.getServletClass();
+            if (REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) || REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass)) {
+                servletName = s.getServletName();
+                break;
+            }
+        }
+        if (servletName != null) {
+            for (ServletMapping sm : webApp.getServletMapping()) {
+                if (servletName.equals(sm.getServletName())) {
+                    return sm;
+                }
             }
         }
         return null;
@@ -150,7 +160,21 @@ public abstract class WebRestSupport extends RestSupport {
     protected Servlet getRestServletAdaptor(WebApp webApp) {
         if (webApp != null) {
             for (Servlet s : webApp.getServlet()) {
-                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
+                String servletClass = s.getServletClass();
+                if ( REST_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SPRING_SERVLET_ADAPTOR_CLASS.equals(servletClass) ||
+                    REST_SERVLET_ADAPTOR_CLASS_OLD.equals(servletClass)) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    protected Servlet getRestServletAdaptorByName(WebApp webApp, String servletName) {
+        if (webApp != null) {
+            for (Servlet s : webApp.getServlet()) {
+                if (servletName.equals(s.getServletName())) {
                     return s;
                 }
             }
@@ -206,16 +230,20 @@ public abstract class WebRestSupport extends RestSupport {
             return;
         }
         boolean needsSave = false;
-        Servlet restServlet = getRestServletAdaptor(webApp);
+        Servlet restServlet = getRestServletAdaptorByName(webApp, REST_SERVLET_ADAPTOR);
         if (restServlet != null) {
             webApp.removeServlet(restServlet);
             needsSave = true;
         }
-        ServletMapping sm = getRestServletMapping(webApp);
-        if (sm != null) {
-            webApp.removeServletMapping(sm);
-            needsSave = true;
+
+        for (ServletMapping sm : webApp.getServletMapping()) {
+            if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
+                webApp.removeServletMapping(sm);
+                needsSave = true;
+                break;
+            }
         }
+
         if (needsSave) {
             webApp.write(ddFO);
         }
