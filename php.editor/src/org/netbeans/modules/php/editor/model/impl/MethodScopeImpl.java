@@ -134,7 +134,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
                 if (i > 0) {
-                    sb.append(", ");
+                    sb.append(",");
                 }
                 final Parameter param = parameterList.get(i);
                     List<QualifiedName> types = param.getTypes();
@@ -147,7 +147,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                 sb.append(param.getName());
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
-                        sb.append("=").append(defaultValue).append(" "); //NOI18N
+                        sb.append("=").append(defaultValue); //NOI18N
                     }
             }
         }
