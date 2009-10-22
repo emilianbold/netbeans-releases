@@ -100,6 +100,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private IndicatorRepairActionProvider indicatorRepairActionProvider = null;
     private DLightTarget target;
     private boolean visible;
+    private final Action defaultAction;
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
@@ -150,28 +151,28 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
         this.visible = configuration.isVisible();
         setIndicatorActionsProviderContext(Lookup.EMPTY);
+        defaultAction = new AbstractAction(actionDisplayName) {
+
+            public void actionPerformed(ActionEvent e) {
+                notifyListeners();
+            }
+        };
+        defaultAction.putValue(Action.NAME, actionDisplayName);
+        if (actionTooltip != null){
+            defaultAction.putValue(Action.SHORT_DESCRIPTION, actionTooltip);
+        }
     }
 
 
     /**
-     * 
+     * This method will be
      * @param context
      */
     public abstract void setIndicatorActionsProviderContext(Lookup context);
 
     //public abstract Action[]  getActions();
     public final Action getDefaultAction() {
-        AbstractAction action = new AbstractAction(actionDisplayName) {
-
-            public void actionPerformed(ActionEvent e) {
-                notifyListeners();
-            }
-        };
-        action.putValue(Action.NAME, actionDisplayName);
-        if (actionTooltip != null){
-            action.putValue(Action.SHORT_DESCRIPTION, actionTooltip);
-        }
-        return action;
+        return defaultAction;
     }
 
     protected abstract void repairNeeded(boolean needed);
@@ -383,7 +384,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         Column col = metadata.getColumns().get(idx);
         return col.getColumnName();
     }
-
+    
     /**
      * Returns component this indicator will paint data at
      * @return component this indicator will paint own data at
