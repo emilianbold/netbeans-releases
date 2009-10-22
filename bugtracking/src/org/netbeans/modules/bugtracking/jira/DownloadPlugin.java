@@ -39,18 +39,26 @@
 
 package org.netbeans.modules.bugtracking.jira;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.JButton;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.InstallSupport.Installer;
+import org.netbeans.api.autoupdate.InstallSupport.Validator;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -61,7 +69,7 @@ import org.openide.util.RequestProcessor;
 public class DownloadPlugin implements ActionListener {
 
     private DownloadPanel panel;
-    private JButton ok;
+    private JButton install;
     private JButton cancel;
     private UpdateElement jiraElement;
     private UpdateElement jiraLibraryElement;
@@ -70,48 +78,29 @@ public class DownloadPlugin implements ActionListener {
 
     public DownloadPlugin() {
         panel = new DownloadPanel();
-        ok = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_OK"));
-        cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));
-        ok.setEnabled(false);
+        install = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Install")); // NOI18N
+        cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
+        install.setEnabled(false);
         panel.licensePanel.setVisible(false);
         panel.acceptCheckBox.addActionListener(this);
     }
 
-    boolean show() {
-        download();
-        NotifyDescriptor descriptor = new NotifyDescriptor (
-                panel,
-                NbBundle.getMessage(DownloadPlugin.class, "LBL_DownloadJira"),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.DEFAULT_OPTION,
-                new Object [] { ok, cancel },
-                ok);
-        boolean ret = DialogDisplayer.getDefault().notify(descriptor) == ok;
-        if(!ret) {
-            jiraElement = null;
-        }
-        return ret;
-    }
-
-    private void download() {
+    void startDownload() {
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJira"));
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJira"));
-                panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJira"));
-                panel.progressBarPanel.add(ProgressHandleFactory.createProgressComponent(ph), BorderLayout.CENTER);
-                panel.repaint();
                 ph.start();
                 try {
                     List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
                     for (UpdateUnit u : units) {
-                        if(u.getCodeName().equals("org.netbeans.modules.jira")) {
+                        if(u.getCodeName().equals("org.netbeans.modules.jira")) {       // NOI18N
                             List<UpdateElement> elements = u.getAvailableUpdates();
                             if(elements.size() == 0) {
                                 jiraElementInstalled = true;
                             } else {
                                 jiraElement = u.getAvailableUpdates().get(0);
                             }
-                        } else if(u.getCodeName().equals("org.netbeans.libs.jira")) {
+                        } else if(u.getCodeName().equals("org.netbeans.libs.jira")) {   // NOI18N
                             List<UpdateElement> elements = u.getAvailableUpdates();
                             if(elements.size() == 0) {
                                 jiraLibraryElementInstalled = true;
@@ -126,31 +115,151 @@ public class DownloadPlugin implements ActionListener {
                         }
                     }
                     if(jiraLibraryElementInstalled && jiraElementInstalled) {
-                        panel.progressBarPanel.setVisible(false);
-                        panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyInstalled"));
-                        panel.repaint();
+                        notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyInstalled"),  // NOI18N
+                                    NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));            // NOI18N
+                        //panel.progressLabel.setText();
                         return;
                     }
                 } finally {
                     ph.finish();
                 }
                 if(jiraElement == null || jiraLibraryElement == null) {
-                    panel.progressBarPanel.setVisible(false);
-                    panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_JiraNotFound"));
-                    panel.repaint();
+                    notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_JiraNotFound"),          // NOI18N
+                                NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));                // NOI18N
                     return;
                 }
                 panel.licensePanel.setVisible(true);
                 panel.licenseTextPane.setText(jiraElement.getLicence());
                 panel.progressPanel.setVisible(false);
                 panel.repaint();
+
+                NotifyDescriptor descriptor = new NotifyDescriptor (
+                        panel,
+                        NbBundle.getMessage(DownloadPlugin.class, "LBL_DownloadJira"),                  // NOI18N
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        new Object [] { install, cancel },
+                        install);
+
+                boolean ret = DialogDisplayer.getDefault().notify(descriptor) == install;
+                if(!ret) {
+                    jiraElement = null;
+                    jiraLibraryElement = null;
+                    return;
+                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if(jiraLibraryElement != null) {
+                            install(jiraLibraryElement, jiraElement == null);
+                        }
+                        if(jiraElement != null) {
+                            install(jiraElement, true);
+                        }
+                    }
+                });
             }
         });
     }
 
+    private void install(final UpdateElement updateElement, final boolean done) {
+        try {
+            InstallCancellable ic = new InstallCancellable();
+            OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
+            if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
+                oc.add(updateElement);
+            } else if (updateElement.getUpdateUnit().isPending()) {
+                notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_RestartNeeded"), //NOI18N
+                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_RestartNeeded"),            //NOI18N
+                    NotifyDescriptor.INFORMATION_MESSAGE, false);
+                return;
+            } else {
+                oc = OperationContainer.createForUpdate();
+                if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
+                    oc.add(updateElement);
+                } else {
+                    BugtrackingManager.LOG.warning("MissingClient: cannot install " + updateElement.toString());            // NOI18N
+                    if (updateElement.getUpdateUnit().getInstalled() != null) {
+                        BugtrackingManager.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString()); // NOI18N
+                    }
+                    notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
+                            NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_InvalidOperation"),        //NOI18N
+                            NotifyDescriptor.ERROR_MESSAGE, false);
+                    return;
+                }
+            }
+            Validator v = oc.getSupport().doDownload(
+                    ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(
+                        MissingJiraSupportPanel.class, "LBL_Downloading", updateElement.getDisplayName()), // NOI18N
+                        ic),
+                    false);
+            if(ic.cancelled) {
+                return;
+            }
+            Installer i = oc.getSupport().doValidate(
+                    v,
+                    ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(
+                            MissingJiraSupportPanel.class,
+                            "LBL_Validating",                                   // NOI18N
+                            updateElement.getDisplayName()),
+                        ic));
+            if(ic.cancelled) {
+                return;
+            }
+            Restarter rest = oc.getSupport().doInstall(
+                                    i,
+                                    ProgressHandleFactory.createHandle(
+                                        NbBundle.getMessage(
+                                            MissingJiraSupportPanel.class,
+                                            "LBL_Installing",                   // NOI18N
+                                            updateElement.getDisplayName()),
+                                    ic));
+            if(done && rest != null) {
+                JButton restart = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Restart")); // NOI18N
+                JButton cancel = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Cancel"));   // NOI18N
+                NotifyDescriptor descriptor = new NotifyDescriptor(
+                        NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_NeedsRestart"),                          // NOI18N
+                        NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_DownloadJira"),                          // NOI18N
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object [] { restart, cancel },
+                            restart);
+                if(DialogDisplayer.getDefault().notify(descriptor) == restart) {
+                    oc.getSupport().doRestart(
+                        rest,
+                        ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_Restarting"))); // NOI18N
+                }
+            }
+        } catch (OperationException e) {
+            BugtrackingManager.LOG.log(Level.INFO, null, e);
+            notifyError(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
+                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
+        }
+    }
+
+    private static void notifyError (final String message, final String title) {
+        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
+    }
+
+    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType,
+                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(nd);
+    }
+
+    private class InstallCancellable implements Cancellable {
+        private boolean cancelled;
+        public boolean cancel() {
+            cancelled = true;
+            return true;
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.acceptCheckBox) {
-            ok.setEnabled(panel.acceptCheckBox.isSelected());
+            install.setEnabled(panel.acceptCheckBox.isSelected());
         } 
     }
 

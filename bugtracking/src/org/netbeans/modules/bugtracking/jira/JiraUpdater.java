@@ -39,23 +39,21 @@
 
 package org.netbeans.modules.bugtracking.jira;
 
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.InstallSupport.Validator;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -65,18 +63,16 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Cancellable;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Notifies and eventually downloads a missing JIRA plugin from the Update Center
  * @author Tomas Stupka
  */
-public class JiraUpdater implements ActionListener {
+public class JiraUpdater {
 
     private static JiraUpdater instance;
     private JiraProxyConector connector;
@@ -91,6 +87,11 @@ public class JiraUpdater implements ActionListener {
         return instance;
     }
 
+    /**
+     * Determines if the jira plugin is instaled or not
+     *
+     * @return true if jira plugin is installed, otherwise false
+     */
     public static boolean isJiraInstalled() {
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         for (BugtrackingConnector c : connectors) {
@@ -100,10 +101,6 @@ public class JiraUpdater implements ActionListener {
             }
         }
         return false;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        install();
     }
 
     /**
@@ -123,144 +120,90 @@ public class JiraUpdater implements ActionListener {
     /**
      * Download and install the JIRA plugin from the Update Center
      */
-    public void install() {
+    public void downloadAndInstall() {
         final DownloadPlugin dp = new DownloadPlugin();
-        dp.show();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                UpdateElement  jiraLibraryElement = dp.getJiraLibraryElement();
-                UpdateElement  jiraElement = dp.getJiraElement();
-                if(jiraLibraryElement != null) {
-                    install(jiraLibraryElement, jiraElement == null);
+        dp.startDownload();
+        
+    }
+
+    /**
+     * Notifies about the missing jira plugin and provides an option to choose
+     * if it should be downloaded
+     *
+     * @param url if not null a hyperlink is shown in the dialog
+     * 
+     * @return true if the user pushes the Download button, otherwise false
+     */
+    public static boolean notifyJiraDownload(String url) {
+        JButton download = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
+
+        String msg = NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA");              // NOI18N
+        if(url != null) {
+            msg += "<br>" + NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA_URL", url);// NOI18N
+        }
+        msg = "<html>" + msg + "</body>";                                       // NOI18N                                                             // NOI18N
+        
+        JPanel panel = createNotificationPanel(msg, new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
+                    return;
                 }
-                if(jiraElement != null) {
-                    install(jiraElement, true);
+                HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+                if (displayer != null) {
+                    displayer.showURL(e.getURL());
+                } else {
+                    // XXX nice error message?
+                    BugtrackingManager.LOG.warning("No URLDisplayer found.");             // NOI18N
                 }
             }
         });
-    }
-
-    public static boolean notifyJiraDownload() {
-        JButton ok = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
-        JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
-        MissingJiraSupportPanel panel = JiraUpdater.getInstance().createPanel(true, false, NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA")); // NOI18N
 
         final DialogDescriptor dd =
             new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(FakeJiraSupport.class, "CTL_MissingJiraPlugin"),                    // NOI18N
                 true,
-                new Object[] {ok, cancel},
-                ok,
+                new Object[] {download, cancel},
+                download,
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(FakeJiraSupport.class),
                 null);
-        return DialogDisplayer.getDefault().notify(dd) == ok;
+        return DialogDisplayer.getDefault().notify(dd) == download;
     }
 
-    private MissingJiraSupportPanel createPanel(boolean containerGaps, boolean downloadButtonVisible, String msg) {
-        MissingJiraSupportPanel panel = new MissingJiraSupportPanel(containerGaps, msg);
-        panel.downloadButton.addActionListener(this);
-        panel.downloadButton.setVisible(downloadButtonVisible);
+    private static JPanel createNotificationPanel(String msg, HyperlinkListener hl) {
+        JPanel panel = new JPanel();
+
+        JTextPane pane = new JTextPane();
+        pane.setBackground(panel.getBackground());
+        pane.setContentType("text/html"); // NOI18N
+        pane.setText(msg);
+        pane.setEditable(false);
+        pane.addHyperlinkListener(hl);
+        
+        panel.setPreferredSize(new Dimension(650, 100));
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup().addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(pane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().addContainerGap()
+                .add(pane)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE))
+                .addContainerGap(60, Short.MAX_VALUE))
+        );
+
         return panel;
     }
     
-    private void install(final UpdateElement updateElement, final boolean done) {
-        try {
-            InstallCancellable ic = new InstallCancellable();
-            OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
-            if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
-                oc.add(updateElement);
-            } else if (updateElement.getUpdateUnit().isPending()) {
-                notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_RestartNeeded"), //NOI18N
-                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_RestartNeeded"), //NOI18N
-                    NotifyDescriptor.INFORMATION_MESSAGE, false);
-                return;
-            } else {
-                oc = OperationContainer.createForUpdate();
-                if (oc.canBeAdded(updateElement.getUpdateUnit(), updateElement)) {
-                    oc.add(updateElement);
-                } else {
-                    BugtrackingManager.LOG.warning("MissingClient: cannot install " + updateElement.toString());
-                    if (updateElement.getUpdateUnit().getInstalled() != null) {
-                        BugtrackingManager.LOG.warning("MissingClient: already installed " + updateElement.getUpdateUnit().getInstalled().toString());
-                    }
-                    notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
-                            NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_InvalidOperation"), //NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE, false);
-                    return;
-                }
-            }
-            Validator v = oc.getSupport().doDownload(
-                    ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(
-                        MissingJiraSupportPanel.class, "LBL_Downloading", updateElement.getDisplayName()),
-                        ic),
-                    false);
-            if(ic.cancelled) {
-                return;
-            }
-            Installer i = oc.getSupport().doValidate(
-                    v,
-                    ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(
-                            MissingJiraSupportPanel.class,
-                            "LBL_Validating",
-                            updateElement.getDisplayName()),
-                        ic));
-            if(ic.cancelled) {
-                return;
-            }
-            Restarter rest = oc.getSupport().doInstall(
-                                    i,
-                                    ProgressHandleFactory.createHandle(
-                                        NbBundle.getMessage(
-                                            MissingJiraSupportPanel.class,
-                                            "LBL_Installing",
-                                            updateElement.getDisplayName()),
-                                    ic));
-            if(done && rest != null) {
-                JButton restart = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Restart"));
-                JButton cancel = new JButton(NbBundle.getMessage(MissingJiraSupportPanel.class, "CTL_Action_Cancel"));
-                NotifyDescriptor descriptor = new NotifyDescriptor(
-                        NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_NeedsRestart"),
-                        NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_DownloadJira"),
-                            NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            new Object [] { restart, cancel },
-                            restart);
-                if(DialogDisplayer.getDefault().notify(descriptor) == restart) {
-                    oc.getSupport().doRestart(
-                        rest,
-                        ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_Restarting")));
-                }
-            }
-        } catch (OperationException e) {
-            BugtrackingManager.LOG.log(Level.INFO, null, e);
-            notifyError(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_UC_Unavailable"),   // NOI18N
-                    NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_UC_Unavailable"));      // NOI18N
-        }
-    }
-
-    private static void notifyError (final String message, final String title) {
-        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
-    }
-
-    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
-        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType,
-                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notifyLater(nd);
-    }
-
-    private class InstallCancellable implements Cancellable {
-        private boolean cancelled;
-        public boolean cancel() {
-            cancelled = true;
-            return true;
-        }
-    }
-
     private class JiraProxyConector extends BugtrackingConnector {
         @Override
         public String getDisplayName() {
@@ -341,9 +284,12 @@ public class JiraUpdater implements ActionListener {
     }
 
     private class JiraProxyController extends BugtrackingController {
+        private JPanel panel;
         @Override
         public JComponent getComponent() {
-            MissingJiraSupportPanel panel = createPanel(false, true, NbBundle.getMessage(FakeJiraSupport.class, "MSG_NOT_YET_INSTALLED")); // NOI18N
+            if(panel == null) {
+                panel = createControllerPanel();
+            }
             return panel;
         }
         @Override
@@ -358,5 +304,44 @@ public class JiraUpdater implements ActionListener {
         public void applyChanges() throws IOException {
 
         }
+
+        private JPanel createControllerPanel() {
+            JPanel panel = new JPanel();
+
+            JLabel pane = new JLabel();
+            pane.setText(NbBundle.getMessage(FakeJiraSupport.class, "MSG_NOT_YET_INSTALLED"));
+
+            JButton downloadButton = new JButton();
+            downloadButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    downloadAndInstall();
+                }
+            });
+            
+            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
+
+            GroupLayout layout = new GroupLayout(panel);
+            panel.setLayout(layout);
+            layout.setHorizontalGroup(
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(pane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, Short.MAX_VALUE))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(downloadButton))
+            );
+            layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(pane)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(downloadButton))
+                .addContainerGap())
+            );
+
+            return panel;
+        }
+
     }
 }
