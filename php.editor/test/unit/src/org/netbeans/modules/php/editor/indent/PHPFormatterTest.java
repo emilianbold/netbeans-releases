@@ -161,6 +161,29 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue174595.php");
     }
 
+    /**
+     * issue 124273 - partially only
+     * @throws Exception
+     */
+
+    public void test124273_1() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
+    }
+
+    public void test124273_2() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
+    }
+    public void test124273_3() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_3.php");
+    }
+
+    public void test175229_1() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/175229_1.php");
+    }
+
+    public void test175229_2() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/175229_2.php");
+    }
     public void testIfElseStatement() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/else_if.php");
     }
