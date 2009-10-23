@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -71,6 +72,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.model.Parameter;
+import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.impl.ParameterImpl;
@@ -127,6 +129,9 @@ public class PHPIndex {
     }
 
     public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind) {
+        return getAllTopLevel(context, prefix, nameKind, EnumSet.<PhpKind>allOf(PhpKind.class));
+    }
+    public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, QuerySupport.Kind nameKind, EnumSet<PhpKind> kinds) {
         final Collection<IndexedElement> elements = new ArrayList<IndexedElement>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
@@ -138,11 +143,21 @@ public class PHPIndex {
         final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_TOP_LEVEL, 
                 prefix.toLowerCase(), QuerySupport.Kind.PREFIX, TOP_LEVEL_TERMS);
 
-        findFunctions(result, nameKind, prefix, functions);
-        findConstants(result, nameKind, prefix, constants);
-        findClasses(result, nameKind, prefix, classes);
-        findInterfaces(result, nameKind, prefix, interfaces);
-        findTopVariables(result, nameKind, prefix, vars);
+        if (kinds.contains(PhpKind.FUNCTION)) {
+            findFunctions(result, nameKind, prefix, functions);
+        }
+        if (kinds.contains(PhpKind.CONSTANT)) {
+            findConstants(result, nameKind, prefix, constants);
+        }
+        if (kinds.contains(PhpKind.CLASS)) {
+            findClasses(result, nameKind, prefix, classes);
+        }
+        if (kinds.contains(PhpKind.IFACE)) {
+            findInterfaces(result, nameKind, prefix, interfaces);
+        }
+        if (kinds.contains(PhpKind.VARIABLE)) {
+            findTopVariables(result, nameKind, prefix, vars);
+        }
         elements.addAll(functions);
         elements.addAll(constants);
         elements.addAll(classes);

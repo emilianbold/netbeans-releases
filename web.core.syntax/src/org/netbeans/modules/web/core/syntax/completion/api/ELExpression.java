@@ -925,7 +925,6 @@ public class ELExpression {
                     lastReturnType = null;
                 }
             }
-            System.out.println("^^^^^^^^^^^^ "+lastReturnType+ " ########## " +lastKnownType);
             if ( lastKnownType == null && lastReturnType == null && handler!= null){
                 handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
             }

@@ -69,6 +69,7 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
@@ -766,7 +767,29 @@ public class TargetServer {
                 "MSG_DeployOnSave", provider.getDeploymentName()), false);
         ui.start(Integer.valueOf(0));
         try {
+            boolean serverResources = false;
+            for (Artifact artifact : artifacts) {
+                if (artifact.isServerResource()) {
+                    serverResources = true;
+                    break;
+                }
+            }
+
+            try {
+                if (serverResources) {
+                    DeploymentHelper.deployDatasources(provider);
+                    DeploymentHelper.deployMessageDestinations(provider);
+                }
+            } catch (DatasourceAlreadyExistsException ex) {
+                Exceptions.printStackTrace(ex);
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
+            }
+
             DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
+            if (serverResources) {
+                ChangeDescriptorAccessor.getDefault().withChangedServerResources(changes);
+            }
+
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, changes.toString());
             }
@@ -777,6 +800,9 @@ public class TargetServer {
             }
             return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
+        }  catch (ConfigurationException ex) {
             Exceptions.printStackTrace(ex);
             return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {

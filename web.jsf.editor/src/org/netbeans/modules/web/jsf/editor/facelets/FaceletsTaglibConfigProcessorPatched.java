@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.config.processor.AbstractConfigProcessor;
 import com.sun.faces.util.FacesLogger;
 import com.sun.faces.facelets.util.ReflectionUtil;
@@ -236,6 +237,28 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
         }
 
 
+    }
+
+    public void process(DocumentInfo[] documents) throws Exception {
+        for (int i = 0, length = documents.length; i < length; i++) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE,
+                        MessageFormat.format(
+                        "Processing facelet-taglibrary document: ''{0}''",
+                        documents[i].getDocument().getDocumentURI()));
+            }
+            String namespace =
+                    documents[i].getDocument().getDocumentElement().getNamespaceURI();
+            Element documentElement = documents[i].getDocument().getDocumentElement();
+            NodeList libraryClass =
+                    documentElement.getElementsByTagNameNS(namespace, LIBRARY_CLASS);
+            if (libraryClass != null && libraryClass.getLength() > 0) {
+                processTaglibraryClass(libraryClass, compiler);
+            } else {
+                processTagLibrary(documentElement, namespace, compiler);
+            }
+
+        }
     }
 
     // --------------------------------------------------------- Private Methods
