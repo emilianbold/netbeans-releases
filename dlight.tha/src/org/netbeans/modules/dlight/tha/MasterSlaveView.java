@@ -158,20 +158,21 @@ public final class MasterSlaveView<T, F extends THANodeFactory<T>> extends JSpli
     public void setMasterData(List<? extends T> data) {
         //master.setListData(data.toArray());
 //        master.setRootVisible(true);
-        if (data.isEmpty()) {
+        if (data == null || data.isEmpty()) {
             master.setRootVisible(true);
             rootNode.setLeaf();
-        } else {
-            master.setRootVisible(false);
-            rootNode.setKeys(new ChildrenList(nodeFactory, data));
+            return;
         }
+        
+        master.setRootVisible(false);
+        rootNode.setKeys(new ChildrenList(nodeFactory, data));
+
         master.expandAll();
-        if (data != null && !data.isEmpty()) {
-            try {
-                manager.setSelectedNodes(new Node[]{rootNode.getChildren().getNodes()[0]});
-            } catch (PropertyVetoException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+
+        try {
+            manager.setSelectedNodes(new Node[]{rootNode.getChildren().getNodes()[0]});
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
