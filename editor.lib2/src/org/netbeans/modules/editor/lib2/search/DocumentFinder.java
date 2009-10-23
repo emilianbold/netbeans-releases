@@ -266,6 +266,13 @@ public class DocumentFinder
             initOffset = startOffset - blockSearchStart;
          else
             initOffset = startOffset;
+        if (initOffset < 0 || initOffset > blockText.length ())
+            throw new IndexOutOfBoundsException (
+                "Index: " + initOffset +
+                "\nOffset: " + startOffset + "-" + endOffset +
+                "\nBlock: " + blockSearchStart + "-" + blockSearchEnd +
+                "\nLength : " + blockText.length ()
+            );
         int findRet = finder.find(initOffset, blockText);
         if (!finder.isFound()){
             ret[0]  = -1;
