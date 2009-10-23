@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -91,6 +92,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
+import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -98,6 +100,7 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.options.CodeCompletionPanel.VariablesScope;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -417,7 +420,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } else {
             NamespaceIndexFilter<IndexedElement> completionSupport = new NamespaceIndexFilter<IndexedElement>(request.prefix);
-            Collection<IndexedElement> allTopLevel = request.index.getAllTopLevel(request.result, completionSupport.getName(), nameKind);
+            VariablesScope ccVariablesScope = OptionsUtils.codeCompletionVariablesScope();
+            Collection<IndexedElement> allTopLevel = null;
+            if (ccVariablesScope.equals(VariablesScope.ALL)) {
+                allTopLevel = request.index.getAllTopLevel(request.result, completionSupport.getName(), nameKind);
+            } else {
+                final EnumSet<PhpKind> allOf = EnumSet.<PhpKind>allOf(PhpKind.class);
+                allOf.remove(PhpKind.VARIABLE);
+                allTopLevel = request.index.getAllTopLevel(request.result, completionSupport.getName(), nameKind, allOf);
+            }
             for (IndexedElement indexedElement : completionSupport.filter(allTopLevel)) {
                 if (indexedElement instanceof IndexedClass) {
                     proposals.add(new PHPCompletionItem.ClassItem((IndexedClass)indexedElement, request, false, kind));
@@ -765,7 +776,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         NamespaceIndexFilter<IndexedElement> completionSupport = new NamespaceIndexFilter<IndexedElement>(request.prefix);
         QualifiedNameKind kind = completionSupport.getKind();
-        Collection<IndexedElement> allTopLevel = index.getAllTopLevel(request.result, completionSupport.getName(), nameKind);
+        VariablesScope ccVariablesScope = OptionsUtils.codeCompletionVariablesScope();
+        Collection<IndexedElement> allTopLevel = null;
+        if (ccVariablesScope.equals(VariablesScope.ALL)) {
+            allTopLevel = request.index.getAllTopLevel(request.result, completionSupport.getName(), nameKind);
+        } else {
+            final EnumSet<PhpKind> allOf = EnumSet.<PhpKind>allOf(PhpKind.class);
+            allOf.remove(PhpKind.VARIABLE);
+            allTopLevel = request.index.getAllTopLevel(request.result, completionSupport.getName(), nameKind, allOf);
+        }
         if (!kind.isUnqualified()) {
             allTopLevel = completionSupport.filter(allTopLevel);
         }
@@ -858,9 +877,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
     private void autoCompleteGlobals(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
-        PHPIndex index = request.index;
         Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
-        for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
+        VariablesScope ccVariablesScope = OptionsUtils.codeCompletionVariablesScope();
+        Collection<IndexedElement> allTopLevel = null;
+        if (ccVariablesScope.equals(VariablesScope.ALL)) {
+            allTopLevel = request.index.getAllTopLevel(request.result, request.prefix, nameKind);
+        } else {
+            final EnumSet<PhpKind> allOf = EnumSet.<PhpKind>allOf(PhpKind.class);
+            allOf.remove(PhpKind.VARIABLE);
+            allTopLevel = request.index.getAllTopLevel(request.result, request.prefix, nameKind, allOf);
+        }
+        for (IndexedElement element : allTopLevel) {
             if (element instanceof IndexedVariable) {
                 IndexedConstant topLevelVar = (IndexedConstant) element;
                 allVars.put(topLevelVar.getName(), topLevelVar);
