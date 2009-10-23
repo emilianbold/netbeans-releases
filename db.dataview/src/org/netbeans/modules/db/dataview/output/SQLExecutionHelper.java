@@ -214,7 +214,7 @@ class SQLExecutionHelper {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
-                    deleteARow(rows[j], rsTable.getModel());
+                    deleteARow(rsTable.convertRowIndexToModel(rows[j]), rsTable.getModel());
                 }
             }
 

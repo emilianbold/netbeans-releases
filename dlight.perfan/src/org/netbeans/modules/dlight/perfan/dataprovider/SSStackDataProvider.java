@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.perfan.dataprovider;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
@@ -451,7 +452,9 @@ class SSStackDataProvider implements StackDataProvider, ThreadAnalyzerDataProvid
         private final DecimalFormat df = new DecimalFormat();
 
         public HotSpotFunctionsFetcher() {
-            df.getDecimalFormatSymbols().setDecimalSeparator(',');
+            DecimalFormatSymbols symbols = df.getDecimalFormatSymbols();
+            symbols.setDecimalSeparator('.');
+            df.setDecimalFormatSymbols(symbols);
         }
 
         public List<FunctionCallWithMetric> compute(HotSpotFunctionsFetcherParams taskArguments) throws InterruptedException {

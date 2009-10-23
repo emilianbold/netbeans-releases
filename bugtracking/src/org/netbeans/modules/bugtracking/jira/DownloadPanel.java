@@ -95,7 +95,7 @@ public class DownloadPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        licenseTextPane.setText("null");
+        licenseTextPane.setText(org.openide.util.NbBundle.getMessage(DownloadPanel.class, "DownloadPanel.licenseTextPane.text")); // NOI18N
         jScrollPane1.setViewportView(licenseTextPane);
 
         acceptCheckBox.setText(org.openide.util.NbBundle.getMessage(DownloadPanel.class, "DownloadPanel.acceptCheckBox.text")); // NOI18N
@@ -120,13 +120,13 @@ public class DownloadPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(licensePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(licensePanelLayout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
                         .add(342, 342, 342))
                     .add(licensePanelLayout.createSequentialGroup()
-                        .add(acceptCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                        .add(acceptCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                         .add(126, 126, 126))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
                 .addContainerGap())
         );
         licensePanelLayout.setVerticalGroup(
@@ -151,14 +151,14 @@ public class DownloadPanel extends javax.swing.JPanel {
                 .add(layout.createSequentialGroup()
                     .addContainerGap()
                     .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addContainerGap(15, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(licensePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
                     .add(157, 157, 157)
