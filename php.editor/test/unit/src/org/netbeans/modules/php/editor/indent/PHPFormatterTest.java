@@ -166,16 +166,16 @@ public class PHPFormatterTest extends PHPTestBase {
      * @throws Exception
      */
 
-//    public void test124273_1() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
-//    }
-//
-//    public void test124273_2() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
-//    }
-//    public void test124273_3() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/124273_3.php");
-//    }
+    public void test124273_1() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
+    }
+
+    public void test124273_2() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
+    }
+    public void test124273_3() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_3.php");
+    }
 
     /**
      * issue 175229, _2 is a bit more complex example
@@ -194,8 +194,8 @@ public class PHPFormatterTest extends PHPTestBase {
      * @throws Exception
      */
 
-    public void test174653() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174653_1.php");
+    public void test174563_wrong_namespace_declaration() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174563_1.php");
     }
 
 
@@ -320,6 +320,14 @@ public class PHPFormatterTest extends PHPTestBase {
     }
 
     public void test173352() throws Exception {
+        reformatFileContents("testfiles/formatting/issue173352.php");
+    }
+
+    /**
+     * issue 173352 - case added by qa 
+     * @throws Exception
+     */
+    public void test173352_fromQA() throws Exception {
         reformatFileContents("testfiles/formatting/issue173352.php");
     }
 

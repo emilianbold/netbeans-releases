@@ -1355,7 +1355,7 @@ exists or setup the property manually. For example like this:
                 <xsl:comment> the directory must exist, otherwise the XML formatter would fail </xsl:comment>
                 <mkdir dir="${{build.test.results.dir}}"/>
                 <ejbjarproject1:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
-                                      classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}"
+                                      classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}:${{j2ee.platform.embeddableejb.classpath}}"
                                       args="${{test.class}}">
                     <customize>
                         <arg value="showoutput=true"/>
