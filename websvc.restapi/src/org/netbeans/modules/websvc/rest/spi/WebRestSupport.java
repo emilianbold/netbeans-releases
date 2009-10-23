@@ -41,6 +41,8 @@ package org.netbeans.modules.websvc.rest.spi;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -48,9 +50,13 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
+import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -276,6 +282,23 @@ public abstract class WebRestSupport extends RestSupport {
      * @param prj project instance
      */
     protected void logResourceCreation(Project prj) {
+    }
+
+    public List<RestApplication> getRestApplications() {
+        RestApplicationModel applicationModel = getRestApplicationsModel();
+        if (applicationModel != null) {
+            try {
+                return applicationModel.runReadAction(new MetadataModelAction<RestApplications, List<RestApplication>>() {
+
+                    public List<RestApplication> run(RestApplications metadata) throws IOException {
+                        return metadata.getRestApplications();
+                    }
+                    });
+            } catch (IOException ex) {
+                return Collections.emptyList();
+            }
+        }
+        return Collections.emptyList();
     }
 
 }
