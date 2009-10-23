@@ -174,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>
-            <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
+            <property name="module.builddir" value="${basedir}/netBeans/baseide/build"/>
         </ant>            
         <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
