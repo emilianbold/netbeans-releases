@@ -109,6 +109,18 @@ public class AutosTestCase extends ProjectBasedTestCase {
         performTest("file.cc", 15);
     }
 
+//    public void testAutosEmptyLine() throws Exception {
+//        performTest("file.cc", 19);
+//    }
+//
+//    public void testAutosMultiLine() throws Exception {
+//        performTest("file.cc", 23);
+//    }
+//
+//    public void testAutosComment() throws Exception {
+//        performTest("file.cc", 27);
+//    }
+
     private void performTest(String source, int lineIndex) throws Exception {
         File workDir = getWorkDir();
         File testFile = getDataFile(source);
