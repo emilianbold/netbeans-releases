@@ -67,8 +67,6 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
 
     public AbstractSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
-        Logger.getLogger("cnd.remote.logger").setLevel(Level.FINEST);
-        Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
     }
 
     @ForAllEnvironments

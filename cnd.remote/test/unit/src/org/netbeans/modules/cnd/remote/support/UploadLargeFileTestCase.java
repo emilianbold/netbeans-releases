@@ -54,11 +54,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class UploadLargeFileTestCase extends RemoteTestBase {
 
-    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
     public UploadLargeFileTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
