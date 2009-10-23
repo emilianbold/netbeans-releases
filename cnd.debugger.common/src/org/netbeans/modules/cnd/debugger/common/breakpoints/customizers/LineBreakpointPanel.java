@@ -288,7 +288,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, H
             }
             String path = tfFileName.getText().trim();
             if (new File(path).exists()) {
-                path = "file:"+path;
+                path = "file:"+path; //NOI18N
             }
             breakpoint.setURL(path);
             breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
@@ -355,7 +355,7 @@ public class LineBreakpointPanel extends JPanel implements ControllerProvider, H
             }
             try {
                 if (new File(path).exists()) {
-                    path = "file:"+path;
+                    path = "file:"+path; //NOI18N
                 }
                 URL url = new URL(path);
                 try {
