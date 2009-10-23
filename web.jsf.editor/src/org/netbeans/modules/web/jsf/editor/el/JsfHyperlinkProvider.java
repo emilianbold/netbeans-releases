@@ -308,6 +308,9 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             
             FacesManagedBean bean = ConfigurationUtils.findFacesManagedBean( 
                     wm, beanName);
+            if ( bean == null ){
+                return ;
+            }
             FileObject config = null;
             if ( bean instanceof ManagedBean) {
                 config = ((ManagedBean)bean).getModel().getModelSource().
@@ -315,7 +318,6 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             }
             else {
                 String fqn = bean.getManagedBeanClass();
-                MetadataModel<JsfModel> model = JsfModelFactory.getModel( wm );
                 JavaSource javaSource = JavaSource.create( 
                         ClasspathInfo.create(mySource)  );
                 openElement( javaSource , fqn);
