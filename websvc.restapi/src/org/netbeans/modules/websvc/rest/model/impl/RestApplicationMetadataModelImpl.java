@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.rest.model.spi;
+package org.netbeans.modules.websvc.rest.model.impl;
 
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestApplications;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.model.impl.RestApplicationMetadataModelImpl;
-import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataModelImpl;
 
 /**
  *
- * @author Milan Kuchtiak
+ * @author mkuchtiak
  */
-public class RestServicesMetadataModelFactory {
-    
-    private RestServicesMetadataModelFactory() {
+public class RestApplicationMetadataModelImpl implements RestApplicationModel {
+
+    private final AnnotationModelHelper helper;
+    //private final RestApplications root;
+    private final RestApplications metadata;
+
+    public RestApplicationMetadataModelImpl(MetadataUnit metadataUnit, Project project) {
+        ClasspathInfo cpi = ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
+        helper = AnnotationModelHelper.create(cpi);
+        metadata = RestApplicationsImpl.create(helper, project);
+        //metadata = new RestServicesMetadataImpl(root);
     }
-    
-    public static RestServicesModel createMetadataModel(MetadataUnit metadataUnit, Project project) {
-        RestServicesModel impl = new RestServicesMetadataModelImpl(metadataUnit, project);
-        MetadataModelFactory.createMetadataModel(impl);
-        return impl;
+
+    public <R> R runReadAction(final MetadataModelAction<RestApplications, R> action) throws MetadataModelException, IOException {
+        return helper.runJavaSourceTask(new Callable<R>() {
+            public R call() throws Exception {
+                return action.run(metadata);
+            }
+        });
     }
-    public static RestApplicationModel createApplicationMetadataModel(MetadataUnit metadataUnit, Project project) {
-        RestApplicationModel impl = new RestApplicationMetadataModelImpl(metadataUnit, project);
-        return impl;
+
+    public boolean isReady() {
+        return !helper.isJavaScanInProgress();
     }
-    
+
+    public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<RestApplications, R> action) throws MetadataModelException, IOException {
+        return helper.runJavaSourceTaskWhenScanFinished(new Callable<R>() {
+            public R call() throws Exception {
+                return action.run(metadata);
+            }
+        });
+    }
+
 }
