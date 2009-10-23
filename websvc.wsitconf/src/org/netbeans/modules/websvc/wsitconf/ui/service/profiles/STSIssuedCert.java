@@ -51,7 +51,6 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
@@ -124,8 +123,6 @@ public class STSIssuedCert extends ProfileBaseForm {
         
         issuerAddressField.setText(SecurityTokensModelHelper.getIssuedIssuerAddress(token));
         issuerMetadataField.setText(SecurityTokensModelHelper.getIssuedIssuerMetadataAddress(token));
-
-        setChBox(reqDerivedKeys, SecurityPolicyModelHelper.isRequireDerivedKeys(token));
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
@@ -235,13 +232,6 @@ public class STSIssuedCert extends ProfileBaseForm {
                 asmh.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
             }
         }
-        if (source.equals(reqDerivedKeys)) {
-            WSDLComponent recTokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
-            WSDLComponent recToken = SecurityTokensModelHelper.getTokenTypeElement(recTokenKind);
-            spmh.enableRequireDerivedKeys(recToken, reqDerivedKeys.isSelected());
-            spmh.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
-            return;
-        }
         
         enableDisable();
     }
@@ -267,7 +257,6 @@ public class STSIssuedCert extends ProfileBaseForm {
         layoutLabel = new javax.swing.JLabel();
         layoutCombo = new javax.swing.JComboBox();
         encryptSignatureChBox = new javax.swing.JCheckBox();
-        reqDerivedKeys = new javax.swing.JCheckBox();
         encryptOrderChBox = new javax.swing.JCheckBox();
         issuerAddressLabel = new javax.swing.JLabel();
         issuerAddressField = new javax.swing.JTextField();
@@ -281,7 +270,6 @@ public class STSIssuedCert extends ProfileBaseForm {
         keySizeCombo = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(secConvChBox, org.openide.util.NbBundle.getMessage(STSIssuedCert.class, "LBL_SecConvLabel")); // NOI18N
-        secConvChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         secConvChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         secConvChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -290,7 +278,6 @@ public class STSIssuedCert extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(reqSigConfChBox, org.openide.util.NbBundle.getMessage(STSIssuedCert.class, "LBL_RequireSigConfirmation")); // NOI18N
-        reqSigConfChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reqSigConfChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         reqSigConfChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -299,7 +286,6 @@ public class STSIssuedCert extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(derivedKeysChBox, org.openide.util.NbBundle.getMessage(STSIssuedCert.class, "LBL_RequireDerivedKeysForSecConv")); // NOI18N
-        derivedKeysChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         derivedKeysChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         derivedKeysChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -326,7 +312,6 @@ public class STSIssuedCert extends ProfileBaseForm {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(encryptSignatureChBox, org.openide.util.NbBundle.getMessage(STSIssuedCert.class, "LBL_EncryptSignatureLabel")); // NOI18N
-        encryptSignatureChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptSignatureChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptSignatureChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -334,17 +319,7 @@ public class STSIssuedCert extends ProfileBaseForm {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeys, org.openide.util.NbBundle.getMessage(STSIssuedCert.class, "LBL_RequireDerivedKeys")); // NOI18N
-        reqDerivedKeys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        reqDerivedKeys.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        reqDerivedKeys.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reqDerivedKeysActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(encryptOrderChBox, org.openide.util.NbBundle.getMessage(STSIssuedCert.class, "LBL_EncryptOrderLabel")); // NOI18N
-        encryptOrderChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptOrderChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         encryptOrderChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -405,35 +380,35 @@ public class STSIssuedCert extends ProfileBaseForm {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(issuerAddressLabel)
-                    .add(reqDerivedKeys)
-                    .add(reqSigConfChBox)
-                    .add(derivedKeysChBox)
-                    .add(encryptSignatureChBox)
-                    .add(encryptOrderChBox)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layoutLabel)
-                                    .add(algoSuiteLabel)
-                                    .add(issuerMetadataLabel)
-                                    .add(tokenTypeLabel)
-                                    .add(keyTypeLabel)
-                                    .add(keySizeLabel))
-                                .add(13, 13, 13)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                            .add(org.jdesktop.layout.GroupLayout.LEADING, issuerMetadataField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                                            .add(org.jdesktop.layout.GroupLayout.LEADING, issuerAddressField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                                            .add(org.jdesktop.layout.GroupLayout.LEADING, tokenTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                    .add(keyTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(keySizeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, secConvChBox))
-                        .addContainerGap())))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layoutLabel)
+                            .add(algoSuiteLabel)
+                            .add(issuerMetadataLabel)
+                            .add(tokenTypeLabel)
+                            .add(keyTypeLabel)
+                            .add(keySizeLabel))
+                        .add(13, 13, 13)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, issuerMetadataField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, issuerAddressField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, tokenTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(keyTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(keySizeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(reqSigConfChBox)
+                            .add(derivedKeysChBox)
+                            .add(encryptSignatureChBox)
+                            .add(encryptOrderChBox)
+                            .add(secConvChBox))
+                        .addContainerGap(13, Short.MAX_VALUE))))
         );
 
         layout.linkSize(new java.awt.Component[] {algoSuiteCombo, keySizeCombo, keyTypeCombo, layoutCombo, tokenTypeCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -469,8 +444,6 @@ public class STSIssuedCert extends ProfileBaseForm {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(layoutLabel)
                     .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(reqDerivedKeys)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(secConvChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -512,10 +485,6 @@ public class STSIssuedCert extends ProfileBaseForm {
          setValue(encryptOrderChBox);
     }//GEN-LAST:event_encryptOrderChBoxActionPerformed
 
-    private void reqDerivedKeysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqDerivedKeysActionPerformed
-         setValue(reqDerivedKeys);
-    }//GEN-LAST:event_reqDerivedKeysActionPerformed
-
     private void reqSigConfChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqSigConfChBoxActionPerformed
          setValue(reqSigConfChBox);
     }//GEN-LAST:event_reqSigConfChBoxActionPerformed
@@ -556,7 +525,6 @@ public class STSIssuedCert extends ProfileBaseForm {
     private javax.swing.JLabel keyTypeLabel;
     private javax.swing.JComboBox layoutCombo;
     private javax.swing.JLabel layoutLabel;
-    private javax.swing.JCheckBox reqDerivedKeys;
     private javax.swing.JCheckBox reqSigConfChBox;
     private javax.swing.JCheckBox secConvChBox;
     private javax.swing.JComboBox tokenTypeCombo;
