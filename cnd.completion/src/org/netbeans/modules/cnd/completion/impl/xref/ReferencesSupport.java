@@ -181,6 +181,7 @@ public final class ReferencesSupport {
 
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
             final int offset, TokenItem<CppTokenId> jumpToken, FileReferencesContext fileReferencesContext) {
+        long oldVersion = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
@@ -217,13 +218,13 @@ public final class ReferencesSupport {
             if (key < 0) {
                 key = offset;
             }
-            csmItem = getReferencedObject(csmFile, key);
+            csmItem = getReferencedObject(csmFile, key, oldVersion);
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, FAKE);
+                    putReferencedObject(csmFile, key, FAKE, oldVersion);
                 } else {
-                    putReferencedObject(csmFile, key, csmItem);
+                    putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
             } else if (csmItem == FAKE) {
                 csmItem = null;
@@ -642,22 +643,33 @@ public final class ReferencesSupport {
 
     };
 
-    private CsmObject getReferencedObject(CsmFile file, int offset) {
+    private CsmObject getReferencedObject(CsmFile file, int offset, long oldVersion) {
         try {
             cacheLock.readLock().lock();
             Map<Integer, CsmObject> map = cache.get(file);
+            CsmObject out = null;
             if (map != null) {
-                return map.get(offset);
+                out = map.get(offset);
+                if (out == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                    // we don't beleive in such fake and put null instead
+                    map.put(offset, null);
+                    out = null;
+                }
             }
-            return null;
+            return out;
         } finally {
             cacheLock.readLock().unlock();
         }
     }
 
-    private void putReferencedObject(CsmFile file, int offset, CsmObject object) {
+    private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
         try {
             cacheLock.writeLock().lock();
+            if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                // we don't beleive in such fake
+//                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
+                return;
+            }
             Map<Integer, CsmObject> map = cache.get(file);
             if (map == null) {
                 if (cache.size() > MAX_CACHE_SIZE) {
