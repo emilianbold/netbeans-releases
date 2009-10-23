@@ -88,6 +88,7 @@ public class NativeExecutor implements Runnable {
     private final boolean showInput;
     private final ExecutionEnvironment execEnv;
     private final boolean unbuffer;
+    private boolean x11forwarding = false;
     
     private String rcfile;
     private NativeExecution nativeExecution;
@@ -160,6 +161,10 @@ public class NativeExecutor implements Runnable {
             boolean showInput) {
         this(ExecutionEnvironmentFactory.getLocal(), runDir, executable,
                 arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
+    }
+
+    public void setX11Forwarding(boolean x11forwarding) {
+        this.x11forwarding = x11forwarding;
     }
     
     /** targets may be null to indicate default target */
@@ -287,7 +292,8 @@ public class NativeExecutor implements Runnable {
                     prepareEnvironment(),
                     out,
 		    showInput ? io.getIn() : null,
-                    unbuffer);
+                    unbuffer,
+                    x11forwarding);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             executionFinished(-2, System.currentTimeMillis() - startTime);

@@ -233,6 +233,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     pae.getType() == ProjectActionEvent.Type.BUILD,
                     showInput,
                     unbuffer);
+            //if (pae.getType() == ProjectActionEvent.Type.RUN)
+            switch (pae.getType()) {
+                case DEBUG:
+                case RUN:
+                    if (!contains(env, "DISPLAY")) { // if DISPLAY is set, let it do its work
+                        projectExecutor.setX11Forwarding(true);
+                    }
+            }
             projectExecutor.addExecutionListener(this);
             if (rcfile != null) {
                 projectExecutor.setExitValueOverride(rcfile);
@@ -245,6 +253,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         } else {
             assert false;
         }
+    }
+
+    private boolean contains(String[] env, String var) {
+        for (String v : env) {
+            int pos = v.indexOf('='); //NOI18N
+            if (pos > 0) {
+                if (v.substring(0, pos).equals(var)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void addExecutionListener(ExecutionListener l) {
