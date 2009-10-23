@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
+import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
@@ -129,6 +130,7 @@ public abstract class RestSupport {
     
     private AntProjectHelper helper;
     protected RestServicesModel restServicesModel;
+    protected RestApplicationModel restApplicationModel;
     private List<PropertyChangeListener> modelListeners = new ArrayList<PropertyChangeListener>();
     protected final Project project;
 
@@ -220,6 +222,21 @@ public abstract class RestSupport {
             }
         }
         return restServicesModel;
+    }
+
+    public RestApplicationModel getRestApplicationsModel() {
+        FileObject sourceRoot = findSourceRoot();
+        if (restApplicationModel == null && sourceRoot != null) {
+            ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
+                    cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
+                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
+                    null);
+            restApplicationModel =
+                    RestServicesMetadataModelFactory.createApplicationMetadataModel(metadataUnit, project);
+        }
+        return restApplicationModel;
     }
 
     protected void refreshRestServicesMetadataModel() {
