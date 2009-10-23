@@ -49,6 +49,9 @@ public class KenaiInstance implements Comparable<KenaiInstance> {
     private String displayName;
 
     public KenaiInstance(String url, String name) {
+        if (url.endsWith("/")) {
+            url=url.substring(0, url.length()-1);
+        }
         this.url=url;
         this.displayName=name;
     }

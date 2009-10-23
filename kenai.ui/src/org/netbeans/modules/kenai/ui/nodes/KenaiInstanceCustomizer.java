@@ -41,10 +41,12 @@ package org.netbeans.modules.kenai.ui.nodes;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -167,15 +169,24 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         dd.setValid(true);
     }
 
-    static String urlValid(String s) {
+    private static Pattern urlPatten = Pattern.compile("https://([a-zA-Z0-9\\-\\.])+\\.(([a-zA-Z]{2,3})|(info)|(name)|(aero)|(coop)|(museum)|(jobs)|(mobi)|(travel))/?$");
+
+
+
+    private static String urlValid(String s) {
         if (!s.startsWith("https://")) { //NOI18N
-            return org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "Err_NotHttps");
+            return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_NotHttps");
         }
-        for (KenaiInstance instance: KenaiInstancesManager.getDefault().getInstances()) {
-            if (instance.getUrl().toString().equals(s.endsWith("/")?s.substring(0, s.length()-1):s)) {
-                return  org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlUsed", s);
+
+        if (!urlPatten.matcher(s).matches()) {
+            return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlNotValid");
+        }
+        for (KenaiInstance instance : KenaiInstancesManager.getDefault().getInstances()) {
+            if (instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) {
+                return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlUsed", s);
             }
         }
+
         try {
             new URL(s);
             return null;
