@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -477,6 +478,8 @@ public class CompilerSet {
                 return tool;
             }
         }
+        CndUtils.assertFalse(true, "Should not be here, cuz we should create empty tools in CompilerSetManager");  //NOI18N
+        //TODO: remove this code, empty tools should be created in CompilerSetManager
         return compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
                 CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
     }
@@ -493,6 +496,8 @@ public class CompilerSet {
                 return tool;
             }
         }
+        CndUtils.assertFalse(true, "Should not be here, cuz we should create empty tools in CompilerSetManager"); //NOI18N
+        //TODO: remove this code, empty tools should be created in CompilerSetManager
         Tool t;
         // Fixup: all tools should go here ....
         t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),

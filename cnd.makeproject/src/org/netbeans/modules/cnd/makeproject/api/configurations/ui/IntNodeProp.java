@@ -48,7 +48,6 @@ import org.openide.nodes.Node;
 public class IntNodeProp extends Node.Property {
 
     private final IntConfiguration intConfiguration;
-    private final String unused;
     private final String name;
     private final String description;
     private boolean canWrite;
@@ -59,7 +58,6 @@ public class IntNodeProp extends Node.Property {
         super(Integer.class);
         this.intConfiguration = intConfiguration;
         this.canWrite = canWrite;
-        this.unused = unused;
         this.name = name;
         this.description = description;
     }

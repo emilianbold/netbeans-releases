@@ -64,7 +64,8 @@ public final class AstDynamicMethodElement extends AstMethodElement {
 
     @Override
     public String getName() {
-        return AstUtilities.getNameOrValue(methodNode);
+        String result = AstUtilities.getNameOrValue(methodNode);
+        return result == null ? "" : result;
     }
 
     @Override

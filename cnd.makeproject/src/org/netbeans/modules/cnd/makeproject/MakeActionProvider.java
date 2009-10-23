@@ -1074,6 +1074,10 @@ public class MakeActionProvider implements ActionProvider {
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
+        RunProfile runProfile = (RunProfile)conf.getAuxObject(RunProfile.PROFILE_ID);
+        if (runProfile != null && !runProfile.getBuildFirst()) {
+            return true;
+        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();

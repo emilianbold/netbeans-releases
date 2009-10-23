@@ -43,6 +43,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.actions.RenameAction;
 import org.openide.util.ContextAwareAction;
@@ -88,13 +89,11 @@ public class RSMDataObjectAction extends SystemAction implements Menu, Popup, Co
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
-        if (a.isEnabled()) {
+        if (ActionsImplementationFactory.canRename(actionContext)) {
             return this;
         } else {
             Action rename = renameAction.createContextAwareInstance(actionContext);
-            Action b = RefactoringActionsFactory.safeDeleteAction().createContextAwareInstance(actionContext);
-            if (!rename.isEnabled() && b.isEnabled()) {
+            if (!rename.isEnabled() && ActionsImplementationFactory.canDelete(actionContext)) {
                 return this;
             } else {
                 return rename;
