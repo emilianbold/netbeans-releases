@@ -14,5 +14,18 @@ int main(int argc, char**argv) {
     if (argc == 1) return argc + argv;
     if (argc == 2) return main(argc, argv);
 
+    int a = 5;
+
+    int b = 5;
+
+    main(a,
+        b,
+        c);
+
+    int x = 5;
+    // comment
+    int y = 5;
+
+
     return 0;
 }
