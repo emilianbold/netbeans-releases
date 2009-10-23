@@ -195,6 +195,9 @@ public final class LineAnnotationInfo {
      */
     public synchronized String getTooltip() {
         if (tooltip == null) {
+            if (notFormatedColumns == null || notFormatedColumns.length == 0){
+                return "";
+            }
             StringBuilder sb = new StringBuilder();
             int i = 0;
 
