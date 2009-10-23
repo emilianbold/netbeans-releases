@@ -51,8 +51,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -632,7 +630,8 @@ public final class ReferencesSupport {
     }
     private final CsmProgressListener progressListener;
     private static final int MAX_CACHE_SIZE = 10;
-    private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+    private final Object cacheLock = new CacheLock();
+    private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
     private static CsmObject FAKE = new CsmObject() {
 
@@ -644,8 +643,7 @@ public final class ReferencesSupport {
     };
 
     private CsmObject getReferencedObject(CsmFile file, int offset, long oldVersion) {
-        try {
-            cacheLock.readLock().lock();
+        synchronized (cacheLock) {
             Map<Integer, CsmObject> map = cache.get(file);
             CsmObject out = null;
             if (map != null) {
@@ -657,14 +655,11 @@ public final class ReferencesSupport {
                 }
             }
             return out;
-        } finally {
-            cacheLock.readLock().unlock();
         }
     }
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
-        try {
-            cacheLock.writeLock().lock();
+        synchronized (cacheLock) {
             if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                 // we don't beleive in such fake
 //                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
@@ -679,21 +674,16 @@ public final class ReferencesSupport {
                 cache.put(file, map);
             }
             map.put(offset, object);
-        } finally {
-            cacheLock.writeLock().unlock();
         }
     }
 
     private void clearFileReferences(CsmFile file) {
-        try {
-            cacheLock.writeLock().lock();
+        synchronized (cacheLock) {
             if (file == null) {
                 cache.clear();
             } else {
                 cache.remove(file);
             }
-        } finally {
-            cacheLock.writeLock().unlock();
         }
     }
 
