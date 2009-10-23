@@ -100,6 +100,7 @@ public final class LineAnnotationInfo {
                 lineOffset = el.getStartOffset();
             } catch (IndexOutOfBoundsException ioobe) {
                 // getElement throws IndexOutOfBoundsException if line doesn't exists!
+                return 0;
             }
 
         }
