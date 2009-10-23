@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.spi.editor.highlighting.*;
@@ -543,6 +544,22 @@ public class PositionsBagTest extends NbTestCase {
             atttributes.get(3));
     }
     
+    public void testRemoveHighlights_165270() throws Exception {
+        PositionsBag hs = new PositionsBag(doc);
+        hs.addHighlight(pos(5), pos(10), EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+        hs.removeHighlights(pos(5), pos(10), true);
+        assertEquals("Highlights were not removed", 0, hs.getMarks().size());
+
+        hs.addHighlight(pos(10), pos(20), EMPTY);
+        hs.addHighlight(pos(30), pos(40), EMPTY);
+        hs.addHighlight(pos(50), pos(60), EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+        hs.removeHighlights(pos(30), pos(40), true);
+        assertEquals("Highlights were not removed", 4, hs.getMarks().size());
+        assertMarks("Wrong highlights after remove", createOffsetsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
+    }
+
     public void testAddAll() {
         PositionsBag hsA = new PositionsBag(doc);
         PositionsBag hsB = new PositionsBag(doc);
@@ -765,5 +782,70 @@ public class PositionsBagTest extends NbTestCase {
     
     private Position pos(int offset) {
         return new SimplePosition(offset);
+    }
+
+    private PositionsBag createOffsetsBag(Object... triples) {
+        assert triples != null;
+        assert triples.length % 3 == 0;
+
+        PositionsBag bag = new PositionsBag(doc);
+        for(int i = 0; i < triples.length / 3; i++) {
+            bag.addHighlight(pos((Integer) triples[3 * i]), pos((Integer) triples[3 * i + 1]), (AttributeSet) triples[3 * i + 2]);
+        }
+
+        return bag;
+    }
+
+    private void assertMarks(String message, PositionsBag expected, PositionsBag actual) {
+        try {
+            GapList<Position> expectedPositions = expected.getMarks();
+            GapList<Position> actualPositions = actual.getMarks();
+            GapList<AttributeSet> expectedAttributes = expected.getAttributes();
+            GapList<AttributeSet> actualAttributes = actual.getAttributes();
+            assertEquals("Different number of marks", expectedPositions.size(), actualPositions.size());
+            for(int i = 0; i < expectedPositions.size(); i++) {
+                Position expectedPos = expectedPositions.get(i);
+                Position actualPos = actualPositions.get(i);
+                assertEquals("Different offset at the " + i + "-th mark", expectedPos.getOffset(), actualPos.getOffset());
+
+                AttributeSet expectedAttrib = expectedAttributes.get(i);
+                AttributeSet actualAttrib = actualAttributes.get(i);
+                assertSame("Different attributes at the " + i + "-th mark", expectedAttrib, actualAttrib);
+            }
+        } catch (AssertionFailedError afe) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(message);
+            sb.append('\n');
+            sb.append("Expected marks (size=");
+            sb.append(expected.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(expected, sb);
+            sb.append('\n');
+            sb.append("Actual marks (size=");
+            sb.append(actual.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(actual, sb);
+            sb.append('\n');
+
+            AssertionFailedError afe2 = new AssertionFailedError(sb.toString());
+            afe2.initCause(afe);
+            throw afe2;
+        }
+    }
+
+    private StringBuilder dumpMarks(PositionsBag bag, StringBuilder sb) {
+        for (int i = 0; i < bag.getMarks().size(); i++) {
+            Position pos = bag.getMarks().get(i);
+            sb.append('[').append(i).append("] = {");
+            sb.append(pos.toString());
+            sb.append("; attribs=");
+            AttributeSet attribs = bag.getAttributes().get(i);
+            sb.append(attribs);
+            sb.append('}');
+            if (i + 1 < bag.getMarks().size()) {
+                sb.append('\n');
+            }
+        }
+        return sb;
     }
 }

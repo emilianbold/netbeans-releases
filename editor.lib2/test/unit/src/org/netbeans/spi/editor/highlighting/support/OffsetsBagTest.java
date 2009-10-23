@@ -47,6 +47,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.lib2.highlighting.OffsetGapList;
 import org.netbeans.spi.editor.highlighting.*;
@@ -81,15 +82,14 @@ public class OffsetsBagTest extends NbTestCase {
     }
 
     public void testRemoveBeyondEnd() throws Exception {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "0123456789", null);
-        OffsetsBag hs = new OffsetsBag(doc);
+        Document d = new PlainDocument();
+        d.insertString(0, "0123456789", null);
+        OffsetsBag hs = new OffsetsBag(d);
         hs.addHighlight(0, 5, EMPTY);
         hs.addHighlight(6, 8, EMPTY);
         assertEquals("Sequence size", 4, hs.getMarks().size());
         hs.removeHighlights(0, 11, false);
-        hs.clear();
-        assertEquals("Sequence was not cleared", 0, hs.getMarks().size());
+        assertEquals("Highlights were not removed", 0, hs.getMarks().size());
     }
 
     public void testAddLeftOverlap() {
@@ -540,6 +540,22 @@ public class OffsetsBagTest extends NbTestCase {
             marks.get(3).getAttributes());
     }
     
+    public void testRemoveHighlights_165270() throws Exception {
+        OffsetsBag hs = new OffsetsBag(doc);
+        hs.addHighlight(5, 10, EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+        hs.removeHighlights(5, 10, true);
+        assertEquals("Highlights were not removed", 0, hs.getMarks().size());
+
+        hs.addHighlight(10, 20, EMPTY);
+        hs.addHighlight(30, 40, EMPTY);
+        hs.addHighlight(50, 60, EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+        hs.removeHighlights(30, 40, true);
+        assertEquals("Highlights were not removed", 4, hs.getMarks().size());
+        assertMarks("Wrong highlights after remove", createOffsetsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
+    }
+
     public void testAddAll() {
         OffsetsBag hsA = new OffsetsBag(doc);
         OffsetsBag hsB = new OffsetsBag(doc);
@@ -685,10 +701,10 @@ public class OffsetsBagTest extends NbTestCase {
     }
 
     public void testDocumentChanges() throws BadLocationException {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
+        Document d = new PlainDocument();
+        d.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
         
-        OffsetsBag bag = new OffsetsBag(doc);
+        OffsetsBag bag = new OffsetsBag(d);
         
         SimpleAttributeSet attribsA = new SimpleAttributeSet();
         SimpleAttributeSet attribsB = new SimpleAttributeSet();
@@ -714,7 +730,7 @@ public class OffsetsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", marks.get(2).getAttributes().getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", marks.get(3).getAttributes());
         
-        doc.insertString(12, "----", SimpleAttributeSet.EMPTY);
+        d.insertString(12, "----", SimpleAttributeSet.EMPTY);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -730,7 +746,7 @@ public class OffsetsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", marks.get(2).getAttributes().getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", marks.get(3).getAttributes());
         
-        doc.remove(1, 5);
+        d.remove(1, 5);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -753,5 +769,61 @@ public class OffsetsBagTest extends NbTestCase {
             System.out.println("<" + seq.getStartOffset() + ", " + seq.getEndOffset() + ", " + seq.getAttributes() + ">");
         }
         System.out.println("} --- End of Dumping highlights from: " + seq + " ---------------------");
+    }
+
+    private OffsetsBag createOffsetsBag(Object... triples) {
+        assert triples != null;
+        assert triples.length % 3 == 0;
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        for(int i = 0; i < triples.length / 3; i++) {
+            bag.addHighlight((Integer) triples[3 * i], (Integer) triples[3 * i + 1], (AttributeSet) triples[3 * i + 2]);
+        }
+
+        return bag;
+    }
+
+    private void assertMarks(String message, OffsetsBag expected, OffsetsBag actual) {
+        try {
+            OffsetGapList<OffsetsBag.Mark> expectedMarks = expected.getMarks();
+            OffsetGapList<OffsetsBag.Mark> actualMarks = actual.getMarks();
+            assertEquals("Different number of marks", expectedMarks.size(), actualMarks.size());
+            for(int i = 0; i < expectedMarks.size(); i++) {
+                OffsetsBag.Mark expectedMark = expectedMarks.get(i);
+                OffsetsBag.Mark actualMark = actualMarks.get(i);
+                assertEquals("Different offset at the " + i + "-th mark", expectedMark.getOffset(), actualMark.getOffset());
+                assertSame("Different attributes at the " + i + "-th mark", expectedMark.getAttributes(), actualMark.getAttributes());
+            }
+        } catch (AssertionFailedError afe) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(message);
+            sb.append('\n');
+            sb.append("Expected marks (size=");
+            sb.append(expected.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(expected, sb);
+            sb.append('\n');
+            sb.append("Actual marks (size=");
+            sb.append(actual.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(actual, sb);
+            sb.append('\n');
+
+            AssertionFailedError afe2 = new AssertionFailedError(sb.toString());
+            afe2.initCause(afe);
+            throw afe2;
+        }
+    }
+
+    private StringBuilder dumpMarks(OffsetsBag bag, StringBuilder sb) {
+        for (int i = 0; i < bag.getMarks().size(); i++) {
+            OffsetsBag.Mark mark = bag.getMarks().get(i);
+            sb.append('[').append(i).append("] = ");
+            sb.append('{').append(mark.toString()).append('}');
+            if (i + 1 < bag.getMarks().size()) {
+                sb.append('\n');
+            }
+        }
+        return sb;
     }
 }

@@ -301,11 +301,20 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                 }
 
                 if (startIdx != -1 && attributes.get(startIdx) != null) {
-                    startIdx++;
-                    if (startIdx <= endIdx) {
+                    if (startIdx + 1 < endIdx) {
+                        startIdx++;
                         marks.set(startIdx, startPosition);
                         attributes.set(startIdx, null);
+                    } else if (startIdx + 1 == endIdx) {
+                        if (marks.get(startIdx).getOffset() < startPosition.getOffset()) {
+                            startIdx++;
+                            marks.set(startIdx, startPosition);
+                            attributes.set(startIdx, null);
+                        } else {
+                            startIdx--;
+                        }
                     } else {
+                        startIdx++;
                         marks.add(startIdx, startPosition);
                         attributes.add(startIdx, null);
                     }

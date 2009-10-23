@@ -367,11 +367,16 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                     }
                     
                     if (startIdx != -1 && marks.get(startIdx).getAttributes() != null) {
-                        startIdx++;
-                        if (startIdx <= endIdx) {
-                            marks.set(startIdx, new Mark(startOffset, null));
+                        if (startIdx + 1 < endIdx) {
+                            marks.set(++startIdx, new Mark(startOffset, null));
+                        } else if (startIdx + 1 == endIdx) {
+                            if (marks.get(startIdx).getOffset() < startOffset) {
+                                marks.set(++startIdx, new Mark(startOffset, null));
+                            } else {
+                                startIdx--;
+                            }
                         } else {
-                            marks.add(startIdx, new Mark(startOffset, null));
+                            marks.add(++startIdx, new Mark(startOffset, null));
                         }
                         changeStart = startOffset;
                     }
