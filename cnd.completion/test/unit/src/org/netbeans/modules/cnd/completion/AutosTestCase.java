@@ -101,6 +101,10 @@ public class AutosTestCase extends ProjectBasedTestCase {
         performTest("file.cc", 9);
     }
 
+    public void testAutosIfEnd() throws Exception {
+        performTest("file.cc", 11);
+    }
+
     public void testAutosCompoundLine1() throws Exception {
         performTest("file.cc", 14);
     }
@@ -109,14 +113,18 @@ public class AutosTestCase extends ProjectBasedTestCase {
         performTest("file.cc", 15);
     }
 
+    public void testAutosCompoundLine3() throws Exception {
+        performTest("file.cc", 29);
+    }
+
 //    public void testAutosEmptyLine() throws Exception {
 //        performTest("file.cc", 19);
 //    }
-//
-//    public void testAutosMultiLine() throws Exception {
-//        performTest("file.cc", 23);
-//    }
-//
+
+    public void testAutosMultiLine() throws Exception {
+        performTest("file.cc", 23);
+    }
+
 //    public void testAutosComment() throws Exception {
 //        performTest("file.cc", 27);
 //    }
