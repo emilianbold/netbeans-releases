@@ -39,7 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.core.multiview;
 
 import java.util.ArrayList;
@@ -48,19 +47,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
-
-
 
 /**
  *
@@ -68,28 +61,17 @@ import org.openide.windows.TopComponent;
  */
 public class MultiViewElementTest extends NbTestCase {
     
-    /** Creates a new instance of SFSTest */
     public MultiViewElementTest(String name) {
         super (name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MultiViewElementTest.class);
-        
-        return suite;
-    }
-
-    protected boolean runInEQ () {
+    protected @Override boolean runInEQ () {
         return true;
     }
-    
+
+    protected @Override int timeOut() {
+        return 500000;
+    }
     
     public void testRequestVisible() throws Exception {
         MVElem elem1 = new MVElem();
@@ -259,7 +241,7 @@ public class MultiViewElementTest extends NbTestCase {
     }
     
     private class UndoRedoImpl implements UndoRedo {
-        public List listeners = new ArrayList();
+        public List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         public boolean undo = true;
         public boolean redo = true;
         
@@ -296,4 +278,3 @@ public class MultiViewElementTest extends NbTestCase {
     }
     
 }
-
