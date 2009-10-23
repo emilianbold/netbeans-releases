@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -50,6 +51,7 @@ import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -83,7 +85,6 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
         setDefaultCompilerSet("GNU");
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String projectPath = rcFile.get( SECTION, projectKey);
-        System.setProperty("cnd.remote.timestamps.clear", rcFile.get(SECTION, "cnd.remote.timestamps.clear", ""));
         assertNotNull(projectPath);
         File projectDirFile = new File(projectPath);
         assertTrue(projectDirFile.exists());
@@ -92,21 +93,15 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
         FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         long time = System.currentTimeMillis();
-        addPropertyFromRcFile(rcFile, "cnd.rfs.preload.sleep");
-        addPropertyFromRcFile(rcFile, "cnd.rfs.preload.log");
-        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.log");
-        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.port");
-        addPropertyFromRcFile(rcFile, "cnd.rfs.controller.host");
+        addPropertyFromRcFile(SECTION, "cnd.remote.timestamps.clear");
+        addPropertyFromRcFile(SECTION, "cnd.rfs.preload.sleep");
+        addPropertyFromRcFile(SECTION, "cnd.rfs.preload.log");
+        addPropertyFromRcFile(SECTION, "cnd.rfs.controller.log");
+        addPropertyFromRcFile(SECTION, "cnd.rfs.controller.port");
+        addPropertyFromRcFile(SECTION, "cnd.rfs.controller.host");
         buildProject(makeProject, buildCommand, 60*60*24*7, TimeUnit.SECONDS);
         time = System.currentTimeMillis() - time;
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
-    }
-
-    private void addPropertyFromRcFile(RcFile rcFile, String varName) {
-        String value = rcFile.get(SECTION, varName);
-        if (value != null && value.length() > 0) {
-            System.setProperty(varName, value);
-        }
     }
 
     @Conditional(section=SECTION, key = "test.build")

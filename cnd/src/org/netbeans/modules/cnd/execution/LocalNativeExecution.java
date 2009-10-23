@@ -85,6 +85,17 @@ class LocalNativeExecution extends NativeExecution {
         assert execEnv.isLocal();
     }
 
+    public int executeCommand(
+            File runDirFile,
+            String executable,
+            String arguments,
+            String[] envp,
+            PrintWriter out,
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException {
+        return executeCommand(runDirFile, executable, arguments, envp, out, in, unbuffer, false);
+    }
+
     /**
      * Execute an executable, a makefile, or a script
      * @param runDir absolute path to directory from where the command should be executed
@@ -103,7 +114,8 @@ class LocalNativeExecution extends NativeExecution {
             String[] envp,
             PrintWriter out,
             Reader in,
-            boolean unbuffer) throws IOException, InterruptedException {
+            boolean unbuffer,
+            boolean x11forwarding) throws IOException, InterruptedException {
         int rc = -1;
 
         //this.runDirFile = runDirFile;

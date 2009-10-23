@@ -68,6 +68,7 @@ public class ScannerTestCase extends NbTestCase {
 	String GCC_DIRECTORY_ENTER = "[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Entering[\\w+\\s+]+`([^']*)'"; // NOI18N
 	String GCC_DIRECTORY_LEAVE = "[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Leaving[\\w+\\s+]+`([^']*)'"; // NOI18N
 	String GCC_DIRECTORY_CD    = "cd\\s+([\\S]+)[\\s;]";// NOI18N
+        String GCC_DIRECTORY_MAKE_ALL = "Making all in (.*)";// NOI18N
 	String GCC_STACK_HEADER = "^In file included from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"; // NOI18N
 	String GCC_STACK_NEXT =   "^                 from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"; // NOI18N
 	ScannerDescriptor scanner = toolchain.getScanner();
@@ -77,6 +78,7 @@ public class ScannerTestCase extends NbTestCase {
 	assertEquals(scanner.getEnterDirectoryPattern(),GCC_DIRECTORY_ENTER);
 	assertEquals(scanner.getLeaveDirectoryPattern(),GCC_DIRECTORY_LEAVE);
 	assertEquals(scanner.getChangeDirectoryPattern(),GCC_DIRECTORY_CD);
+	assertEquals(scanner.getMakeAllInDirectoryPattern(),GCC_DIRECTORY_MAKE_ALL);
 	assertEquals(scanner.getStackHeaderPattern(),GCC_STACK_HEADER);
 	assertEquals(scanner.getStackNextPattern(),GCC_STACK_NEXT);
     }
@@ -131,6 +133,11 @@ public class ScannerTestCase extends NbTestCase {
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
+    public void testGnuCluceneLogs() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        doTest(getLogs(), toolchain.getScanner(), getRef());
+    }
+
     private void doTest(File logFile, ScannerDescriptor scanner, PrintStream ref) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(logFile));
         String line;
@@ -143,6 +150,12 @@ public class ScannerTestCase extends NbTestCase {
             pattern = Pattern.compile(scanner.getChangeDirectoryPattern());
             if ((match = match(pattern, line)) != null) {
                 ref.println(lineCnt + " changeDirectory { dir: " + match.get(0) + " }");
+                continue;
+            }
+
+            pattern = Pattern.compile(scanner.getMakeAllInDirectoryPattern());
+            if ((match = match(pattern, line)) != null) {
+                ref.println(lineCnt + " makeAllInDirectory { dir: " + match.get(0) + " }");
                 continue;
             }
 

@@ -65,13 +65,8 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  */
 public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
-//    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-//    }
-
     public static final String PLATFORMS_SECTION = "remote.platforms";
+    public static final String DEFAULT_SECTION = "remote";
 
     public RemoteDevelopmentTest(Class testClass) {
         this(testClass.getName(), testClass);
