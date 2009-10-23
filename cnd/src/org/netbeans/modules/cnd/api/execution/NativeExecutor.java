@@ -290,20 +290,20 @@ public class NativeExecutor implements Runnable {
                     unbuffer);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            executionFinished(-1, System.currentTimeMillis() - startTime);
+            executionFinished(-2, System.currentTimeMillis() - startTime);
             throw td;
         } catch (IOException ex) {
             // command not found, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -1;
+            rc = -3;
         } catch (InterruptedException ex) {
             // interrupted, normal exit
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            rc = -1;
+            rc = -4;
         } catch (Throwable t) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             ErrorManager.getDefault().notify(t);
-            rc = -1;
+            rc = -5;
         } finally {
             if (showInput) {
                 io.setInputVisible(false);
