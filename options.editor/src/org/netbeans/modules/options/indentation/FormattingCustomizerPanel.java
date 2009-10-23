@@ -519,7 +519,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
         for(String key : from.keys()) {
             String value = from.get(key, null);
-            assert value != null : "Preferences should never have value == null."; //NOI18N
+            if (value == null) continue;
 
             Class type = guessType(value);
             if (Integer.class == type) {
