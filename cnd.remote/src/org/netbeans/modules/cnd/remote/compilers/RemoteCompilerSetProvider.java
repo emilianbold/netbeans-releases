@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -97,7 +96,9 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     }
 
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-            return SystemIncludesUtils.createLoader(env, sets);
+        return new Runnable() {
+            public void run() {}
+        };
     }
 
     public String[] getCompilerSetData(String path) {

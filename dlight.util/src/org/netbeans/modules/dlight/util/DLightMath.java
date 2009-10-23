@@ -149,4 +149,19 @@ public class DLightMath {
         long remainder = value % multiplier;
         return value - remainder + multiplier;
     }
+
+    public static float[] ensureSumLessOrEqual(float limit, float... values) {
+        float[] result = values.clone();
+        float sum = 0;
+        for (float value : values) {
+            sum += value;
+        }
+        if (limit < sum) {
+            float scale = limit / sum;
+            for (int i = 0; i < values.length; ++i) {
+                result[i] *= scale;
+            }
+        }
+        return result;
+    }
 }

@@ -435,12 +435,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
 
         // clearFileExistenceCache all opened projects, UIDs will be removed in disposeProject
-        for (Iterator projIter = prjsColl.iterator(); projIter.hasNext();) {
+        for (Iterator<CsmProject> projIter = prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
             libs.addAll(project.getLibraries());
             disposeProject(project);
         }
-        for (Iterator projIter = libs.iterator(); projIter.hasNext();) {
+        for (Iterator<CsmProject> projIter = libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
         }
         LibraryManager.getInstance().shutdown();
@@ -656,6 +656,32 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         CndFileUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();
     }
+
+    public void scheduleReparse(Collection<CsmProject> projects) {
+        CndFileUtils.clearFileExistenceCache();
+        Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
+        Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
+        for (CsmProject csmProject : projects) {
+            if (csmProject instanceof ProjectBase) {
+                ProjectBase project = (ProjectBase) csmProject;
+                toReparse.add(project);
+                for (CsmProject csmLib : project.getLibraries()) {
+                    if (csmLib instanceof LibProjectImpl) {
+                        LibProjectImpl lib = (LibProjectImpl) csmLib;
+                        if (!libs.contains(lib)) {
+                            lib.initFields();
+                            libs.add(lib);
+                        }
+                    }
+                }
+            }
+        }
+        LibraryManager.getInstance().cleanLibrariesData(libs);
+        for (ProjectBase projectBase : toReparse) {
+            projectBase.scheduleReparse();
+        }
+    }
+
     private static final class Lock {}
     private final Object lock = new Lock();
     /** maps platform project to project */

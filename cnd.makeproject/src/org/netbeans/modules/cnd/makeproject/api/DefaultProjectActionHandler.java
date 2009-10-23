@@ -233,6 +233,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     pae.getType() == ProjectActionEvent.Type.BUILD,
                     showInput,
                     unbuffer);
+            //if (pae.getType() == ProjectActionEvent.Type.RUN)
+            switch (pae.getType()) {
+                case DEBUG:
+                case RUN:
+                    if (!contains(env, "DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                        projectExecutor.setX11Forwarding(true);
+                    }
+            }
             projectExecutor.addExecutionListener(this);
             if (rcfile != null) {
                 projectExecutor.setExitValueOverride(rcfile);
@@ -247,6 +255,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
+    private boolean contains(String[] env, String var) {
+        for (String v : env) {
+            int pos = v.indexOf('='); //NOI18N
+            if (pos > 0) {
+                if (v.substring(0, pos).equals(var)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
@@ -258,20 +278,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public boolean canCancel() {
-        if (pae.getType() != ProjectActionEvent.Type.RUN) {
-            return true;
-        } else {
-            if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                if (!pae.getConfiguration().getDevelopmentHost().isLocalhost()) {
-                    return true;
-                }
-            }
-            int consoleType = pae.getProfile().getConsoleType().getValue();
-            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                consoleType = RunProfile.getDefaultConsoleType();
-            }
-            return consoleType != RunProfile.CONSOLE_TYPE_EXTERNAL;
-        }
+        return true;
     }
 
     public void cancel() {
