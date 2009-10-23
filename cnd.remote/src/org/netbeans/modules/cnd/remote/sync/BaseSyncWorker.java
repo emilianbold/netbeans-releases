@@ -124,6 +124,7 @@ import org.openide.util.NbBundle;
             if (err != null) {
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_top_dir"));
             }
+            return false;
         }
         String remoteDir = remoteParent + '/' + topLocalDir.getName(); //NOI18N
 
