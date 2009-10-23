@@ -94,5 +94,27 @@ public abstract class NativeExecution {
             Reader in,
             boolean unbuffer) throws IOException, InterruptedException;
 
+    /**
+     * Execute an executable, a makefile, or a script
+     * @param runDir absolute path to directory from where the command should be executed
+     * @param executable absolute or relative path to executable, makefile, or script
+     * @param arguments space separated list of arguments
+     * @param envp environment variables (name-value pairs of the form ABC=123)
+     * @param out Output
+     * @param io Input
+     * @param unbuffer - true if stdout unbuffering is needed
+     * @param forwardX11 - true if X11 forwarding is needed
+     * @return completion code
+     */
+    public abstract int executeCommand(
+            File runDirFile,
+            String executable,
+            String arguments,
+            String[] envp,
+            PrintWriter out,
+            Reader in,
+            boolean unbuffer,
+            boolean forwardX11) throws IOException, InterruptedException;
+
     public abstract void stop();
 }
