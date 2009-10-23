@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -260,15 +259,6 @@ public class RemoteServerList implements ServerListImplementation {
         }
     }
 
-    public synchronized void removeServer(ServerRecord record) {
-        RemoteUtil.LOGGER.finest("ServerList: remove " + record);
-        SystemIncludesUtils.cancel(record.getExecutionEnvironment());
-        if (items.remove(record)) {
-            removeFromPreferences(record);
-            refresh();
-        }
-    }
-
     @Override
     public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         RemoteUtil.LOGGER.finest("ServerList: set " + records);
@@ -278,7 +268,6 @@ public class RemoteServerList implements ServerListImplementation {
             removed.remove(rec.getExecutionEnvironment());
         }
         setDefaultRecord(defaultRecord);
-        SystemIncludesUtils.cancel(removed);
     }
 
     private Collection<ExecutionEnvironment> clear() {
