@@ -89,20 +89,20 @@ public final class TimeSeriesIndicator
     private final static Logger log = DLightLogger.getLogger(TimeSeriesIndicator.class);
     private final DataRowToTimeSeries dataRowHandler;
     private final TimeSeriesDataContainer data;
-    private  GraphPanel<TimeSeriesPlot, Legend> panel;
-    private  TimeSeriesPlot graph;
-    private  Legend legend;
-    private  JButton button;
+    private GraphPanel<TimeSeriesPlot, Legend> panel;
+    private TimeSeriesPlot graph;
+    private Legend legend;
+    private JButton button;
     private final int graphCount;
     private int tickCounter;
     private List<Action> popupActions;
     private volatile boolean isInitialized = false;
     private final TimeSeriesIndicatorConfiguration configuration;
-    private final Object uiLock = new String("TimeSeriesIndicator.uiLock");//NOI18N
+    private final UILock uiLock = new UILock();
 
     public TimeSeriesIndicator(TimeSeriesIndicatorConfiguration configuration) {
         super(configuration);
-        this.configuration  = configuration;
+        this.configuration = configuration;
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
         this.dataRowHandler = accessor.getDataRowHandler(configuration);
         this.graphCount = accessor.getTimeSeriesDescriptors(configuration).size();
@@ -111,8 +111,8 @@ public final class TimeSeriesIndicator
 
     }
 
-    private final void initUI(){
-        synchronized(uiLock){
+    private final void initUI() {
+        synchronized (uiLock) {
             this.graph = createGraph(configuration, data);
             TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
             this.legend = new Legend(accessor.getTimeSeriesDescriptors(configuration), accessor.getDetailDescriptors(configuration));
@@ -247,8 +247,8 @@ public final class TimeSeriesIndicator
 
     @Override
     public JComponent getComponent() {
-        synchronized(uiLock){
-            if (!isInitialized){
+        synchronized (uiLock) {
+            if (!isInitialized) {
                 initUI();
             }
         }
@@ -274,9 +274,12 @@ public final class TimeSeriesIndicator
                 }
             }
         }
-        if (panel != null){
+        if (panel != null) {
             panel.setPopupActions(actions);
         }
         this.popupActions = actions;
+    }
+
+    private final static class UILock {
     }
 }

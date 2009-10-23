@@ -174,7 +174,13 @@ public abstract class ProcReaderImpl implements ProcReader {
         int offset = 0;
         try {
             offset = buffer.getAndLockOffset();
-            is.read(buffer.buffer, offset, MAXFILELENGTH);
+            int read_total = 0;
+            int read = 0;
+
+            while (read >= 0 && read_total < MAXFILELENGTH) {
+               read = is.read(buffer.buffer, offset + read_total, MAXFILELENGTH - read_total);
+               read_total += read;
+            }
         } finally {
             is.close();
         }

@@ -518,7 +518,6 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
 
     private final static class StatusLabel extends JLabel {
 
-        private final static HashMap<String, String> strings = new HashMap<String, String>();
         private final static HashMap<String, Color> colors = new HashMap<String, Color>() {
 
             {
@@ -543,28 +542,16 @@ public final class THAIndicatorsTopComponent extends TopComponent implements Exp
             }
 
             Color color = colors.get(propID);
-            String msg = strings.get(propID);
+            super.setForeground(color == null ? Color.DARK_GRAY : color);
 
-            if (color == null) {
-                color = Color.DARK_GRAY;
-                colors.put(propID, color);
+            String msg = null;
+
+            try {
+                msg = getMessage(propID, collectionKind);
+            } catch (MissingResourceException ex) {
             }
 
-            if (msg == null) {
-                try {
-                    msg = getMessage(propID, collectionKind);
-                } catch (MissingResourceException ex) {
-                }
-
-                if (msg == null) {
-                    msg = propID;
-                }
-
-                strings.put(propID, msg);
-            }
-
-            super.setForeground(color);
-            super.setText(msg);
+            super.setText(msg == null ? propID : msg);
         }
     }
 }

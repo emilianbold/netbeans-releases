@@ -92,7 +92,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
     }
 
-    final class ROEditor extends DataEditorSupport {
+    private static final class ROEditor extends DataEditorSupport {
 
         private ROEditor(DataObject d) {
             super(d, new E(d));
