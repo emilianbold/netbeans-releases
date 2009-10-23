@@ -198,7 +198,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         while ((fileName = rdr.readLine()) != null) {
             boolean directory = fileName.endsWith("/"); // NOI18N
             // FIXUP: catch links, but how to distinguish link to dir from link to file?
-            if (fileName.endsWith("@")) {
+            if (fileName.endsWith("@")) { // NOI18N
                 fileName = fileName.substring(0, fileName.length() - 1);
             }
 
