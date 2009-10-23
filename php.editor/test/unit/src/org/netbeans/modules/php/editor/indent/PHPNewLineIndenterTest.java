@@ -190,10 +190,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     }
 
     /**
-     * 13900 issue
-     * @throws Exceptionace
+     * 173900 issue
+     * @throws Exception
      */
-//    public void test173900() throws Exception{
+//    public void test173900() throws Exception {
 //        testIndentInFile("testfiles/indent/qa/issues/173900.php");
 //    }
 
