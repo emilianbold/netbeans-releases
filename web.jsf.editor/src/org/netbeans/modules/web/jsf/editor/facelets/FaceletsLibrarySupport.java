@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import com.sun.faces.config.ConfigManager;
+import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.facelets.tag.AbstractTagLibrary;
 import com.sun.faces.facelets.tag.TagLibrary;
 import com.sun.faces.facelets.tag.composite.CompositeLibrary;
@@ -254,7 +255,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
         //parse the libraries
         ConfigManager cm = ConfigManager.getInstance();
-        Document[] documents = (Document[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
+        DocumentInfo[] documents = (DocumentInfo[]) callMethod("getConfigDocuments", ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
         if (documents == null) {
             return null; //error????
         }

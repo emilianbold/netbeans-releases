@@ -213,33 +213,8 @@ public class FaceletsTaglibConfigProcessorPatched extends AbstractConfigProcesso
     }
 
     // -------------------------------------------- Methods from ConfigProcessor
-    /**
-     * @see ConfigProcessor#process(org.w3c.dom.Document[])
-     */
-    public void process(Document[] documents) {
-        for (int i = 0, length = documents.length; i < length; i++) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE,
-                        MessageFormat.format(
-                        "Processing facelet-taglibrary document: ''{0}''",
-                        documents[i].getDocumentURI()));
-            }
-            String namespace =
-                    documents[i].getDocumentElement().getNamespaceURI();
-            Element documentElement = documents[i].getDocumentElement();
-            NodeList libraryClass =
-                    documentElement.getElementsByTagNameNS(namespace, LIBRARY_CLASS);
-            if (libraryClass != null && libraryClass.getLength() > 0) {
-                processTaglibraryClass(libraryClass, compiler);
-            } else {
-                processTagLibrary(documentElement, namespace, compiler);
-            }
-        }
 
-
-    }
-
-    public void process(DocumentInfo[] documents) throws Exception {
+    public void process(DocumentInfo[] documents) {
         for (int i = 0, length = documents.length; i < length; i++) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE,
