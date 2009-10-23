@@ -38,11 +38,13 @@
  */
 package org.netbeans.modules.cnd.tha.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.MissingResourceException;
+import javax.naming.event.EventDirContext;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -90,7 +92,9 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     }
 
     public void run() {
+        sensorMainAction.setEnabled(isEnabledFor());
         setEnabled(isEnabled());
+
     }
 
     private static String loc(String key, String... params) {
@@ -188,8 +192,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
         if (!evt.getPropertyName().equals("mainProject") && !Configurations.PROP_ACTIVE_CONFIGURATION.equals(evt.getPropertyName())) { // NOI18N
             return;
         }
-        sensorMainAction.setEnabled(isEnabledFor());
-        setEnabled(isEnabled());
+        SwingUtilities.invokeLater(this);
     }
 
     private boolean isEnabledFor() {
@@ -212,8 +215,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     }
 
     public void filesPropertiesChanged() {
-        sensorMainAction.setEnabled(isEnabledFor());
-        setEnabled(isEnabled());
+        SwingUtilities.invokeLater(this);
     }
 
     public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
@@ -223,8 +225,7 @@ public final class THAMainProjectAction extends AbstractAction implements Proper
     }
 
     public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
-        sensorMainAction.setEnabled(isEnabledFor());
-        setEnabled(isEnabled());
+        SwingUtilities.invokeLater(this);
     }
 
     private final class ProjectActionPerformerImpl implements ProjectActionPerformer {
