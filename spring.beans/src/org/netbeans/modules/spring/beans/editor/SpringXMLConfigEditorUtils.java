@@ -194,8 +194,12 @@ public final class SpringXMLConfigEditorUtils {
         try {
             TokenItem tok = syntaxSupport.getTokenChain(0,1);
             if(tok != null) {
-                while(!ContextUtilities.isTagToken(tok)) {
-                    tok = tok.getNext();
+                TokenItem prevTok = null;
+                while((!ContextUtilities.isTagToken(tok)) && (tok != prevTok) ) {
+                    prevTok = tok;
+                    if (tok.getNext() != null) {
+                        tok = tok.getNext();
+                    }
                 }
                 SyntaxElement element = syntaxSupport.getElementChain(tok.getOffset()+tok.getImage().length());
                 if(element instanceof StartTag || element instanceof EmptyTag) {
