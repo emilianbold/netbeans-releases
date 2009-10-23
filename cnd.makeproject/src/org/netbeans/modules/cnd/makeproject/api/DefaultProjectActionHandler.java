@@ -237,7 +237,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             switch (pae.getType()) {
                 case DEBUG:
                 case RUN:
-                    if (!contains(env, "DISPLAY")) { // if DISPLAY is set, let it do its work
+                    if (!contains(env, "DISPLAY")) { // NOI18N // if DISPLAY is set, let it do its work
                         projectExecutor.setX11Forwarding(true);
                     }
             }
