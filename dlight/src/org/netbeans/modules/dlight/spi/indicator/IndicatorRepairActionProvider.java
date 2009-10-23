@@ -90,11 +90,13 @@ public final class IndicatorRepairActionProvider implements ValidationListener {
         //otherwise print select another data provider
         //if we have no indicator data provider - please provide some message : when it will work
         List<IndicatorDataProvider<?>> providers = configuration.getConfigurationOptions(false).getIndicatorDataProviders(currentTool);
-        this.currentStatus = providers == null || providers.isEmpty() ? tool.validateIndicatorDataProviders(targetToRepairFor) : ValidationStatus.invalidStatus(getMessage("NoIndicatorDataProviderFound"));//NOI18N
         if (providers == null || providers.isEmpty()) {
+            currentStatus = tool.validateIndicatorDataProviders(configuration, targetToRepairFor);
             if (!currentStatus.isKnown() || currentStatus.isValid()) {
-                currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound"));
+                currentStatus = ValidationStatus.invalidStatus(getMessage("IndicatorDataProviderNotFound")); // NOI18N
             }
+        } else {
+            currentStatus = ValidationStatus.invalidStatus(getMessage("NoIndicatorDataProviderFound")); // NOI18N
         }
 
         toReValidate = new ArrayList<IndicatorDataProvider<?>>();

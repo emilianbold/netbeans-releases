@@ -320,7 +320,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return newStatus;
     }
 
-    public final ValidationStatus validateIndicatorDataProviders(final DLightTarget target) {
+    public final ValidationStatus validateIndicatorDataProviders(final DLightConfiguration dlightConfiguration, final DLightTarget target) {
         if (indicatorDataProvidersValidationStatus.isValid()) {
             return indicatorDataProvidersValidationStatus;
         }
@@ -332,10 +332,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
-                    for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+                    for (IndicatorDataProvider<?> idp : dlightConfiguration.getConfigurationOptions(false).getIndicatorDataProviders(DLightTool.this)) {
                         result = result.merge(idp.validate(target));
                     }
-                    for (DataCollector<?> dc : dataCollectors) {
+                    for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(DLightTool.this)) {
                         if (!(dc instanceof IndicatorDataProvider)) {
                             continue;
                         }
@@ -355,10 +355,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
         } else {
             ValidationStatus result = ValidationStatus.initialStatus();
 
-            for (IndicatorDataProvider<?> idp : indicatorDataProviders) {
+            for (IndicatorDataProvider<?> idp : dlightConfiguration.getConfigurationOptions(false).getIndicatorDataProviders(this)) {
                 result = result.merge(idp.validate(target));
             }
-            for (DataCollector<?> dc : dataCollectors) {
+            for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(this)) {
                 if (!(dc instanceof IndicatorDataProvider)) {
                     continue;
                 }
@@ -370,7 +370,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     }
 
-    public final ValidationStatus validateDataCollectors(final DLightTarget target) {
+    public final ValidationStatus validateDataCollectors(final DLightConfiguration dlightConfiguration, final DLightTarget target) {
         if (dataCollectorsValidationStatus.isValid()) {
             return dataCollectorsValidationStatus;
         }
@@ -382,7 +382,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
-                    for (DataCollector<?> dc : dataCollectors) {
+                    for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(DLightTool.this)) {
                         result = result.merge(dc.validate(target));
                     }
                     return result;
@@ -399,7 +399,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         } else {
             ValidationStatus result = ValidationStatus.initialStatus();
 
-            for (DataCollector<?> dc : dataCollectors) {
+            for (DataCollector<?> dc : dlightConfiguration.getConfigurationOptions(false).getCollectors(this)) {
                 result = result.merge(dc.validate(target));
             }
             result = dataCollectorsValidationStatus;
