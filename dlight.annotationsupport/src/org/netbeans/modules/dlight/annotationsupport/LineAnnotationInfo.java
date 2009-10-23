@@ -100,6 +100,7 @@ public final class LineAnnotationInfo {
                 lineOffset = el.getStartOffset();
             } catch (IndexOutOfBoundsException ioobe) {
                 // getElement throws IndexOutOfBoundsException if line doesn't exists!
+                return 0;
             }
 
         }
@@ -195,6 +196,9 @@ public final class LineAnnotationInfo {
      */
     public synchronized String getTooltip() {
         if (tooltip == null) {
+            if (notFormatedColumns == null || notFormatedColumns.length == 0){
+                return "";
+            }
             StringBuilder sb = new StringBuilder();
             int i = 0;
 

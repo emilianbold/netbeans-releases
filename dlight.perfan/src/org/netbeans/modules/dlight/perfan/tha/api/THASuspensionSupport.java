@@ -141,15 +141,13 @@ public final class THASuspensionSupport {
         listener.statusChanged(status);
     }
 
-    private class LinuxVerifier implements Runnable {
+    private abstract class Verifier implements Runnable {
 
-        private final NativeProcessBuilder npb;
-        private final Pattern collectPattern;
+        protected NativeProcessBuilder npb;
+        protected Pattern collectPattern;
 
-        public LinuxVerifier() {
-            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("ps").setArguments("-o", "comm=", "-p", "" + pid); // NOI18N
-            collectPattern = Pattern.compile(".*/collect$"); // NOI18N
+        public Verifier() {
+            this.npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         }
 
         public void run() {
@@ -175,7 +173,24 @@ public final class THASuspensionSupport {
         }
     }
 
-    private class SolarisVerifier extends LinuxVerifier {
+    private class LinuxVerifier extends Verifier {
+
+        public LinuxVerifier() {
+            super();
+            npb.setExecutable("ps").setArguments("-o", "comm=", "-p", "" + pid); // NOI18N
+            collectPattern = Pattern.compile("^collect$"); // NOI18N
+        }
+    }
+
+    private class SolarisVerifier extends Verifier {
+        // On Solaris cannot use the same ps as on Linux, bacause of truncated
+        // output (will fail in case of long path to collect)
+
+        public SolarisVerifier() {
+            super();
+            npb.setExecutable("/bin/pargs").setArguments("-l", "" + pid); // NOI18N
+            collectPattern = Pattern.compile(".*/collect .*"); // NOI18N
+        }
     }
 
     public interface Listener {
