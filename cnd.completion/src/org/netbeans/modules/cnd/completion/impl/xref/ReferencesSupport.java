@@ -712,7 +712,7 @@ public final class ReferencesSupport {
         if (index >= 0) {
             CsmReference macroRef = macroUsages.get(index);
             CsmObject csmItem = macroRef.getReferencedObject();
-            assert csmItem != null : "must be referenced macro" + macroRef;
+            assert csmItem != null : "referenced macro is null. ref " + macroRef + ", file " + macroRef.getContainingFile() + ", name " + macroRef.getText();
             return csmItem;
         }
         return null;
