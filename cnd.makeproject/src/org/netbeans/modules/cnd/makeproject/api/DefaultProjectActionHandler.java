@@ -258,20 +258,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     public boolean canCancel() {
-        if (pae.getType() != ProjectActionEvent.Type.RUN) {
-            return true;
-        } else {
-            if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                if (!pae.getConfiguration().getDevelopmentHost().isLocalhost()) {
-                    return true;
-                }
-            }
-            int consoleType = pae.getProfile().getConsoleType().getValue();
-            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                consoleType = RunProfile.getDefaultConsoleType();
-            }
-            return consoleType != RunProfile.CONSOLE_TYPE_EXTERNAL;
-        }
+        return true;
     }
 
     public void cancel() {
