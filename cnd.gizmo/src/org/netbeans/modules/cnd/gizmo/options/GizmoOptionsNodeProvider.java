@@ -87,7 +87,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsGizmo"); // NOI18N // FIXUP: need real help tag from Ann
+            return new HelpCtx("ProjectPropsProfile"); // NOI18N
         }
     }
 
