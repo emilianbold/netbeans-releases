@@ -1510,7 +1510,7 @@ Santa Clara, California 95054 if you have questions.
 
 LICENSE #5:
 
-JAVAFX 1.2 SOFTWARE DEVELOPMENT KIT (SDK).
+JAVAFX 1.2.1 SOFTWARE DEVELOPMENT KIT (SDK).
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 

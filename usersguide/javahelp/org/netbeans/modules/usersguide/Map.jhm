@@ -512,6 +512,9 @@
 <mapID target="org.netbeans.modules.bugzilla.blocksChooser" url="collab/csh/issues_blockschooser.html" />
 <mapID target="org.netbeans.modules.bugzilla.duplicateChooser" url="collab/csh/issues_duplicatechooser.html" />
 
+<!-- Issue tracking csh topic for JIRA plugin in kenai dashboar -->
+<mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
+
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
 

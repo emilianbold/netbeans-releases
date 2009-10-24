@@ -1158,6 +1158,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
         private String metaBaseValue = null;
 
+        private File resources = null;
+        
         private String buildClasses = null;
 
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
@@ -1178,12 +1180,15 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         public void initialize() throws FileStateInvalidException {
             metaBase = getEjbModule().getMetaInf();
             metaBaseValue = evaluator().getProperty(EjbJarProjectProperties.META_INF);
+            resources = getEjbModule().getResourceDirectory();
             buildClasses = evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
 
             if (metaBase != null) {
                 metaBase.getFileSystem().addFileChangeListener(this);
             }
 
+            FileUtil.addFileChangeListener(this, resources);
+            
             LOGGER.log(Level.FINE, "Meta directory is {0}", metaBaseValue);
 
             EjbJarProject.this.evaluator().addPropertyChangeListener(this);
@@ -1193,11 +1198,14 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (metaBase != null) {
                 metaBase.getFileSystem().removeFileChangeListener(this);
             }
+            FileUtil.removeFileChangeListener(this, resources);
+
             EjbJarProject.this.evaluator().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (EjbJarProjectProperties.META_INF.equals(evt.getPropertyName())) {
+            if (EjbJarProjectProperties.META_INF.equals(evt.getPropertyName())
+                    || EjbJarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
                 try {
                     cleanup();
                     initialize();
@@ -1214,7 +1222,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         @Override
         public void fileChanged(FileEvent fe) {
             try {
-                handleCopyFileToDestDir(fe.getFile());
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
@@ -1223,7 +1233,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         @Override
         public void fileDataCreated(FileEvent fe) {
             try {
-                handleCopyFileToDestDir(fe.getFile());
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
@@ -1232,6 +1244,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
+                if (handleResource(fe)) {
+                    return;
+                }
+
                 FileObject fo = fe.getFile();
                 FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
                 if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
@@ -1258,6 +1274,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         @Override
         public void fileDeleted(FileEvent fe) {
             try {
+                if (handleResource(fe)) {
+                    return;
+                }
+
                 FileObject fo = fe.getFile();
                 FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
                 if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
@@ -1281,6 +1301,18 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(files);
             }
+        }
+
+        private boolean handleResource(FileEvent fe) {
+            FileObject resourceFo = FileUtil.toFileObject(resources);
+            if (resourceFo != null
+                    && (resourceFo.equals(fe.getFile()) || FileUtil.isParentOf(resourceFo, fe.getFile()))) {
+
+                fireArtifactChange(Collections.singleton(
+                        Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource()));
+                return true;
+            }
+            return false;
         }
 
         private void handleDeleteFileInDestDir(String resourcePath) throws IOException {

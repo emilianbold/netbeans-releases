@@ -383,11 +383,11 @@ class EjbJarActionProvider implements ActionProvider {
         // TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             targetNames = setupTestSingle(p, files);
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             targetNames = setupDebugTestSingle(p, files);
         } else {
             if (targetNames == null) {
@@ -454,9 +454,9 @@ class EjbJarActionProvider implements ActionProvider {
             FileObject files[] = findJavaSources(context);
             return files != null && files.length == 1;
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            return findTestSourcesForSources(context) != null;
+            return findTestSources(context, true) != null;
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSourcesForSources(context);
+            FileObject[] files = findTestSources(context, true);
             return files != null && files.length == 1;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] testFiles = findTestSources(context, false);
