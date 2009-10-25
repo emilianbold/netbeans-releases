@@ -276,7 +276,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         
         // create model
         FileObject template = FileUtil.getConfigFile(
-                "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
+                "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
         assert template != null;
         
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
