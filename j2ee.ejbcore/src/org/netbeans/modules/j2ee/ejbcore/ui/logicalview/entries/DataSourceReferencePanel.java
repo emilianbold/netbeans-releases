@@ -222,9 +222,11 @@ public class DataSourceReferencePanel extends JPanel {
     }
     
     private void setupAddButton() {
-        if (!isDsApiSupportedByServerPlugin) {
-            addButton.setEnabled(false);
-        }
+        addButton.setEnabled(isDsApiSupportedByServerPlugin);
+        warningLabel.setVisible(!isDsApiSupportedByServerPlugin);
+        projectDsRadio.setEnabled(isDsApiSupportedByServerPlugin);
+        projectDsRadio.setSelected(isDsApiSupportedByServerPlugin);
+        serverDsRadio.setSelected(!isDsApiSupportedByServerPlugin);
     }
     
     public void verify() {

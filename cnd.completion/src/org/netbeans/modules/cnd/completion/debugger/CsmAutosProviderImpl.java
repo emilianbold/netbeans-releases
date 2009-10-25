@@ -45,7 +45,9 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -94,7 +96,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
         final Set<String> autos = new HashSet<String>();
 
         // add current line autos
-        addAutos(csmFile, lineRootElement, line, document, autos);
+        int startOffset = addAutos(csmFile, lineRootElement, line, document, autos);
 
         if (line > 0) {
             // add previous line autos
@@ -104,61 +106,90 @@ public class CsmAutosProviderImpl implements AutosProvider {
         return autos;
     }
 
-    private static void addAutos(final CsmFile csmFile,
+    private static int addAutos(final CsmFile csmFile,
                                 final Element lineRootElement,
                                 final int line,
                                 final StyledDocument document,
                                 final Set<String> autos) {
         final Element lineElem = lineRootElement.getElement(line);
         if (lineElem == null) {
-            return;
+            return -1;
         }
-        final int lineStartOffset = lineElem.getStartOffset();
-        final int lineEndOffset = lineElem.getEndOffset();
+        int lineStartOffset = lineElem.getStartOffset();
+        CsmOffsetable statementStart = getStatement(csmFile, lineStartOffset);
+        if (statementStart != null) {
+            lineStartOffset = statementStart.getStartOffset();
+        }
 
-        CsmContext context = CsmOffsetResolver.findContext(csmFile, lineStartOffset, null);
-        CsmScope scope = context.getLastScope();
-        if (scope != null) {
-            CsmFileReferences.getDefault().accept(scope, new CsmFileReferences.Visitor() {
-                public void visit(CsmReferenceContext context) {
-                    CsmReference reference = context.getReference();
-                        if (lineStartOffset <= reference.getStartOffset() && reference.getEndOffset() <= lineEndOffset) {
-                            CsmObject referencedObject = reference.getReferencedObject();
-                            if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
-                                StringBuilder sb = new StringBuilder(reference.getText());
-                                if (context.size() > 1) {
-                                    outer: for (int i = context.size()-1; i >= 0; i--) {
-                                        CppTokenId token = context.getToken(i);
-                                        switch (token) {
-                                            case DOT:
-                                            case ARROW:
-                                            case SCOPE:
-                                                break;
-                                            default: break outer;
-                                        }
-                                        if (i > 0) {
-                                            sb.insert(0, token.fixedText());
-                                            sb.insert(0, context.getReference(i-1).getText());
-                                        }
-                                    }
-                                }
-                                autos.add(sb.toString());
-                            } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
-                                String txt = reference.getText().toString();
-                                int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
-                                if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
-                                    try {
-                                        txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
-                                    } catch (BadLocationException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                }
-                                autos.add(txt);
-                            }
-                        }
-                }
-            });
+        int lineEndOffset = lineElem.getEndOffset();
+        CsmOffsetable statementEnd = getStatement(csmFile, lineEndOffset);
+        if (statementEnd != null) {
+            lineEndOffset = statementEnd.getEndOffset();
         }
+
+        final int startOffset = lineStartOffset;
+        final int endOffset = lineEndOffset;
+
+        CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+            public void visit(CsmReferenceContext context) {
+                CsmReference reference = context.getReference();
+                    if (startOffset <= reference.getStartOffset() && reference.getEndOffset() <= endOffset) {
+                        CsmObject referencedObject = reference.getReferencedObject();
+                        if (CsmKindUtilities.isVariable(referencedObject) && !filterAuto((CsmVariable)referencedObject)) {
+                            StringBuilder sb = new StringBuilder(reference.getText());
+                            if (context.size() > 1) {
+                                outer: for (int i = context.size()-1; i >= 0; i--) {
+                                    CppTokenId token = context.getToken(i);
+                                    switch (token) {
+                                        case DOT:
+                                        case ARROW:
+                                        case SCOPE:
+                                            break;
+                                        default: break outer;
+                                    }
+                                    if (i > 0) {
+                                        sb.insert(0, token.fixedText());
+                                        sb.insert(0, context.getReference(i-1).getText());
+                                    }
+                                }
+                            }
+                            autos.add(sb.toString());
+                        } else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {
+                            String txt = reference.getText().toString();
+                            int[] macroExpansionSpan = CsmMacroExpansion.getMacroExpansionSpan(document, reference.getStartOffset(), false);
+                            if (macroExpansionSpan != null && macroExpansionSpan[0] != macroExpansionSpan[1]) {
+                                try {
+                                    txt = document.getText(macroExpansionSpan[0], macroExpansionSpan[1] - macroExpansionSpan[0]);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                            autos.add(txt);
+                        }
+                    }
+            }
+        });
+        return lineStartOffset;
+    }
+
+    private static CsmOffsetable getStatement(CsmFile csmFile, int offset) {
+        CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, null);
+        CsmScope scope = context.getLastScope();
+
+        for (CsmScopeElement csmScopeElement : scope.getScopeElements()) {
+            if (CsmKindUtilities.isOffsetable(csmScopeElement)) {
+                CsmOffsetable offs = (CsmOffsetable) csmScopeElement;
+                if (offs.getEndOffset() >= offset) {
+                    // avoid invalid and compound statements
+                    if ((offs.getStartOffset() > offset) || CsmKindUtilities.isCompoundStatement(offs)) {
+                        return null;
+                    } else {
+                        return offs;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean filterAuto(CsmScopeElement object) {
