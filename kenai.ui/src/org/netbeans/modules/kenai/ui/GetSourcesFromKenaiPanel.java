@@ -46,7 +46,6 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -70,9 +69,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -178,6 +176,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         localFolderTextField = new JTextField();
         browseLocalButton = new JButton();
         proxyConfigButton = new JButton();
+        emptySpace = new JPanel();
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setPreferredSize(new Dimension(700, 250));
@@ -353,13 +352,21 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weighty = 1.0;
         add(proxyConfigButton, gridBagConstraints);
 
         proxyConfigButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.proxyConfigButton.AccessibleContext.accessibleDescription")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(emptySpace, gridBagConstraints);
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -601,6 +608,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     private JButton browseKenaiButton;
     private JButton browseLocalButton;
     private JButton browseRepoButton;
+    private JPanel emptySpace;
     private JComboBox kenaiRepoComboBox;
     private JLabel kenaiRepoLabel;
     private JLabel localFolderDescLabel;
