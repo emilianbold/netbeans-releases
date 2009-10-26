@@ -129,6 +129,7 @@ public class DebuggingActionsTest extends DebuggerTestCase{
             Utilities.deleteAllBreakpoints();
             Utilities.toggleBreakpoint(eo, 104);
             new ContinueAction().performMenu();
+            new EventTool().waitNoEvent(1000);
             assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));        
     }

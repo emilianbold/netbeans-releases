@@ -108,18 +108,6 @@ public void testStepInto() throws Throwable {
     assertTrue("Call Site annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CallSite"));
 }
 
-public void testStepIntoStartDebugging() throws Throwable {
-    EditorOperator eo = new EditorOperator("MemoryView.java");
-    Utilities.toggleBreakpoint(eo, 80);
-    new DebugProjectAction().perform(projectNode);
-    //wait for breakpoint
-    Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
-    new StepIntoAction().perform();
-    Thread.sleep(2000);
-    assertTrue("CurrentPC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
-    assertTrue("Call Site annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CallSite"));
-}
-
 public void testStepOver() throws Throwable {
     new EventTool().waitNoEvent(1000);
     EditorOperator eo = new EditorOperator("MemoryView.java");
@@ -147,31 +135,6 @@ public void testStepOver() throws Throwable {
     assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
 }
 
-    /**
-     * Tests start of debugger by run to cursor, run to cursor during an active session
-     *
-     * Testspec:
-     * 1) Open MemoryView.java
-     * 2) Place caret on line 75
-     * 3) Invoke Run To Cursor
-     * 4) Place caret on line 104
-     * 5) Invoke Run To Cursor
-     *
-     * @throws Throwable
-     */
-    public void testRunToCursorStartDebugging() throws Throwable
-    {
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        eo.setCaretPosition(75, 9);
-        new RunToCursorAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:75");
-        assertTrue("Current PC annotation is not on line 75", Utilities.checkAnnotation(eo, 75, "CurrentPC"));
-
-        eo.setCaretPosition(104, 9);
-        new RunToCursorAction().perform();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
-        assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));
-    }
 
   public void testStepOut() throws Throwable {
         EditorOperator eo = new EditorOperator("MemoryView.java");
