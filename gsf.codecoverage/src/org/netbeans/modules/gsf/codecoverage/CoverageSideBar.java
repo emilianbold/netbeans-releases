@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
 public class CoverageSideBar extends javax.swing.JPanel {
     private static final String COVERAGE_SIDEBAR_PROP = "coverageSideBar"; // NOI18N
     private static final String COVERAGE_SIDEBAR_FOCUS = "coverageSideBarFocus"; // NOI18N
-    private static final String FOCUS_KEY_BINDING = "control shift F12";
+    private static final String FOCUS_KEY_BINDING = "control shift F11";
     private Document document;
     private boolean enabled;
 
