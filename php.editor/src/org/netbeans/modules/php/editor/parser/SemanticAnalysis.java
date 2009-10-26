@@ -318,7 +318,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 IdentifierColoring item = privateMethod.remove(name);
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
-                    return;
                 }
             }
             addOffsetRange(fnName, ColoringAttributes.STATIC_SET);

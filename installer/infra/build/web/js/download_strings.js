@@ -45,7 +45,7 @@ var NBJDK_DOWNLOAD_LINK  = "http://java.sun.com/javase/downloads/netbeans.html";
 
 var JAVA_COM_LINK        = "http://java.com/";
 
-var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 6 or JDK 5 is required for installing and running the Java SE, Java and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
+var JDK_NOTE_ALL      = "Java 6 or Java 5 is required for installing and running the PHP, Ruby and C/C++ NetBeans Bundles. You can download the <a href=\"{0}\">latest Java at java.com</a>.<br><br>JDK 6 or JDK 5 is required for installing and running the Java SE, JavaFX, Java and All NetBeans Bundles. You can download <a href=\"{1}\">standalone JDK</a> or download the latest <a href=\"{2}\">JDK with NetBeans IDE Java SE bundle</a>.<br><br>";
 //var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
 var JDK_NOTE_MACOSX   = "";
 
@@ -86,7 +86,7 @@ var SUBSCRIBE_LABEL          = "Subscribe&nbsp;to&nbsp;newsletters:";
 var MONTHLY_LABEL            = "Monthly&nbsp;&nbsp;&nbsp;&nbsp;";
 var WEEKLY_LABEL             = "Weekly";
 var CONTACT_LABEL            = "NetBeans&nbsp;can&nbsp;contact&nbsp;me&nbsp;at&nbsp;this&nbsp;address";
-var LANGUAGE_LABEL           = "Language:";
+var LANGUAGE_LABEL           = "IDE Language:";
 var PLATFORM_LABEL           = "Platform:";
 var PLUGIN_MANAGER_LABEL     = "You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br><br>";
 var JAVATOOLSBUNDLE_LABEL    = "You can also download the NetBeans IDE as part of the <a href=\"http://java.sun.com/javaee/downloads/index.jsp\">Java EE 5 Tools Bundle</a> or <a href=\"http://download.netbeans.org/netbeans/6.1/mysql_bundle/\">MySQL GlassFish Bundle</a>.";

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -95,6 +96,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -541,8 +543,8 @@ public final class Util {
      * <code>dependency</code> project. I.e. adds new &lt;module-dependency&gt;
      * element into target's <em>project.xml</em>. If such a dependency already
      * exists the method does nothing. If the given code name base cannot be
-     * found in the module's universe the method logs informational message and
-     * does nothing otherwise.
+     * found in the module's universe or if adding the dependency creates dependency
+     * cycle (since 6.8) the method logs informational message and does nothing otherwise.
      * <p>
      * Note that the method does <strong>not</strong> save the
      * <code>target</code> project. You need to do so explicitly (see {@link
@@ -585,7 +587,12 @@ public final class Util {
                 (releaseVersion == null) ?  me.getReleaseVersion() : releaseVersion,
                 version == null ? me.getSpecificationVersion() : version.toString(),
                 useInCompiler, false);
-        pxm.addDependency(md);
+        try {
+            pxm.addDependency(md);
+        } catch (CyclicDependencyException ex) {
+            Util.err.log(ErrorManager.INFORMATIONAL, ex.getLocalizedMessage());
+            return false;
+        }
         return true;
     }
     

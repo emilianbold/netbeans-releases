@@ -60,7 +60,7 @@ public final class TimerTicker
     implements Runnable {
 
     private static final DataTableMetadata tableMetadata;
-    private final Object lock = new String(TimerTicker.class.getName());
+    private final Lock lock = new Lock();
     private final IndicatorDataProviderConfiguration configuration;
     private long startTime = 0;
     private Future tickerService;
@@ -151,5 +151,8 @@ public final class TimerTicker
 
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
 
+    }
+
+    private final static class Lock {
     }
 }

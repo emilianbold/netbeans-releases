@@ -43,6 +43,7 @@ package org.openide.text;
 
 
 
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 
 
@@ -50,6 +51,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
     private NbLikeEditorKit k;
 

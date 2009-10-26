@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.rest.projects;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -60,14 +62,19 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
 import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,7 +115,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                 return;
             }
 
-            Servlet adaptorServlet = getRestServletAdaptor(webApp);
+            Servlet adaptorServlet = getRestServletAdaptorByName(webApp,REST_SERVLET_ADAPTOR);
             if (adaptorServlet != null) {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
@@ -304,6 +311,46 @@ public class WebProjectRestSupport extends WebRestSupport {
         params[1] = project.getClass().getName();
         params[2] = "RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
+    }
+
+    @Override
+    public String getApplicationPath() throws IOException {
+        WebApp webApp = findWebApp();
+        if (webApp == null) {
+            String applPath = getApplicationPathFromAnnotations();
+            return (applPath == null ? super.getApplicationPath() : applPath);
+        } else {
+            ServletMapping sm = getRestServletMapping(webApp);
+            if (sm == null) {
+                String applPath = getApplicationPathFromAnnotations();
+                return (applPath == null ? super.getApplicationPath() : applPath);
+            } else {
+                String urlPattern = sm.getUrlPattern();
+                if (urlPattern.endsWith("*")) {
+                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                }
+                if (urlPattern.endsWith("/")) {
+                    urlPattern = urlPattern.substring(0, urlPattern.length()-1);
+                }
+                return urlPattern;
+            }
+        }
+    }
+
+    private String getApplicationPathFromAnnotations() {
+        List<RestApplication> restApplications = getRestApplications();
+        if (restApplications.size() == 1) {
+            return restApplications.get(0).getApplicationPath();
+        } else if (restApplications.size() > 1) {
+            RestApplicationsPanel panel = new RestApplicationsPanel(restApplications);
+            DialogDescriptor desc = new DialogDescriptor(panel, 
+                    NbBundle.getMessage(WebProjectRestSupport.class,"TTL_RestResourcesPath"));
+            DialogDisplayer.getDefault().notify(desc);
+            if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+                return panel.getApplicationPath();
+            }
+        }
+        return null;
     }
    
 }

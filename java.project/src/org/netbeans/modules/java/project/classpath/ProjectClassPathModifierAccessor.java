@@ -49,7 +49,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,7 +64,7 @@ public abstract class ProjectClassPathModifierAccessor {
         try {
             Class.forName (c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     

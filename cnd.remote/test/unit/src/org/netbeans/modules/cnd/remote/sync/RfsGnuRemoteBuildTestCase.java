@@ -72,11 +72,10 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
     @Conditional(section="remote.platforms.smart.secure.copy.options", key="test.gnu.single")
     @ForAllEnvironments(section="remote.platforms.smart.secure.copy")
     public void testBuildRfsSampleArgsGNU_Single() throws Exception {
-        log.setLevel(Level.ALL); // TODO: comment out
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        removeRemoteHomeSubdir("remote/" + projectDirFO.getNameExt());
+        removeRemoteHome();
         buildProject(makeProject, 60, TimeUnit.SECONDS);
     }
 
@@ -85,7 +84,7 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
-        removeRemoteHomeSubdir("remote/" + projectDirFO.getNameExt());
+        removeRemoteHome();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
         buildProject(makeProject, 60, TimeUnit.SECONDS);

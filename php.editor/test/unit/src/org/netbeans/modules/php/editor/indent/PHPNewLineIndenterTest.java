@@ -190,10 +190,10 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     }
 
     /**
-     * 13900 issue
-     * @throws Exceptionace
+     * 173900 issue
+     * @throws Exception
      */
-//    public void test173900() throws Exception{
+//    public void test173900() throws Exception {
 //        testIndentInFile("testfiles/indent/qa/issues/173900.php");
 //    }
 
@@ -204,7 +204,82 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void test173937_1() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/173937_1.php");
     }
+    
+    public void test173979_1() throws Exception {
+        testIndentInFile("testfiles/indent/issue173979_1.php");
+    }
 
+    public void test173979_2() throws Exception {
+        testIndentInFile("testfiles/indent/issue173979_2.php");
+    }
+
+    public void test175118_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_01.php");
+    }
+
+    public void test175118_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_02.php");
+    }
+
+    public void test175118_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_03.php");
+    }
+
+    public void test175118_04() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_04.php");
+    }
+
+    public void test175118_05() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_05.php");
+    }
+
+    public void test175118_06() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_06.php");
+    }
+
+    public void test175118_07() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_07.php");
+    }
+
+    public void test175118_08() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_08.php");
+    }
+
+    public void test175118_09() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_09.php");
+    }
+
+    public void test175118_10() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_10.php");
+    }
+
+    public void test175118_11() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_11.php");
+    }
+
+    public void test175118_12() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_12.php");
+    }
+
+    public void test175118_13() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_13.php");
+    }
+
+    public void test175118_14() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_14.php");
+    }
+
+    public void test175118_15() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_15.php");
+    }
+
+    public void test175118_16() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_16.php");
+    }
+
+    public void test175118_17() throws Exception {
+        testIndentInFile("testfiles/indent/issue175118_17.php");
+    }
 
     @Override
     protected boolean runInEQ() {

@@ -43,12 +43,10 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
-import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
@@ -102,7 +100,6 @@ public class MutualCertificates extends ProfileBaseForm {
 
         WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-        setChBox(reqDerivedKeys, SecurityPolicyModelHelper.isRequireDerivedKeys(token));
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
@@ -165,15 +162,6 @@ public class MutualCertificates extends ProfileBaseForm {
                 asmh.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
             }
         }
-        if (source.equals(reqDerivedKeys)) {
-            WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
-            WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-            spmh.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
-            tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, InitiatorToken.class);
-            token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-            spmh.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
-            return;
-        }
         
         enableDisable();
     }
@@ -198,7 +186,6 @@ public class MutualCertificates extends ProfileBaseForm {
         layoutLabel = new javax.swing.JLabel();
         layoutCombo = new javax.swing.JComboBox();
         encryptSignatureChBox = new javax.swing.JCheckBox();
-        reqDerivedKeys = new javax.swing.JCheckBox();
         encryptOrderChBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(secConvChBox, org.openide.util.NbBundle.getMessage(MutualCertificates.class, "LBL_SecConvLabel")); // NOI18N
@@ -246,15 +233,6 @@ public class MutualCertificates extends ProfileBaseForm {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(reqDerivedKeys, org.openide.util.NbBundle.getMessage(MutualCertificates.class, "LBL_RequireDerivedKeys")); // NOI18N
-        reqDerivedKeys.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        reqDerivedKeys.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        reqDerivedKeys.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reqDerivedKeysActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(encryptOrderChBox, org.openide.util.NbBundle.getMessage(MutualCertificates.class, "LBL_EncryptOrderLabel")); // NOI18N
         encryptOrderChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         encryptOrderChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -271,11 +249,6 @@ public class MutualCertificates extends ProfileBaseForm {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(reqDerivedKeys)
-                    .add(secConvChBox)
-                    .add(derivedKeysChBox)
-                    .add(encryptSignatureChBox)
-                    .add(encryptOrderChBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layoutLabel)
@@ -283,7 +256,11 @@ public class MutualCertificates extends ProfileBaseForm {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(algoSuiteCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(secConvChBox)
+                    .add(derivedKeysChBox)
+                    .add(encryptSignatureChBox)
+                    .add(encryptOrderChBox))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -300,8 +277,6 @@ public class MutualCertificates extends ProfileBaseForm {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(layoutLabel)
                     .add(layoutCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(reqDerivedKeys)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(secConvChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -320,10 +295,6 @@ public class MutualCertificates extends ProfileBaseForm {
     private void encryptOrderChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptOrderChBoxActionPerformed
          setValue(encryptOrderChBox);
     }//GEN-LAST:event_encryptOrderChBoxActionPerformed
-
-    private void reqDerivedKeysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqDerivedKeysActionPerformed
-         setValue(reqDerivedKeys);
-    }//GEN-LAST:event_reqDerivedKeysActionPerformed
 
     private void derivedKeysChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_derivedKeysChBoxActionPerformed
          setValue(derivedKeysChBox);
@@ -353,7 +324,6 @@ public class MutualCertificates extends ProfileBaseForm {
     private javax.swing.JCheckBox encryptSignatureChBox;
     private javax.swing.JComboBox layoutCombo;
     private javax.swing.JLabel layoutLabel;
-    private javax.swing.JCheckBox reqDerivedKeys;
     private javax.swing.JCheckBox secConvChBox;
     // End of variables declaration//GEN-END:variables
     

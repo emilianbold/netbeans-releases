@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
@@ -66,8 +67,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.editor.java.RunOffAWT;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
@@ -86,7 +86,7 @@ import org.openide.util.NbPreferences;
 public class JavaFixAllImports {
     
     private static final String PREFS_KEY = JavaFixAllImports.class.getName();
-    private static final String KEY_REMOVE_UNUSED_IMPORTS = "removeUnusedImports";
+    private static final String KEY_REMOVE_UNUSED_IMPORTS = "removeUnusedImports"; // NOI18N
     private static final JavaFixAllImports INSTANCE = new JavaFixAllImports();
     
     public static JavaFixAllImports getDefault() {
@@ -102,7 +102,21 @@ public class JavaFixAllImports {
 
             public void run(final WorkingCopy wc) {
                 try {
-                    wc.toPhase(Phase.RESOLVED);
+                    final AtomicBoolean cancel = new AtomicBoolean();
+
+                    RunOffAWT.runOffAWT(new Runnable() {
+
+                        public void run() {
+                            try {
+                                wc.toPhase(Phase.RESOLVED);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }, "fix-imports", cancel); // NOI18N
+                    if (cancel.get()) {
+                        return;
+                    }
 
                     ComputeImports.Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(wc);
 
@@ -264,36 +278,12 @@ public class JavaFixAllImports {
             if (javaSource == null) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaFixAllImports.class, "MSG_CannotFixImports"));
             } else {
-                //Run Fix Imports as soon as scan finishes. Make it cancellable
-                CancellableTask taskWhenScanFinished = new CancellableTask(new ModificationRunnable(javaSource, task));
-                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JavaFixAllImports.class, "fix-imports"), taskWhenScanFinished); // NOI18N
-                taskWhenScanFinished.setHandle(handle);
-                handle.start();
-                javaSource.runWhenScanFinished(taskWhenScanFinished, true);
+                javaSource.runModificationTask(task).commit();
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
     }
-
-    private class ModificationRunnable implements Runnable {
-        private JavaSource javaSource;
-        private Task<WorkingCopy> task;
-
-        public ModificationRunnable(JavaSource javaSource, Task<WorkingCopy> task) {
-            this.javaSource = javaSource;
-            this.task = task;
-        }
-
-        public void run() {
-            try {
-                javaSource.runModificationTask(task).commit();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
     
     private static List<TreePathHandle> getImportsFromSamePackage(WorkingCopy wc) {
         ImportVisitor v = new ImportVisitor(wc);

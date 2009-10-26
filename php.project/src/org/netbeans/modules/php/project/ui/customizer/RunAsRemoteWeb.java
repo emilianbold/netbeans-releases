@@ -793,9 +793,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof UploadFiles;
             setName("ComboBox.listRenderer"); // NOI18N
-            setText(((UploadFiles) value).getLabel());
+            // #175236
+            if (value != null) {
+                assert value instanceof UploadFiles;
+                setText(((UploadFiles) value).getLabel());
+            }
             setIcon(null);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());

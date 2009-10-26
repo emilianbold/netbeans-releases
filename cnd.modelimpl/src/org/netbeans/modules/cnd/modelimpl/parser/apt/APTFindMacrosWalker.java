@@ -337,6 +337,12 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                     if (target == null && targetPrj != null) {
                         target = targetPrj.getUnresolvedFile();
                     }
+                    if (target == null) {
+                        ProjectBase currentPrj = (ProjectBase) current.getProject();
+                        if (currentPrj != null) {
+                            target = currentPrj.getUnresolvedFile();
+                        }
+                    }
                 }
             }
             return target;

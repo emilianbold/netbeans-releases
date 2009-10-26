@@ -41,9 +41,11 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Collections;
 import java.util.List;
+import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.AstUtilities;
 
 /**
  * An element for dynamic methods, such as named_scope.
@@ -52,20 +54,30 @@ import org.netbeans.modules.csl.spi.ParserResult;
  */
 public final class AstDynamicMethodElement extends AstMethodElement {
 
-    private final SymbolNode symbolNode;
+    private final Node methodNode;
+    private List<String> parameters;
 
-    public AstDynamicMethodElement(ParserResult info, SymbolNode node) {
+    public AstDynamicMethodElement(ParserResult info, Node node) {
         super(info, node);
-        this.symbolNode = node;
+        this.methodNode = node;
     }
+
     @Override
     public String getName() {
-        return symbolNode.getName();
+        String result = AstUtilities.getNameOrValue(methodNode);
+        return result == null ? "" : result;
     }
 
     @Override
     public List<String> getParameters() {
-        return Collections.emptyList();
+        if (parameters == null) {
+            return Collections.emptyList();
+        }
+        return parameters;
+    }
+
+    public void setParameters(List<String> parameters) {
+        this.parameters = parameters;
     }
 
     @Override

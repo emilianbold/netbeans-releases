@@ -197,6 +197,11 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
         while ((fileName = rdr.readLine()) != null) {
             boolean directory = fileName.endsWith("/"); // NOI18N
+            // FIXUP: catch links, but how to distinguish link to dir from link to file?
+            if (fileName.endsWith("@")) { // NOI18N
+                fileName = fileName.substring(0, fileName.length() - 1);
+            }
+
             File file = new File(dir, fileName);
             try {
                 boolean result = directory ? file.mkdirs() : file.createNewFile();

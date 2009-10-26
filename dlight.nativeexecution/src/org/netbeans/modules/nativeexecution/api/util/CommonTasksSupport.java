@@ -261,11 +261,13 @@ public final class CommonTasksSupport {
         return NativeTaskExecutorService.submit(new Callable<Integer>() {
 
             public Integer call() throws Exception {
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                final HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                final String command = "/bin/kill"; // NOI18N
+                final String[] args = new String[]{signal == Signal.NULL ? "-0" : "-" + signal.name().substring(3), "" + pid}; // NOI18N
+
                 String shell = hostInfo.getShell();
                 if (shell != null) {
-                    String cmd = String.format("kill -%d %d", signal.getID(), pid); // NOI18N
-                    CommandRunner runner = new CommandRunner(execEnv, error, shell, "-c", cmd); // NOI18N
+                    CommandRunner runner = new CommandRunner(execEnv, error, command, args);
                     return runner.call();
                 } else {
                     // Will not kill in case when no cygwin on Windows installed??

@@ -258,7 +258,7 @@ public class ConfigurationMakefileWriter {
     public static String getCompilerName(MakeConfiguration conf, int tool) {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet != null) {
-            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(tool);
+            Tool compiler = compilerSet.getTool(tool);
             if (compiler != null) {
                 BasicCompilerConfiguration compilerConf = null;
                 switch (tool) {
@@ -317,6 +317,9 @@ public class ConfigurationMakefileWriter {
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
+        if (conf.isQmakeConfiguration()) {
+            bw.write("QMAKE=" + getCompilerName(conf, Tool.QMakeTool) + "\n"); // NOI18N
+        }
         bw.write("\n"); // NOI18N
 
         bw.write("# Macros\n"); // NOI18N
@@ -371,7 +374,7 @@ public class ConfigurationMakefileWriter {
             bw.write("nbproject/qt-${CND_CONF}.mk: nbproject/qt-${CND_CONF}.pro FORCE\n"); // NOI18N
             // It is important to generate makefile in current directory, and then move it to nbproject/.
             // Otherwise qmake will complain that sources are not found.
-            bw.write("\tqmake VPATH=. " + qmakeSpec + "-o qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.pro\n"); // NOI18N
+            bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
             if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes

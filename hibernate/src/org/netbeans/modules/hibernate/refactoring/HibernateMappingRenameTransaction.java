@@ -88,8 +88,11 @@ public class HibernateMappingRenameTransaction extends RenameTransaction {
 
                             // If we're only replace the directory part of the resource name, then...
                             if(pathOnly) {
-                                comparePart = resourceName.substring(0, resourceName.lastIndexOf('/'));
-                                newResourceName = newName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
+                                int lastIndex = resourceName.lastIndexOf('/');
+                                if (lastIndex > -1) {
+                                    comparePart = resourceName.substring(0, lastIndex);
+                                    newResourceName = newResourceName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
+                                }
                             }
                             if(comparePart.equals(origName)) {
                                 sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newResourceName);

@@ -232,7 +232,7 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                     container.addDeclaration(using);
                     currentNamespace.addDeclaration(using);
                     break;
@@ -418,7 +418,7 @@ public class AstRenderer {
         }
     }
 
-    private AST skipTemplateParameters(AST node) {
+    public static AST skipTemplateParameters(AST node) {
         int depth = 0;
         while (node != null) {
             switch (node.getType()) {
@@ -1522,7 +1522,7 @@ public class AstRenderer {
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {
-                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                 container.addDeclaration(using);
                 currentNamespace.addDeclaration(using);
                 return true;
@@ -1761,7 +1761,7 @@ public class AstRenderer {
                 tokenType < CPPTokenTypes.CSM_STATEMENTS_END;
     }
 
-    private AST skipTemplateSibling(AST template) {
+    public static AST skipTemplateSibling(AST template) {
         assert template.getType() == CPPTokenTypes.LITERAL_template;
         AST next = template.getNextSibling();
         if (template.getFirstChild() != null) {

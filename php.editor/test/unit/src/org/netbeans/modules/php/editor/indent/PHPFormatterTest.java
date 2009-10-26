@@ -157,6 +157,49 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/174578.php");
     }
 
+    public void test174595() throws Exception {
+        reformatFileContents("testfiles/formatting/issue174595.php");
+    }
+
+    /**
+     * issue 124273 - partially only
+     * @throws Exception
+     */
+
+    public void test124273_1() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
+    }
+
+    public void test124273_2() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
+    }
+    public void test124273_3() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/124273_3.php");
+    }
+
+    /**
+     * issue 175229, _2 is a bit more complex example
+     * @throws Exception
+     */
+//    public void test175229_1() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/175229_1.php");
+//    }
+//
+//    public void test175229_2() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/175229_2.php");
+//    }
+
+    /**
+     * issue 174653 
+     * @throws Exception
+     */
+
+    public void test174563_wrong_namespace_declaration() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174563_1.php");
+    }
+
+
+
     public void testIfElseStatement() throws Exception {
         reformatFileContents("testfiles/formatting/real_life/else_if.php");
     }
@@ -199,6 +242,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testArrays2() throws Exception {
         reformatFileContents("testfiles/formatting/arrays2.php");
+    }
+
+    public void testNestedArrays1() throws Exception {
+        reformatFileContents("testfiles/formatting/nested_array1.php");
     }
 
     public void testSubsequentQuotes() throws Exception {
@@ -273,6 +320,14 @@ public class PHPFormatterTest extends PHPTestBase {
     }
 
     public void test173352() throws Exception {
+        reformatFileContents("testfiles/formatting/issue173352.php");
+    }
+
+    /**
+     * issue 173352 - case added by qa 
+     * @throws Exception
+     */
+    public void test173352_fromQA() throws Exception {
         reformatFileContents("testfiles/formatting/issue173352.php");
     }
 

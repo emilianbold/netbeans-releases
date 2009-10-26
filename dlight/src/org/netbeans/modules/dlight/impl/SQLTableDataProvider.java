@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
-import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilterFactory;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -55,7 +54,6 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.util.Range;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,7 +61,7 @@ import org.openide.util.Exceptions;
  */
 public class SQLTableDataProvider implements TableDataProvider {
 
-    private final Object lock = new String("FunctionsListDataProviderImpl.lock");//NOI18N
+    private final Lock lock = new Lock();
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
     private SQLDataStorage storage;
     private ServiceInfoDataStorage serviceInfoStorage;
@@ -193,5 +191,8 @@ public class SQLTableDataProvider implements TableDataProvider {
             filters.clear();
             filters.addAll(newSet);
         }
+    }
+
+    private final static class Lock {
     }
 }

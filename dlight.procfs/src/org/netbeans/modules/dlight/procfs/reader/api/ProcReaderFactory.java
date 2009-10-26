@@ -38,12 +38,26 @@
  */
 package org.netbeans.modules.dlight.procfs.reader.api;
 
-import org.netbeans.modules.dlight.procfs.reader.impl.ProcReaderImpl;
+import java.io.IOException;
+import java.nio.ByteOrder;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.procfs.api.LWPUsage;
+import org.netbeans.modules.dlight.procfs.api.PStatus;
+import org.netbeans.modules.dlight.procfs.api.PUsage;
+import org.netbeans.modules.dlight.procfs.reader.impl.DataModel;
 import org.netbeans.modules.dlight.procfs.reader.impl.LocalProcReader;
+import org.netbeans.modules.dlight.procfs.reader.impl.ProcessStatusProvider;
+import org.netbeans.modules.dlight.procfs.reader.impl.ProcessStatusProvider64;
+import org.netbeans.modules.dlight.procfs.reader.impl.ProcessUsageProvider;
 import org.netbeans.modules.dlight.procfs.reader.impl.RemoteProcReader;
+import org.netbeans.modules.dlight.procfs.reader.impl.ThreadsInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 public final class ProcReaderFactory {
 
@@ -51,20 +65,89 @@ public final class ProcReaderFactory {
     }
 
     public static ProcReader getReader(final ExecutionEnvironment execEnv, final int pid) {
-        ProcReaderImpl reader = null;
+        ProcReader reader = null;
 
         try {
             HostInfo info = HostInfoUtils.getHostInfo(execEnv);
-            boolean bigendian = info.getCpuFamily() == HostInfo.CpuFamily.SPARC;
+            ByteOrder byteOrder = info.getCpuFamily() == HostInfo.CpuFamily.SPARC
+                    ? ByteOrder.BIG_ENDIAN
+                    : ByteOrder.LITTLE_ENDIAN;
+
+            DataModel dataModel = getDataModel(execEnv, pid);
+
+            ProcessStatusProvider _statusProvider = null;
+            ProcessUsageProvider _usageProvider = null;
+            ThreadsInfoProvider _threadsInfoProvider = null;
+
+
+            ProcReader _reader = null;
 
             if (execEnv.isLocal()) {
-                reader = new LocalProcReader(pid, bigendian);
+                _reader = new LocalProcReader(pid, byteOrder, dataModel);
+
             } else {
-                reader = new RemoteProcReader(execEnv, pid, bigendian);
+                _reader = new RemoteProcReader(execEnv, pid, byteOrder, dataModel);
             }
+
+            _usageProvider = (ProcessUsageProvider) _reader;
+            _threadsInfoProvider = (ThreadsInfoProvider) _reader;
+
+            // @see IZ#171783 - MSA does not work for 64-bit application
+            if (dataModel == DataModel._LP64) {
+                _statusProvider = new ProcessStatusProvider64(execEnv, pid);
+            } else {
+                _statusProvider = (ProcessStatusProvider) _reader;
+            }
+
+            final ProcessStatusProvider statusProvider = _statusProvider;
+            final ProcessUsageProvider usageProvider = _usageProvider;
+            final ThreadsInfoProvider threadsInfoProvider = _threadsInfoProvider;
+
+            reader = new ProcReader() {
+
+                public PUsage getProcessUsage() throws IOException {
+                    return usageProvider.getProcessUsage();
+                }
+
+                public List<LWPUsage> getThreadsInfo() throws IOException {
+                    return threadsInfoProvider.getThreadsInfo();
+                }
+
+                public PStatus getProcessStatus() throws IOException {
+                    return statusProvider.getProcessStatus();
+                }
+            };
+
         } catch (Throwable th) {
         }
 
         return reader;
+    }
+
+    private static DataModel getDataModel(ExecutionEnvironment execEnv, int pid) {
+        DataModel dataModel = DataModel._LP64; // safer ???
+
+        try {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable("/bin/pflags").setArguments("" + pid); // NOI18N
+            Process p = npb.call();
+            List<String> lines = ProcessUtils.readProcessOutput(p);
+            int rc = p.waitFor();
+            Pattern pattern = Pattern.compile("[ \t]+data model = ([^ ]+).*"); // NOI18N
+            if (rc == 0) {
+                for (String line : lines) {
+                    Matcher m = pattern.matcher(line);
+                    if (m.matches()) {
+                        String model = m.group(1);
+                        dataModel = DataModel.valueOf(model);
+                        break;
+                    }
+                }
+            }
+        } catch (InterruptedException ex) {
+        } catch (IOException ex) {
+        }
+
+        return dataModel;
     }
 }

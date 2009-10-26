@@ -593,6 +593,9 @@ public final class J2SEProject implements Project, AntProjectListener {
                                 EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                                 File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                                 ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+                                
+                                //remove jaxws.endorsed.dir property
+                                ep.remove("jaxws.endorsed.dir");
 
                                 // move web-service-clients one level up from in project.xml
                                 // WS should be part of auxiliary configuration

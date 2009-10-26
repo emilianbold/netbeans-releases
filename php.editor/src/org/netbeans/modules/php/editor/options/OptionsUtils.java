@@ -84,6 +84,10 @@ public final class OptionsUtils {
                         CodeCompletionPanel.PHP_CODE_COMPLETION_NON_STATIC_METHODS_DEFAULT);
             }
 
+            if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_VARIABLES_SCOPE.equals(settingName)) {
+                codeCompletionVariablesScope = CodeCompletionPanel.VariablesScope.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_VARIABLES_SCOPE, null));
+            }
+
             if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE.equals(settingName)) {
                 codeCompletionType = CodeCompletionPanel.CodeCompletionType.resolve(preferences.get(CodeCompletionPanel.PHP_CODE_COMPLETION_TYPE, null));
             }
@@ -99,7 +103,9 @@ public final class OptionsUtils {
     private static Boolean codeCompletionStaticMethods = null;
     private static Boolean codeCompletionNonStaticMethods = null;
 
-    private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;;
+    private static CodeCompletionPanel.VariablesScope codeCompletionVariablesScope = null;
+
+    private static CodeCompletionPanel.CodeCompletionType codeCompletionType = null;
 
     private OptionsUtils() {
     }
@@ -147,6 +153,15 @@ public final class OptionsUtils {
         lazyInit();
         assert codeCompletionNonStaticMethods != null;
         return codeCompletionNonStaticMethods;
+    }
+
+    /**
+     * All variables or only from current file.
+     */
+    public static CodeCompletionPanel.VariablesScope codeCompletionVariablesScope() {
+        lazyInit();
+        assert codeCompletionVariablesScope != null;
+        return codeCompletionVariablesScope;
     }
 
     /**

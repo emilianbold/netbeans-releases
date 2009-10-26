@@ -39,16 +39,25 @@
 package org.netbeans.modules.cnd.tha;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptionsListener;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
-import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  *
@@ -56,37 +65,26 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
  */
 public final class THAConfigurationOptions implements DLightConfigurationOptions {
 
-    private final List<DLightConfigurationOptionsListener> listeners = new ArrayList<DLightConfigurationOptionsListener>();
+        private final List<DLightConfigurationOptionsListener> listeners = new ArrayList<DLightConfigurationOptionsListener>();
+    private static Logger log = DLightLogger.getLogger(THAConfigurationOptions.class);
+    private String DLightCollectorString = "SunStudio";//NOI18N
+    private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
+    private static final String SUNSTUDIO = "SunStudio";//NOI18N
+//    private static final String DTRACE = "DTrace";//NOI18N
+//    private static final String PRSTAT_INDICATOR = "prstat";//NOI18N
+    private static final String PROC_READER = "ProcReader";//NOI18N
+    private static final String PROCFS_READER = "ProcFSReader";//NOI18N
+    private Project currentProject;
+    private boolean areCollectorsTurnedOn = false;
+    private boolean profileOnRun = true;
 
-    public void configure(THAConfiguration configuration){
-        //collector configurations should be sorted out here
-        
-        
-    }
-
-   
-
-    public boolean profileOnRun() {
-        return false;
-    }
 
     public void turnCollectorsState(boolean turnState) {
+        areCollectorsTurnedOn = turnState;
     }
 
-    public boolean areCollectorsTurnedOn() {
-        return true;
-    }
-
-    public List<DataCollector<?>> getCollectors(DLightTool tool) {
-        return tool.getCollectors();
-    }
-
-    public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
-        return tool.getIndicatorDataProviders();
-    }
-
-    public boolean validateToolsRequiredUserInteraction() {
-        return false;
+    public boolean profileOnRun() {
+        return profileOnRun;
     }
 
     public Collection<String> getActiveToolNames() {
@@ -97,6 +95,101 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
             result.add(tool.getID());
         }
         return result;
+    }
+
+    public void configure(Project project) {
+        areCollectorsTurnedOn = true;
+        this.currentProject = project;
+        Configuration activeConfiguration = getActiveConfiguration();
+//        GizmoProjectOptions options = new GizmoProjectOptions(currentProject);
+        //set up as following:
+        //get data from the project about selected provider of detailed voew
+
+        turnCollectorsState(true);
+
+        if (!(activeConfiguration instanceof MakeConfiguration)) {
+            return;
+        }
+
+        //if we have sun studio compiler along compiler collections presentedCompiler
+        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
+        List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
+
+        boolean hasSunStudio = false;
+
+        for (CompilerSet cs : compilers) {
+            if (cs.isSunCompiler()) {
+                hasSunStudio = true;
+                break;
+            }
+        }
+
+        String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
+        DLightConfiguration dlightConfiguration = DLightConfigurationManager.getInstance().getConfigurationByName("THA");//NOI18N
+        //get all names from the inside usinf providers
+//        GizmoOptions.DataProvider currentProvider = gizmoOptions.getDataProviderValue();
+        DLightCollectorString = dlightConfiguration.getCollectorProviders();
+        DLightIndicatorDPStrings = dlightConfiguration.getIndicatorProviders();
+
+        if ((DLightCollectorString != null && DLightCollectorString.equals(SUNSTUDIO) && !hasSunStudio) ||
+                (platform.indexOf("Linux") != -1 && DLightCollectorString != null //NOI18N
+                && !DLightCollectorString.equals(SUNSTUDIO)) || !GizmoServiceInfo.isPlatformSupported(platform)) {
+            setForLinux();
+        }
+
+    }
+
+    private boolean setForLinux() {
+        String platform = ((MakeConfiguration) getActiveConfiguration()).getDevelopmentHost().getBuildPlatformDisplayName();
+        if (platform.indexOf("Linux") != -1 || !GizmoServiceInfo.isPlatformSupported(platform)) {//NOI18N
+            areCollectorsTurnedOn = false;
+            if (platform.indexOf("Linux") != -1) {//NOI18N
+                DLightCollectorString = SUNSTUDIO;
+            } else {
+                DLightCollectorString = "";//NOI18N
+            }
+
+            DLightIndicatorDPStrings = Arrays.asList(PROCFS_READER, PROC_READER);
+            return true;
+        }
+        return false;
+    }
+
+    private Configuration getActiveConfiguration() {
+        return ConfigurationSupport.getProjectActiveConfiguration(currentProject);
+    }
+
+    public boolean areCollectorsTurnedOn() {
+        return areCollectorsTurnedOn;
+    }
+
+    public List<DataCollector<?>> getCollectors(DLightTool tool) {
+        List<DataCollector<?>> collectors = tool.getCollectors();
+        List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
+        for (DataCollector collector : collectors) {
+            if (collector.getName().equals(DLightCollectorString)) {
+                result.add(collector);
+            }
+        }
+        return result;
+    }
+
+    public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
+        List<IndicatorDataProvider<?>> idps = tool.getIndicatorDataProviders();
+        List<IndicatorDataProvider<?>> result = new ArrayList<IndicatorDataProvider<?>>();
+        for (IndicatorDataProvider idp : idps) {
+            for (String idpStringName : DLightIndicatorDPStrings) {
+                if (idp.getName().equals(idpStringName)) {
+                    result.add(idp);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public boolean validateToolsRequiredUserInteraction() {
+        return false;
     }
 
     public void addListener(DLightConfigurationOptionsListener listener) {
@@ -114,8 +207,16 @@ public final class THAConfigurationOptions implements DLightConfigurationOptions
     }
 
     public void removeListener(DLightConfigurationOptionsListener listener) {
-        synchronized(this){
+        synchronized (this) {
             listeners.remove(listener);
+        }
+    }
+
+    private final void notifyListeners(String toolName, boolean isEnabled) {
+        synchronized (this) {
+            for (DLightConfigurationOptionsListener l : listeners) {
+                l.dlightToolEnabling(toolName, isEnabled);
+            }
         }
     }
 }

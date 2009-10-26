@@ -1074,6 +1074,10 @@ public class MakeActionProvider implements ActionProvider {
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
             boolean validated, AtomicBoolean cancelled) {
+        RunProfile runProfile = (RunProfile)conf.getAuxObject(RunProfile.PROFILE_ID);
+        if (runProfile != null && !runProfile.getBuildFirst()) {
+            return true;
+        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
@@ -1152,6 +1156,7 @@ public class MakeActionProvider implements ActionProvider {
         Tool fTool = cs.getTool(Tool.FortranCompiler);
         Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
+        Tool qmakeTool = cs.getTool(Tool.QMakeTool);
 
         if (cancelled.get()) {
             return false;
@@ -1197,6 +1202,9 @@ public class MakeActionProvider implements ActionProvider {
         }
         if (asRequired && !exists(asTool.getPath(), pi)) {
             //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            runBTA = true;
+        }
+        if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
             runBTA = true;
         }
 

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -319,7 +320,18 @@ public class ComputeImports {
             
             return null;
         }
-        
+
+        @Override
+        public Void visitAnnotation(AnnotationTree node,
+                Map<String, Object> p) {
+            super.visitAnnotation(node, p);
+            TypeMirror typeMirror = info.getTrees().getTypeMirror(getCurrentPath());
+            if (typeMirror != null && typeMirror.getKind() == TypeKind.ERROR) {
+                unresolved.add(node.getAnnotationType().toString());
+            }
+            return null;
+        }
+
         @Override
         public Void visitIdentifier(IdentifierTree tree, Map<String, Object> p) {
             super.visitIdentifier(tree, p);

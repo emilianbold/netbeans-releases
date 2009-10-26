@@ -16,19 +16,19 @@ Searchable Keys:
   attribute : tc
   class : Message
   class-ig : message
-  field : aa
-  field : additional
-  field : answer
-  field : authority
+  field : aa;;Fixnum;
+  field : additional;;Array;
+  field : answer;;Array;
+  field : authority;;Array;
   field : id
   field : identifier|STATIC
-  field : opcode
-  field : qr
-  field : question
-  field : ra
-  field : rcode
-  field : rd
-  field : tc
+  field : opcode;;Fixnum;
+  field : qr;;Fixnum;
+  field : question;;Array;
+  field : ra;;Fixnum;
+  field : rcode;;Fixnum;
+  field : rd;;Fixnum;
+  field : tc;;Fixnum;
   fqn : Resolv::DNS::Message
   method : ==(other);;TrueClass|FalseClass;
   method : add_additional(name,ttl,data)
@@ -354,10 +354,10 @@ Searchable Keys:
   constant : ClassValue;
   constant : TypeValue;Fixnum
   extends : Resource
-  field : port
-  field : priority
+  field : port;;Integer;
+  field : priority;;Integer;
   field : target
-  field : weight
+  field : weight;;Integer;
   fqn : Resolv::DNS::Resource::IN::SRV
   method : decode_rdata(msg)|STATIC|;;SRV;
   method : encode_rdata(msg)
@@ -379,7 +379,7 @@ Searchable Keys:
   field : data
   field : msg
   field : queue
-  field : sock
+  field : sock;;TCPSocket;
   fqn : Resolv::DNS::Requester::Sender
   method : initialize(msg,data,sock,queue)|PRIVATE|
   method : new(msg,data,sock,queue)|PRIVATE|STATIC|
@@ -449,15 +449,15 @@ Searchable Keys:
   class : Config
   class-ig : config
   constant : InitialTimeout;Fixnum
-  field : config_info
-  field : initialized
-  field : mutex
-  field : nameserver
-  field : ndots
-  field : search
+  field : config_info;;NilClass;
+  field : initialized;;NilClass|TrueClass;
+  field : mutex;;Mutex;
+  field : nameserver;;Array;
+  field : ndots;;Fixnum;
+  field : search;;Array;
   fqn : Resolv::DNS::Config
-  method : default_config_hash(filename)|STATIC|;;Hash|NilClass;
-  method : generate_candidates(name)
+  method : default_config_hash(filename)|STATIC|;;Hash;
+  method : generate_candidates(name);;Array;
   method : generate_timeouts;;Array;
   method : initialize(config_info)|PRIVATE|
   method : lazy_initialize;;Config;
@@ -480,9 +480,9 @@ Searchable Keys:
   extends : Requester
   field : host
   field : id
-  field : port
-  field : sock
-  field : thread
+  field : port;;Integer;
+  field : sock;;TCPSocket;
+  field : thread;;Thread;
   fqn : Resolv::DNS::Requester::ConnectedUDP
   method : initialize(host,port)|PRIVATE|
   method : new(host,port)|PRIVATE|STATIC|
@@ -502,10 +502,10 @@ Searchable Keys:
   constant : DNSThreadGroup;ThreadGroup
   constant : Port;Fixnum
   constant : UDPSize;Fixnum
-  field : config
-  field : initialized
-  field : mutex
-  field : requester
+  field : config;;Config;
+  field : initialized;;NilClass|TrueClass;
+  field : mutex;;Mutex;
+  field : requester;;UnconnectedUDP|ConnectedUDP|NilClass;
   fqn : Resolv::DNS
   method : close
   method : each_address(name)
@@ -564,11 +564,11 @@ Searchable Keys:
   class-ig : hosts
   constant : DefaultFileName;
   constant : DefaultFileName;String
-  field : addr2name
+  field : addr2name;;Hash;
   field : filename
-  field : initialized
-  field : mutex
-  field : name2addr
+  field : initialized;;NilClass|TrueClass;
+  field : mutex;;Mutex;
+  field : name2addr;;Hash;
   fqn : Resolv::Hosts
   method : each_address(name,&proc)
   method : each_name(address,&proc)
@@ -620,18 +620,18 @@ Searchable Keys:
   class : MessageDecoder
   class-ig : messagedecoder
   field : data
-  field : index
+  field : index;;Fixnum;
   field : limit
   fqn : Resolv::DNS::Message::MessageDecoder
-  method : get_bytes(len);;Array;
+  method : get_bytes(len)
   method : get_label;;Str;
   method : get_labels(limit);;Array;
-  method : get_length16;;Array;
+  method : get_length16
   method : get_name;;Name;
   method : get_question;;Array;
   method : get_rr;;Array;
-  method : get_string;;Array;
-  method : get_string_list
+  method : get_string
+  method : get_string_list;;Array;
   method : get_unpack(template)
   method : initialize(data)|PRIVATE|
   method : new(data)|PRIVATE|STATIC|
@@ -648,7 +648,7 @@ Searchable Keys:
   class : MessageEncoder
   class-ig : messageencoder
   field : data
-  field : names
+  field : names;;Hash;
   fqn : Resolv::DNS::Message::MessageEncoder
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|
@@ -702,7 +702,7 @@ Document 30
 Searchable Keys:
   class : Name
   class-ig : name
-  field : absolute
+  field : absolute;;TrueClass;
   field : labels
   fqn : Resolv::DNS::Name
   method : ==(other);;TrueClass|FalseClass;
@@ -836,9 +836,9 @@ Document 37
 Searchable Keys:
   class : Requester
   class-ig : requester
-  field : senders
-  field : sock
-  field : thread
+  field : senders;;Hash;
+  field : sock;;TCPSocket;
+  field : thread;;Thread;
   fqn : Resolv::DNS::Requester
   method : close
   method : delete(arg)
@@ -858,7 +858,7 @@ Searchable Keys:
   class-ig : resolv
   constant : AddressRegex;Regexp
   constant : DefaultResolver;Resolv
-  field : resolvers
+  field : resolvers;;Array;
   fqn : Resolv
   method : each_address(name)
   method : each_address(name,&block)|STATIC|
@@ -938,7 +938,7 @@ Searchable Keys:
   class-ig : sender
   extends : Requester::Sender
   field : host
-  field : port
+  field : port;;Integer;
   fqn : Resolv::DNS::Requester::UnconnectedUDP::Sender
   method : initialize(msg,data,sock,host,port,queue)|PRIVATE|
   method : new(msg,data,sock,host,port,queue)|PRIVATE|STATIC|
@@ -988,10 +988,10 @@ Searchable Keys:
   extends : Requester
   field : host
   field : id
-  field : port
-  field : senders
-  field : sock
-  field : thread
+  field : port;;Integer;
+  field : senders;;Hash;
+  field : sock;;TCPSocket;
+  field : thread;;Thread;
   fqn : Resolv::DNS::Requester::TCP
   method : initialize(host,port)|PRIVATE|
   method : new(host,port)|PRIVATE|STATIC|
@@ -1010,8 +1010,8 @@ Searchable Keys:
   class-ig : unconnectedudp
   extends : Requester
   field : id
-  field : sock
-  field : thread
+  field : sock;;TCPSocket;
+  field : thread;;Thread;
   fqn : Resolv::DNS::Requester::UnconnectedUDP
   method : initialize|PRIVATE|
   method : new|PRIVATE|STATIC|

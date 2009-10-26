@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.AddressBreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.ControllerProvider;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.FunctionBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.customizers.LineBreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
@@ -187,7 +188,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         if (helpCtx == null) {
             helpCtx = new HelpCtx("debug.add.breakpoint");  // FIXUP - Whats our help ID?
         }
-        final Controller[] cPtr = new Controller[] { (Controller) c };
+        final Controller[] cPtr = new Controller[] { ((ControllerProvider) c).getController() };
         final DialogDescriptor[] descriptorPtr = new DialogDescriptor[1];
         final Dialog[] dialogPtr = new Dialog[1];
         ActionListener buttonsActionListener = new ActionListener() {

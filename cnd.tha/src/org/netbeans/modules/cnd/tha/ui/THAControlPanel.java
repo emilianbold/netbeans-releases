@@ -39,19 +39,15 @@
 package org.netbeans.modules.cnd.tha.ui;
 
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.tha.actions.THAActionsProvider;
 import org.netbeans.modules.dlight.perfan.tha.api.THAConfiguration;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,6 +71,7 @@ final class THAControlPanel extends JToolBar {
         setFloatable(true);
         setRollover(true);
         setBorder(null);
+//        setFocusable(true);
         final JLabel statusLabel = new JLabel();
         final String collectionKind = getMessage(thaConfiguration.collectDataRaces() ? "THAControlPanel.DeadlocksAndRaces" : "THAControlPanel.Deadlocks"); // NOI18N
         actionsSupport.addActionListener(new ActionListener() {
@@ -94,7 +91,8 @@ final class THAControlPanel extends JToolBar {
         Action suspendAction = actionsSupport.getSuspendCollectionAction();
         Action resumeAction = actionsSupport.getResumeCollectionAction();
 
-        statusLabel.setText(getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" : "THAControlPanel.Paused", collectionKind)); // NOI18N
+        statusLabel.setText(getMessage("THAControlPanel.Preparing"));//NOI18N
+                //getMessage(thaConfiguration.collectFromBeginning() ? "THAControlPanel.Recording" : "THAControlPanel.Paused", collectionKind)); // NOI18N
         statusLabel.setForeground(thaConfiguration.collectFromBeginning() ? RECORDING_COLOR : PAUSED_COLOR);
         statusLabel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 //        JButton suspendButton = new JButton(suspendAction);
@@ -103,6 +101,7 @@ final class THAControlPanel extends JToolBar {
 //        JButton resumeButton = new JButton(resumeAction);
 //        resumeButton.setDisabledIcon(ImageUtilities.image2Icon((Image)resumeAction.getValue("disabledIcon")));//NOI18N
 //        add(resumeButton);
+        statusLabel.setVisible(false);
         add(suspendAction);
         add(resumeAction);
         add(actionsSupport.getStopAction());

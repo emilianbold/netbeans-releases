@@ -237,6 +237,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz172227.cpp");
     }
 
+    public void testIZ171453() throws Exception {
+        // IZ#171453 : Private Inheretence: Using Directive
+        performStaticTest("iz171453.cpp");
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

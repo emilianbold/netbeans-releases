@@ -100,7 +100,6 @@ public class WSUtils {
     private static String SUN_DOMAIN_13_DTD_SUFFIX =
             "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_3.dtd";
     
-    private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
     private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
 
     private static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
@@ -360,28 +359,6 @@ public class WSUtils {
         }
         retrieveJaxWsFromResource(projectDir);
         return projectDir.getFileObject(JAX_WS_XML_PATH);
-    }
-    
-    /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
-     *  to specify jvmarg value : -Djava.endorsed.dirs=${jaxws.endorsed.dir}"
-     */
-    public static boolean setJaxWsEndorsedDirProperty(EditableProperties ep) {
-        String oldJaxWsEndorsedDirs = ep.getProperty(ENDORSED_DIR_PROPERTY);
-        String javaVersion = System.getProperty("java.specification.version"); //NOI18N
-        boolean changed=false;
-        if ("1.6".equals(javaVersion)) { //NOI18N
-            String jaxWsEndorsedDirs = getJaxWsApiDir();
-            if (jaxWsEndorsedDirs!=null && !jaxWsEndorsedDirs.equals(oldJaxWsEndorsedDirs)) {
-                ep.setProperty(ENDORSED_DIR_PROPERTY, jaxWsEndorsedDirs);
-                changed=true;
-            }
-        } else {
-            if (oldJaxWsEndorsedDirs!=null) {
-                ep.remove(ENDORSED_DIR_PROPERTY);
-                changed=true;
-            }
-        }
-        return changed;
     }
     
     private static String getJaxWsApiDir() {

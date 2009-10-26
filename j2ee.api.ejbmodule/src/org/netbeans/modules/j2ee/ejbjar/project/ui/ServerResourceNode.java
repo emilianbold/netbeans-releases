@@ -86,7 +86,6 @@ public class ServerResourceNode extends FilterNode {
     private static final Logger LOGGER = Logger.getLogger(ServerResourceNode.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
-    private static final Image RESOURCE_FILE_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ejbjar/project/ui/resourcesBadge.gif", true ); // NOI18N
     private static final String SETUP_DIR = "setup"; // NOI18N
     private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
     
@@ -117,7 +116,7 @@ public class ServerResourceNode extends FilterNode {
     }
     
     private static Image badgeIcon(Image icon) {
-        return ImageUtilities.mergeImages(icon, RESOURCE_FILE_BADGE, 7, 7);
+        return ImageUtilities.mergeImages(icon, ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ejbjar/project/ui/resourcesBadge.gif", true ), 7, 7);
     }
     
     public String getDisplayName() {

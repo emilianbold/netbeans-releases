@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.paralleladviser.paralleladviserview.*;
 import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.paralleladviser.utils.ParallelAdviserAdviceUtils;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -69,24 +70,16 @@ public class SunStudioCompilerXautoparAdvice implements Advice {
         URL iconUrl = SunStudioCompilerXautoparAdvice.class.getClassLoader().getResource("org/netbeans/modules/cnd/paralleladviser/paralleladviserview/resources/info.png"); // NOI18N
 
         return ParallelAdviserAdviceUtils.createAdviceComponent(
-                ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl, "Automatic parallelization with Sun Studio compilers", // NOI18N
-                "<b>-xautopar</b> turns on automatic parallelization for multiple processors. " + // NOI18N
-                "Does dependence analysis (analyze loops for inter-iteration data dependence) and loop restructuring. " + // NOI18N
-                "If optimization is not at-xO3 or higher, optimization is raised to-xO3 and a warning is emitted." + // NOI18N
-                "<br>" + // NOI18N
-                "<br>" + // NOI18N
-                "To achieve faster execution, this option requires a multiple processor system. " + // NOI18N
-                "On a single-processor system, the resulting binary usually runs slower." + // NOI18N
-                "<br>" + // NOI18N
-                "<br>" + // NOI18N
-                "If you use <b>-xautopar</b> and compile and link in one step, " + // NOI18N
-                "then linking automatically includes the microtasking library and the threads-safe C runtime library. " + // NOI18N
-                "If you use <b>-xautopar</b> and compile and link in separate steps, then you must also link with <b>-xautopar</b>." + // NOI18N
-                "<br>" + // NOI18N
-                "<br>" + // NOI18N
-                "<a href=\"http://developers.sun.com/sunstudio/downloads/\">Download Sun Studio</a>.", 800), null); // NOI18N
+                ParallelAdviserAdviceUtils.createAdviceHtml(iconUrl,
+                getString("PAT_SunStudioCompilersAutomatic_Title"), // NOI18N
+                getString("PAT_SunStudioCompilersAutomatic_Body"), // NOI18N
+                800), null); // NOI18N
     }
 
     public void addNotification(OutputWriter writer) {
+    }
+
+    private static String getString(String name) {
+        return NbBundle.getMessage(SunStudioCompilerXautoparAdvice.class, name);
     }
 }
