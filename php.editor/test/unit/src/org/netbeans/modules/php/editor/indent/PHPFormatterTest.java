@@ -73,139 +73,8 @@ public class PHPFormatterTest extends PHPTestBase {
             // Ignore -- we've already registered this either via layers or other means
         }
     }
-  
-     public void testSpacesAfterObjectRefereneces_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php");
-    }
-
-    /**
-     * issue 160996
-     * @throws Exception
-     */
-      
-    public void test160996_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/160996.php");
-    }
-
-    /**
-     * issue 162320
-     * @throws Exception
-     */
-
-    public void test162320_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162320.php");
-    }
-
-    /**
-     * issue 162586
-     * @throws Exception
-     */
-
-    public void test162586_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162586.php");
-    }
-
-    /**
-     * issue 173899
-     * @throws Exception
-     */
-
-    public void test173899_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173899.php");
-    }
-    /**
-     * issue 173903
-     * @throws Exception
-     */
-    public void test173903_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173903.php");
-    }
-
-    /**
-     * issue 173906
-     * @throws Exception
-     */
-    public void test173906_1_unstableReopened() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_1.php");
-    }
-    
-    public void test173906_2_unstableReopened() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_2.php");
-    }
-    public void test173906_3_unstableReopened() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_3.php");
-    }
-
-     /**
-     * issue 173908
-     * @throws Exception
-     */
-    public void test173908_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173908.php");
-    }
-
-    /**
-     * issue 174579
-     * @throws Exception
-     */
-    public void test174579_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174579.php");
-    }
-
-    /**
-     * issue 174578
-     * @throws Exception
-     */
-    public void test174578_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174578.php");
-    }
-
-    public void test174595() throws Exception {
+      public void test174595() throws Exception {
         reformatFileContents("testfiles/formatting/issue174595.php");
-    }
-
-    /**
-     * issue 124273 - partially only
-     * @throws Exception
-     */
-
-//    public void test124273_1() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/124273_1.php");
-//    }
-//
-//    public void test124273_2() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/124273_2.php");
-//    }
-
-    /**
-     * issue 175427 and 124273 where 17527 is a regression
-     * @throws Exception
-     */
-    public void test124273_175247_regression() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php");
-    }
-
-    /**
-     * issue 175229
-     * @throws Exception
-     */
-//    public void test175229 throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/175229_1.php");
-//    }
-
-    /**
-     * issue 174653 
-     * @throws Exception
-     */
-
-    public void test174563_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174563_1.php");
-    }
-
-
-
-    public void testIfElseStatement_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php");
     }
 
     public void testContinuedExpression() throws Exception {
@@ -326,24 +195,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test174563() throws Exception {
         reformatFileContents("testfiles/formatting/issue174563.php");
     }
-    
-    /**
-     * issue 174595
-     * @throws Exception
-     */
-//    public void test174595_175229() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/174595_175229.php");
-//    }
-
-    /**
-     * issue 174873 - test for missing $e variable only, so created
-     * with respect to #173906 that is reopened.
-     * @throws Exception
-     */
-    public void test174873_173906_stablePartial() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php");
-    }
-
+  
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
