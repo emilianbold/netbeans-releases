@@ -690,7 +690,7 @@ public abstract class RestSupport {
     }
 
     public String getApplicationPath() throws IOException {
-        return "/resources"; // default application path
+        return "resources"; // default application path
     }
 }
 
