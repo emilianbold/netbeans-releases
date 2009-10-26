@@ -375,7 +375,11 @@ public final class PositionsBag extends AbstractHighlightsContainer {
             }
 
             if (endIdx != -1 && attributes.get(endIdx) != null) {
-                endIdx++;
+                if (marks.get(endIdx).getOffset() < endOffset) {
+                    endIdx++;
+                } else {
+                    endIdx--;
+                }
             }
             
             if (startIdx < endIdx) {

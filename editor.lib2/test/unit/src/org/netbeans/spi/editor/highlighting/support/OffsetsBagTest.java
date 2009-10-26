@@ -556,6 +556,43 @@ public class OffsetsBagTest extends NbTestCase {
         assertMarks("Wrong highlights after remove", createOffsetsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
     }
 
+    public void testRemoveHighlights_114642() throws Exception {
+        OffsetsBag hs = new OffsetsBag(doc);
+        hs.addHighlight(5, 10, EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+
+        final OffsetsBag expected = createOffsetsBag(5, 10, EMPTY);
+        hs.removeHighlights(1, 5, true);
+        assertMarks("Highlights should not be removed by <1, 5, true>", expected, hs);
+
+        hs.removeHighlights(10, 15, true);
+        assertMarks("Highlights should not be removed <10, 15, true>", expected, hs);
+
+        hs.removeHighlights(1, 5, false);
+        assertMarks("Highlights should not be removed <1, 5, false>", expected, hs);
+
+        hs.removeHighlights(10, 15, false);
+        assertMarks("Highlights should not be removed <10, 15, false>", expected, hs);
+    }
+
+    public void testRemoveHighlights_114642_2() throws Exception {
+        OffsetsBag expected = createOffsetsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        OffsetsBag hs = createOffsetsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+
+        hs.removeHighlights(25, 30, true);
+        assertMarks("Highlights should not be removed <25, 30, true>", expected, hs);
+
+        hs.removeHighlights(40, 45, true);
+        assertMarks("Highlights should not be removed <40, 45, true>", expected, hs);
+
+        hs.removeHighlights(25, 30, false);
+        assertMarks("Highlights should not be removed <25, 30, false>", expected, hs);
+
+        hs.removeHighlights(40, 45, false);
+        assertMarks("Highlights should not be removed <40, 45, false>", expected, hs);
+    }
+
     public void testAddAll() {
         OffsetsBag hsA = new OffsetsBag(doc);
         OffsetsBag hsB = new OffsetsBag(doc);

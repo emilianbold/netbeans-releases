@@ -557,7 +557,44 @@ public class PositionsBagTest extends NbTestCase {
         assertEquals("Sequence size", 6, hs.getMarks().size());
         hs.removeHighlights(pos(30), pos(40), true);
         assertEquals("Highlights were not removed", 4, hs.getMarks().size());
-        assertMarks("Wrong highlights after remove", createOffsetsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
+        assertMarks("Wrong highlights after remove", createPositionsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
+    }
+
+    public void testRemoveHighlights_114642() throws Exception {
+        PositionsBag hs = new PositionsBag(doc);
+        hs.addHighlight(pos(5), pos(10), EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+
+        final PositionsBag expected = createPositionsBag(5, 10, EMPTY);
+        hs.removeHighlights(pos(1), pos(5), true);
+        assertMarks("Highlights should not be removed by <1, 5, true>", expected, hs);
+
+        hs.removeHighlights(pos(10), pos(15), true);
+        assertMarks("Highlights should not be removed <10, 15, true>", expected, hs);
+
+        hs.removeHighlights(pos(1), pos(5), false);
+        assertMarks("Highlights should not be removed <1, 5, false>", expected, hs);
+
+        hs.removeHighlights(pos(10), pos(15), false);
+        assertMarks("Highlights should not be removed <10, 15, false>", expected, hs);
+    }
+
+    public void testRemoveHighlights_114642_2() throws Exception {
+        PositionsBag expected = createPositionsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        PositionsBag hs = createPositionsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+
+        hs.removeHighlights(pos(25), pos(30), true);
+        assertMarks("Highlights should not be removed <25, 30, true>", expected, hs);
+
+        hs.removeHighlights(pos(40), pos(45), true);
+        assertMarks("Highlights should not be removed <40, 45, true>", expected, hs);
+
+        hs.removeHighlights(pos(25), pos(30), false);
+        assertMarks("Highlights should not be removed <25, 30, false>", expected, hs);
+
+        hs.removeHighlights(pos(40), pos(45), false);
+        assertMarks("Highlights should not be removed <40, 45, false>", expected, hs);
     }
 
     public void testAddAll() {
@@ -709,10 +746,10 @@ public class PositionsBagTest extends NbTestCase {
     }
 
     public void testDocumentChanges() throws BadLocationException {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
+        Document d = new PlainDocument();
+        d.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
         
-        PositionsBag bag = new PositionsBag(doc);
+        PositionsBag bag = new PositionsBag(d);
         
         SimpleAttributeSet attribsA = new SimpleAttributeSet();
         SimpleAttributeSet attribsB = new SimpleAttributeSet();
@@ -720,8 +757,8 @@ public class PositionsBagTest extends NbTestCase {
         attribsA.addAttribute("set-name", "attribsA");
         attribsB.addAttribute("set-name", "attribsB");
         
-        bag.addHighlight(doc.createPosition(0), doc.createPosition(30), attribsA);
-        bag.addHighlight(doc.createPosition(10), doc.createPosition(20), attribsB);
+        bag.addHighlight(d.createPosition(0), d.createPosition(30), attribsA);
+        bag.addHighlight(d.createPosition(10), d.createPosition(20), attribsB);
         GapList<Position> marks = bag.getMarks();
         GapList<AttributeSet> atttributes = bag.getAttributes();
         
@@ -739,7 +776,7 @@ public class PositionsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", atttributes.get(2).getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", atttributes.get(3));
         
-        doc.insertString(12, "----", SimpleAttributeSet.EMPTY);
+        d.insertString(12, "----", SimpleAttributeSet.EMPTY);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -755,7 +792,7 @@ public class PositionsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", atttributes.get(2).getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", atttributes.get(3));
         
-        doc.remove(1, 5);
+        d.remove(1, 5);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -784,7 +821,7 @@ public class PositionsBagTest extends NbTestCase {
         return new SimplePosition(offset);
     }
 
-    private PositionsBag createOffsetsBag(Object... triples) {
+    private PositionsBag createPositionsBag(Object... triples) {
         assert triples != null;
         assert triples.length % 3 == 0;
 

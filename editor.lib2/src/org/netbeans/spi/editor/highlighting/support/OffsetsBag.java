@@ -389,7 +389,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                 }
                 
                 if (endIdx != -1 && marks.get(endIdx).getAttributes() != null) {
-                    endIdx++;
+                    if (marks.get(endIdx).getOffset() < endOffset) {
+                        endIdx++;
+                    } else {
+                        endIdx--;
+                    }
                 }
             }
             
