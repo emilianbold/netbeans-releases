@@ -592,12 +592,12 @@ class EjbJarActionProvider implements ActionProvider {
                 Object o = s.lookupFirst(null, AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
-                    if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                    if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
                         if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
                             return true;
                         }
                     } else {
-                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        if (sdi.getHost() != null && sdi.getHost().equalsIgnoreCase(attCookie.getHostName())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 return true;
                             }

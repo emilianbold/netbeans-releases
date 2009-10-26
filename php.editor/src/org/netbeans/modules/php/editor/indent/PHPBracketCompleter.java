@@ -329,10 +329,20 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ']') || LexUtilities.textEquals(token.text(), ')')) // NOI18N
-                && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
+                /*&& (Utilities.getRowLastNonWhite(doc, offset) == offset)*/) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
-            sb.append("\n"); // NOI18N
+            Token<?extends PHPTokenId> helpToken = token;
+            if (ts.movePrevious()) {
+                do {
+                    helpToken = ts.token();
+                } while ((helpToken.id() == PHPTokenId.WHITESPACE
+                        || helpToken.id() == PHPTokenId.PHP_LINE_COMMENT)
+                        && ts.movePrevious());
+            }
+            if (!(helpToken.id() == PHPTokenId.PHP_TOKEN && helpToken.text().charAt(0) == ',')) {
+                sb.append("\n"); // NOI18N
+            }
             sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
