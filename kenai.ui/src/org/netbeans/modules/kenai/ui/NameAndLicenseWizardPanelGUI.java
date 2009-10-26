@@ -255,8 +255,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     @Override
     public String getName() {
         return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
-                panel==null || panel.isFinishPanel() ?
-                    "NameAndLicenseWizardPanelGUI.shareLocalName": // NOI18N
                     "NameAndLicenseWizardPanelGUI.panelName"); // NOI18N
     }
 
@@ -705,21 +703,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE, getProjectTitle());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_PRJ_DESC, getProjectDesc());
         settings.putProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE, getProjectLicense());
-
-        if (panel.isFinishPanel()) {
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES, KenaiService.Names.BUGZILLA);
-            //settings.putProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL, "nevim");
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_NAME, SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME);
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_TYPE, SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME);
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_SCM_URL, 
-                    MessageFormat.format(
-                    SourceAndIssuesWizardPanelGUI.REPO_NAME_PREVIEW_MSG,
-                    Kenai.getDefault().getUrl().toString(),
-                    SourceAndIssuesWizardPanelGUI.SVN_REPO_NAME,
-                    getProjectName(), 
-                    SourceAndIssuesWizardPanelGUI.SVN_DEFAULT_NAME));
-            settings.putProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT, true);
-        }
     }
 
     // ----------
