@@ -222,6 +222,8 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php");
     }
 
+
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
