@@ -904,9 +904,6 @@ public class CompilerSetManager {
                 return;
             }
         }
-
-        // if tool was not found - create empty tool
-        cs.addTool(executionEnvironment, "", "", kind); // NOI18N
     }
 
     /**
