@@ -190,7 +190,11 @@ public class KenaiUtil {
         try {
             return Kenai.getDefault().getProject(ph.getId());
         } catch (KenaiException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+            BugtrackingManager.LOG.log(
+                    Level.WARNING,
+                    "Could not get KenaiProject object for project Id \"{0}\".",//NOI18N
+                    ph.getId());
+            BugtrackingManager.LOG.log(Level.INFO, null, ex);
         }
         return null;
     }
