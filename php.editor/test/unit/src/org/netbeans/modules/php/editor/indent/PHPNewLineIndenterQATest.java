@@ -108,8 +108,15 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
     public void test173937_1_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173937_1.php");
     }
-    
 
+    /**
+     * 173937 issue
+     * @throws
+     */
+//    public void test175437() throws Exception {
+//        testIndentInFile("testfiles/indent/qa/issues/unstable_newIssues/175437.php");
+//    }
+    
     @Override
     protected boolean runInEQ() {
         return true;
