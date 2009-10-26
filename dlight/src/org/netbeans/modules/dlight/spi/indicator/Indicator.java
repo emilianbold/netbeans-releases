@@ -339,7 +339,11 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         if (component == null) {
             return;
         }
-        component.setToolTipText(getDescription());
+        StringBuilder st = new StringBuilder();
+        st.append("<html><body>");
+        st.append(getDescription().replaceAll("\n", "<br>"));
+        st.append("</body></html><");
+        component.setToolTipText(st.toString());
     }
 
     final List<VisualizerConfiguration> getVisualizerConfigurations() {

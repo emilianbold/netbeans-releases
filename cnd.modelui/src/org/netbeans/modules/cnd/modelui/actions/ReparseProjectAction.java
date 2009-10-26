@@ -37,19 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelui.trace;
+package org.netbeans.modules.cnd.modelui.actions;
 
-import org.netbeans.modules.cnd.modelui.actions.ProjectActionBase;
-
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.openide.util.NbBundle;
+        
 /**
- * A common abstract parent for  test actions on projects
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresensky
  */
-public abstract class TestProjectActionBase extends ProjectActionBase {
+public final class ReparseProjectAction extends ProjectActionBase {
 
-    protected final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
+    public ReparseProjectAction() {
+        super(true);
+    }
 
-    public TestProjectActionBase() {
-        super(TEST_XREF);
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(getClass(), "CTL_ReparseProject"); //NOI18N
+    }
+
+    
+    @Override
+    protected void performAction(Collection<CsmProject> csmProjects) {
+        CsmModelAccessor.getModel().scheduleReparse(csmProjects);
     }
 }

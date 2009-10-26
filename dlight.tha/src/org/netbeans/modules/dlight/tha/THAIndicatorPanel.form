@@ -94,6 +94,7 @@
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="contentAreaFilled" type="boolean" value="false"/>
+        <Property name="name" type="java.lang.String" value="deadlocksDetails" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="racesDetails">
@@ -109,6 +110,7 @@
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="contentAreaFilled" type="boolean" value="false"/>
+        <Property name="name" type="java.lang.String" value="racesDetails" noResource="true"/>
       </Properties>
     </Component>
   </SubComponents>

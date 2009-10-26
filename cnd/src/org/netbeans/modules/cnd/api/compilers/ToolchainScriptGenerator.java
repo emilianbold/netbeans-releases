@@ -117,11 +117,11 @@ final class ToolchainScriptGenerator {
         line("for f in $PATHSLIST; do"); // NOI18N
         line("  line="); // NOI18N
         line("  flavor="); // NOI18N
-        line("  echo $f | egrep -s -e \"^/\""); // NOI18N
+        line("  echo $f | egrep -e \"^/\" >/dev/null"); // NOI18N
         line("  if [ \"$?\" != \"0\" ]; then"); // NOI18N
         line("    continue  # skip relative directories"); // NOI18N
         line("  fi"); // NOI18N
-        line("  echo $f | egrep -s -e \"^/usr/ucb\""); // NOI18N
+        line("  echo $f | egrep -e \"^/usr/ucb\" >/dev/null"); // NOI18N
         line("  if [ \"$?\" = \"0\" ]; then"); // NOI18N
         line("    continue  # skip /usr/ucb (IZ #142780)"); // NOI18N
         line("  fi"); // NOI18N
@@ -145,7 +145,7 @@ final class ToolchainScriptGenerator {
             line("while [ ! -n \"$status\" ]; do"); // NOI18N
             if (c.getPathPattern() != null) {
                 // todo windows use case insensitive regexp
-                line("  echo $f | egrep -s -e \""+c.getPathPattern()+"\""); // NOI18N
+                line("  echo $f | egrep -e \""+c.getPathPattern()+"\" >/dev/null"); // NOI18N
                 line("  status=$?"); // NOI18N
                 line("  if [ ! \"$status\" = \"0\" ]; then"); // NOI18N
                 if (c.getExistFolder() == null) {
@@ -169,7 +169,7 @@ final class ToolchainScriptGenerator {
             }
             line("  fi"); // NOI18N
             if (c.getVersionFlags() != null && c.getVersionPattern() != null){
-                line("  $file "+c.getVersionFlags()+" 2>&1 | egrep -s -e \""+c.getVersionPattern()+"\""); // NOI18N
+                line("  $file "+c.getVersionFlags()+" 2>&1 | egrep -e \""+c.getVersionPattern()+"\" >/dev/null"); // NOI18N
                 line("  status=$?"); // NOI18N
                 line("  if [ ! \"$status\" = \"0\" ]; then"); // NOI18N
                 line("    break"); // NOI18N
