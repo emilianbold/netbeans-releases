@@ -256,56 +256,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue168908.php");
     }
 
-    /**
-     * issue 146247 there are 4 cases to be tested 
-     * @throws Exception
-     */
-    public void test146247_1_stableFixed() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_1.php");
-    }
-    public void test146247_2_stableFixed() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_2.php");
-    }
-    public void test146247_3_stableFixed() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_3.php");
-    }
-    public void test146247_4_stableFixed() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_4.php");
-    }
-
-    /**
-     * 173966 issue - a regression from 146247
-     * @throws Exception
-     */
-    public void test173966_regression() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/regressions/173966.php");
-    }
-
-    /**
-     * 167087 issue
-     * @throws Exceptioneviem
-     */
-    public void test167087_stableFixed() throws Exception {
-        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/167087.php");
-    }
-
-    /**
-     * 173900 issue
-     * @throws Exception
-     */
-//    public void test173900() throws Exception {
-//        testIndentInFile("testfiles/indent/qa/issues/173900.php");
-//    }
-
-    /**
-     * 173937 issue
-     * @throws
-     */
-    public void test173937_1_stableFixed() throws Exception {
-        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173937_1.php");
-    }
-    
-    public void test173979_1_stableFixed() throws Exception {
+   public void test173979_1_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/issue173979_1.php");
     }
 
