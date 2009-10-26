@@ -52,9 +52,11 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.netbeans.core.windows.*;
+import org.netbeans.junit.MockServices;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.test.MockLookup;
 
 /**
  * Tests SaveAsAction.
@@ -62,6 +64,9 @@ import org.openide.util.lookup.InstanceContent;
  * @author S. Aubrecht
  */
 public class SaveAsActionTest extends NbTestCase {
+    static {
+        MockLookup.setInstances(new WindowManagerImpl());
+    }
     
     private TopComponent editorWithSaveAs;
     private TopComponent editorWithoutSaveAs;
@@ -75,6 +80,7 @@ public class SaveAsActionTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         Lookup editorLkp = Lookups.fixed( new SaveAsCapable() {
             public void saveAs(FileObject folder, String name) throws IOException {
@@ -114,6 +120,7 @@ public class SaveAsActionTest extends NbTestCase {
         assertTrue( viewMode.getOpenedTopComponents().contains( viewWithoutSaveAs ) );
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
