@@ -54,7 +54,9 @@ import org.openide.util.actions.SystemAction;
  *
  * @author ak119685
  */
-public class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, ComponentListener, MouseMotionListener {
+public class AnnotationBar extends JComponent implements Accessible, 
+        PropertyChangeListener, DocumentListener, ChangeListener,
+        ActionListener, ComponentListener, MouseMotionListener {
 
     //TestAnnotationsPanel mainPanel = new TestAnnotationsPanel();
     /**
