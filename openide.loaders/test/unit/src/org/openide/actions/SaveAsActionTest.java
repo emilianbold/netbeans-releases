@@ -44,6 +44,7 @@ package org.openide.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -51,12 +52,11 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
-import org.netbeans.core.windows.*;
-import org.netbeans.junit.MockServices;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.test.MockLookup;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 /**
  * Tests SaveAsAction.
@@ -65,7 +65,7 @@ import org.openide.util.test.MockLookup;
  */
 public class SaveAsActionTest extends NbTestCase {
     static {
-        MockLookup.setInstances(new WindowManagerImpl());
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     
     private TopComponent editorWithSaveAs;
@@ -74,13 +74,14 @@ public class SaveAsActionTest extends NbTestCase {
     private TopComponent viewWithSaveAs;
     private TopComponent viewWithoutSaveAs;
     
-    private ModeImpl editorMode;
+    private Mode editorMode;
     
     public SaveAsActionTest(String name) {
         super(name);
     }
     
     @Override
+    @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
         Lookup editorLkp = Lookups.fixed( new SaveAsCapable() {
             public void saveAs(FileObject folder, String name) throws IOException {
@@ -93,15 +94,19 @@ public class SaveAsActionTest extends NbTestCase {
             }
         });
         editorWithSaveAs = new TopComponent( editorLkp );
+        editorWithSaveAs.setName("editorWithSaveAs");
         editorWithoutSaveAs = new TopComponent();
+        editorWithoutSaveAs.setName("editorWithoutSaveAs");
         
         viewWithSaveAs = new TopComponent( viewLkp );
+        viewWithSaveAs.setName("viewWithSaveAs");
         viewWithoutSaveAs = new TopComponent();
+        viewWithoutSaveAs.setName("viewWithoutSaveAs");
         
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        WindowManager wm = WindowManager.getDefault();
         
-        editorMode = wm.createMode("_my_editor_mode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
-        ModeImpl viewMode = wm.createMode("_my_view_mode", Constants.MODE_KIND_VIEW, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
+        editorMode = wm.getCurrentWorkspace().createMode("editor", null, null);
+        Mode viewMode = wm.getCurrentWorkspace().createMode("view", null, null);
         
         editorMode.dockInto( editorWithSaveAs );
         editorMode.dockInto( editorWithoutSaveAs );
@@ -114,10 +119,17 @@ public class SaveAsActionTest extends NbTestCase {
         viewWithSaveAs.open();
         viewWithoutSaveAs.open();
         
-        assertTrue( editorMode.getOpenedTopComponents().contains( editorWithSaveAs ) );
-        assertTrue( editorMode.getOpenedTopComponents().contains( editorWithoutSaveAs ) );
-        assertTrue( viewMode.getOpenedTopComponents().contains( viewWithSaveAs ) );
-        assertTrue( viewMode.getOpenedTopComponents().contains( viewWithoutSaveAs ) );
+        assertTrue(Arrays.asList(wm.getOpenedTopComponents(editorMode)).contains(editorWithSaveAs));
+        assertTrue(Arrays.asList(wm.getOpenedTopComponents(editorMode)).contains(editorWithoutSaveAs));
+        assertTrue(Arrays.asList(wm.getOpenedTopComponents(viewMode)).contains(viewWithSaveAs));
+        assertTrue(Arrays.asList(wm.getOpenedTopComponents(viewMode)).contains(viewWithoutSaveAs));
+    }
+
+    protected @Override void tearDown() throws Exception {
+        editorWithSaveAs.close();
+        editorWithoutSaveAs.close();
+        viewWithSaveAs.close();
+        viewWithoutSaveAs.close();
     }
     
     @Override
@@ -161,7 +173,9 @@ public class SaveAsActionTest extends NbTestCase {
         };
         
         action.addPropertyChangeListener( l );
+        /* No apparent reason for this; isEnabled notes isDirty is true, and there is no active component:
         assertTrue( "action will not refresh its state when it has no registered listener", action.isEnabled() );
+         */
         
         editorWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
@@ -198,7 +212,8 @@ public class SaveAsActionTest extends NbTestCase {
         TopComponent tc = new TopComponent( lkp );
         editorMode.dockInto( tc );
         tc.open();
-        assertTrue( editorMode.getOpenedTopComponents().contains( tc ) );
+        tc.requestActive();
+        assertTrue(Arrays.asList(WindowManager.getDefault().getOpenedTopComponents(editorMode)).contains(tc));
         
         ContextAwareAction action = SaveAsAction.create();
         assertFalse( "action is disabled for editor windows without SaveAsCapable in their Lookup", action.isEnabled() );
