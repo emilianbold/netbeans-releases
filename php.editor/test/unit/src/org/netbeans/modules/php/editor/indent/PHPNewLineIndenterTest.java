@@ -139,6 +139,106 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
     public void testArrays3() throws Exception{
         testIndentInFile("testfiles/indent/arrays3.php");
     }
+
+    public void testArrays4() throws Exception{
+        testIndentInFile("testfiles/indent/arrays4.php");
+    }
+    
+    public void testArrays5() throws Exception{
+        testIndentInFile("testfiles/indent/arrays5.php");
+    }
+
+    public void testArrays6() throws Exception{
+        testIndentInFile("testfiles/indent/arrays6.php");
+    }
+
+    public void testArrays7() throws Exception{
+        testIndentInFile("testfiles/indent/arrays7.php");
+    }
+
+    public void testArrays8() throws Exception{
+        testIndentInFile("testfiles/indent/arrays8.php");
+    }
+
+    public void testArrays9() throws Exception{
+        testIndentInFile("testfiles/indent/arrays9.php");
+    }
+
+    public void testArrays10() throws Exception{
+        testIndentInFile("testfiles/indent/arrays10.php");
+    }
+
+    public void testArrays11() throws Exception{
+        testIndentInFile("testfiles/indent/arrays11.php");
+    }
+
+    public void testArrays12() throws Exception{
+        testIndentInFile("testfiles/indent/arrays12.php");
+    }
+
+    public void testArrays13() throws Exception{
+        testIndentInFile("testfiles/indent/arrays13.php");
+    }
+
+    public void testArrays14() throws Exception{
+        testIndentInFile("testfiles/indent/arrays14.php");
+    }
+
+    public void testArrays15() throws Exception{
+        testIndentInFile("testfiles/indent/arrays15.php");
+    }
+
+    public void testArrays16() throws Exception{
+        testIndentInFile("testfiles/indent/arrays16.php");
+    }
+
+    public void testArrays17() throws Exception{
+        testIndentInFile("testfiles/indent/arrays17.php");
+    }
+
+    public void testArrays18() throws Exception{
+        testIndentInFile("testfiles/indent/arrays18.php");
+    }
+
+    public void testArrays19() throws Exception{
+        testIndentInFile("testfiles/indent/arrays19.php");
+    }
+
+    public void testArrays20() throws Exception{
+        testIndentInFile("testfiles/indent/arrays20.php");
+    }
+
+    public void testArrays21() throws Exception{
+        testIndentInFile("testfiles/indent/arrays21.php");
+    }
+
+    public void testArrays22() throws Exception{
+        testIndentInFile("testfiles/indent/arrays22.php");
+    }
+
+    public void testArrays23() throws Exception{
+        testIndentInFile("testfiles/indent/arrays23.php");
+    }
+
+    public void testArrays24() throws Exception{
+        testIndentInFile("testfiles/indent/arrays24.php");
+    }
+
+    public void testArrays25() throws Exception{
+        testIndentInFile("testfiles/indent/arrays25.php");
+    }
+
+    public void testArrays26() throws Exception{
+        testIndentInFile("testfiles/indent/arrays26.php");
+    }
+
+    public void testArrays27() throws Exception{
+        testIndentInFile("testfiles/indent/arrays27.php");
+    }
+
+    public void testArrays28() throws Exception{
+        testIndentInFile("testfiles/indent/arrays28.php");
+    }
     
     public void test157137() throws Exception{
         testIndentInFile("testfiles/indent/issue157137.php");
