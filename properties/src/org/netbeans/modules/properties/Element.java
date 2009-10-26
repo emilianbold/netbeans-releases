@@ -336,6 +336,9 @@ public abstract class Element implements Serializable {
                 if (c < 0x20) {
                     Basic.appendIsoControlChar(buf, c);
                 } else {
+                    if (c == '\\') {
+                        buf.append('\\');
+                    }
                     buf.append(c);
                 }
             }
