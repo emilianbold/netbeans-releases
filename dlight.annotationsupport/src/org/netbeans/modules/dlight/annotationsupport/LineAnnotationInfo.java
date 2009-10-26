@@ -200,7 +200,7 @@ public final class LineAnnotationInfo {
                 return "";
             }
             StringBuilder sb = new StringBuilder();
-            sb.append("<html><body>");
+            sb.append("<html><body>");//NOI18N
             int i = 0;
 
             for (String col : getFileAnnotationInfo().getColumnNames()) {
@@ -210,7 +210,7 @@ public final class LineAnnotationInfo {
                 sb.append(col).append(':').append(notFormatedColumns[i]);
                 i++;
             }
-            sb.append("</body></html>");
+            sb.append("</body></html>");//NOI18N
             tooltip = sb.toString();
         }
         return tooltip;
