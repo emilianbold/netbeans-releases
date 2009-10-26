@@ -548,7 +548,7 @@ public class WsValidation extends WebServicesTestBase {
                 "testWsHandlers",
                 "testDeployWsProject",
                 "testTestWS",
-                "testGenerateWrapper",
+// IZ# 175453               "testGenerateWrapper",
                 "testGenerateWSDL",
                 "testDeployWsProject",
                 "testCreateWsClient",
