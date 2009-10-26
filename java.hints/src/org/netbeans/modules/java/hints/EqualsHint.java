@@ -179,7 +179,7 @@ public class EqualsHint extends AbstractHint {
             if (getErasure(getPreferences(null))) {
                 Types types = info.getTypes();
                 parameter = types.erasure(parameter);
-                invokedOn = info.getTypes().erasure(invokedOn);
+                invokedOn = types.erasure(invokedOn);
             }
             boolean castable = info.getTypeUtilities().isCastable(invokedOn, parameter) || info.getTypeUtilities().isCastable(parameter, invokedOn);
 
