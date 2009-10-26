@@ -2,8 +2,7 @@
 function test() {
   do {
     echo "test";
-  } 
-  while ($condition);
+  } while ($condition);
   
 }
 ?>
