@@ -245,7 +245,7 @@ public class VariablesTestCase extends GdbTestCase {
                 "C",
                 null,
                 null,
-                "Type B has no component named C"
+                "class C {\\n  public:\\n    int e;\\n}\\n"
                 );
 
         // Should have 2 fields
@@ -253,6 +253,7 @@ public class VariablesTestCase extends GdbTestCase {
         assertEquals("<Base class>", var.getFields()[0].getName());
         assertEquals(1, ((AbstractVariable)var.getFields()[0]).getFields().length);
         assertEquals("e", ((AbstractVariable)var.getFields()[0]).getFields()[0].getName());
+        assertEquals("int", ((AbstractVariable)var.getFields()[0]).getFields()[0].getType());
     }
 
     @Test
@@ -272,7 +273,7 @@ public class VariablesTestCase extends GdbTestCase {
                 "C",
                 null,
                 null,
-                "Type B has no component named C"
+                "class C {\\n  public:\\n    double e;\\n}\\n"
                 );
 
         // Should have 2 fields
@@ -280,6 +281,7 @@ public class VariablesTestCase extends GdbTestCase {
         assertEquals("<Base class>", var.getFields()[0].getName());
         assertEquals(1, ((AbstractVariable)var.getFields()[0]).getFields().length);
         assertEquals("e", ((AbstractVariable)var.getFields()[0]).getFields()[0].getName());
+        assertEquals("double", ((AbstractVariable)var.getFields()[0]).getFields()[0].getType());
     }
 
     @Test
