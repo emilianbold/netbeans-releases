@@ -1156,6 +1156,7 @@ public class MakeActionProvider implements ActionProvider {
         Tool fTool = cs.getTool(Tool.FortranCompiler);
         Tool asTool = cs.getTool(Tool.Assembler);
         Tool makeTool = cs.getTool(Tool.MakeTool);
+        Tool qmakeTool = cs.getTool(Tool.QMakeTool);
 
         if (cancelled.get()) {
             return false;
@@ -1201,6 +1202,9 @@ public class MakeActionProvider implements ActionProvider {
         }
         if (asRequired && !exists(asTool.getPath(), pi)) {
             //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            runBTA = true;
+        }
+        if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
             runBTA = true;
         }
 
