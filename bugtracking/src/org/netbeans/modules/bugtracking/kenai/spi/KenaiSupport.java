@@ -53,6 +53,11 @@ import org.netbeans.modules.kenai.api.KenaiProject;
  */
 public abstract class KenaiSupport {
 
+    public enum BugtrackingType {
+        BUGZILLA,
+        JIRA
+    }
+    
     /**
      * Creates a {@link Repository} for the given {@link KenaiProject}
      *
@@ -74,5 +79,20 @@ public abstract class KenaiSupport {
      * @return
      */
     public abstract Query getAllIssuesQuery(Repository repository);
+
+    /**
+     * Returns the default "My Issues" query for the given repository
+     *
+     * @return
+     */
+    public abstract Query getMyIssuesQuery(Repository repository);
+
+    /**
+     * Determines the
+     *
+     * @return
+     */
+    public abstract BugtrackingType getType();
+
 
 }

@@ -1001,9 +1001,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         String issuesUrl = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_ISSUES_URL);
         if (issuesUrl == null || "".equals(issuesUrl.trim())) { // NOI18N
             // external issues tracking url will be empty by default
-            setRepoUrl(""); // NOI18N
+            setIssuesUrl(""); // NOI18N
         } else {
-            setRepoUrl(issuesUrl);
+            setIssuesUrl(issuesUrl);
         }
 
         Boolean createChat = (Boolean) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_CREATE_CHAT);
