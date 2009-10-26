@@ -46,13 +46,10 @@ package org.netbeans.modules.dlight.toolsui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -323,6 +320,7 @@ public class ToolsManagerPanel extends PanelWithApply {
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
         Object item = profileConfigurationComboBox.getSelectedItem();
         if (item instanceof String && ((String) item).equals(manageConfigurations)) {
+            profileConfigurationComboBox.hidePopup();
             MyListEditorPanel listEditorPanel = new MyListEditorPanel(dLightConfigurations);
 
             DialogDescriptor descriptor = new DialogDescriptor(listEditorPanel, getString("TXT_ConfigurationsCustomizer"));
