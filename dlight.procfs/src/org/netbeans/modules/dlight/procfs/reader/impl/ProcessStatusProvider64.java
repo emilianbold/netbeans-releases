@@ -38,59 +38,70 @@
  */
 package org.netbeans.modules.dlight.procfs.reader.impl;
 
-import java.util.List;
-import org.netbeans.modules.dlight.procfs.api.LWPUsage;
-import org.netbeans.modules.dlight.procfs.api.PStatus;
-import org.netbeans.modules.dlight.procfs.api.PUsage;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.dlight.procfs.api.PStatus;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
-public class LocalProcReader extends ProcReaderImpl {
+/**
+ *
+ * @author ak119685
+ */
+public class ProcessStatusProvider64 implements ProcessStatusProvider {
 
-    private final File usageFile;
-    private final File statusFile;
-    private final File lwpDir;
+    private final NativeProcessBuilder npb;
+    private final Pattern lwpPattern;
+    private final PStatus.PIDInfo pidInfo;
 
-    public LocalProcReader(int pid, ByteOrder byteOrder, DataModel dataModel) {
-        super(byteOrder, dataModel);
-        usageFile = new File("/proc/" + pid + "/usage"); // NOI18N
-        statusFile = new File("/proc/" + pid + "/status"); // NOI18N
-        lwpDir = new File("/proc/" + pid + "/lwp"); // NOI18N
+    public ProcessStatusProvider64(ExecutionEnvironment execEnv, int pid) {
+        npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+        npb.setExecutable("/bin/pflags").setArguments("" + pid); // NOI18N
+        lwpPattern = Pattern.compile("^[\t ]+\\/([0-9]+):.*"); // NOI18N
+        pidInfo = new PStatus.PIDInfo(pid) {
+        };
     }
 
     public PStatus getProcessStatus() {
         PStatus status = null;
+
         try {
-            status = getProcessStatus(new FileInputStream(statusFile));
+            final Process p = npb.call();
+            final List<String> lines = ProcessUtils.readProcessOutput(p);
+            int count = 0;
+            for (String line : lines) {
+                Matcher m = lwpPattern.matcher(line);
+                if (m.matches()) {
+                    count++;
+                }
+            }
+
+            int rc = -1;
+
+            try {
+                rc = p.waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            if (rc == 0) {
+                final int pr_nlwp = count;
+                status = new PStatus() {
+
+                    public ThreadsInfo getThreadInfo() {
+                        return new ThreadsInfo(pr_nlwp, 0) {
+                        };
+                    }
+
+                    public PIDInfo getPIDInfo() {
+                        return pidInfo;
+                    }
+                };
+            }
         } catch (IOException ex) {
         }
         return status;
-    }
-
-    public PUsage getProcessUsage() throws IOException {
-        return getProcessUsage(new FileInputStream(usageFile));
-    }
-
-    public List<LWPUsage> getThreadsInfo() {
-        List<LWPUsage> result = new ArrayList<LWPUsage>();
-
-        String[] lwps = lwpDir.list();
-
-        if (lwps == null) {
-            return result;
-        }
-
-        for (String lwp : lwps) {
-            try {
-                result.add(getProcessUsage(new FileInputStream(new File(lwpDir, lwp + "/lwpusage")))); // NOI18N
-            } catch (IOException ex) {
-                // ignore...
-            }
-        }
-
-        return result;
     }
 }

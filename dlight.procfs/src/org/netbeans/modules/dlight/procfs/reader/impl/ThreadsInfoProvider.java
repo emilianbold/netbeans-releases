@@ -38,59 +38,15 @@
  */
 package org.netbeans.modules.dlight.procfs.reader.impl;
 
+import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.dlight.procfs.api.LWPUsage;
-import org.netbeans.modules.dlight.procfs.api.PStatus;
-import org.netbeans.modules.dlight.procfs.api.PUsage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
 
-public class LocalProcReader extends ProcReaderImpl {
+/**
+ *
+ * @author ak119685
+ */
+public interface ThreadsInfoProvider {
 
-    private final File usageFile;
-    private final File statusFile;
-    private final File lwpDir;
-
-    public LocalProcReader(int pid, ByteOrder byteOrder, DataModel dataModel) {
-        super(byteOrder, dataModel);
-        usageFile = new File("/proc/" + pid + "/usage"); // NOI18N
-        statusFile = new File("/proc/" + pid + "/status"); // NOI18N
-        lwpDir = new File("/proc/" + pid + "/lwp"); // NOI18N
-    }
-
-    public PStatus getProcessStatus() {
-        PStatus status = null;
-        try {
-            status = getProcessStatus(new FileInputStream(statusFile));
-        } catch (IOException ex) {
-        }
-        return status;
-    }
-
-    public PUsage getProcessUsage() throws IOException {
-        return getProcessUsage(new FileInputStream(usageFile));
-    }
-
-    public List<LWPUsage> getThreadsInfo() {
-        List<LWPUsage> result = new ArrayList<LWPUsage>();
-
-        String[] lwps = lwpDir.list();
-
-        if (lwps == null) {
-            return result;
-        }
-
-        for (String lwp : lwps) {
-            try {
-                result.add(getProcessUsage(new FileInputStream(new File(lwpDir, lwp + "/lwpusage")))); // NOI18N
-            } catch (IOException ex) {
-                // ignore...
-            }
-        }
-
-        return result;
-    }
+    public abstract List<LWPUsage> getThreadsInfo() throws IOException;
 }

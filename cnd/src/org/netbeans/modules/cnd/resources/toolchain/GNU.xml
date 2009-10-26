@@ -45,6 +45,13 @@ made subject to such option by the copyright holder.
     <toolchain name="GNU" display="GNU Compiler Collection" family="GNU" qmakespec="${os}-g++"/>
     <platforms stringvalue="linux,unix,none"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
+    <default_locations>
+        <platform os="linux" directory="/usr/bin"/>
+        <platform os="sun_intel" directory="/opt/sfw/bin"/>
+        <platform os="sun_intel" directory="/usr/sfw/bin"/>
+        <platform os="sun_sparc" directory="/opt/sfw/bin"/>
+        <platform os="sun_sparc" directory="/usr/sfw/bin"/>
+    </default_locations>
     <drive_letter_prefix stringvalue="/"/>
     <c>
         <compiler name="gcc"/>
