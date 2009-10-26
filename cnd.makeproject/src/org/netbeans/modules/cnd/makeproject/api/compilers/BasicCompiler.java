@@ -163,22 +163,19 @@ public abstract class BasicCompiler extends Tool {
         return false;
     }
 
-    protected void normalizePaths(List<String> paths) {
+    protected final void normalizePaths(List<String> paths) {
         for (int i = 0; i < paths.size(); i++) {
             paths.set(i, normalizePath(paths.get(i)));
         }
     }
 
     protected String normalizePath(String path) {
-        if (getExecutionEnvironment().isLocal()) {
-            return CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
-        } else {
-            // TODO: remote paths would love to be normalized too
-            return path;
-        }
+        // this call also fixes inambiguties at case insensitive systems when work
+        // with case sensitive "path"s returned by remote compilers
+        return CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
     }
 
-    protected String applyPathPrefix(String path) {
+    protected final String applyPathPrefix(String path) {
         String prefix = getIncludeFilePathPrefix();
         return normalizePath( prefix != null ? prefix + path : path );
     }

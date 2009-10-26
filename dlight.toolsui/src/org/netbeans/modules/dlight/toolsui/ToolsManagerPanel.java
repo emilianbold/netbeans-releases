@@ -46,13 +46,10 @@ package org.netbeans.modules.dlight.toolsui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -287,49 +284,43 @@ public class ToolsManagerPanel extends PanelWithApply {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(profileConfigurationLabel)
-                        .add(4, 4, 4)
-                        .add(profileConfigurationComboBox, 0, 518, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(profileConfigurationComboBox, 0, 476, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(toolsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 300, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(toolsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 288, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(detailsLabel)
-                                .add(182, 182, 182))
-                            .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)))
+                            .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                            .add(detailsLabel)))
                     .add(toolsLabel))
-                .add(12, 12, 12))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(38, 38, 38)
-                        .add(toolsLabel))
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(profileConfigurationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(profileConfigurationLabel))))
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(profileConfigurationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(profileConfigurationLabel))
+                .add(1, 1, 1)
+                .add(toolsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(detailsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
-                    .add(toolsList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
-                .add(12, 12, 12))
+                    .add(toolsList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                    .add(detailsLabel))
+                .add(21, 21, 21))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void profileConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_profileConfigurationComboBoxActionPerformed
         Object item = profileConfigurationComboBox.getSelectedItem();
         if (item instanceof String && ((String) item).equals(manageConfigurations)) {
+            profileConfigurationComboBox.hidePopup();
             MyListEditorPanel listEditorPanel = new MyListEditorPanel(dLightConfigurations);
 
             DialogDescriptor descriptor = new DialogDescriptor(listEditorPanel, getString("TXT_ConfigurationsCustomizer"));
@@ -395,7 +386,7 @@ public class ToolsManagerPanel extends PanelWithApply {
             newName = newName.replace("/", "_FSLASH_"); // NOI18N
             newName = newName.replace("\\", "_BSLASH_"); // NOI18N
             newName = newName.replace(".", "_DOT_"); // NOI18N
-            return newName;
+            return newName.trim();
         }
 
         private DLightConfigurationUIWrapper findDLightConfigurationUIWrapper(String name) {
@@ -438,7 +429,8 @@ public class ToolsManagerPanel extends PanelWithApply {
                 return;
             }
             String newDisplayName = notifyDescriptor.getInputText();
-            if (newDisplayName.length() == 0) {
+            newDisplayName = newDisplayName.trim();
+            if (newDisplayName.trim().length() == 0) {
                 newDisplayName = o.getDisplayName();
             } else {
                 newDisplayName = makeNameUnique(newDisplayName);

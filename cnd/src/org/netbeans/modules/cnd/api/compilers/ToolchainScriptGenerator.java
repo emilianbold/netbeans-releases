@@ -56,7 +56,7 @@ final class ToolchainScriptGenerator {
             "PLATFORM_SOLARIS_SPARC", // NOI18N
             "PLATFORM_SOLARIS_INTEL", // NOI18N
             "PLATFORM_LINUX", // NOI18N
-            "PLATFORM_WINDOWS", // NOI18N
+            //"PLATFORM_WINDOWS", // NOI18N // not supported yet
             "PLATFORM_MACOSX", // NOI18N
             "PLATFORM_NONE" // NOI18N
     };
@@ -64,7 +64,7 @@ final class ToolchainScriptGenerator {
             PlatformTypes.PLATFORM_SOLARIS_SPARC,
             PlatformTypes.PLATFORM_SOLARIS_INTEL,
             PlatformTypes.PLATFORM_LINUX,
-            PlatformTypes.PLATFORM_WINDOWS,
+            //PlatformTypes.PLATFORM_WINDOWS, // not supported yet
             PlatformTypes.PLATFORM_MACOSX,
             PlatformTypes.PLATFORM_NONE
     };
@@ -77,7 +77,6 @@ final class ToolchainScriptGenerator {
         ToolchainScriptGenerator generator = new ToolchainScriptGenerator();
         generator.prefix(path);
         generator.scanPaths();
-        generator.printSets();
         return generator.buf.toString();
     }
 
@@ -89,7 +88,7 @@ final class ToolchainScriptGenerator {
         } else {
             line("echo $PLATFORM_NAME"); // NOI18N
             for(int i = 0; i < platforms.length; i++) {
-                line("if [ \"$PLATFORM\" == \"$"+platforms[i]+"\" ]; then"); // NOI18N
+                line("if [ \"$PLATFORM\" = \"$"+platforms[i]+"\" ]; then"); // NOI18N
                 if (platformsID[i] == PlatformTypes.PLATFORM_WINDOWS) {
                     line("PATH=$PATH;C:/WINDOWS/System32;C:/WINDOWS;C:/WINDOWS/System32/WBem"); // NOI18N
                 } else if (platformsID[i] != PlatformTypes.PLATFORM_NONE) {
@@ -106,23 +105,24 @@ final class ToolchainScriptGenerator {
             }
             line("PATHSLIST=$PATH"); // NOI18N
         }
-        line("if [ \"$PLATFORM\" == \"$PLATFORM_WINDOWS\" ]; then"); // NOI18N
+        line("if [ \"$PLATFORM\" = \"$PLATFORM_WINDOWS\" ]; then"); // NOI18N
         line(" IFS=;"); // NOI18N
         line("else"); // NOI18N
         line(" IFS=:"); // NOI18N
         line("fi"); // NOI18N
-        line("declare -a cset=('')"); // NOI18N
-        line("declare i=0"); // NOI18N
+        line("foundFlavors=\";\""); // NOI18N
     }
 
     private void scanPaths(){
         line("for f in $PATHSLIST; do"); // NOI18N
         line("  line="); // NOI18N
         line("  flavor="); // NOI18N
-        line("  if [ \"${f:0:1}\" != \"/\" ]; then"); // NOI18N
+        line("  echo $f | egrep -s -e \"^/\""); // NOI18N
+        line("  if [ \"$?\" != \"0\" ]; then"); // NOI18N
         line("    continue  # skip relative directories"); // NOI18N
         line("  fi"); // NOI18N
-        line("  if [ \"${f:0:8}\" = \"/usr/ucb\" ]; then"); // NOI18N
+        line("  echo $f | egrep -s -e \"^/usr/ucb\""); // NOI18N
+        line("  if [ \"$?\" = \"0\" ]; then"); // NOI18N
         line("    continue  # skip /usr/ucb (IZ #142780)"); // NOI18N
         line("  fi"); // NOI18N
         scanPath();
@@ -130,7 +130,7 @@ final class ToolchainScriptGenerator {
     }
     private void scanPath(){
         for(int i = 0; i < platforms.length; i++) {
-            line("if [ \"$PLATFORM\" == \"$"+platforms[i]+"\" ]; then"); // NOI18N
+            line("if [ \"$PLATFORM\" = \"$"+platforms[i]+"\" ]; then"); // NOI18N
             platformPath(platformsID[i]);
             line("fi"); // NOI18N
         }
@@ -147,7 +147,7 @@ final class ToolchainScriptGenerator {
                 // todo windows use case insensitive regexp
                 line("  echo $f | egrep -s -e \""+c.getPathPattern()+"\""); // NOI18N
                 line("  status=$?"); // NOI18N
-                line("  if [ ! \"$status\" == \"0\" ]; then"); // NOI18N
+                line("  if [ ! \"$status\" = \"0\" ]; then"); // NOI18N
                 if (c.getExistFolder() == null) {
                     line("    break"); // NOI18N
                 } else {
@@ -171,7 +171,7 @@ final class ToolchainScriptGenerator {
             if (c.getVersionFlags() != null && c.getVersionPattern() != null){
                 line("  $file "+c.getVersionFlags()+" 2>&1 | egrep -s -e \""+c.getVersionPattern()+"\""); // NOI18N
                 line("  status=$?"); // NOI18N
-                line("  if [ ! \"$status\" == \"0\" ]; then"); // NOI18N
+                line("  if [ ! \"$status\" = \"0\" ]; then"); // NOI18N
                 line("    break"); // NOI18N
                 line("  fi"); // NOI18N
             }
@@ -244,17 +244,6 @@ final class ToolchainScriptGenerator {
         }
     }
 
-    void printSets(){
-        line("# Print the set of compiler collections, one per line"); // NOI18N
-        line("if [ -n \"${cset[*]}\" ]; then"); // NOI18N
-        line("  j=0"); // NOI18N
-        line("  while [ $j -lt $i ]; do"); // NOI18N
-        line("    echo \"${cset[$j]}\""); // NOI18N
-        line("    j=$((j+1))"); // NOI18N
-        line("  done"); // NOI18N
-        line("fi"); // NOI18N
-    }
-
     private void lines(String lines){
         StringTokenizer st = new StringTokenizer(lines,"\n"); // NOI18N
         while(st.hasMoreTokens()) {
@@ -266,7 +255,7 @@ final class ToolchainScriptGenerator {
     private void line(String line){
         String l = line.trim();
         if (TRACE) {
-            if (l.equals("fi") || l.equals("done") || l.equals("else") || l.endsWith("}")){ // NOI18N
+            if (l.equals("fi") || l.equals("done") || l.equals("else") || l.equals("}")){ // NOI18N
                 level--;
             }
             if (level >= 0) {
