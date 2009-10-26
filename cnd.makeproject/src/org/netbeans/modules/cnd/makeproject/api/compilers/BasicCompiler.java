@@ -169,7 +169,7 @@ public abstract class BasicCompiler extends Tool {
         }
     }
 
-    protected final String normalizePath(String path) {
+    protected String normalizePath(String path) {
         // this call also fixes inambiguties at case insensitive systems when work
         // with case sensitive "path"s returned by remote compilers
         return CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
