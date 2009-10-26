@@ -299,7 +299,7 @@ public final class CreateTestsAction extends NodeAction {
             final File generatedFile = getGeneratedFile(className, parent);
 
             // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpUnit, configFiles, PhpProjectUtils.getFullyQualifiedName(phpProject, phpClass), sourceFo, workingDirectory, paramSkeleton);
+            Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
             try {
                 if (result.get() != 0) {
                     // test not generated
