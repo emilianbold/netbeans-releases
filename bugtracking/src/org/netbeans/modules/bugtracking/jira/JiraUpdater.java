@@ -140,7 +140,7 @@ public class JiraUpdater {
 
         String msg = NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA");              // NOI18N
         if(url != null) {
-            msg += "<br>" + NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA_URL", url);// NOI18N
+            msg += "<div><br>" + NbBundle.getMessage(FakeJiraSupport.class, "MSG_PROJECT_NEEDS_JIRA_URL", url);// NOI18N
         }
         msg = "<html>" + msg + "</body>";                                       // NOI18N                                                             // NOI18N
         
