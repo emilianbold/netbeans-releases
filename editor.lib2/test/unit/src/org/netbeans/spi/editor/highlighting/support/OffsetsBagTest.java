@@ -47,6 +47,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.SimpleAttributeSet;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.lib2.highlighting.OffsetGapList;
 import org.netbeans.spi.editor.highlighting.*;
@@ -81,15 +82,14 @@ public class OffsetsBagTest extends NbTestCase {
     }
 
     public void testRemoveBeyondEnd() throws Exception {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "0123456789", null);
-        OffsetsBag hs = new OffsetsBag(doc);
+        Document d = new PlainDocument();
+        d.insertString(0, "0123456789", null);
+        OffsetsBag hs = new OffsetsBag(d);
         hs.addHighlight(0, 5, EMPTY);
         hs.addHighlight(6, 8, EMPTY);
         assertEquals("Sequence size", 4, hs.getMarks().size());
         hs.removeHighlights(0, 11, false);
-        hs.clear();
-        assertEquals("Sequence was not cleared", 0, hs.getMarks().size());
+        assertEquals("Highlights were not removed", 0, hs.getMarks().size());
     }
 
     public void testAddLeftOverlap() {
@@ -540,6 +540,171 @@ public class OffsetsBagTest extends NbTestCase {
             marks.get(3).getAttributes());
     }
     
+    public void testRemoveHighlights_165270() throws Exception {
+        OffsetsBag hs = new OffsetsBag(doc);
+        hs.addHighlight(5, 10, EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+        hs.removeHighlights(5, 10, true);
+        assertEquals("Highlights were not removed", 0, hs.getMarks().size());
+
+        hs.addHighlight(10, 20, EMPTY);
+        hs.addHighlight(30, 40, EMPTY);
+        hs.addHighlight(50, 60, EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+        hs.removeHighlights(30, 40, true);
+        assertEquals("Highlights were not removed", 4, hs.getMarks().size());
+        assertMarks("Wrong highlights after remove", createOffsetsBag(10, 20, EMPTY, 50, 60, EMPTY), hs);
+    }
+
+    public void testRemoveHighlights_114642() throws Exception {
+        OffsetsBag hs = new OffsetsBag(doc);
+        hs.addHighlight(5, 10, EMPTY);
+        assertEquals("Sequence size", 2, hs.getMarks().size());
+
+        final OffsetsBag expected = createOffsetsBag(5, 10, EMPTY);
+        hs.removeHighlights(1, 5, true);
+        assertMarks("Highlights should not be removed by <1, 5, true>", expected, hs);
+
+        hs.removeHighlights(10, 15, true);
+        assertMarks("Highlights should not be removed <10, 15, true>", expected, hs);
+
+        hs.removeHighlights(1, 5, false);
+        assertMarks("Highlights should not be removed <1, 5, false>", expected, hs);
+
+        hs.removeHighlights(10, 15, false);
+        assertMarks("Highlights should not be removed <10, 15, false>", expected, hs);
+    }
+
+    public void testRemoveHighlights_114642_2() throws Exception {
+        OffsetsBag expected = createOffsetsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        OffsetsBag hs = createOffsetsBag(10, 20, EMPTY, 30, 40, EMPTY, 50, 60, EMPTY);
+        assertEquals("Sequence size", 6, hs.getMarks().size());
+
+        hs.removeHighlights(25, 30, true);
+        assertMarks("Highlights should not be removed <25, 30, true>", expected, hs);
+
+        hs.removeHighlights(40, 45, true);
+        assertMarks("Highlights should not be removed <40, 45, true>", expected, hs);
+
+        hs.removeHighlights(25, 30, false);
+        assertMarks("Highlights should not be removed <25, 30, false>", expected, hs);
+
+        hs.removeHighlights(40, 45, false);
+        assertMarks("Highlights should not be removed <40, 45, false>", expected, hs);
+    }
+
+    public void test158249_AddToRemoveFromLeft() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(3, 4, false);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(2, 3, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(1, 2, false);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(0, 1, false);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromLeftClip() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(3, 4, true);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(2, 3, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(1, 2, true);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(0, 1, true);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRight() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(0, 1, false);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(1, 2, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(2, 3, false);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(3, 4, false);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRightClip() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(0, 1, true);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(1, 2, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(2, 3, true);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(3, 4, true);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddRemove() {
+        OffsetsBag bag = createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(1, 3, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(15, 25, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 10, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(5, 35, false);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddRemoveClip() {
+        OffsetsBag bag = createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(1, 3, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(15, 25, true);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 10, EMPTY, 10, 15, EMPTY, 25, 30, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(5, 35, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 5, EMPTY, 35, 40, EMPTY), bag);
+    }
+
     public void testAddAll() {
         OffsetsBag hsA = new OffsetsBag(doc);
         OffsetsBag hsB = new OffsetsBag(doc);
@@ -685,10 +850,10 @@ public class OffsetsBagTest extends NbTestCase {
     }
 
     public void testDocumentChanges() throws BadLocationException {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
+        Document d = new PlainDocument();
+        d.insertString(0, "01234567890123456789012345678901234567890123456789", SimpleAttributeSet.EMPTY);
         
-        OffsetsBag bag = new OffsetsBag(doc);
+        OffsetsBag bag = new OffsetsBag(d);
         
         SimpleAttributeSet attribsA = new SimpleAttributeSet();
         SimpleAttributeSet attribsB = new SimpleAttributeSet();
@@ -714,7 +879,7 @@ public class OffsetsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", marks.get(2).getAttributes().getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", marks.get(3).getAttributes());
         
-        doc.insertString(12, "----", SimpleAttributeSet.EMPTY);
+        d.insertString(12, "----", SimpleAttributeSet.EMPTY);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -730,7 +895,7 @@ public class OffsetsBagTest extends NbTestCase {
         assertEquals("3. highlight - wrong attribs", "attribsA", marks.get(2).getAttributes().getAttribute("set-name"));
         assertNull("  3. highlight - wrong end", marks.get(3).getAttributes());
         
-        doc.remove(1, 5);
+        d.remove(1, 5);
         
         assertEquals("Wrong number of highlights", 4, marks.size());
         assertEquals("1. highlight - wrong start offset", 0, marks.get(0).getOffset());
@@ -753,5 +918,61 @@ public class OffsetsBagTest extends NbTestCase {
             System.out.println("<" + seq.getStartOffset() + ", " + seq.getEndOffset() + ", " + seq.getAttributes() + ">");
         }
         System.out.println("} --- End of Dumping highlights from: " + seq + " ---------------------");
+    }
+
+    private OffsetsBag createOffsetsBag(Object... triples) {
+        assert triples != null;
+        assert triples.length % 3 == 0;
+
+        OffsetsBag bag = new OffsetsBag(doc);
+        for(int i = 0; i < triples.length / 3; i++) {
+            bag.addHighlight((Integer) triples[3 * i], (Integer) triples[3 * i + 1], (AttributeSet) triples[3 * i + 2]);
+        }
+
+        return bag;
+    }
+
+    private void assertMarks(String message, OffsetsBag expected, OffsetsBag actual) {
+        try {
+            OffsetGapList<OffsetsBag.Mark> expectedMarks = expected.getMarks();
+            OffsetGapList<OffsetsBag.Mark> actualMarks = actual.getMarks();
+            assertEquals("Different number of marks", expectedMarks.size(), actualMarks.size());
+            for(int i = 0; i < expectedMarks.size(); i++) {
+                OffsetsBag.Mark expectedMark = expectedMarks.get(i);
+                OffsetsBag.Mark actualMark = actualMarks.get(i);
+                assertEquals("Different offset at the " + i + "-th mark", expectedMark.getOffset(), actualMark.getOffset());
+                assertSame("Different attributes at the " + i + "-th mark", expectedMark.getAttributes(), actualMark.getAttributes());
+            }
+        } catch (AssertionFailedError afe) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(message);
+            sb.append('\n');
+            sb.append("Expected marks (size=");
+            sb.append(expected.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(expected, sb);
+            sb.append('\n');
+            sb.append("Actual marks (size=");
+            sb.append(actual.getMarks().size());
+            sb.append("):\n");
+            dumpMarks(actual, sb);
+            sb.append('\n');
+
+            AssertionFailedError afe2 = new AssertionFailedError(sb.toString());
+            afe2.initCause(afe);
+            throw afe2;
+        }
+    }
+
+    private StringBuilder dumpMarks(OffsetsBag bag, StringBuilder sb) {
+        for (int i = 0; i < bag.getMarks().size(); i++) {
+            OffsetsBag.Mark mark = bag.getMarks().get(i);
+            sb.append('[').append(i).append("] = ");
+            sb.append('{').append(mark.toString()).append('}');
+            if (i + 1 < bag.getMarks().size()) {
+                sb.append('\n');
+            }
+        }
+        return sb;
     }
 }
