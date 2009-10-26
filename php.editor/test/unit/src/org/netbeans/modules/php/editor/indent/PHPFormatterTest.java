@@ -328,9 +328,16 @@ public class PHPFormatterTest extends PHPTestBase {
      * @throws Exception
      */
     public void test173352_fromQA() throws Exception {
-        reformatFileContents("testfiles/formatting/issue173352.php");
+        reformatFileContents("testfiles/formatting/qa/issues/173352.php");
     }
 
+    /**
+     * issue 174595
+     * @throws Exception
+     */
+    public void test174595_175229() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174595_175229.php");
+    }
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
