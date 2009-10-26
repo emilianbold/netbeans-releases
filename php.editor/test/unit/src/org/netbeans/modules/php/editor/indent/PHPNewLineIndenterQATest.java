@@ -97,9 +97,9 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
      * 173900 issue
      * @throws Exception
      */
-//    public void test173900() throws Exception {
-//        testIndentInFile("testfiles/indent/qa/issues/173900.php");
-//    }
+    public void test173900_regression() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/173900.php");
+    }
 
     /**
      * 173937 issue
