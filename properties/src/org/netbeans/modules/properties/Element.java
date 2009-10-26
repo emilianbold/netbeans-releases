@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -157,9 +157,6 @@ public abstract class Element implements Serializable {
         protected static void appendIsoControlChar(final StringBuilder buf,
                                                    final char c) {
             switch (c) {
-            case '\b':
-                buf.append('\\').append('b');
-                break;
             case '\t':
                 buf.append('\\').append('t');
                 break;
@@ -330,12 +327,30 @@ public abstract class Element implements Serializable {
         private static final String escapeSpecialChars(final String text) {
             StringBuilder buf = new StringBuilder(text.length() + 16);
 
+            boolean isInitialWhitespace = true;
             final int length = text.length();
             for (int i = 0; i < length; i++) {
                 char c = text.charAt(i);
+
+                boolean escape = false;
+                if (c == '\\') {
+                    isInitialWhitespace = false;
+                    escape = true;
+                } else if (isInitialWhitespace) {
+                    if (c == ' ') {
+                        escape = true;
+                    } else {
+                        isInitialWhitespace =    (c == '\t') || (c == '\r')
+                                              || (c == '\n') || (c == '\f');
+                    }
+                }
+
                 if (c < 0x20) {
                     Basic.appendIsoControlChar(buf, c);
                 } else {
+                    if (escape) {
+                        buf.append('\\');
+                    }
                     buf.append(c);
                 }
             }
@@ -387,7 +402,7 @@ public abstract class Element implements Serializable {
                     // new line
                     if (aChar == '\n') {
                         String line = sb.substring(lineStart, i);
-                        String convertedLine = ValueElem.escapeSpecialChars(line);
+                        String convertedLine = escapeSpecialChars(line);
                         sb.replace(lineStart, i, convertedLine);
 
                         // shift the index:
@@ -413,6 +428,29 @@ public abstract class Element implements Serializable {
                 }
                 return sb.toString();
             }
+        }
+
+        /**
+         *
+         * @author  Marian Petras
+         */
+        private static final String escapeSpecialChars(final String text) {
+            StringBuilder buf = new StringBuilder(text.length() + 16);
+
+            final int length = text.length();
+            for (int i = 0; i < length; i++) {
+                char c = text.charAt(i);
+                assert (c != '\n');
+
+                if ((c < 0x20) && (c != '\t')) { // keep tabs un-escaped in comments
+                    Basic.appendIsoControlChar(buf, c);
+                    continue;
+                } else if (c == '\\') {
+                    buf.append('\\');
+                }
+                buf.append(c);
+            }
+            return buf.toString();
         }
 
         @Override
