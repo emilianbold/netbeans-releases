@@ -1957,8 +1957,9 @@ member_declarator
 conversion_function_decl_or_def returns [boolean definition = false]
 	{CPPParser.TypeQualifier tq; }
 	:	// DW 01/08/03 Use type_specifier here? see syntax
-		LITERAL_OPERATOR declaration_specifiers[true, false] (STAR | AMPERSAND)*
-		(LESSTHAN template_parameter_list GREATERTHAN)?
+		LITERAL_OPERATOR declaration_specifiers[true, false]
+                (ptr_operator)*
+                (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list)? RPAREN	
 		(tq = cv_qualifier)?
 		(exception_specification)?
