@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -86,8 +86,9 @@ class DiffNode extends AbstractNode {
         if (status == FileInformation.STATUS_VERSIONED_MERGE) {
             status = FileInformation.STATUS_VERSIONED_CONFLICT;
         }
+        String oldHtmlDisplayName = htmlDisplayName;
         htmlDisplayName = Subversion.getInstance().getAnnotator().annotateNameHtml(setup.getBaseFile().getName(), info, null);
-        fireDisplayNameChange(htmlDisplayName, htmlDisplayName);
+        fireDisplayNameChange(oldHtmlDisplayName, htmlDisplayName);
     }
 
     public String getHtmlDisplayName() {
