@@ -261,16 +261,16 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
      * @throws Exception
      */
     public void test146247_1() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_1.php");
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_1.php");
     }
     public void test146247_2() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_2.php");
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_2.php");
     }
     public void test146247_3() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_3.php");
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_3.php");
     }
     public void test146247_4() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/146247_4.php");
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_4.php");
     }
 
     /**
@@ -278,7 +278,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
      * @throws Exception
      */
     public void test173966() throws Exception{
-        testIndentInFile("testfiles/indent/qa/issues/173966.php");
+        testIndentInFile("testfiles/indent/qa/issues/regressions/173966.php");
     }
 
     /**
@@ -286,7 +286,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
      * @throws Exceptioneviem
      */
     public void test167087() throws Exception {
-        testIndentInFile("testfiles/indent/qa/issues/167087.php");
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/167087.php");
     }
 
     /**
@@ -302,7 +302,7 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
      * @throws
      */
     public void test173937_1() throws Exception {
-        testIndentInFile("testfiles/indent/qa/issues/173937_1.php");
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173937_1.php");
     }
     
     public void test173979_1() throws Exception {
