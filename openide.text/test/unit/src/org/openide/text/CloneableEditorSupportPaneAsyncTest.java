@@ -59,13 +59,12 @@ import org.openide.windows.CloneableTopComponent;
  *
  * @author Jaroslav Tulach
  */
-public class CloneableEditorSupportPaneTest extends NbTestCase implements CloneableEditorSupport.Env {
+public class CloneableEditorSupportPaneAsyncTest extends NbTestCase implements CloneableEditorSupport.Env {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     /** the support to work with */
-    private CloneableEditorSupport support;
-    private CloneableEditorSupport support2;
+    private CES support;
     /** the content of lookup of support */
     private InstanceContent ic;
 
@@ -81,7 +80,7 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
     private java.beans.VetoableChangeListener vetoL;
 
     
-    public CloneableEditorSupportPaneTest(java.lang.String testName) {
+    public CloneableEditorSupportPaneAsyncTest(java.lang.String testName) {
         super(testName);
     }
     
@@ -90,16 +89,15 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorSupportPaneTest.class);
+        TestSuite suite = new NbTestSuite(CloneableEditorSupportPaneAsyncTest.class);
         
         return suite;
     }
     
-
+    @Override
     protected void setUp () {
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));
-        support2 = new CES2(this, new AbstractLookup(new InstanceContent ()));
     }
     
     public void testGetOpenedPanes () throws Exception {
@@ -111,9 +109,22 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         JEditorPane[] panes = support.getOpenedPanes();
         assertNotNull(panes);
         assertEquals(1, panes.length);
-        assertNotNull(instance);
-        assertTrue(instance.activated);
-                
+    }
+    
+    public void testGetOpenedPanesAndClose () throws Exception {
+        content = "Ahoj\nMyDoc";
+        //javax.swing.text.Document doc = support.openDocument ();
+        support.open();
+        JEditorPane[] panes = support.getOpenedPanes();
+        assertNotNull(panes);
+        assertEquals(1, panes.length);
+        CloneableEditor ce = (CloneableEditor) support.getRef().getArbitraryComponent();
+        ce.close();
+        panes = support.getOpenedPanes();
+        support.open();
+        //ce.open();
+        panes = support.getOpenedPanes();
+        JEditorPane pane = ce.getEditorPane();
     }
 
     /** Test with new Line.show API */
@@ -126,69 +137,6 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         JEditorPane[] panes = support.getOpenedPanes();
         assertNotNull(panes);
         assertEquals(1, panes.length);
-        assertNotNull(instance);
-        assertTrue(instance.activated);
-
-    }
-  
-    public void testGetOpenedPanes2ForSeparatePane() throws Exception {
-        content = "Ahoj\nMyDoc";
-        javax.swing.text.Document doc = support2.openDocument ();
-        support2.open();
-        Line line = support2.getLineSet().getCurrent(0);
-        line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE);
-        JEditorPane[] panes = support2.getOpenedPanes();
-        assertNotNull(panes);
-        assertEquals(1, panes.length);
-        assertNotNull(instance2);
-    }
-
-    /** Test with new Line.show API */
-    public void testGetOpenedPanes2ForSeparatePane2() throws Exception {
-        content = "Ahoj\nMyDoc";
-        javax.swing.text.Document doc = support2.openDocument ();
-        support2.open();
-        Line line = support2.getLineSet().getCurrent(0);
-        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.NONE);
-        JEditorPane[] panes = support2.getOpenedPanes();
-        assertNotNull(panes);
-        assertEquals(1, panes.length);
-        assertNotNull(instance2);
-    }
-
-    public void testDocumentSaveCancelledByUser() throws Exception {
-        //register DialogDisplayer which "pushes" Yes option in the document save dialog
-        MockServices.setServices(DD.class);
-        
-        content = "Ahoj\nMyDoc";
-        CloneableEditorSupport sup = new CES3 (this, new AbstractLookup(new InstanceContent ()));
-        javax.swing.text.Document doc = sup.openDocument ();
-        
-        //modify the document
-        doc.insertString(0, "Kuk", null);
-        
-        //open the document
-        sup.open();
-        Line line = sup.getLineSet().getCurrent(0);
-        line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE);
-        
-        //check document opened
-        assertTrue(sup.isDocumentLoaded());
-        
-        //close the document, this should invoke the save dialog, YES option will be choosen.
-        sup.close();
-        
-        //the CES3 implementation of saveDocument() throws UserCancelException so the file is not saved
-        
-        //document still opened
-        assertTrue(sup.isDocumentLoaded());
-        
-    }
-    
-    public void testCreateCloneableTopComponent() throws Exception {
-        CloneableTopComponent comp = support.createCloneableTopComponent();
-        assertNotNull(comp);
-        assertEquals(MyPane.class, comp.getClass());
     }
     
     //
@@ -259,7 +207,6 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
         modified = false;
     }
 
-    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -270,9 +217,13 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
             super (env, l);
         }
         
+        public CloneableTopComponent.Ref getRef () {
+            return allEditors;
+        }
+
         @Override
         protected boolean asynchronousOpen() {
-            return false;
+            return true;
         }
         
         protected String messageName() {
@@ -295,128 +246,7 @@ public class CloneableEditorSupportPaneTest extends NbTestCase implements Clonea
             return "ToolTip";
         }
         
-        protected org.openide.text.CloneableEditorSupport.Pane createPane() {
-            instance = new MyPane();
-            return instance;
-        }
-        
     }
-    
-    private static MyPane instance;
-    
-    private static final class MyPane extends CloneableTopComponent implements CloneableEditorSupport.Pane {
         
-        private CloneableTopComponent tc;
-        private JEditorPane pane;
-        
-        MyPane() {
-            pane = new JEditorPane();
-            
-        }
-        
-        public org.openide.windows.CloneableTopComponent getComponent() {
-            return this;
-        }
-        
-        public javax.swing.JEditorPane getEditorPane() {
-            return pane;
-        }
-        
-        public void updateName() {
-        }
-        
-        public boolean activated = false;
-        public void requestActive() {
-            super.requestActive();
-            activated = true;
-        }
-        
-       /**
-         * callback for the Pane implementation to adjust itself to the openAt() request.
-         */
-        public void ensureVisible() {
-            open();
-            requestVisible();
-        }        
-    }
-    
-    
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
-    
-    private static class CES2 extends CES {
-        public CES2 (Env env, Lookup l) {
-            super (env, l);
-        }
-        
-        protected org.openide.text.CloneableEditorSupport.Pane createPane() {
-            instance2 = new MyPaneNonNonTC();
-            return instance2;
-        }
-    }
-    
-    private static class CES3 extends CES {
-        public CES3 (Env env, Lookup l) {
-            super (env, l);
-        }
-
-        @Override
-        public void saveDocument() throws IOException {
-            throw new UserCancelException();
-        }
-    }
-    
-    public static class DD extends org.openide.DialogDisplayer {
-
-        public java.awt.Dialog createDialog(org.openide.DialogDescriptor descriptor) {
-            throw new IllegalStateException ("Not implemented");
-        }
-        
-        public Object notify(org.openide.NotifyDescriptor descriptor) {
-            return descriptor.getOptions()[0];
-        }
-        
-    }
-    
-    private static MyPaneNonNonTC instance2;
-    
-    
-    private static final class MyPaneNonNonTC implements CloneableEditorSupport.Pane {
-        
-        private CloneableTopComponent tc;
-        private JEditorPane pane;
-        
-        MyPaneNonNonTC() {
-            pane = new JEditorPane();
-            tc = new TC();
-            
-        }
-        
-        public org.openide.windows.CloneableTopComponent getComponent() {
-            return tc;
-        }
-        
-        public javax.swing.JEditorPane getEditorPane() {
-            return pane;
-        }
-        
-        public void updateName() {
-        }
-        
-       public void ensureVisible() {
-            tc.open();
-            tc.requestVisible();
-        }                
-        
-    }
-    
-    private static class TC extends CloneableTopComponent {
-        
-        
-        public void requestActive() {
-            super.requestActive();
-        }
-
-    }
     
 }
