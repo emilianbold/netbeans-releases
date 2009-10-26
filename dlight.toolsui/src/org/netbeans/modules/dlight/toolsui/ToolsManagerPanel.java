@@ -386,7 +386,7 @@ public class ToolsManagerPanel extends PanelWithApply {
             newName = newName.replace("/", "_FSLASH_"); // NOI18N
             newName = newName.replace("\\", "_BSLASH_"); // NOI18N
             newName = newName.replace(".", "_DOT_"); // NOI18N
-            return newName;
+            return newName.trim();
         }
 
         private DLightConfigurationUIWrapper findDLightConfigurationUIWrapper(String name) {
@@ -429,7 +429,8 @@ public class ToolsManagerPanel extends PanelWithApply {
                 return;
             }
             String newDisplayName = notifyDescriptor.getInputText();
-            if (newDisplayName.length() == 0) {
+            newDisplayName = newDisplayName.trim();
+            if (newDisplayName.trim().length() == 0) {
                 newDisplayName = o.getDisplayName();
             } else {
                 newDisplayName = makeNameUnique(newDisplayName);
