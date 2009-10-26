@@ -166,13 +166,13 @@ public class PHPFormatterTest extends PHPTestBase {
      * @throws Exception
      */
 
-    public void test124273_1() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
-    }
-
-    public void test124273_2() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
-    }
+//    public void test124273_1() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
+//    }
+//
+//    public void test124273_2() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
+//    }
     public void test124273_3() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/124273_3.php");
     }
@@ -335,9 +335,9 @@ public class PHPFormatterTest extends PHPTestBase {
      * issue 174595
      * @throws Exception
      */
-    public void test174595_175229() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174595_175229.php");
-    }
+//    public void test174595_175229() throws Exception {
+//        reformatFileContents("testfiles/formatting/qa/issues/174595_175229.php");
+//    }
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
