@@ -322,17 +322,6 @@ public class ComputeImports {
         }
 
         @Override
-        public Void visitAnnotation(AnnotationTree node,
-                Map<String, Object> p) {
-            super.visitAnnotation(node, p);
-            TypeMirror typeMirror = info.getTrees().getTypeMirror(getCurrentPath());
-            if (typeMirror != null && typeMirror.getKind() == TypeKind.ERROR) {
-                unresolved.add(node.getAnnotationType().toString());
-            }
-            return null;
-        }
-
-        @Override
         public Void visitIdentifier(IdentifierTree tree, Map<String, Object> p) {
             super.visitIdentifier(tree, p);
             
