@@ -73,135 +73,8 @@ public class PHPFormatterTest extends PHPTestBase {
             // Ignore -- we've already registered this either via layers or other means
         }
     }
-  
-     public void testSpacesAfterObjectRefereneces() throws Exception {
-        reformatFileContents("testfiles/formatting/real_life/spacesAfterObjectReferences.php");
-    }
-
-    /**
-     * issue 160996
-     * @throws Exception
-     */
-      
-    public void testStatementsWithoutSpaces() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/160996.php");
-    }
-
-    /**
-     * issue 162320
-     * @throws Exception
-     */
-
-    public void testCommentsInStatements() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/162320.php");
-    }
-
-    /**
-     * issue 162586
-     * @throws Exception
-     */
-
-    public void testCommentsFormattingMixedWithHTML() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/162586.php");
-    }
-
-    /**
-     * issue 173899
-     * @throws Exception
-     */
-
-    public void test173899() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173899.php");
-    }
-    /**
-     * issue 173903
-     * @throws Exception
-     */
-    public void test173903() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173903.php");
-    }
-
-    /**
-     * issue 173906
-     * @throws Exception
-     */
-    public void test173906_1() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906_1.php");
-    }
-    public void test173906_2() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906_2.php");
-    }
-
-
-     /**
-     * issue 173908
-     * @throws Exception
-     */
-    public void test173908() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173908.php");
-    }
-
-    /**
-     * issue 174579
-     * @throws Exception
-     */
-    public void test174579() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174579.php");
-    }
-
-    /**
-     * issue 174578
-     * @throws Exception
-     */
-    public void test174578() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174578.php");
-    }
-
-    public void test174595() throws Exception {
+      public void test174595() throws Exception {
         reformatFileContents("testfiles/formatting/issue174595.php");
-    }
-
-    /**
-     * issue 124273 - partially only
-     * @throws Exception
-     */
-
-    public void test124273_1() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/124273_1.php");
-    }
-
-    public void test124273_2() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/124273_2.php");
-    }
-    public void test124273_3() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/124273_3.php");
-    }
-
-    /**
-     * issue 175229, _2 is a bit more complex example
-     * @throws Exception
-     */
-//    public void test175229_1() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/175229_1.php");
-//    }
-//
-//    public void test175229_2() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/175229_2.php");
-//    }
-
-    /**
-     * issue 174653 
-     * @throws Exception
-     */
-
-    public void test174563_wrong_namespace_declaration() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/174563_1.php");
-    }
-
-
-
-    public void testIfElseStatement() throws Exception {
-        reformatFileContents("testfiles/formatting/real_life/else_if.php");
     }
 
     public void testContinuedExpression() throws Exception {
@@ -242,6 +115,10 @@ public class PHPFormatterTest extends PHPTestBase {
 
     public void testArrays2() throws Exception {
         reformatFileContents("testfiles/formatting/arrays2.php");
+    }
+
+    public void testFragment1() throws Exception {
+        reformatFileContents("testfiles/formatting/format_fragment1.php");
     }
 
     public void testNestedArrays1() throws Exception {
@@ -318,19 +195,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test174563() throws Exception {
         reformatFileContents("testfiles/formatting/issue174563.php");
     }
-
-    public void test173352() throws Exception {
-        reformatFileContents("testfiles/formatting/issue173352.php");
-    }
-
-    /**
-     * issue 173352 - case added by qa 
-     * @throws Exception
-     */
-    public void test173352_fromQA() throws Exception {
-        reformatFileContents("testfiles/formatting/issue173352.php");
-    }
-
+  
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
