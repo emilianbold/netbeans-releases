@@ -137,8 +137,6 @@ public class JavaResourceHolder extends ResourceHolder {
         if (bundleStructure == null)
             return null;
 
-        key = Util.getUnescapedKey(key);
-
         return bundleStructure.getItem(getLocalizationFileName(), key);
     }
 
