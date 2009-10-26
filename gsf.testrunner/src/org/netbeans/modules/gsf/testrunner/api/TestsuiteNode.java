@@ -73,9 +73,10 @@ public class TestsuiteNode extends AbstractNode {
     /**
      * The max line length to display in the messages.
      * See Issue #172772
+     * See Issue #175430
      */
     static final int MAX_MSG_LINE_LENGTH =
-          Integer.getInteger("testrunner.max.msg.line.length", 80); //NOI18N
+          Integer.getInteger("testrunner.max.msg.line.length", 320); //NOI18N
 
     protected String suiteName;
     protected TestSuite suite;
@@ -364,23 +365,29 @@ public class TestsuiteNode extends AbstractNode {
      * @return If length of the {@code line} is more than the {@code maxLength}
      * then concatenation of the string that is limited up to {@code maxLength}
      * chars and a comment string that describes how many chars are omitted,
-     * otherwise the {@code line} without any changes.
+     * otherwise the {@code line} without any changes. The {@code line} without
+     * any changes will be also returned if a comment string that describes how
+     * many chars are omitted is longer than an message tail that is intended to
+     * be omitted.
      * @throws MissingResourceException if resources for the comment string
      * can't be loaded.
      *
      * @see Issue #172772
+     * @see Issue #175430
      */
     public static String cutLine(String line, int maxLength, boolean isHTML)
                                                throws MissingResourceException {
         int length = line.length();
         if (length > maxLength) {
-            line = line.substring(0, maxLength);
-            String startMsg = isHTML ? "<i> " : "";
-            String endMsg = isHTML ? "</i>" : "";
-            line = line.concat(startMsg +
-                               NbBundle.getMessage(TestsuiteNode.class,
-                                       "MSG_CharsOmitted", length - maxLength) +
-                               endMsg);
+            int tailLength = length - maxLength;
+            String cutMsg = NbBundle.getMessage(TestsuiteNode.class,
+                                       "MSG_CharsOmitted", tailLength);
+            if(tailLength > cutMsg.length()) {
+                line = line.substring(0, maxLength);
+                String startMsg = isHTML ? "<i> " : "";
+                String endMsg = isHTML ? "</i>" : "";
+                line = line.concat(startMsg + cutMsg + endMsg);
+            }
         }
         return line;
     }
