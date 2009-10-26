@@ -42,13 +42,14 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio" display="Sun™ Studio Toolchain" family="SunStudio"/>
+    <toolchain name="SunStudio-linux" display="Sun™ Studio Toolchain" family="SunStudio"/>
     <!-- download uc_url="http://elif.russia.sun.com/uc/catalog.xml" module_id="org.netbeans.libs.sunstudio"
          uc_display="Developer Update Center" / -->
     <download uc_url="http://updates.netbeans.org/netbeans/updates/6.8/uc/final/thirdparty/catalog.xml.gz" module_id="org.netbeans.libs.sunstudio"
          uc_display="3rd Party Plugins" />
-    <platforms stringvalue="linux"/>
+    <platforms stringvalue="sun_intel"/>
     <c>
+        <compiler name="cc-"/>
         <architecture>
             <default flags="" default="true"/>
             <bits_32 flags="-m32"/>
@@ -56,6 +57,7 @@ made subject to such option by the copyright holder.
         </architecture>
     </c>
     <cpp>
+        <compiler name="CC-"/>
         <architecture>
             <default flags="" default="true"/>
             <bits_32 flags="-m32"/>
@@ -63,6 +65,7 @@ made subject to such option by the copyright holder.
         </architecture>
     </cpp>
     <fortran>
+        <compiler name="f95-"/>
         <architecture>
             <default flags="" default="true"/>
             <bits_32 flags="-m32"/>
@@ -70,6 +73,7 @@ made subject to such option by the copyright holder.
         </architecture>
     </fortran>
     <assembler>
+        <compiler name="as95-"/>
         <architecture>
             <default flags="" default="true"/>
             <bits_32 flags="-m32"/>
