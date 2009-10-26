@@ -40,12 +40,12 @@ chat
 null
 instant_messenger
 https://testkenai.com/projects/golden-project-1/instant_messenger/golden-project-1
-source-code-repository
+source-code-repository2
 SOURCE
 Source Code Repository
-https://hg.testkenai.com/hg/golden-project-1~source-code-repository
+https://hg.testkenai.com/hg/golden-project-1~source-code-repository2
 mercurial
-https://testkenai.com/projects/golden-project-1/sources/source-code-repository/show
+https://testkenai.com/projects/golden-project-1/sources/source-code-repository2/show
 jira
 ISSUES
 Issue Tracking
