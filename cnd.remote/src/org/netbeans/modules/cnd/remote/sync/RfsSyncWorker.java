@@ -46,6 +46,7 @@ import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
@@ -57,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-final class RfsSyncWorker extends ZipSyncWorker {
+/*package*/ final class RfsSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     private static Parameters lastParameters;
     private static final boolean allAtOnce = false;
@@ -94,16 +95,6 @@ final class RfsSyncWorker extends ZipSyncWorker {
     }
 
     @Override
-    protected void synchronizeImpl(String remoteDir) throws InterruptedException, ExecutionException, IOException {
-        Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
-        if (mkDir.get() != 0) {
-            throw new IOException("Can not create directory " + remoteDir); //NOI18N
-        }
-        lastParameters = new Parameters(localDirs, remoteDir, executionEnvironment, out, err, privProjectStorageDir);
-        // no actual sinc here - only store parameters
-    }
-
-    @Override
     public boolean synchronize() {
         // Later we'll allow user to specify where to copy project files to
         RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
@@ -121,7 +112,11 @@ final class RfsSyncWorker extends ZipSyncWorker {
                 out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
                         remoteParent, ServerList.get(executionEnvironment).toString()));
             }
-            synchronizeImpl(remoteParent);
+            Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteParent, err);
+            if (mkDir.get() != 0) {
+                throw new IOException("Can not create directory " + remoteParent); //NOI18N
+            }
+            lastParameters = new Parameters(localDirs, remoteParent, executionEnvironment, out, err, privProjectStorageDir);
             success = true;
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
@@ -144,4 +139,10 @@ final class RfsSyncWorker extends ZipSyncWorker {
         }
         return success;
     }
+
+    @Override
+    public boolean cancel() {
+        return false;
+    }
+
 }

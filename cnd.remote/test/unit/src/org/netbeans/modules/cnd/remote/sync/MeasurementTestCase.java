@@ -117,7 +117,7 @@ public class MeasurementTestCase extends RemoteTestBase {
 
             ZipSyncWorker worker = new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, srcDir);
             long time = System.currentTimeMillis();
-            worker.synchronizeImpl(dst);
+            worker.synchronize();
             time = System.currentTimeMillis() - time;
             statistics.add(new StatEntry(getName(), time));
             CommonTasksSupport.rmDir(execEnv, dst, true, err).get();
