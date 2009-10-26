@@ -126,24 +126,6 @@ final class ToolchainScriptGenerator {
         line("    continue  # skip /usr/ucb (IZ #142780)"); // NOI18N
         line("  fi"); // NOI18N
         scanPath();
-        line("  if [ -n \"$line\" ]; then"); // NOI18N
-        line("    found="); // NOI18N
-        line("    len=${#flavor}"); // NOI18N
-        line("    j=0"); // NOI18N
-        line("    while [ $j -lt $i ]; do"); // NOI18N
-        line("      # check the flavor of ${cset[$j]} and skip if its a duplicate"); // NOI18N
-        line("      cpart=\"${cset[$j]}\""); // NOI18N
-        line("      if [ \"${cpart:0:$len}\" == \"$flavor\" ]; then"); // NOI18N
-        line("        found=true"); // NOI18N
-        line("        break"); // NOI18N
-        line("      fi"); // NOI18N
-        line("      j=`expr $j + 1`"); // NOI18N
-        line("    done"); // NOI18N
-        line("    if [ -z \"$found\" ]; then"); // NOI18N
-        line("      cset[$i]=$line"); // NOI18N
-        line("      ((i=$i+1))"); // NOI18N
-        line("    fi"); // NOI18N
-        line("  fi"); // NOI18N
         line("done"); // NOI18N
     }
     private void scanPath(){
@@ -220,6 +202,7 @@ final class ToolchainScriptGenerator {
             }
             line("  break"); // NOI18N
             line("done"); // NOI18N
+            line("addNewToolChain"); // NOI18N
         }
     }
 
