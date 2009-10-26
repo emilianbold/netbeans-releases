@@ -76,6 +76,8 @@ public final class SSMetrics {
         static public final FunctionMetric SyncWaitCallInclusive = fm(GID, "i.syncn", Integer.class); // NOI18N
         static public final FunctionMetric SyncWaitTimeExclusive = fm(GID, "e.sync", Double.class); // NOI18N
         static public final FunctionMetric SyncWaitCallExclusive = fm(GID, "e.syncn", Integer.class); // NOI18N
+        static public final FunctionMetric OMPWaitTimeInclusive = fm(GID, "i.ompwait", Double.class); // NOI18N
+        static public final FunctionMetric OMPWorkTimeInclusive = fm(GID, "i.ompwork", Double.class); // NOI18N
     }
 
     static private FunctionMetric fm(String groupID, String id, Class clazz) {
