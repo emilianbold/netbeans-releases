@@ -126,10 +126,13 @@ public class PHPFormatterTest extends PHPTestBase {
      * @throws Exception
      */
     public void test173906_1() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906_1.php");
+        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_1.php");
     }
     public void test173906_2() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/173906_2.php");
+        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_2.php");
+    }
+    public void test173906_3() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_3.php");
     }
 
 
@@ -338,6 +341,16 @@ public class PHPFormatterTest extends PHPTestBase {
 //    public void test174595_175229() throws Exception {
 //        reformatFileContents("testfiles/formatting/qa/issues/174595_175229.php");
 //    }
+
+    /**
+     * issue 174873 - test for missing $e variable only, so created
+     * with respect to #173906 that is reopened.
+     * @throws Exception
+     */
+    public void test174873() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/174873.php");
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
