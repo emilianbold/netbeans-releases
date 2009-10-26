@@ -978,7 +978,7 @@ public class CompilerSetManager {
     }
 
     private static Tool autoComplete(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets, ToolDescriptor descriptor, int tool){
-        if (descriptor != null) {
+        if (descriptor != null && !cs.isUrlPointer()) {
             AlternativePath[] paths = descriptor.getAlternativePath();
             if (paths != null && paths.length > 0) {
                 for(AlternativePath p : paths){
@@ -1139,10 +1139,10 @@ public class CompilerSetManager {
     }
 
     private static void completeCompilerSet(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets) {
-        if (cs.findTool(Tool.CCompiler) == null && cs.findTool(Tool.CCCompiler) == null) {
-            // do not complete empty tool
-            return;
-        }
+        //if (cs.findTool(Tool.CCompiler) == null && cs.findTool(Tool.CCCompiler) == null) {
+        //    // do not complete empty tool
+        //    return;
+        //}
         if (cs.findTool(Tool.CCompiler) == null) {
             autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), Tool.CCompiler);
         }
