@@ -118,6 +118,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
     @Override
     public void execute(InputOutput io) {
+        if (io != null) {
+            err = io.getErr();
+            out = io.getOut();
+        }
         try {
             rfsSupport.setIO(io);
             if (checkRemotePath()) {
