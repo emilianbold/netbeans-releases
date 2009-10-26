@@ -343,10 +343,13 @@ final class VisualizerChildren extends Object {
         str += "[";
         for (VisualizerNode vn : visNodes) {
             str += vn;
-            VisualizerChildren vch = vn.getChildren(false);
-            if (vch != VisualizerChildren.EMPTY) {
-                str += vch;
+            if (vn != null) {
+                VisualizerChildren vch = vn.getChildren(false);
+                if (vch != VisualizerChildren.EMPTY) {
+                    str += vch;
+                }
             }
+            str += ", ";
         }
         str += "]";
         return str;
