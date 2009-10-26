@@ -86,6 +86,7 @@ import org.jrubyparser.ast.DSymbolNode;
 import org.jrubyparser.ast.HashNode;
 import org.jrubyparser.ast.ILiteralNode;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
 import org.jrubyparser.ast.OrNode;
 import org.jrubyparser.ast.ReturnNode;
@@ -691,6 +692,23 @@ public class AstUtilities {
         return node.getNodeType() == NodeType.FCALLNODE ||
                 node.getNodeType() == NodeType.VCALLNODE ||
                 node.getNodeType() == NodeType.CALLNODE;
+    }
+
+    static boolean isAssignmentNode(Node node) {
+        return node.getNodeType() == NodeType.INSTASGNNODE ||
+                node.getNodeType() == NodeType.LOCALASGNNODE ||
+                node.getNodeType() == NodeType.CLASSVARASGNNODE ||
+                node.getNodeType() == NodeType.GLOBALASGNNODE ||
+                node.getNodeType() == NodeType.ATTRASSIGNNODE ||
+                node.getNodeType() == NodeType.MULTIPLEASGNNODE;
+    }
+
+    static Node findNextNonNewLineNode(Node target) {
+        if (target.getNodeType() != NodeType.NEWLINENODE) {
+            return target;
+        }
+        NewlineNode newlineNode = (NewlineNode) target;
+        return findNextNonNewLineNode(newlineNode.getNextNode());
     }
     
     public static String getCallName(Node node) {
