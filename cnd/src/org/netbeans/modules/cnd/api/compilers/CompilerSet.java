@@ -259,6 +259,7 @@ public class CompilerSet {
     private String libraryOption;
     private CompilerProvider compilerProvider;
     private String driveLetterPrefix = "/"; // NOI18N
+    private Map<Integer,String> pathSearch;
     
     /** Creates a new instance of CompilerSet */
     protected CompilerSet(CompilerFlavor flavor, String directory, String name) {
@@ -612,6 +613,20 @@ public class CompilerSet {
         return path;
     }
     
+    void addPathCandidate(int tool, String path) {
+        if (pathSearch == null){
+            pathSearch = new HashMap<Integer, String>();
+        }
+        pathSearch.put(tool, path);
+    }
+
+    String getPathCandidate(int tool){
+        if (pathSearch == null){
+            return null;
+        }
+        return pathSearch.get(tool);
+    }
+
     @Override
     public String toString() {
         return name;
