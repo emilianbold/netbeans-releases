@@ -128,6 +128,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test173906_1() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/173906_1.php");
     }
+    
     public void test173906_2() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/173906_2.php");
     }
@@ -205,6 +206,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/arrays2.php");
     }
 
+    public void testFragment1() throws Exception {
+        reformatFileContents("testfiles/formatting/format_fragment1.php");
+    }
+
     public void testNestedArrays1() throws Exception {
         reformatFileContents("testfiles/formatting/nested_array1.php");
     }
@@ -279,11 +284,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test174563() throws Exception {
         reformatFileContents("testfiles/formatting/issue174563.php");
     }
-
-    public void test173352() throws Exception {
-        reformatFileContents("testfiles/formatting/issue173352.php");
-    }
-
+    
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
