@@ -48,7 +48,7 @@ Searchable Keys:
   method : gregorian|DOCUMENTED|
   method : hash|DOCUMENTED|
   method : hour|DOCUMENTED|PRIVATE|
-  method : initialize(ajd,of,sg)|DOCUMENTED|PRIVATE|
+  method : initialize(ajd,of,sg)|DOCUMENTED|PRIVATE|;;Array;
   method : inspect|DOCUMENTED|
   method : italy|DOCUMENTED|
   method : jd(jd,sg)|DOCUMENTED|STATIC|
@@ -72,7 +72,7 @@ Searchable Keys:
   method : mjd|DOCUMENTED|
   method : month
   method : mon|DOCUMENTED|
-  method : new(ajd,of,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : new(ajd,of,sg)|DOCUMENTED|PRIVATE|STATIC|;;Array;
   method : new_offset(of)|PRIVATE|
   method : new_start(sg)|DOCUMENTED|
   method : new_with_hash(elem,sg)|STATIC|
