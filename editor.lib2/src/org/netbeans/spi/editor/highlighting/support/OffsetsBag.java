@@ -369,28 +369,38 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                     if (startIdx != -1 && marks.get(startIdx).getAttributes() != null) {
                         if (startIdx + 1 < endIdx) {
                             marks.set(++startIdx, new Mark(startOffset, null));
-                        } else if (startIdx + 1 == endIdx) {
-                            if (marks.get(startIdx).getOffset() < startOffset) {
-                                marks.set(++startIdx, new Mark(startOffset, null));
-                            } else {
-                                startIdx--;
-                            }
                         } else {
-                            marks.add(++startIdx, new Mark(startOffset, null));
+                            if (marks.get(startIdx).getOffset() < startOffset) {
+                                if (startIdx + 1 == endIdx) {
+                                    marks.set(++startIdx, new Mark(startOffset, null));
+                                } else {
+                                    marks.add(++startIdx, new Mark(startOffset, null));
+                                }
+                            } else {
+                                if (startIdx == 0 || marks.get(startIdx - 1).getAttributes() == null) {
+                                    startIdx--;
+                                } else {
+                                    marks.set(startIdx, new Mark(startOffset, null));
+                                }
+                            }
                         }
                         changeStart = startOffset;
                     }
                     startIdx++;
-
                 }
             } else {
                 if (startIdx == -1 || marks.get(startIdx).getAttributes() == null) {
+                    startIdx++;
+                } else if (startIdx > 0 && marks.get(startIdx - 1).getAttributes() != null) {
+                    marks.get(startIdx).setAttributes(null);
                     startIdx++;
                 }
                 
                 if (endIdx != -1 && marks.get(endIdx).getAttributes() != null) {
                     if (marks.get(endIdx).getOffset() < endOffset) {
-                        endIdx++;
+                        if (endIdx + 1 >= marks.size() || marks.get(endIdx + 1).getAttributes() == null) {
+                            endIdx++;
+                        }
                     } else {
                         endIdx--;
                     }

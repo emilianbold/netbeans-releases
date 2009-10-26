@@ -593,6 +593,118 @@ public class OffsetsBagTest extends NbTestCase {
         assertMarks("Highlights should not be removed <40, 45, false>", expected, hs);
     }
 
+    public void test158249_AddToRemoveFromLeft() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(3, 4, false);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(2, 3, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(1, 2, false);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(0, 1, false);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromLeftClip() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(3, 4, true);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(2, 3, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(1, 2, true);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(0, 1, true);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRight() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(0, 1, false);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(1, 2, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(2, 3, false);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(3, 4, false);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRightClip() {
+        OffsetsBag bag = new OffsetsBag(doc);
+        bag.addHighlight(3, 4, EMPTY);
+        assertMarks("Expecting 1 highlight", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(2, 3, EMPTY);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(1, 2, EMPTY);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(0, 1, EMPTY);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(0, 1, true);
+        assertMarks("Expecting 3 highlights", createOffsetsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(1, 2, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(2, 3, true);
+        assertMarks("Expecting 1 highlights", createOffsetsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(3, 4, true);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddRemove() {
+        OffsetsBag bag = createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(1, 3, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(15, 25, false);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 10, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(5, 35, false);
+        assertMarks("Expecting no highlights", createOffsetsBag(), bag);
+    }
+
+    public void test158249_AddRemoveClip() {
+        OffsetsBag bag = createOffsetsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(1, 3, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(15, 25, true);
+        assertMarks("Expecting 4 highlights", createOffsetsBag(0, 10, EMPTY, 10, 15, EMPTY, 25, 30, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createOffsetsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(5, 35, true);
+        assertMarks("Expecting 2 highlights", createOffsetsBag(0, 5, EMPTY, 35, 40, EMPTY), bag);
+    }
+
     public void testAddAll() {
         OffsetsBag hsA = new OffsetsBag(doc);
         OffsetsBag hsB = new OffsetsBag(doc);

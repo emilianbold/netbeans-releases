@@ -305,18 +305,25 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                         startIdx++;
                         marks.set(startIdx, startPosition);
                         attributes.set(startIdx, null);
-                    } else if (startIdx + 1 == endIdx) {
-                        if (marks.get(startIdx).getOffset() < startPosition.getOffset()) {
-                            startIdx++;
-                            marks.set(startIdx, startPosition);
-                            attributes.set(startIdx, null);
-                        } else {
-                            startIdx--;
-                        }
                     } else {
-                        startIdx++;
-                        marks.add(startIdx, startPosition);
-                        attributes.add(startIdx, null);
+                        if (marks.get(startIdx).getOffset() < startPosition.getOffset()) {
+                            if (startIdx + 1 == endIdx) {
+                                startIdx++;
+                                marks.set(startIdx, startPosition);
+                                attributes.set(startIdx, null);
+                            } else {
+                                startIdx++;
+                                marks.add(startIdx, startPosition);
+                                attributes.add(startIdx, null);
+                            }
+                        } else {
+                            if (startIdx == 0 || attributes.get(startIdx - 1) == null) {
+                                startIdx--;
+                            } else {
+                                marks.set(startIdx, startPosition);
+                                attributes.set(startIdx, null);
+                            }
+                        }
                     }
                     changeStart = startPosition.getOffset();
                 }
@@ -372,17 +379,22 @@ public final class PositionsBag extends AbstractHighlightsContainer {
             
             if (startIdx == -1 || attributes.get(startIdx) == null) {
                 startIdx++;
+            } else if (startIdx > 0 && attributes.get(startIdx - 1) != null) {
+                attributes.set(startIdx, null);
+                startIdx++;
             }
 
             if (endIdx != -1 && attributes.get(endIdx) != null) {
                 if (marks.get(endIdx).getOffset() < endOffset) {
-                    endIdx++;
+                    if (endIdx + 1 >= attributes.size() || attributes.get(endIdx + 1) == null) {
+                        endIdx++;
+                    }
                 } else {
                     endIdx--;
                 }
             }
             
-            if (startIdx < endIdx) {
+            if (startIdx <= endIdx) {
                 if (changeStart == Integer.MAX_VALUE) {
                     changeStart = marks.get(startIdx).getOffset();
                 }

@@ -597,6 +597,118 @@ public class PositionsBagTest extends NbTestCase {
         assertMarks("Highlights should not be removed <40, 45, false>", expected, hs);
     }
 
+    public void test158249_AddToRemoveFromLeft() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(3), pos(4), false);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), false);
+        assertMarks("Expecting 1 highlights", createPositionsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(pos(0), pos(1), false);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromLeftClip() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(0, 1, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(3), pos(4), true);
+        assertMarks("Expecting 3 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), true);
+        assertMarks("Expecting 1 highlights", createPositionsBag(0, 1, EMPTY), bag);
+        bag.removeHighlights(pos(0), pos(1), true);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRight() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(0), pos(1), false);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), false);
+        assertMarks("Expecting 1 highlights", createPositionsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(3), pos(4), false);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddToRemoveFromRightClip() {
+        PositionsBag bag = new PositionsBag(doc);
+        bag.addHighlight(pos(3), pos(4), EMPTY);
+        assertMarks("Expecting 1 highlight", createPositionsBag(3, 4, EMPTY), bag);
+        bag.addHighlight(pos(2), pos(3), EMPTY);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(1), pos(2), EMPTY);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.addHighlight(pos(0), pos(1), EMPTY);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+
+        bag.removeHighlights(pos(0), pos(1), true);
+        assertMarks("Expecting 3 highlights", createPositionsBag(1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(1), pos(2), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(2, 3, EMPTY, 3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(2), pos(3), true);
+        assertMarks("Expecting 1 highlights", createPositionsBag(3, 4, EMPTY), bag);
+        bag.removeHighlights(pos(3), pos(4), true);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddRemove() {
+        PositionsBag bag = createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(pos(1), pos(3), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(15), pos(25), false);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 10, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(5), pos(35), false);
+        assertMarks("Expecting no highlights", createPositionsBag(), bag);
+    }
+
+    public void test158249_AddRemoveClip() {
+        PositionsBag bag = createPositionsBag(0, 1, EMPTY, 1, 2, EMPTY, 2, 3, EMPTY, 3, 4, EMPTY);
+        bag.removeHighlights(pos(1), pos(3), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 1, EMPTY, 3, 4, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(15), pos(25), true);
+        assertMarks("Expecting 4 highlights", createPositionsBag(0, 10, EMPTY, 10, 15, EMPTY, 25, 30, EMPTY, 30, 40, EMPTY), bag);
+
+        bag = createPositionsBag(0, 10, EMPTY, 10, 20, EMPTY, 20, 30, EMPTY, 30, 40, EMPTY);
+        bag.removeHighlights(pos(5), pos(35), true);
+        assertMarks("Expecting 2 highlights", createPositionsBag(0, 5, EMPTY, 35, 40, EMPTY), bag);
+    }
+
     public void testAddAll() {
         PositionsBag hsA = new PositionsBag(doc);
         PositionsBag hsB = new PositionsBag(doc);
