@@ -128,13 +128,13 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test173906_1_unstableReopened() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_1.php");
     }
+    
     public void test173906_2_unstableReopened() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_2.php");
     }
     public void test173906_3_unstableReopened() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/173906_3.php");
     }
-
 
      /**
      * issue 173908
@@ -248,6 +248,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/arrays2.php");
     }
 
+    public void testFragment1() throws Exception {
+        reformatFileContents("testfiles/formatting/format_fragment1.php");
+    }
+
     public void testNestedArrays1() throws Exception {
         reformatFileContents("testfiles/formatting/nested_array1.php");
     }
@@ -322,12 +326,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test174563() throws Exception {
         reformatFileContents("testfiles/formatting/issue174563.php");
     }
-
-    public void test173352() throws Exception {
-        reformatFileContents("testfiles/formatting/issue173352.php");
-    }
-
-   
+    
     /**
      * issue 174595
      * @throws Exception
