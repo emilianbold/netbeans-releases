@@ -140,7 +140,7 @@ public class ConfigurationMakefileWriter {
                 Platform platform = Platforms.getPlatform(platformID);
                 StringBuffer list = new StringBuffer();
                 for (MakeConfiguration c : wrongPlatform) {
-                    list.append(getString("CONF", c.getName(), conf.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
+                    list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
                 }
                 String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
                 NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
