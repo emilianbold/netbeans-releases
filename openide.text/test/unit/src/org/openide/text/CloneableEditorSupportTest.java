@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import java.util.Collections;
 import java.util.Date;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
@@ -60,6 +62,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -381,6 +384,34 @@ implements CloneableEditorSupport.Env {
         support.saveDocument();
         assertTrue("CES.saveDocument() did not execute a runnable in \"beforeSaveRunnable\" document property",
                 processed[0]);
+    }
+
+    public void testPrepareDocument() throws Exception {
+        content = "Ahoj\nMyDoc";
+        Task task = support.prepareDocument();
+        task.waitFinished();
+
+        try {
+            Object o = new Object();
+            assertGC("", new WeakReference<Object>(o));
+        } catch (AssertionFailedError e) {
+            // ignore, intentional
+        }
+
+        Document doc = support.getDoc();
+        assertNotNull("Document should not be GCed while its loading task exists", doc);
+
+        Task task2 = support.prepareDocument();
+        assertTrue("Loading task should be finished", task2.isFinished());
+        assertNotSame("Expecting different task instance", task, task2);
+        task2 = null;
+        
+        Reference<Task> taskRef = new WeakReference<Task>(task);
+        Reference<Document> docRef = new WeakReference<Document>(doc);
+        task = null;
+        doc = null;
+        assertGC("Can't GC document loading task", taskRef);
+        assertGC("Can't GC document", docRef);
     }
 
     //

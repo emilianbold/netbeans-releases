@@ -109,17 +109,8 @@ final class ChildrenArray extends NodeAdapter {
         }
     }
 
-    /** Finalizes nodes by calling get on weak hash map,
-     * all references stored in the map, that are finalized
-     * will be cleared.
-     */
-    public synchronized void finalizeNodes() {
-        Map m = map;
-        if (m != null) {
-            // processes the queue of garbage
-            // collected keys
-            m.remove(null);
-        }
+    void remove(Info info) {
+        map.remove(info);
     }
 
     /** Initilized if has some nodes. */
