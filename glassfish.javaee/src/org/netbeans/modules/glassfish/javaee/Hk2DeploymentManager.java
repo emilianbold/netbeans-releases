@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,8 +62,6 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.javaee.ide.MonitorProgressObject;
@@ -72,18 +70,13 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.glassfish.javaee.ide.UpdateContextRoot;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
-
 
 /**
  *
@@ -113,17 +106,6 @@ public class Hk2DeploymentManager implements DeploymentManager {
     
     /**
      * 
-     * @param deployableObject 
-     * @return 
-     * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException 
-     */
-    public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) 
-            throws InvalidModuleException {
-        return new Hk2Configuration(deployableObject);
-    }
-
-    /**
-     * 
      * @param targetList
      * @param moduleArchive
      * @param deploymentPlan
@@ -132,22 +114,20 @@ public class Hk2DeploymentManager implements DeploymentManager {
      */
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
-        // compute the ModuleID
         String t = moduleArchive.getName();
         final String moduleName = t.substring(0, t.length() - 4);
-        
+        // 
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
                 null, moduleArchive.getAbsolutePath());
         final MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
         final MonitorProgressObject updateCRProgress = new MonitorProgressObject(this, moduleId);
         deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress, moduleId, getServerInstance(), true));
         MonitorProgressObject restartProgress = new MonitorProgressObject(this, moduleId);
-        final GlassfishModule commonSupport = this.getCommonServerSupport();
 
+        final GlassfishModule commonSupport = this.getCommonServerSupport();
         boolean restart = false;
         try {
-            restart = HttpMonitorHelper.synchronizeMonitor(
-                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+            restart = HttpMonitorHelper.synchronizeMonitor( commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
                     Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
                     "modules/org-netbeans-modules-schema2beans.jar");
@@ -177,35 +157,6 @@ public class Hk2DeploymentManager implements DeploymentManager {
 
     /**
      * 
-     * @param targetList
-     * @param moduleArchive
-     * @param deploymentPlan
-     * @return
-     * @throws java.lang.IllegalStateException
-     */
-    public ProgressObject distribute(Target [] targetList, InputStream moduleArchive, InputStream deploymentPlan) 
-            throws IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Hk2DeploymentManager.distribute(target [], stream, stream) not supported yet.");
-    }
-
-    /**
-     * 
-     * @param targetList
-     * @param type
-     * @param moduleArchive
-     * @param deploymentPlan
-     * @return
-     * @throws java.lang.IllegalStateException
-     */
-    public ProgressObject distribute(Target [] targetList, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan) 
-            throws IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Hk2DeploymentManager.distribute(target [], module_type, stream, stream) not supported yet.");
-    }
-
-    /**
-     * 
      * @param moduleIDList
      * @param moduleArchive
      * @param deploymentPlan
@@ -213,34 +164,93 @@ public class Hk2DeploymentManager implements DeploymentManager {
      * @throws java.lang.UnsupportedOperationException
      * @throws java.lang.IllegalStateException
      */
-    public ProgressObject redeploy(TargetModuleID [] moduleIDList, File moduleArchive, File deploymentPlan) 
+    public ProgressObject redeploy(TargetModuleID [] moduleIDList, final File moduleArchive, File deploymentPlan)
             throws UnsupportedOperationException, IllegalStateException {
         final Hk2TargetModuleID moduleId = (Hk2TargetModuleID) moduleIDList[0];
         final String moduleName = moduleId.getModuleID();
 
-        MonitorProgressObject deployProgress = new MonitorProgressObject(this, moduleId);
-        MonitorProgressObject returnProgress = new MonitorProgressObject(this, moduleId);
-        GlassfishModule commonSupport = this.getCommonServerSupport();
+        final MonitorProgressObject progressObject = new MonitorProgressObject(this,
+                moduleId, CommandType.REDEPLOY);
+       MonitorProgressObject restartObject = new MonitorProgressObject(this,moduleId,
+                CommandType.REDEPLOY);
+        final MonitorProgressObject updateCRObject = new MonitorProgressObject(this, 
+                moduleId, CommandType.REDEPLOY);
+        final GlassfishModule commonSupport = this.getCommonServerSupport();
         // FIXME -- broken for remote deploy of web apps
-        deployProgress.addProgressListener(new UpdateContextRoot(returnProgress,moduleId,getServerInstance(), false));
+        progressObject.addProgressListener(new UpdateContextRoot(updateCRObject,moduleId,getServerInstance(), true));
+        boolean restart = false;
         try {
-            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+            restart = HttpMonitorHelper.synchronizeMonitor(
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
                     Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
                     "modules/org-netbeans-modules-schema2beans.jar");
-            if (restart) {
-                commonSupport.restartServer(deployProgress);
-            }
         } catch (IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state",
+                    ex);
         } catch (SAXException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state",
+                    ex);
         }
         ResourceRegistrationHelper.deployResources(moduleArchive,this);
-        commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+        if (restart) {
+            restartObject.addProgressListener(new ProgressListener() {
 
-        return returnProgress;
+                public void handleProgressEvent(ProgressEvent event) {
+                    if (event.getDeploymentStatus().isCompleted()) {
+                            commonSupport.deploy(progressObject, moduleArchive, moduleName);
+                    } else {
+                        progressObject.fireHandleProgressEvent(event.getDeploymentStatus());
+                    }
+                }
+            });
+            commonSupport.restartServer(restartObject);
+            return updateCRObject;
+        } else {
+                commonSupport.deploy(progressObject, moduleArchive, moduleName);
+            return updateCRObject;
+        }
+    }
+    
+    /**
+     *
+     * @param deployableObject
+     * @return
+     * @throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException
+     */
+    public DeploymentConfiguration createConfiguration(DeployableObject deployableObject)
+            throws InvalidModuleException {
+        return new Hk2Configuration(deployableObject);
+    }
+
+
+    /**
+     *
+     * @param targetList
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.IllegalStateException
+     */
+    public ProgressObject distribute(Target [] targetList, InputStream moduleArchive, InputStream deploymentPlan)
+            throws IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.distribute(target [], stream, stream) not supported yet.");
+    }
+
+    /**
+     *
+     * @param targetList
+     * @param type
+     * @param moduleArchive
+     * @param deploymentPlan
+     * @return
+     * @throws java.lang.IllegalStateException
+     */
+    public ProgressObject distribute(Target [] targetList, ModuleType type, InputStream moduleArchive, InputStream deploymentPlan)
+            throws IllegalStateException {
+        throw new UnsupportedOperationException(
+                "Hk2DeploymentManager.distribute(target [], module_type, stream, stream) not supported yet.");
     }
 
     /**
@@ -523,7 +533,8 @@ public class Hk2DeploymentManager implements DeploymentManager {
     
     private final String constructServerUri(String host, String port, String path) {
         StringBuilder builder = new StringBuilder(128);
-        builder.append("http://"); // NOI18N
+        builder.append(Utils.getHttpListenerProtocol(host, port));
+        builder.append("://"); // NOI18N
         builder.append(host);
         builder.append(":"); // NOI18N
         builder.append(port);

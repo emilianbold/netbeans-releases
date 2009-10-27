@@ -45,6 +45,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.ruby.RubyType;
 
 /**
  *
@@ -55,4 +56,11 @@ public interface Element extends ElementHandle {
     String getIn();
     ElementKind getKind();
     Set<Modifier> getModifiers();
+    /**
+     * Gets the type of this element.
+     *
+     * @return the type; may return <code>null</code>.
+     */
+    RubyType getType();
+
 }

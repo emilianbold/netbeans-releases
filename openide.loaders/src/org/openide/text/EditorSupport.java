@@ -63,7 +63,7 @@ import org.openide.windows.*;
  * Then this data object will be capable of being opened in an editor, and there will be ways of retrieving and acting upon the Swing document which is editing it.
 *
 * @author Jaroslav Tulach
-* @deprecated Use DataEditorSupport instead
+* @deprecated Use {@link org.openide.text.DataEditorSupport} instead
 */
 @Deprecated
 public class EditorSupport extends OpenSupport

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.remote.sync;
 
+import org.netbeans.modules.cnd.api.remote.RemoteBinaryService.RemoteBinaryID;
 import org.netbeans.modules.cnd.remote.support.*;
 import java.io.File;
 import junit.framework.Test;
@@ -51,11 +52,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 
-    static {
-//        System.setProperty("cnd.remote.testuserinfo", "rdtest:********@endif.russia");
-//        System.setProperty("cnd.remote.logger.level", "0");
-//        System.setProperty("nativeexecution.support.logger.level", "0");
-    }
     public RemoteBinaryServiceTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
@@ -91,8 +87,14 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
                 assertTrue(rcs.run() == 0);
                 expectedDownloadCount++;
             }
-            localPath = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
-            assertNotNull(localPath);
+
+            RemoteBinaryID remoteBinaryID = RemoteBinaryService.getRemoteBinary(execEnv, remotePath);
+            assertNotNull(remoteBinaryID);
+
+            Boolean result = RemoteBinaryService.getResult(remoteBinaryID).get();
+            assertTrue(result);
+
+            localPath = RemoteBinaryService.getFileName(remoteBinaryID);
             localFile = new File(localPath);
             assertTrue(localFile.exists());
             assertTrue(localFile.length() > 0);

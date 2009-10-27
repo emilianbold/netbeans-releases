@@ -44,14 +44,17 @@ package org.netbeans.modules.javadoc.search;
 import java.awt.EventQueue;
 import java.io.Externalizable;
 import java.io.ObjectStreamException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ElementHandle;
@@ -59,7 +62,9 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
@@ -68,6 +73,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -82,17 +88,20 @@ public final class IndexSearch
     private static final String INDEX_SEARCH_HELP_CTX_KEY = "javadoc.search.window"; //NOI18N
             
     private static final java.awt.Dimension PREFFERED_SIZE = new java.awt.Dimension( 580, 430 );
+    static Logger LOG = Logger.getLogger(IndexSearch.class.getName());
 
     static final long serialVersionUID =1200348578933093459L;
 
     /** The only instance allowed in system */
-    private static Reference refIndexSearch;
+    private static Reference<IndexSearch> refIndexSearch;
     
     /** cache of previously searched strings */
     private static Object[] MRU = new Object[0];
 
     /** Search engine */
-    private JavadocSearchEngine searchEngine = null;
+    private final SearchTask searchTask = new SearchTask(this);
+    /** search button state */
+    private boolean stopState = false;
 
     /** The state of the window is stored in hidden options of DocumentationSettings */
     private DocumentationSettings ds = DocumentationSettings.getDefault();
@@ -108,7 +117,7 @@ public final class IndexSearch
     private JSplitPane splitPanel;
 
     /** List models for different sorts */
-    private ArrayList results = new ArrayList();
+    private List<DocIndexItem> results = new ArrayList<DocIndexItem>();
 
     private DefaultListModel referenceModel = null;
     private DefaultListModel typeModel = null;
@@ -118,6 +127,7 @@ public final class IndexSearch
     private int oldSplit = DocumentationSettings.getDefault().getIdxSearchSplit();
 
     private final DefaultListModel waitModel = new DefaultListModel();
+    private final DefaultListModel initModel = new DefaultListModel();
     private final DefaultListModel notModel = new DefaultListModel();
     private boolean setDividerLocation;
 
@@ -127,6 +137,10 @@ public final class IndexSearch
         DocIndexItem dii = new DocIndexItem( b.getString("CTL_SEARCH_Wait" ), "", null, "" );    //NOI18N
         dii.setIconIndex( DocSearchIcons.ICON_WAIT );
         waitModel.addElement( dii );
+
+        dii = new DocIndexItem( b.getString("CTL_SEARCH_InitRoots"), "", null, "" );    //NOI18N
+        dii.setIconIndex( DocSearchIcons.ICON_WAIT );
+        initModel.addElement( dii );
 
         DocIndexItem diin = new DocIndexItem( b.getString("CTL_SEARCH_NotFound" ), "", null, "" );   //NOI18N
         diin.setIconIndex( DocSearchIcons.ICON_NOT_FOUND );
@@ -140,8 +154,7 @@ public final class IndexSearch
         javax.swing.ComboBoxEditor editor = searchComboBox.getEditor();
         editor.addActionListener (new java.awt.event.ActionListener () {
                                       public void actionPerformed (java.awt.event.ActionEvent evt) {
-                                          if ( searchEngine == null )
-                                              searchButtonActionPerformed( evt );
+                                          searchButtonActionPerformed( evt );
                                       }
                                   }
                                  );
@@ -170,12 +183,14 @@ public final class IndexSearch
         resultsList = new javax.swing.JList ();
         resultsList.setSelectionMode (javax.swing.ListSelectionModel.SINGLE_SELECTION );
         resultsList.addKeyListener (new java.awt.event.KeyAdapter () {
+                                        @Override
                                         public void keyPressed (java.awt.event.KeyEvent evt) {
                                             resultsListKeyPressed (evt);
                                         }
                                     }
                                    );
         resultsList.addMouseListener (new java.awt.event.MouseAdapter () {
+                                          @Override
                                           public void mouseClicked (java.awt.event.MouseEvent evt) {
                                               resultsListMouseClicked (evt);
                                           }
@@ -238,20 +253,24 @@ public final class IndexSearch
             sourceButton.setMnemonic(b.getString("CTL_SEARCH_showSource_Mnemonic").charAt(0));  // NOI18N
         }
         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind"));
+        stopState = false;
         Mnemonics.setLocalizedText(helpButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonHelp"));
         
         initAccessibility();
         resolveButtonState();
     }
     
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
     
+    @Override
     protected String preferredID() {
         return "JavaDocIndexSearch"; // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(INDEX_SEARCH_HELP_CTX_KEY);
     }
@@ -401,7 +420,7 @@ public final class IndexSearch
     // </editor-fold>//GEN-END:initComponents
 
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        Help help=(Help)Lookup.getDefault().lookup(Help.class);
+        Help help = Lookup.getDefault().lookup(Help.class);
         
         help.showHelp(getHelpCtx());
     }//GEN-LAST:event_helpButtonActionPerformed
@@ -591,16 +610,11 @@ public final class IndexSearch
     }//GEN-LAST:event_searchComboBoxActionPerformed
 
     private void searchButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        if ( searchEngine == null ) {
-            if ( searchComboBox.getEditor().getItem().toString() != null &&
+        if (evt != null && stopState) {
+            searchTask.stopSearch();
+        } else if ( searchComboBox.getEditor().getItem().toString() != null &&
                     searchComboBox.getEditor().getItem().toString().length() > 0 ) {
-                searchEngine = JavadocSearchEngine.getDefault();
-                go();
-            }
-        }
-        else {
-            searchEngine.stop();
-            searchEngine = null;
+            go();
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
@@ -618,11 +632,12 @@ public final class IndexSearch
     // End of variables declaration//GEN-END:variables
 
 
-    private void searchStoped() {
-        searchEngine = null;
-        javax.swing.SwingUtilities.invokeLater( new Runnable() {
+    private void searchStoped(final List<DocIndexItem> newResults) {
+        Mutex.EVENT.readAccess( new Runnable() {
                                                     public void run() {
+                                                        results = newResults;
                                                         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind"));
+                                                        stopState = false;
                                                         referenceModel = typeModel = alphaModel = null;
                                                         sortResults();
                                                         if ( resultsList.getModel().getSize() > 0 ) {
@@ -649,9 +664,7 @@ public final class IndexSearch
 
         if ( quickFind != null ) {
             searchComboBox.getEditor().setItem( quickFind );
-            if ( searchEngine == null ) {
-                searchButtonActionPerformed( null );
-            }
+            searchButtonActionPerformed( null );
         }
 
         quickFind = null;
@@ -686,9 +699,9 @@ public final class IndexSearch
 
     public static IndexSearch getDefault() {
         IndexSearch indexSearch;
-        if (refIndexSearch == null || null == (indexSearch = (IndexSearch) refIndexSearch.get())) {
+        if (refIndexSearch == null || null == (indexSearch = refIndexSearch.get())) {
             indexSearch = new IndexSearch ();
-            refIndexSearch = new SoftReference(indexSearch);
+            refIndexSearch = new SoftReference<IndexSearch>(indexSearch);
 
             indexSearch.setName( NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_WindowTitle") );   //NOI18N
             indexSearch.setIcon(ImageUtilities.loadImage("org/netbeans/modules/javadoc/resources/searchDoc.gif")); // NOI18N
@@ -721,7 +734,7 @@ public final class IndexSearch
         String toFind = searchComboBox.getEditor().getItem().toString().trim();
 
         // Alocate array for results
-        results = new ArrayList();
+        results = new ArrayList<DocIndexItem>();
 
         //Clear all models
         referenceModel = null;
@@ -742,25 +755,11 @@ public final class IndexSearch
 
         resultsList.setModel( waitModel );
 
-        try {
-            searchEngine.search(new String[]{toFind}, new JavadocSearchEngine.SearchEngineCallback(){
-                public void finished(){
-                    searchStoped();
-                }
-                public void addItem(DocIndexItem item){
-                    results.add(item);
-                }
-            });
-        }
-        catch(NoJavadocException noJdc){
-            DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( noJdc.getMessage() ) );   //NOI18N
-            searchStoped();
-            return;
-        }
-        
         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonStop"));
+        stopState = true;
+        searchTask.addSearch(toFind);
     }
-    
+
     private void mirrorMRUStrings() {
         ComboBoxModel model = searchComboBox.getModel();
         int size = model.getSize();
@@ -770,16 +769,14 @@ public final class IndexSearch
         }
     }
 
-    DefaultListModel generateModel( java.util.Comparator comp ) {
+    DefaultListModel generateModel( java.util.Comparator<DocIndexItem> comp ) {
         DefaultListModel model = new DefaultListModel();
 
         java.util.Collections.sort( results, comp );
-        java.util.Iterator it = results.iterator();
 
         String pckg = null;
 
-        while ( it.hasNext() ) {
-            DocIndexItem dii = (DocIndexItem)it.next();
+        for (DocIndexItem dii : results) {
             if ( comp == DocIndexItem.REFERENCE_COMPARATOR &&
                     !dii.getPackage().equals( pckg ) &&
                     dii.getIconIndex() != DocSearchIcons.ICON_PACKAGE ) {
@@ -844,5 +841,135 @@ public final class IndexSearch
         quickBrowser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IndexSearch.class, "ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
 
         return quickBrowser;
+    }
+
+    private void stopWorld() {
+        searchButton.setEnabled(false);
+        searchComboBox.setEnabled(false);
+        resultsList.setModel(initModel);
+    }
+
+    private void resumeWorld() {
+        searchButton.setEnabled(true);
+        searchComboBox.setEnabled(true);
+        resultsList.setModel(waitModel);
+    }
+
+    private static final class SearchTask implements Runnable {
+        private static final RequestProcessor RP = new RequestProcessor(IndexSearch.class.getName(), 1);
+        private final IndexSearch indexSearch;
+        private final Task task;
+        private final List<String> queries;
+        private boolean rootsInited = false;
+
+        private JavadocSearchEngine searchEngine;
+
+        private SearchTask(IndexSearch indexSearch) {
+            this.indexSearch = indexSearch;
+            task = RP.create(this);
+            this.queries = new ArrayList<String>();
+        }
+
+
+        public void addSearch(String toFind) {
+            synchronized(this) {
+                queries.add(toFind);
+            }
+            LOG.fine("SearchTask.addSearch: " + toFind);
+            task.schedule(0);
+        }
+
+        public void stopSearch() {
+            searchEngine.stop();
+        }
+
+        public void run() {
+            // init roots
+            initRoots();
+            String toFind;
+            synchronized(this) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("SearchTask.run: " + queries.size() + ", " + queries.toString());
+                }
+
+                toFind = queries.remove(0);
+                if (isCanceled()) {
+                    LOG.fine("SearchTask.cancel");
+                    return;
+                }
+            }
+            // search
+            searchEngine = JavadocSearchEngine.getDefault();
+            search(toFind, searchEngine, new ArrayList<DocIndexItem>());
+        }
+
+        private synchronized boolean isCanceled() {
+            return !queries.isEmpty();
+        }
+
+        private void initRoots() {
+            if (rootsInited) {
+                return;
+            }
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        indexSearch.stopWorld();
+                    }
+                });
+
+                // init roots
+                JavadocRegistry.getDefault().getDocRoots();
+                LOG.fine("SearchTask.initRoots");
+                rootsInited = true;
+
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        indexSearch.resumeWorld();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private void search(final String toFind, final JavadocSearchEngine engine, final List<DocIndexItem> results) {
+            try {
+                engine.search(new String[]{toFind}, new JavadocSearchEngine.SearchEngineCallback(){
+                    public void finished(){
+                        LOG.fine("SearchTask.finished: " + toFind);
+                        showResult(results);
+                    }
+                    public void addItem(DocIndexItem item){
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("SearchTask.addItem: " + toFind + ", item: " + item.toString());
+                        }
+                        results.add(item);
+                        if (isCanceled()) {
+                            LOG.fine("SearchTask.addItem.stopEngine: " + toFind + ", item: " + item.toString());
+                            engine.stop();
+                        }
+                    }
+                });
+            }
+            catch(NoJavadocException noJdc){
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( noJdc.getMessage() ) );   //NOI18N
+                indexSearch.searchStoped(results);
+            }
+        }
+
+        private void showResult(List<DocIndexItem> results) {
+            if (!isCanceled()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "SearchTask.showResult: " + results.size(), new Exception());
+                }
+                indexSearch.searchStoped(results);
+            }
+        }
+
     }
 }

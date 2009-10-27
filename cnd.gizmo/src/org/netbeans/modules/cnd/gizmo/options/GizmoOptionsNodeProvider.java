@@ -87,7 +87,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsGizmo"); // NOI18N // FIXUP: need real help tag from Ann
+            return new HelpCtx("ProjectPropsProfile"); // NOI18N
         }
     }
 
@@ -103,7 +103,7 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
         set.put(new GizmoStringNodeProp(gizmoOptions.getDlightConfigurationName(), GizmoOptionsImpl.CONFIGURATION_PROP, getString("profileConfiguration_txt"), getString("profileConfiguration_help")));
         sheet.put(set);
 
-        set = new Sheet.Set();
+//        set = new Sheet.Set();
 //        set.setName("Indicators"); // NOI18N
 //        set.setDisplayName("To Be Removed from here and down.....");//NOI18N
 //        set.put(new IntNodeProp(gizmoOptions.getDataProvider(), true, GizmoOptionsImpl.DATA_PROVIDER_PROP, getString("dataprovider_txt"), getString("dataprovider_help"))); // NOI18N

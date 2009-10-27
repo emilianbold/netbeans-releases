@@ -379,7 +379,8 @@ made subject to such option by the copyright holder.
             <globmapper from="${app.name}/*" to="*"/>
         </unzip>
         <echo level="warning">
-Note: Since NetBeans 6.7, you can use property 'cluster.path' instead of 'create-platform' target. See http://wiki.netbeans.org/DevFaqHowToReuseModules.
+Note: As of NetBeans 6.7, you can use the property 'cluster.path' instead of the 'create-platform' target.
+See: http://wiki.netbeans.org/DevFaqHowToReuseModules
         </echo>
     </target>
     

@@ -607,7 +607,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 typeName = indexedConstant.getTypeName();
             }
             if (typeName == null) {
-                typeName = "?"; //NOI18N
+                typeName = indexedConstant.isTypeResolved() ? "?" : ""; //NOI18N
             }
             return typeName;
         }
@@ -738,7 +738,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         protected String getFunctionBodyForTemplate() {
-            return "${cursor};\n";//NOI18N
+            return "${cursor}\n";//NOI18N
         }
     }
 

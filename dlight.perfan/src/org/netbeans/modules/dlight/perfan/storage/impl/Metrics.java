@@ -64,6 +64,14 @@ public class Metrics {
         this.msort = msort;
     }
 
+    public String getMsort() {
+        return msort;
+    }
+
+    public String getMspec() {
+        return mspec;
+    }
+
     public static Metrics constructFrom(final List<Column> columns, final List<Column> orderBy) {
         String mspecResult = convertor.collectionToString(columns);
         String msortResult = convertor.collectionToString(orderBy);

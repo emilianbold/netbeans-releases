@@ -79,8 +79,10 @@ public class MakeConfiguration extends Configuration {
     public static final String OBJECTDIR_MACRO_NAME = "OBJECTDIR"; // NOI18N
     public static final String OBJECTDIR_MACRO = "${" + OBJECTDIR_MACRO_NAME + "}"; // NOI18N
     // Project Types
-    private static String[] TYPE_NAMES = {
-        getString("MakefileName"),
+    private static String[] TYPE_NAMES_UNMANAGED = {
+        getString("MakefileName")
+    };
+    private static String[] TYPE_NAMES_MANAGED = {
         getString("ApplicationName"),
         getString("DynamicLibraryName"),
         getString("StaticLibraryName"),
@@ -129,7 +131,12 @@ public class MakeConfiguration extends Configuration {
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
-        configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
+        if (configurationTypeValue == TYPE_MAKEFILE) {
+            configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
+        }
+        else {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
+        }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
         compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
@@ -838,6 +845,34 @@ public class MakeConfiguration extends Configuration {
         val = IpeUtils.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
         val = IpeUtils.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
         return val;
+    }
+
+    /*
+     * Special version of IntConfiguration
+     * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
+     */
+    class ManagedIntConfiguration extends IntConfiguration {
+        public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
+            super(master, def, names, options);
+        }
+
+        @Override
+        public void setValue(String s) {
+            String[] names = getNames();
+            if (s != null) {
+                for (int i = 0; i < names.length; i++) {
+                    if (s.equals(names[i])) {
+                        setValue(i+1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public String getName() {
+            return getNames()[getValue()-1];
+        }
     }
 //
 //    private String[] getCompilerSetDisplayNames() {

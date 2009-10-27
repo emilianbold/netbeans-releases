@@ -178,7 +178,7 @@ public class NbTestCaseTest extends NbTestCase {
         try {
             assertGC("The object is really not referenced", wr);
         } catch (AssertionFailedError afe) {
-            assertTrue("Found the reference", afe.getMessage().indexOf("Not found") >= 0);
+            assertTrue("Found the reference:\n" + afe.getMessage(), afe.getMessage().indexOf("Not found") >= 0);
             return;
         }
         fail("The assertion should fail");

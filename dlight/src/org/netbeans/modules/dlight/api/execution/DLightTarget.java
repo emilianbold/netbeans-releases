@@ -68,7 +68,6 @@ public abstract class DLightTarget {
     static {
         DLightTargetAccessor.setDefault(new DLightTargetAccessorImpl());
     }
-
     /**
      * Create new target to be d-lighted, as a parameter service which
      * can start and terminated target should be passed
@@ -251,17 +250,20 @@ public abstract class DLightTarget {
         void setupEnvironment(DLightTarget target, MacroMap env) throws ConnectException;
     }
 
-    private static final class DLightTargetAccessorImpl extends DLightTargetAccessor {
+    private static final class DLightTargetAccessorImpl extends DLightTargetAccessor<DLightTarget> {
 
         @Override
-        public DLightTargetExecutionService<? extends DLightTarget> getDLightTargetExecution(DLightTarget target) {
-            return target.getExecutionService();
+        public DLightTargetExecutionService<DLightTarget> getDLightTargetExecution(DLightTarget target) {
+            @SuppressWarnings("unchecked")
+            DLightTargetExecutionService<DLightTarget> executionService = (DLightTargetExecutionService<DLightTarget>) target.getExecutionService();
+            return executionService;
         }
 
         @Override
         public Info getDLightTargetInfo(DLightTarget target) {
             return target.info;
         }
+
     }
 
     public static final class Info {

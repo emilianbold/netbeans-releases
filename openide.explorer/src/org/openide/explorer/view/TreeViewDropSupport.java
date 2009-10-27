@@ -769,7 +769,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
                 Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
 
-                ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
+                if( null != ExplorerDnDManager.getDefault().getDraggedTransferable( (DnDConstants.ACTION_MOVE & dropAction) != 0 ) )
+                    ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
 
                 //postpone the potential re-order so that the drop Node has enough 
                 //time to re-create its children

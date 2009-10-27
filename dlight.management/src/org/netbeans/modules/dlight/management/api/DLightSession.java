@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,6 +84,8 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -213,18 +216,25 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return state;
     }
 
-    public String getDescription() {
+    public synchronized String getDescription() {
         if (description == null) {
-            String targets = ""; // NOI18N
+            String targets;
+
             if (contexts.isEmpty()) {
-                targets = "no targets"; // NOI18N
+                targets = loc("DLightSession.description.noTargets"); // NOI18N
             } else {
+                StringBuilder sb = new StringBuilder();
+
                 for (ExecutionContext context : contexts) {
-                    targets += context.getTarget().toString() + "; "; // NOI18N
+                    sb.append(context.getTarget().toString()).append("; "); // NOI18N
                 }
+                
+                targets = sb.toString();
             }
-            description = "Session #" + sessionID + " (" + targets + ")"; // NOI18N
+            
+            description = loc("DLightSession.description", String.valueOf(sessionID), targets); // NOI18N
         }
+        
         return description;
     }
 
@@ -249,12 +259,13 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
             return Collections.emptyList();
         }
         List<Visualizer<?>> result = new ArrayList<Visualizer<?>>();
-        for (String toolName : visualizers.keySet()) {
-            Map<String, Visualizer<?>> toolVisualizers = visualizers.get(toolName);
-            for (String visID : toolVisualizers.keySet()) {
-                result.add(toolVisualizers.get(visID));
+
+        for (Entry<String, Map<String, Visualizer<?>>> mapEntry : visualizers.entrySet()) {
+            for (Entry<String, Visualizer<?>> entry : mapEntry.getValue().entrySet()) {
+                result.add(entry.getValue());
             }
         }
+        
         return result;
 
     }
@@ -337,7 +348,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 // first target.... (from the first context)
                 boolean f = false;
 
-                final DLightTargetAccessor targetAccess =
+                final DLightTargetAccessor<? extends DLightTarget> targetAccess =
                         DLightTargetAccessor.getDefault();
 
                 for (ExecutionContext context : contexts) {
@@ -532,6 +543,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
                         for (Indicator<?> i : indicators) {
+                            i.setIndicatorActionsProviderContext(Lookups.fixed(context.getDLightConfiguration(), tool));
                             target.addTargetListener(i);
                             boolean wasSubscribed = idp.subscribe(i);
                             if (wasSubscribed) {
@@ -621,8 +633,8 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
         Map<String, String> info = targetInfo.getInfo();
 
-        for (String key : info.keySet()) {
-            DataFilter filter = DataFiltersManager.getInstance().createFilter(key, info.get(key));
+        for (Entry<String, String> entry : info.entrySet()) {
+            DataFilter filter = DataFiltersManager.getInstance().createFilter(entry.getKey(), entry.getValue());
             if (filter != null) {
                 dataFiltersSupport.addFilter(filter, false);
             }
@@ -896,5 +908,9 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     void setActive(boolean b) {
         isActive = b;
+    }
+
+    private static String loc(String key, String ... params) {
+        return NbBundle.getMessage(DLightSession.class, key, params);
     }
 }

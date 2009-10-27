@@ -45,6 +45,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
@@ -101,6 +102,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1060,7 +1062,9 @@ public class IssuePanel extends javax.swing.JPanel {
                     Component comp = scrollPane.getHorizontalScrollBar();
                     delta = comp.isVisible() ? comp.getHeight() : 0;
                 }
-                dim = new Dimension(dim.width, delta + ((dim.height < 100) ? 100 : dim.height));
+                Insets insets = getInsets();
+                int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;
+                dim = new Dimension(dim.width, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
                 return dim;
             }
         };
@@ -1227,8 +1231,6 @@ public class IssuePanel extends javax.swing.JPanel {
         issueTypeCombo.addActionListener(formListener);
 
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        addCommentArea.setRows(5);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -1379,8 +1381,7 @@ public class IssuePanel extends javax.swing.JPanel {
                                     .add(layout.createSequentialGroup()
                                         .add(summaryField)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(summaryWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                                        .add(summaryWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 9, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                         .add(submitButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1522,9 +1523,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, priorityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
-
         layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, priorityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         reportedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedField.AccessibleContext.accessibleDescription")); // NOI18N
         blocksButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -1608,6 +1609,9 @@ public class IssuePanel extends javax.swing.JPanel {
             else if (evt.getSource() == priorityCombo) {
                 IssuePanel.this.priorityComboActionPerformed(evt);
             }
+            else if (evt.getSource() == issueTypeCombo) {
+                IssuePanel.this.issueTypeComboActionPerformed(evt);
+            }
             else if (evt.getSource() == submitButton) {
                 IssuePanel.this.submitButtonActionPerformed(evt);
             }
@@ -1619,9 +1623,6 @@ public class IssuePanel extends javax.swing.JPanel {
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == issueTypeCombo) {
-                IssuePanel.this.issueTypeComboActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -1889,7 +1890,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), issue.getBugzillaRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), // NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.blocksChooser")); // NOI18N
         if (newIssue != null) {
             StringBuilder sb = new StringBuilder();
             if (!blocksField.getText().trim().equals("")) { // NOI18N
@@ -1901,7 +1906,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), issue.getBugzillaRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.dependsOnChooser")); // NOI18N
         if (newIssue != null) {
             StringBuilder sb = new StringBuilder();
             if (!dependsField.getText().trim().equals("")) { // NOI18N
@@ -1990,7 +1999,11 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), issue.getBugzillaRepository(), this); // NOI18N
+        Issue newIssue = BugtrackingUtil.selectIssue(
+                NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
+                issue.getBugzillaRepository(),
+                this,
+                new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
         if (newIssue != null) {
             duplicateField.setText(newIssue.getID());
         }

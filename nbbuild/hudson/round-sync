@@ -16,7 +16,7 @@ rollback() {
   fi
 }
 
-BASETIP=`hg id -i | tr -d "+"`
+BASETIP=`hg log -r . --template '{node}'`
 trap rollback EXIT
 
 hg pull -u http://hg.netbeans.org/"$push_repo"
@@ -33,6 +33,8 @@ else
     fi
 fi
 
-hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
+TIP=`hg log -r . --template '{node}'`
+
+hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
 unset BASETIP
 exit 0

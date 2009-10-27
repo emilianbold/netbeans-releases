@@ -43,128 +43,18 @@ package org.openide.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.junit.MockServices;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.ContextGlobalProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.TopComponent;
 
 /** Utilities for actions tests.
  * @author Jesse Glick
  */
 public abstract class ActionsInfraHid {
-    
+
     private ActionsInfraHid() {}
     
-    public static final UsefulThings UT;
-    static {
-        MockServices.setServices(UsefulThings.class);
-        UT = Lookup.getDefault().lookup(UsefulThings.class);
-    }
-    
-    /** An action manager and top component registry.
-     */
-    public static final class UsefulThings implements TopComponent.Registry, ContextGlobalProvider {
-        // Registry:
-        private TopComponent activated;
-        /** instances to keep */
-        private InstanceContent ic = new InstanceContent ();
-        /** lookup */
-        private Lookup lookup = new AbstractLookup (ic);
-        /** changes */
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-            pcs.addPropertyChangeListener(l);
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-            pcs.removePropertyChangeListener(l);
-        }
-        
-        private void firePropertyChange(String p, Object o, Object n) {
-            pcs.firePropertyChange(p, o, n);
-        }
-        
-        
-        public TopComponent getActivated() {
-            return activated;
-        }
-        
-        public void setActivated(TopComponent nue) {
-            TopComponent old = activated;
-            activated = nue;
-            firePropertyChange(PROP_ACTIVATED, old, nue);
-            updateLookup ();
-        }
-        
-        private Node[] activatedNodes = new Node[0];
-        private Node[] currentNodes = null;
-        
-        public Node[] getActivatedNodes() {
-            return activatedNodes;
-        }
-        
-        public Node[] getCurrentNodes() {
-            return currentNodes;
-        }
-        
-        public void setCurrentNodes(Node[] nue) {
-            if (nue != null) {
-                Node[] old = activatedNodes;
-                activatedNodes = nue;
-                firePropertyChange(PROP_ACTIVATED_NODES, old, nue);
-            }
-            Node[] old = currentNodes;
-            currentNodes = nue;
-            firePropertyChange(PROP_CURRENT_NODES, old, nue);
-            updateLookup ();
-        }
-        
-        private Set<TopComponent> opened = null;
-        
-        public Set<TopComponent> getOpened() {
-            return opened;
-        }
-        
-        public void setOpened(Set<TopComponent> nue) {
-            Set<TopComponent> old = opened;
-            opened = nue;
-            firePropertyChange(PROP_OPENED, old, nue);
-        }
-        
-        private void updateLookup () {
-            List<IPair> items = new ArrayList<IPair>();
-            if (currentNodes != null) {
-                for (Node n : currentNodes) {
-                    items.add(new IPair(n));
-                }
-            } else {
-                items.add (IPair.NULL_NODES);
-            }
-            if (activated != null) {
-                items.add (new IPair (activated.getActionMap ()));
-            }
-            ic.setPairs (items);
-        }
-                
-        //
-        // ContextGlobalProvider
-        //
-        public Lookup createGlobalContext() {
-            return lookup;
-        }
-    }
-    
     /** Prop listener that will tell you if it gets a change.
+     * XXX replace with MockPropertyChangeListener
      */
     public static final class WaitPCL implements PropertyChangeListener {
         /** whether a change has been received, and if so count */
@@ -208,45 +98,4 @@ public abstract class ActionsInfraHid {
             l.add(new byte[1000]);
         }
     }
-
-    private static final class IPair extends AbstractLookup.Pair {
-        private Object obj;
-        
-        public static final IPair NULL_NODES = new IPair(new AbstractNode(Children.LEAF));
-        
-        public IPair (Object obj) {
-            this.obj = obj;
-        }
-        
-        protected boolean creatorOf(Object obj) {
-            return this.obj == obj;
-        }
-        
-        public String getDisplayName() {
-            return obj.toString ();
-        }
-        
-        public String getId() {
-            if (this == NULL_NODES) {
-                return "none"; // NOI18N
-            }
-            return obj.toString ();
-        }
-        
-        public Object getInstance() {
-            if (this == NULL_NODES) {
-                return null;
-            }
-            return obj;
-        }
-        
-        public Class getType() {
-            return obj.getClass();
-        }
-        
-        protected boolean instanceOf(Class c) {
-            return c.isInstance(obj);
-        }
-        
-    } // end of IPair
 }

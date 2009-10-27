@@ -36,20 +36,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-/*
- * THAIndicatorPanel.java
- *
- * Created on Aug 27, 2009, 3:46:54 PM
- */
 package org.netbeans.modules.dlight.tha;
 
-import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,13 +50,18 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
 
     private final Action deadlocksAction;
     private final Action racesAction;
+
     /** Creates new form THAIndicatorPanel */
     public THAIndicatorPanel(Action deadlocksAction, Action racesAction) {
-        initComponents();
-        deadlocksLabel.setEnabled(false);
-        racesLabel.setEnabled(false);
         this.deadlocksAction = deadlocksAction;
         this.racesAction = racesAction;
+        initComponents();
+
+        // not everything could be set in the form editor
+        deadlocksDetails.setVisible(false);
+        deadlocksDetails.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        racesDetails.setVisible(false);
+        racesDetails.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     /** This method is called from within the constructor to
@@ -78,32 +73,35 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jEditorPane1 = new javax.swing.JEditorPane();
         deadlocksLabel = new javax.swing.JLabel();
         racesLabel = new javax.swing.JLabel();
-        deadlocksDetails = new javax.swing.JLabel();
-        racesDetails = new javax.swing.JLabel();
+        deadlocksDetails = new javax.swing.JButton();
+        racesDetails = new javax.swing.JButton();
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.jLabel2.text")); // NOI18N
-
-        jScrollPane1.setViewportView(jEditorPane1);
-
-        setBackground(java.awt.Color.white);
+        setOpaque(false);
 
         deadlocksLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_active16.png"))); // NOI18N
-        deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksLabel.text")); // NOI18N
+        deadlocksLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAControlPanel.deadlocksLabel.nodeadlocks")); // NOI18N
         deadlocksLabel.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/deadlock_inactive16.png"))); // NOI18N
+        deadlocksLabel.setEnabled(false);
 
         racesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_active16.png"))); // NOI18N
-        racesLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.racesLabel.text")); // NOI18N
+        racesLabel.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAControlPanel.dataracesLabel.nodataraces")); // NOI18N
         racesLabel.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/dlight/tha/resources/races_inactive16.png"))); // NOI18N
+        racesLabel.setEnabled(false);
 
+        deadlocksDetails.setAction(deadlocksAction);
+        deadlocksDetails.setForeground(java.awt.Color.blue);
         deadlocksDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.deadlocksDetails.text")); // NOI18N
+        deadlocksDetails.setBorderPainted(false);
+        deadlocksDetails.setContentAreaFilled(false);
         deadlocksDetails.setName("deadlocksDetails"); // NOI18N
 
+        racesDetails.setAction(racesAction);
+        racesDetails.setForeground(java.awt.Color.blue);
         racesDetails.setText(org.openide.util.NbBundle.getMessage(THAIndicatorPanel.class, "THAIndicatorPanel.racesDetails.text")); // NOI18N
+        racesDetails.setBorderPainted(false);
+        racesDetails.setContentAreaFilled(false);
         racesDetails.setName("racesDetails"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -113,15 +111,13 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(racesLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(racesDetails))
-                    .add(layout.createSequentialGroup()
-                        .add(deadlocksLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deadlocksDetails)))
-                .addContainerGap(174, Short.MAX_VALUE))
+                    .add(racesLabel)
+                    .add(deadlocksLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(deadlocksDetails)
+                    .add(racesDetails))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -130,7 +126,7 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(deadlocksLabel)
                     .add(deadlocksDetails))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(racesLabel)
                     .add(racesDetails))
@@ -138,58 +134,37 @@ public class THAIndicatorPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel deadlocksDetails;
+    private javax.swing.JButton deadlocksDetails;
     private javax.swing.JLabel deadlocksLabel;
-    private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel racesDetails;
+    private javax.swing.JButton racesDetails;
     private javax.swing.JLabel racesLabel;
     // End of variables declaration//GEN-END:variables
 
     void setDeadlocks(int deadlocks) {
         if (0 < deadlocks) {
-            deadlocksLabel.setText(getMessage("THAControlPanel.deadlocksButton.deadlocks", deadlocks));//NOI18N
+            deadlocksLabel.setText(deadlocks == 1 ?
+                getMessage("THAControlPanel.deadlocksLabel.deadlock", deadlocks) ://NOI18N
+                getMessage("THAControlPanel.deadlocksLabel.deadlocks", deadlocks));//NOI18N
             deadlocksLabel.setEnabled(true);
-            deadlocksDetails.setForeground(Color.blue);
-            deadlocksDetails.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            deadlocksDetails.setText(getMessage("THAIndicatorPanel.details"));//NOI18N
-            deadlocksDetails.addMouseListener(new MouseAdapter() {
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (SwingUtilities.isLeftMouseButton(e)){
-                        deadlocksAction.actionPerformed(null);
-                    }
-                }
-
-            });
+            deadlocksDetails.setVisible(true);
         } else {
-            deadlocksLabel.setText(getMessage("THAControlPanel.deadlocksButton.nodeadlocks"));//NOI18N
+            deadlocksLabel.setText(getMessage("THAControlPanel.deadlocksLabel.nodeadlocks"));//NOI18N
             deadlocksLabel.setEnabled(false);
+            deadlocksDetails.setVisible(false);
         }
     }
 
     void setDataRaces(int dataraces) {
         if (0 < dataraces) {
-            racesLabel.setText(getMessage("THAControlPanel.dataracesButton.dataraces", dataraces));//NOI18N
+            racesLabel.setText(dataraces == 1 ?
+                getMessage("THAControlPanel.dataracesLabel.datarace", dataraces) ://NOI18N
+                getMessage("THAControlPanel.dataracesLabel.dataraces", dataraces));//NOI18N
             racesLabel.setEnabled(true);
-            racesDetails.setForeground(Color.blue);
-            racesDetails.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            racesDetails.setText(getMessage("THAIndicatorPanel.details"));//NOI18N
-            racesDetails.addMouseListener(new MouseAdapter() {
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (SwingUtilities.isLeftMouseButton(e)){
-                        racesAction.actionPerformed(null);
-                    }
-                }
-
-            });
+            racesDetails.setVisible(true);
         } else {
-            racesLabel.setText(getMessage("THAControlPanel.dataracesButton.nodataraces"));//NOI18N
+            racesLabel.setText(getMessage("THAControlPanel.dataracesLabel.nodataraces"));//NOI18N
             racesLabel.setEnabled(false);
+            racesDetails.setVisible(false);
         }
     }
 

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.maven.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -296,6 +295,63 @@ public class PluginPropertyUtils {
         }
         return toRet;
     }
+
+    /**
+     * gets the list of values for the given property, if configured in the current project.
+     * @param multiproperty list's root element (eg. "sourceRoots")
+     * @param singleproperty - list's single value element (eg. "sourceRoot")
+     */
+    public static String[] getReportPluginPropertyList(Project prj, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
+        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        assert project != null : "Requires a maven project instance"; //NOI18N
+        return getReportPluginPropertyList(project.getOriginalMavenProject(), groupId, artifactId, multiproperty, singleproperty, goal);
+    }
+
+    /**
+     * gets the list of values for the given property, if configured in the current project.
+     * @param multiproperty list's root element (eg. "sourceRoots")
+     * @param singleproperty - list's single value element (eg. "sourceRoot")
+     */
+    public static String[] getReportPluginPropertyList(MavenProject prj, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
+        String[] toRet = null;
+        if (prj.getReportPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getReportPlugins()) {
+            ReportPlugin plug = (ReportPlugin)obj;
+            if (artifactId.equals(plug.getArtifactId()) &&
+                   groupId.equals(plug.getGroupId())) {
+                if (plug.getReportSets() != null) {
+                    for (Object obj2 : plug.getReportSets()) {
+                        ReportSet exe = (ReportSet)obj2;
+                        if (exe.getReports().contains(goal)) {
+                            toRet = checkListConfiguration(prj, exe.getConfiguration(), multiproperty, singleproperty);
+                            if (toRet != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (toRet == null) {
+                    toRet = checkListConfiguration(prj, plug.getConfiguration(), multiproperty, singleproperty);
+                }
+            }
+        }
+        if (toRet == null) {  //NOI18N
+            if (prj.getPluginManagement() != null) {
+                for (Object obj : prj.getPluginManagement().getPlugins()) {
+                    Plugin plug = (Plugin)obj;
+                    if (artifactId.equals(plug.getArtifactId()) &&
+                        groupId.equals(plug.getGroupId())) {
+                        toRet = checkListConfiguration(prj, plug.getConfiguration(), multiproperty, singleproperty);
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
+
 
     private static String[] checkListConfiguration(MavenProject prj, Object conf, String multiproperty, String singleproperty) {
         if (conf != null && conf instanceof Xpp3Dom) {

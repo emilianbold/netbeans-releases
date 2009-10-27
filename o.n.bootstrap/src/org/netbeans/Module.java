@@ -227,6 +227,9 @@ public abstract class Module extends ModuleInfo {
      * @since JST-PENDING again used from NbProblemDisplayer
      */
     public final boolean provides(String token) {
+        if (provides == null) {
+            return false;
+        }
         for (int i = 0; i < provides.length; i++) {
             if (provides[i].equals(token)) {
                 return true;

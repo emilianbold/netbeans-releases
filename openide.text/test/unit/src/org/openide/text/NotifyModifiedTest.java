@@ -41,7 +41,6 @@
 
 package org.openide.text;
 
-
 import java.beans.PropertyChangeSupport;
 import java.io.StringWriter;
 import java.util.Date;
@@ -85,15 +84,21 @@ implements CloneableEditorSupport.Env {
     private boolean shouldVetoNotifyModified;
     /** kit to create */
     private javax.swing.text.EditorKit editorKit;
-
     
     public NotifyModifiedTest(java.lang.String testName) {
         super(testName);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 20000;
     }
   
 //    public static Test suite() {
 //        return new NotifyModifiedTest("testUndoDoesMarkFileAsDirtyIssue56963");
 //    }
+
+
     
     @Override
     protected void setUp () {

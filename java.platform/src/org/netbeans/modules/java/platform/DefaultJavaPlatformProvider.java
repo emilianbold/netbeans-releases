@@ -43,13 +43,14 @@ package org.netbeans.modules.java.platform;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 
 import java.util.*;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
@@ -60,6 +61,8 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private FileObject storage;
     private JavaPlatform defaultPlatform;
+
+    private static final Logger LOG = Logger.getLogger(DefaultJavaPlatformProvider.class.getName());
 
     public DefaultJavaPlatformProvider () {
         storage = FileUtil.getConfigFile(PLATFORM_STORAGE);
@@ -80,7 +83,7 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
                     DataObject dobj = DataObject.find(platformDefinition);
                     InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                     if (ic == null) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
+                        LOG.warning("DefaultPlatformStorage: The file: "+    //NOI18N
                             platformDefinition.getNameExt() + " has no InstanceCookie");                           //NOI18N
                         continue;
                     }
@@ -89,7 +92,7 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
                             platforms.add((JavaPlatform) ic.instanceCreate());
                         }
                         else {
-                            ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
+                            LOG.warning("DefaultPlatformStorage: The file: "+    //NOI18N
                                 platformDefinition.getNameExt() + " is not an instance of JavaPlatform");                  //NOI18N
                         }
                     }
@@ -99,16 +102,16 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
                             platforms.add((JavaPlatform) instance);
                         }
                         else {
-                            ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
+                            LOG.warning("DefaultPlatformStorage: The file: "+    //NOI18N
                                 platformDefinition.getNameExt() + " is not an instance of JavaPlatform");                  //NOI18N
                         }
                     }
                 }
             }catch (ClassNotFoundException cnf) {
-                ErrorManager.getDefault().notify (cnf);
+                Exceptions.printStackTrace(cnf);
             }
             catch (IOException ioe) {
-                ErrorManager.getDefault().notify (ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         return platforms.toArray(new JavaPlatform[platforms.size()]);

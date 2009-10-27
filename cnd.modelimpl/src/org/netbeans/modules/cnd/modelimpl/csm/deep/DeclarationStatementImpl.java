@@ -208,7 +208,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         declarators.add(new UsingDirectiveImpl(token, getContainingFile(), !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DECLARATION:
-                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext()));
+                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:

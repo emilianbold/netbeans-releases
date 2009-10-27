@@ -44,11 +44,12 @@ package org.netbeans.modules.java.project;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 
 /**
  * Delegates {@link JavadocForBinaryQueryImplementation} to the project which
@@ -56,27 +57,27 @@ import org.openide.ErrorManager;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=100)
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
-    
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JavadocForBinaryQueryImpl.class.getName());
+
+    private static final Logger LOG = Logger.getLogger(JavadocForBinaryQueryImpl.class.getName());
     
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryImpl() {
     }
     
     public JavadocForBinaryQuery.Result findJavadoc(URL binary) {
-        boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+        boolean log = LOG.isLoggable(Level.FINE);
         Project project = FileOwnerQuery.getOwner(URI.create(binary.toString()));
         if (project != null) {
             JavadocForBinaryQueryImplementation jfbqi = project.getLookup().lookup(JavadocForBinaryQueryImplementation.class);
             if (jfbqi != null) {
                 JavadocForBinaryQuery.Result result = jfbqi.findJavadoc(binary);
-                if (log) ERR.log("Project " + project + " reported for " + binary + ": " + (result != null ? Arrays.asList(result.getRoots()) : null));
+                if (log) LOG.fine("Project " + project + " reported for " + binary + ": " + (result != null ? Arrays.asList(result.getRoots()) : null));
                 return result;
             } else {
-                if (log) ERR.log("Project " + project + " did not have any JavadocForBinaryQueryImplementation");
+                if (log) LOG.fine("Project " + project + " did not have any JavadocForBinaryQueryImplementation");
             }
         } else {
-            if (log) ERR.log("No project found for " + binary + "; cannot find Javadoc");
+            if (log) LOG.fine("No project found for " + binary + "; cannot find Javadoc");
         }
         return null;
     }

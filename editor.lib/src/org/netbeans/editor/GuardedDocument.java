@@ -188,9 +188,12 @@ public class GuardedDocument extends BaseDocument
         return guardedBlockChain;
     }
 
-    public boolean isPosGuarded(int pos) {
-        int rel = guardedBlockChain.compareBlock(pos, pos) & MarkBlock.IGNORE_EMPTY;
-        return (rel == MarkBlock.INSIDE_BEGIN || rel == MarkBlock.INNER);
+    public boolean isPosGuarded(int offset) {
+        int rel = guardedBlockChain.compareBlock(offset, offset) & MarkBlock.IGNORE_EMPTY;
+        // Return not guarded when inside line
+        return (rel == MarkBlock.INNER || (rel == MarkBlock.INSIDE_BEGIN && // and at line begining
+                (offset == 0 || org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this).
+                charAt(offset - 1) == '\n')));
     }
 
     /** This method is called automatically before the document

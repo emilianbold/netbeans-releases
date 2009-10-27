@@ -67,6 +67,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.util.Lookup;
@@ -167,7 +168,14 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     }
 
     public Component createEditor(JEditorPane j) {
-        return Utilities.getEditorUI(j).getExtComponent();
+        EditorUI editorUI = Utilities.getEditorUI(j);
+        if (editorUI == null) { // Editor kit not installed yet??
+            javax.swing.plaf.TextUI ui = j.getUI();
+            javax.swing.text.EditorKit kit = j.getEditorKit();
+            throw new IllegalStateException("NbEditorDocument.createEditor(): ui=" + ui + // NOI18N
+                    ", kit=" + kit + ", pane=" + j); // NOI18N
+        }
+        return editorUI.getExtComponent();
     }
 
     public JToolBar createToolbar(JEditorPane j) {

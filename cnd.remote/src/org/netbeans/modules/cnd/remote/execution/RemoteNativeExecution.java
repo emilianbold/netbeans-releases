@@ -64,7 +64,17 @@ class RemoteNativeExecution extends NativeExecution {
         assert execEnv.isRemote();
         this.execEnv = execEnv;
     }
-    
+
+    public int executeCommand(
+            File runDirFile,
+            String executable,
+            String arguments,
+            String[] envp,
+            PrintWriter out,
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException {
+        return executeCommand(runDirFile, executable, arguments, envp, out, in, unbuffer, false);
+    }
 
     /**
      * Execute an executable, a makefile, or a script
@@ -84,11 +94,12 @@ class RemoteNativeExecution extends NativeExecution {
             String[] envp,
             PrintWriter out,
             Reader in,
-            boolean unbuffer) throws IOException, InterruptedException {
+            boolean unbuffer,
+            boolean x11forwarding) throws IOException, InterruptedException {
         RemoteNativeExecutionSupport support = null;
         if (execEnv != null ) {
             support = new RemoteNativeExecutionSupport(execEnv, runDirFile, executable, 
-                    arguments, envToMap(envp), out, in);
+                    arguments, envToMap(envp), out, in, x11forwarding);
         }
         return support == null ? -1 : support.getExitStatus();
     }

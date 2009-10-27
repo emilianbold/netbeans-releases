@@ -70,6 +70,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
@@ -78,6 +84,7 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
+import org.netbeans.modules.glassfish.spi.Utils;
 
 
 /** 
@@ -376,6 +383,39 @@ public class CommandRunner extends BasicTask<OperationState> {
                     if(conn instanceof HttpURLConnection) {
                         HttpURLConnection hconn = (HttpURLConnection) conn;
 
+                        if (conn instanceof HttpsURLConnection) {
+                            // let's just trust any server that we connect to...
+                            // we aren't send them money or secrets...
+                            TrustManager[] tm = new TrustManager[]{
+                                new X509TrustManager() {
+
+                                    public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                        return;
+                                    }
+
+                                    public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                                        return;
+                                    }
+
+                                    public X509Certificate[] getAcceptedIssuers() {
+                                        return null;
+                                    }
+                                }
+                            };
+
+                            SSLContext context = null;
+                            try {
+                                context = SSLContext.getInstance("SSL");
+                                context.init(null, tm, null);
+                                ((HttpsURLConnection)hconn).setSSLSocketFactory(context.getSocketFactory());
+                            } catch (Exception ex) {
+                                // if there is an issue here... there will be another exception later
+                                // which will take care of the user interaction...
+                                Logger.getLogger("glassfish").log(Level.INFO, "trust manager problem: " + urlToConnectTo,ex); // NOI18N
+                            }
+
+                        }
+
                         // Set up standard connection characteristics
                         hconn.setAllowUserInteraction(false);
                         hconn.setDoInput(true);
@@ -457,7 +497,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
         boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
-        URI uri = new URI("http", null, host, port, "/__asadmin/" + cmd, query, null); // NOI18N
+        URI uri = new URI(Utils.getHttpListenerProtocol(host,port), null, host, port, "/__asadmin/" + cmd, query, null); // NOI18N
         return uri.toASCIIString();
     }
     

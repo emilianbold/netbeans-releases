@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -319,7 +320,7 @@ public class ComputeImports {
             
             return null;
         }
-        
+
         @Override
         public Void visitIdentifier(IdentifierTree tree, Map<String, Object> p) {
             super.visitIdentifier(tree, p);

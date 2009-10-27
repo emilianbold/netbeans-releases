@@ -130,7 +130,8 @@ public final class DataUtil {
     /**
      * Tries to convert given object to float.
      * <code>Number</code> subclasses are converted using <code>floatValue()</code> method.
-     * <code>String</code>s are parsed with <code>Float.parseFloat()</code>.
+     * <code>String</code>s are parsed with <code>Float.parseFloat()</code>
+     * (both <code>'.'</code> and <code>','</code> are allowed as decimal separator).
      * In case string is malformed, or object is of any other class,
      * or <code>null</code> is given, default value is returned.
      *
@@ -143,7 +144,42 @@ public final class DataUtil {
             return ((Number) obj).floatValue();
         } else if (obj instanceof String) {
             try {
-                return Float.parseFloat((String) obj);
+                return Float.parseFloat(((String) obj).replace(',', '.'));
+            } catch (NumberFormatException ex) {
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Shortcut for {@link #toDouble(java.lang.Object, double)}
+     * with <code>defaultValue = 0</code>.
+     *
+     * @param obj  converted object
+     * @return conversion result
+     */
+    public static double toDouble(Object obj) {
+        return toDouble(obj, 0);
+    }
+
+    /**
+     * Tries to convert given object to double.
+     * <code>Number</code> subclasses are converted using <code>doubleValue()</code> method.
+     * <code>String</code>s are parsed with <code>Double.parseDouble()</code>
+     * (both <code>'.'</code> and <code>','</code> are allowed as decimal separator).
+     * In case string is malformed, or object is of any other class,
+     * or <code>null</code> is given, default value is returned.
+     *
+     * @param obj  converted object
+     * @param defaultValue  what to return if conversion fails
+     * @return coversion result
+     */
+    public static double toDouble(Object obj, double defaultValue) {
+        if (obj instanceof Number) {
+            return ((Number) obj).doubleValue();
+        } else if (obj instanceof String) {
+            try {
+                return Double.parseDouble(((String) obj).replace(',', '.'));
             } catch (NumberFormatException ex) {
             }
         }

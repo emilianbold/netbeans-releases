@@ -255,7 +255,6 @@ public class WsValidation extends WebServicesTestBase {
             //ignore
         }
         assertTrue("missing @BindingType", eo.contains("@BindingType")); //NOI18N
-        assertTrue("missing namespace", eo.contains("SOAPBinding.SOAP12HTTP_BINDING")); //NOI18N
         //Switch to SOAP 1.1
         actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_SetSoap11");
         GenerateCodeOperator.openDialog(actionName, eo);
@@ -381,7 +380,7 @@ public class WsValidation extends WebServicesTestBase {
         wsClientRootNode.expand();
         Node wsClientNode = new Node(wsClientRootNode, getWsName()); //NOI18N
         wsClientNode.expand();
-        waitForWsImport("wsimport-client-compile)"); //NOI18N
+        waitForWsImport("wsimport-client-"); //NOI18N
         Node wsClientServiceNode = new Node(wsClientNode, getWsName()); //NOI18N
         wsClientServiceNode.expand();
         Node wsClientPortNode = new Node(wsClientServiceNode, getWsName()); //NOI18N
@@ -549,7 +548,7 @@ public class WsValidation extends WebServicesTestBase {
                 "testWsHandlers",
                 "testDeployWsProject",
                 "testTestWS",
-                "testGenerateWrapper",
+// IZ# 175453               "testGenerateWrapper",
                 "testGenerateWSDL",
                 "testDeployWsProject",
                 "testCreateWsClient",
@@ -586,7 +585,7 @@ public class WsValidation extends WebServicesTestBase {
         eo.select(line);
         //Call Web Service Operation...
         String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.actions.Bundle", "LBL_CallWebServiceOperation");
-        if (eo.getToolTipText().endsWith(".java")) { //NOI18N
+        if (eo.getToolTipText().contains(".java")) { //NOI18N
             //java files do have Insert code
             GenerateCodeOperator.openDialog(actionName, eo);
         } else {

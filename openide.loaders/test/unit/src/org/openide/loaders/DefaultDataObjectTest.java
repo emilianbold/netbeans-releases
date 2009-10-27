@@ -67,6 +67,10 @@ import org.openide.util.Enumerations;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class DefaultDataObjectTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+
     private FileSystem lfs;
     private DataObject obj;
     
@@ -257,4 +261,4 @@ public class DefaultDataObjectTest extends NbTestCase {
         }
         
     }
-}
+        }

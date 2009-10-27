@@ -71,6 +71,6 @@ public class MoveAction extends RefactoringGlobalAction {
     }
 
     protected boolean enable(Lookup context) {
-        return ActionsImplementationFactory.canMove(context);
+        return true;
     }
 }

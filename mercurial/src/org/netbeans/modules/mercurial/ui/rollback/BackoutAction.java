@@ -59,8 +59,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Pull action for mercurial: 
@@ -184,12 +182,6 @@ public class BackoutAction extends ContextAction {
                         }else if(repoRev != null){
                             HgUtils.forceStatusRefresh(root);
                         }
-                        // refresh filesystem to take account of deleted files.
-                        FileObject rootObj = FileUtil.toFileObject(root);
-                        try {
-                            rootObj.getFileSystem().refresh(true);
-                        } catch (java.lang.Exception ex) {
-                        }                        
                     }
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

@@ -115,7 +115,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (name.length()==0) {
             throw new AstRendererException((FileImpl)file, this.getStartOffset(), "Empty function name."); // NOI18N
         }
-        rawName = AstUtil.getRawNameInChildren(ast);
+        rawName = initRawName(ast);
         AST child = ast.getFirstChild();
         if (child != null) {
             setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
@@ -254,6 +254,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     protected String initName(AST node) {
         return findFunctionName(node);
     }
+
+    protected CharSequence[] initRawName(AST node) {
+        return findFunctionRawName(node);
+    }
     
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
@@ -308,7 +312,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         return "";
     }
-    
+
+    private static CharSequence[] findFunctionRawName(AST ast) {
+        if( CastUtils.isCast(ast) ) {
+            return CastUtils.getFunctionRawName(ast);
+        }
+        return AstUtil.getRawNameInChildren(ast);
+    }  
+
     protected boolean isCStyleStatic() {
         return isStatic() && CsmKindUtilities.isFile(getScope());
     }
