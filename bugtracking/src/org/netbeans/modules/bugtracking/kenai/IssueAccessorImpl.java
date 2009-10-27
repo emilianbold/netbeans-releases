@@ -112,7 +112,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         for(Map.Entry<String, List<RecentIssue>> entry : recentIssues.entrySet()) {
             Repository repo = repoMap.get(entry.getKey());
             if(repo == null) {
-                BugtrackingManager.LOG.warning("No repository available with ID " + entry.getKey());
+                BugtrackingManager.LOG.fine("No repository available with ID " + entry.getKey()); // NOI18N
                 continue;
             }
             KenaiProject kenaiProject = repo.getLookup().lookup(KenaiProject.class);
@@ -160,7 +160,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         }
         Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
         if(repo == null) {
-            BugtrackingManager.LOG.warning("No issue tracker available for the given kanei project [" + project.getName() + "," + project.getDisplayName() + "]");
+            BugtrackingManager.LOG.fine("No issue tracker available for the given kenai project [" + project.getName() + "," + project.getDisplayName() + "]"); // NOI18N
             return new IssueHandle[0];
         }
         Collection<Issue> issues = BugtrackingManager.getInstance().getRecentIssues(repo);
