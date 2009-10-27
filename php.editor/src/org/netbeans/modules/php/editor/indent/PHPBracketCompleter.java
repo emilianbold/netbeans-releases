@@ -314,6 +314,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             return -1;
         }
 
+
         // XXX: this may not be neccessary, at least not for }
         // Special case: since I do hash completion, if you try to type
         //     y = Thread.start {
@@ -332,6 +333,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 /*&& (Utilities.getRowLastNonWhite(doc, offset) == offset)*/) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
+            // the new line will not be added, if we are in middle of array declaration
             Token<?extends PHPTokenId> helpToken = token;
             if (ts.movePrevious()) {
                 do {
@@ -360,7 +362,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 ts.move(begin);
                 if (ts.moveNext()) {
                     id = ts.token().id();
-                    if (id == PHPTokenId.PHP_LINE_COMMENT) {
+                    if (id == PHPTokenId.PHP_LINE_COMMENT
+                            || id == PHPTokenId.PHPDOC_COMMENT_START
+                            || id == PHPTokenId.PHP_COMMENT_START) {
                         offset = begin;
                     }
                 }
@@ -475,9 +479,20 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
         
         if (id == PHPTokenId.PHP_COMMENT || id == PHPTokenId.PHP_COMMENT_START || id == PHPTokenId.PHP_COMMENT_END) {
-            Object [] ret = beforeBreakInComments(doc, ts, offset, caret, 
-                PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
-            return (Integer) ret[0];
+            if (id == PHPTokenId.PHP_COMMENT_START && offset == ts.offset()) {
+////                int indent = GsfUtilities.getLineIndent(doc, offset);
+////                String indentString = IndentUtils.createIndentString(doc, indent);
+////
+////                int insertOffset = offset; // offset < length ? offset+1 : offset;
+////                doc.insertString(insertOffset, indentString, null);
+////                caret.setDot(insertOffset);
+//                //return insertOffset;
+            }
+            else {
+                Object [] ret = beforeBreakInComments(doc, ts, offset, caret,
+                    PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END);
+                return (Integer) ret[0];
+            }
         }
         
         return -1;
