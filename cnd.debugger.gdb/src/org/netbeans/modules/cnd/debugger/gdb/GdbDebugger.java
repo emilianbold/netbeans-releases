@@ -69,7 +69,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -633,7 +633,7 @@ public class GdbDebugger implements PropertyChangeListener {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CompilerSetManager.getMSysBase();
+            String msysBase = CompilerSetUtils.getMSysBase();
             if (msysBase != null && msysBase.length() > 0) {
                 csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
             }

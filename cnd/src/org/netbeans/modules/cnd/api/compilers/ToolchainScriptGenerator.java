@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 final class ToolchainScriptGenerator {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private static final String[] platforms = new String[]{
             "PLATFORM_SOLARIS_SPARC", // NOI18N
             "PLATFORM_SOLARIS_INTEL", // NOI18N

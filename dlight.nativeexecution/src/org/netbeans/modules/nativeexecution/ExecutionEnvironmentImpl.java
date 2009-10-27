@@ -135,7 +135,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
      */
     public String getDisplayName() {
         if (isLocal()) {
-            return "localhost"; // NOI18N
+            return HostInfoUtils.LOCALHOST;
         } else {
             String result = this.user + "@" + this.host; // NOI18N;
             if (this.sshPort != 22) {
