@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
