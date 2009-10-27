@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -67,7 +66,8 @@ public class DevelopmentHostConfiguration {
     private int value;
     private List<ExecutionEnvironment> servers;
 
-    private int buildPlatform; // Actual build platform
+//    private int buildPlatform; // Actual build platform
+    private IntConfiguration buildPlatformConfiguration;
 
     private boolean modified;
     private boolean dirty = false;
@@ -85,11 +85,12 @@ public class DevelopmentHostConfiguration {
         def = value;
         pcs = new PropertyChangeSupport(this);
 
-        buildPlatform = CompilerSetManager.getDefault(execEnv).getPlatform();
+        int buildPlatform = CompilerSetManager.getDefault(execEnv).getPlatform();
         if (buildPlatform == -1) {
             // TODO: CompilerSet is not reliable about platform; it must be.
             buildPlatform = PlatformTypes.PLATFORM_NONE;
         }
+        buildPlatformConfiguration = new IntConfiguration(null, buildPlatform, Platforms.getPlatformDisplayNames(), null);
     }
 
     /** TODO: deprecate and remove, see #158983 */
@@ -107,11 +108,11 @@ public class DevelopmentHostConfiguration {
             out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         else {
-            int platformID = CompilerSetManager.getDefault(getExecutionEnvironment()).getPlatform();
-            Platform platform = Platforms.getPlatform(platformID);
-            if (platform != null) {
-                out += " [" + platform.getDisplayName() + "]"; // NOI18N
-            }
+//            int platformID = CompilerSetManager.getDefault(getExecutionEnvironment()).getPlatform();
+//            Platform platform = Platforms.getPlatform(platformID);
+//            if (platform != null) {
+//                out += " [" + platform.getDisplayName() + "]"; // NOI18N
+//            }
         }
         return out;
     }
@@ -259,6 +260,7 @@ public class DevelopmentHostConfiguration {
         }
         setDirty(dirty2);
         setHost(newEnv);
+        getBuildPlatformConfiguration().assign(conf.getBuildPlatformConfiguration());
     }
 
     @Override
@@ -266,6 +268,7 @@ public class DevelopmentHostConfiguration {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getExecutionEnvironment());
         // FIXUP: left setValue call to leave old logic
         clone.setHost(getExecutionEnvironment());
+        clone.setBuildPlatformConfiguration(getBuildPlatformConfiguration().clone());
         return clone;
     }
 
@@ -285,14 +288,14 @@ public class DevelopmentHostConfiguration {
      * @return the buildPlatform
      */
     public int getBuildPlatform() {
-        return buildPlatform;
+        return getBuildPlatformConfiguration().getValue();
     }
 
     /**
      * @param buildPlatform the buildPlatform to set
      */
     public void setBuildPlatform(int buildPlatform) {
-        this.buildPlatform = buildPlatform;
+        getBuildPlatformConfiguration().setValue(buildPlatform);
     }
 
     public String getBuildPlatformDisplayName() {
@@ -302,6 +305,20 @@ public class DevelopmentHostConfiguration {
         else {
             return "";
         }
+    }
+
+    /**
+     * @return the buildPlatformConfiguration
+     */
+    public IntConfiguration getBuildPlatformConfiguration() {
+        return buildPlatformConfiguration;
+    }
+
+    /**
+     * @param buildPlatformConfiguration the buildPlatformConfiguration to set
+     */
+    public void setBuildPlatformConfiguration(IntConfiguration buildPlatformConfiguration) {
+        this.buildPlatformConfiguration = buildPlatformConfiguration;
     }
 
 }

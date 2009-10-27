@@ -1121,7 +1121,7 @@ public class MakeActionProvider implements ActionProvider {
                     return false;
                 }
             }
-            conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
+            //conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
         boolean unknownCompilerSet = false;
