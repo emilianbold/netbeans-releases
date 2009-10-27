@@ -99,7 +99,9 @@ public class ExposeBusinessMethod implements Fix {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement targetClass = targetClassHandle.resolve(workingCopy);
                 ExecutableElement originalMethod = methodHandle.resolve(workingCopy);
-
+                if (targetClass == null || originalMethod == null){
+                    return;
+                }
                 ClassTree clazzTree = workingCopy.getTrees().getTree(targetClass);
                 TreeMaker make = workingCopy.getTreeMaker();
                 MethodTree newMethod = make.Method(originalMethod, null);

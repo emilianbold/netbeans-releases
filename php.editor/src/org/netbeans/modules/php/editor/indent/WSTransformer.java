@@ -73,6 +73,9 @@ class WSTransformer extends DefaultTreePathVisitor {
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
 
+    private Collection<PHPTokenId> NO_BREAK_B4_TKNS = Arrays.asList(PHPTokenId.PHP_CLOSETAG,
+            PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_CATCH);
+
     public WSTransformer(Context context) {
         this.context = context;
         String openingBraceStyle = CodeStyle.get(context.document()).getOpeningBraceStyle();
@@ -209,7 +212,7 @@ class WSTransformer extends DefaultTreePathVisitor {
                 }
             } else {
                 // do not break lines in expressions like <?php foo(); ?>, see issue #174595
-                retVal = tokenSequence.token().id() == PHPTokenId.PHP_CLOSETAG;
+                retVal = NO_BREAK_B4_TKNS.contains(tokenSequence.token().id());
                 if (fwd){
                     tokenSequence.movePrevious();
                 } else {
