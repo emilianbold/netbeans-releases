@@ -396,8 +396,6 @@ public class GdbDebugger implements PropertyChangeListener {
                     // for anonymous breakpoints to be set correctly, see IZ 139388
                     gdb.up_silently(1024);
 
-                    gdb.data_list_register_names("");
-                    
                     setLoading();
                 }
             } else {
@@ -434,7 +432,6 @@ public class GdbDebugger implements PropertyChangeListener {
                     // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
                     gdb.break_insert_temporary("WinMain"); // NOI18N
                 }
-                gdb.data_list_register_names("");
 
                 String inRedir = "";
                 if (ioProxy != null) {
@@ -768,6 +765,9 @@ public class GdbDebugger implements PropertyChangeListener {
             if (evt.getNewValue() == State.LOADING) {
                 shareToken = gdb.info_share(false).getID();
             } else if (evt.getNewValue() == State.READY) {
+                // request register names only when we stopeed in main
+                // IZ 172402
+                gdb.data_list_register_names("");
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
                 } else {
