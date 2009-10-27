@@ -290,4 +290,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz175324.cc");
     }
 
+    public void testIZ168253() throws Exception {
+        // IZ#168253 : Unable to resolve identifier for some header files
+        performTest("iz168253.cc");
+    }
+
 }
