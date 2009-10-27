@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+  <folder name="DLight">
+      <folder name="XMLToolConfigurations">
+        <file name="XMLFopsToolConfiguration.instance">
+            <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.spi.support.DLightToolConfigurationProviderFactory.create"/>
+            <attr name="name" stringvalue="fops"/>
+            <attr name="displayedName" stringvalue="Read/Write Monitor"/>
+            <attr name="id" stringvalue="dlight.fops.xml"/>
+        </file>
+        </folder>
+  </folder>
+</filesystem>
