@@ -138,6 +138,12 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
         commentsMapped();
     }
 
+    public void addComments(RelativePosition positioning, Iterable<? extends Comment> comments) {
+        for (Comment c : comments) {
+            addComment(positioning, c);
+        }
+    }
+    
     public List<Comment> getComments(RelativePosition positioning) {
         if (commentsMap.containsKey(positioning)) {
             return Collections.unmodifiableList(commentsMap.get(positioning));

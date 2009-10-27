@@ -917,6 +917,21 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
+    public void testIntroduceMethodComments170213() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test(boolean arg) {\n" +
+                       "        |//t1\n" +
+                       "        String allianceString = new String(\"[]\");\n" +
+                       "        //t2\n" +
+                       "        allianceString += \"\";\n" +
+                       "        //t3|\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void test(boolean arg) { name(); } private static void name() { //t1\nString allianceString = new String(\"[]\"); //t2\nallianceString += \"\"; //t3\n} }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+
 //    public void testIntroduceMethod109489() throws Exception {
 //        performErrorMessageTest("package test;\n" +
 //                                "public class Test {\n" +
