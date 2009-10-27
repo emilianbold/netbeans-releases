@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.ActionProvider;
@@ -1216,7 +1217,10 @@ public class MakeActionProvider implements ActionProvider {
             return false;
         }
         if (runBTA) {
-            if (conf.getDevelopmentHost().isLocalhost()) {
+            if (CndUtils.isUnitTestMode()) {
+                // do not show any dialogs in unit test mode, just silently fail validation
+                lastValidation = false;
+            } else if (conf.getDevelopmentHost().isLocalhost()) {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();

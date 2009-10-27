@@ -51,6 +51,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -103,7 +104,7 @@ public final class CsmFontColorManager {
     private final boolean isUnitTestsMode;
     
     private CsmFontColorManager() {
-        isUnitTestsMode = CsmUtilities.isUnitTestsMode();
+        isUnitTestsMode = CndUtils.isUnitTestMode();
     }
 
     public interface FontColorChangeListener extends EventListener {
