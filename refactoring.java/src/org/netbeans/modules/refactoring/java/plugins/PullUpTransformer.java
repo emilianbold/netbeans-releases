@@ -112,6 +112,8 @@ public class PullUpTransformer extends RefactoringVisitor {
                         Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                         mod.add(Modifier.ABSTRACT);
                         mod.remove(Modifier.FINAL);
+                        // abstract method cannot be synchronized
+                        mod.remove(Modifier.SYNCHRONIZED);
                         if (el.getKind().isInterface()) {
                             mod.remove(Modifier.PUBLIC);
                             mod.remove(Modifier.PROTECTED);
