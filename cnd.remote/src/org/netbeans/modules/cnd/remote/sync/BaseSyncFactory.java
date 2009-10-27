@@ -41,48 +41,37 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
-class ZipSyncFactory extends BaseSyncFactory {
-
-    /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
-    /*package*/ static final String ID = "scp"; //NOI18N
-    
-    @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, localDirs);
-    }
+public abstract class BaseSyncFactory extends RemoteSyncFactory {
 
     @Override
-    public String getDisplayName() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
-    }
-
-    @Override
-    public String getDescription() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
-    }
-
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE_SCP && ! RemoteUtil.isForeign(execEnv);
+    public RemoteSyncWorker createNew(Project project, PrintWriter out, PrintWriter err) {
+        ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
+        if (execEnv.isRemote()) {
+            ServerRecord rec = ServerList.get(execEnv);
+            if (rec != null) {
+                RemoteSyncFactory factory = rec.getSyncFactory();
+                if (factory != null ) {
+                    File privateStorageFile = RemoteProjectSupport.getPrivateStorage(project);
+                    if (!privateStorageFile.exists()) {
+                        privateStorageFile.mkdirs();
+                    }
+                    File[] sourceRoots = RemoteProjectSupport.getProjectSourceDirs(project);
+                    return factory.createNew(execEnv, out, err, privateStorageFile, sourceRoots);
+                }
+            }
+        }
+        return null;
     }
 }

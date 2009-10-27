@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -117,6 +119,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected abstract boolean accept(DataObject object);
+
+    protected static Project getProject(Node node) {
+        DataObject dataObject = node.getCookie(DataObject.class);
+        if (dataObject != null) {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            if (fileObject != null) {
+                return FileOwnerQuery.getOwner(fileObject);
+            }
+        }
+        return null;
+    }
 
     protected static ExecutionEnvironment getExecutionEnvironment(FileObject fileObject, Project project) {
         if (project == null) {
@@ -495,13 +508,15 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         private final ExecutionListener listener;
         private final InputOutput tab;
         private final String resourceKey;
+        private final RemoteSyncWorker syncWorker;
         private long startTimeMillis;
         private Runnable postRunnable;
 
-        public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey) {
+        public ProcessChangeListener(ExecutionListener listener, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
             this.listener = listener;
             this.tab = tab;
             this.resourceKey = resourceKey;
+            this.syncWorker = syncWorker;
         }
 
         public void stateChanged(ChangeEvent e) {
@@ -536,6 +551,9 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
+                    if (syncWorker != null) {
+                        syncWorker.shutdown();
+                    }
                     break;
                 }
                 case ERROR:

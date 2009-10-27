@@ -46,12 +46,15 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -92,7 +95,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
 
     public static void performAction(Node node) {
-        performAction(node, null, null, null, null);
+        performAction(node, null, null, getProject(node), null);
     }
 
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
@@ -174,7 +177,13 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             }
             inputOutput = tab;
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Run"); // NOI18N
+        RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
+        if (syncWorker != null) {
+            if (!syncWorker.startup(envMap)) {
+                return null;
+            }
+        }
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, inputOutput, "Run", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setWorkingDirectory(buildDir.getPath())
         .setCommandLine(quoteExecutable(shellCommand)+" "+argsFlat.toString()) // NOI18N
