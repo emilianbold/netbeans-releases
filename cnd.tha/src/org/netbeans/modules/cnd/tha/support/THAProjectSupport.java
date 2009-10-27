@@ -497,22 +497,12 @@ public final class THAProjectSupport implements PropertyChangeListener {
             return null;
         }
         CompilerSet compilerSet = mc.getCompilerSet().getCompilerSet();
-        if (compilerSet == null) {
+        if (compilerSet == null || compilerSet.isGnuCompiler()) {
             return null;
         }
-        Tool ccTool = compilerSet.getTool(Tool.CCCompiler);
-        String ccPath = ccTool.getPath();
-        String sunstudioBinDir = ccPath.substring(0, ccPath.length() - ccTool.getName().length());
-
+        String sunstudioBinDir = compilerSet.getDirectory();
         ExecutionEnvironment execEnv = mc.getDevelopmentHost().getExecutionEnvironment();
         return THAInstrumentationSupport.getSupport(execEnv, sunstudioBinDir);
-//        // ensure that connection is established and ServerRecord exists for the
-//        // development host....
-//        if (ServerListUI.ensureRecordOnline(execEnv)) {
-//            return THAInstrumentationSupport.getSupport(execEnv, sunstudioBinDir);
-//        } else {
-//            return null;
-//        }
     }
 
     private void setModified() {

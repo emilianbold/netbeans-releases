@@ -148,9 +148,14 @@ public class SubprojectProviderImpl implements SubprojectProvider {
                 throw new InterruptedException();
             }
             String path = (String) it.next();
+            if (path.trim().length() == 0) {
+                //#175331
+                continue;
+            }
             File sub = new File(basedir, path);
             File projectFile = FileUtil.normalizeFile(sub);
-            if (projectFile.exists()) {
+            if (!projectFile.equals(basedir) //#175331
+                 && projectFile.exists()) {
                 FileObject projectDir = FileUtil.toFileObject(projectFile);
                 if (projectDir != null && !isProcessed(resultset, projectDir)) {
                     Project proj = processOneSubproject(projectDir);

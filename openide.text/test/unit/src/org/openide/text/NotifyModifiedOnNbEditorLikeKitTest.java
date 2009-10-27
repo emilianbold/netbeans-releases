@@ -41,17 +41,13 @@
 
 package org.openide.text;
 
-
-
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
-
 
 /** Testing different features of NotifyModifieTest with NbEditorKit
  *
  * @author Jaroslav Tulach
  */
-@RandomlyFails
 public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
     private NbLikeEditorKit k;
 
@@ -113,9 +109,11 @@ public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
                 }
             }
         }
-
-        X x = new X ();
-        testRP.post (x).waitFinished ();
-        assertTrue ("No lock is held on document when running notifyModified", x.ok);
+        //Avoid random deadlock with ARQ thread
+        if (!"Active Reference Queue Daemon".equals(Thread.currentThread().getName())) {
+            X x = new X ();
+            testRP.post (x).waitFinished ();
+            assertTrue ("No lock is held on document when running notifyModified", x.ok);
+        }
     }
 }

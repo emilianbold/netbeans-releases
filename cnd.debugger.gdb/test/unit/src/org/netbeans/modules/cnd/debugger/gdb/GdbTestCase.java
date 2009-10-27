@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  * Base class for each gdb test case should extend this class. It provides a handle
@@ -302,7 +303,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
 
     class TestConfiguration extends MakeConfiguration {
         public TestConfiguration(String args) {
-            super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, CompilerSetManager.LOCALHOST);
+            super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, HostInfoUtils.LOCALHOST);
             RunProfile profile = getProfile();
             profile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
             profile.setArgs(args);

@@ -196,9 +196,11 @@ public final class WatchProjects {
             Log.assertInstances("Checking if all projects are really garbage collected", "Project");
         } catch (AssertionFailedError t) {
             Logger.getLogger(WatchProjects.class.getName()).warning(t.getMessage());
-            if (printTreeView(Frame.getFrames()) == 0 || !Boolean.getBoolean("ignore.random.failures")) {
+            if (!Boolean.getBoolean("ignore.random.failures")) {
                 throw t;
             }
+        } finally {
+            printTreeView(Frame.getFrames());
         }
     }
     

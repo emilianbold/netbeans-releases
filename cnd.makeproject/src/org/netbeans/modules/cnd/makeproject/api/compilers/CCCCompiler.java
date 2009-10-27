@@ -64,8 +64,11 @@ import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public abstract class CCCCompiler extends BasicCompiler {
+
+    private static final String DEV_NULL = "/dev/null"; // NOI18N
+
     private volatile Pair compilerDefinitions;
-    private static File tmpFile = null;
+    private static File emptyFile = null;
     
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
@@ -217,7 +220,7 @@ public abstract class CCCCompiler extends BasicCompiler {
 
         List<String> argsList = new ArrayList<String>();
         argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
-        argsList.add(tmpFile(execEnv));
+        argsList.add(getEmptyFile(execEnv));
 
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -300,17 +303,22 @@ public abstract class CCCCompiler extends BasicCompiler {
             }
         }
     }
-    
-    private String tmpFile(ExecutionEnvironment execEnv) {
-        if (tmpFile == null && execEnv.isLocal() && Utilities.isWindows()) {
-            try {
-                tmpFile = File.createTempFile("xyz", ".c"); // NOI18N
-                tmpFile.deleteOnExit();
-                return tmpFile.getAbsolutePath();
-            } catch (IOException ioe) {
+
+    private String getEmptyFile(ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            // no /dev/null on Windows, so we need a real file
+            if (emptyFile == null) {
+                try {
+                    File tmpFile = File.createTempFile("xyz", ".c"); // NOI18N
+                    tmpFile.deleteOnExit();
+                    emptyFile = tmpFile;
+                } catch (IOException ioe) {
+                }
             }
+            return emptyFile == null? DEV_NULL : emptyFile.getAbsolutePath();
+        } else {
+            return DEV_NULL;
         }
-        return "/dev/null"; // NOI18N
     }
 
     protected String getUniqueID() {

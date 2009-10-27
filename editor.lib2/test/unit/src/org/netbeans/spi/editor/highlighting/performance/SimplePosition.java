@@ -57,4 +57,8 @@ public final class SimplePosition implements Position {
     public int getOffset() {
         return offset;
     }
+
+    public @Override String toString() {
+        return "offset=" + offset;
+    }
 } 
