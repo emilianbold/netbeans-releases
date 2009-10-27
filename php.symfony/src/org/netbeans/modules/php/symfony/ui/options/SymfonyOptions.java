@@ -62,7 +62,6 @@ public final class SymfonyOptions {
     // default params
     private static final String PARAMS_FOR_PROJECT = "default.params.project"; // NOI18N
     private static final String PARAMS_FOR_APPS = "default.params.apps"; // NOI18N
-    private static final String DEFAULT_PARAMS_FOR_PROJECT = "--orm=none"; // NOI18N
     private static final String DEFAULT_PARAMS_FOR_APPS = "--escaping-strategy=on --csrf-secret=" + DEFAULT_SECRET; // NOI18N
 
     private volatile boolean symfonySearched = false;
@@ -92,7 +91,7 @@ public final class SymfonyOptions {
     }
 
     public String getDefaultParamsForProject() {
-        return getPreferences().get(PARAMS_FOR_PROJECT, DEFAULT_PARAMS_FOR_PROJECT);
+        return getPreferences().get(PARAMS_FOR_PROJECT, ""); // NOI18N
     }
 
     public void setDefaultParamsForProject(String params) {

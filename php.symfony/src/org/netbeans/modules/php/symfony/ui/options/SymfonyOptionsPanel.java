@@ -174,6 +174,7 @@ public class SymfonyOptionsPanel extends JPanel {
         defaultParametersLabel = new JLabel();
         defaultParametersForProjectLabel = new JLabel();
         defaultParametersForProjectTextField = new JTextField();
+        jLabel1 = new JLabel();
         defaultParametersForAppsLabel = new JLabel();
         defaultParametersForAppsTextField = new JTextField();
         noteLabel = new JLabel();
@@ -205,7 +206,9 @@ public class SymfonyOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersLabel.text"));
         defaultParametersForProjectLabel.setLabelFor(defaultParametersForAppsTextField);
 
+
         Mnemonics.setLocalizedText(defaultParametersForProjectLabel, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.defaultParametersForProjectLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.jLabel1.text"));
         defaultParametersForAppsLabel.setLabelFor(defaultParametersForAppsTextField);
 
 
@@ -278,9 +281,14 @@ public class SymfonyOptionsPanel extends JPanel {
                     .add(defaultParametersForProjectLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
-                    .add(defaultParametersForAppsTextField, GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
-                .add(0, 0, 0))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                            .add(defaultParametersForAppsTextField, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE))
+                        .add(0, 0, 0))))
         );
 
         layout.linkSize(new Component[] {browseButton, searchButton}, GroupLayout.HORIZONTAL);
@@ -304,6 +312,8 @@ public class SymfonyOptionsPanel extends JPanel {
                     .add(defaultParametersForProjectLabel)
                     .add(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(defaultParametersForAppsLabel)
                     .add(defaultParametersForAppsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -315,7 +325,7 @@ public class SymfonyOptionsPanel extends JPanel {
                 .add(installationInfoLabel)
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED, 21, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(errorLabel)
                 .add(0, 0, 0))
         );
@@ -383,6 +393,7 @@ public class SymfonyOptionsPanel extends JPanel {
     private JLabel errorLabel;
     private JLabel includePathInfoLabel;
     private JLabel installationInfoLabel;
+    private JLabel jLabel1;
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
     private JLabel runningInfoLabel;
