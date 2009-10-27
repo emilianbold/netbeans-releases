@@ -57,6 +57,7 @@ import org.jdesktop.swingx.JXBusyLabel;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.*;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
@@ -578,17 +579,21 @@ public class ChatTopComponent extends TopComponent {
         if (kenai.getStatus() == Kenai.Status.OFFLINE) {
             UIUtils.showLogin();
         } else {
-            RequestProcessor.getDefault().post(new Runnable() {
+            if (!Utilities.isChatSupported()) {
+                JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", Kenai.getDefault().getName()));
+             } else {
+                RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
-                    try {
-                        PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
-                        kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
-                    } catch (KenaiException ex) {
-                        Exceptions.printStackTrace(ex);
+                    public void run() {
+                        try {
+                            PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
+                            kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), true);
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
+                });
+             }
         }
 }//GEN-LAST:event_loginLinkMouseClicked
 
