@@ -545,7 +545,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
 
-
             EditorKit k = support.cesKit();
             if (newInitialize() && k instanceof Callable) {
                 try {
@@ -556,11 +555,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             }
             
             synchronized (this) {
-                try {
-                    doc = support.openDocument();
-                } catch (IOException exc) {
-                    LOG.log(Level.INFO,"Failed to open document",exc);
-                }
+                //Last fix of #138686 makes sure doc is not gc'ed till we keep reference to prepareDocument task
+                //so we can use support.getDocument instead of support.openDocument
+                doc = support.getDocument();
+                assert doc != null;
                 kit = k;
                 initialized = true;
                 if (LOG.isLoggable(Level.FINE)) {

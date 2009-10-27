@@ -1529,7 +1529,7 @@ public abstract class PositionEstimator {
     }
     
     @SuppressWarnings("empty-statement")
-    private static JavaTokenId moveToDifferentThan(
+    public static JavaTokenId moveToDifferentThan(
         TokenSequence<JavaTokenId> seq,
         Direction dir,
         EnumSet<JavaTokenId> set)

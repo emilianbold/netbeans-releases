@@ -241,9 +241,18 @@ public class IssuePanel extends javax.swing.JPanel {
         statusWhiteboardField.setVisible(showStatusWhiteboard);
         statusWhiteboardWarning.setVisible(showStatusWhiteboard);
         boolean showIssueType = BugzillaUtil.isNbRepository(issue.getRepository());
-        issueTypeLabel.setVisible(showIssueType);
+        issueTypeLabel.setVisible(false);
         issueTypeCombo.setVisible(showIssueType);
         issueTypeWarning.setVisible(showIssueType);
+        severityCombo.setVisible(!showIssueType);
+        severityWarning.setVisible(!showIssueType);
+        // Replace severity by issue-type
+        if (showIssueType) {
+            GroupLayout layout = (GroupLayout)getLayout();
+            JLabel temp = new JLabel();
+            swap(layout, severityCombo, issueTypeCombo, temp);
+            swap(layout, severityWarning, issueTypeWarning, temp);
+        }
 
         tasklistButton.setEnabled(false);
         reloadForm(true);
@@ -251,7 +260,7 @@ public class IssuePanel extends javax.swing.JPanel {
         // Hack to "link" the width of both columns
         Dimension dim = ccField.getPreferredSize();
         int width1 = Math.max(osCombo.getPreferredSize().width, platformCombo.getPreferredSize().width);
-        int width2 = Math.max(priorityCombo.getPreferredSize().width, severityCombo.getPreferredSize().width);
+        int width2 = Math.max(priorityCombo.getPreferredSize().width, showIssueType ? issueTypeCombo.getPreferredSize().width : severityCombo.getPreferredSize().width);
         int gap = LayoutStyle.getSharedInstance().getPreferredGap(osCombo, platformCombo, LayoutStyle.RELATED, SwingConstants.EAST, this);
         ccField.setPreferredSize(new Dimension(2*Math.max(width1,width2)+gap,dim.height));
     }
@@ -1523,9 +1532,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2}, org.jdesktop.layout.GroupLayout.VERTICAL);
-
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, priorityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         reportedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedField.AccessibleContext.accessibleDescription")); // NOI18N
         blocksButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.AccessibleContext.accessibleDescription")); // NOI18N
