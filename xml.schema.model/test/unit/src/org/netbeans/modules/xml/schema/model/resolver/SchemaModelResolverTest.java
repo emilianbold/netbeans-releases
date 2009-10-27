@@ -398,6 +398,59 @@ public class SchemaModelResolverTest {
         assertNotNull(smF);
     }
 
+    /**
+     * B is included by A and E.
+     * A, C, D form a reference cycle.
+     * E also includes F and it includes C.
+     *
+     * Types from C and F has to be visible from B. 
+     *
+     */
+    @Test
+    public void testResolve16() throws Exception {
+        SchemaModel smA = Util.loadSchemaModel2("resources/cyclic_dependencies.zip", "cyclic_dependencies/A.xsd");
+        assertNotNull(smA);
+        //
+        SchemaModel smB = Util.loadSchemaModel2("resources/cyclic_dependencies.zip", "cyclic_dependencies/B.xsd");
+        assertNotNull(smB);
+        //
+        SchemaModel smC = Util.loadSchemaModel2("resources/cyclic_dependencies.zip", "cyclic_dependencies/C.xsd");
+        assertNotNull(smC);
+        //
+        SchemaModel smD = Util.loadSchemaModel2("resources/cyclic_dependencies.zip", "cyclic_dependencies/D.xsd");
+        assertNotNull(smD);
+        //
+        SchemaModel smE = Util.loadSchemaModel2("resources/cyclic_dependencies.zip", "cyclic_dependencies/E.xsd");
+        assertNotNull(smE);
+        //
+        SchemaModel smF = Util.loadSchemaModel2("resources/cyclic_dependencies.zip", "cyclic_dependencies/F.xsd");
+        assertNotNull(smF);
+        //
+        assert(smB.getState() == State.VALID);
+        GlobalElement el = (GlobalElement)smB.getSchema().getChildren().get(0);
+        assertNotNull(el);
+        assertEquals(el.getName(), "elemC");
+        NamedComponentReference ncr = el.getType();
+        String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assertEquals(name, "cyclic_dependencies_test:complexTypeC");
+        //this is when it'll try to resolve
+        GlobalComplexType gct = (GlobalComplexType)ncr.get();
+        assertNotNull(gct);
+        assertEquals(gct.getName(), "complexTypeC");
+        //
+        el = (GlobalElement)smB.getSchema().getChildren().get(1);
+        assertNotNull(el);
+        assertEquals(el.getName(), "elemF");
+        ncr = el.getType();
+        name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assertEquals(name, "cyclic_dependencies_test:complexTypeF");
+        //this is when it'll try to resolve
+        gct = (GlobalComplexType)ncr.get();
+        assertNotNull(gct);
+        assertEquals(gct.getName(), "complexTypeF");
+        //
+    }
+
     private void testResolve8to12(String zipFile, String schemaFile, String referencedSchemaFile)
             throws Exception {
         //

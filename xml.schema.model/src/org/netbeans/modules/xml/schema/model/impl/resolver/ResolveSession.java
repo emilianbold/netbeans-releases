@@ -157,9 +157,9 @@ public class ResolveSession {
         //
         // Load additional models
         Set<SchemaModelImpl> inclusionRoots = graph.getRoots(sModel, false);
-        Set<SchemaModelImpl> evoidCycling = new HashSet<SchemaModelImpl>();
+        Set<SchemaModelImpl> avoidCycling = new HashSet<SchemaModelImpl>();
         for (SchemaModelImpl root : inclusionRoots) {
-            checkAllDependingModelsLoaded(root, graph, sModels, evoidCycling);
+            checkAllDependingModelsLoaded(root, graph, sModels, avoidCycling);
         }
         //
         return graph;
@@ -229,16 +229,20 @@ public class ResolveSession {
      * It's usually is a root of the graph.
      * @param graph
      * @param initiallyLoadedModels.
-     * @param evoidCycling
+     * @param avoidCycling
      */
     private void checkAllDependingModelsLoaded(SchemaModelImpl owner,
             BidirectionalGraph<SchemaModelImpl> graph,
             Set<SchemaModelImpl> initiallyLoadedModels,
-            Set<SchemaModelImpl> evoidCycling) {
+            Set<SchemaModelImpl> avoidCycling) {
         //
-        if (evoidCycling.contains(owner)) {
+        if (avoidCycling.contains(owner)) {
             return;
         }
+        //
+        // Put the owner model to the set in order to avoid cyclilng in case of
+        // cyclinc references
+        avoidCycling.add(owner);
         //
         boolean needRegister = !initiallyLoadedModels.contains(owner);
         //
@@ -250,7 +254,7 @@ public class ResolveSession {
                 }
                 //
                 checkAllDependingModelsLoaded(referencedSModel,
-                        graph, initiallyLoadedModels, evoidCycling);
+                        graph, initiallyLoadedModels, avoidCycling);
             }
         }
     }
